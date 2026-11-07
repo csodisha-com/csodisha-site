@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "examinations": [
+    {
+      "id": "otet",
+      "code": "OTET",
+      "name_en": "Odisha Teacher Eligibility Test",
+      "name_or": "ଓଡ଼ିଶା ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା",
+      "category": "State Teaching Eligibility",
+      "authority": "Board of Secondary Education (BSE), Odisha",
+      "papers": [
+        {
+          "paper_id": "paper-1",
+          "target": "Primary (Classes I-V)",
+          "subjects": [
+            { "slug": "cdp", "title_en": "Child Development & Pedagogy", "title_or": "ଶିଶୁ ବିକାଶ ଓ ଶିକ୍ଷାଦାନ ପଦ୍ଧତି", "units": 5 },
+            { "slug": "odia", "title_en": "Language I (Odia)", "title_or": "ଭାଷା-୧ (ଓଡ଼ିଆ)", "units": 4 },
+            { "slug": "english", "title_en": "Language II (English)", "title_or": "ଭାଷା-୨ (ଇଂରାଜୀ)", "units": 4 },
+            { "slug": "mathematics", "title_en": "Mathematics", "title_or": "ଗଣିତ", "units": 5 },
+            { "slug": "evs", "title_en": "Environmental Studies", "title_or": "ପରିବେଶ ଅଧ୍ୟୟନ", "units": 5 }
+          ]
+        },
+        {
+          "paper_id": "paper-2",
+          "target": "Upper Primary (Classes VI-VIII)",
+          "subjects": [
+            { "slug": "cdp-upper", "title_en": "Child Development & Pedagogy", "title_or": "ଶିଶୁ ବିକାଶ ଓ ଶିକ୍ଷାଦାନ ପଦ୍ଧତି", "units": 5 },
+            { "slug": "odia-upper", "title_en": "Language I (Odia)", "title_or": "ଭାଷା-୧ (ଓଡ଼ିଆ)", "units": 4 },
+            { "slug": "english-upper", "title_en": "Language II (English)", "title_or": "ଭାଷା-୨ (ଇଂରାଜୀ)", "units": 4 },
+            { "slug": "math-science", "title_en": "Mathematics & Science", "title_or": "ଗଣିତ ଓ ବିଜ୍ଞାନ", "units": 6 },
+            { "slug": "social-studies", "title_en": "Social Studies", "title_or": "ସାମାଜିକ ପାଠ", "units": 6 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "osstet",
+      "code": "OSSTET",
+      "name_en": "Odisha Secondary School Teacher Eligibility Test",
+      "name_or": "ଓଡ଼ିଶା ମାଧ୍ୟମିକ ବିଦ୍ୟାଳୟ ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା",
+      "category": "Secondary Teaching Eligibility",
+      "authority": "Board of Secondary Education (BSE), Odisha",
+      "papers": [
+        {
+          "paper_id": "category-1",
+          "target": "TGT (Arts / Science / CBZ)",
+          "subjects": [
+            { "slug": "pedagogy-eval", "title_en": "Child Development, Pedagogy & School Management", "title_or": "ଶିଶୁ ବିକାଶ, ଶିକ୍ଷାଦାନ ଓ ବିଦ୍ୟାଳୟ ପରିଚାଳନା", "units": 4 },
+            { "slug": "odia", "title_en": "MIL Odia", "title_or": "ଏମ୍.ଆଇ.ଏଲ୍ ଓଡ଼ିଆ", "units": 3 },
+            { "slug": "english", "title_en": "General English", "title_or": "ଇଂରାଜୀ", "units": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ctet",
+      "code": "CTET",
+      "name_en": "Central Teacher Eligibility Test",
+      "name_or": "କେନ୍ଦ୍ରୀୟ ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା",
+      "category": "National Teaching Eligibility",
+      "authority": "Central Board of Secondary Education (CBSE)",
+      "papers": [
+        { "paper_id": "paper-1", "target": "Primary (Classes I-V)" },
+        { "paper_id": "paper-2", "target": "Elementary (Classes VI-VIII)" }
+      ]
+    },
+    {
+      "id": "oavs",
+      "code": "OAVS",
+      "name_en": "Odisha Adarsha Vidyalaya Sangathan Recruitment",
+      "name_or": "ଓଡ଼ିଶା ଆଦର୍ଶ ବିଦ୍ୟାଳୟ ସଂଗଠନ ନିଯୁକ୍ତି",
+      "category": "State Model School Recruitment",
+      "authority": "OAVS / School & Mass Education Dept.",
+      "papers": [
+        { "paper_id": "tgt-pgt-comp", "target": "TGT/PGT & Computer Teacher Framework" }
+      ]
+    }
+  ]
+}
