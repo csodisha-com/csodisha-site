@@ -1,0 +1,43 @@
+
+/* Ask CSO 3.0 — autocomplete and indexed results */
+.cso-ask3-suggest {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  border:1px solid var(--bd);
+  border-radius:10px;
+  padding:6px;
+  margin-top:-5px;
+  background:var(--card);
+  max-height:230px;
+  overflow-y:auto;
+}
+.cso-ask3-suggest[hidden] {display:none}
+.cso-ask3-suggest button {
+  padding:10px 12px;
+  border:0;
+  border-radius:7px;
+  text-align:left;
+  background:transparent;
+  color:var(--tx);
+  cursor:pointer;
+  font:inherit;
+  font-size:13px;
+}
+.cso-ask3-suggest button:hover,
+.cso-ask3-suggest button:focus-visible {
+  background:var(--bg);
+  outline:2px solid var(--bl);
+}
+.cso-ask3-heading {
+  padding:12px;
+  border:1px solid var(--bd);
+  border-radius:10px;
+  background:var(--bg);
+}
+.cso-ask3-heading p {
+  margin:6px 0 0;
+  font-size:12px;
+  color:var(--mut);
+  line-height:1.6;
+}

@@ -1,0 +1,2757 @@
+:root{--bg:#f4f7fb;--card:#fff;--tx:#14233b;--mut:#5b6b82;--bd:#e3e9f1;--bl:#1d4ed8;--gr:#0f6b4a;--dk:#0b4a43;--or:#f26a1b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme]),:root[data-theme=system]{--bg:#0e1522;--card:#17202f;--tx:#e8eef7;--mut:#9fb0c6;--bd:#27344a}}
+:root[data-theme=dark]{--bg:#0e1522;--card:#17202f;--tx:#e8eef7;--mut:#9fb0c6;--bd:#27344a}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 "Segoe UI",Roboto,Arial,sans-serif}
+a{color:inherit;text-decoration:none}.w{max-width:1440px;margin:0 auto;padding:0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px}
+.top{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--card);flex-wrap:wrap}
+.logo{font:900 34px/1 Arial;letter-spacing:-2px;background:linear-gradient(90deg,#f2a31b,#2c8f3e,#1d4ed8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{display:block;font:700 8px Arial;letter-spacing:0;color:var(--tx);-webkit-text-fill-color:var(--tx)}
+.adm{border:1px solid #f0b4b4;background:#fdeeee;color:#b21f1f;border-radius:8px;padding:6px 12px;font-weight:600;font-size:13px}
+.pill{border:1px solid var(--bd);border-radius:8px;padding:6px 12px;font-size:13px}
+.sp{flex:1}.acct{display:flex;gap:8px;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:8px 12px;background:#eef4ff}
+.btn{border:1px solid var(--bl);color:var(--bl);background:#fff;border-radius:8px;padding:7px 16px;font-weight:600}
+.btn.p{background:var(--bl);color:#fff}
+nav{background:linear-gradient(90deg,#0b2f4e,#0b4a43 60%,#0f6b4a);color:#fff;border-radius:0 0 20px 20px}
+nav .w{display:flex;justify-content:space-between;flex-wrap:wrap}nav a{padding:14px 16px;font-weight:500}
+nav a.on{color:#ffb020;border-bottom:3px solid #ffb020;font-weight:700}
+.g1{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-top:12px}
+.hero{border-radius:10px;min-height:310px;background:linear-gradient(180deg,#f7d6a6 0,#f0b26a 40%,#6f8a3a 75%,#2f5a2a);position:relative;padding:36px 24px;text-align:center}
+.hero{overflow:hidden}.hero>*{position:relative;z-index:1}.hero>svg.bg{position:absolute;inset:0;width:100%;height:100%;z-index:0}.hero h1{margin:0;font:900 38px Arial;color:#0b3a6b}.hero h1 b{color:#f26a1b}
+.hero p{margin:6px 0;font-weight:500}.sr{display:flex;align-items:center;background:#fff;border-radius:12px;padding:6px 6px 6px 16px;margin:18px 0 12px;gap:8px;color:var(--mut)}
+.sr i{flex:1;text-align:left;font-style:normal}.sr b{background:var(--bl);color:#fff;border-radius:10px;padding:12px 16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chips span{background:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#0b3a6b}
+.lu{padding:14px}.lu h3{margin:0 0 10px;color:var(--bl);display:flex;justify-content:space-between;font-size:18px}.lu h3 a{font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.tabs button{background:#eef2f8;color:var(--tx);border-radius:6px;padding:5px 12px;font-size:12px}.tabs button.a{background:var(--bl);color:#fff}
+.it{display:grid;grid-template-columns:60px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--bd);align-items:center}
+.tg{font-size:10px;font-weight:700;text-align:center;padding:10px 2px;border-radius:4px;border-left:3px solid var(--or);background:#fff1e8}
+.it small{color:var(--mut);display:block}.it .d{text-align:right;font-size:12px;color:var(--mut)}
+.bd{font-size:11px;border-radius:12px;padding:2px 8px;margin:2px 0 0 4px;display:inline-block;border:1px solid #bfe3cf;color:#0f6b4a;background:#eaf8f0}.bd.r{border-color:#f3b8b8;color:#c02626;background:#fdeeee}
+.sec{margin-top:12px;padding:14px}.sec h2{margin:0;font-size:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sec h2 small{font-size:13px;font-weight:400;color:var(--mut)}
+.row{display:grid;gap:10px;margin-top:10px}.c4{grid-template-columns:repeat(4,1fr)}.c6{grid-template-columns:repeat(6,1fr)}.c2{grid-template-columns:1fr 1fr}
+.opt{display:flex;gap:10px;align-items:center;padding:14px;border-radius:10px;border:1px solid var(--bd)}.opt b{display:block;font-size:16px}.opt small{color:var(--mut)}
+.ic{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:#e6efff}
+.go{margin-left:auto;color:var(--bl);border:1px solid var(--bl);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;flex:none}
+.gbtn{margin-left:auto;background:#0f7a4f;color:#fff;border-radius:8px;padding:11px 24px;font-weight:700}
+.ask{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;justify-content:space-between;color:var(--mut);margin:10px 0}
+.ask span:last-child{background:var(--bl);color:#fff;border-radius:6px;padding:0 12px}
+.q{display:flex;flex-wrap:wrap;gap:8px}.q span{border:1px solid var(--bd);border-radius:14px;padding:4px 12px;font-size:13px;background:#f4f7fb;color:var(--tx)}
+.new{margin-left:auto;background:#6d28d9;color:#fff;font-size:12px;font-weight:700;border-radius:12px;padding:3px 12px}
+.tp{overflow:hidden;padding:0}.tp .im{height:100px}.tp div.t{padding:10px}.tp b{display:block;font-size:13px}.tp small{color:var(--mut);font-size:12px}
+.tl{padding:10px;display:flex;gap:10px}.tl b{font-size:13px;display:block}.tl small{color:var(--mut);font-size:11px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
+.g3 .card{padding:16px;position:relative;overflow:hidden}.dc{position:absolute;right:8px;bottom:6px}.sub{display:flex;margin-top:10px}.sub span{flex:1;border:1px solid var(--bd);padding:10px;border-radius:6px 0 0 6px;color:var(--mut);background:#fff}
+.sub b{background:var(--bl);color:#fff;padding:10px 16px;border-radius:0 6px 6px 0}
+footer{background:#0b2238;color:#cfe0f2;margin-top:12px;padding:24px 0 0}
+footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 1.2fr;gap:14px}footer h4{margin:0 0 8px;color:#fff}footer a{display:block;font-size:13px;padding:3px 0}
+.fb{background:#06182a;margin-top:20px;padding:12px 0;font-size:12px}.fb .w{display:flex;justify-content:space-between}
+@media(max-width:800px){.g1,.c4,.c2,.g3{grid-template-columns:1fr}.c6{grid-template-columns:1fr 1fr}footer .w{grid-template-columns:1fr 1fr}}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+.pill{background:var(--card);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.pill .fz{background:none;border:0;cursor:pointer;font-weight:700;padding:0 3px}
+button.btn{font-weight:600;cursor:pointer}
+.acct span{font-size:13px}
+nav a,.dd a{cursor:pointer}.ni{position:relative}.ni>a{display:block}
+.dd{position:absolute;top:100%;left:0;background:var(--card);border:1px solid var(--bd);border-radius:8px;min-width:210px;z-index:50;display:none;box-shadow:0 8px 24px #0003;overflow:hidden}
+.ni:hover .dd,.ni:focus-within .dd{display:block}
+.dd a{display:block;padding:10px 14px;color:var(--tx);font-weight:400}.dd a:hover{background:var(--bg);color:var(--bl)}
+.sr input{flex:1;border:0;outline:0;font:inherit;background:transparent;color:#14233b;min-width:0}
+.sr .sb{background:var(--bl);color:#fff;border:0;border-radius:10px;padding:12px 16px;cursor:pointer}
+.mic{background:none;border:0;cursor:pointer;font-size:16px}
+.ask{align-items:center;gap:8px}.ask input{flex:1;border:0;outline:0;background:transparent;font:inherit;color:#14233b;min-width:0}
+.ask button:last-child{background:var(--bl);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer}
+.chat{max-height:200px;overflow:auto;font-size:13px;margin:0 0 8px}.chat p{margin:5px 0}.chat .u{text-align:right;color:var(--bl);font-weight:600}.chat a{color:var(--bl);cursor:pointer;text-decoration:underline}
+.sub input{flex:1;min-width:0;border:1px solid var(--bd);padding:10px;border-radius:6px 0 0 6px;background:#fff;color:#14233b;font:inherit}
+.sub button{background:var(--bl);color:#fff;border:0;padding:10px 16px;border-radius:0 6px 6px 0;cursor:pointer}
+#soc a{cursor:pointer;font-weight:700}
+.opt,.tp,.tl.card,.it,.chips span,.q span,.tabs span,.top>div:first-child{cursor:pointer}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible,input:focus-visible{outline:2px solid var(--bl);outline-offset:2px}
+.it:hover,.tp:hover,.tl.card:hover,.opt:hover{box-shadow:0 2px 10px #0002}
+.ov{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100;padding:12px}
+.md{background:var(--card);color:var(--tx);border-radius:12px;padding:20px;width:100%;max-width:400px;max-height:90vh;overflow:auto}
+.md h3{margin:0 0 8px}.md label,.fm label{display:block;font-size:13px;font-weight:600}
+.md input,.md select,.fm input{width:100%;padding:10px;margin:5px 0 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+.md .btn,.fm .btn{width:100%;margin-top:4px}.md .x{float:right;cursor:pointer;background:none;border:0;font-size:18px}
+.err{color:#c02626;font-size:12px;min-height:16px}
+.ts{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#14233b;color:#fff;padding:10px 16px;border-radius:8px;z-index:200;font-size:13px}
+.pp{position:fixed;background:var(--card);border:1px solid var(--bd);border-radius:8px;z-index:60;min-width:190px;box-shadow:0 8px 24px #0003;overflow:hidden}
+.pp button{display:block;width:100%;text-align:left;background:none;border:0;padding:10px 14px;cursor:pointer}.pp button:hover{background:var(--bg)}
+#view{padding-bottom:12px}.crumb{font-size:13px;color:var(--mut);margin:0}.crumb a{color:var(--bl);cursor:pointer}
+.lst{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.rs{padding:12px;display:block;cursor:pointer}.rs b{display:block}.rs small{color:var(--mut)}
+.mut{color:var(--mut)}.fm{max-width:360px}
+#top{position:fixed;right:16px;bottom:16px;width:40px;height:40px;border-radius:50%;border:0;background:var(--bl);color:#fff;cursor:pointer;z-index:40;font-size:18px}
+.hc{--tx:#000;--mut:#222;--bd:#000;--bg:#fff;--card:#fff}.hc.dk,:root[data-theme=dark] .hc{--tx:#fff;--mut:#ddd;--bd:#fff;--bg:#000;--card:#000}
+.ul a{text-decoration:underline}.rm *{animation:none!important;transition:none!important}
+
+/* CSO-IN: Header alignment improvements */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px max(20px, calc((100vw - 1440px) / 2 + 12px));
+}
+
+.top > div:first-child {
+  flex-shrink: 0;
+}
+
+.top .adm {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.top .sp {
+  flex: 1 1 auto;
+}
+
+.top .acct {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+@media (max-width: 800px) {
+  .top {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .top .sp {
+    display: none;
+  }
+
+  .top .acct {
+    margin-left: auto;
+  }
+}
+
+/* CSO-IN: Balanced header controls */
+.top {
+  gap: 16px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.top .adm,
+.top .pill,
+.top .acct,
+.top .btn {
+  font-size: 14px;
+}
+
+.top .adm,
+.top .pill,
+.top .btn {
+  min-height: 42px;
+}
+
+.top .pill,
+.top .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top .acct {
+  min-height: 48px;
+  gap: 10px;
+}
+
+@media (max-width: 800px) {
+  .top {
+    gap: 10px;
+    padding: 8px 12px;
+  }
+}
+
+/* CSO-IN: Final responsive logo sizing */
+.top > div:first-child img {
+  width: 135px !important;
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 800px) {
+  .top > div:first-child img {
+    width: 110px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .top > div:first-child img {
+    width: 95px !important;
+  }
+}
+
+/* CSO-IN: Admin Portal button refinement */
+.top .adm {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 14px;
+  min-height: 48px;
+  border: 1px solid #e6aaaa;
+  border-radius: 10px;
+  background: #fff3f3;
+  color: #9d2525;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.top .adm small {
+  font-size: 10px;
+  font-weight: 500;
+  color: #a34b4b;
+}
+.top .adm:hover {
+  background: #ffe5e5;
+  border-color: #cc7777;
+}
+.top .adm:focus-visible {
+  outline: 3px solid #12549a;
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .top .adm {
+    padding: 7px 10px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .top .adm small { font-size: 9px; }
+}
+
+/* CSO five-theme palette */
+:root[data-theme=reading]{
+  --bg:#eaf4ed;
+  --card:#f8fcf8;
+  --tx:#213d30;
+  --mut:#476858;
+  --bd:#c8dfd0;
+}
+:root[data-theme=sepia]{
+  --bg:#f4e8cf;
+  --card:#fff8e9;
+  --tx:#513b29;
+  --mut:#796149;
+  --bd:#dfcba8;
+}
+
+/* CSO theme contrast fixes v1 */
+
+/* Give controls appropriate text and background colors. */
+:root {
+  --control-bg: #ffffff;
+  --control-tx: #14233b;
+  --link-color: #1d4ed8;
+}
+
+:root[data-theme=dark] {
+  --control-bg: #202e42;
+  --control-tx: #f1f5fb;
+  --link-color: #93b9ff;
+  --bl: #93b9ff;
+}
+
+:root[data-theme=reading] {
+  --control-bg: #f8fcf8;
+  --control-tx: #213d30;
+  --link-color: #245b45;
+  --bl: #245b45;
+}
+
+:root[data-theme=sepia] {
+  --control-bg: #fff8e9;
+  --control-tx: #513b29;
+  --link-color: #79502b;
+  --bl: #79502b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme=system] {
+    --control-bg: #202e42;
+    --control-tx: #f1f5fb;
+    --link-color: #93b9ff;
+    --bl: #93b9ff;
+  }
+}
+
+/* Cards, fields and buttons must match their text colors. */
+.acct,
+.ask,
+.sub span,
+.q span,
+.tabs button:not(.a) {
+  background: var(--control-bg);
+  color: var(--control-tx);
+}
+
+.ask input,
+.sub input,
+.sr input {
+  color: #14233b;
+}
+
+.ask input {
+  color: var(--control-tx);
+}
+
+.sub input {
+  background: var(--control-bg);
+  color: var(--control-tx);
+}
+
+.sr {
+  color: #14233b;
+}
+
+.sr input::placeholder {
+  color: #53627a;
+  opacity: 1;
+}
+
+.btn:not(.p) {
+  background: var(--control-bg);
+  color: var(--link-color);
+  border-color: var(--link-color);
+}
+
+.lu h3,
+.go,
+.crumb a,
+.chat a,
+.chat .u {
+  color: var(--link-color);
+}
+
+/* Ensure highlighted buttons retain readable labels. */
+:root[data-theme=dark] .btn.p,
+:root[data-theme=dark] .tabs .a,
+:root[data-theme=dark] .sub button,
+:root[data-theme=dark] .ask button:last-child,
+:root[data-theme=dark] .sr .sb,
+:root[data-theme=dark] #top,
+:root[data-theme=reading] .btn.p,
+:root[data-theme=sepia] .btn.p {
+  color: #ffffff;
+}
+
+/* Fixed illustrated hero needs its own readable text colors. */
+.hero {
+  color: #183421;
+}
+
+.hero h1 {
+  color: #0b3a6b;
+}
+
+.hero .chips span {
+  color: #0b3a6b;
+}
+
+/* Header controls inherit the correct theme text color. */
+.top .pill,
+.pp button,
+.dd a {
+  color: var(--tx);
+}
+
+/* CSO light-panel readability fix */
+
+/* These panels intentionally keep light backgrounds in every theme. */
+.cso-compass,
+.cso-library {
+  color: #183b30;
+}
+
+/* The four Compass option cards also have light backgrounds. */
+.cso-compass .opt {
+  color: #20354a;
+}
+
+.cso-compass .opt b {
+  color: #20354a;
+}
+
+.cso-compass .opt small,
+.cso-compass h2 small {
+  color: #425b63;
+}
+
+/* Keep headings and descriptions readable. */
+.cso-compass h2 {
+  color: #183b30;
+}
+
+.cso-library p {
+  color: #355748;
+}
+
+/* Preserve readable text on green action buttons. */
+.cso-compass .gbtn,
+.cso-library .btn.p {
+  color: #ffffff;
+}
+
+/* Give keyboard users a visible focus indicator. */
+.cso-compass a:focus-visible,
+.cso-library a:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+
+/* CSO adaptive panel themes v2 */
+
+/* Default: white, reading and sepia use their own theme colors. */
+.cso-compass,
+.cso-library {
+  background: var(--card) !important;
+  color: var(--tx);
+}
+
+.cso-compass h2,
+.cso-compass h2 small,
+.cso-library p {
+  color: var(--tx);
+}
+
+.cso-compass .opt {
+  color: #20354a;
+}
+
+/* Dark mode: replace light panels with dark surfaces. */
+:root[data-theme=dark] .cso-compass,
+:root[data-theme=dark] .cso-library {
+  background: #17202f !important;
+  color: #e8eef7;
+  border-color: #34455d;
+}
+
+:root[data-theme=dark] .cso-compass h2,
+:root[data-theme=dark] .cso-compass h2 small,
+:root[data-theme=dark] .cso-library h2,
+:root[data-theme=dark] .cso-library p {
+  color: #e8eef7 !important;
+}
+
+/* Dark option cards: retain subtle individual colors. */
+:root[data-theme=dark] .cso-compass .opt {
+  background: #24344b !important;
+  color: #f1f5fb;
+  border-color: #465b78;
+}
+
+:root[data-theme=dark] .cso-compass .opt b,
+:root[data-theme=dark] .cso-compass .opt small {
+  color: #f1f5fb;
+}
+
+/* System mode when the device uses dark appearance. */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme=system] .cso-compass,
+  :root[data-theme=system] .cso-library {
+    background: #17202f !important;
+    color: #e8eef7;
+    border-color: #34455d;
+  }
+
+  :root[data-theme=system] .cso-compass h2,
+  :root[data-theme=system] .cso-compass h2 small,
+  :root[data-theme=system] .cso-library h2,
+  :root[data-theme=system] .cso-library p {
+    color: #e8eef7 !important;
+  }
+
+  :root[data-theme=system] .cso-compass .opt {
+    background: #24344b !important;
+    color: #f1f5fb;
+    border-color: #465b78;
+  }
+
+  :root[data-theme=system] .cso-compass .opt b,
+  :root[data-theme=system] .cso-compass .opt small {
+    color: #f1f5fb;
+  }
+}
+
+/* Keep action buttons legible. */
+.cso-compass .gbtn,
+.cso-library .btn.p {
+  color: #ffffff;
+}
+
+/* CSO adaptive dark hero v1 */
+
+/* Darken the illustrated landscape without hiding its details. */
+:root[data-theme=dark] .hero,
+:root[data-theme=system] .hero {
+  isolation: isolate;
+}
+
+:root[data-theme=dark] .hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 19, 36, .60);
+  z-index: 1;
+  pointer-events: none;
+}
+
+:root[data-theme=dark] .hero h1,
+:root[data-theme=dark] .hero p {
+  color: #ffffff;
+}
+
+:root[data-theme=dark] .hero h1 b {
+  color: #ffae68;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme=system] .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 19, 36, .60);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  :root[data-theme=system] .hero h1,
+  :root[data-theme=system] .hero p {
+    color: #ffffff;
+  }
+
+  :root[data-theme=system] .hero h1 b {
+    color: #ffae68;
+  }
+}
+
+/* Keep search and popular-search chips bright and readable. */
+:root[data-theme=dark] .hero .sr,
+:root[data-theme=dark] .hero .chips span {
+  background: #ffffff;
+  color: #173b65;
+}
+
+/* CSO latest updates category contrast fix */
+
+/* Pastel category boxes need dark text in every theme. */
+.lu .tg {
+  color: #24364d !important;
+}
+
+/* Keep the category labels visible in Dark and System Dark. */
+:root[data-theme=dark] .lu .tg,
+:root[data-theme=system] .lu .tg {
+  color: #24364d !important;
+}
+
+/* CSO accessibility improvements v1 */
+
+/* High Contrast: use consistent readable colors across themes. */
+body.hc {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --tx: #111111;
+  --mut: #333333;
+  --bd: #111111;
+  --control-bg: #ffffff;
+  --control-tx: #111111;
+  --link-color: #003c9e;
+}
+
+:root[data-theme=dark] body.hc {
+  --bg: #080808;
+  --card: #111111;
+  --tx: #ffffff;
+  --mut: #eeeeee;
+  --bd: #ffffff;
+  --control-bg: #111111;
+  --control-tx: #ffffff;
+  --link-color: #a8c8ff;
+}
+
+body.hc .card,
+body.hc .pill,
+body.hc .opt,
+body.hc .dd,
+body.hc .pp {
+  border-width: 2px;
+}
+
+body.hc a:focus-visible,
+body.hc button:focus-visible,
+body.hc input:focus-visible,
+body.hc select:focus-visible {
+  outline: 3px solid #ffb020;
+  outline-offset: 3px;
+}
+
+/* Make underlined links clearly distinguishable. */
+body.ul a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Respect both manual and device-level reduced-motion settings. */
+body.rm *,
+body.rm *::before,
+body.rm *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* CSO Login and Sign Up forms v1 */
+.cso-auth { max-width: 420px; margin: auto; color: var(--tx); }
+.cso-auth-icon { font-size: 30px; text-align: center; margin-bottom: 8px; }
+.cso-auth h3 { text-align: center; margin: 0 0 5px; }
+.cso-auth > .mut { text-align: center; margin: 0 0 22px; }
+.cso-auth label { display: block; margin: 13px 0; font-weight: 600; font-size: 14px; }
+.cso-auth input {
+  display: block; width: 100%; box-sizing: border-box;
+  padding: 12px; margin-top: 6px; border: 1px solid var(--bd);
+  border-radius: 8px; background: var(--card); color: var(--tx);
+  font: inherit;
+}
+.cso-auth input:focus { outline: 2px solid var(--bl); outline-offset: 1px; }
+.cso-pw { position: relative; }
+.cso-pw input { padding-right: 65px; }
+.cso-show {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  border: 0; background: transparent; color: var(--bl);
+  cursor: pointer; padding: 5px; font-size: 12px;
+}
+.cso-auth-link {
+  border: 0; background: transparent; color: var(--bl);
+  cursor: pointer; font: inherit; font-weight: 600;
+}
+.cso-forgot { display: block; margin: 5px 0 15px auto; font-size: 13px; }
+.cso-auth-submit { width: 100%; padding: 12px; margin-top: 8px; }
+.cso-auth-switch { text-align: center; font-size: 13px; margin-top: 20px; }
+.cso-auth-note { text-align: center; font-size: 12px; color: var(--mut); margin-top: 15px; }
+.cso-auth .err { min-height: 18px; margin-top: 8px; }
+@media(max-width: 480px) {
+  .cso-auth { width: 100%; }
+}
+
+/* CSO signup location field styling */
+.cso-auth select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--tx);
+  font: inherit;
+}
+.cso-auth select:focus {
+  outline: 2px solid var(--bl);
+  outline-offset: 1px;
+}
+.cso-auth select:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+/* CSO signup mobile number styling */
+.cso-phone {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  background: var(--card);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.cso-phone span {
+  padding: 12px;
+  white-space: nowrap;
+  border-right: 1px solid var(--bd);
+  color: var(--tx);
+}
+.cso-auth .cso-phone input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.cso-phone:focus-within {
+  outline: 2px solid var(--bl);
+  outline-offset: 1px;
+}
+
+/* CSO Admin Portal login v1 */
+.cso-admin-login {
+  width: min(100%, 430px);
+  margin: auto;
+  color: var(--tx);
+}
+.cso-admin-head {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.cso-admin-shield {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+.cso-admin-head h2 {
+  margin: 4px 0;
+  font-size: 25px;
+}
+.cso-admin-head p {
+  margin: 6px 0 14px;
+  opacity: .8;
+}
+.cso-admin-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 30px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 700;
+}
+#cso-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#cso-admin-form label {
+  font-size: 14px;
+  font-weight: 650;
+}
+#cso-admin-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--tx);
+  font: inherit;
+}
+#cso-admin-form input:focus-visible {
+  outline: 2px solid var(--bl);
+  outline-offset: 2px;
+}
+.cso-admin-password {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.cso-admin-password input {
+  flex: 1;
+  min-width: 0;
+}
+.cso-admin-password button {
+  padding: 0 13px;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--tx);
+  cursor: pointer;
+}
+.cso-admin-submit {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+}
+.cso-admin-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 4px 0;
+}
+.cso-admin-notice {
+  margin: 20px 0 0;
+  padding: 12px;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  background: var(--card);
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+@media (max-width: 480px) {
+  .cso-admin-login {
+    width: 100%;
+  }
+  .cso-admin-head h2 {
+    font-size: 22px;
+  }
+}
+
+/* CSO navigation upgrade v1 */
+#navw {
+  display: block;
+}
+.cso-nav-items {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 4px;
+}
+.cso-nav-items > a,
+.cso-nav-parent > a {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  color: #fff;
+  text-decoration: none;
+}
+.cso-nav-parent {
+  display: flex;
+  align-items: stretch;
+}
+.cso-nav-parent > a {
+  padding-right: 4px;
+}
+.cso-nav-arrow {
+  padding: 0 12px 0 4px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+.cso-nav-items > a:hover,
+.cso-nav-parent:hover,
+.cso-nav-items .ni.cso-open > .cso-nav-parent {
+  background: #ffffff1a;
+}
+.cso-nav-items a.on {
+  color: #ffbd42;
+  border-bottom: 3px solid #ffbd42;
+  font-weight: 700;
+}
+.cso-nav-items .dd {
+  top: 100%;
+  min-width: 225px;
+  padding: 6px;
+  border-radius: 10px;
+}
+.cso-nav-items .dd a {
+  min-height: 40px;
+  padding: 11px 13px;
+  border-radius: 6px;
+  white-space: normal;
+}
+.cso-nav-items .ni.cso-open > .dd {
+  display: block;
+}
+.cso-nav-mobile {
+  display: none;
+  border: 1px solid #ffffff55;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  background: #ffffff15;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (min-width: 801px) {
+  .cso-nav-items > .ni:last-child .dd {
+    left: auto;
+    right: 0;
+  }
+}
+@media (max-width: 800px) {
+  .cso-nav-mobile {
+    display: inline-flex;
+  }
+  .cso-nav-items {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 10px;
+  }
+  .cso-nav-items.cso-mobile-open {
+    display: flex;
+  }
+  .cso-nav-items > a,
+  .cso-nav-parent > a {
+    min-height: 44px;
+  }
+  .cso-nav-parent > a {
+    flex: 1;
+  }
+  .cso-nav-items .dd {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+  }
+  .cso-nav-items .ni:not(.cso-open) .dd {
+    display: none;
+  }
+}
+
+/* CSO navigation appearance v2 */
+
+/* Main navigation bar */
+nav {
+  background: linear-gradient(
+    105deg,
+    #102d4b 0%,
+    #0d4547 56%,
+    #116345 100%
+  );
+  color: #fff;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 5px 18px rgba(8, 34, 48, .13);
+}
+
+#navw {
+  max-width: 1440px;
+}
+
+.cso-nav-items {
+  align-items: stretch;
+  gap: 5px;
+}
+
+/* Main menu labels */
+.cso-nav-items > a,
+.cso-nav-parent > a {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .1px;
+  line-height: 1.4;
+  min-height: 58px;
+  padding: 14px 15px;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+.cso-nav-parent > a {
+  padding-right: 5px;
+}
+
+.cso-nav-items > a,
+.cso-nav-parent {
+  border-radius: 8px 8px 0 0;
+}
+
+.cso-nav-parent {
+  transition: background-color .18s ease;
+}
+
+/* Dropdown arrows */
+.cso-nav-arrow {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 0 12px 0 5px;
+  transition: transform .18s ease, color .18s ease;
+}
+
+.cso-nav-arrow:hover {
+  color: #ffc65d;
+}
+
+.ni.cso-open .cso-nav-arrow {
+  transform: rotate(180deg);
+  color: #ffc65d;
+}
+
+/* Hover states */
+.cso-nav-items > a:hover,
+.cso-nav-parent:hover,
+.cso-nav-items .ni.cso-open > .cso-nav-parent {
+  background: rgba(255, 255, 255, .12);
+}
+
+.cso-nav-items > a:hover,
+.cso-nav-parent > a:hover {
+  color: #ffe0a0;
+}
+
+/* Active page highlighting */
+.cso-nav-items a.on {
+  color: #ffc04a;
+  border-bottom: 3px solid #ffc04a;
+  font-weight: 700;
+}
+
+/* Dropdown panels */
+.cso-nav-items .dd {
+  background: var(--card);
+  color: var(--tx);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 235px;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, .16),
+    0 3px 8px rgba(0, 0, 0, .07);
+}
+
+.cso-nav-items .dd a {
+  color: var(--tx);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  border-radius: 7px;
+  padding: 11px 14px;
+  transition:
+    background-color .16s ease,
+    color .16s ease,
+    padding-left .16s ease;
+}
+
+.cso-nav-items .dd a:hover,
+.cso-nav-items .dd a:focus-visible {
+  background: var(--bg);
+  color: var(--bl);
+  padding-left: 19px;
+}
+
+/* Keyboard accessibility */
+.cso-nav-items a:focus-visible,
+.cso-nav-arrow:focus-visible,
+.cso-nav-mobile:focus-visible {
+  outline: 3px solid #ffcf68;
+  outline-offset: -3px;
+}
+
+/* Mobile menu */
+.cso-nav-mobile {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 9px;
+  color: #fff;
+  padding: 11px 17px;
+  font-size: 14px;
+  transition: background-color .18s ease;
+}
+
+.cso-nav-mobile:hover {
+  background: rgba(255, 255, 255, .22);
+}
+
+@media (max-width: 800px) {
+  nav {
+    border-radius: 0 0 14px 14px;
+  }
+
+  .cso-nav-items {
+    gap: 2px;
+  }
+
+  .cso-nav-items > a,
+  .cso-nav-parent > a {
+    min-height: 46px;
+    padding: 12px 14px;
+  }
+
+  .cso-nav-items .dd {
+    min-width: 0;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 9px;
+    margin-bottom: 6px;
+  }
+
+  .cso-nav-items .dd a:hover {
+    padding-left: 16px;
+  }
+}
+
+/* Reduce Motion accessibility */
+body.rm .cso-nav-items *,
+body.rm .cso-nav-mobile {
+  transition: none !important;
+}
+
+/* CSO dropdown refinement v3 */
+
+/* Consistent dropdown structure */
+.cso-nav-items .ni {
+  position: relative;
+}
+
+.cso-nav-items .dd {
+  top: 100%;
+  left: 0;
+  min-width: 245px;
+  padding: 7px;
+  box-sizing: border-box;
+  border: 1px solid var(--bd);
+  border-top: 3px solid #e9a23b;
+  border-radius: 0 0 12px 12px;
+  background: var(--card);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .16);
+  z-index: 60;
+}
+
+/* Individual dropdown links */
+.cso-nav-items .dd a {
+  display: block;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--tx);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: normal;
+}
+
+/* Clearer hover and keyboard focus */
+.cso-nav-items .dd a:hover,
+.cso-nav-items .dd a:focus-visible {
+  background: var(--bg);
+  color: var(--bl);
+  padding-left: 18px;
+}
+
+/* Subtle separation between menu items */
+.cso-nav-items .dd a + a {
+  margin-top: 2px;
+}
+
+/* Keep rightmost dropdown inside the screen */
+@media (min-width: 801px) {
+  .cso-nav-items > .ni:last-child .dd {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* Mobile dropdowns remain in normal document flow */
+@media (max-width: 800px) {
+  .cso-nav-items .dd {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    margin: 2px 0 8px;
+    border: 1px solid var(--bd);
+    border-left: 3px solid #e9a23b;
+    border-radius: 9px;
+    box-shadow: none;
+  }
+
+  .cso-nav-items .dd a {
+    min-height: 44px;
+    padding: 12px 14px;
+  }
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .cso-nav-items .dd a {
+    transition: none;
+  }
+}
+
+
+/* CSO homepage hero — accessible popular-search chips */
+.hero .chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.hero .chips-label {
+  background: #e9eef5;
+  color: #173b65;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hero .search-chip {
+  appearance: none;
+  border: 1px solid rgba(16, 58, 99, .12);
+  background: #fff;
+  color: #173b65;
+  border-radius: 9px;
+  padding: 8px 12px;
+  min-height: 36px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color .15s ease, transform .15s ease;
+}
+.hero .search-chip:hover {
+  background: #e8f2ff;
+  transform: translateY(-1px);
+}
+.hero .search-chip:focus-visible {
+  outline: 3px solid #ffb020;
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .hero .chips {
+    gap: 7px;
+  }
+  .hero .search-chip {
+    padding: 9px 11px;
+    min-height: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .search-chip {
+    transition: none;
+  }
+  .hero .search-chip:hover {
+    transform: none;
+  }
+}
+
+
+/* CSO accessible search loading animation */
+@keyframes cso-search-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cso-search-spinner { animation: none !important; }
+}
+
+
+/* CSO Phase 5: narrow-screen homepage layout */
+@media (max-width: 480px) {
+  .c6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .c6 > *,
+  .tl.card,
+  .tl.card > span:last-child {
+    min-width: 0;
+  }
+
+  .tl.card > span:last-child {
+    overflow-wrap: anywhere;
+  }
+
+  .sec h2 > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .sec h2 > .new,
+  .sec h2 > .btn {
+    flex-shrink: 0;
+  }
+
+  .sec {
+    min-width: 0;
+  }
+}
+
+
+/* Latest Updates: accessible, touch-friendly category filters */
+.lu .tabs button {
+  appearance: none;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.lu .tabs button.a {
+  background: var(--bl);
+  color: #fff;
+}
+.lu .tabs button:focus-visible {
+  outline: 3px solid var(--bl);
+  outline-offset: 2px;
+}
+
+
+/* CSO Latest Updates: readable cards and transparent source labels */
+.lu .cso-update-row {
+  text-decoration: none;
+  color: var(--tx);
+  cursor: pointer;
+  grid-template-columns: 60px minmax(0,1fr) auto;
+}
+.lu .cso-update-main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lu .cso-update-main strong {
+  display: block;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.lu .cso-update-main small {
+  margin-top: 3px;
+}
+.lu .cso-update-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 5px;
+}
+.cso-update-badge {
+  display: inline-block;
+  padding: 3px 7px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: normal;
+}
+.cso-update-badge.official {
+  color: #0f6b4a;
+  background: #eaf8f0;
+  border: 1px solid #bfe3cf;
+}
+.cso-update-badge.unverified {
+  color: #854d0e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+.cso-update-badge.notice {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+.cso-update-badge.guide {
+  color: #1d4ed8;
+  background: #e6efff;
+  border: 1px solid #c5d6fb;
+}
+.cso-update-detail-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lu .cso-update-row:focus-visible {
+  outline: 3px solid var(--bl);
+  outline-offset: 2px;
+}
+@media (max-width:480px) {
+  .lu .cso-update-row {
+    grid-template-columns: 54px minmax(0,1fr);
+    gap: 8px;
+  }
+  .lu .cso-update-row .d {
+    grid-column: 2;
+    text-align: left;
+  }
+  .lu .cso-update-badges {
+    justify-content: flex-start;
+  }
+}
+
+
+/* CSO Latest Updates: View All directory */
+.cso-all-updates-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.cso-all-updates-filters button {
+  min-height: 44px;
+  padding: 9px 13px;
+  border: 1px solid var(--bd);
+  border-radius: 22px;
+  background: var(--card);
+  color: var(--tx);
+  cursor: pointer;
+  font: inherit;
+}
+.cso-all-updates-filters button.active {
+  background: var(--bl);
+  color: #fff;
+  border-color: var(--bl);
+}
+.cso-all-updates-filters button:focus-visible {
+  outline: 3px solid var(--bl);
+  outline-offset: 2px;
+}
+.cso-all-updates-list {
+  display: grid;
+  gap: 10px;
+}
+.cso-all-update-card {
+  display: grid;
+  grid-template-columns: 80px minmax(0,1fr) minmax(120px,auto);
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--card);
+  text-decoration: none;
+  color: var(--tx);
+}
+.cso-all-update-card:hover {
+  box-shadow: 0 3px 12px #0002;
+}
+.cso-all-update-main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cso-all-update-main strong,
+.cso-all-update-main small {
+  display: block;
+}
+.cso-all-update-main small {
+  margin-top: 5px;
+  color: var(--mut);
+}
+.cso-all-update-meta {
+  text-align: right;
+  font-size: 12px;
+  color: var(--mut);
+}
+.cso-all-update-meta .cso-update-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.cso-all-updates-empty {
+  padding: 22px;
+  text-align: center;
+  border: 1px dashed var(--bd);
+  border-radius: 10px;
+  color: var(--mut);
+}
+@media (max-width:480px) {
+  .cso-all-update-card {
+    grid-template-columns: 65px minmax(0,1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+  .cso-all-update-meta {
+    grid-column: 2;
+    text-align: left;
+  }
+  .cso-all-update-meta .cso-update-badges {
+    justify-content: flex-start;
+  }
+}
+
+
+/* CSO-IN: Circular text-only brand logo */
+.cso-text-logo {
+  box-sizing: border-box;
+  width: 148px;
+  height: 148px;
+  max-width: 100%;
+  border: 4px solid #15803d;
+  border-radius: 50%;
+  background: #fffdf3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(16, 42, 80, .12);
+  font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif;
+}
+.cso-text-logo__letters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 54px;
+  line-height: .95;
+  font-weight: 900;
+  letter-spacing: -4px;
+}
+.cso-text-logo__letters span:nth-child(1) { color: #ed6a13; }
+.cso-text-logo__letters span:nth-child(2) { color: #087b45; }
+.cso-text-logo__letters span:nth-child(3) { color: #1749a2; }
+.cso-text-logo__name {
+  color: #102a50;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: .2px;
+}
+.cso-text-logo__name strong {
+  display: block;
+  color: #1749a2;
+  font-size: 17px;
+  line-height: 1.1;
+  letter-spacing: 1px;
+}
+.cso-text-logo__stripe {
+  display: flex;
+  width: 75%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 5px;
+}
+.cso-text-logo__stripe span { flex: 1; }
+.cso-text-logo__stripe span:nth-child(1) { background: #ed6a13; }
+.cso-text-logo__stripe span:nth-child(2) { background: #fff; }
+.cso-text-logo__stripe span:nth-child(3) { background: #087b45; }
+
+
+/* CSO-IN: Odisha watermark CSO-only logo */
+.cso-text-logo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #fffdf3;
+  border-color: #15803d;
+}
+.cso-text-logo__map {
+  position: absolute;
+  inset: 12%;
+  width: 76%;
+  height: 76%;
+  z-index: 0;
+  pointer-events: none;
+}
+.cso-text-logo__map path {
+  fill: #c8dfca;
+  stroke: #86b893;
+  stroke-width: 1.5;
+  opacity: .55;
+}
+.cso-text-logo__letters {
+  position: relative;
+  z-index: 1;
+  font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif;
+  font-size: 68px;
+  font-weight: 900;
+  letter-spacing: -5px;
+  text-shadow: 0 1px 1px rgba(255,255,255,.9);
+}
+
+/* CSO-IN: Visible Odisha map correction */
+.cso-text-logo__map {
+  inset: 5%;
+  width: 90%;
+  height: 90%;
+}
+.cso-text-logo__map path {
+  fill: #9dcea9;
+  stroke: #367e4c;
+  stroke-width: 1.8;
+  opacity: .85;
+}
+.cso-text-logo__letters {
+  text-shadow:
+    -2px -2px 0 #fffdf3,
+     2px -2px 0 #fffdf3,
+    -2px  2px 0 #fffdf3,
+     2px  2px 0 #fffdf3;
+}
+
+/* CSO-IN: Compact Admin Portal height logo */
+.top {
+  align-items: center;
+}
+.top > div:first-child:has(.cso-text-logo) {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+}
+.top .cso-text-logo {
+  box-sizing: border-box;
+  width: 108px;
+  height: 100%;
+  min-height: 46px;
+  max-height: 64px;
+  padding: 3px 8px;
+  gap: 0;
+  border: 2px solid #15803d;
+  border-radius: 10px;
+  background: #fffdf3;
+  box-shadow: 0 2px 6px rgba(16,42,80,.12);
+}
+.top .cso-text-logo__letters {
+  font-size: 37px;
+  line-height: 1;
+  letter-spacing: -3px;
+}
+.top .cso-text-logo__map {
+  inset: 3%;
+  width: 94%;
+  height: 94%;
+}
+.top .cso-text-logo__map path {
+  fill: #a1d3ad;
+  stroke: #367e4c;
+  opacity: .9;
+}
+
+/* CSO-IN: Reduced overall header height */
+.top {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  gap: 10px;
+}
+.top .adm {
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 4px 10px;
+  gap: 1px;
+}
+.top .cso-text-logo {
+  height: 42px;
+  min-height: 42px;
+  max-height: 42px;
+}
+.top .cso-text-logo__letters {
+  font-size: 33px;
+}
+@media (max-width: 768px) {
+  .top {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .top .adm {
+    min-height: 42px;
+    padding: 4px 8px;
+  }
+}
+
+/* CSO-IN: Opportunity Compass refinement v1 */
+.cso-compass {
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.cso-compass h2 {
+  gap: 12px;
+  font-size: 21px;
+  line-height: 1.3;
+}
+
+.cso-compass h2 small {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cso-compass .row.c4 {
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.cso-compass .opt {
+  min-width: 0;
+  min-height: 88px;
+  padding: 13px;
+  gap: 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.cso-compass .opt:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(15,35,60,.12);
+}
+
+.cso-compass .opt > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.cso-compass .opt b {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.cso-compass .opt small {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.cso-compass .opt .ic {
+  width: 42px;
+  height: 42px;
+  font-size: 21px;
+}
+
+.cso-compass .opt .go {
+  width: 25px;
+  height: 25px;
+}
+
+.cso-compass .gbtn {
+  padding: 10px 18px;
+  border-radius: 9px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+  .cso-compass .row.c4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cso-compass {
+    padding: 12px;
+  }
+
+  .cso-compass h2 {
+    font-size: 18px;
+  }
+
+  .cso-compass .row.c4 {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .cso-compass .opt {
+    min-height: 74px;
+    padding: 11px;
+  }
+
+  .cso-compass .gbtn {
+    margin-left: 0;
+    padding: 9px 14px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-compass .opt {
+    transition: none;
+  }
+
+  .cso-compass .opt:hover {
+    transform: none;
+  }
+}
+
+
+/* CSO Latest Updates upward ticker */
+.lu {
+  position: relative;
+}
+
+.lu .cso-update-row {
+  position: relative;
+}
+
+.lu.cso-ticker-active {
+  overflow: hidden;
+}
+
+.lu.cso-ticker-active .cso-ticker-window {
+  height: 320px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lu.cso-ticker-active .cso-ticker-track {
+  animation: cso-scroll-up 24s linear infinite;
+}
+
+.lu.cso-ticker-active .cso-ticker-window:hover
+.cso-ticker-track,
+.lu.cso-ticker-active .cso-ticker-window:focus-within
+.cso-ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes cso-scroll-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lu.cso-ticker-active .cso-ticker-track {
+    animation: none;
+  }
+  .lu.cso-ticker-active .cso-ticker-window {
+    overflow-y: auto;
+  }
+}
+
+/* CSO Official Source button styling START */
+.cso-official-source-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: fit-content;
+  padding: 5px 11px;
+  margin: 4px 0;
+  border: 1px solid #80cbc4;
+  border-radius: 8px;
+  background: #e0f2f1;
+  color: #00695c !important;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.cso-official-source-link:hover {
+  background: #b2dfdb;
+  border-color: #00897b;
+  color: #004d40 !important;
+}
+
+.cso-official-source-link:focus-visible {
+  outline: 3px solid #26a69a;
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .cso-official-source-link,
+.dark .cso-official-source-link {
+  background: #123b39;
+  border-color: #388e83;
+  color: #a7f3d0 !important;
+}
+
+[data-theme="dark"] .cso-official-source-link:hover,
+.dark .cso-official-source-link:hover {
+  background: #18534e;
+  color: #ffffff !important;
+}
+/* CSO Official Source button styling END */
+
+
+/* CSO Trust Layer clickable cards */
+a.cso-trust-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease,
+              box-shadow .2s ease;
+}
+
+a.cso-trust-link:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgba(37,99,235,.12);
+}
+
+a.cso-trust-link:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a.cso-trust-link {
+    transition: none;
+  }
+}
+
+
+/* CSO Latest Updates live search styles */
+.cso-all-update-card[hidden],
+[data-cso-updates-search-empty][hidden] {
+  display: none !important;
+}
+
+.cso-updates-search-wrap {
+  margin: 18px 0;
+}
+
+.cso-updates-search-wrap label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.cso-updates-search-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cso-updates-search-controls input {
+  flex: 1 1 230px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #94a3b8;
+  border-radius: 10px;
+  background: var(--card, transparent);
+  color: inherit;
+  font: inherit;
+}
+
+.cso-updates-search-controls input:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.cso-updates-search-controls button {
+  padding: 10px 17px;
+  border: 1px solid #64748b;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.cso-updates-search-controls button:hover {
+  background: rgba(100,116,139,.12);
+}
+
+@media(max-width:480px) {
+  .cso-updates-search-controls input {
+    flex-basis: 100%;
+  }
+}
+
+
+/* CSO Latest Updates source grouping styles v2 */
+.cso-update-result {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 15px;
+  min-width: 0;
+}
+
+.cso-update-result[hidden] {
+  display: none !important;
+}
+
+.cso-update-result .cso-all-update-card {
+  margin-bottom: 0;
+}
+
+.cso-update-result-source {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cso-update-result-source .cso-official-source-link {
+  display: inline-flex;
+  width: fit-content;
+}
+
+
+/* CSO Opportunity Compass polish v1 */
+
+/* Maintain the existing light card colours in all themes. */
+.cso-compass .opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 112px;
+  padding: 17px;
+  border: 1px solid rgba(71,85,105,.14);
+  border-radius: 13px;
+  text-decoration: none;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease;
+}
+
+.cso-compass .opt:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.12);
+  border-color: rgba(37,99,235,.35);
+}
+
+.cso-compass .opt:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.cso-compass .opt > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.cso-compass .opt b {
+  display: block;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.cso-compass .opt small {
+  display: block;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.cso-compass .opt .go {
+  flex: none;
+  font-size: 20px;
+  transition: transform .18s ease;
+}
+
+.cso-compass .opt:hover .go {
+  transform: translateX(3px);
+}
+
+@media (max-width: 700px) {
+  .cso-compass .opt {
+    min-height: 94px;
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .cso-compass .opt .ic {
+    flex-shrink: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-compass .opt,
+  .cso-compass .opt .go {
+    transition: none;
+  }
+
+  .cso-compass .opt:hover,
+  .cso-compass .opt:hover .go {
+    transform: none;
+  }
+}
+
+
+/* CSO universal sidebar logo v1 */
+.brand-logo .cso-sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: inherit;
+  font-family: "Arial Black", Arial, sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+
+.brand-logo .cso-sidebar-logo span:nth-child(1) {
+  color: #ed6a13;
+}
+
+.brand-logo .cso-sidebar-logo span:nth-child(2) {
+  color: #087b45;
+}
+
+.brand-logo .cso-sidebar-logo span:nth-child(3) {
+  color: #1749a2;
+}
+
+
+/* CSO UNIVERSAL FOOTER LAYOUT V1 */
+
+/* Main footer: compact, balanced and responsive */
+footer {
+  padding-top: 30px;
+  margin-top: 16px;
+}
+
+footer > .w {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1.15fr)
+    repeat(4, minmax(115px, 1fr))
+    minmax(150px, 1.15fr);
+  gap: 24px;
+  align-items: start;
+}
+
+footer > .w > div {
+  min-width: 0;
+}
+
+/* CSO branding column */
+footer > .w > div:first-child {
+  text-align: left;
+}
+
+footer > .w > div:first-child > div:first-child {
+  max-width: 120px;
+  box-sizing: border-box;
+}
+
+footer > .w > div:first-child .cso-text-logo {
+  width: 100%;
+  max-width: 100px;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+footer > .w > div:first-child p {
+  line-height: 1.6;
+  margin: 12px 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* Footer headings and links */
+footer h4 {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+footer a {
+  line-height: 1.5;
+  padding: 4px 0;
+  text-decoration: none;
+}
+
+footer a:hover,
+footer a:focus-visible {
+  text-decoration: underline;
+}
+
+footer a:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* Slogan column */
+footer > .w > div:last-child {
+  text-align: center;
+  padding-top: 24px !important;
+}
+
+footer > .w > div:last-child b {
+  display: block;
+  line-height: 1.6;
+}
+
+/* Bottom language and slogan bar */
+footer .fb {
+  margin-top: 28px;
+  padding: 12px 0;
+}
+
+footer .fb .w {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  line-height: 1.6;
+}
+
+/* Tablet */
+@media (max-width: 1050px) {
+  footer > .w {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px 22px;
+  }
+
+  footer > .w > div:last-child {
+    padding-top: 0 !important;
+    text-align: left;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  footer {
+    padding-top: 24px;
+  }
+
+  footer > .w {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
+  }
+
+  footer > .w > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  footer > .w > div:last-child {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  footer .fb .w {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  footer > .w {
+    grid-template-columns: 1fr;
+  }
+
+  footer > .w > div:first-child,
+  footer > .w > div:last-child {
+    grid-column: auto;
+  }
+}
+
+/* END CSO UNIVERSAL FOOTER LAYOUT V1 */
+
+
+/* CSO FOOTER ODISHA MAP V1 */
+footer .cso-footer-odisha-map {
+  display: block;
+  width: 100%;
+  max-width: 155px;
+  height: auto;
+  margin: 0 auto 12px;
+  object-fit: contain;
+}
+
+@media (max-width: 600px) {
+  footer .cso-footer-odisha-map {
+    max-width: 140px;
+    margin-bottom: 10px;
+  }
+}
+/* END CSO FOOTER ODISHA MAP V1 */
+
+
+/* CSO FOOTER LOGO REFINEMENT V1 */
+
+/* Allow the complete CSO logo to remain visible */
+footer > .w > div:first-child > div:first-child {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 132px;
+  max-width: 100%;
+  min-height: 112px;
+  padding: 12px !important;
+  box-sizing: border-box;
+  overflow: visible;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+/* Override previous footer logo size restrictions */
+footer > .w > div:first-child .cso-text-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 80px;
+  aspect-ratio: auto;
+  overflow: visible;
+}
+
+/* Prevent the letters from being cut off */
+footer > .w > div:first-child .cso-text-logo__letters {
+  max-width: 100%;
+  overflow: visible;
+  transform: none;
+}
+
+/* Copyright below the logo */
+footer > .w > div:first-child p {
+  margin: 14px 0 0;
+  max-width: 200px;
+  font-size: 12px !important;
+  line-height: 1.7;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Keep branding comfortably inside the footer */
+footer > .w > div:first-child {
+  min-width: 0;
+  padding-left: 2px;
+}
+
+@media (max-width: 600px) {
+  footer > .w > div:first-child > div:first-child {
+    width: 120px;
+    min-height: 104px;
+  }
+
+  footer > .w > div:first-child p {
+    max-width: 260px;
+  }
+}
+
+/* END CSO FOOTER LOGO REFINEMENT V1 */
+
+
+/* CSO FOOTER TEXT WORDMARK V1 */
+footer .cso-footer-wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  max-width: 100%;
+}
+
+footer .cso-footer-wordmark-letters {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 1px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(38px, 4vw, 54px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  white-space: nowrap;
+}
+
+footer .cso-footer-wordmark-letters span:nth-child(1) {
+  color: #ff7900;
+}
+
+footer .cso-footer-wordmark-letters span:nth-child(2) {
+  color: #16b66a;
+}
+
+footer .cso-footer-wordmark-letters span:nth-child(3) {
+  color: #5d9cff;
+}
+
+footer .cso-footer-wordmark-name {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: .1px;
+}
+
+footer > .w > div:first-child > .cso-footer-wordmark {
+  width: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+footer > .w > div:first-child > p {
+  margin-top: 15px;
+  line-height: 1.7;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 600px) {
+  footer .cso-footer-wordmark-letters {
+    font-size: 42px;
+  }
+}
+/* END CSO FOOTER TEXT WORDMARK V1 */
+
+/* CSO accessible date-of-birth dropdowns */
+.cso-dob-fields {
+  display: grid;
+  grid-template-columns: 0.8fr 1.4fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cso-auth .cso-dob-fields select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px 5px;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--tx);
+  font: inherit;
+}
+
+.cso-auth .cso-dob-fields select:focus {
+  outline: 2px solid var(--bl);
+  outline-offset: 1px;
+}
+
+.cso-auth input[name="dob"] {
+  margin-top: 8px;
+  background: var(--bg);
+  cursor: default;
+}
+
+/* CSO compact rectangular registration modal */
+.md.cso-signup-modal {
+  width: min(760px, calc(100vw - 32px));
+  max-width: 760px;
+  max-height: 88vh;
+  padding: 24px 28px;
+  box-sizing: border-box;
+  border-radius: 16px;
+}
+
+.cso-signup-modal .cso-auth {
+  width: 100%;
+  max-width: none;
+}
+
+.cso-signup-modal .cso-auth form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+  row-gap: 2px;
+  align-items: start;
+}
+
+.cso-signup-modal .cso-auth form > label {
+  min-width: 0;
+  margin: 7px 0;
+}
+
+.cso-signup-modal .cso-auth form > .err,
+.cso-signup-modal .cso-auth form > .cso-auth-submit {
+  grid-column: 1 / -1;
+}
+
+.cso-signup-modal .cso-auth > .cso-auth-icon {
+  margin-bottom: 4px;
+}
+
+.cso-signup-modal .cso-auth > .mut {
+  margin-bottom: 12px;
+}
+
+.cso-signup-modal .cso-auth > .cso-auth-switch,
+.cso-signup-modal .cso-auth > .cso-auth-note {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+.cso-signup-modal .cso-auth-submit {
+  margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .md.cso-signup-modal {
+    width: calc(100vw - 20px);
+    max-height: 92vh;
+    padding: 18px 16px;
+  }
+
+  .cso-signup-modal .cso-auth form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .cso-signup-modal .cso-auth form > .err,
+  .cso-signup-modal .cso-auth form > .cso-auth-submit {
+    grid-column: 1;
+  }
+}
+
+
+/* Email OTP verification panel in the registration modal */
+.cso-otp-panel {
+  margin: 16px 0;
+  padding: 18px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--bg);
+}
+.cso-otp-panel h4 { margin: 0 0 8px; }
+.cso-otp-panel p { line-height: 1.55; }
+.cso-otp-panel input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 12px 0;
+  padding: 13px;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--tx);
+  font: inherit;
+  letter-spacing: .2em;
+  text-align: center;
+}
+.cso-otp-verify { width: 100%; margin-top: 4px; }
+.cso-otp-resend { display: block; margin: 12px auto 0; }
+.cso-otp-feedback { min-height: 20px; margin-bottom: 0; font-size: 13px; }
+
+
+/* CSO Student Dashboard - Step 61H */
+
+.cso-student-welcome {
+  padding: 28px;
+  margin: 12px 0 24px;
+  border-radius: 16px;
+  background: linear-gradient(120deg,#e8f5ed,#eef3ff);
+  border: 1px solid #d5e7db;
+}
+
+.cso-student-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #167044;
+}
+
+.cso-student-welcome h2 {
+  margin: 10px 0;
+  font-size: 28px;
+}
+
+.cso-student-welcome p {
+  margin: 8px 0 14px;
+}
+
+.cso-student-status {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 30px;
+  background: #d7f3df;
+  color: #126534;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cso-student-section {
+  margin: 24px 0;
+}
+
+.cso-student-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.cso-student-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--bd);
+  border-radius: 13px;
+  background: var(--card);
+  color: var(--tx);
+  text-decoration: none;
+  transition: transform .18s, box-shadow .18s;
+}
+
+.cso-student-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 22px #00000012;
+}
+
+.cso-student-icon {
+  font-size: 29px;
+}
+
+.cso-student-card > span:not(.cso-student-icon) {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cso-student-arrow {
+  color: var(--bl);
+  font-weight: 700;
+  margin-top: auto;
+}
+
+.cso-student-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.cso-student-shortcuts a {
+  padding: 12px 16px;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  text-decoration: none;
+  color: var(--tx);
+}
+
+@media(max-width:700px) {
+  .cso-student-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 10px;
+  }
+
+  .cso-student-card {
+    padding: 14px;
+  }
+
+  .cso-student-welcome {
+    padding: 20px;
+  }
+}
+
+@media(max-width:380px) {
+  .cso-student-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* STEP 61S: Student dashboard light-banner contrast correction.
+   The welcome banner intentionally remains light in both themes.
+   Its text must therefore remain dark in both themes. */
+
+.cso-student-welcome {
+  color: #183044 !important;
+}
+
+.cso-student-welcome h2,
+.cso-student-welcome p {
+  color: #183044 !important;
+  opacity: 1 !important;
+}
+
+.cso-student-welcome .cso-student-kicker {
+  color: #167044 !important;
+}
+
+.cso-student-welcome .cso-student-status {
+  color: #126534 !important;
+  background: #d7f3df !important;
+}
+
+/* Maintain readable text in both light and dark modes. */
+.cso-student-card,
+.cso-student-section {
+  color: var(--tx);
+}
+
+.cso-student-card strong {
+  color: var(--tx);
+}
+
+.cso-student-card > span:not(.cso-student-icon) {
+  color: var(--tx);
+}
+
+.cso-student-arrow {
+  color: var(--bl);
+}
+
+
+
+/* STEP 61V: CSO account navigation colour system */
+
+/* Student identity */
+.cso-account-name {
+  display: inline-flex;
+  align-items: center;
+  color: #0f766e !important;
+  background: #ccfbf1;
+  border: 1px solid #99f6e4;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-weight: 750;
+}
+
+/* Login - primary blue */
+.cso-login-button {
+  color: #ffffff !important;
+  background: #2563eb !important;
+  border: 1px solid #2563eb !important;
+  font-weight: 700;
+}
+
+/* Student dashboard - purple */
+.cso-dashboard-button {
+  color: #ffffff !important;
+  background: #7047c9 !important;
+  border: 1px solid #7047c9 !important;
+  font-weight: 700;
+}
+
+/* Logout - red */
+.cso-logout-button {
+  color: #ffffff !important;
+  background: #dc3545 !important;
+  border: 1px solid #dc3545 !important;
+  font-weight: 700;
+}
+
+/* Consistent interaction feedback */
+.cso-login-button:hover,
+.cso-dashboard-button:hover,
+.cso-logout-button:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.cso-login-button:focus-visible,
+.cso-dashboard-button:focus-visible,
+.cso-logout-button:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.cso-login-button:disabled,
+.cso-dashboard-button:disabled,
+.cso-logout-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Dark theme identity contrast */
+[data-theme="dark"] .cso-account-name,
+.dark .cso-account-name {
+  color: #99f6e4 !important;
+  background: #134e4a;
+  border-color: #0f766e;
+}
+
+/* Keep navigation usable on narrow screens */
+@media (max-width: 480px) {
+  .cso-account-name,
+  .cso-login-button,
+  .cso-dashboard-button,
+  .cso-logout-button {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
