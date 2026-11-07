@@ -134,23 +134,23 @@ function heroLang(){
 }
 function nav(){
  const w=$('#navw');
- w.innerHTML='<button type="button" class="cso-nav-mobile" aria-expanded="false" aria-controls="cso-nav-items">☰ Menu</button>'+
+ w.innerHTML='<button type="button" class="cso-nav-mobile" aria-expanded="false" aria-controls="cso-nav-items"><span aria-hidden="true">☰</span> Menu</button>'+
  '<div id="cso-nav-items" class="cso-nav-items">'+
- '<a href="#" data-h="" class="cso-nav-home">🏠 '+esc(translateText('Home'))+'</a>'+
+ '<a href="#" data-h="" class="cso-nav-home"><span aria-hidden="true">🏠</span> '+esc(translateText('Home'))+'</a>'+
  NAV.map(([s,t,i])=>
  '<div class="ni">'+
  '<div class="cso-nav-parent">'+
- '<a href="'+(s==='jobs-careers'?'jobs-careers/':s==='schemes-benefits'?'schemes-benefits/':s==='study-library'?'study-library/':s==='community'?'community/':s==='about'?'about/':'#'+s)+'"'+((s==='jobs-careers'||s==='schemes-benefits'||s==='study-library'||s==='community'||s==='about')?'':' data-m="'+s+'"')+'>'+i+' '+esc(translateText(t))+'</a>'+
- '<button type="button" class="cso-nav-arrow" aria-label="Toggle '+esc(t)+' menu" aria-expanded="false">⌄</button>'+
+ '<a href="'+(s==='jobs-careers'?'jobs-careers/':s==='schemes-benefits'?'schemes-benefits/':s==='study-library'?'study-library/':s==='community'?'community/':s==='about'?'about/':'#'+s)+'"'+((s==='jobs-careers'||s==='schemes-benefits'||s==='study-library'||s==='community'||s==='about')?'':' data-m="'+s+'"')+'><span aria-hidden="true">'+i+'</span> '+esc(translateText(t))+'</a>'+
+ '<button type="button" class="cso-nav-arrow" aria-label="Toggle '+esc(t)+' menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-nav-dd-'+s+'">⌄</button>'+
  '</div>'+
- '<div class="dd">'+MENUS[s].map((x,index)=>
+ '<div class="dd" id="cso-nav-dd-'+s+'">'+MENUS[s].map((x,index)=>
   '<a href="'+(s==='jobs-careers'
-     ? 'jobs-careers/?section='+index
-     : s==='schemes-benefits'
-     ? 'schemes-benefits/?section='+index
-     : s==='study-library'
-      ? 'study-library/?section='+index
-      : s==='community' ? 'community/?section='+index : s==='about' ? 'about/?section='+index : '#'+slug(x))+'"'+((s==='jobs-careers'||s==='schemes-benefits'||s==='study-library'||s==='community'||s==='about')?'':' data-h="'+slug(x)+'"')+'>'+esc(translateText(x))+'</a>'
+      ? 'jobs-careers/?section='+index
+      : s==='schemes-benefits'
+      ? 'schemes-benefits/?section='+index
+      : s==='study-library'
+       ? 'study-library/?section='+index
+       : s==='community' ? 'community/?section='+index : s==='about' ? 'about/?section='+index : '#'+slug(x))+'"'+((s==='jobs-careers'||s==='schemes-benefits'||s==='study-library'||s==='community'||s==='about')?'':' data-h="'+slug(x)+'"')+'>'+esc(translateText(x))+'</a>'
  ).join('')+'</div>'+
  '</div>'
  ).join('')+'</div>';
@@ -201,12 +201,27 @@ document.addEventListener('keydown',e=>{
   if(toggle)toggle.setAttribute('aria-expanded','false');
  }
 });
+document.addEventListener('focusout',e=>{
+ const navw=document.getElementById('navw');
+ if(!navw)return;
+ const openItem=navw.querySelector('.ni.cso-open');
+ if(openItem&&(!e.relatedTarget||!openItem.contains(e.relatedTarget))){
+  csoCloseNavDropdowns();
+ }
+ const items=document.getElementById('cso-nav-items');
+ if(items&&items.classList.contains('cso-mobile-open')&&(!e.relatedTarget||!navw.contains(e.relatedTarget))){
+  items.classList.remove('cso-mobile-open');
+  const toggle=navw.querySelector('.cso-nav-mobile');
+  if(toggle)toggle.setAttribute('aria-expanded','false');
+  csoCloseNavDropdowns();
+ }
+});
 /* CSO navigation upgrade v1 */
 function setActive(h){
   $$('#navw a').forEach(a=>a.classList.remove('on'));
 
   const p=!h
-    ?$('#navw>a')
+    ?$('#navw .cso-nav-home')
     :$$('#navw .ni')
       .map(n=>$('[data-m]',n))
       .filter(Boolean)
