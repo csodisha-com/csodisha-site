@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#edf4ff">
+<meta name="description" content="Explore career pathways, education choices and practical skills with Common Sense Odisha.">
+<title>Career Guidance | Common Sense Odisha</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.cso-career-page{max-width:1120px;margin:30px auto 60px;padding:0 20px;color:var(--tx)}
+.cso-career-page *{box-sizing:border-box}
+.cso-career-hero,.cso-career-card,.cso-career-note{background:var(--card);border:1px solid var(--bd);border-radius:15px}
+.cso-career-hero{padding:clamp(22px,4vw,38px)}
+.cso-career-eyebrow{display:inline-block;color:#8b5cf6;font-weight:800;margin-bottom:12px}
+.cso-career-page h1{font-size:clamp(28px,4vw,42px);line-height:1.2;margin:0 0 14px}
+.cso-career-page h2{font-size:clamp(21px,3vw,27px);margin:0 0 16px}
+.cso-career-page h3{font-size:19px;margin:0 0 10px}
+.cso-career-page p{line-height:1.7}
+.cso-career-intro{max-width:790px}
+.cso-career-actions,.cso-career-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.cso-career-button{display:inline-flex;align-items:center;justify-content:center;padding:12px 17px;border-radius:10px;background:#6d28d9;color:#fff!important;text-decoration:none;font-weight:700}
+.cso-career-button.secondary{background:var(--card);color:var(--tx)!important;border:1px solid var(--bd)}
+.cso-career-section{margin-top:30px}
+.cso-career-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cso-career-card{min-width:0;padding:22px}
+.cso-career-card p{margin:0 0 13px}
+.cso-career-card a{color:var(--bl);font-weight:700}
+.cso-career-note{margin-top:30px;padding:20px}
+.cso-career-page a:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+@media(max-width:700px){.cso-career-grid{grid-template-columns:1fr}.cso-career-page{padding:0 14px}.cso-career-card{padding:18px}}
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<!-- CSO global layout: header and navigation -->
+<header class="top">
+<div style="text-align:center"><div class="cso-text-logo" role="img" aria-label="Common Sense Odisha"><div class="cso-text-logo__letters"><span>C</span><span>S</span><span>O</span></div></div></div>
+<a class="adm" href="#">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+<span id="ctl" style="display:contents"></span>
+<span class="sp"></span>
+<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+</header>
+<nav><div class="w" id="navw"></div></nav>
+<main class="cso-career-page" id="main-content">
+
+<!-- CSO Career Path Finder v1 -->
+<section id="career-path-finder" class="cpf" aria-labelledby="cpf-title">
+  <div class="cpf-intro">
+    <span class="cpf-eyebrow">INTERACTIVE CAREER GUIDANCE</span>
+    <h2 id="cpf-title">Find Your Career Direction</h2>
+    <p>Explore education, employment, training and self-employment options based on your interests. No login or personal details required.</p>
+  </div>
+
+  <div class="cpf-grid">
+    <div class="cpf-field">
+      <label for="cpf-education">1. Your education level</label>
+      <select id="cpf-education">
+        <option value="below10">Below Class 10</option>
+        <option value="10">Class 10 completed</option>
+        <option value="12science" selected>Class 12 — Science</option>
+        <option value="12commerce">Class 12 — Commerce</option>
+        <option value="12arts">Class 12 — Arts / Humanities</option>
+        <option value="diploma">Diploma / Polytechnic</option>
+        <option value="bsc">Graduation — Science</option>
+        <option value="engineering">B.Tech / Engineering</option>
+        <option value="postgraduate">Postgraduate</option>
+        <option value="iti">ITI certificate</option>
+        <option value="ba">Graduation — Arts</option>
+        <option value="bcom">Graduation — Commerce</option>
+        <option value="professional">Other professional degree</option>
+        <option value="other">Other qualifications / work experience</option>
+      </select>
+    </div>
+
+    <div class="cpf-field">
+      <label for="cpf-interest">2. Your main interest</label>
+      <select id="cpf-interest">
+        <option value="technology" selected>Technology &amp; IT</option>
+        <option value="engineering">Engineering &amp; technical trades</option>
+        <option value="public">Government &amp; public service</option>
+        <option value="teaching">Teaching &amp; education</option>
+        <option value="healthcare">Healthcare &amp; medical services</option>
+        <option value="business">Business &amp; entrepreneurship</option>
+        <option value="creative">Creative arts, design &amp; media</option>
+        <option value="defence">Defence, police &amp; uniformed services</option>
+        <option value="sports">Sports &amp; fitness</option>
+        <option value="social">Social work &amp; community development</option>
+        <option value="hospitality">Hospitality, tourism &amp; travel</option>
+        <option value="law">Law &amp; public administration</option>
+        <option value="agriculture">Agriculture &amp; allied sectors</option>
+        <option value="banking">Banking, finance &amp; accounting</option>
+      </select>
+    </div>
+
+    <div class="cpf-field">
+      <label for="cpf-pathway">3. Your preferred pathway</label>
+      <select id="cpf-pathway">
+        <option value="all" selected>Show all possibilities</option>
+        <option value="government">Government employment</option>
+        <option value="private">Private-sector employment</option>
+        <option value="study">Higher education</option>
+        <option value="training">Vocational training / skill development</option>
+        <option value="self">Self-employment / entrepreneurship</option>
+        <option value="freelance">Freelancing / remote work</option>
+        <option value="apprenticeship">Apprenticeship / internship</option>
+        <option value="exam">Competitive examination preparation</option>
+        <option value="unsure">Not sure — help me explore</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="cpf-actions">
+    <button type="button" id="cpf-find">Explore My Options</button>
+    <button type="button" id="cpf-reset" class="cpf-secondary">Reset</button>
+  </div>
+
+  <div id="cpf-results" class="cpf-results" aria-live="polite" aria-atomic="false" hidden>
+    <h3>Your Personalised Career Exploration</h3>
+    <p id="cpf-summary"></p>
+    <div id="cpf-options" class="cpf-options"></div>
+
+    
+  <!-- CSO Career Plan actions v1 -->
+  <div class="cpf-plan-actions" aria-label="Career plan actions">
+    <button type="button" id="cpf-print">
+      Print / Save as PDF
+    </button>
+    <button type="button" id="cpf-copy">
+      Copy Career Plan
+    </button>
+    <span id="cpf-copy-status" role="status" aria-live="polite"></span>
+  </div>
+
+    <div class="cpf-next">
+      <h3>Practical Next Steps</h3>
+      <ol id="cpf-steps"></ol>
+    </div>
+
+
+    <section id="cpf-matched-resources"
+             class="cpf-matched-resources"
+             aria-labelledby="cpf-matched-title" hidden>
+      <h3 id="cpf-matched-title">Relevant CSO-IN Resources</h3>
+      <p>Explore published CSO-IN content related to your career
+      interests and selected pathway. These suggestions do not
+      confirm admission, recruitment eligibility or vacancies.</p>
+      <p id="cpf-matched-status" role="status" aria-live="polite"></p>
+      <div id="cpf-matched-content"></div>
+    </section>
+    <div class="cpf-resources">
+      <h3>Official Resources</h3>
+      <p>Use official websites to confirm current eligibility, application dates, course recognition and recruitment notices.</p>
+      <ul>
+        <li><a href="https://skillodisha.gov.in/" target="_blank" rel="noopener noreferrer">Skill Odisha</a> — skills and training information</li>
+        <li><a href="https://samsodisha.gov.in/" target="_blank" rel="noopener noreferrer">SAMS Odisha</a> — admission-related information</li>
+        <li><a href="https://www.ncs.gov.in/" target="_blank" rel="noopener noreferrer">National Career Service</a> — career and employment resources</li>
+        <li><a href="https://www.apprenticeshipindia.gov.in/" target="_blank" rel="noopener noreferrer">Apprenticeship India</a> — apprenticeship information</li>
+        <li><a href="https://www.opsc.gov.in/" target="_blank" rel="noopener noreferrer">Odisha Public Service Commission</a> — official recruitment notices</li>
+        <li><a href="https://www.osssc.gov.in/" target="_blank" rel="noopener noreferrer">Odisha Sub-ordinate Staff Selection Commission</a> — official recruitment notices</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="cpf-disclaimer"><strong>Important:</strong> These are general exploration suggestions, not individual eligibility decisions, admission offers or job guarantees. Always verify requirements and deadlines with the responsible authority.</p>
+</section>
+
+<style>
+#career-path-finder {
+  --cpf-accent: #2563eb;
+  --cpf-border: color-mix(in srgb, currentColor 19%, transparent);
+  margin: 24px 0 32px;
+  padding: clamp(18px, 3vw, 32px);
+  border: 1px solid var(--cpf-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--card, #ffffff) 94%, var(--cpf-accent) 6%);
+  color: inherit;
+}
+#career-path-finder *, #career-path-finder *::before,
+#career-path-finder *::after { box-sizing: border-box; }
+.cpf-eyebrow { font-size: .75rem; font-weight: 800; letter-spacing: .09em; color: #2563eb; }
+.cpf-intro h2 { margin: 8px 0 10px; font-size: clamp(1.4rem, 3vw, 2rem); }
+.cpf-intro p { max-width: 720px; line-height: 1.65; }
+.cpf-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.cpf-field label { display: block; font-weight: 700; margin-bottom: 9px; }
+.cpf-field select {
+  display: block; width: 100%; min-width: 0; padding: 12px;
+  border: 1px solid #94a3b8; border-radius: 9px;
+  background: #fff; color: #172033; font: inherit;
+}
+.cpf-field select:focus-visible, .cpf-actions button:focus-visible,
+.cpf-resources a:focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
+.cpf-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.cpf-actions button {
+  padding: 12px 20px; border: 1px solid var(--cpf-accent);
+  border-radius: 9px; background: var(--cpf-accent); color: #fff;
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.cpf-actions button.cpf-secondary { background: transparent; color: inherit; }
+.cpf-results { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--cpf-border); }
+.cpf-results[hidden] { display: none; }
+.cpf-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 12px; margin: 18px 0; }
+.cpf-option { padding: 17px; border: 1px solid var(--cpf-border); border-radius: 12px; background: color-mix(in srgb, currentColor 4%, transparent); }
+.cpf-option h4 { margin: 0 0 8px; font-size: 1rem; }
+.cpf-option p { margin: 0; line-height: 1.55; font-size: .92rem; }
+.cpf-next, .cpf-resources { margin-top: 22px; }
+.cpf-next li, .cpf-resources li { margin: 8px 0; line-height: 1.6; }
+.cpf-resources a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; }
+.cpf-disclaimer { margin-top: 24px; padding: 13px; border-left: 3px solid #d97706; font-size: .9rem; line-height: 1.6; }
+@media (max-width: 800px) { .cpf-grid { grid-template-columns: 1fr; } }
+@media (prefers-color-scheme: dark) {
+  #career-path-finder { --cpf-accent: #60a5fa; }
+  .cpf-eyebrow, .cpf-resources a { color: #93c5fd; }
+  .cpf-actions button:not(.cpf-secondary) { background: #2563eb; border-color: #2563eb; color: #fff; }
+}
+
+/* CSO Career Path Finder results refinement v2 */
+#career-path-finder .cpf-results > h3 {
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+}
+#career-path-finder #cpf-summary {
+  line-height: 1.7;
+  max-width: 820px;
+}
+#career-path-finder .cpf-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+#career-path-finder .cpf-option {
+  padding: 20px;
+  border-radius: 13px;
+}
+#career-path-finder .cpf-card-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #93c5fd;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+#career-path-finder .cpf-option h4 {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+#career-path-finder .cpf-option p {
+  line-height: 1.7;
+}
+#career-path-finder .cpf-next {
+  margin-top: 28px;
+}
+#career-path-finder .cpf-next ol {
+  padding-left: 23px;
+}
+#career-path-finder .cpf-next li {
+  padding-left: 5px;
+  margin-bottom: 11px;
+}
+@media (max-width: 760px) {
+  #career-path-finder .cpf-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* CSO printable Career Plan v1 */
+#career-path-finder .cpf-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 8px;
+}
+
+#career-path-finder .cpf-plan-actions button {
+  padding: 11px 17px;
+  border: 1px solid #3b82f6;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#career-path-finder #cpf-copy {
+  background: transparent;
+  color: inherit;
+}
+
+#career-path-finder .cpf-plan-actions button:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+#career-path-finder #cpf-copy-status {
+  font-size: .85rem;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  body > header,
+  body > nav,
+  body > footer,
+  #career-path-finder .cpf-intro,
+  #career-path-finder .cpf-grid,
+  #career-path-finder .cpf-actions,
+  #career-path-finder .cpf-plan-actions {
+    display: none !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #career-path-finder,
+  #career-path-finder .cpf-results,
+  #career-path-finder .cpf-results * {
+    visibility: visible !important;
+  }
+
+  #career-path-finder {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: #fff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+  }
+
+  #career-path-finder .cpf-results {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  #career-path-finder .cpf-options {
+    display: block !important;
+  }
+
+  #career-path-finder .cpf-option {
+    display: block !important;
+    margin: 12px 0 !important;
+    padding: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    color: #111827 !important;
+    break-inside: avoid;
+  }
+
+  #career-path-finder .cpf-card-label,
+  #career-path-finder a {
+    color: #1d4ed8 !important;
+  }
+
+  #career-path-finder .cpf-next,
+  #career-path-finder .cpf-resources,
+  #career-path-finder .cpf-disclaimer {
+    color: #111827 !important;
+  }
+
+  #career-path-finder .cpf-next li,
+  #career-path-finder .cpf-resources li {
+    break-inside: avoid;
+  }
+
+  #career-path-finder .cpf-results::before {
+    content: "COMMON SENSE ODISHA | PERSONAL CAREER EXPLORATION PLAN";
+    display: block;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1d4ed8;
+    font-size: 13pt;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  #career-path-finder .cpf-results::after {
+    content: "CSO-IN | General guidance only. Verify all eligibility and deadlines with official authorities.";
+    display: block;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #cbd5e1;
+    font-size: 9pt;
+    color: #334155;
+  }
+}
+
+</style>
+
+
+<script>
+(function () {
+  "use strict";
+
+  const education = document.getElementById("cpf-education");
+  const interest = document.getElementById("cpf-interest");
+  const pathway = document.getElementById("cpf-pathway");
+  const results = document.getElementById("cpf-results");
+  const summary = document.getElementById("cpf-summary");
+  const options = document.getElementById("cpf-options");
+  const steps = document.getElementById("cpf-steps");
+
+  const educationData = {
+    below10: {
+      level: "foundation",
+      label: "Below Class 10",
+      advice: "Focus on foundational learning, completing school education where possible, and age-appropriate skill exploration."
+    },
+    "10": {
+      level: "school",
+      label: "Class 10",
+      advice: "Explore higher secondary education, recognised vocational programmes and suitable technical training."
+    },
+    "12science": {
+      level: "higher",
+      label: "Class 12 Science",
+      advice: "Compare science, technical, healthcare and other programmes according to subject-specific eligibility."
+    },
+    "12commerce": {
+      level: "higher",
+      label: "Class 12 Commerce",
+      advice: "Explore commerce, accounting, finance, business and other eligible education pathways."
+    },
+    "12arts": {
+      level: "higher",
+      label: "Class 12 Arts / Humanities",
+      advice: "Explore humanities, social sciences, communication, education and other eligible programmes."
+    },
+    diploma: {
+      level: "technical",
+      label: "Diploma / Polytechnic",
+      advice: "Consider technician roles, practical industry experience and eligible lateral-entry or further-study options."
+    },
+    bsc: {
+      level: "graduate",
+      label: "Science graduate",
+      advice: "Consider subject-related employment, professional training, postgraduate study and eligible recruitment."
+    },
+    engineering: {
+      level: "technicalGraduate",
+      label: "Engineering graduate",
+      advice: "Explore engineering roles, technical specialisations, industry experience and postgraduate options."
+    },
+    postgraduate: {
+      level: "postgraduate",
+      label: "Postgraduate",
+      advice: "Consider specialised roles, research, advanced qualifications and eligibility-based recruitment."
+    },
+    iti: {
+      level: "technical",
+      label: "ITI certificate",
+      advice: "Explore trade-related employment, apprenticeships and further recognised technical qualifications."
+    },
+    ba: {
+      level: "graduate",
+      label: "Arts graduate",
+      advice: "Consider communication, administration, education-related routes and other eligible career options."
+    },
+    bcom: {
+      level: "graduate",
+      label: "Commerce graduate",
+      advice: "Explore accounting, business operations, finance and relevant professional qualifications."
+    },
+    professional: {
+      level: "professional",
+      label: "Professional degree",
+      advice: "Review profession-specific registration, licensing and recruitment requirements."
+    },
+    other: {
+      level: "other",
+      label: "Other qualifications / experience",
+      advice: "Identify transferable skills and check the exact qualification requirements for each opportunity."
+    }
+  };
+
+  const interestData = {
+    technology: {
+      label: "Technology & IT",
+      roles: ["Digital support and IT services", "Software and web development", "Data and cybersecurity foundations"],
+      skills: "Computer literacy, programming fundamentals, digital projects and problem-solving"
+    },
+    engineering: {
+      label: "Engineering & technical trades",
+      roles: ["Technical maintenance and operations", "Manufacturing and engineering support", "Trade-specific technical services"],
+      skills: "Technical drawing, safety, tools, troubleshooting and practical workshop skills"
+    },
+    public: {
+      label: "Government & public service",
+      roles: ["Public administration support", "Government recruitment pathways", "Citizen-facing public services"],
+      skills: "Communication, general awareness, digital literacy and examination preparation"
+    },
+    teaching: {
+      label: "Teaching & education",
+      roles: ["Education support services", "Teaching pathways subject to required qualifications", "Tutoring and learning support"],
+      skills: "Subject knowledge, communication, lesson planning and digital teaching tools"
+    },
+    healthcare: {
+      label: "Healthcare & medical services",
+      roles: ["Healthcare support services", "Allied health education pathways", "Healthcare administration"],
+      skills: "Science foundations, communication, hygiene and patient-service awareness"
+    },
+    business: {
+      label: "Business & entrepreneurship",
+      roles: ["Business operations", "Sales and customer services", "Small-enterprise development"],
+      skills: "Budgeting, communication, marketing, customer service and business planning"
+    },
+    creative: {
+      label: "Creative arts, design & media",
+      roles: ["Graphic and digital design", "Content and media production", "Creative services"],
+      skills: "Portfolio building, design tools, writing and visual communication"
+    },
+    defence: {
+      label: "Defence, police & uniformed services",
+      roles: ["Uniformed-service recruitment pathways", "Defence-related technical support", "Public safety support services"],
+      skills: "Physical fitness, discipline, general awareness and role-specific preparation"
+    },
+    sports: {
+      label: "Sports & fitness",
+      roles: ["Sports coaching pathways", "Fitness and recreation services", "Sports administration"],
+      skills: "Fitness fundamentals, coaching communication, safety and relevant certification"
+    },
+    social: {
+      label: "Social work & community development",
+      roles: ["Community outreach", "Development programme support", "Social-sector project coordination"],
+      skills: "Communication, documentation, teamwork and community engagement"
+    },
+    hospitality: {
+      label: "Hospitality, tourism & travel",
+      roles: ["Hospitality operations", "Travel and tourism services", "Customer experience and event support"],
+      skills: "Customer service, languages, digital booking tools and hospitality skills"
+    },
+    law: {
+      label: "Law & public administration",
+      roles: ["Legal support services", "Public administration", "Law education and professional pathways"],
+      skills: "Reading, writing, research, documentation and analytical reasoning"
+    },
+    agriculture: {
+      label: "Agriculture & allied sectors",
+      roles: ["Agricultural services", "Food processing and allied activities", "Agri-enterprise development"],
+      skills: "Farm-business basics, relevant technical skills, safety and market awareness"
+    },
+    banking: {
+      label: "Banking, finance & accounting",
+      roles: ["Accounting and bookkeeping", "Banking operations pathways", "Financial services support"],
+      skills: "Numeracy, spreadsheets, accounting fundamentals and financial literacy"
+    }
+  };
+
+  const pathwayData = {
+    all: {
+      label: "Multiple pathways",
+      headline: "Compare employment, education and independent work",
+      action: "Compare at least two routes before deciding.",
+      note: "A balanced shortlist can include training, employment and further education."
+    },
+    government: {
+      label: "Government employment",
+      headline: "Explore eligibility-based public recruitment",
+      action: "Check official recruitment notifications, qualification rules, age limits and application dates.",
+      note: "Government recruitment varies by post; this finder cannot determine eligibility."
+    },
+    private: {
+      label: "Private-sector employment",
+      headline: "Build skills for industry and service-sector roles",
+      action: "Prepare a CV, build demonstrable skills and review legitimate employer vacancies.",
+      note: "Practical experience, communication and portfolio evidence may help."
+    },
+    study: {
+      label: "Higher education",
+      headline: "Compare recognised courses and entry requirements",
+      action: "Check recognised institutions, subject prerequisites, admissions, fees and scholarships.",
+      note: "Course eligibility depends on the institution and programme."
+    },
+    training: {
+      label: "Vocational training",
+      headline: "Develop practical, job-relevant skills",
+      action: "Find recognised skill-training or vocational programmes suited to your current qualification.",
+      note: "Compare course recognition, duration, costs and practical training."
+    },
+    self: {
+      label: "Self-employment",
+      headline: "Explore a small business or independent service",
+      action: "Study local demand, required permissions, startup costs and training opportunities.",
+      note: "Start with a realistic budget and test demand before committing funds."
+    },
+    freelance: {
+      label: "Freelancing / remote work",
+      headline: "Build a portfolio for independent work",
+      action: "Choose a marketable skill, create sample projects and verify client or platform legitimacy.",
+      note: "Avoid advance-fee job scams and unrealistic earnings promises."
+    },
+    apprenticeship: {
+      label: "Apprenticeship / internship",
+      headline: "Gain supervised practical experience",
+      action: "Search official apprenticeship channels and legitimate employer internship notices.",
+      note: "Check age, qualification, stipend and programme requirements."
+    },
+    exam: {
+      label: "Competitive examinations",
+      headline: "Prepare for suitable examinations",
+      action: "Identify examinations for which you meet the published requirements and build a study plan.",
+      note: "Exam eligibility and schedules must be checked with the recruiting authority."
+    },
+    unsure: {
+      label: "Career exploration",
+      headline: "Start by comparing a few realistic options",
+      action: "Try a short skill project, speak with qualified advisers and compare available pathways.",
+      note: "You do not need to commit to one career immediately."
+    }
+  };
+
+
+  function educationFit(level, path) {
+    if (level === "foundation") {
+      return "Prioritise completing foundational education and age-appropriate skills. Many jobs and professional courses have minimum age or qualification requirements.";
+    }
+    if (level === "school") {
+      return "Compare Class 10-level options, higher secondary education, ITI and recognised vocational routes.";
+    }
+    if (level === "higher") {
+      return "Check whether your Class 12 stream, subjects and marks meet the published requirements.";
+    }
+    if (level === "technical") {
+      return "Match opportunities to your specific ITI trade or diploma specialisation.";
+    }
+    if (level === "professional") {
+      return "Check any mandatory registration, licence or professional qualification.";
+    }
+    return "Confirm the required degree, subject specialisation, experience and other conditions.";
+  }
+
+  const specificDirections = {
+    technology: {
+      "12science": ["BCA, B.Sc. Computer Science or eligible technical degree", "Programming, web development and IT support", "Build a basic website or coding portfolio"],
+      "12commerce": ["BCA or other computing courses where eligible", "Business analytics and digital operations", "Practise spreadsheets and basic programming"],
+      "12arts": ["Digital skills and computing courses where eligible", "Web content, IT support and digital operations", "Build a small digital project"],
+      engineering: ["Software engineering and IT systems", "Cloud, cybersecurity or data specialisation", "Create a technical portfolio"],
+      diploma: ["Technical IT support and networking", "Relevant diploma-based industry roles", "Develop practical troubleshooting skills"]
+    },
+    engineering: {
+      "12science": ["Engineering degree or diploma subject to eligibility", "Polytechnic and technical education", "Explore mechanical, electrical or civil engineering fundamentals"],
+      "10": ["Polytechnic or ITI routes subject to eligibility", "Technical trades and workshop learning", "Build maths, science and practical skills"],
+      iti: ["Trade-related technician and maintenance roles", "Relevant apprenticeships", "Develop trade-specific practical experience"],
+      diploma: ["Technician and junior technical roles", "Eligible lateral-entry engineering routes", "Strengthen CAD, safety and technical skills"],
+      engineering: ["Graduate engineering roles", "Industry specialisation or postgraduate study", "Build practical engineering projects"]
+    },
+    healthcare: {
+      "12science": ["Nursing or allied health courses subject to subject eligibility", "Pharmacy or other recognised healthcare courses where eligible", "Compare approved institutions and entrance requirements"],
+      "12commerce": ["Healthcare administration and hospital operations", "Eligible healthcare support training", "Check science prerequisites before choosing clinical courses"],
+      "12arts": ["Healthcare administration and community support", "Eligible healthcare service programmes", "Check professional course subject requirements"],
+      bsc: ["Relevant allied health or postgraduate programmes", "Laboratory or research-related pathways where eligible", "Check course recognition and registration rules"]
+    },
+    teaching: {
+      "12science": ["Teacher education routes after eligible higher study", "Subject-based higher education", "Explore recognised teacher-training requirements"],
+      "12commerce": ["Commerce-related higher education", "Teaching routes subject to required qualifications", "Build communication and subject skills"],
+      "12arts": ["Humanities and education-related degrees", "Recognised teacher education pathways", "Review teacher recruitment qualifications"],
+      ba: ["Recognised teacher education where eligible", "Education support and tutoring", "Check applicable teacher eligibility tests"],
+      bsc: ["Science teaching pathways where eligible", "Teacher education and subject specialisation", "Check recruitment and qualification rules"]
+    },
+    banking: {
+      "12commerce": ["B.Com, finance or accounting education", "Bookkeeping and financial operations skills", "Practise spreadsheets and accounting basics"],
+      bcom: ["Accounting, audit and finance support", "Banking recruitment subject to eligibility", "Develop Excel and financial analysis skills"],
+      ba: ["Banking operations and customer service", "Eligible competitive recruitment", "Build numeracy and communication skills"]
+    },
+    agriculture: {
+      "12science": ["Agriculture and allied science courses where eligible", "Food processing and agricultural technology", "Check subject and entrance requirements"],
+      "10": ["Recognised agriculture-related vocational training", "Practical farming and allied skills", "Continue education and learn market basics"],
+      bsc: ["Agriculture-related specialisation where eligible", "Research or technical services", "Explore recognised training and field experience"]
+    },
+    law: {
+      "12arts": ["Integrated law degree where eligible", "Public administration and social science courses", "Check law entrance and admission requirements"],
+      "12commerce": ["Integrated law degree where eligible", "Business law and administration interests", "Build research and writing skills"],
+      ba: ["Graduate-entry law programmes where eligible", "Administration and legal support", "Check professional licensing rules"]
+    },
+    defence: {
+      "10": ["Explore education routes for future uniformed-service recruitment", "Age-appropriate fitness and general awareness", "Check official recruitment qualifications"],
+      "12science": ["Eligible defence or technical recruitment routes", "Higher education and technical options", "Check age, medical and physical standards"],
+      engineering: ["Technical defence-related opportunities", "Engineering and support roles", "Verify official entry requirements"]
+    },
+    creative: {
+      "12arts": ["Design, media or communication courses", "Graphic design and content creation", "Build a portfolio of original work"],
+      ba: ["Communication and media opportunities", "Design and content roles", "Develop a writing or design portfolio"]
+    },
+    business: {
+      "12commerce": ["Business or commerce higher education", "Small-enterprise and sales skills", "Create a simple business plan"],
+      bcom: ["Business operations and finance", "Entrepreneurship and consulting support", "Learn budgeting and customer research"]
+    }
+  };
+
+  const pathwayTitles = {
+    all: "Explore several realistic directions",
+    government: "Government recruitment route",
+    private: "Private-sector career route",
+    study: "Education and qualification route",
+    training: "Practical skill-development route",
+    self: "Self-employment route",
+    freelance: "Freelance and remote-work route",
+    apprenticeship: "Apprenticeship and internship route",
+    exam: "Competitive examination route",
+    unsure: "Career discovery route"
+  };
+
+  function makeCard(label, title, detail) {
+    const card = document.createElement("article");
+    card.className = "cpf-option";
+
+    const eyebrow = document.createElement("span");
+    eyebrow.className = "cpf-card-label";
+    eyebrow.textContent = label;
+
+    const heading = document.createElement("h4");
+    heading.textContent = title;
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = detail;
+
+    card.append(eyebrow, heading, paragraph);
+    options.appendChild(card);
+  }
+
+  function render() {
+    const edu = educationData[education.value];
+    const field = interestData[interest.value];
+    const path = pathwayData[pathway.value];
+
+    if (!edu || !field || !path) return;
+
+    const special =
+      specificDirections[interest.value] &&
+      specificDirections[interest.value][education.value];
+
+    const directions = special || field.roles;
+    const caution = educationFit(edu.level, pathway.value);
+
+    summary.textContent =
+      "Your selection: " + edu.label + " | " +
+      field.label + " | " + path.label +
+      ". Explore these possible directions and verify eligibility before applying.";
+
+    options.replaceChildren();
+
+    if (edu.level === "foundation") {
+      makeCard(
+        "01 · Career direction",
+        "Build your education foundation",
+        "Continue age-appropriate education and explore " +
+        field.label + " through introductory learning."
+      );
+      makeCard(
+        "02 · Skills to build",
+        "Start with practical fundamentals",
+        field.skills + "."
+      );
+      makeCard(
+        "03 · Recommended action",
+        "Plan your next learning step",
+        caution
+      );
+    } else {
+      const firstDirection = directions[0];
+      const secondDirection = directions[1] || field.roles[1];
+      const thirdDirection = directions[2] || field.roles[2];
+
+      makeCard(
+        "01 · Career direction",
+        firstDirection,
+        "A possible direction related to your education and interest. " +
+        caution
+      );
+
+      makeCard(
+        "02 · Skills to build",
+        secondDirection,
+        "Develop relevant abilities: " + field.skills + "."
+      );
+
+      makeCard(
+        "03 · Recommended action",
+        pathwayTitles[pathway.value],
+        path.action + " " + thirdDirection + "."
+      );
+    }
+
+    const nextSteps = [
+      "Shortlist two or three options in " + field.label + ".",
+      path.action,
+      "Build relevant skills: " + field.skills + ".",
+      caution,
+      "Check official notices, recognised institutions, fees and deadlines.",
+      "Prepare a practical 30-day learning or application plan."
+    ];
+
+    steps.replaceChildren();
+
+    nextSteps.forEach(function (item) {
+      const li = document.createElement("li");
+      li.textContent = item;
+      steps.appendChild(li);
+    });
+
+    results.hidden = false;
+    results.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  }
+
+  document.getElementById("cpf-find")
+    .addEventListener("click", render);
+
+  document.getElementById("cpf-reset")
+    .addEventListener("click", function () {
+      education.value = "12science";
+      interest.value = "technology";
+      pathway.value = "all";
+      results.hidden = true;
+      summary.textContent = "";
+      options.replaceChildren();
+      steps.replaceChildren();
+      education.focus();
+    });
+
+})();
+</script>
+
+
+<script>
+(function () {
+  "use strict";
+
+  const finder = document.getElementById("career-path-finder");
+  const printButton = document.getElementById("cpf-print");
+  const copyButton = document.getElementById("cpf-copy");
+  const status = document.getElementById("cpf-copy-status");
+
+  function selectedText(id) {
+    const select = document.getElementById(id);
+    return select.options[select.selectedIndex].textContent.trim();
+  }
+
+  function careerPlanText() {
+    const summary = document.getElementById("cpf-summary").textContent.trim();
+
+    const cards = Array.from(
+      document.querySelectorAll("#cpf-options .cpf-option")
+    ).map(function (card) {
+      return card.innerText.trim();
+    });
+
+    const steps = Array.from(
+      document.querySelectorAll("#cpf-steps li")
+    ).map(function (li, index) {
+      return (index + 1) + ". " + li.textContent.trim();
+    });
+
+    const resources = Array.from(
+      document.querySelectorAll("#career-path-finder .cpf-resources a")
+    ).map(function (link) {
+      return link.textContent.trim() + ": " + link.href;
+    });
+
+    return [
+      "COMMON SENSE ODISHA — CAREER EXPLORATION PLAN",
+      "",
+      "Education: " + selectedText("cpf-education"),
+      "Interest: " + selectedText("cpf-interest"),
+      "Preferred pathway: " + selectedText("cpf-pathway"),
+      "",
+      "CAREER SUMMARY",
+      summary,
+      "",
+      "SUGGESTED DIRECTIONS",
+      cards.join("\n\n"),
+      "",
+      "PRACTICAL NEXT STEPS",
+      steps.join("\n"),
+      "",
+      "OFFICIAL RESOURCES",
+      resources.join("\n"),
+      "",
+      "DISCLAIMER",
+      "General educational guidance only. Verify eligibility, recognition,",
+      "fees, deadlines and application procedures with official authorities."
+    ].join("\n");
+  }
+
+  printButton.addEventListener("click", function () {
+    if (document.getElementById("cpf-results").hidden) {
+      status.textContent = "Explore your options first.";
+      return;
+    }
+
+    window.print();
+  });
+
+  copyButton.addEventListener("click", async function () {
+    if (document.getElementById("cpf-results").hidden) {
+      status.textContent = "Explore your options first.";
+      return;
+    }
+
+    const text = careerPlanText();
+
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        throw new Error("Clipboard API unavailable");
+      }
+
+      await navigator.clipboard.writeText(text);
+      status.textContent = "Career plan copied.";
+    } catch (error) {
+      status.textContent =
+        "Copy unavailable in this browser. Use Print / Save as PDF.";
+    }
+  });
+
+  const reset = document.getElementById("cpf-reset");
+
+  reset.addEventListener("click", function () {
+    status.textContent = "";
+  });
+
+  finder.querySelectorAll("select").forEach(function (select) {
+    select.addEventListener("change", function () {
+      status.textContent = "";
+    });
+  });
+})();
+</script>
+
+<!-- End CSO Career Path Finder v1 -->
+
+
+<section class="cso-career-hero">
+<span class="cso-career-eyebrow">🧭 CSO Opportunity Compass</span>
+<h1>Career Guidance</h1>
+<p class="cso-career-intro">Explore possible career directions, education pathways and practical skills. Start with your qualifications and interests, then check official requirements before making an application or decision.</p>
+<div class="cso-career-actions">
+<a class="cso-career-button" href="#education">Explore by Education Level</a>
+<a class="cso-career-button secondary" href="../jobs-careers/">Browse Jobs &amp; Careers</a>
+</div>
+</section>
+
+<section class="cso-career-section" id="education">
+<h2>Start with Your Education Level</h2>
+<div class="cso-career-grid">
+<article class="cso-career-card"><h3>After Class 10</h3><p>Explore higher secondary streams, vocational education, technical training and foundational skills.</p><a href="../study-library/">Explore study resources →</a></article>
+<article class="cso-career-card"><h3>After Class 12</h3><p>Compare degree courses, diplomas, skill programmes and entrance examination pathways.</p><a href="../study-library/">Explore education options →</a></article>
+<article class="cso-career-card"><h3>After Graduation</h3><p>Consider recruitment opportunities, postgraduate study, professional qualifications and employability skills.</p><a href="../jobs-careers/">Explore career opportunities →</a></article>
+<article class="cso-career-card"><h3>Other Qualifications &amp; Experience</h3><p>Review options related to ITI, diplomas, professional training, work experience or career changes.</p><a href="../jobs-careers/">Browse Jobs &amp; Careers →</a></article>
+</div>
+</section>
+
+<section class="cso-career-section" id="pathways">
+<h2>Explore Career Pathways</h2>
+<div class="cso-career-grid">
+<article class="cso-career-card"><h3>🏛 Government Careers</h3><p>Understand recruitment notices, eligibility, examination patterns and official application procedures.</p><a href="../jobs-careers/">Explore jobs →</a></article>
+<article class="cso-career-card"><h3>💼 Private-Sector Careers</h3><p>Explore entry-level roles, workplace skills and ways to evaluate employment opportunities.</p><a href="#skills">Build practical skills →</a></article>
+<article class="cso-career-card"><h3>🎓 Further Education</h3><p>Compare courses, entry requirements, costs and longer-term goals before choosing a programme.</p><a href="../study-library/">Visit Study Library →</a></article>
+<article class="cso-career-card"><h3>🌱 Self-Employment</h3><p>Explore skill development, business planning and relevant assistance while checking eligibility.</p><a href="../schemes-benefits/">Explore schemes →</a></article>
+</div>
+</section>
+
+<section class="cso-career-section" id="skills">
+<h2>Build Skills That Support Your Goals</h2>
+<div class="cso-career-grid">
+<article class="cso-career-card"><h3>Digital Literacy</h3><p>Practise email, online applications, document handling, basic spreadsheets and digital safety.</p></article>
+<article class="cso-career-card"><h3>Communication &amp; Interviews</h3><p>Develop clear writing, speaking, résumé preparation and interview confidence.</p></article>
+<article class="cso-career-card"><h3>Exam Preparation</h3><p>Read the official syllabus, create a realistic study plan and use reliable preparation materials.</p></article>
+<article class="cso-career-card"><h3>Career Decision-Making</h3><p>Compare your interests, eligibility, costs, location, time commitment and future possibilities.</p></article>
+</div>
+</section>
+
+<section class="cso-career-section" id="resources">
+<h2>Useful CSO Resources</h2>
+<div class="cso-career-links">
+<a class="cso-career-button secondary" href="../jobs-careers/">Jobs &amp; Careers</a>
+<a class="cso-career-button secondary" href="../study-library/">Study Library</a>
+<a class="cso-career-button secondary" href="../schemes-benefits/">Schemes &amp; Benefits</a>
+<a class="cso-career-button secondary" href="../trust-layer/">Trust Layer</a>
+</div>
+</section>
+
+<aside class="cso-career-note"><strong>Important:</strong> This page provides general educational guidance, not personalised counselling, guaranteed placement or confirmation of eligibility. Verify qualifications, deadlines, fees and application procedures with the relevant official organisation.</aside>
+</main>
+<!-- CSO global layout: footer -->
+<footer><div class="w">
+<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
+<div><h4>Quick Links</h4><a href="../">Home</a><a href="../jobs-careers/">Jobs &amp; Careers</a><a href="../schemes-benefits/">Schemes &amp; Benefits</a><a href="../study-library/">Study Library</a><a href="../community/">Community</a><a href="../about/">About</a></div>
+<div><h4>Resources</h4><a href="../#latest-updates">Latest Updates</a><a href="../#popular-topics">Popular Topics</a><a href="../#important-tools">Important Tools</a></div>
+<div><h4>Support</h4><a href="../support/">Help &amp; Support</a><a href="../support/#report-error">Report an Error</a><a href="../support/#suggest-resource">Suggest a Resource</a><a href="../support/#contact">Contact Us</a><a href="../support/#faqs">FAQs</a></div>
+<div><h4>Legal</h4><a href="../privacy-policy/">Privacy Policy</a><a href="../terms-of-use/">Terms of Use</a><a href="../disclaimer/">Disclaimer</a><a href="../copyright-policy/">Copyright Policy</a></div>
+<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.png" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
+<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+
+<style>
+#cpf-matched-resources {
+  margin: 26px 0;
+  padding: 22px 0;
+  border-top: 1px solid rgba(120,140,170,.35);
+  border-bottom: 1px solid rgba(120,140,170,.35);
+}
+#cpf-matched-resources[hidden] { display: none !important; }
+#cpf-matched-resources h3 { margin-bottom: 10px; }
+.cpf-match-group { margin-top: 24px; }
+.cpf-match-group h4 { margin-bottom: 12px; }
+.cpf-match-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr));
+  gap: 12px;
+}
+.cpf-match-card {
+  padding: 16px;
+  border: 1px solid rgba(120,140,170,.35);
+  border-radius: 12px;
+  background: rgba(120,140,170,.07);
+  overflow-wrap: anywhere;
+}
+.cpf-match-card h5 {
+  font-size: 1rem;
+  margin: 0 0 9px;
+}
+.cpf-match-card p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.cpf-match-card a {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.cpf-match-meta {
+  font-size: .88rem;
+  opacity: .9;
+}
+.cpf-match-status {
+  display: inline-block;
+  margin: 5px 0;
+  padding: 4px 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 700;
+}
+</style>
+
+<script src="./resources.js" defer></script>
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js" defer></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e1257bea99c62',t:'MTc5NDA3MjY4Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e1257bea99c62',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

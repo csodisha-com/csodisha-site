@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Join the CSO Community | Common Sense Odisha</title>
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/style.css">
+<!-- CSO-IN shared theme synchronization v1 -->
+<script>
+(function () {
+  function syncTheme() {
+    var settings = {};
+    try {
+      settings = JSON.parse(localStorage.getItem('cso') || '{}') || {};
+    } catch (error) {
+      settings = {};
+    }
+
+    var themes = ['light', 'dark', 'system', 'reading', 'sepia'];
+    var theme = themes.includes(settings.theme)
+      ? settings.theme
+      : 'system';
+
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+
+  syncTheme();
+
+  window.addEventListener('storage', function (event) {
+    if (event.key === 'cso') syncTheme();
+  });
+
+  window.addEventListener('pageshow', syncTheme);
+})();
+</script>
+
+<style>
+/* CSO registration form — isolated styles */
+.cso-join-main {
+  max-width: 850px;
+  margin: 35px auto;
+  padding: 0 18px 45px;
+}
+.cso-join-main .panel {
+  background: var(--card);
+  color: var(--tx);
+  border: 1px solid var(--bd);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 8px 30px #00000012;
+}
+.cso-join-main h1 {
+  font-size: clamp(25px,4vw,34px);
+  margin: 0 0 8px;
+}
+.cso-join-main .intro {
+  color: var(--mut);
+  margin: 0 0 23px;
+}
+.cso-join-main .grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 17px;
+}
+.cso-join-main .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 17px;
+}
+.cso-join-main .field label {
+  font-weight: 650;
+}
+.cso-join-main input:not([type="checkbox"]),
+.cso-join-main select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--tx);
+  font: inherit;
+}
+.cso-join-main fieldset {
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 15px;
+  margin: 0 0 20px;
+}
+.cso-join-main legend {
+  font-weight: 700;
+  padding: 0 7px;
+}
+.cso-join-main .options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.cso-join-main .check {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+.cso-join-main .check input {
+  width: auto;
+  margin-top: 4px;
+  accent-color: #16754e;
+}
+.cso-join-main .note {
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 15px 0;
+}
+.cso-join-main .actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cso-join-main .actions button,
+.cso-join-main .actions .back {
+  padding: 12px 18px;
+  border-radius: 9px;
+  font: inherit;
+}
+.cso-join-main .actions button {
+  background: #176a4b;
+  color: white;
+  border: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cso-join-main .actions .back {
+  background: var(--bg);
+  color: var(--tx);
+  border: 1px solid var(--bd);
+}
+.cso-join-main #status {
+  min-height: 20px;
+  margin: 12px 0 0;
+}
+@media(max-width:600px) {
+  .cso-join-main { margin: 16px auto; }
+  .cso-join-main .panel { padding: 19px; }
+  .cso-join-main .grid,
+  .cso-join-main .options {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+</head>
+<body>
+<header class="top">
+<a href="../../index.html" aria-label="CSO-IN Homepage" style="display:block;text-align:center"><div class="cso-text-logo" role="img" aria-label="Common Sense Odisha"><div class="cso-text-logo__letters"><span>C</span><span>S</span><span>O</span></div></div></a>
+<a class="adm" href="#">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+<span id="ctl" style="display:contents"></span>
+<span class="sp"></span>
+<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+</header>
+<nav><div class="w" id="navw"></div></nav>
+<main class="cso-join-main">
+<section class="panel">
+<h1>👥 Join the CSO Community</h1>
+<p class="intro">Connect with students, teachers, job aspirants and learners across Odisha.</p>
+
+<form id="joinForm">
+<div class="field">
+<label for="fullName">Full Name *</label>
+<input id="fullName" name="fullName" maxlength="100" autocomplete="name" placeholder="Enter your full name" required>
+</div>
+
+<div class="grid">
+<div class="field">
+<label for="state">State *</label>
+<select id="state" name="state" required>
+<option value="">Select state</option>
+</select>
+</div>
+<div class="field">
+<label for="district">District *</label>
+<select id="district" name="district" required disabled>
+<option value="">Select state first</option>
+</select>
+</div>
+</div>
+
+<div class="grid">
+<div class="field">
+<label for="role">Community Role *</label>
+<select id="role" name="role" required>
+<option value="">Select your role</option>
+<option>Student</option>
+<option>Teacher / Educator</option>
+<option>Job Aspirant</option>
+<option>Government Exam Aspirant</option>
+<option>Parent / Guardian</option>
+<option>Working Professional</option>
+<option>Social Worker / Volunteer</option>
+<option>Other</option>
+</select>
+</div>
+<div class="field">
+<label for="qualification">Education / Qualification</label>
+<select id="qualification" name="qualification">
+<option value="">Select qualification (optional)</option>
+<option>School Student (Class 1–10)</option>
+<option>Class 11–12</option>
+<option>ITI / Diploma</option>
+<option>Graduate</option>
+<option>Postgraduate</option>
+<option>Teacher / Professional</option>
+<option>Other</option>
+</select>
+</div>
+</div>
+
+<fieldset>
+<legend>Areas of Interest</legend>
+<div class="options">
+<label class="check"><input type="checkbox" name="interests" value="Jobs & Careers">Jobs & Careers</label>
+<label class="check"><input type="checkbox" name="interests" value="Competitive Exams">Competitive Exams</label>
+<label class="check"><input type="checkbox" name="interests" value="Study Library & Notes">Study Library & Notes</label>
+<label class="check"><input type="checkbox" name="interests" value="Scholarships & Schemes">Scholarships & Schemes</label>
+<label class="check"><input type="checkbox" name="interests" value="Skill Development">Skill Development</label>
+<label class="check"><input type="checkbox" name="interests" value="Community Discussions">Community Discussions</label>
+</div>
+</fieldset>
+
+<label class="check">
+<input id="guidelines" type="checkbox" required>
+<span>I agree to participate respectfully and follow the CSO Community Guidelines. *</span>
+</label>
+
+<div class="note">
+<strong>Form preview:</strong> Registration is not yet connected to a backend.
+No details entered here will be submitted or saved.
+</div>
+
+<div class="actions">
+<button type="submit">Check Form</button>
+<a class="back" href="../">Explore Community</a>
+</div>
+<p id="status" role="status" aria-live="polite"></p>
+</form>
+</section>
+</main>
+
+<script src="../../assets/india-districts.js"></script>
+<script>
+(function(){
+'use strict';
+
+const state = document.getElementById('state');
+const district = document.getElementById('district');
+const form = document.getElementById('joinForm');
+const status = document.getElementById('status');
+
+const fallbackOdisha = [
+'Angul','Balangir','Balasore','Bargarh','Bhadrak','Boudh',
+'Cuttack','Deogarh','Dhenkanal','Gajapati','Ganjam','Jagatsinghpur',
+'Jajpur','Jharsuguda','Kalahandi','Kandhamal','Kendrapara',
+'Kendujhar','Khordha','Koraput','Malkangiri','Mayurbhanj',
+'Nabarangpur','Nayagarh','Nuapada','Puri','Rayagada',
+'Sambalpur','Subarnapur','Sundargarh'
+];
+
+const states = [
+'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh',
+'Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand',
+'Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur',
+'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan',
+'Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh',
+'Uttarakhand','West Bengal','Andaman and Nicobar Islands',
+'Chandigarh','Dadra and Nagar Haveli and Daman and Diu',
+'Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'
+];
+
+function option(text){
+const el = document.createElement('option');
+el.value = text;
+el.textContent = text;
+return el;
+}
+
+states.forEach(s=>state.appendChild(option(s)));
+
+function districtData(){
+const sources = [
+window.CSO_INDIA_DISTRICTS,
+window.INDIA_DISTRICTS,
+window.indiaDistricts,
+window.CSO_DISTRICTS
+];
+for(const source of sources){
+if(source && typeof source === 'object') return source;
+}
+return {};
+}
+
+function updateDistricts(){
+district.replaceChildren();
+district.appendChild(option(''));
+district.options[0].textContent = 'Select district';
+const data = districtData();
+const selected = state.value;
+let list = data[selected] || data[selected.toUpperCase()] || [];
+if(!Array.isArray(list)) list = [];
+if(selected === 'Odisha' && !list.length) list = fallbackOdisha;
+list.forEach(d=>{
+if(typeof d === 'string') district.appendChild(option(d));
+});
+district.disabled = !selected || !list.length;
+if(!list.length){
+district.options[0].textContent = selected
+? 'District list unavailable for this state'
+: 'Select state first';
+}
+}
+
+state.value = 'Odisha';
+updateDistricts();
+state.addEventListener('change',updateDistricts);
+
+form.addEventListener('submit',function(e){
+e.preventDefault();
+if(!form.reportValidity()) return;
+status.textContent =
+'Form details are valid. Registration will become available after backend integration.';
+});
+})();
+</script>
+<footer><div class="w">
+<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
+<div><h4>Quick Links</h4><a href="../../">Home</a><a href="../../jobs-careers/">Jobs &amp; Careers</a><a href="../../schemes-benefits/">Schemes &amp; Benefits</a><a href="../../study-library/">Study Library</a><a href="../../community/">Community</a><a href="../../about/">About</a></div>
+<div><h4>Resources</h4><a href="../../#latest-updates">Latest Updates</a><a href="../../#popular-topics">Popular Topics</a><a href="../../#important-tools">Important Tools</a></div>
+<div><h4>Support</h4><a href="../../support/">Help &amp; Support</a><a href="../../support/#report-error">Report an Error</a><a href="../../support/#suggest-resource">Suggest a Resource</a><a href="../../support/#contact">Contact Us</a><a href="../../support/#faqs">FAQs</a></div>
+<div><h4>Legal</h4><a href="../../privacy-policy/">Privacy Policy</a><a href="../../terms-of-use/">Terms of Use</a><a href="../../disclaimer/">Disclaimer</a><a href="../../copyright-policy/">Copyright Policy</a></div>
+<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="../../assets/odisha-footer-map.png" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
+<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+<script src="../../assets/cso-auth-client.js" defer></script>
+<script src="../../assets/shared-header.js" defer></script>
+
+<script>
+window.addEventListener('load', function () {
+  var nav = document.getElementById('navw');
+  if (!nav) return;
+
+  var siteRoot = new URL('../../', location.href);
+
+  function repair() {
+    nav.querySelectorAll('a[href]').forEach(function (a) {
+      if (a.dataset.csoJoinFixed === '1') return;
+
+      var href = a.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+      if (/^(https?:|mailto:|tel:|\/)/i.test(href)) return;
+
+      var cleaned = href.replace(/^\.\.\//, '')
+                        .replace(/^\.\//, '');
+
+      var destination = new URL(cleaned, siteRoot);
+      a.href = destination.href;
+      a.dataset.csoJoinFixed = '1';
+    });
+  }
+
+  repair();
+
+  new MutationObserver(repair).observe(nav, {
+    childList: true,
+    subtree: true
+  });
+});
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e127eefc3e211',t:'MTc5NDA3MjY5Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e127eefc3e211',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

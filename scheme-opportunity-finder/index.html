@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Explore government schemes, benefits, scholarships and support through Common Sense Odisha.">
+<title>Scheme Opportunity Finder | Common Sense Odisha</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="./finder.css">
+<script src="./finder.js" defer></script>
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js" defer></script>
+</head>
+<body>
+<header class="top">
+<div style="text-align:center"><div class="cso-text-logo" role="img" aria-label="Common Sense Odisha"><div class="cso-text-logo__letters"><span>C</span><span>S</span><span>O</span></div></div></div>
+<a class="adm" href="#">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+<span id="ctl" style="display:contents"></span>
+<span class="sp"></span>
+<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+</header>
+<nav><div class="w" id="navw"></div></nav>
+<main class="sof-wrap">
+  <section class="sof-hero sof-theme3-hero">
+    
+    <h1>🤲 I Want a Scheme</h1>
+    <p>Find government schemes, scholarships, benefits and support relevant to your needs.</p>
+    
+  </section>
+<section class="sof-panel sof-search-panel sof-theme3-search" aria-label="Search scheme opportunities">
+<!-- CSO-SOF-THEME3-20261030 -->
+<h2>Find schemes and benefits</h2>
+<p class="sof-theme3-description">
+  Search scholarships, pensions, farmer support, housing and more.
+</p>
+<form id="sof-theme3-form" role="search">
+<div class="sof-search-row">
+      <label for="sof-search">Search scheme topics</label>
+      <input id="sof-search" type="search" placeholder="Search scholarships, pensions, farmer support…" autocomplete="off">
+      <button id="sof-clear" type="button">Clear</button>
+    </div>
+
+</form>
+
+<div class="sof-theme3-suggestions"
+     aria-label="Popular scheme searches">
+  <span>Popular searches:</span>
+  <button type="button" data-sof-query="scholarship">Scholarships</button>
+  <button type="button" data-sof-query="farmer">Farmers</button>
+  <button type="button" data-sof-query="pension">Pensions</button>
+  <button type="button" data-sof-query="housing">Housing</button>
+</div>
+<p class="sof-theme3-hint">
+  Results are directory topics, not confirmed eligibility.
+  Check official sources before applying.
+</p>
+
+<div id="sof-search-feedback" hidden>
+  <p id="sof-search-status" role="status" aria-live="polite"></p>
+  <div id="sof-search-results" class="sof-results"></div>
+</div>
+</section>
+
+
+  <section class="sof-panel" aria-labelledby="sof-find-heading">
+    <h2 id="sof-find-heading">What kind of support do you need?</h2>
+    <p>Choose a category to explore matching topics in the CSO Schemes & Benefits Directory.</p>
+    <p class="sof-theme3-browse-label">Or browse scheme topics by category</p>
+<div class="sof-categories" id="sof-categories"></div>
+    
+    <div class="sof-controls">
+      <label for="sof-group">Directory area</label>
+      <select id="sof-group">
+        <option value="all">All areas</option>
+      </select>
+    </div>
+    <p id="sof-status" role="status" aria-live="polite">Loading scheme directory…</p>
+    <div id="sof-results" class="sof-results"></div>
+    <div class="sof-actions">
+      <button type="button" id="sof-more" hidden>Show more topics</button>
+      <a href="../schemes-benefits/">Explore the complete Schemes & Benefits Directory →</a>
+    </div>
+  </section>
+
+  <section class="sof-panel" aria-labelledby="sof-updates-heading">
+    <h2 id="sof-updates-heading">Latest published scheme updates</h2>
+    <p>Scheme-related announcements already published on CSO. Dates and availability must be checked against official notices.</p>
+    <div id="sof-updates" class="sof-results"></div>
+    <a href="../index.html">View CSO Latest Updates →</a>
+  </section>
+
+  <section class="sof-panel" aria-labelledby="sof-resources-heading">
+    <h2 id="sof-resources-heading">Explore related CSO resources</h2>
+    <div class="sof-resource-grid">
+      <a href="../scholarship-guidance/">🎓 Scholarship Guidance <span>Education funding and scholarship resources</span></a>
+      <a href="../study/">📚 I Want to Study <span>Study paths and education resources</span></a>
+      <a href="../job-opportunity-finder/">💼 Job Opportunity Finder <span>Employment and career opportunities</span></a>
+      <a href="../career-guidance/">🧭 Career Guidance <span>Explore career directions</span></a>
+      <a href="../schemes-benefits/">🏛 Schemes & Benefits Explorer <span>Browse all directory categories</span></a>
+    </div>
+  </section>
+
+  <section class="sof-panel sof-trust" aria-labelledby="sof-trust-heading">
+    <h2 id="sof-trust-heading">Check before applying</h2>
+    <p>Directory topics are navigation aids, not proof that a named scheme is currently open. Eligibility, application deadlines, benefit amounts and documents depend on official scheme rules.</p>
+    <p>Use the issuing department's official website or notification to verify information. Never share OTPs, passwords or banking credentials with an unverified agent.</p>
+    <a href="../trust-layer/">Explore the CSO Trust Layer →</a>
+  </section>
+</main>
+<footer><div class="w">
+<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
+<div><h4>Quick Links</h4><a href="../">Home</a><a href="../jobs-careers/">Jobs &amp; Careers</a><a href="../schemes-benefits/">Schemes &amp; Benefits</a><a href="../study-library/">Study Library</a><a href="../community/">Community</a><a href="../about/">About</a></div>
+<div><h4>Resources</h4><a href="../#latest-updates">Latest Updates</a><a href="../#popular-topics">Popular Topics</a><a href="../#important-tools">Important Tools</a></div>
+<div><h4>Support</h4><a href="../support/">Help &amp; Support</a><a href="../support/#report-error">Report an Error</a><a href="../support/#suggest-resource">Suggest a Resource</a><a href="../support/#contact">Contact Us</a><a href="../support/#faqs">FAQs</a></div>
+<div><h4>Legal</h4><a href="../privacy-policy/">Privacy Policy</a><a href="../terms-of-use/">Terms of Use</a><a href="../disclaimer/">Disclaimer</a><a href="../copyright-policy/">Copyright Policy</a></div>
+<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.png" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
+<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+
+<script>
+/* CSO-SOF-THEME3-20261030 */
+(function () {
+  "use strict";
+
+  function init() {
+    const input = document.getElementById("sof-search");
+    const form = document.getElementById("sof-theme3-form");
+
+    if (!input || !form) return;
+
+    function runSearch(value) {
+      if (typeof value === "string") {
+        input.value = value;
+      }
+
+      input.dispatchEvent(
+        new Event("input", { bubbles: true })
+      );
+
+      if (input.value.trim()) {
+        const feedback = document.getElementById(
+          "sof-search-feedback"
+        );
+
+        if (feedback && !feedback.hidden) {
+          feedback.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+          });
+        }
+      }
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      runSearch();
+    });
+
+    document.querySelectorAll("[data-sof-query]").forEach(
+      function (button) {
+        button.addEventListener("click", function () {
+          runSearch(button.dataset.sofQuery || "");
+        });
+      }
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+
+<script>
+/* CSO-SOF-FINAL-ENTER-SEARCH-20261030 */
+(function () {
+  "use strict";
+
+  function init() {
+    const form = document.getElementById("sof-theme3-form");
+    const input = document.getElementById("sof-search");
+
+    if (!form || !input) return;
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      input.dispatchEvent(
+        new Event("input", { bubbles: true })
+      );
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e1252db05cf28',t:'MTc5NDA3MjY4Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e1252db05cf28',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

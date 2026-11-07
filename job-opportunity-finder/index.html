@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Opportunity Finder | Common Sense Odisha</title>
+<meta name="description" content="Explore job directions based on education, interests and employment preferences.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.cso-job-page {
+  width: min(1120px, calc(100% - 32px));
+  margin: 28px auto 65px;
+}
+.cso-job-page__intro {
+  margin-bottom: 24px;
+}
+.cso-job-page__intro h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+.cso-job-page__intro p {
+  max-width: 760px;
+  line-height: 1.7;
+}
+.cso-job-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 25px;
+}
+.cso-job-page__links a {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #1749a2;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cso-job-page__links a:last-child {
+  background: transparent;
+  color: inherit;
+  border: 1px solid #64748b;
+}
+.cso-job-page__links a:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+</style>
+</head>
+<body>
+<header class="top">
+<div style="text-align:center"><div class="cso-text-logo" role="img" aria-label="Common Sense Odisha"><div class="cso-text-logo__letters"><span>C</span><span>S</span><span>O</span></div></div></div>
+<a class="adm" href="#">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+<span id="ctl" style="display:contents"></span>
+<span class="sp"></span>
+<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+</header>
+<nav><div class="w" id="navw"></div></nav>
+
+<main class="cso-job-page" id="main-content">
+  <div class="cso-job-page__intro">
+    <h1>Find Your Job Direction</h1>
+    <p>Choose your education, interests and employment preference
+    to explore realistic job directions and practical next steps.</p>
+    <div class="cso-job-page__links">
+      <a href="../jobs-careers/">Explore Jobs &amp; Careers Dashboard</a>
+      <a href="../index.html">Back to Homepage</a>
+    </div>
+  </div>
+
+<!-- CSO Job Opportunity Finder v1 -->
+<section id="cso-job-finder" class="jof" aria-labelledby="jof-title">
+  <div class="jof-heading">
+    <span class="jof-icon" aria-hidden="true">💼</span>
+    <div>
+      <h2 id="jof-title">CSO Job Opportunity Finder</h2>
+      <p>Explore suitable job directions based on your education, interests and preferred type of work.</p>
+    </div>
+  </div>
+
+  <div class="jof-grid">
+    <label>
+      <span>Education / qualification</span>
+      <select id="jof-education">
+        <option value="below10">Below Class 10</option>
+        <option value="10">Class 10 completed</option>
+        <option value="12">Class 12 completed</option>
+        <option value="iti">ITI certificate</option>
+        <option value="diploma">Diploma / Polytechnic</option>
+        <option value="graduate">Graduation</option>
+        <option value="engineering">B.Tech / Engineering</option>
+        <option value="postgraduate">Postgraduate</option>
+        <option value="professional">Professional qualification</option>
+        <option value="other">Other qualifications / experience</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Job interest</span>
+      <select id="jof-interest">
+        <option value="office">Office & administration</option>
+        <option value="technical">Technical & skilled trades</option>
+        <option value="it">Technology & IT</option>
+        <option value="teaching">Teaching & education</option>
+        <option value="health">Healthcare & support services</option>
+        <option value="banking">Banking & finance</option>
+        <option value="defence">Defence, police & security</option>
+        <option value="agriculture">Agriculture & rural livelihoods</option>
+        <option value="sales">Sales, retail & customer service</option>
+        <option value="creative">Media, design & digital work</option>
+        <option value="hospitality">Hospitality, tourism & travel</option>
+        <option value="social">Community & social services</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Employment preference</span>
+      <select id="jof-type">
+        <option value="all">Explore all job pathways</option>
+        <option value="government">Government recruitment</option>
+        <option value="private">Private-sector employment</option>
+        <option value="apprenticeship">Apprenticeship / internship</option>
+        <option value="self">Self-employment</option>
+        <option value="remote">Freelance / remote work</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="jof-actions">
+    <button type="button" id="jof-explore">Find Job Directions</button>
+    <button type="button" id="jof-reset">Reset</button>
+  </div>
+
+  <div id="jof-results" class="jof-results" hidden aria-live="polite">
+    <h3>Your Job Exploration Plan</h3>
+<div class="jof-plan-actions" aria-label="Save your job plan">
+  <button type="button" id="jof-print">Print / Save as PDF</button>
+  <button type="button" id="jof-copy">Copy Job Plan</button>
+  <span id="jof-action-status" role="status" aria-live="polite"></span>
+</div>
+    <p id="jof-summary"></p>
+    <div id="jof-cards" class="jof-cards"></div>
+    <h4>Practical next steps</h4>
+    <ol id="jof-steps"></ol>
+
+    <section id="jof-matched-resources" class="jof-matched-resources"
+             aria-labelledby="jof-matched-title" hidden>
+      <h3 id="jof-matched-title">Relevant CSO-IN Resources</h3>
+      <p>Resources related to your selections. These are not
+      confirmed vacancies or eligibility decisions.</p>
+      <p id="jof-matched-status" role="status" aria-live="polite"></p>
+      <div id="jof-matched-content"></div>
+    </section>
+    <div class="jof-resources">
+      <h4>Official resources to explore</h4>
+      <ul>
+        <li><a href="https://www.ncs.gov.in/" target="_blank" rel="noopener noreferrer">National Career Service (NCS)</a></li>
+        <li><a href="https://www.opsc.gov.in/" target="_blank" rel="noopener noreferrer">Odisha Public Service Commission (OPSC)</a></li>
+        <li><a href="https://www.osssc.gov.in/" target="_blank" rel="noopener noreferrer">Odisha Sub-ordinate Staff Selection Commission (OSSSC)</a></li>
+        <li><a href="https://www.apprenticeshipindia.gov.in/" target="_blank" rel="noopener noreferrer">Apprenticeship India</a></li>
+      </ul>
+    </div>
+    <p class="jof-disclaimer">
+      This tool provides general career guidance, not live job listings.
+      Recruitment eligibility, age limits, qualifications, deadlines and
+      vacancies must be checked in current official notifications.
+    </p>
+  </div>
+</section>
+
+<style>
+#cso-job-finder {
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid rgba(120,150,190,.35);
+  border-radius: 16px;
+  background: rgba(100,145,205,.07);
+  color: inherit;
+}
+#cso-job-finder * { box-sizing: border-box; }
+#cso-job-finder .jof-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+#cso-job-finder .jof-icon {
+  font-size: 28px;
+  background: rgba(100,145,205,.15);
+  padding: 12px;
+  border-radius: 13px;
+}
+#cso-job-finder h2,
+#cso-job-finder h3,
+#cso-job-finder h4 { margin-top: 0; }
+#cso-job-finder .jof-heading p {
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+#cso-job-finder .jof-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 14px;
+}
+#cso-job-finder .jof-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  font-weight: 650;
+}
+#cso-job-finder select {
+  width: 100%;
+  min-height: 45px;
+  padding: 10px;
+  border: 1px solid #8296b5;
+  border-radius: 9px;
+  background: #fff;
+  color: #182536;
+  font: inherit;
+}
+#cso-job-finder .jof-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+#cso-job-finder button {
+  padding: 12px 18px;
+  border-radius: 9px;
+  border: 1px solid #2563eb;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+#jof-explore { background: #2563eb; color: #fff; }
+#jof-reset { background: transparent; color: inherit; }
+#cso-job-finder button:focus-visible,
+#cso-job-finder select:focus-visible,
+#cso-job-finder a:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+#cso-job-finder .jof-results {
+  margin-top: 25px;
+  padding-top: 23px;
+  border-top: 1px solid rgba(120,150,190,.35);
+}
+#cso-job-finder .jof-results[hidden] { display: none !important; }
+#cso-job-finder .jof-cards {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 13px;
+  margin: 19px 0 26px;
+}
+#cso-job-finder .jof-card {
+  padding: 18px;
+  border: 1px solid rgba(120,150,190,.4);
+  border-radius: 12px;
+  background: rgba(100,145,205,.08);
+}
+#cso-job-finder .jof-card small {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 800;
+  color: #60a5fa;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+#cso-job-finder .jof-card h4 { margin-bottom: 10px; }
+#cso-job-finder .jof-card p,
+#cso-job-finder .jof-results li { line-height: 1.7; }
+#cso-job-finder .jof-disclaimer {
+  margin-top: 20px;
+  padding: 12px;
+  border-left: 3px solid #e9a23b;
+  background: rgba(233,162,59,.09);
+  line-height: 1.6;
+}
+#cso-job-finder .jof-resources { margin-top: 22px; }
+#cso-job-finder .jof-resources a { color: #60a5fa; }
+@media (max-width: 850px) {
+  #cso-job-finder .jof-grid,
+  #cso-job-finder .jof-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 550px) {
+  #cso-job-finder { padding: 16px; }
+  #cso-job-finder .jof-heading { gap: 10px; }
+}
+
+/* CSO Job Plan actions v2 */
+#cso-job-finder .jof-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+#cso-job-finder #jof-print {
+  background: #2563eb;
+  color: #fff;
+}
+#cso-job-finder #jof-copy {
+  background: transparent;
+  color: inherit;
+}
+#cso-job-finder #jof-action-status {
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+</style>
+
+
+<script>
+/* CSO Job Opportunity Finder v2 engine */
+(function () {
+  "use strict";
+
+  const root = document.getElementById("cso-job-finder");
+  if (!root) return;
+
+  const education = root.querySelector("#jof-education");
+  const interest = root.querySelector("#jof-interest");
+  const type = root.querySelector("#jof-type");
+  const results = root.querySelector("#jof-results");
+  const summary = root.querySelector("#jof-summary");
+  const cards = root.querySelector("#jof-cards");
+  const steps = root.querySelector("#jof-steps");
+
+  const qualifications = {
+    below10: {
+      direction: "Foundational education and age-appropriate learning",
+      advice: "Prioritise continuing education and basic skills. Formal employment may have minimum age, education and safety requirements.",
+      document: "School records and any recognised training records"
+    },
+    "10": {
+      direction: "Class 10-level opportunities and vocational pathways",
+      advice: "Compare recognised vocational courses, further education and recruitment notices that explicitly accept Class 10.",
+      document: "Class 10 certificate and identity documents"
+    },
+    "12": {
+      direction: "Class 12-level opportunities and entry-level training",
+      advice: "Check the required stream, subjects, marks and minimum age for each advertised opportunity.",
+      document: "Class 10 and Class 12 certificates"
+    },
+    iti: {
+      direction: "Trade-specific technician and apprenticeship pathways",
+      advice: "Match vacancies and apprenticeships to your exact ITI trade, certificate recognition and required experience.",
+      document: "ITI trade certificate and relevant marksheets"
+    },
+    diploma: {
+      direction: "Diploma-based technician and technical support roles",
+      advice: "Check the required diploma branch, institution recognition and any technical tests.",
+      document: "Diploma certificate and branch-specific records"
+    },
+    graduate: {
+      direction: "Graduate-level recruitment and sector-specific entry roles",
+      advice: "Check whether the vacancy accepts any degree or requires a specific subject, percentage or experience.",
+      document: "Degree certificate, marksheets and relevant skills records"
+    },
+    engineering: {
+      direction: "Engineering and technical graduate roles",
+      advice: "Match roles to your engineering branch, projects, technical skills and required professional standards.",
+      document: "Engineering degree, marksheets and project portfolio"
+    },
+    postgraduate: {
+      direction: "Specialist and postgraduate-level pathways",
+      advice: "Check subject specialisation, experience and any required eligibility examinations.",
+      document: "Postgraduate degree and relevant research or work records"
+    },
+    professional: {
+      direction: "Profession-specific employment pathways",
+      advice: "Confirm mandatory registration, licensing, professional accreditation and experience before applying.",
+      document: "Professional qualification and registration documents, where required"
+    },
+    other: {
+      direction: "Experience-based and skills-based opportunities",
+      advice: "Match roles to documented qualifications, demonstrable skills and prior work experience.",
+      document: "Training certificates, experience letters and work portfolio"
+    }
+  };
+
+  const sectors = {
+    office: {
+      title: "Office administration and operations",
+      roles: ["Administrative assistant", "Documentation and records support", "Office operations"],
+      skills: "Typing, spreadsheets, office software, communication and record keeping",
+      caution: "Some clerical or administrative posts require specific examinations or computer qualifications."
+    },
+    technical: {
+      title: "Technical and skilled-trade work",
+      roles: ["Technician or trade assistant", "Maintenance and service support", "Technical operations"],
+      skills: "Trade-specific practical skills, workplace safety, equipment handling and troubleshooting",
+      caution: "Electrical, mechanical and other regulated work may require particular trade certificates or licences."
+    },
+    it: {
+      title: "Technology and IT",
+      roles: ["IT support", "Digital operations", "Junior web or software-related work"],
+      skills: "Computer fundamentals, troubleshooting, programming basics and portfolio projects",
+      caution: "Specialist IT roles may require demonstrable technical skills or particular qualifications."
+    },
+    teaching: {
+      title: "Teaching and education services",
+      roles: ["Education support", "Tutoring where appropriate", "Qualified teaching roles"],
+      skills: "Subject knowledge, communication, lesson planning and digital teaching tools",
+      caution: "Formal teaching posts may require recognised teacher education, eligibility tests and other qualifications."
+    },
+    health: {
+      title: "Healthcare and support services",
+      roles: ["Healthcare administration", "Hospital operations support", "Qualified clinical or allied-health roles"],
+      skills: "Communication, record keeping, safety awareness and relevant healthcare training",
+      caution: "Clinical practice requires the applicable recognised qualification and professional registration."
+    },
+    banking: {
+      title: "Banking, finance and accounting",
+      roles: ["Accounts support", "Customer service in financial operations", "Eligible banking recruitment"],
+      skills: "Numeracy, spreadsheets, bookkeeping, communication and financial literacy",
+      caution: "Banking recruitment may require specific degrees, examinations and other eligibility conditions."
+    },
+    defence: {
+      title: "Defence, police and security services",
+      roles: ["Eligible uniformed-service recruitment", "Security operations support", "Technical or administrative defence-related roles"],
+      skills: "Fitness, discipline, general awareness and role-specific preparation",
+      caution: "Check official age, citizenship, medical, physical and qualification requirements."
+    },
+    agriculture: {
+      title: "Agriculture and rural livelihoods",
+      roles: ["Agricultural operations", "Food processing and allied services", "Rural enterprise support"],
+      skills: "Practical field skills, safety, record keeping and market awareness",
+      caution: "Specialist agricultural posts may require agriculture-related qualifications."
+    },
+    sales: {
+      title: "Sales, retail and customer service",
+      roles: ["Retail associate", "Customer support", "Sales operations"],
+      skills: "Communication, digital tools, product knowledge and customer handling",
+      caution: "Check employment terms, salary structure and whether commissions are clearly disclosed."
+    },
+    creative: {
+      title: "Media, design and digital work",
+      roles: ["Content assistant", "Graphic or digital design support", "Media production support"],
+      skills: "Writing, design tools, editing and an original work portfolio",
+      caution: "Portfolio quality and practical tests may matter alongside formal qualifications."
+    },
+    hospitality: {
+      title: "Hospitality, tourism and travel",
+      roles: ["Guest services", "Hotel operations support", "Travel and tourism assistance"],
+      skills: "Customer service, languages, communication and workplace etiquette",
+      caution: "Some roles require specialised training, language ability or shift availability."
+    },
+    social: {
+      title: "Community and social services",
+      roles: ["Community programme assistant", "Field coordination support", "Social-sector administration"],
+      skills: "Communication, documentation, community engagement and basic data handling",
+      caution: "Specialist social-work positions may require recognised qualifications or field experience."
+    }
+  };
+
+  const pathways = {
+    all: {
+      title: "Compare multiple employment pathways",
+      action: "Explore suitable government notices, genuine private employers and recognised training opportunities.",
+      preparation: "Prepare a general CV and shortlist two or three realistic pathways."
+    },
+    government: {
+      title: "Government recruitment preparation",
+      action: "Check official recruitment notices for post-specific eligibility, examination patterns and application dates.",
+      preparation: "Create a study timetable and organise documents for verified recruitment processes."
+    },
+    private: {
+      title: "Private-sector job applications",
+      action: "Identify genuine employers, tailor your CV and prepare for interviews or practical tests.",
+      preparation: "Build a skills portfolio and apply through employer websites or reputable platforms."
+    },
+    apprenticeship: {
+      title: "Recognised apprenticeship or internship",
+      action: "Look for training positions matching your trade, qualification, age and programme rules.",
+      preparation: "Prepare training records and check the duration, stipend, supervision and certificate terms."
+    },
+    self: {
+      title: "Self-employment and small enterprise",
+      action: "Research local customer demand, startup costs and any applicable registration requirements.",
+      preparation: "Draft a small budget, test your service and avoid large upfront spending without evidence of demand."
+    },
+    remote: {
+      title: "Freelance and remote work",
+      action: "Build a portfolio, learn remote collaboration tools and verify clients before accepting work.",
+      preparation: "Prepare sample work and avoid advance-fee job offers or requests for sensitive documents."
+    }
+  };
+
+  const focusedDirections = {
+    iti: {
+      technical: "Trade-specific technician, maintenance or apprenticeship work",
+      it: "Computer or electronics support where your ITI trade is relevant",
+      agriculture: "Agricultural equipment or technical service work where qualified"
+    },
+    diploma: {
+      technical: "Diploma technician and technical operations roles",
+      it: "IT support or networking roles matching your diploma branch",
+      agriculture: "Agricultural equipment and technical services where eligible"
+    },
+    engineering: {
+      technical: "Graduate engineering and branch-specific technical roles",
+      it: "Software, systems or IT engineering roles matching your skills",
+      agriculture: "Agricultural technology or engineering-related work where eligible"
+    },
+    graduate: {
+      office: "Graduate-level administration and operations roles",
+      banking: "Accounts, finance operations and eligible banking recruitment",
+      social: "Programme coordination and community-sector roles"
+    },
+    postgraduate: {
+      teaching: "Education and specialist teaching pathways subject to eligibility",
+      social: "Research, programme coordination and specialist social-sector roles",
+      it: "Specialist technology roles matching your degree and practical skills"
+    },
+    professional: {
+      health: "Recognised healthcare roles matching your professional registration",
+      teaching: "Qualified teaching roles subject to applicable recruitment rules",
+      banking: "Profession-specific finance or accounting roles where eligible"
+    }
+  };
+
+  function label(select) {
+    return select.options[select.selectedIndex].textContent.trim();
+  }
+
+  function addCard(category, title, description) {
+    const card = document.createElement("article");
+    card.className = "jof-card";
+
+    const eyebrow = document.createElement("small");
+    eyebrow.textContent = category;
+
+    const heading = document.createElement("h4");
+    heading.textContent = title;
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = description;
+
+    card.append(eyebrow, heading, paragraph);
+    cards.appendChild(card);
+  }
+
+  function explore() {
+    const qualification = qualifications[education.value];
+    const sector = sectors[interest.value];
+    const pathway = pathways[type.value];
+
+    if (!qualification || !sector || !pathway) return;
+
+    const focused =
+      focusedDirections[education.value] &&
+      focusedDirections[education.value][interest.value];
+
+    summary.textContent =
+      "Education: " + label(education) +
+      " | Interest: " + label(interest) +
+      " | Preference: " + label(type) +
+      ". These are suggested directions, not confirmed job vacancies or eligibility decisions.";
+
+    cards.replaceChildren();
+
+    if (education.value === "below10") {
+      addCard(
+        "01 · Suitable direction",
+        "Continue education and develop foundational skills",
+        "Explore age-appropriate learning related to " +
+        sector.title.toLowerCase() +
+        ". Do not treat this tool as permission to enter restricted employment."
+      );
+    } else {
+      addCard(
+        "01 · Suitable direction",
+        focused || sector.roles[0],
+        qualification.direction + ". " + qualification.advice
+      );
+    }
+
+    addCard(
+      "02 · Skills to build",
+      sector.title,
+      sector.skills + ". " + sector.caution
+    );
+
+    addCard(
+      "03 · Recommended pathway",
+      education.value === "below10"
+        ? "Education and skill development first"
+        : pathway.title,
+      education.value === "below10"
+        ? qualification.advice
+        : pathway.action
+    );
+
+    const nextSteps = education.value === "below10"
+      ? [
+          "Continue foundational education and age-appropriate learning.",
+          "Develop basic communication, digital literacy and numeracy.",
+          "Explore your interest through safe projects or recognised education programmes.",
+          "Ask a trusted educator or guardian about suitable future study and training routes.",
+          "Check minimum age and qualification rules before considering any employment."
+        ]
+      : [
+          "Shortlist roles related to " + sector.title.toLowerCase() + ".",
+          qualification.advice,
+          pathway.preparation,
+          "Build relevant skills: " + sector.skills + ".",
+          "Organise documents: " + qualification.document + ".",
+          sector.caution,
+          "Check the full official notification or genuine employer terms before applying.",
+          "Never pay for a guaranteed job or share OTPs, passwords or banking credentials."
+        ];
+
+    steps.replaceChildren();
+
+    nextSteps.forEach(function (text) {
+      const item = document.createElement("li");
+      item.textContent = text;
+      steps.appendChild(item);
+    });
+
+    results.hidden = false;
+    results.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  }
+
+  root.querySelector("#jof-explore")
+    .addEventListener("click", explore);
+
+  root.querySelector("#jof-reset")
+    .addEventListener("click", function () {
+      education.value = "12";
+      interest.value = "office";
+      type.value = "all";
+      summary.textContent = "";
+      cards.replaceChildren();
+      steps.replaceChildren();
+      results.hidden = true;
+      education.focus();
+    });
+
+
+  /* CSO Job Plan actions v2 */
+
+  function buildJobPlanText() {
+    const lines = [
+      "COMMON SENSE ODISHA (CSO-IN)",
+      "YOUR JOB EXPLORATION PLAN",
+      "",
+      summary.textContent.trim(),
+      "",
+      "RECOMMENDATIONS"
+    ];
+
+    cards.querySelectorAll(".jof-card").forEach(function (card) {
+      const heading = card.querySelector("h4");
+      const description = card.querySelector("p");
+
+      if (heading) {
+        lines.push("", heading.textContent.trim());
+      }
+      if (description) {
+        lines.push(description.textContent.trim());
+      }
+    });
+
+    lines.push("", "PRACTICAL NEXT STEPS");
+
+    steps.querySelectorAll("li").forEach(function (item, index) {
+      lines.push((index + 1) + ". " + item.textContent.trim());
+    });
+
+    lines.push("", "OFFICIAL RESOURCES");
+
+    root.querySelectorAll(".jof-resources a").forEach(function (link) {
+      lines.push(
+        link.textContent.trim() + ": " + link.href
+      );
+    });
+
+    lines.push(
+      "",
+      "IMPORTANT",
+      root.querySelector(".jof-disclaimer").textContent.trim(),
+      "",
+      "Common Sense Odisha — Be Self-Reliant"
+    );
+
+    return lines.join("\n");
+  }
+
+  const actionStatus = root.querySelector("#jof-action-status");
+
+  root.querySelector("#jof-copy").addEventListener(
+    "click",
+    async function () {
+      if (results.hidden) return;
+
+      const text = buildJobPlanText();
+
+      try {
+        if (!navigator.clipboard ||
+            !navigator.clipboard.writeText) {
+          throw new Error("Clipboard API unavailable");
+        }
+
+        await navigator.clipboard.writeText(text);
+        actionStatus.textContent = "Job plan copied.";
+      } catch (error) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        let copied = false;
+
+        try {
+          copied = document.execCommand("copy");
+        } catch (fallbackError) {
+          copied = false;
+        }
+
+        textarea.remove();
+
+        actionStatus.textContent = copied
+          ? "Job plan copied."
+          : "Copy unavailable. Please select and copy the plan manually.";
+      }
+    }
+  );
+
+  root.querySelector("#jof-print").addEventListener(
+    "click",
+    function () {
+      if (results.hidden) return;
+
+      const printWindow = window.open(
+        "",
+        "_blank",
+        "width=850,height=1000"
+      );
+
+      if (!printWindow) {
+        actionStatus.textContent =
+          "Pop-up blocked. Please allow pop-ups to print the plan.";
+        return;
+      }
+
+      const plan = buildJobPlanText();
+
+      const escaped = plan
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+      const documentHTML = [
+        "<!DOCTYPE html>",
+        '<html lang="en"><head>',
+        '<meta charset="utf-8">',
+        "<title>CSO-IN Job Exploration Plan</title>",
+        "<style>",
+        "@page{size:A4;margin:17mm}",
+        "body{font-family:Arial,sans-serif;color:#172033;",
+        "max-width:760px;margin:0 auto;padding:20px;line-height:1.65}",
+        "h1{font-size:23px;color:#1749a2;margin-bottom:18px}",
+        "pre{white-space:pre-wrap;overflow-wrap:anywhere;",
+        "font:inherit;font-size:12px;line-height:1.65}",
+        "@media print{body{padding:0}}",
+        "</style></head><body>",
+        "<h1>Common Sense Odisha — Job Exploration Plan</h1>",
+        "<pre>", escaped, "</pre>",
+        "</body></html>"
+      ].join("");
+
+      printWindow.document.open();
+      printWindow.document.write(documentHTML);
+      printWindow.document.close();
+
+      printWindow.focus();
+
+      printWindow.addEventListener("load", function () {
+        printWindow.print();
+      }, { once: true });
+    }
+  );
+
+  education.value = "12";
+})();
+</script>
+
+<!-- End CSO Job Opportunity Finder v1 -->
+
+</main>
+
+<footer><div class="w">
+<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
+<div><h4>Quick Links</h4><a href="../">Home</a><a href="../jobs-careers/">Jobs &amp; Careers</a><a href="../schemes-benefits/">Schemes &amp; Benefits</a><a href="../study-library/">Study Library</a><a href="../community/">Community</a><a href="../about/">About</a></div>
+<div><h4>Resources</h4><a href="../#latest-updates">Latest Updates</a><a href="../#popular-topics">Popular Topics</a><a href="../#important-tools">Important Tools</a></div>
+<div><h4>Support</h4><a href="../support/">Help &amp; Support</a><a href="../support/#report-error">Report an Error</a><a href="../support/#suggest-resource">Suggest a Resource</a><a href="../support/#contact">Contact Us</a><a href="../support/#faqs">FAQs</a></div>
+<div><h4>Legal</h4><a href="../privacy-policy/">Privacy Policy</a><a href="../terms-of-use/">Terms of Use</a><a href="../disclaimer/">Disclaimer</a><a href="../copyright-policy/">Copyright Policy</a></div>
+<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.png" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
+<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+
+<style>
+#jof-matched-resources {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(120,140,170,.35);
+}
+#jof-matched-resources[hidden] { display: none !important; }
+#jof-matched-resources h3 { margin-bottom: 10px; }
+.jof-resource-group { margin-top: 24px; }
+.jof-resource-group h4 { margin-bottom: 12px; }
+.jof-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr));
+  gap: 12px;
+}
+.jof-resource-card {
+  padding: 16px;
+  border: 1px solid rgba(120,140,170,.35);
+  border-radius: 12px;
+  background: rgba(120,140,170,.07);
+  overflow-wrap: anywhere;
+}
+.jof-resource-card h5 {
+  font-size: 1rem;
+  margin: 0 0 9px;
+}
+.jof-resource-card p {
+  line-height: 1.6;
+  margin: 8px 0;
+}
+.jof-resource-card a {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.jof-resource-meta { font-size: .88rem; opacity: .85; }
+</style>
+
+<script src="./resources.js" defer></script>
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js" defer></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e124bfbc887e9',t:'MTc5NDA3MjY4NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e124bfbc887e9',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity Compass | Common Sense Odisha</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.compass-page{max-width:960px;margin:30px auto;padding:0 16px 40px}
+.compass-panel{background:var(--card,#fff);color:var(--tx,#172b3a);border:1px solid var(--bd,#dce5eb);border-radius:16px;padding:24px}
+.compass-panel h1{margin:0 0 8px;font-size:28px}
+.compass-panel p{line-height:1.6}
+.compass-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}
+.compass-field{display:flex;flex-direction:column;gap:7px}
+.compass-field label{font-weight:700}
+.compass-field select{width:100%;padding:12px;border:1px solid #a8b8c4;border-radius:9px;background:#fff;color:#172b3a;font:inherit}
+.compass-actions{grid-column:1/-1}
+.compass-submit{background:#0f7a4f;color:white;border:0;border-radius:9px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer}
+.compass-results{margin-top:24px}
+.compass-result{display:block;margin-top:12px;padding:16px;border:1px solid var(--bd,#dce5eb);border-radius:12px;background:var(--card,#fff);color:var(--tx,#172b3a);text-decoration:none}
+.compass-result strong{display:block;margin-bottom:5px}
+.compass-note{font-size:13px;color:var(--mut,#526579)}
+@media(max-width:600px){.compass-form{grid-template-columns:1fr}.compass-panel{padding:16px}.compass-panel h1{font-size:23px}}
+
+/* CSO-IN Compass results layout v1 */
+.compass-pathway-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.compass-pathway-card {
+  padding: 17px;
+  border: 1px solid #dce8df;
+  border-radius: 14px;
+  background: #f8fcf9;
+  box-shadow: 0 3px 12px rgba(0,0,0,.035);
+}
+.compass-pathway-number {
+  display: inline-block;
+  margin-bottom: 9px;
+  color: #167347;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.compass-pathway-card p {
+  margin: 0;
+  line-height: 1.6;
+}
+.compass-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-left: 3px solid #b98726;
+  background: #fffaf0;
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+@media (max-width: 650px) {
+  .compass-pathway-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* CSO-IN Compass next steps styling v1 */
+.compass-next-steps {
+  margin: 12px 0 20px;
+  padding-left: 25px;
+  line-height: 1.7;
+}
+.compass-next-steps li {
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+
+/* CSO-IN Compass dark card contrast fix v2 */
+html[data-theme="dark"] .compass-pathway-card {
+  background: #243247 !important;
+  border: 1px solid #475569 !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .compass-pathway-card p {
+  color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="dark"] .compass-pathway-number {
+  color: #86efac !important;
+}
+
+html[data-theme="dark"] #compass-results h2,
+html[data-theme="dark"] #compass-results h3,
+html[data-theme="dark"] #compass-results > p,
+html[data-theme="dark"] .compass-next-steps li {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .compass-note {
+  background: #332913 !important;
+  color: #fef3c7 !important;
+  border-left-color: #fbbf24 !important;
+}
+
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<header class="top">
+  <a href="../index.html" aria-label="Common Sense Odisha Homepage"
+     style="display:block;text-align:center">
+    <div class="cso-text-logo" role="img" aria-label="Common Sense Odisha">
+      <div class="cso-text-logo__letters">
+        <span>C</span><span>S</span><span>O</span>
+      </div>
+    </div>
+  </a>
+  <a class="adm" href="#">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+  <span id="ctl" style="display:contents"></span>
+  <span class="sp"></span>
+  <div class="acct">
+    <span style="font-size:26px">👤</span>
+    <span id="auth" style="display:contents"></span>
+  </div>
+</header>
+<nav aria-label="Main navigation">
+  <div class="w" id="navw"></div>
+</nav>
+
+<main class="compass-page">
+  <p><a href="../">← Back to Common Sense Odisha</a></p>
+  <section class="compass-panel">
+    <h1>🧭 CSO Opportunity Compass</h1>
+    <p>Tell us a little about your goals. We'll suggest relevant pathways to explore.</p>
+    <form id="compass-form" class="compass-form">
+      <div class="compass-field">
+        <label for="goal">What are you looking for?</label>
+        <select id="goal" required>
+          <option value="">Select your goal</option>
+          <option value="job">A Job</option>
+          <option value="study">Study Opportunities</option>
+          <option value="scheme">Schemes & Benefits</option>
+          <option value="career">Career Guidance</option>
+        </select>
+      </div>
+      <div class="compass-field">
+        <label for="education">Education level</label>
+        <select id="education" required>
+          <option value="">Select education</option>
+          <option>Below Class 10</option>
+          <option>Class 10</option>
+          <option>Class 12</option>
+          <option>ITI / Diploma</option>
+          <option>Graduate</option>
+          <option>Postgraduate</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="compass-field">
+        <label for="age">Age range</label>
+        <select id="age" required>
+          <option value="">Select age range</option>
+          <option>Under 18</option>
+          <option>18–24</option>
+          <option>25–34</option>
+          <option>35–44</option>
+          <option>45+</option>
+        </select>
+      </div>
+      <div class="compass-field">
+        <label for="district">Location preference</label>
+        <select id="district">
+          <option value="Odisha">Anywhere in Odisha</option>
+          <option value="Angul">Angul</option>
+          <option value="Balangir">Balangir</option>
+          <option value="Balasore">Balasore</option>
+          <option value="Bargarh">Bargarh</option>
+          <option value="Bhadrak">Bhadrak</option>
+          <option value="Boudh">Boudh</option>
+          <option value="Cuttack">Cuttack</option>
+          <option value="Deogarh">Deogarh</option>
+          <option value="Dhenkanal">Dhenkanal</option>
+          <option value="Gajapati">Gajapati</option>
+          <option value="Ganjam">Ganjam</option>
+          <option value="Jagatsinghpur">Jagatsinghpur</option>
+          <option value="Jajpur">Jajpur</option>
+          <option value="Jharsuguda">Jharsuguda</option>
+          <option value="Kalahandi">Kalahandi</option>
+          <option value="Kandhamal">Kandhamal</option>
+          <option value="Kendrapara">Kendrapara</option>
+          <option value="Kendujhar">Kendujhar</option>
+          <option value="Khordha">Khordha</option>
+          <option value="Koraput">Koraput</option>
+          <option value="Malkangiri">Malkangiri</option>
+          <option value="Mayurbhanj">Mayurbhanj</option>
+          <option value="Nabarangpur">Nabarangpur</option>
+          <option value="Nayagarh">Nayagarh</option>
+          <option value="Nuapada">Nuapada</option>
+          <option value="Puri">Puri</option>
+          <option value="Rayagada">Rayagada</option>
+          <option value="Sambalpur">Sambalpur</option>
+          <option value="Subarnapur">Subarnapur</option>
+          <option value="Sundargarh">Sundargarh</option>
+        </select>
+
+      <div class="compass-field">
+        <label for="interest">Your Interest</label>
+        <select id="interest" required>
+          <option value="">Select your interest</option>
+          <option value="government">Government Jobs & Public Service</option>
+          <option value="private">Private-Sector Careers</option>
+          <option value="technical">Technical Skills & Training</option>
+          <option value="education">Higher Education & Examinations</option>
+          <option value="business">Entrepreneurship & Self-Employment</option>
+          <option value="general">Not Sure / Explore All</option>
+        </select>
+      </div>
+
+      </div>
+      <div class="compass-actions">
+        <button class="compass-submit" type="submit">Discover My Pathways →</button>
+      </div>
+    </form>
+    <div id="compass-results" class="compass-results" role="status" aria-live="polite"></div>
+    <p class="compass-note">Recommendations are exploratory guidance, not confirmation of eligibility. Always check official requirements.</p>
+  </section>
+</main>
+<script>
+// CSO-IN Opportunity Compass matching engine v1
+const compassPathways = {
+  job: {
+    title: "Job and employment pathways",
+    url: "../jobs-careers/",
+    general: [
+      "Explore recruitment categories and official job notifications.",
+      "Compare required qualifications before applying."
+    ],
+    levels: {
+      "Below Class 10": ["Explore foundational skills and vocational training."],
+      "Class 10": ["Explore Class 10-level recruitment and skill training."],
+      "Class 12": ["Explore Class 12-level recruitment and apprenticeships."],
+      "ITI / Diploma": ["Explore technical recruitment and apprenticeship pathways."],
+      "Graduate": ["Explore graduate-level recruitment and competitive examinations."],
+      "Postgraduate": ["Explore specialised recruitment, teaching and research pathways."],
+      "Other": ["Explore qualification-based recruitment and skill-development routes."]
+    }
+  },
+  study: {
+    title: "Education and learning pathways",
+    url: "../study-library/",
+    general: [
+      "Explore courses, entrance examinations and recognised institutions.",
+      "Check admission requirements and official application schedules."
+    ],
+    levels: {
+      "Below Class 10": ["Explore school progression and foundational learning."],
+      "Class 10": ["Explore higher secondary, ITI and vocational options."],
+      "Class 12": ["Explore undergraduate, diploma and entrance-exam pathways."],
+      "ITI / Diploma": ["Explore advanced technical qualifications and lateral-entry options."],
+      "Graduate": ["Explore postgraduate courses and professional certifications."],
+      "Postgraduate": ["Explore research, doctoral and advanced professional learning."],
+      "Other": ["Explore flexible learning and recognised certification options."]
+    }
+  },
+  scheme: {
+    title: "Schemes and assistance pathways",
+    url: "../schemes-benefits/",
+    general: [
+      "Explore government schemes and public assistance categories.",
+      "Verify eligibility, documents and application deadlines on official portals."
+    ],
+    levels: {
+      "Below Class 10": ["Explore school education and family-support categories."],
+      "Class 10": ["Explore education support and skills-related assistance."],
+      "Class 12": ["Explore scholarships, higher education and training assistance."],
+      "ITI / Diploma": ["Explore technical education and livelihood-support categories."],
+      "Graduate": ["Explore higher education, employment and entrepreneurship support."],
+      "Postgraduate": ["Explore research, higher education and professional development support."],
+      "Other": ["Explore assistance categories based on individual circumstances."]
+    }
+  },
+  career: {
+    title: "Career guidance pathways",
+    url: "../jobs-careers/",
+    general: [
+      "Compare career families, qualifications and skill requirements.",
+      "Explore training options and longer-term progression."
+    ],
+    levels: {
+      "Below Class 10": ["Explore interests, foundational skills and education choices."],
+      "Class 10": ["Compare higher secondary, vocational and technical pathways."],
+      "Class 12": ["Compare degree, diploma, apprenticeship and career options."],
+      "ITI / Diploma": ["Explore technical careers and upskilling routes."],
+      "Graduate": ["Explore professional careers, examinations and postgraduate options."],
+      "Postgraduate": ["Explore specialised, research and leadership career routes."],
+      "Other": ["Explore career choices based on interests and existing skills."]
+    }
+  }
+};
+
+document.getElementById("compass-form").addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  const goal = document.getElementById("goal").value;
+  const education = document.getElementById("education").value;
+  const age = document.getElementById("age").value;
+  const district = document.getElementById("district").value;
+  const pathway = compassPathways[goal];
+
+  if (!pathway || !education || !age) return;
+
+  const suggestions = [
+    ...(pathway.levels[education] || []),
+    ...pathway.general
+  ];
+
+  if (age === "Under 18") {
+    suggestions.push(
+      "Prioritise age-appropriate education and training; check minimum-age rules before considering recruitment."
+    );
+  } else if (age === "18–24") {
+    suggestions.push(
+      "Explore youth-oriented training, education and early-career pathways where relevant."
+    );
+  } else if (age === "25–34") {
+    suggestions.push(
+      "Compare qualification requirements, professional development and age limits where applicable."
+    );
+  } else if (age === "35–44" || age === "45+") {
+    suggestions.push(
+      "Explore continuing education, livelihood support and career transitions; check age restrictions individually."
+    );
+  }
+
+
+  // CSO-IN interest matching v1
+  const interest = document.getElementById("interest").value;
+
+  const interestSuggestions = {
+    government: [
+      "Explore public recruitment categories and official examination notices.",
+      "Check qualification, age limits and reservation rules in each official notification."
+    ],
+    private: [
+      "Explore private-sector roles, internships and workplace skills.",
+      "Compare employer requirements and avoid unverified recruitment offers."
+    ],
+    technical: [
+      "Explore ITI, diploma, apprenticeship and practical skills pathways.",
+      "Check recognised training providers and certification requirements."
+    ],
+    education: [
+      "Explore higher education, scholarships and entrance examinations.",
+      "Check official admission criteria, accreditation and deadlines."
+    ],
+    business: [
+      "Explore entrepreneurship, self-employment and business-skills pathways.",
+      "Research registration, financing and support schemes through official sources."
+    ],
+    general: [
+      "Compare multiple career, education and skills pathways before deciding."
+    ]
+  };
+
+  suggestions.push(...(interestSuggestions[interest] || []));
+
+  const results = document.getElementById("compass-results");
+  results.replaceChildren();
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Your suggested pathways";
+
+  const summary = document.createElement("p");
+  summary.textContent = education + " • " + age + " • " + district + " • " + document.getElementById("interest").selectedOptions[0].textContent;
+
+  const list = document.createElement("div");
+  list.className = "compass-pathway-grid";
+
+  suggestions.forEach(function(suggestion, index) {
+    const item = document.createElement("article");
+    item.className = "compass-pathway-card";
+
+    const number = document.createElement("span");
+    number.className = "compass-pathway-number";
+    number.textContent = "PATHWAY " + (index + 1);
+
+    const description = document.createElement("p");
+    description.textContent = suggestion;
+
+    item.append(number, description);
+    list.appendChild(item);
+  });
+
+  const link = document.createElement("a");
+  link.className = "compass-result";
+  link.href = pathway.url;
+
+  const title = document.createElement("strong");
+  title.textContent = pathway.title + " →";
+
+  const description = document.createElement("span");
+  description.textContent = "Open the relevant CSO explorer to research these pathways.";
+
+  link.append(title, description);
+
+  const note = document.createElement("p");
+  note.className = "compass-note";
+  note.textContent =
+    "Location preference: " + district +
+    ". District-specific matching is not available yet. These suggestions do not confirm eligibility, vacancies or scheme availability.";
+
+
+  // CSO-IN next steps guidance v1
+  const nextSteps = {
+    job: [
+      "Identify recruitment categories matching your qualification.",
+      "Read the latest official recruitment notification.",
+      "Check age limits, required documents and application deadlines."
+    ],
+    study: [
+      "Shortlist suitable courses or examinations.",
+      "Check recognition, admission requirements and official schedules.",
+      "Compare fees, scholarships and application procedures."
+    ],
+    scheme: [
+      "Identify relevant assistance categories.",
+      "Read official eligibility and document requirements.",
+      "Check application methods, deadlines and authorised portals."
+    ],
+    career: [
+      "Compare career options with your interests and qualifications.",
+      "Identify skills or additional training you may need.",
+      "Explore recognised learning and employment pathways."
+    ]
+  };
+
+  const stepsHeading = document.createElement("h3");
+  stepsHeading.textContent = "What to Do Next";
+
+  const stepsList = document.createElement("ol");
+  stepsList.className = "compass-next-steps";
+
+  for (const step of (nextSteps[goal] || [])) {
+    const item = document.createElement("li");
+    item.textContent = step;
+    stepsList.appendChild(item);
+  }
+
+  results.append(heading, summary, list, stepsHeading, stepsList, link, note);
+  results.scrollIntoView({behavior:"smooth", block:"nearest"});
+});
+</script>
+<!-- CSO global footer v1 -->
+<footer><div class="w">
+<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
+<div><h4>Quick Links</h4><a href="../">Home</a><a href="../jobs-careers/">Jobs &amp; Careers</a><a href="../schemes-benefits/">Schemes &amp; Benefits</a><a href="../study-library/">Study Library</a><a href="../community/">Community</a><a href="../about/">About</a></div>
+<div><h4>Resources</h4><a href="../#latest-updates">Latest Updates</a><a href="../#popular-topics">Popular Topics</a><a href="../#important-tools">Important Tools</a></div>
+<div><h4>Support</h4><a href="../support/">Help &amp; Support</a><a href="../support/#report-error">Report an Error</a><a href="../support/#suggest-resource">Suggest a Resource</a><a href="../support/#contact">Contact Us</a><a href="../support/#faqs">FAQs</a></div>
+<div><h4>Legal</h4><a href="../privacy-policy/">Privacy Policy</a><a href="../terms-of-use/">Terms of Use</a><a href="../disclaimer/">Disclaimer</a><a href="../copyright-policy/">Copyright Policy</a></div>
+<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.png" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
+<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e1244b9884115',t:'MTc5NDA3MjY4NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e1244b9884115',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

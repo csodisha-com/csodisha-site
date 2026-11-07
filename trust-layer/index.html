@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSO Trust Layer | Common Sense Odisha</title>
+<meta name="description" content="Official sources, verification, deadlines and corrections at Common Sense Odisha.">
+<link rel="stylesheet" href="../assets/style.css">
+
+<style>
+.cso-trust-page {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+.cso-trust-page .grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 18px;
+  margin: 28px 0;
+}
+.cso-trust-page .card {
+  padding: 24px;
+  border-radius: 14px;
+}
+.cso-trust-page .intro {
+  max-width: 780px;
+  opacity: .8;
+}
+.cso-trust-page .icon {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.cso-trust-page .note {
+  padding: 18px;
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
+  background: rgba(37,99,235,.08);
+}
+.cso-trust-page section[id] {
+  scroll-margin-top: 120px;
+}
+@media(max-width:650px) {
+  .cso-trust-page .grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+
+<style>
+.cso-report-form-wrap {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--bd, #d7e0ec);
+}
+.cso-report-form-wrap h3 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+.cso-report-help {
+  margin: 0 0 16px;
+  opacity: .8;
+}
+#cso-report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+#cso-report-form label {
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 8px;
+}
+#cso-report-form input,
+#cso-report-form select,
+#cso-report-form textarea {
+  display: block;
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 9px;
+  border: 1px solid #9cabc0;
+  background: var(--card, #fff);
+  color: inherit;
+  font: inherit;
+}
+#cso-report-form textarea {
+  resize: vertical;
+}
+#cso-report-form input:focus,
+#cso-report-form select:focus,
+#cso-report-form textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+.cso-report-submit {
+  background: #1d4ed8;
+  color: #fff;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 18px;
+  margin-top: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cso-report-submit:hover {
+  background: #1e40af;
+}
+.cso-report-submit:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+.cso-report-privacy {
+  opacity: .75;
+  line-height: 1.5;
+}
+#cso-report-message {
+  margin: 6px 0;
+  font-size: 13px;
+}
+</style>
+
+
+<style>
+.cso-evidence-preview {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px dashed #64748b;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: .9;
+}
+.cso-evidence-preview ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+#cso-report-evidence {
+  cursor: pointer;
+}
+</style>
+
+
+<style>
+#cso-other-problem-wrap[hidden] {
+  display: none !important;
+}
+#cso-other-problem-wrap:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+#cso-other-problem-wrap textarea {
+  min-height: 75px;
+}
+</style>
+
+
+<!-- CSO Report Form Refinement v2 -->
+<style>
+#cso-report-form {
+  gap: 10px;
+}
+
+#cso-report-form label {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#cso-report-form input,
+#cso-report-form select,
+#cso-report-form textarea {
+  box-sizing: border-box;
+  min-width: 0;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+#cso-report-form input:focus,
+#cso-report-form select:focus,
+#cso-report-form textarea:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
+#cso-other-problem-wrap[hidden] {
+  display: none !important;
+}
+
+#cso-other-problem-wrap:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#cso-report-evidence {
+  padding: 18px 12px !important;
+  border: 2px dashed #64748b !important;
+  border-radius: 12px !important;
+  background: rgba(59,130,246,.04) !important;
+}
+
+#cso-report-evidence:hover {
+  border-color: #60a5fa !important;
+}
+
+.cso-evidence-preview {
+  padding: 12px 14px;
+  border: 1px solid var(--bd,#64748b);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+
+.cso-evidence-preview li {
+  margin: 5px 0;
+}
+
+.cso-report-submit {
+  min-height: 46px;
+  margin-top: 18px;
+  transition: background .2s, transform .2s;
+}
+
+.cso-report-submit:hover {
+  transform: translateY(-1px);
+}
+
+#cso-report-message:not(:empty),
+#cso-evidence-message:not(:empty) {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(59,130,246,.10);
+  border-left: 3px solid #3b82f6;
+}
+
+.cso-report-privacy {
+  line-height: 1.6;
+}
+
+@media(max-width:650px) {
+  .cso-report-form-wrap {
+    margin-top: 16px;
+  }
+  #cso-report-form input,
+  #cso-report-form select,
+  #cso-report-form textarea {
+    font-size: 16px;
+  }
+}
+</style>
+
+
+<style>
+.cso-trust-guidance {
+  margin: 34px 0 26px;
+}
+
+.cso-trust-guidance > h2 {
+  margin: 0 0 10px;
+  font-size: clamp(21px, 2.5vw, 28px);
+}
+
+.cso-trust-guidance-intro {
+  max-width: 850px;
+  line-height: 1.7;
+  opacity: .82;
+}
+
+.cso-trust-guidance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.cso-trust-guide-card {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--bd, #64748b);
+  border-radius: 14px;
+  background: var(--card, rgba(100,116,139,.08));
+}
+
+.cso-trust-guide-card h3 {
+  margin: 0 0 18px;
+  font-size: 18px;
+}
+
+.cso-trust-guide-card p {
+  line-height: 1.65;
+}
+
+.cso-trust-status-row {
+  margin: 0 0 17px;
+}
+
+.cso-trust-status-row p {
+  margin: 7px 0 0;
+  font-size: 13px;
+  opacity: .85;
+}
+
+.cso-trust-pill {
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.cso-verified,
+.cso-open {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cso-review,
+.cso-upcoming {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.cso-unverified {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.cso-closed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cso-trust-checklist {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.cso-trust-checklist li {
+  margin: 0 0 12px;
+  line-height: 1.6;
+}
+
+.cso-trust-guide-note {
+  margin-top: 16px;
+  font-size: 12px;
+  opacity: .75;
+}
+
+.cso-trust-report-link {
+  display: inline-block;
+  padding: 10px 15px;
+  margin-top: 8px;
+  border-radius: 9px;
+  background: #1d4ed8;
+  color: #fff !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cso-trust-report-link:hover {
+  background: #1e40af;
+}
+
+.cso-trust-report-link:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+@media(max-width:700px) {
+  .cso-trust-guidance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cso-trust-guide-card {
+    padding: 18px;
+  }
+}
+</style>
+
+
+<!-- CSO Trust Guidance Polish v2 -->
+<style>
+/* Guidance header and reference-only explanation */
+.cso-trust-guidance {
+  margin-block: 30px 26px;
+}
+
+.cso-trust-guidance-intro {
+  margin-bottom: 14px;
+}
+
+.cso-trust-legend-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 15px;
+  margin: 14px 0 20px;
+  border: 1px solid rgba(96,165,250,.3);
+  border-left: 3px solid #3b82f6;
+  border-radius: 10px;
+  background: rgba(59,130,246,.065);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.cso-trust-legend-icon {
+  flex: none;
+  color: #60a5fa;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+/* Allow cards to follow their content height. */
+.cso-trust-guidance-grid {
+  align-items: start;
+  gap: 16px;
+  margin-top: 0;
+}
+
+.cso-trust-guide-card {
+  align-self: start;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+.cso-trust-guide-card h3 {
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+/* Compact status rows on desktop. */
+.cso-trust-status-row {
+  display: grid;
+  grid-template-columns: minmax(110px, max-content) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 13px;
+  margin-bottom: 15px;
+}
+
+.cso-trust-status-row:last-child {
+  margin-bottom: 0;
+}
+
+.cso-trust-status-row .cso-trust-pill {
+  justify-self: start;
+  white-space: nowrap;
+}
+
+.cso-trust-status-row p {
+  margin: 1px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cso-trust-checklist li {
+  margin-bottom: 9px;
+}
+
+.cso-trust-guide-note {
+  line-height: 1.6;
+}
+
+.cso-trust-report-link {
+  transition: background-color .18s, transform .18s;
+}
+
+.cso-trust-report-link:hover {
+  transform: translateY(-1px);
+}
+
+/* Preserve comfortable reading on narrower screens. */
+@media (max-width: 900px) {
+  .cso-trust-status-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .cso-trust-status-row p {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .cso-trust-guidance {
+    margin-block: 24px;
+  }
+
+  .cso-trust-guidance-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .cso-trust-guide-card {
+    padding: 17px;
+  }
+
+  .cso-trust-legend-notice {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .cso-trust-status-row {
+    margin-bottom: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cso-trust-report-link {
+    transition: none;
+  }
+}
+</style>
+
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+<div style="text-align:center"><div class="cso-text-logo" role="img" aria-label="Common Sense Odisha"><div class="cso-text-logo__letters"><span>C</span><span>S</span><span>O</span></div></div></div>
+<a class="adm" href="#">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+<span id="ctl" style="display:contents"></span>
+<span class="sp"></span>
+<div class="acct"><span style="font-size:26px">👤</span><span id="auth" style="display:contents"></span></div>
+</header>
+<nav><div class="w" id="navw"></div></nav>
+<main class="cso-trust-page">
+<h1>🛡️ CSO Trust Layer</h1>
+<p class="intro">Our approach to helping readers evaluate public information and find original sources.</p>
+<div class="grid">
+<section class="card" id="official-source">
+<div class="icon">📄</div>
+<h2>Official Source</h2>
+<p>We aim to link announcements to the relevant government department, institution, or original notification. A portal link does not by itself confirm a specific vacancy or deadline. Always read the original notice before applying.</p>
+</section>
+<section class="card" id="last-verified">
+<div class="icon">📅</div>
+<h2>Last Verified</h2>
+<p>Verification dates should represent an actual review of the source. Where an announcement has not been individually checked, its verification status should remain unconfirmed rather than displaying an invented date.</p>
+</section>
+<section class="card" id="deadline-status">
+<div class="icon">⏰</div>
+<h2>Deadline &amp; Status</h2>
+<p>Application dates and open or closed status must come from the specific official notice. Some informational pages have no application deadline. When dates are uncertain, consult the source directly.</p>
+</section>
+<section class="card" id="report-correct">
+<div class="icon">💬</div>
+<h2>Report &amp; Correct</h2>
+<p>Found incorrect information, an outdated announcement, or a broken official link? Use the form below to prepare a correction report with supporting evidence.</p>
+
+<!-- CSO Report & Correct Form v1 -->
+<div class="cso-report-form-wrap">
+  <h3>Report an Issue</h3>
+  <p class="cso-report-help">
+    Found incorrect or outdated information?
+    Prepare a correction report for the CSO team.
+  </p>
+
+  <form id="cso-report-form" novalidate>
+    <label for="cso-report-type">Problem Type *</label>
+    <select id="cso-report-type" required>
+      <option value="">Select a problem</option>
+      <option>Incorrect information</option>
+      <option>Wrong deadline</option>
+      <option>Broken official link</option>
+      <option>Outdated announcement</option>
+      <option>Other</option>
+    </select>
+
+
+    <!-- CSO Other Problem Description v1 -->
+    <div id="cso-other-problem-wrap" hidden>
+      <label for="cso-other-problem">
+        Briefly Describe Your Problem *
+      </label>
+      <textarea
+        id="cso-other-problem"
+        rows="2"
+        maxlength="200"
+        placeholder="Tell us your problem in a few words..."
+        aria-describedby="cso-other-problem-help"
+      ></textarea>
+      <small id="cso-other-problem-help"
+             class="cso-report-privacy">
+        Required when Other is selected. Maximum 200 characters.
+      </small>
+    </div>
+
+    <label for="cso-report-url">Related Page URL</label>
+    <input
+      id="cso-report-url"
+      type="url"
+      placeholder="https://csodisha.com/..."
+      autocomplete="url"
+    >
+
+    <label for="cso-report-description">
+      Describe the Issue *
+    </label>
+    <textarea
+      id="cso-report-description"
+      rows="5"
+      maxlength="3000"
+      minlength="15"
+      placeholder="Explain the problem and what needs correction..."
+      required
+    ></textarea>
+
+    <label for="cso-report-source">
+      Supporting Official Source (Optional)
+    </label>
+    <input
+      id="cso-report-source"
+      type="url"
+      placeholder="https://official-government-website..."
+    >
+
+
+    <!-- CSO Evidence Attachment v1 -->
+    <label for="cso-report-evidence">
+      Supporting Documents & Evidence (Optional)
+    </label>
+
+    <input
+      id="cso-report-evidence"
+      type="file"
+      accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+      multiple
+      aria-describedby="cso-evidence-help"
+    >
+
+    <small id="cso-evidence-help" class="cso-report-privacy">
+      Select up to 3 files, maximum 10 MB each.
+      Accepted: PDF, JPG, PNG, WEBP.
+      Files are not uploaded automatically.
+      You must attach them manually when sending your email.
+      Avoid including unnecessary personal information.
+    </small>
+
+
+    <!-- CSO Evidence UI Enhancement v1 -->
+    <div id="cso-evidence-preview"
+         class="cso-evidence-preview"
+         aria-live="polite">
+      No evidence files selected.
+    </div>
+
+    <p id="cso-evidence-message"
+       role="status" aria-live="polite"></p>
+
+    <button type="submit" class="cso-report-submit">
+      Review & Prepare Email →
+    </button>
+
+    <p id="cso-report-message" role="status"
+       aria-live="polite"></p>
+
+    <small class="cso-report-privacy">
+      This form does not upload your report or store personal data.
+      Your email application will open so you can review and send
+      the report yourself.
+    </small>
+  </form>
+</div>
+</section>
+</div>
+
+<!-- CSO Trust Guidance v1 -->
+<section class="cso-trust-guidance"
+         aria-labelledby="cso-trust-guidance-title">
+
+  <h2 id="cso-trust-guidance-title">
+    🔎 How to Check Information on CSO
+  </h2>
+
+  <p class="cso-trust-guidance-intro">
+    Before applying for a job, scholarship, admission, or
+    government scheme, check the original official notice.
+    These guides explain what different information labels mean.
+  </p>
+
+  <div class="cso-trust-legend-notice" role="note">
+    <span class="cso-trust-legend-icon" aria-hidden="true">ⓘ</span>
+    <span>
+      <strong>Status Legend — For Reference Only.</strong>
+      These labels explain possible verification and application
+      statuses. They do not confirm the status of any particular
+      CSO announcement.
+    </span>
+  </div>
+
+  <div class="cso-trust-guidance-grid">
+
+    <article class="cso-trust-guide-card">
+      <h3>🛡 Verification Status</h3>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-verified">
+          ✓ Verified
+        </span>
+        <p>
+          The specific announcement has been checked against
+          its original official source.
+        </p>
+      </div>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-review">
+          ◷ Needs Review
+        </span>
+        <p>
+          Information needs another check because it may
+          have changed or become outdated.
+        </p>
+      </div>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-unverified">
+          ? Not Yet Verified
+        </span>
+        <p>
+          The announcement has not been individually verified.
+          Check the official source before taking action.
+        </p>
+      </div>
+    </article>
+
+    <article class="cso-trust-guide-card">
+      <h3>📄 Official Source Checklist</h3>
+
+      <ul class="cso-trust-checklist">
+        <li>
+          Confirm the department or institution named
+          in the notice.
+        </li>
+        <li>
+          Look for a notification number and publication date,
+          where applicable.
+        </li>
+        <li>
+          Read eligibility, fees, documents, and instructions
+          in the original notice.
+        </li>
+        <li>
+          Verify application dates on the official portal.
+        </li>
+        <li>
+          Watch for corrections, extensions, and cancellation
+          notices.
+        </li>
+      </ul>
+
+      <p class="cso-trust-guide-note">
+        A link to an official homepage does not by itself
+        verify a particular recruitment announcement.
+      </p>
+    </article>
+
+    <article class="cso-trust-guide-card">
+      <h3>⏰ Deadline &amp; Application Status</h3>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-open">Open</span>
+        <p>Applications are currently being accepted.</p>
+      </div>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-upcoming">Upcoming</span>
+        <p>The confirmed application period has not started.</p>
+      </div>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-closed">Closed</span>
+        <p>The confirmed application deadline has passed.</p>
+      </div>
+
+      <div class="cso-trust-status-row">
+        <span class="cso-trust-pill cso-unverified">
+          Not Confirmed
+        </span>
+        <p>
+          The application dates have not been established
+          from a specific official notice.
+        </p>
+      </div>
+    </article>
+
+    <article class="cso-trust-guide-card">
+      <h3>💬 Found an Error?</h3>
+
+      <p>
+        Help improve CSO by reporting incorrect information,
+        broken links, outdated announcements, or wrong
+        application details.
+      </p>
+
+      <p>
+        You can include an official notice URL and select
+        supporting evidence files.
+      </p>
+
+      <a class="cso-trust-report-link"
+         href="#report-correct">
+        Go to Report &amp; Correct →
+      </a>
+
+      <p class="cso-trust-guide-note">
+        Reports currently use email preparation.
+        Selected evidence files must be attached manually.
+        Direct website submission is not enabled yet.
+      </p>
+    </article>
+
+  </div>
+</section>
+
+<div class="note">
+<strong>Important:</strong> CSO is an independent information platform and is not an official government website. Original government notifications take precedence over summaries.
+</div>
+<p><a href="../index.html">← Return to homepage</a></p>
+
+<!-- CSO-TRUST-LAYER-2-20261030 -->
+<style>
+.cso-trust-v2 {
+  margin: 26px 0;
+  padding: clamp(18px,3vw,28px);
+  border: 1px solid var(--bd,#d5dfeb);
+  border-radius: 18px;
+  background: var(--card,#fff);
+}
+.cso-trust-v2 h2 {
+  margin: 0 0 8px;
+  font-size: clamp(21px,2.5vw,27px);
+}
+.cso-trust-v2-lead {
+  margin: 0 0 20px;
+  line-height: 1.65;
+  opacity: .85;
+}
+.cso-trust-v2-steps {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 12px;
+}
+.cso-trust-v2-step {
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid var(--bd,#d5dfeb);
+  border-radius: 13px;
+}
+.cso-trust-v2-step .num {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: rgba(59,130,246,.13);
+  color: #60a5fa;
+  font-weight: 800;
+}
+.cso-trust-v2-step h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.cso-trust-v2-step p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: .85;
+}
+.cso-trust-v2-checklist {
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 13px;
+  background: rgba(59,130,246,.06);
+  border: 1px solid var(--bd,#d5dfeb);
+}
+.cso-trust-v2-checklist h3 {
+  margin: 0 0 7px;
+}
+.cso-trust-v2-checklist p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  opacity: .85;
+}
+.cso-trust-v2-checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 11px 0;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.cso-trust-v2-checklist input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #2563eb;
+  flex: none;
+}
+.cso-trust-v2-progress {
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.cso-trust-v2-meter {
+  height: 8px;
+  margin-top: 9px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(100,116,139,.22);
+}
+.cso-trust-v2-fill {
+  width: 0;
+  height: 100%;
+  background: #2563eb;
+  transition: width .2s ease;
+}
+.cso-trust-v2-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 17px;
+}
+.cso-trust-v2-actions a,
+.cso-trust-v2-actions button {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px solid #6484bb;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cso-trust-v2-actions a:focus-visible,
+.cso-trust-v2-actions button:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+.cso-trust-v2-disclaimer {
+  margin: 18px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: .8;
+}
+@media(max-width:850px) {
+  .cso-trust-v2-steps {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:550px) {
+  .cso-trust-v2-steps {
+    grid-template-columns: 1fr;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .cso-trust-v2-fill {
+    transition: none;
+  }
+}
+</style>
+
+<section class="cso-trust-v2"
+         aria-labelledby="cso-trust-v2-heading">
+  <h2 id="cso-trust-v2-heading">
+    🛡️ From Official Source to Informed Decision
+  </h2>
+  <p class="cso-trust-v2-lead">
+    A practical four-step approach to checking opportunities
+    before applying. CSO helps you navigate information;
+    the original authority makes the official decision.
+  </p>
+
+  <div class="cso-trust-v2-steps">
+    <article class="cso-trust-v2-step">
+      <span class="num" aria-hidden="true">01</span>
+      <h3>Find the Original Notice</h3>
+      <p>Open the official department, institution or notification link. A general portal link is not proof of a particular announcement.</p>
+    </article>
+    <article class="cso-trust-v2-step">
+      <span class="num" aria-hidden="true">02</span>
+      <h3>Compare the Details</h3>
+      <p>Check the notice against the CSO summary. Look for differences in dates, eligibility, fees and required documents.</p>
+    </article>
+    <article class="cso-trust-v2-step">
+      <span class="num" aria-hidden="true">03</span>
+      <h3>Confirm Your Eligibility</h3>
+      <p>Read the official conditions for age, education, residence, category and other requirements that apply to you.</p>
+    </article>
+    <article class="cso-trust-v2-step">
+      <span class="num" aria-hidden="true">04</span>
+      <h3>Use the Official Application Route</h3>
+      <p>Apply only through the application channel specified by the authority. Check the final deadline and retain your acknowledgement.</p>
+    </article>
+  </div>
+
+  <div class="cso-trust-v2-checklist">
+    <h3>My Application Safety Checklist</h3>
+    <p>Tick each item after checking it yourself. This checklist stays on this page and does not certify an opportunity.</p>
+
+    <div id="cso-trust-v2-items">
+      <label><input type="checkbox"> I opened the original official notice.</label>
+      <label><input type="checkbox"> I checked eligibility and required documents.</label>
+      <label><input type="checkbox"> I checked the official deadline and application status.</label>
+      <label><input type="checkbox"> I confirmed the official application website or procedure.</label>
+    </div>
+
+    <div class="cso-trust-v2-progress"
+         id="cso-trust-v2-progress"
+         role="status"
+         aria-live="polite">
+      0 of 4 checks completed
+    </div>
+    <div class="cso-trust-v2-meter"
+         role="progressbar"
+         aria-label="Checklist completion"
+         aria-valuemin="0"
+         aria-valuemax="4"
+         aria-valuenow="0"
+         id="cso-trust-v2-meter">
+      <div class="cso-trust-v2-fill"
+           id="cso-trust-v2-fill"></div>
+    </div>
+
+    <div class="cso-trust-v2-actions">
+      <button type="button" id="cso-trust-v2-reset">
+        Reset Checklist
+      </button>
+      <a href="#report-correct">Report an Issue →</a>
+    </div>
+  </div>
+
+  <p class="cso-trust-v2-disclaimer">
+    CSO is an independent information platform, not a government
+    authority. Completing this checklist does not establish
+    eligibility, verification or approval.
+  </p>
+</section>
+
+<script>
+(function () {
+  "use strict";
+  const box = document.getElementById("cso-trust-v2-items");
+  const status = document.getElementById("cso-trust-v2-progress");
+  const meter = document.getElementById("cso-trust-v2-meter");
+  const fill = document.getElementById("cso-trust-v2-fill");
+  const reset = document.getElementById("cso-trust-v2-reset");
+  if (!box || !status || !meter || !fill || !reset) return;
+
+  const checks = Array.from(box.querySelectorAll('input[type="checkbox"]'));
+
+  function render() {
+    const done = checks.filter(item => item.checked).length;
+    status.textContent = done + " of " + checks.length + " checks completed";
+    meter.setAttribute("aria-valuenow", String(done));
+    fill.style.width = (done / checks.length * 100) + "%";
+  }
+
+  box.addEventListener("change", render);
+
+  reset.addEventListener("click", function () {
+    checks.forEach(item => { item.checked = false; });
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</main>
+<footer><div class="w">
+<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
+<div><h4>Quick Links</h4><a href="../">Home</a><a href="../jobs-careers/">Jobs &amp; Careers</a><a href="../schemes-benefits/">Schemes &amp; Benefits</a><a href="../study-library/">Study Library</a><a href="../community/">Community</a><a href="../about/">About</a></div>
+<div><h4>Resources</h4><a href="../#latest-updates">Latest Updates</a><a href="../#popular-topics">Popular Topics</a><a href="../#important-tools">Important Tools</a></div>
+<div><h4>Support</h4><a href="../support/">Help &amp; Support</a><a href="../support/#report-error">Report an Error</a><a href="../support/#suggest-resource">Suggest a Resource</a><a href="../support/#contact">Contact Us</a><a href="../support/#faqs">FAQs</a></div>
+<div><h4>Legal</h4><a href="../privacy-policy/">Privacy Policy</a><a href="../terms-of-use/">Terms of Use</a><a href="../disclaimer/">Disclaimer</a><a href="../copyright-policy/">Copyright Policy</a></div>
+<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.png" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
+<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+<script src="../assets/odia.js"></script>
+<script src="../assets/hindi.js"></script>
+<script src="../assets/india-districts.js"></script>
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const form = document.getElementById("cso-report-form");
+  if (!form) return;
+
+  const message = document.getElementById("cso-report-message");
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const type = document.getElementById("cso-report-type");
+    const page = document.getElementById("cso-report-url");
+    const description =
+      document.getElementById("cso-report-description");
+    const source = document.getElementById("cso-report-source");
+
+    if (!type.value) {
+      message.textContent = "Please select a problem type.";
+      type.focus();
+      return;
+    }
+
+    if (description.value.trim().length < 15) {
+      message.textContent =
+        "Please describe the issue in at least 15 characters.";
+      description.focus();
+      return;
+    }
+
+    for (const field of [page, source]) {
+      if (field.value.trim() && !field.checkValidity()) {
+        message.textContent = "Please enter a valid URL.";
+        field.focus();
+        return;
+      }
+    }
+
+
+    const evidence = document.getElementById("cso-report-evidence");
+    const evidenceMessage =
+      document.getElementById("cso-evidence-message");
+
+    const files = Array.from(evidence.files || []);
+    const allowed = new Set([
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ]);
+
+    evidenceMessage.textContent = "";
+
+    if (files.length > 3) {
+      evidenceMessage.textContent =
+        "Please select no more than 3 evidence files.";
+      evidence.focus();
+      return;
+    }
+
+    for (const file of files) {
+      const extension = file.name.split(".").pop().toLowerCase();
+
+      const validExtension = [
+        "pdf", "jpg", "jpeg", "png", "webp"
+      ].includes(extension);
+
+      if (!validExtension || !allowed.has(file.type)) {
+        evidenceMessage.textContent =
+          "Unsupported file: " + file.name;
+        evidence.focus();
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        evidenceMessage.textContent =
+          "File exceeds 10 MB: " + file.name;
+        evidence.focus();
+        return;
+      }
+    }
+
+
+    const otherProblem =
+      document.getElementById("cso-other-problem");
+
+    if (type.value === "Other" &&
+        !otherProblem.value.trim()) {
+      message.textContent =
+        "Please briefly describe the other problem.";
+      otherProblem.focus();
+      return;
+    }
+
+    const subject = "CSO Correction Report: " + type.value;
+
+    const body = [
+      "Common Sense Odisha — Correction Report",
+      "",
+      "Problem Type: " + type.value,
+      "Other Problem: " +
+        (type.value === "Other"
+          ? otherProblem.value.trim()
+          : "Not applicable"),
+      "Related Page: " + (page.value.trim() || "Not provided"),
+      "Supporting Source: " +
+        (source.value.trim() || "Not provided"),
+      "",
+      "Evidence Files Selected: " +
+        (files.length
+          ? files.map(file => file.name).join(", ")
+          : "None"),
+      "",
+      "IMPORTANT: Attach selected evidence files manually.",
+      "",
+      "Issue Description:",
+      description.value.trim(),
+      "",
+      "Submitted by: Website visitor",
+      "Please review against the original official notice."
+    ].join("\n");
+
+    const mailto =
+      "mailto:?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+
+    message.textContent =
+      "Your email application will open. Choose the CSO " +
+      "contact address, manually attach your evidence files " +
+      "(if selected), and send the message to submit your report.";
+
+    window.location.href = mailto;
+  });
+})();
+</script>
+
+
+<script>
+(function () {
+  const input = document.getElementById("cso-report-evidence");
+  const preview = document.getElementById("cso-evidence-preview");
+
+  if (!input || !preview) return;
+
+  input.addEventListener("change", function () {
+    const files = Array.from(input.files || []);
+
+    preview.replaceChildren();
+
+    if (!files.length) {
+      preview.textContent = "No evidence files selected.";
+      return;
+    }
+
+    const heading = document.createElement("strong");
+    heading.textContent =
+      files.length + " evidence file(s) selected:";
+    preview.appendChild(heading);
+
+    const list = document.createElement("ul");
+
+    for (const file of files) {
+      const item = document.createElement("li");
+      item.textContent =
+        file.name + " — " +
+        (file.size / (1024 * 1024)).toFixed(2) + " MB";
+      list.appendChild(item);
+    }
+
+    preview.appendChild(list);
+  });
+})();
+</script>
+
+
+<script>
+(function () {
+  "use strict";
+
+  const type = document.getElementById("cso-report-type");
+  const wrap = document.getElementById("cso-other-problem-wrap");
+  const input = document.getElementById("cso-other-problem");
+
+  if (!type || !wrap || !input) return;
+
+  function updateOtherField() {
+    const show = type.value === "Other";
+
+    wrap.hidden = !show;
+    input.required = show;
+
+    if (!show) {
+      input.value = "";
+    }
+  }
+
+  type.addEventListener("change", updateOtherField);
+  updateOtherField();
+})();
+</script>
+
+
+<script>
+(function () {
+  "use strict";
+
+  const type = document.getElementById("cso-report-type");
+  const description =
+    document.getElementById("cso-report-description");
+  const other = document.getElementById("cso-other-problem");
+  const descriptionLabel = document.querySelector(
+    'label[for="cso-report-description"]'
+  );
+
+  if (!type || !description || !other || !descriptionLabel) return;
+
+  function updateDescription() {
+    const isOther = type.value === "Other";
+
+    description.required = !isOther;
+    description.minLength = isOther ? 0 : 15;
+
+    descriptionLabel.textContent = isOther
+      ? "Additional Details (Optional)"
+      : "Describe the Issue *";
+
+    description.placeholder = isOther
+      ? "Add more details if needed..."
+      : "Explain the problem and what needs correction...";
+  }
+
+  type.addEventListener("change", updateDescription);
+  updateDescription();
+
+  // Existing submit handler validates the description before
+  // this listener runs. Intercept the submit event in capture
+  // phase so Other can use its short description instead.
+  const form = document.getElementById("cso-report-form");
+
+  if (!form) return;
+
+  form.addEventListener("submit", function (event) {
+    if (type.value !== "Other") return;
+
+    if (!other.value.trim()) return;
+
+    if (description.value.trim().length >= 15) return;
+
+    // The original submit handler requires 15 characters.
+    // Supply the short description only for email preparation.
+    description.value = other.value.trim();
+  }, true);
+})();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e12747e80fd71',t:'MTc5NDA3MjY5MQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e12747e80fd71',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
