@@ -5851,19 +5851,23 @@ nav a.on,
 .dd a,
 .cso-site-dropdown a,
 .cso-auth-dropdown-menu a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important; /* Force left alignment */
+  text-align: left !important;
+  gap: 10px !important;
+  padding: 8px 14px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   color: #e2e8f0 !important; /* Crisp readable light text */
   font-size: 0.86rem !important;
   font-weight: 500 !important;
-  padding: 8px 16px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
   text-decoration: none !important;
   background: transparent !important;
   border-radius: 0 !important;
   margin: 0 !important;
   border: none !important;
-  transition: background 0.15s ease, color 0.15s ease !important;
+  transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
 }
 
 /* Dropdown Item Hover & Focus */
@@ -5881,16 +5885,41 @@ nav a.on,
 .dd a:focus {
   background: rgba(16, 149, 93, 0.22) !important; /* Subtle emerald tint */
   color: #38bdf8 !important; /* Accent cyan / highlight */
-  padding-left: 19px !important;
+  padding-left: 18px !important;
 }
 
-/* Dropdown Arrows / Indicators / Bullets */
-.nav-dropdown a::after,
+/* If chevron/bullet is on the left */
+.nav-dropdown a .arrow,
 .dropdown-menu a .arrow,
 .has-dropdown ul a .arrow,
 .cso-nav-items .dd a .dd-bullet,
 .dd a .dd-bullet,
-.cso-site-dropdown a .dd-bullet {
+.cso-site-dropdown a .dd-bullet,
+.nav-dropdown a::before {
+  flex-shrink: 0 !important;
+  opacity: 0.7 !important;
+  font-size: 0.8rem !important;
+  color: #94a3b8 !important;
+}
+
+/* Item title text takes remaining space */
+.nav-dropdown a span,
+.dropdown-menu a span,
+.dropdown-item span,
+.cso-nav-items .dd a span,
+.dd a span,
+.cso-site-dropdown a span {
+  text-align: left !important;
+  flex: 1 !important;
+}
+
+/* If there is a trailing right arrow */
+.nav-dropdown a .arrow-right,
+.dropdown-menu a .arrow-right,
+.dropdown-menu a::after,
+.nav-dropdown a::after {
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
   color: #94a3b8 !important;
 }
 
