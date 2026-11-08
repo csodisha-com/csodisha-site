@@ -79,6 +79,30 @@
   gap: 8px;
   flex-wrap: wrap;
   padding: 2px 0;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .cso-ask2-modes,
+  .cso-ask-modes {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+    width: 100%;
+  }
+
+  .cso-ask2-modes::-webkit-scrollbar,
+  .cso-ask-modes::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cso-ask2-modes button,
+  .cso-ask-modes button {
+    flex-shrink: 0;
+  }
 }
 
 .cso-ask2-modes button,
