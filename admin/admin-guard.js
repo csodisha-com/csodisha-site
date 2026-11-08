@@ -138,21 +138,18 @@
      * Route Guard: Run immediately on protected dashboard pages
      */
     function enforceDashboardAuth() {
-      const isLoginPage = window.location.pathname.endsWith('login.html');
-      const session = getSession();
-
-      if (!session) {
-        if (!isLoginPage) {
-          const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.replace(`${LOGIN_URL}?return=${returnUrl}`);
-        }
+      const currentPath = window.location.pathname;
+      // Never redirect if we are already on the login page
+      if (currentPath.includes('login')) {
         return false;
       }
 
-      // If on login page and already authenticated, bounce to dashboard
-      if (isLoginPage) {
-        window.location.replace(DASHBOARD_URL);
-        return true;
+      const session = getSession();
+
+      if (!session) {
+        const returnUrl = encodeURIComponent(window.location.pathname);
+        window.location.replace(`/admin/login.html?return=${returnUrl}`);
+        return false;
       }
 
       return true;
@@ -179,7 +176,7 @@
     };
 
     // Immediate protection execution if not on the login page
-    if (!window.location.pathname.endsWith('login.html')) {
+    if (!window.location.pathname.includes('login')) {
       enforceDashboardAuth();
     }
   } catch (guardErr) {

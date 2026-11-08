@@ -80,10 +80,14 @@
     </div>
   </div>
 
-  <script src="./admin-guard.js"></script>
   <script>
     (function() {
       'use strict';
+      const AUTH_KEY = 'cso_admin_session';
+      const DASHBOARD_URL = '/admin/';
+      const TARGET_EMAIL = 'admin@csodisha.com';
+      const TARGET_PASSKEY = 'Admin@CSO#2026';
+
       const form = document.getElementById('admin-login-form');
       const emailInput = document.getElementById('admin-email');
       const passInput = document.getElementById('admin-passkey');
@@ -92,6 +96,25 @@
       const errorMsg = document.getElementById('login-error-msg');
       const submitBtn = document.getElementById('btn-submit-login');
 
+      // Helper: save session without needing admin-guard.js
+      function saveSession(user, remember) {
+        const session = {
+          user: String(user || TARGET_EMAIL).trim().toLowerCase(),
+          token: 'cso_adm_' + Math.random().toString(36).substring(2) + Date.now().toString(36),
+          loginAt: Date.now(),
+          expiresAt: Date.now() + 8 * 60 * 60 * 1000 // 8 hours duration
+        };
+        try {
+          sessionStorage.setItem(AUTH_KEY, JSON.stringify(session));
+          if (remember) {
+            localStorage.setItem(AUTH_KEY, JSON.stringify(session));
+          }
+        } catch (e) {
+          console.warn('Unable to persist session', e);
+        }
+        return session;
+      }
+
       // Toggle passkey visibility
       toggleBtn.addEventListener('click', () => {
         const isPass = passInput.type === 'password';
@@ -99,10 +122,6 @@
         toggleBtn.textContent = isPass ? 'Hide' : 'Show';
         toggleBtn.setAttribute('aria-label', isPass ? 'Hide passkey' : 'Show passkey');
       });
-
-      // Target admin credentials
-      const TARGET_EMAIL = 'admin@csodisha.com';
-      const TARGET_PASSKEY = 'Admin@CSO#2026';
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -129,17 +148,29 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Verifying Session...</span>';
 
-        // Save session using admin guard
-        const session = window.CSOAdminGuard.saveSession(email, remember);
+        // Save session locally
+        const session = saveSession(email, remember);
 
-        // Optional server verify ping
+        // Optional server verify ping with 3s timeout
         try {
-          await window.CSOAdminGuard.verifySessionWithServer(session);
+          const controller = new AbortController();
+          const tId = setTimeout(() => controller.abort(), 3000);
+          await fetch('/api/admin/verify', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${session.token}`,
+              'Accept': 'application/json'
+            },
+            signal: controller.signal
+          }).finally(() => clearTimeout(tId));
         } catch (_) {}
 
-        // Redirect to dashboard or return destination
+        // Redirect to dashboard or sanitized return destination
         const params = new URLSearchParams(window.location.search);
-        const destination = params.get('return') || window.CSOAdminGuard.DASHBOARD_URL;
+        let destination = params.get('return') || DASHBOARD_URL;
+        if (!destination.startsWith('/admin') || destination.includes('login')) {
+          destination = DASHBOARD_URL;
+        }
         window.location.replace(destination);
       });
     })();
