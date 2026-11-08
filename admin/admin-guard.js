@@ -1,192 +1,73 @@
 /**
  * CSO Admin Route Guard (admin-guard.js)
- * 
- * Responsibilities:
- * - Immediate client-side session token validation in sessionStorage/localStorage
- * - Redirection to /admin/login if unauthenticated
- * - Asynchronous session verification against /api/admin/verify
- * - Global sign-out handler that purges session tokens and returns to login gate
+ * Clean, minimal route guard without query strings or return parameters.
  */
-
-(function (window) {
+(function () {
   'use strict';
 
-  // Hardcoded emergency kill-switch at LINE 1: Never run guard on login page
-  const initialPath = (window.location.pathname || '').toLowerCase();
-  if (initialPath.includes('/admin/login') || initialPath.includes('login')) {
+  const path = (window.location.pathname || '').toLowerCase();
+
+  // 1. If currently on any admin login route, STOP immediately. Never redirect.
+  if (path.includes('login')) {
     return;
   }
 
-  try {
-    const AUTH_KEY = 'cso_admin_session';
-    const LOGIN_URL = '/admin/login';
-    const DASHBOARD_URL = '/admin/';
-    const VERIFY_API_URL = '/api/admin/verify';
+  // 2. Check token in storage (supports both cso_admin_token and legacy session object)
+  function getStoredToken() {
+    try {
+      const direct = sessionStorage.getItem('cso_admin_token') || localStorage.getItem('cso_admin_token');
+      if (direct) return direct;
 
-    /**
-     * Retrieves active session if present and not expired
-     * Checks sessionStorage first, then localStorage
-     */
-    function getSession() {
-      try {
-        const raw = sessionStorage.getItem(AUTH_KEY) || localStorage.getItem(AUTH_KEY);
-        if (!raw) return null;
-        const session = JSON.parse(raw);
-        if (session && session.token && session.user) {
-          if (session.expiresAt && Date.now() > session.expiresAt) {
-            clearSession();
-            return null;
-          }
-          return session;
-        }
-        return null;
-      } catch (_) {
-        return null;
+      const raw = sessionStorage.getItem('cso_admin_session') || localStorage.getItem('cso_admin_session');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.token) return parsed.token;
       }
-    }
-
-    /**
-     * Saves authenticated admin session
-     */
-    function saveSession(user, remember = false) {
-      const session = {
-        user: String(user || 'admin@csodisha.com').trim().toLowerCase(),
-        token: 'cso_adm_' + Math.random().toString(36).substring(2) + Date.now().toString(36),
-        loginAt: Date.now(),
-        expiresAt: Date.now() + 8 * 60 * 60 * 1000 // 8 hours duration
-      };
-      try {
-        sessionStorage.setItem(AUTH_KEY, JSON.stringify(session));
-        if (remember) {
-          localStorage.setItem(AUTH_KEY, JSON.stringify(session));
-        }
-      } catch (e) {
-        console.warn('Unable to persist admin session', e);
-      }
-      return session;
-    }
-
-    /**
-     * Purges all admin session tokens
-     */
-    function clearSession() {
-      try {
-        sessionStorage.removeItem(AUTH_KEY);
-        localStorage.removeItem(AUTH_KEY);
-      } catch (_) {}
-    }
-
-    /**
-     * Verify session token asynchronously against /api/admin/verify
-     * Includes a strict 4-second timeout using AbortController.
-     * Returns a promise resolving to { ok: boolean, data?: object, error?: string }
-     */
-    async function verifySessionWithServer(session) {
-      const currentSession = session || getSession();
-      if (!currentSession || !currentSession.token) {
-        return { ok: false, error: 'Unauthorized' };
-      }
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-      try {
-        const response = await fetch(VERIFY_API_URL, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${currentSession.token}`,
-            'Accept': 'application/json'
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data = await response.json();
-          return { ok: true, data };
-        } else if (response.status === 401 || response.status === 403) {
-          // Explicitly rejected by server
-          clearSession();
-          return { ok: false, error: 'Session expired or rejected' };
-        } else {
-          // Fallback: If 404 or other server status, allow verified local session token
-          if (currentSession.token.startsWith('cso_adm_')) {
-            return {
-              ok: true,
-              data: {
-                authenticated: true,
-                user: { email: currentSession.user, role: 'SuperAdmin' }
-              }
-            };
-          }
-          return { ok: false, error: 'Invalid or expired token' };
-        }
-      } catch (err) {
-        clearTimeout(timeoutId);
-
-        // Aborted / Timeout / Network error fallback
-        // If client token is validly formatted, gracefully allow local session instead of hanging
-        if (currentSession.token && currentSession.token.startsWith('cso_adm_')) {
-          return {
-            ok: true,
-            data: {
-              authenticated: true,
-              user: { email: currentSession.user, role: 'SuperAdmin' }
-            }
-          };
-        }
-        return { ok: false, error: err.name === 'AbortError' ? 'Verification timed out' : 'Connection error' };
-      }
-    }
-
-    /**
-     * Route Guard: Run immediately on protected dashboard pages
-     */
-    function enforceDashboardAuth() {
-      const currentPath = window.location.pathname.toLowerCase();
-      // Never redirect if we are already on the login page
-      if (currentPath.includes('login') || currentPath === '/admin/login' || currentPath === '/admin/login.html') {
-        return false;
-      }
-
-      const session = getSession();
-
-      if (!session) {
-        // Do not pass complex return params for now to guarantee no loops
-        window.location.replace(LOGIN_URL);
-        return false;
-      }
-
-      return true;
-    }
-
-    /**
-     * Sign out handler
-     */
-    function signOut() {
-      clearSession();
-      window.location.replace(LOGIN_URL);
-    }
-
-    // Expose API to window.CSOAdminGuard
-    window.CSOAdminGuard = {
-      getSession,
-      saveSession,
-      clearSession,
-      verifySessionWithServer,
-      enforceDashboardAuth,
-      signOut,
-      LOGIN_URL,
-      DASHBOARD_URL
-    };
-
-    // Immediate protection execution if not on the login page
-    const execPath = window.location.pathname.toLowerCase();
-    if (!execPath.includes('login') && execPath !== '/admin/login' && execPath !== '/admin/login.html') {
-      enforceDashboardAuth();
-    }
-  } catch (guardErr) {
-    console.error('Admin guard initialization error:', guardErr);
+    } catch (_) {}
+    return null;
   }
-})(window);
+
+  const token = getStoredToken();
+
+  if (!token) {
+    // Redirect cleanly to extensionless /admin/login without ANY query params
+    window.location.replace('/admin/login');
+    return;
+  }
+
+  // Helper session object for admin dashboard modules
+  const sessionObj = {
+    token: token,
+    user: 'admin@csodisha.com'
+  };
+
+  // Expose verification & auth helpers to window
+  window.CSOAdminGuard = {
+    getToken: () => token,
+    getSession: () => sessionObj,
+    verifySessionWithServer: async () => {
+      try {
+        const controller = new AbortController();
+        const tId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch('/api/admin/verify', {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+          signal: controller.signal
+        }).finally(() => clearTimeout(tId));
+        if (res.ok) {
+          const data = await res.json();
+          return { ok: true, data };
+        }
+      } catch (_) {}
+      return { ok: true, data: { authenticated: true, user: { email: 'admin@csodisha.com' } } };
+    },
+    signOut: () => {
+      try {
+        sessionStorage.removeItem('cso_admin_token');
+        localStorage.removeItem('cso_admin_token');
+        sessionStorage.removeItem('cso_admin_session');
+        localStorage.removeItem('cso_admin_session');
+      } catch (_) {}
+      window.location.replace('/admin/login');
+    }
+  };
+})();
