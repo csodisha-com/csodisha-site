@@ -5600,26 +5600,33 @@ mark.cso-search-highlight {
 .top,
 .top-bar,
 .header-utility,
-.cso-header-top {
-  background-color: #0a182c !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+.cso-header-top,
+.site-header__top,
+#header-top {
+  background: #081220 !important;
+  border-bottom: 1.5px solid rgba(255, 122, 0, 0.45) !important; /* Warm saffron divider */
   color: #e2e8f0 !important;
 }
 
-/* Admin Portal button: distinct red shield style on dark bar */
+/* Utility pills (Admin Portal, Language, Accessibility, Font Size) */
 .top .adm,
 .top-bar .adm,
 .header-utility .adm,
-.cso-header-top .adm {
+.cso-header-top .adm,
+.site-header__top .adm,
+#header-top .adm {
   background: rgba(220, 38, 38, 0.15) !important;
   color: #fca5a5 !important;
   border: 1px solid rgba(220, 38, 38, 0.35) !important;
+  border-radius: 6px !important;
 }
 
 .top .adm small,
 .top-bar .adm small,
 .header-utility .adm small,
-.cso-header-top .adm small {
+.cso-header-top .adm small,
+.site-header__top .adm small,
+#header-top .adm small {
   color: #fca5a5 !important;
   opacity: 0.85 !important;
 }
@@ -5627,34 +5634,33 @@ mark.cso-search-highlight {
 .top .adm:hover,
 .top-bar .adm:hover,
 .header-utility .adm:hover,
-.cso-header-top .adm:hover {
+.cso-header-top .adm:hover,
+.site-header__top .adm:hover,
+#header-top .adm:hover {
   background: rgba(220, 38, 38, 0.25) !important;
   border-color: rgba(220, 38, 38, 0.55) !important;
   color: #ffffff !important;
 }
 
-/* Language, Accessibility, Font Size, Theme & Auth Controls */
+/* Language, Accessibility, Font Size, Theme & General Pills */
 .top .pill,
-.top .btn,
 .top-bar .pill,
-.top-bar .btn,
 .header-utility .pill,
-.header-utility .btn,
 .cso-header-top .pill,
-.cso-header-top .btn {
+.site-header__top .pill,
+#header-top .pill {
   background: rgba(255, 255, 255, 0.06) !important;
-  color: #cbd5e1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px !important;
 }
 
 .top .pill:hover,
-.top .btn:hover,
 .top-bar .pill:hover,
-.top-bar .btn:hover,
 .header-utility .pill:hover,
-.header-utility .btn:hover,
 .cso-header-top .pill:hover,
-.cso-header-top .btn:hover {
+.site-header__top .pill:hover,
+#header-top .pill:hover {
   background: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.28) !important;
@@ -5664,7 +5670,9 @@ mark.cso-search-highlight {
 .top .pill .fz,
 .top-bar .pill .fz,
 .header-utility .pill .fz,
-.cso-header-top .pill .fz {
+.cso-header-top .pill .fz,
+.site-header__top .pill .fz,
+#header-top .pill .fz {
   color: #cbd5e1 !important;
   background: transparent !important;
 }
@@ -5672,57 +5680,144 @@ mark.cso-search-highlight {
 .top .pill .fz:hover,
 .top-bar .pill .fz:hover,
 .header-utility .pill .fz:hover,
-.cso-header-top .pill .fz:hover {
+.cso-header-top .pill .fz:hover,
+.site-header__top .pill .fz:hover,
+#header-top .pill .fz:hover {
   color: #ffffff !important;
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Desktop auth container and buttons */
+/* Refactor Right-side Account / Login block */
 .top .acct,
 .top-bar .acct,
 .header-utility .acct,
-.cso-header-top .acct {
+.cso-header-top .acct,
+.site-header__top .acct,
+#header-top .acct {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
   color: #cbd5e1 !important;
 }
 
+.top .acct .cso-desktop-auth-icon {
+  display: none !important;
+}
+
+/* Login link & button */
 .top .acct .cso-login-button,
 .top-bar .acct .cso-login-button,
 .header-utility .acct .cso-login-button,
-.cso-header-top .acct .cso-login-button {
-  background: rgba(255, 255, 255, 0.08) !important;
+.cso-header-top .acct .cso-login-button,
+.cso-auth-item-link.cso-login-link,
+.top .acct a.cso-auth-item-link {
   color: #cbd5e1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  padding: 6px 12px !important;
+  background: transparent !important;
+  border: none !important;
+  text-decoration: none !important;
+  border-radius: 6px !important;
+  transition: color 0.18s ease, background 0.18s ease !important;
 }
 
 .top .acct .cso-login-button:hover,
 .top-bar .acct .cso-login-button:hover,
 .header-utility .acct .cso-login-button:hover,
-.cso-header-top .acct .cso-login-button:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
+.cso-header-top .acct .cso-login-button:hover,
+.cso-auth-item-link.cso-login-link:hover,
+.top .acct a.cso-auth-item-link:hover {
   color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* Sign Up CTA pill */
 .top .acct .btn.p,
 .top-bar .acct .btn.p,
 .header-utility .acct .btn.p,
-.cso-header-top .acct .btn.p {
-  background: #f25d07 !important;
+.cso-header-top .acct .btn.p,
+.cso-signup-pill {
+  background: #ff671f !important;
   color: #ffffff !important;
-  border: 1px solid #ea580c !important;
+  border-radius: 6px !important;
+  padding: 5px 14px !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  text-decoration: none !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.18s ease, transform 0.18s ease !important;
 }
 
 .top .acct .btn.p:hover,
 .top-bar .acct .btn.p:hover,
 .header-utility .acct .btn.p:hover,
-.cso-header-top .acct .btn.p:hover {
+.cso-header-top .acct .btn.p:hover,
+.cso-signup-pill:hover {
   background: #ff7828 !important;
-  border-color: #f97316 !important;
+  color: #ffffff !important;
 }
 
-.top .acct .cso-desktop-auth-icon {
-  color: #94a3b8 !important;
+/* ==========================================================================
+   Main Navigation Menu (Odisha Emerald Brand Bar)
+   ========================================================================== */
+
+nav,
+.site-header__nav,
+.main-nav,
+#cso-main-navbar {
+  background: linear-gradient(90deg, #034827 0%, #056637 50%, #02391F 100%) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25) !important;
+  padding: 0 clamp(8px, 2vw, 24px) !important;
+  border-radius: 0 0 16px 16px !important;
 }
+
+/* Style the Navigation Links */
+.main-nav a,
+.site-header__nav a,
+nav a,
+.cso-nav-items > a,
+.cso-nav-parent > a {
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: clamp(0.82rem, 0.95vw, 0.9rem) !important;
+  padding: 10px 14px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: background 0.18s ease, color 0.18s ease !important;
+  text-decoration: none !important;
+}
+
+.main-nav a:hover,
+.site-header__nav a:hover,
+nav a:hover,
+.cso-nav-items > a:hover,
+.cso-nav-parent:hover,
+.cso-nav-parent > a:hover,
+.cso-nav-items .ni.cso-open > .cso-nav-parent {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #FFE5B4 !important; /* Soft warm gold hover */
+}
+
+.main-nav a.active,
+.site-header__nav a.active,
+.main-nav a.on,
+.site-header__nav a.on,
+nav a.on,
+.cso-nav-items a.on {
+  background: rgba(0, 0, 0, 0.22) !important;
+  color: #FFA834 !important;
+  box-shadow: inset 0 -2px 0 #FFA834 !important;
+  border-bottom: none !important;
+}
+
 
 
 
