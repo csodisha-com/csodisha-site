@@ -5822,7 +5822,7 @@ nav a.on,
    Navigation Dropdown Menus & Submenu High-Contrast Styling
    ========================================================================== */
 
-/* Dropdown container */
+/* Default hidden state */
 .dropdown-menu,
 .nav-dropdown,
 .cso-nav-dropdown,
@@ -5831,22 +5831,69 @@ nav a.on,
 .has-dropdown ul,
 .cso-nav-items .dd,
 .dd,
-.cso-site-dropdown,
-.cso-auth-dropdown-menu {
-  display: flex !important;
+.cso-site-dropdown {
+  display: none !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   flex-direction: column !important;
   align-items: stretch !important;
   text-align: left !important;
-  background: #0f1e33 !important; /* Deep navy matching site palette */
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35) !important;
   padding: 8px 0 !important;
   padding-left: 0 !important;
   min-width: 260px !important;
-  box-sizing: border-box !important;
+  background: #0f1e33 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
   z-index: 1000 !important;
+  box-sizing: border-box !important;
   list-style: none !important;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateY(6px);
+}
+
+/* Reveal ONLY on hover, focus-within, or when parent/trigger is active */
+.has-dropdown:hover > .nav-dropdown,
+.has-dropdown:hover > .dropdown-menu,
+.has-dropdown:hover > ul,
+.has-dropdown:focus-within > .nav-dropdown,
+.has-dropdown:focus-within > .dropdown-menu,
+.has-dropdown.is-active > .nav-dropdown,
+.has-dropdown.is-active > .dropdown-menu,
+.has-dropdown.is-open > .nav-dropdown,
+.has-dropdown.is-open > .dropdown-menu,
+.site-header__nav li:hover > ul,
+.site-header__nav li:focus-within > ul,
+.ni:hover > .dd,
+.ni:focus-within > .dd,
+.ni.cso-open > .dd,
+.cso-nav-parent:focus-within + .dd,
+.cso-site-dropdown.cso-open {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+
+/* Mobile responsive menu dropdown behaviour */
+@media (max-width: 768px) {
+  .cso-nav-items .ni:not(.cso-open) > .dd {
+    display: none !important;
+  }
+  .cso-nav-items .ni.cso-open > .dd {
+    display: flex !important;
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
 }
 
 /* Dropdown list item */
@@ -5857,12 +5904,11 @@ nav a.on,
 .has-dropdown ul li,
 .cso-nav-items .dd li,
 .dd li {
-  display: block !important;
   width: 100% !important;
-  text-align: left !important;
   margin: 0 !important;
   padding: 0 !important;
   list-style: none !important;
+  text-align: left !important;
 }
 
 /* Individual dropdown link */
@@ -5881,19 +5927,19 @@ nav a.on,
   align-items: center !important;
   justify-content: flex-start !important;
   text-align: left !important;
+  gap: 8px !important;
   width: 100% !important;
   box-sizing: border-box !important;
   padding: 8px 16px !important;
-  gap: 8px !important;
-  white-space: normal !important;
-  color: #e2e8f0 !important; /* Crisp readable light text */
-  font-size: 0.86rem !important;
-  font-weight: 500 !important;
+  color: #e2e8f0 !important;
   text-decoration: none !important;
   background: transparent !important;
   border-radius: 0 !important;
   margin: 0 !important;
   border: none !important;
+  white-space: normal !important;
+  font-size: 0.86rem !important;
+  font-weight: 500 !important;
   transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
 }
 
@@ -5964,7 +6010,7 @@ nav a.on,
 .dd a:focus {
   padding-left: 20px !important;
   text-align: left !important;
-  background: rgba(16, 149, 93, 0.2) !important;
+  background: rgba(16, 149, 93, 0.22) !important;
   color: #38bdf8 !important;
 }
 
