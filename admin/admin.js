@@ -10,6 +10,10 @@
   const ALERTS_KEY = 'cso_admin_alerts';
   const ACTIVITY_KEY = 'cso_admin_activity';
 
+  // Primary verified administrator credentials
+  const ADMIN_EMAIL = 'admin@csodisha.com';
+  const ADMIN_PASSKEY = 'Admin@CSO#2026';
+
   // Elements
   const authOverlay = document.getElementById('admin-auth-overlay');
   const authForm = document.getElementById('admin-login-form');
@@ -161,22 +165,26 @@
         return;
       }
 
-      // Authorisation logic: Client-side access key for administrator inspection & staging
-      // Accepts standard administrator credentials, or any verified passkey with length >= 6
-      if (passkey.length < 6) {
+      // Exact credentials verification
+      const isEmailMatch = userId.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      const isPasskeyMatch = passkey === ADMIN_PASSKEY;
+
+      if (!isEmailMatch || !isPasskeyMatch) {
         if (authMsg) {
           authMsg.className = 'admin-auth-msg error';
           authMsg.hidden = false;
-          authMsg.textContent = 'Passkey must be at least 6 characters.';
+          authMsg.textContent = 'Invalid administrator credentials. Authorised access only.';
         }
+        logActivity(`Failed login attempt for: ${userId}`);
         return;
       }
 
-      const session = saveSession(userId);
+      const session = saveSession(ADMIN_EMAIL);
       hideLoginModal();
+      if (authForm) authForm.reset();
       updateSessionDisplay(session);
-      showToast(`Welcome, Administrator (${userId})! Access authorised.`);
-      logActivity(`Admin login successful: ${userId}`);
+      showToast(`Welcome, Administrator (${ADMIN_EMAIL})! Access authorised.`);
+      logActivity(`Admin login successful: ${ADMIN_EMAIL}`);
       loadAlerts();
     });
   }
@@ -189,10 +197,9 @@
         logActivity(`Admin logout: ${session.user}`);
       }
       clearSession();
+      if (authForm) authForm.reset();
       showToast('Logged out securely. Session destroyed.', 'info');
-      setTimeout(() => {
-        showLoginModal();
-      }, 400);
+      showLoginModal();
     });
   }
 
