@@ -5705,7 +5705,7 @@ mark.cso-search-highlight {
   display: none !important;
 }
 
-/* Login link & button - warm saffron / orange */
+/* Login link & button - Deep Orange (#FF5722) */
 .login-btn,
 .btn-login,
 .header-login-btn,
@@ -5715,10 +5715,11 @@ mark.cso-search-highlight {
 .cso-header-top .acct .cso-login-button,
 .cso-auth-item-link.cso-login-link,
 .top .acct a.cso-auth-item-link,
-a[href*="login"].cso-auth-item-link {
+a[href*="login"].cso-auth-item-link,
+a[href*="login"] {
   background: transparent !important;
-  color: #FF7700 !important;
-  border: 1.5px solid #FF7700 !important;
+  color: #FF5722 !important; /* Deep Orange */
+  border: 1.5px solid #FF5722 !important;
   border-radius: 6px !important;
   padding: 5px 14px !important;
   font-weight: 700 !important;
@@ -5734,9 +5735,9 @@ a[href*="login"].cso-auth-item-link {
 .btn-login svg,
 .header-login-btn svg,
 .top .acct .cso-login-button svg {
-  color: #FF7700 !important;
-  fill: #FF7700 !important;
-  stroke: #FF7700 !important;
+  color: #FF5722 !important;
+  fill: #FF5722 !important;
+  stroke: #FF5722 !important;
 }
 
 .login-btn:hover,
@@ -5748,8 +5749,10 @@ a[href*="login"].cso-auth-item-link {
 .cso-header-top .acct .cso-login-button:hover,
 .cso-auth-item-link.cso-login-link:hover,
 .top .acct a.cso-auth-item-link:hover,
-a[href*="login"].cso-auth-item-link:hover {
-  background: #FF7700 !important;
+a[href*="login"].cso-auth-item-link:hover,
+a[href*="login"]:hover {
+  background: #E64A19 !important; /* Darker Deep Orange */
+  border-color: #E64A19 !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
 }
@@ -5763,7 +5766,7 @@ a[href*="login"].cso-auth-item-link:hover {
   stroke: #FFFFFF !important;
 }
 
-/* Sign Up CTA pill - solid emerald green */
+/* Sign Up CTA pill - Vibrant Royal Blue (#2563EB) */
 .signup-btn,
 .btn-signup,
 .header-signup-btn,
@@ -5773,10 +5776,12 @@ a[href*="login"].cso-auth-item-link:hover {
 .cso-header-top .acct .btn.p,
 .cso-signup-pill,
 a[href*="signup"].cso-signup-pill,
-a[href*="register"].cso-signup-pill {
-  background: #10B981 !important;
+a[href*="register"].cso-signup-pill,
+a[href*="signup"],
+a[href*="register"] {
+  background: #2563EB !important; /* Vibrant Royal Blue */
   color: #FFFFFF !important;
-  border: 1.5px solid #10B981 !important;
+  border: 1.5px solid #2563EB !important;
   border-radius: 6px !important;
   padding: 5px 14px !important;
   font-weight: 700 !important;
@@ -5785,7 +5790,7 @@ a[href*="register"].cso-signup-pill {
   display: inline-flex !important;
   align-items: center !important;
   transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28) !important;
 }
 
 .signup-btn:hover,
@@ -5797,12 +5802,14 @@ a[href*="register"].cso-signup-pill {
 .cso-header-top .acct .btn.p:hover,
 .cso-signup-pill:hover,
 a[href*="signup"].cso-signup-pill:hover,
-a[href*="register"].cso-signup-pill:hover {
-  background: #059669 !important;
-  border-color: #059669 !important;
+a[href*="register"].cso-signup-pill:hover,
+a[href*="signup"]:hover,
+a[href*="register"]:hover {
+  background: #1D4ED8 !important;
+  border-color: #1D4ED8 !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.42) !important;
 }
 
 /* ==========================================================================
