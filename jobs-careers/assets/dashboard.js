@@ -1065,7 +1065,7 @@
       }
     }
 
-    if (event.key === 'Tab' && document.body.classList.contains('menu-open')) {
+    if (event.key === 'Tab' && document.body.classList.contains('menu-open') && sidebar) {
       const focusables = getSidebarFocusables();
       if (!focusables.length) return;
 
@@ -1160,7 +1160,7 @@
     });
   }
 
-  const brandLink = sidebar.querySelector('.brand');
+  const brandLink = sidebar ? sidebar.querySelector('.brand') : null;
   if (brandLink) {
     brandLink.addEventListener('click', e => {
       e.preventDefault();
@@ -1168,25 +1168,50 @@
     });
   }
 
-  fetch('./generated/directory.json')
-    .then(response => {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.json();
-    })
-    .then(data => {
-      if (!Array.isArray(data.sections) || data.sections.length !== 8) {
-        throw new Error('Invalid directory structure');
+  const jsonUrls = [
+    './generated/directory.json',
+    '/jobs-careers/generated/directory.json'
+  ];
+
+  function tryFetch(urlIndex = 0) {
+    if (urlIndex >= jsonUrls.length) {
+      if (loadStatus) {
+        loadStatus.textContent = 'Unable to load directory data. Please check your connection.';
       }
+      return;
+    }
 
-      sections = data.sections;
-      buildDashboard();
-      renderStatistics(data);
+    fetch(jsonUrls[urlIndex])
+      .then(response => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data.sections) || data.sections.length !== 8) {
+          throw new Error('Invalid directory structure');
+        }
 
-      syncFromUrl(false);
+        sections = data.sections;
+        buildDashboard();
+        renderStatistics(data);
 
-      loadStatus.hidden = true;
-    })
-    .catch(error => {
-      loadStatus.textContent = 'Unable to load directory: ' + error.message;
-    });
+        syncFromUrl(false);
+
+        if (loadStatus) {
+          loadStatus.hidden = true;
+          loadStatus.style.display = 'none';
+        }
+      })
+      .catch(error => {
+        if (urlIndex + 1 < jsonUrls.length) {
+          tryFetch(urlIndex + 1);
+        } else {
+          if (loadStatus) {
+            loadStatus.textContent = 'Unable to load directory: ' + error.message;
+          }
+        }
+      });
+  }
+
+  tryFetch(0);
 })();
