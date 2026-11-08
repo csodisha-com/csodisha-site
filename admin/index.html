@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Administrator Control Portal | Common Sense Odisha</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+
+  <!-- 1. Authentication Modal Overlay -->
+  <div class="admin-auth-overlay" id="admin-auth-overlay">
+    <div class="admin-auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <div class="admin-auth-badge">
+        <span class="shield-icon" aria-hidden="true">🛡️</span>
+        <span>Restricted Area</span>
+      </div>
+
+      <h1 class="admin-auth-title" id="auth-modal-title">Admin Portal</h1>
+      <p class="admin-auth-subtitle">Authorised Access Only. Please verify your administrator credentials to enter the workspace.</p>
+
+      <form class="admin-auth-form" id="admin-login-form" novalidate>
+        <div class="form-group">
+          <label for="admin-user-id">Administrator ID / Username</label>
+          <input type="text" id="admin-user-id" class="admin-input" placeholder="e.g. admin@csodisha.com" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="admin-passkey">Administrator Passkey / Token</label>
+          <div class="input-with-button">
+            <input type="password" id="admin-passkey" class="admin-input" placeholder="Enter passkey" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pw" id="toggle-passkey" aria-label="Toggle passkey visibility">Show</button>
+          </div>
+        </div>
+
+        <p class="admin-auth-msg" id="admin-auth-msg" role="alert" hidden></p>
+
+        <button type="submit" class="btn-admin-primary">
+          Authenticate &amp; Open Portal
+        </button>
+      </form>
+
+      <a href="/" class="admin-auth-return">← Return to Public Home</a>
+    </div>
+  </div>
+
+  <!-- 2. Authenticated Dashboard Application -->
+  <div class="admin-app" id="admin-app">
+    
+    <!-- Topbar Header -->
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <a href="/" class="admin-brand" title="Common Sense Odisha Home">
+          <img src="/assets/images/cso-logo.svg" alt="CSO" width="100" height="36">
+          <div class="admin-brand-info">
+            <span class="admin-brand-title">Common Sense Odisha</span>
+            <span class="admin-badge">Admin Workspace</span>
+          </div>
+        </a>
+
+        <div class="admin-nav-actions">
+          <div class="admin-session-badge">
+            <span>Admin: <strong id="session-user-id">—</strong></span>
+            <span aria-hidden="true">·</span>
+            <span id="session-time">Active</span>
+          </div>
+          <a href="/" class="btn-header-action btn-header-public" title="Open Public Website">
+            🌐 Public Portal
+          </a>
+          <button type="button" class="btn-header-action btn-header-logout" id="btn-admin-logout" title="End Administrator Session">
+            🔒 Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Security Warning Banner -->
+    <div class="admin-security-banner">
+      <span aria-hidden="true">⚠️</span>
+      <span><strong>Security Notice:</strong> All administrative updates, content pushes, and cache resets are actively logged to your session audit trail. Idle sessions expire automatically.</span>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="admin-container">
+
+      <!-- Section: Quick Metrics & Data Integrity -->
+      <section aria-labelledby="metrics-title">
+        <div class="admin-section-header">
+          <div>
+            <h2 class="admin-section-title" id="metrics-title">
+              📊 Directory &amp; Repository Metrics
+            </h2>
+            <p class="admin-section-subtitle">Real-time status of indexed verified resources across public portals</p>
+          </div>
+        </div>
+
+        <div class="admin-metrics-grid">
+          <!-- Metric 1: Jobs & Careers -->
+          <div class="admin-metric-card">
+            <div class="admin-metric-icon">💼</div>
+            <div class="admin-metric-body">
+              <span class="admin-metric-value">1,020+</span>
+              <span class="admin-metric-label">Jobs &amp; Recruitment Entries</span>
+              <span class="admin-metric-sub">140 subcategories · 8 major sections</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Schemes & Benefits -->
+          <div class="admin-metric-card">
+            <div class="admin-metric-icon">🏛️</div>
+            <div class="admin-metric-body">
+              <span class="admin-metric-value">1,066+</span>
+              <span class="admin-metric-label">Schemes &amp; Welfare Initiatives</span>
+              <span class="admin-metric-sub">Central &amp; Odisha state entitlements</span>
+            </div>
+          </div>
+
+          <!-- Metric 3: Study Library -->
+          <div class="admin-metric-card">
+            <div class="admin-metric-icon">📖</div>
+            <div class="admin-metric-body">
+              <span class="admin-metric-value">1,710+</span>
+              <span class="admin-metric-label">Study Library Curriculum Nodes</span>
+              <span class="admin-metric-sub">Primary, secondary &amp; competitive exams</span>
+            </div>
+          </div>
+
+          <!-- Metric 4: Platform Total -->
+          <div class="admin-metric-card">
+            <div class="admin-metric-icon">⚡</div>
+            <div class="admin-metric-body">
+              <span class="admin-metric-value">3,790+</span>
+              <span class="admin-metric-label">Total Verified Public Resources</span>
+              <span class="admin-metric-sub">Zero broken links · 100% integrity</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Management Panels (2-Columns) -->
+      <div class="admin-panels-grid">
+
+        <!-- Panel 1: Content Moderation & Broadcast Center -->
+        <section class="admin-panel" aria-labelledby="announcements-title">
+          <div class="admin-panel-title">
+            <span id="announcements-title">📢 Broadcast Announcements &amp; Emergency Alerts</span>
+            <span class="admin-panel-badge" id="active-alerts-count">0 Active</span>
+          </div>
+
+          <form class="admin-form" id="announcement-form">
+            <div class="form-group">
+              <label for="alert-type">Notice Priority / Category</label>
+              <select id="alert-type" class="admin-select">
+                <option value="notice">Information Notice (Standard)</option>
+                <option value="update">Portal Update (Recruitment / Exam)</option>
+                <option value="emergency">Emergency Alert (Critical Notice)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="alert-title">Headline</label>
+              <input type="text" id="alert-title" class="admin-input" placeholder="e.g. OPSC CGL Recruitment Application Deadline Extended" required>
+            </div>
+
+            <div class="form-group">
+              <label for="alert-body">Detailed Notice Message</label>
+              <textarea id="alert-body" class="admin-textarea" placeholder="Provide full context, official dates, or instructions for citizens..." required></textarea>
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="reset" class="btn-secondary">Clear</button>
+              <button type="submit" class="btn-emerald">Publish Notice</button>
+            </div>
+          </form>
+
+          <!-- Active Announcements Table -->
+          <div class="admin-table-wrap">
+            <table class="admin-table" aria-label="Active broadcasts table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Headline</th>
+                  <th>Message</th>
+                  <th>Created</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="alerts-table-body">
+                <!-- Injected via admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Panel 2: System Health, Cache Invalidation & Build Controls -->
+        <section class="admin-panel" aria-labelledby="system-tools-title">
+          <div class="admin-panel-title">
+            <span id="system-tools-title">🛠️ System Operations &amp; Cache Tools</span>
+            <span class="admin-panel-badge">Production Engine</span>
+          </div>
+
+          <div class="system-tools-list">
+            <!-- Tool 1: Cache Invalidation -->
+            <div class="system-tool-item">
+              <div class="system-tool-info">
+                <span class="system-tool-name">Purge Client Cache</span>
+                <span class="system-tool-desc">Invalidates cached service worker stores and triggers fresh asset fetches for visitors.</span>
+              </div>
+              <button type="button" class="btn-primary" id="btn-clear-cache">
+                Clear Cache
+              </button>
+            </div>
+
+            <!-- Tool 2: Force Reindex -->
+            <div class="system-tool-item">
+              <div class="system-tool-info">
+                <span class="system-tool-name">Data Reindex Check</span>
+                <span class="system-tool-desc">Verifies node integrity across all 3,790+ directory entries.</span>
+              </div>
+              <button type="button" class="btn-secondary" id="btn-reindex-data">
+                Reindex
+              </button>
+            </div>
+
+            <!-- Tool 3: Reset Preferences -->
+            <div class="system-tool-item">
+              <div class="system-tool-info">
+                <span class="system-tool-name">Reset Portal Preferences</span>
+                <span class="system-tool-desc">Clears custom theme overrides and returns client settings to system defaults.</span>
+              </div>
+              <button type="button" class="btn-secondary" id="btn-reset-defaults">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Role-Based Access Guidelines -->
+          <div style="background: var(--admin-surface-card); border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px; font-size: 0.8rem; color: var(--admin-text-secondary); line-height: 1.5;">
+            <p style="font-weight: 700; color: var(--admin-text-primary); margin-bottom: 4px;">🔐 Role-Based Access Guidelines</p>
+            <p>Access to this portal is restricted to authorised CSO staff and maintainers. Modifying announcements or clearing caches affects client-side rendering immediately across all browsers.</p>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+    <!-- Admin Footer -->
+    <footer class="admin-footer">
+      <span>Common Sense Odisha Administrator Console &bull; Build 2026.11 &bull; Strictly Authorised Access</span>
+    </footer>
+
+  </div>
+
+  <script src="./admin.js" defer></script>
+</body>
+</html>

@@ -428,11 +428,21 @@
     }
   });
 
+  function ensureAdminLink() {
+    const adminLink = document.querySelector('.top .adm, header .adm, .cso-header-top .adm');
+    if (adminLink) {
+      adminLink.setAttribute('href', '/admin/');
+      adminLink.setAttribute('role', 'button');
+      adminLink.setAttribute('aria-label', 'Admin Portal - Authorised Access Only');
+    }
+  }
+
   function init() {
     applySettings();
     renderControls();
     renderAuth();
     renderNav();
+    ensureAdminLink();
   }
 
   if (document.readyState === 'loading') {
