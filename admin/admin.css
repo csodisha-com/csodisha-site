@@ -55,7 +55,8 @@ body {
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.admin-page-loader.fade-out {
+.admin-page-loader.fade-out,
+#admin-page-loader.fade-out {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
