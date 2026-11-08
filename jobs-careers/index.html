@@ -103,10 +103,6 @@
 
       <div class="sidebar-heading">DIRECTORY SECTIONS</div>
       <nav id="side-navigation" aria-label="Directory sections"></nav>
-
-      <div class="sidebar-footer">
-        <a href="../index.html">← Back to CSO Home</a>
-      </div>
     </aside>
 
     <div class="workspace">
@@ -118,11 +114,14 @@
           <span class="menu-toggle-label">Sections</span>
         </button>
 
-        <div class="top-search">
-          <span aria-hidden="true">⌕</span>
+        <div class="top-search cso-search-box-wrap">
+          <span class="search-lens" aria-hidden="true">🔍</span>
           <input id="directory-search" type="search"
                  placeholder="Search jobs, careers, courses, scholarships..."
                  aria-label="Search Jobs and Careers directory">
+          <kbd class="cso-search-kbd" id="cso-search-kbd" aria-hidden="true" title="Shortcut: Press Ctrl+K or / to search">
+            <span class="cso-kbd-key">Ctrl</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>
+          </kbd>
           <button id="clear-search" class="clear-search"
                   type="button" aria-label="Clear search"
                   title="Clear search" hidden>×</button>
@@ -130,6 +129,15 @@
 
         <a class="home-link" href="./" aria-label="Jobs and Careers Overview">⌂ Overview</a>
       </header>
+
+      <div class="cso-filter-chips-row" id="cso-filter-chips" role="group" aria-label="Quick filters">
+        <button type="button" class="cso-quick-chip active" data-filter="all">All</button>
+        <button type="button" class="cso-quick-chip" data-filter="opsc-ossc">OPSC / OSSC</button>
+        <button type="button" class="cso-quick-chip" data-filter="teaching">Teaching &amp; B.Ed</button>
+        <button type="button" class="cso-quick-chip" data-filter="10th-12th">10th/12th Pass</button>
+        <button type="button" class="cso-quick-chip" data-filter="police-defense">Police &amp; Defense</button>
+        <button type="button" class="cso-quick-chip" data-filter="private-it">Private &amp; IT</button>
+      </div>
 
       <main class="main-content">
 
@@ -146,36 +154,24 @@
 </section>
 
         
-<section class="cso-job-finder-link" aria-label="Job guidance">
-  <p>Need help choosing a job direction?</p>
-  <a href="../job-opportunity-finder/">
-    Open CSO Job Opportunity Finder
+<section class="cso-opportunity-cta-banner" aria-label="Job guidance finder">
+  <div class="cso-cta-banner-content">
+    <div class="cso-cta-banner-icon" aria-hidden="true">🧭</div>
+    <div class="cso-cta-banner-text">
+      <strong>Need help choosing a job direction?</strong>
+      <span>Discover personalised job pathways and state eligibility matching.</span>
+    </div>
+  </div>
+  <a class="cso-cta-banner-btn" href="../job-opportunity-finder/">
+    <span>Open CSO Job Opportunity Finder</span>
+    <span class="cso-cta-arrow" aria-hidden="true">→</span>
   </a>
 </section>
-<style>
-.cso-job-finder-link {
-  margin: 12px 0 25px;
-  padding: 16px 20px;
-  border: 1px solid rgba(100,145,205,.35);
-  border-radius: 12px;
-}
-.cso-job-finder-link p {
-  margin: 0 0 10px;
-}
-.cso-job-finder-link a {
-  font-weight: 700;
-}
-</style>
 
 
 <section id="overview" aria-label="Directory overview">
           <h2>Explore All Categories</h2>
-          <div class="dashboard-grid" id="dashboard-grid"></div>
-
-          <section class="statistics-section" aria-label="Directory statistics">
-            <h2 class="statistics-title">Directory at a Glance</h2>
-            <div class="statistics-grid" id="statistics-grid" role="region" aria-label="Directory statistics metrics"></div>
-          </section>
+          <div class="dashboard-grid cso-interactive-grid" id="dashboard-grid"></div>
 
           <section class="recent-section" id="recent-section"
                    aria-label="Recently viewed categories" hidden>

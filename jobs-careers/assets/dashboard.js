@@ -686,6 +686,7 @@
 
   function renderStatistics(data) {
     const container = $('statistics-grid');
+    if (!container) return;
     const stats = data.statistics || {};
 
     const topLevelCount = sections.reduce(
@@ -735,6 +736,139 @@
     });
   }
 
+  const QUICK_SUBLINKS = [
+    [
+      { label: 'OPSC', path: [0, 1, 0] },
+      { label: 'OSSC', path: [0, 1, 1] },
+      { label: 'Banking', path: [0, 0, 2] },
+      { label: 'Railways', path: [0, 0, 3] }
+    ],
+    [
+      { label: '10th/12th Pass', path: [0, 0] },
+      { label: 'Graduate Jobs', path: [0, 1] },
+      { label: 'Government Career', path: [3] },
+      { label: 'Private Sector', path: [4] }
+    ],
+    [
+      { label: 'Education Criteria', path: [0, 0] },
+      { label: 'Age Cutoffs', path: [0, 1] },
+      { label: 'Reservation Rules', path: [0, 2] },
+      { label: 'Physical Standards', path: [0, 3] }
+    ],
+    [
+      { label: 'OTET / OSSTET', path: [2, 2] },
+      { label: 'UGC NET / CTET', path: [2, 2] },
+      { label: 'Recruitment Exams', path: [2, 1] },
+      { label: 'Skill Certifications', path: [3] }
+    ],
+    [
+      { label: 'Odisha Scholarships', path: [0, 0] },
+      { label: 'Post-Matric Aid', path: [0, 2] },
+      { label: 'Central Schemes', path: [0, 1] },
+      { label: 'Fellowships', path: [0, 4] }
+    ],
+    [
+      { label: 'Study Abroad', path: [0] },
+      { label: 'Global Employment', path: [1] },
+      { label: 'Research Internships', path: [2] },
+      { label: 'Fellowships', path: [4] }
+    ],
+    [
+      { label: 'Career Planning', path: [0] },
+      { label: 'Application & Resume', path: [1] },
+      { label: 'Interview Preparation', path: [2] },
+      { label: 'Professional Skills', path: [3] }
+    ],
+    [
+      { label: 'Odisha Institutions', path: [0, 0] },
+      { label: 'Recruitment Portals', path: [1] },
+      { label: 'Regulatory Bodies', path: [2] },
+      { label: 'Verification & Safety', path: [4] }
+    ]
+  ];
+
+  function openDirectPath(sectionIndex, nodePath) {
+    currentSection = sectionIndex;
+    path = [...nodePath];
+    search.value = '';
+    clearSearch.hidden = true;
+    updateUrlState(true);
+    renderExplorer();
+    closeMobileMenu();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function applyQuickFilter(filterKey) {
+    const chips = document.querySelectorAll('.cso-quick-chip');
+    chips.forEach(c => {
+      const isMatch = c.dataset.filter === filterKey;
+      c.classList.toggle('active', isMatch);
+      c.setAttribute('aria-pressed', String(isMatch));
+    });
+
+    const cards = grid.querySelectorAll('.cso-interactive-card');
+    if (!cards.length) return;
+
+    if (filterKey === 'all') {
+      cards.forEach(card => {
+        card.style.display = '';
+      });
+      return;
+    }
+
+    const filterTerms = {
+      'opsc-ossc': ['opsc', 'ossc', 'public service commission', 'staff selection commission'],
+      'teaching': ['teaching', 'b.ed', 'otet', 'osstet', 'ctet', 'ugc net', 'teacher'],
+      '10th-12th': ['10th', '12th', 'class 10', 'class 12', 'school-level', 'matric', 'secondary'],
+      'police-defense': ['police', 'defense', 'defence', 'army', 'navy', 'air force', 'security'],
+      'private-it': ['private', 'information technology', 'software', 'corporate']
+    }[filterKey] || [];
+
+    cards.forEach(card => {
+      const idx = parseInt(card.dataset.sectionIndex, 10);
+      const section = sections[idx];
+      if (!section) {
+        card.style.display = '';
+        return;
+      }
+
+      function testNode(node) {
+        const text = ((node.title || '') + ' ' + (node.text || '')).toLowerCase();
+        if (filterTerms.some(t => text.includes(t))) return true;
+        if (Array.isArray(node.notes)) {
+          for (const nt of node.notes) {
+            const ntText = ((nt.title || '') + ' ' + (nt.text || '')).toLowerCase();
+            if (filterTerms.some(t => ntText.includes(t))) return true;
+          }
+        }
+        if (Array.isArray(node.children)) {
+          for (const ch of node.children) {
+            if (testNode(ch)) return true;
+          }
+        }
+        return false;
+      }
+
+      const matches = testNode(section);
+      card.style.display = matches ? '' : 'none';
+    });
+  }
+
+  function initQuickFilters() {
+    const chipsContainer = $('cso-filter-chips');
+    if (!chipsContainer) return;
+
+    chipsContainer.addEventListener('click', event => {
+      const chip = event.target.closest('.cso-quick-chip');
+      if (!chip) return;
+      const filter = chip.dataset.filter || 'all';
+      if (overview.hidden) {
+        showOverview(true);
+      }
+      applyQuickFilter(filter);
+    });
+  }
+
   function buildDashboard() {
     sectionsNav.replaceChildren();
     grid.replaceChildren();
@@ -767,26 +901,66 @@
       navButton.addEventListener('click', () => openSection(index, true));
       sectionsNav.append(navButton);
 
-      const card = el('button', 'dashboard-card');
-      card.type = 'button';
-      card.append(el('span', 'card-icon', icons[index % icons.length]));
+      // Rich Interactive Category Card
+      const card = el('div', 'cso-interactive-card dashboard-card');
+      card.dataset.sectionIndex = String(index);
 
-      const content = el('div', 'card-content');
-      content.append(el('span', 'card-title', section.title));
+      // Top Row: Header Trigger
+      const cardHeader = el('div', 'cso-card-header');
+      
+      const iconWrap = el('div', 'cso-card-icon-wrap');
+      const iconSpan = el('span', 'card-icon', icons[index % icons.length]);
+      iconWrap.append(iconSpan);
+      cardHeader.append(iconWrap);
+
+      const titleGroup = el('div', 'cso-card-title-group');
+      const mainTitle = el('h3', 'cso-card-title', section.title);
+      titleGroup.append(mainTitle);
+
       const entries = countNotes(section.children || []);
-      const metaParts = [];
-      if (categories > 0) metaParts.push(`${categories.toLocaleString('en-IN')} categories`);
-      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
-      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
-      card.append(content);
+      const badgesRow = el('div', 'cso-card-badges');
+      if (categories > 0) {
+        const catBadge = el('span', 'cso-count-badge', `${categories.toLocaleString('en-IN')} Categories`);
+        badgesRow.append(catBadge);
+      }
+      if (entries > 0) {
+        const entryBadge = el('span', 'cso-count-badge subtle', `${entries.toLocaleString('en-IN')} Entries`);
+        badgesRow.append(entryBadge);
+      }
+      titleGroup.append(badgesRow);
+      cardHeader.append(titleGroup);
 
-      const arrow = el('span', 'card-arrow', '›');
-      arrow.setAttribute('aria-hidden', 'true');
-      card.append(arrow);
+      const cardArrow = el('span', 'cso-card-arrow', '›');
+      cardArrow.setAttribute('aria-hidden', 'true');
+      cardHeader.append(cardArrow);
 
-      card.addEventListener('click', () => openSection(index, true));
+      cardHeader.addEventListener('click', () => openSection(index, true));
+      card.append(cardHeader);
+
+      // Bottom Row: 2-3 Quick Sub-links
+      const subLinksData = QUICK_SUBLINKS[index] || [];
+      if (subLinksData.length > 0) {
+        const subLinksContainer = el('div', 'cso-card-sublinks');
+        const subLinksLabel = el('span', 'cso-sublinks-label', 'Quick links:');
+        subLinksContainer.append(subLinksLabel);
+
+        subLinksData.forEach(linkInfo => {
+          const pill = el('button', 'cso-card-sublink-pill', linkInfo.label);
+          pill.type = 'button';
+          pill.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            openDirectPath(index, linkInfo.path);
+          });
+          subLinksContainer.append(pill);
+        });
+
+        card.append(subLinksContainer);
+      }
+
       grid.append(card);
     });
+
+    initQuickFilters();
   }
 
   backButton.addEventListener('click', () => {
@@ -837,11 +1011,39 @@
   });
 
   document.addEventListener('keydown', event => {
+    // 1. Ctrl + K or Cmd + K search shortcut
+    if ((event.key === 'k' || event.key === 'K') && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      search.focus();
+      search.select();
+      return;
+    }
+
+    // 2. '/' shortcut when not in editable input
+    const active = document.activeElement;
+    const isEditable = active && (
+      active.tagName === 'INPUT' ||
+      active.tagName === 'TEXTAREA' ||
+      active.isContentEditable
+    );
+    if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !isEditable) {
+      event.preventDefault();
+      search.focus();
+      search.select();
+      return;
+    }
+
     if (event.key === 'Escape') {
       if (document.body.classList.contains('menu-open')) {
         event.preventDefault();
         closeMobileMenu();
         return;
+      }
+      if (search.value) {
+        search.value = '';
+        clearSearch.hidden = true;
+        showOverview();
+        search.blur();
       }
     }
 
