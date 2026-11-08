@@ -5551,5 +5551,47 @@ mark.cso-search-highlight {
   overflow: hidden;
 }
 
+/* ==========================================================================
+   CSO Standalone Emblem & Brand Logo Specifications
+   ========================================================================== */
+
+.cso-brand-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  line-height: 1 !important;
+}
+
+.cso-brand-logo {
+  height: clamp(32px, 3.2vw, 42px) !important;
+  width: auto !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.cso-footer-logo {
+  height: 34px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  display: inline-block !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.cso-sidebar-emblem {
+  height: 38px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  display: inline-block !important;
+}
+
+
 
 

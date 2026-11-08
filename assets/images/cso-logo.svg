@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="csoSaffron" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF8A00"/>
+      <stop offset="100%" stop-color="#F25D07"/>
+    </linearGradient>
+    <linearGradient id="csoWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="csoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16A34A"/>
+      <stop offset="100%" stop-color="#0D6838"/>
+    </linearGradient>
+    <linearGradient id="csoBird" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9F2E"/>
+      <stop offset="100%" stop-color="#F25D07"/>
+    </linearGradient>
+    <filter id="csoGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g id="cso-emblem" filter="url(#csoGlow)">
+    <!-- C: Flowing Saffron Ribbon Arch -->
+    <path d="M 185 55 C 105 45 42 75 42 120 C 42 165 105 195 185 185 C 196 183 200 170 190 165 C 135 158 84 142 84 120 C 84 98 135 82 190 75 C 200 70 196 57 185 55 Z"
+          fill="url(#csoSaffron)" />
+
+    <!-- S: Elegant Origami / Folded Ribbon in Crisp White with Subtle Border -->
+    <g>
+      <!-- S top ribbon -->
+      <path d="M 292 68 C 265 48 215 50 205 76 C 197 96 220 112 248 122 C 285 135 298 152 292 172 C 284 196 242 198 205 180 C 195 175 188 184 196 191 C 242 214 304 208 316 172 C 326 142 292 124 262 113 C 230 102 222 90 226 76 C 231 60 264 58 290 73 C 298 77 304 69 292 68 Z"
+            fill="url(#csoWhite)"
+            stroke="#CBD5E1"
+            stroke-width="1.2" />
+      <!-- S center subtle crease line -->
+      <path d="M 248 122 L 262 113" stroke="#94A3B8" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- O: India Green Circular Base with Chakra -->
+    <g id="cso-chakra-o">
+      <!-- Outer Ring of O -->
+      <path d="M 370 40 C 414.18 40 450 75.82 450 120 C 450 164.18 414.18 200 370 200 C 325.82 200 290 164.18 290 120 C 290 75.82 325.82 40 370 40 Z M 370 66 C 340.18 66 316 90.18 316 120 C 316 149.82 340.18 174 370 174 C 399.82 174 424 149.82 424 120 C 424 90.18 399.82 66 370 66 Z"
+            fill="url(#csoGreen)" />
+
+      <!-- Inner 24-Spoke Konark / Ashoka Chakra -->
+      <circle cx="370" cy="120" r="48" fill="none" stroke="#0F7A4F" stroke-width="4"/>
+    <circle cx="370" cy="120" r="41" fill="none" stroke="#0F7A4F" stroke-width="1.5" stroke-dasharray="2,2.5"/>
+    <circle cx="370" cy="120" r="12" fill="#0F7A4F"/>
+    <circle cx="370" cy="120" r="4.5" fill="#FFFFFF"/>
+    <circle cx="370" cy="120" r="1.8" fill="#0F7A4F"/>
+    <line x1="382.0" y1="120.0" x2="411.0" y2="120.0" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="397.0" cy="120.0" r="1.6" fill="#0F7A4F"/>
+    <line x1="381.59" y1="123.11" x2="409.6" y2="130.61" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="396.08" cy="126.99" r="1.6" fill="#0F7A4F"/>
+    <line x1="380.39" y1="126.0" x2="405.51" y2="140.5" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="393.38" cy="133.5" r="1.6" fill="#0F7A4F"/>
+    <line x1="378.49" y1="128.49" x2="398.99" y2="148.99" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="389.09" cy="139.09" r="1.6" fill="#0F7A4F"/>
+    <line x1="376.0" y1="130.39" x2="390.5" y2="155.51" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="383.5" cy="143.38" r="1.6" fill="#0F7A4F"/>
+    <line x1="373.11" y1="131.59" x2="380.61" y2="159.6" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="376.99" cy="146.08" r="1.6" fill="#0F7A4F"/>
+    <line x1="370.0" y1="132.0" x2="370.0" y2="161.0" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="370.0" cy="147.0" r="1.6" fill="#0F7A4F"/>
+    <line x1="366.89" y1="131.59" x2="359.39" y2="159.6" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="363.01" cy="146.08" r="1.6" fill="#0F7A4F"/>
+    <line x1="364.0" y1="130.39" x2="349.5" y2="155.51" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="356.5" cy="143.38" r="1.6" fill="#0F7A4F"/>
+    <line x1="361.51" y1="128.49" x2="341.01" y2="148.99" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="350.91" cy="139.09" r="1.6" fill="#0F7A4F"/>
+    <line x1="359.61" y1="126.0" x2="334.49" y2="140.5" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="346.62" cy="133.5" r="1.6" fill="#0F7A4F"/>
+    <line x1="358.41" y1="123.11" x2="330.4" y2="130.61" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="343.92" cy="126.99" r="1.6" fill="#0F7A4F"/>
+    <line x1="358.0" y1="120.0" x2="329.0" y2="120.0" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="343.0" cy="120.0" r="1.6" fill="#0F7A4F"/>
+    <line x1="358.41" y1="116.89" x2="330.4" y2="109.39" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="343.92" cy="113.01" r="1.6" fill="#0F7A4F"/>
+    <line x1="359.61" y1="114.0" x2="334.49" y2="99.5" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="346.62" cy="106.5" r="1.6" fill="#0F7A4F"/>
+    <line x1="361.51" y1="111.51" x2="341.01" y2="91.01" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="350.91" cy="100.91" r="1.6" fill="#0F7A4F"/>
+    <line x1="364.0" y1="109.61" x2="349.5" y2="84.49" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="356.5" cy="96.62" r="1.6" fill="#0F7A4F"/>
+    <line x1="366.89" y1="108.41" x2="359.39" y2="80.4" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="363.01" cy="93.92" r="1.6" fill="#0F7A4F"/>
+    <line x1="370.0" y1="108.0" x2="370.0" y2="79.0" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="370.0" cy="93.0" r="1.6" fill="#0F7A4F"/>
+    <line x1="373.11" y1="108.41" x2="380.61" y2="80.4" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="376.99" cy="93.92" r="1.6" fill="#0F7A4F"/>
+    <line x1="376.0" y1="109.61" x2="390.5" y2="84.49" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="383.5" cy="96.62" r="1.6" fill="#0F7A4F"/>
+    <line x1="378.49" y1="111.51" x2="398.99" y2="91.01" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="389.09" cy="100.91" r="1.6" fill="#0F7A4F"/>
+    <line x1="380.39" y1="114.0" x2="405.51" y2="99.5" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="393.38" cy="106.5" r="1.6" fill="#0F7A4F"/>
+    <line x1="381.59" y1="116.89" x2="409.6" y2="109.39" stroke="#0F7A4F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="396.08" cy="113.01" r="1.6" fill="#0F7A4F"/>
+    </g>
+
+    <!-- Ascending Saffron Bird on Top-Right of O -->
+    <g id="cso-ascending-bird" transform="translate(416, 25) rotate(-12)">
+      <!-- Wing 1 (Upward & Forward) -->
+      <path d="M 18 38 C 22 24 38 10 52 2 C 45 14 36 28 28 35 C 38 32 50 30 58 32 C 46 38 34 42 22 43 Z"
+            fill="url(#csoBird)" />
+      <!-- Wing 2 (Rear) -->
+      <path d="M 16 39 C 14 26 22 15 32 8 C 26 18 22 28 18 36 Z"
+            fill="#E05304" />
+      <!-- Bird Body & Sleek Head -->
+      <path d="M 6 48 C 12 45 18 40 24 41 C 28 41 33 39 36 36 C 30 42 22 46 12 50 Z"
+            fill="url(#csoBird)" />
+      <!-- Beak / Head accent -->
+      <circle cx="37" cy="35" r="2.5" fill="#F25D07" />
+    </g>
+  </g>
+</svg>
