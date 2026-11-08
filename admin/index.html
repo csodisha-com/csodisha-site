@@ -4,260 +4,526 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <title>Administrator Control Portal | Common Sense Odisha</title>
+  <title>Admin Control Panel | Common Sense Odisha</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./admin.css">
+  <!-- Immediate Authentication Route Guard -->
+  <script src="./admin-guard.js"></script>
 </head>
 <body>
 
-  <!-- 1. Authentication Modal Overlay -->
-  <div class="admin-auth-overlay" id="admin-auth-overlay">
-    <div class="admin-auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-      <div class="admin-auth-badge">
-        <span class="shield-icon" aria-hidden="true">🛡️</span>
-        <span>Restricted Area</span>
-      </div>
+  <!-- Off-Canvas Mobile Drawer Backdrop -->
+  <div class="admin-backdrop" id="admin-backdrop" aria-hidden="true"></div>
 
-      <h1 class="admin-auth-title" id="auth-modal-title">Admin Portal</h1>
-      <p class="admin-auth-subtitle">Authorised Access Only. Please verify your administrator credentials to enter the workspace.</p>
+  <!-- Dashboard Shell -->
+  <div class="admin-shell">
 
-      <form class="admin-auth-form" id="admin-login-form" novalidate>
-        <div class="form-group">
-          <label for="admin-user-id">Administrator ID / Username</label>
-          <input type="text" id="admin-user-id" class="admin-input" placeholder="e.g. admin@csodisha.com" required autocomplete="username">
-        </div>
-
-        <div class="form-group">
-          <label for="admin-passkey">Administrator Passkey / Token</label>
-          <div class="input-with-button">
-            <input type="password" id="admin-passkey" class="admin-input" placeholder="Enter passkey" required autocomplete="current-password">
-            <button type="button" class="btn-toggle-pw" id="toggle-passkey" aria-label="Toggle passkey visibility">Show</button>
-          </div>
-        </div>
-
-        <p class="admin-auth-msg" id="admin-auth-msg" role="alert" hidden></p>
-
-        <button type="submit" class="btn-admin-primary">
-          Authenticate &amp; Open Portal
-        </button>
-      </form>
-
-      <a href="/" class="admin-auth-return">← Return to Public Home</a>
-    </div>
-  </div>
-
-  <!-- 2. Authenticated Dashboard Application -->
-  <div class="admin-app" id="admin-app">
-    
-    <!-- Topbar Header -->
-    <header class="admin-header">
-      <div class="admin-header-inner">
-        <a href="/" class="admin-brand" title="Common Sense Odisha Home">
-          <img src="/assets/images/cso-logo.svg" alt="CSO" width="100" height="36">
-          <div class="admin-brand-info">
-            <span class="admin-brand-title">Common Sense Odisha</span>
-            <span class="admin-badge">Admin Workspace</span>
+    <!-- Desktop & Mobile Sidebar Navigation -->
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Administrator Navigation">
+      <div class="sidebar-header">
+        <a href="/admin/" class="sidebar-brand" title="CSO Admin Dashboard">
+          <img src="/assets/images/cso-logo.svg" alt="CSO" width="96" height="34">
+          <div>
+            <div class="sidebar-brand-title">CS ODISHA</div>
+            <div class="sidebar-brand-sub">Admin Control</div>
           </div>
         </a>
-
-        <div class="admin-nav-actions">
-          <div class="admin-session-badge">
-            <span>Admin: <strong id="session-user-id">—</strong></span>
-            <span aria-hidden="true">·</span>
-            <span id="session-time">Active</span>
-          </div>
-          <a href="/" class="btn-header-action btn-header-public" title="Open Public Website">
-            🌐 Public Portal
-          </a>
-          <button type="button" class="btn-header-action btn-header-logout" id="btn-admin-logout" title="End Administrator Session">
-            🔒 Logout
-          </button>
-        </div>
+        <button type="button" class="btn-sidebar-close" id="btn-sidebar-close" aria-label="Close navigation drawer">&times;</button>
       </div>
-    </header>
 
-    <!-- Security Warning Banner -->
-    <div class="admin-security-banner">
-      <span aria-hidden="true">⚠️</span>
-      <span><strong>Security Notice:</strong> All administrative updates, content pushes, and cache resets are actively logged to your session audit trail. Idle sessions expire automatically.</span>
-    </div>
+      <nav class="sidebar-nav" aria-label="Modules">
+        <span class="nav-heading">Platform Modules</span>
+        <button type="button" class="nav-item active" data-module="overview" aria-current="page">
+          <span class="nav-icon" aria-hidden="true">📊</span>
+          <span>Overview &amp; Analytics</span>
+        </button>
+
+        <button type="button" class="nav-item" data-module="inquiries">
+          <span class="nav-icon" aria-hidden="true">📬</span>
+          <span>Inquiries &amp; Forms</span>
+          <span class="nav-badge" id="sidebar-unread-badge">2 New</span>
+        </button>
+
+        <button type="button" class="nav-item" data-module="broadcasts">
+          <span class="nav-icon" aria-hidden="true">📢</span>
+          <span>Public Broadcasts</span>
+        </button>
+
+        <span class="nav-heading">System &amp; Network</span>
+        <button type="button" class="nav-item" data-module="config">
+          <span class="nav-icon" aria-hidden="true">⚙️</span>
+          <span>System Configuration</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" aria-hidden="true">AD</div>
+          <div class="sidebar-user-meta">
+            <span class="sidebar-user-name">Administrator</span>
+            <span class="sidebar-user-email">admin@csodisha.com</span>
+          </div>
+        </div>
+        <button type="button" class="btn-sidebar-signout" id="btn-signout">
+          <span aria-hidden="true">🔒</span>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
 
     <!-- Main Workspace -->
-    <main class="admin-container">
+    <div class="admin-workspace">
 
-      <!-- Section: Quick Metrics & Data Integrity -->
-      <section aria-labelledby="metrics-title">
-        <div class="admin-section-header">
-          <div>
-            <h2 class="admin-section-title" id="metrics-title">
-              📊 Directory &amp; Repository Metrics
-            </h2>
-            <p class="admin-section-subtitle">Real-time status of indexed verified resources across public portals</p>
-          </div>
+      <!-- Top Bar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="btn-mobile-toggle" id="btn-mobile-toggle" aria-label="Open navigation menu" aria-expanded="false">
+            &#9776;
+          </button>
+          <h1 class="topbar-title" id="topbar-title">System Overview &amp; Analytics</h1>
         </div>
 
-        <div class="admin-metrics-grid">
-          <!-- Metric 1: Jobs & Careers -->
-          <div class="admin-metric-card">
-            <div class="admin-metric-icon">💼</div>
-            <div class="admin-metric-body">
-              <span class="admin-metric-value">1,020+</span>
-              <span class="admin-metric-label">Jobs &amp; Recruitment Entries</span>
-              <span class="admin-metric-sub">140 subcategories · 8 major sections</span>
-            </div>
+        <div class="topbar-right">
+          <div class="system-status-indicator" title="Cloudflare Worker Edge Status">
+            <span class="status-pulse" aria-hidden="true"></span>
+            <span>Edge Operational</span>
           </div>
 
-          <!-- Metric 2: Schemes & Benefits -->
-          <div class="admin-metric-card">
-            <div class="admin-metric-icon">🏛️</div>
-            <div class="admin-metric-body">
-              <span class="admin-metric-value">1,066+</span>
-              <span class="admin-metric-label">Schemes &amp; Welfare Initiatives</span>
-              <span class="admin-metric-sub">Central &amp; Odisha state entitlements</span>
-            </div>
+          <div class="admin-badge-top">
+            <span>Identity:</span>
+            <strong id="topbar-admin-badge">admin@csodisha.com</strong>
           </div>
 
-          <!-- Metric 3: Study Library -->
-          <div class="admin-metric-card">
-            <div class="admin-metric-icon">📖</div>
-            <div class="admin-metric-body">
-              <span class="admin-metric-value">1,710+</span>
-              <span class="admin-metric-label">Study Library Curriculum Nodes</span>
-              <span class="admin-metric-sub">Primary, secondary &amp; competitive exams</span>
-            </div>
-          </div>
-
-          <!-- Metric 4: Platform Total -->
-          <div class="admin-metric-card">
-            <div class="admin-metric-icon">⚡</div>
-            <div class="admin-metric-body">
-              <span class="admin-metric-value">3,790+</span>
-              <span class="admin-metric-label">Total Verified Public Resources</span>
-              <span class="admin-metric-sub">Zero broken links · 100% integrity</span>
-            </div>
-          </div>
+          <a href="/" class="btn-topbar-action" title="View Public Portal">
+            <span aria-hidden="true">🌐</span>
+            <span>Public Home</span>
+          </a>
         </div>
-      </section>
+      </header>
 
-      <!-- Section: Management Panels (2-Columns) -->
-      <div class="admin-panels-grid">
+      <!-- Dashboard View Container -->
+      <main class="admin-view-container">
 
-        <!-- Panel 1: Content Moderation & Broadcast Center -->
-        <section class="admin-panel" aria-labelledby="announcements-title">
-          <div class="admin-panel-title">
-            <span id="announcements-title">📢 Broadcast Announcements &amp; Emergency Alerts</span>
-            <span class="admin-panel-badge" id="active-alerts-count">0 Active</span>
+        <!-- ================================================================
+             MODULE 1: OVERVIEW & ANALYTICS
+             ================================================================ -->
+        <section class="admin-module" id="module-overview">
+          <div class="module-header">
+            <div>
+              <h2 class="module-title">
+                <span aria-hidden="true">📊</span>
+                <span>System Summary &amp; Activity</span>
+              </h2>
+              <p class="module-subtitle">Real-time repository metrics and user inquiries status across Odisha portals</p>
+            </div>
           </div>
 
-          <form class="admin-form" id="announcement-form">
-            <div class="form-group">
-              <label for="alert-type">Notice Priority / Category</label>
-              <select id="alert-type" class="admin-select">
-                <option value="notice">Information Notice (Standard)</option>
-                <option value="update">Portal Update (Recruitment / Exam)</option>
-                <option value="emergency">Emergency Alert (Critical Notice)</option>
-              </select>
+          <!-- Top Metric Cards -->
+          <div class="analytics-grid">
+            <div class="analytic-card">
+              <div class="analytic-icon" aria-hidden="true">📬</div>
+              <div class="analytic-body">
+                <span class="analytic-value" id="total-submissions-val">6</span>
+                <span class="analytic-label">Total Inquiries</span>
+                <span class="analytic-meta">Form queries &amp; email routing</span>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="alert-title">Headline</label>
-              <input type="text" id="alert-title" class="admin-input" placeholder="e.g. OPSC CGL Recruitment Application Deadline Extended" required>
+            <div class="analytic-card">
+              <div class="analytic-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;" aria-hidden="true">⚠️</div>
+              <div class="analytic-body">
+                <span class="analytic-value" id="unread-submissions-val" style="color: #f87171;">2</span>
+                <span class="analytic-label">Unread Submissions</span>
+                <span class="analytic-meta">Requires administrator review</span>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="alert-body">Detailed Notice Message</label>
-              <textarea id="alert-body" class="admin-textarea" placeholder="Provide full context, official dates, or instructions for citizens..." required></textarea>
+            <div class="analytic-card">
+              <div class="analytic-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;" aria-hidden="true">✓</div>
+              <div class="analytic-body">
+                <span class="analytic-value" id="resolved-submissions-val" style="color: #34d399;">2</span>
+                <span class="analytic-label">Resolved Submissions</span>
+                <span class="analytic-meta">Answered and verified</span>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="alert-link">Optional Action Link (URL or relative path)</label>
-              <input type="text" id="alert-link" class="admin-input" placeholder="e.g. /jobs-careers/ or https://opsc.gov.in">
+            <div class="analytic-card">
+              <div class="analytic-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;" aria-hidden="true">⚡</div>
+              <div class="analytic-body">
+                <span class="analytic-value">3,790+</span>
+                <span class="analytic-label">Indexed Resources</span>
+                <span class="analytic-meta">Jobs, Schemes &amp; Study Library</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Cards -->
+          <div class="overview-sections-grid">
+            <div class="panel-card">
+              <div class="panel-card-title">
+                <span>Direct Access Actions</span>
+                <span class="status-badge resolved">Live</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                <button type="button" class="btn-table-action" onclick="document.querySelector('.nav-item[data-module=inquiries]').click()" style="justify-content: flex-start; padding: 14px;">
+                  <span style="font-size: 1.4rem;">📬</span>
+                  <div style="text-align: left;">
+                    <div style="font-weight: 700;">Review Inquiries</div>
+                    <div style="font-size: 0.74rem; color: var(--admin-text-muted);">Manage incoming public submissions</div>
+                  </div>
+                </button>
+
+                <button type="button" class="btn-table-action" onclick="document.querySelector('.nav-item[data-module=broadcasts]').click()" style="justify-content: flex-start; padding: 14px;">
+                  <span style="font-size: 1.4rem;">📢</span>
+                  <div style="text-align: left;">
+                    <div style="font-weight: 700;">Push Announcement</div>
+                    <div style="font-size: 0.74rem; color: var(--admin-text-muted);">Broadcast alert to homepage</div>
+                  </div>
+                </button>
+              </div>
             </div>
 
-            <div class="admin-form-actions">
-              <button type="button" class="btn-danger" id="btn-clear-active-banner" style="margin-right: auto;">Clear Active Banner</button>
-              <button type="reset" class="btn-secondary">Clear</button>
-              <button type="submit" class="btn-emerald">Publish Notice</button>
+            <div class="panel-card">
+              <div class="panel-card-title">
+                <span>Connected Routing Nodes</span>
+                <span class="status-badge read">Active</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--admin-border);">
+                  <span style="color: var(--admin-text-muted);">Administrative Endpoint:</span>
+                  <strong style="color: var(--admin-text-primary);">admin@csodisha.com</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--admin-text-muted);">Public Contact Desk:</span>
+                  <strong style="color: var(--admin-text-primary);">contact@csodisha.com</strong>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
+        </section>
 
-          <!-- Active Announcements Table -->
-          <div class="admin-table-wrap">
-            <table class="admin-table" aria-label="Active broadcasts table">
+        <!-- ================================================================
+             MODULE 2: INQUIRIES & FORM SUBMISSIONS
+             ================================================================ -->
+        <section class="admin-module" id="module-inquiries" hidden>
+          <div class="module-header">
+            <div>
+              <h2 class="module-title">
+                <span aria-hidden="true">📬</span>
+                <span>Inquiries &amp; Form Submissions</span>
+              </h2>
+              <p class="module-subtitle">Inspect public feedback, exam queries, and resource suggestions</p>
+            </div>
+          </div>
+
+          <!-- Controls Bar: Search & Filter Chips -->
+          <div class="table-controls-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <input
+                type="search"
+                id="inquiry-search"
+                class="admin-input"
+                placeholder="Search by ID, sender, email, or message keyword..."
+                aria-label="Search inquiries"
+              >
+            </div>
+
+            <div class="filter-chips-group" role="group" aria-label="Status filter">
+              <button type="button" class="filter-chip active" data-status="all">All Inquiries</button>
+              <button type="button" class="filter-chip" data-status="unread">Unread Only</button>
+              <button type="button" class="filter-chip" data-status="read">Read</button>
+              <button type="button" class="filter-chip" data-status="resolved">Resolved</button>
+            </div>
+          </div>
+
+          <!-- Responsive Data Table -->
+          <div class="table-responsive-wrapper">
+            <table class="inquiries-table" aria-label="Inquiries and form submissions table">
               <thead>
                 <tr>
-                  <th>Type</th>
-                  <th>Headline</th>
-                  <th>Message</th>
-                  <th>Created</th>
+                  <th>Inquiry ID</th>
+                  <th>Timestamp</th>
+                  <th>Sender</th>
+                  <th>Subject</th>
+                  <th>Message Preview</th>
+                  <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="alerts-table-body">
-                <!-- Injected via admin.js -->
+              <tbody id="inquiries-table-body">
+                <!-- Dynamically populated via admin.js -->
               </tbody>
             </table>
           </div>
         </section>
 
-        <!-- Panel 2: System Health, Cache Invalidation & Build Controls -->
-        <section class="admin-panel" aria-labelledby="system-tools-title">
-          <div class="admin-panel-title">
-            <span id="system-tools-title">🛠️ System Operations &amp; Cache Tools</span>
-            <span class="admin-panel-badge">Production Engine</span>
-          </div>
-
-          <div class="system-tools-list">
-            <!-- Tool 1: Cache Invalidation -->
-            <div class="system-tool-item">
-              <div class="system-tool-info">
-                <span class="system-tool-name">Purge Client Cache</span>
-                <span class="system-tool-desc">Invalidates cached service worker stores and triggers fresh asset fetches for visitors.</span>
-              </div>
-              <button type="button" class="btn-primary" id="btn-clear-cache">
-                Clear Cache
-              </button>
-            </div>
-
-            <!-- Tool 2: Force Reindex -->
-            <div class="system-tool-item">
-              <div class="system-tool-info">
-                <span class="system-tool-name">Data Reindex Check</span>
-                <span class="system-tool-desc">Verifies node integrity across all 3,790+ directory entries.</span>
-              </div>
-              <button type="button" class="btn-secondary" id="btn-reindex-data">
-                Reindex
-              </button>
-            </div>
-
-            <!-- Tool 3: Reset Preferences -->
-            <div class="system-tool-item">
-              <div class="system-tool-info">
-                <span class="system-tool-name">Reset Portal Preferences</span>
-                <span class="system-tool-desc">Clears custom theme overrides and returns client settings to system defaults.</span>
-              </div>
-              <button type="button" class="btn-secondary" id="btn-reset-defaults">
-                Reset
-              </button>
+        <!-- ================================================================
+             MODULE 3: PUBLIC BROADCASTS & ALERTS
+             ================================================================ -->
+        <section class="admin-module" id="module-broadcasts" hidden>
+          <div class="module-header">
+            <div>
+              <h2 class="module-title">
+                <span aria-hidden="true">📢</span>
+                <span>Public Broadcast Announcements</span>
+              </h2>
+              <p class="module-subtitle">Publish emergency banners, recruitment alerts, and exam notices directly to the homepage</p>
             </div>
           </div>
 
-          <!-- Role-Based Access Guidelines -->
-          <div style="background: var(--admin-surface-card); border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px; font-size: 0.8rem; color: var(--admin-text-secondary); line-height: 1.5;">
-            <p style="font-weight: 700; color: var(--admin-text-primary); margin-bottom: 4px;">🔐 Role-Based Access Guidelines</p>
-            <p>Access to this portal is restricted to authorised CSO staff and maintainers. Modifying announcements or clearing caches affects client-side rendering immediately across all browsers.</p>
+          <div class="overview-sections-grid">
+            <!-- Form Card -->
+            <div class="panel-card">
+              <div class="panel-card-title">
+                <span>Compose New Announcement</span>
+                <button type="button" class="btn-sidebar-signout" id="btn-clear-active-banner" style="width: auto; padding: 4px 12px; min-height: 38px; font-size: 0.76rem;">
+                  Take Down Live Banner
+                </button>
+              </div>
+
+              <form id="announcement-form" class="login-form">
+                <div class="form-group">
+                  <label for="alert-type" class="form-label">Notice Priority</label>
+                  <select id="alert-type" class="admin-input admin-select">
+                    <option value="notice">Information Notice (Standard)</option>
+                    <option value="update">Portal Update (Recruitment / Exam)</option>
+                    <option value="emergency">Emergency Alert (High Priority)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="alert-title" class="form-label">Headline / Subject</label>
+                  <input type="text" id="alert-title" class="admin-input" placeholder="e.g. OPSC CGL Examination Schedule Update" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="alert-body" class="form-label">Detailed Notice Message</label>
+                  <textarea id="alert-body" class="admin-input" style="min-height: 90px; resize: vertical;" placeholder="Context, application instructions or official dates..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="alert-link" class="form-label">Action Link (Optional URL)</label>
+                  <input type="text" id="alert-link" class="admin-input" placeholder="e.g. /jobs-careers/ or https://opsc.gov.in">
+                </div>
+
+                <button type="submit" class="btn-primary">
+                  <span>Publish &amp; Activate Live Banner</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Active Broadcasts History -->
+            <div class="panel-card">
+              <div class="panel-card-title">
+                <span>Active Broadcasts History</span>
+              </div>
+              <div class="table-responsive-wrapper" style="box-shadow: none;">
+                <table class="inquiries-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Headline</th>
+                      <th>Message</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="alerts-table-body">
+                    <!-- Populated via admin.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </section>
 
+        <!-- ================================================================
+             MODULE 4: SYSTEM CONFIGURATION
+             ================================================================ -->
+        <section class="admin-module" id="module-config" hidden>
+          <div class="module-header">
+            <div>
+              <h2 class="module-title">
+                <span aria-hidden="true">⚙️</span>
+                <span>System Configuration &amp; Email Routing</span>
+              </h2>
+              <p class="module-subtitle">Read-only connection configuration and production engine maintenance</p>
+            </div>
+          </div>
+
+          <div class="config-grid">
+            <!-- Card 1: Email Routing -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <div class="config-icon" aria-hidden="true">✉️</div>
+                <div>
+                  <h3 style="font-size: 1.05rem; font-weight: 700;">Email Routing Endpoints</h3>
+                  <p style="font-size: 0.78rem; color: var(--admin-text-muted);">Verified MX Records &amp; Cloudflare routing</p>
+                </div>
+              </div>
+              <div class="config-info-list">
+                <div class="config-info-row">
+                  <span class="config-key">Administrative Endpoint</span>
+                  <span class="config-val">admin@csodisha.com</span>
+                </div>
+                <div class="config-info-row">
+                  <span class="config-key">Contact / Support Desk</span>
+                  <span class="config-val">contact@csodisha.com</span>
+                </div>
+                <div class="config-info-row">
+                  <span class="config-key">Routing Protocol</span>
+                  <span class="config-val">Cloudflare Email Workers</span>
+                </div>
+                <div class="config-info-row">
+                  <span class="config-key">Security Encryption</span>
+                  <span class="config-val">TLS 1.3 / Strict SPF + DKIM + DMARC</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Platform Architecture -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <div class="config-icon" aria-hidden="true">🛡️</div>
+                <div>
+                  <h3 style="font-size: 1.05rem; font-weight: 700;">Infrastructure &amp; Security</h3>
+                  <p style="font-size: 0.78rem; color: var(--admin-text-muted);">Production environment parameters</p>
+                </div>
+              </div>
+              <div class="config-info-list">
+                <div class="config-info-row">
+                  <span class="config-key">Edge Network</span>
+                  <span class="config-val">Cloudflare Pages &amp; Workers</span>
+                </div>
+                <div class="config-info-row">
+                  <span class="config-key">API Layer</span>
+                  <span class="config-val">/api/admin/* (Bearer Token Enforced)</span>
+                </div>
+                <div class="config-info-row">
+                  <span class="config-key">Primary Admin</span>
+                  <span class="config-val">admin@csodisha.com</span>
+                </div>
+                <div class="config-info-row">
+                  <span class="config-key">WCAG Compliance</span>
+                  <span class="config-val">Level AA (Color contrast &amp; 44px touch)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Cache Invalidation Operations -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <div class="config-icon" aria-hidden="true">🧹</div>
+                <div>
+                  <h3 style="font-size: 1.05rem; font-weight: 700;">Cache Operations</h3>
+                  <p style="font-size: 0.78rem; color: var(--admin-text-muted);">Browser &amp; storage cache purge tools</p>
+                </div>
+              </div>
+              <p style="font-size: 0.84rem; color: var(--admin-text-secondary); line-height: 1.45;">
+                Trigger cache purges to force client-side re-fetching of all latest datasets across all connected browsers.
+              </p>
+              <div style="display: flex; gap: 10px; margin-top: auto;">
+                <button type="button" class="btn-primary" id="btn-clear-cache" style="min-height: 44px;">
+                  Purge Cache
+                </button>
+                <button type="button" class="btn-topbar-action" id="btn-reindex-data" style="min-height: 44px;">
+                  Verify Index
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ================================================================
+       ACTION CONTROLS: INQUIRY INSPECTOR MODAL & REPLY DRAWER
+       ================================================================ -->
+  <div class="modal-overlay" id="inquiry-modal" role="dialog" aria-modal="true" aria-labelledby="modal-inquiry-id" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <span style="font-size: 0.76rem; font-weight: 700; color: #93c5fd; text-transform: uppercase;">Inquiry Details</span>
+          <h2 class="modal-title" id="modal-inquiry-id">INQ-2026-0000</h2>
+        </div>
+        <button type="button" class="btn-modal-close" id="btn-close-modal" aria-label="Close inspector">&times;</button>
       </div>
 
-    </main>
+      <div class="modal-body">
+        <!-- Metadata Grid -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Sender Name</span>
+            <span class="detail-val" id="modal-sender-name">—</span>
+          </div>
 
-    <!-- Admin Footer -->
-    <footer class="admin-footer">
-      <span>Common Sense Odisha Administrator Console &bull; Build 2026.11 &bull; Strictly Authorised Access</span>
-    </footer>
+          <div class="detail-item">
+            <span class="detail-label">Email Address</span>
+            <span class="detail-val"><a href="#" id="modal-sender-email" style="color: #60a5fa; text-decoration: underline;">—</a></span>
+          </div>
 
+          <div class="detail-item">
+            <span class="detail-label">Phone Contact</span>
+            <span class="detail-val" id="modal-sender-phone">—</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Submitted On</span>
+            <span class="detail-val" id="modal-timestamp">—</span>
+          </div>
+        </div>
+
+        <!-- Subject & Category -->
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="detail-label">Subject Line</span>
+            <span class="status-badge" id="modal-category" style="background: var(--admin-surface-card); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">Category</span>
+          </div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--admin-text-primary);" id="modal-subject">—</div>
+        </div>
+
+        <!-- Full Message Body -->
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span class="detail-label">Full Query Message</span>
+          <div class="message-box" id="modal-message-body">—</div>
+        </div>
+
+        <!-- Quick Reply & Templates Box -->
+        <div class="reply-templates-box">
+          <span class="detail-label">Quick Response Templates</span>
+          <div class="template-chips">
+            <button type="button" class="template-btn" data-template="syllabus">Exam Syllabus Update</button>
+            <button type="button" class="template-btn" data-template="scholarship">Scholarship Deadline</button>
+            <button type="button" class="template-btn" data-template="resolved">Mark Resolved &amp; Close</button>
+          </div>
+
+          <label for="modal-reply-text" class="detail-label" style="margin-top: 6px;">Draft Reply</label>
+          <textarea id="modal-reply-text" class="admin-input" style="min-height: 100px; resize: vertical;" placeholder="Type custom response to candidate or choose a quick template above..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label for="modal-status-select" style="font-size: 0.8rem; font-weight: 600; color: var(--admin-text-muted);">Status:</label>
+          <select id="modal-status-select" class="admin-input admin-select" style="min-height: 40px; padding: 4px 10px; width: auto;">
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-topbar-action" onclick="document.getElementById('btn-close-modal').click()">Close</button>
+          <button type="button" class="btn-primary" id="btn-send-reply" style="min-height: 40px; padding: 6px 16px;">
+            <span>Dispatch Reply &rarr;</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="./admin.js" defer></script>

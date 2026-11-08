@@ -1,0 +1,16 @@
+{
+  "authenticated": true,
+  "user": {
+    "email": "admin@csodisha.com",
+    "name": "CSO Lead Administrator",
+    "role": "SuperAdmin",
+    "permissions": ["all", "moderation", "inquiries", "config", "broadcasts"],
+    "lastLogin": "2026-11-08T14:45:20Z"
+  },
+  "system": {
+    "version": "2026.11-PROD",
+    "region": "ap-south-1 (Bhubaneswar/Kolkata Edge)",
+    "environment": "production",
+    "status": "operational"
+  }
+}

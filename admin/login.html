@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Authentication | Common Sense Odisha</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body class="admin-login-layout">
+
+  <div class="login-card">
+    <div class="login-logo-wrap">
+      <a href="/" title="Return to CSO Homepage">
+        <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="46">
+      </a>
+    </div>
+
+    <div class="login-badge">
+      <span aria-hidden="true">🛡️</span>
+      <span>Restricted Management Gate</span>
+    </div>
+
+    <h1 class="login-title">Administrator Sign In</h1>
+    <p class="login-subtitle">
+      Authorised access only. Verify your administrator identity to access inquiries, broadcasts, and system controls.
+    </p>
+
+    <form class="login-form" id="admin-login-form" novalidate>
+      <div class="form-group">
+        <label for="admin-email" class="form-label">Administrator Email</label>
+        <input
+          type="email"
+          id="admin-email"
+          class="admin-input"
+          value="admin@csodisha.com"
+          placeholder="admin@csodisha.com"
+          required
+          autocomplete="username"
+          spellcheck="false"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="admin-passkey" class="form-label">Administrator Passkey / Bearer Token</label>
+        <div class="input-with-button">
+          <input
+            type="password"
+            id="admin-passkey"
+            class="admin-input"
+            placeholder="Enter passkey (e.g. Admin@CSO#2026)"
+            required
+            autocomplete="current-password"
+          >
+          <button type="button" class="btn-toggle-pw" id="toggle-passkey" aria-label="Show passkey">
+            Show
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+        <input type="checkbox" id="remember-me" style="width: 18px; height: 18px; accent-color: var(--admin-emerald-bright); cursor: pointer;">
+        <label for="remember-me" style="font-size: 0.85rem; color: var(--admin-text-secondary); cursor: pointer;">
+          Stay signed in for 8 hours on this device
+        </label>
+      </div>
+
+      <div class="login-msg error" id="login-error-msg" role="alert" hidden></div>
+
+      <button type="submit" class="btn-primary" id="btn-submit-login">
+        <span>Authenticate &amp; Open Dashboard</span>
+        <span aria-hidden="true">&rarr;</span>
+      </button>
+    </form>
+
+    <div class="login-footer-links">
+      <a href="/">&larr; Return to Public Portal</a>
+      <a href="mailto:admin@csodisha.com">Need Key Assistance?</a>
+    </div>
+  </div>
+
+  <script src="./admin-guard.js"></script>
+  <script>
+    (function() {
+      'use strict';
+      const form = document.getElementById('admin-login-form');
+      const emailInput = document.getElementById('admin-email');
+      const passInput = document.getElementById('admin-passkey');
+      const toggleBtn = document.getElementById('toggle-passkey');
+      const rememberCheckbox = document.getElementById('remember-me');
+      const errorMsg = document.getElementById('login-error-msg');
+      const submitBtn = document.getElementById('btn-submit-login');
+
+      // Toggle passkey visibility
+      toggleBtn.addEventListener('click', () => {
+        const isPass = passInput.type === 'password';
+        passInput.type = isPass ? 'text' : 'password';
+        toggleBtn.textContent = isPass ? 'Hide' : 'Show';
+        toggleBtn.setAttribute('aria-label', isPass ? 'Hide passkey' : 'Show passkey');
+      });
+
+      // Target admin credentials
+      const TARGET_EMAIL = 'admin@csodisha.com';
+      const TARGET_PASSKEY = 'Admin@CSO#2026';
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMsg.hidden = true;
+        errorMsg.textContent = '';
+
+        const email = (emailInput.value || '').trim().toLowerCase();
+        const passkey = (passInput.value || '').trim();
+        const remember = rememberCheckbox.checked;
+
+        if (!email || !passkey) {
+          errorMsg.hidden = false;
+          errorMsg.textContent = 'Please enter both administrator email and passkey.';
+          return;
+        }
+
+        // Validate credentials
+        if (email !== TARGET_EMAIL || passkey !== TARGET_PASSKEY) {
+          errorMsg.hidden = false;
+          errorMsg.textContent = 'Invalid administrator credentials. Authorised access only.';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Verifying Session...</span>';
+
+        // Save session using admin guard
+        const session = window.CSOAdminGuard.saveSession(email, remember);
+
+        // Optional server verify ping
+        try {
+          await window.CSOAdminGuard.verifySessionWithServer(session);
+        } catch (_) {}
+
+        // Redirect to dashboard or return destination
+        const params = new URLSearchParams(window.location.search);
+        const destination = params.get('return') || window.CSOAdminGuard.DASHBOARD_URL;
+        window.location.replace(destination);
+      });
+    })();
+  </script>
+</body>
+</html>
