@@ -1,1 +1,4 @@
 /api/auth/me /api/auth/me.json 200
+/scholarship-guidance/* /schemes-benefits/ 301
+/education-explorer/* /study/examinations/ 301
+/study-path-finder/* /career-guidance/ 301

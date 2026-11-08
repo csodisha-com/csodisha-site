@@ -1,0 +1,615 @@
+{
+  "title": "CSO Community Directory",
+  "navigation": [
+    {
+      "id": "group-01",
+      "number": "01",
+      "title": "Local & Odisha Communities",
+      "sections": [
+        {
+          "number": "1.1",
+          "title": "District & Regional Forums",
+          "children": [
+            {
+              "number": "1.1.1",
+              "title": "Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara)",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Regional development discussions, citizen initiatives, local governance updates"
+                }
+              ]
+            },
+            {
+              "number": "1.1.2",
+              "title": "Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh)",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Education hubs, agriculture networks, cultural preservation forums"
+                }
+              ]
+            },
+            {
+              "number": "1.1.3",
+              "title": "Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri)",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Tribal welfare, healthcare initiatives, local youth development"
+                }
+              ]
+            },
+            {
+              "number": "1.1.4",
+              "title": "Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal)",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Industrial corridors, environmental forums, community education"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "1.2",
+          "title": "Panchayat & Urban Civic Groups",
+          "children": [
+            {
+              "number": "1.2.1",
+              "title": "Gram Panchayat Citizen Circles",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Rural welfare monitoring, local scheme awareness, village councils"
+                }
+              ]
+            },
+            {
+              "number": "1.2.2",
+              "title": "Urban Local Bodies & Resident Associations",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Municipality services, urban sanitation, neighborhood safety"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-02",
+      "number": "02",
+      "title": "Students, Educators & Mentorship",
+      "sections": [
+        {
+          "number": "2.1",
+          "title": "School & College Student Circles",
+          "children": [
+            {
+              "number": "2.1.1",
+              "title": "Secondary & Higher Secondary Study Circles",
+              "children": [],
+              "notes": [
+                {
+                  "text": "BSE Odisha, CHSE, CBSE peer learning and revision groups"
+                }
+              ]
+            },
+            {
+              "number": "2.1.2",
+              "title": "Undergraduate & University Study Collectives",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Degree course discussions, semester exam prep, college clubs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "2.2",
+          "title": "Educators, Teachers & Mentorship Hub",
+          "children": [
+            {
+              "number": "2.2.1",
+              "title": "School Teachers & Pedagogy Network",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Teaching resources exchange, innovative classroom methodologies"
+                }
+              ]
+            },
+            {
+              "number": "2.2.2",
+              "title": "Higher Education Mentors & Researchers",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Research guidance, academic paper publishing, higher studies advice"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-03",
+      "number": "03",
+      "title": "Careers, Business & Professional Networks",
+      "sections": [
+        {
+          "number": "3.1",
+          "title": "Job Seekers & Competitive Aspirants",
+          "children": [
+            {
+              "number": "3.1.1",
+              "title": "OPSC, OSSC & OSSSC Exam Aspirants",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Strategy sharing, daily current affairs discussion, mock interviews"
+                }
+              ]
+            },
+            {
+              "number": "3.1.2",
+              "title": "Banking, Railway & SSC Central Exam Forums",
+              "children": [],
+              "notes": [
+                {
+                  "text": "National recruitment prep, syllabus breakdown, doubt clearing"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "3.2",
+          "title": "Entrepreneurs, Startups & MSMEs",
+          "children": [
+            {
+              "number": "3.2.1",
+              "title": "Odisha Startup Founders & Innovators",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Incubation support, funding schemes, Startup Odisha guidance"
+                }
+              ]
+            },
+            {
+              "number": "3.2.2",
+              "title": "Small Business & Trade Guilds",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Market linkages, GST/licensing support, local trade promotion"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-04",
+      "number": "04",
+      "title": "Agriculture & Rural Livelihoods",
+      "sections": [
+        {
+          "number": "4.1",
+          "title": "Farmer Collectives & Organic Growers",
+          "children": [
+            {
+              "number": "4.1.1",
+              "title": "Krushak Knowledge Sharing Circles",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Kalia Yojana, PM-Kisan, weather advisories, modern farm techniques"
+                }
+              ]
+            },
+            {
+              "number": "4.1.2",
+              "title": "Millet Mission & Indigenous Crops",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Millets cultivation, processing units, sustainable rural farming"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "4.2",
+          "title": "Allied Rural Sectors",
+          "children": [
+            {
+              "number": "4.2.1",
+              "title": "Dairy, Poultry & Livestock Keepers",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Livestock health, OMFED schemes, veterinary care guidance"
+                }
+              ]
+            },
+            {
+              "number": "4.2.2",
+              "title": "Fisheries & Coastal Livelihoods",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Aquaculture techniques, marine fisheries subsidies, cold-chain support"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-05",
+      "number": "05",
+      "title": "Women, Families, Health & Inclusion",
+      "sections": [
+        {
+          "number": "5.1",
+          "title": "Mission Shakti & Women Groups",
+          "children": [
+            {
+              "number": "5.1.1",
+              "title": "Self-Help Groups (SHGs) & Financial Literacy",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Micro-credit schemes, handicraft sales, entrepreneurship for women"
+                }
+              ]
+            },
+            {
+              "number": "5.1.2",
+              "title": "Women Health, Safety & Legal Rights",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Maternal wellness, nutrition support, emergency helplines"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "5.2",
+          "title": "Special Beneficiaries & Inclusion",
+          "children": [
+            {
+              "number": "5.2.1",
+              "title": "Divyangjan (Persons with Disabilities) Support",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Assistive devices, accessible education, reservation guidelines"
+                }
+              ]
+            },
+            {
+              "number": "5.2.2",
+              "title": "Senior Citizens & Elder Care Forums",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Old age pensions, healthcare access, elder community centers"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-06",
+      "number": "06",
+      "title": "Youth, NGOs & Volunteering",
+      "sections": [
+        {
+          "number": "6.1",
+          "title": "Youth Development & Leadership",
+          "children": [
+            {
+              "number": "6.1.1",
+              "title": "NYKS, NSS & Youth Clubs",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Community service projects, leadership camps, disaster relief"
+                }
+              ]
+            },
+            {
+              "number": "6.1.2",
+              "title": "Skill Development & Vocational Circles",
+              "children": [],
+              "notes": [
+                {
+                  "text": "World Skill Center, ITI apprenticeships, career training"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "6.2",
+          "title": "Civil Society & NGOs",
+          "children": [
+            {
+              "number": "6.2.1",
+              "title": "Non-Profit Networks in Odisha",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Child education, rural development, CSR partnerships"
+                }
+              ]
+            },
+            {
+              "number": "6.2.2",
+              "title": "Volunteering Opportunities",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Blood donation drives, emergency cyclone relief, literacy camps"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-07",
+      "number": "07",
+      "title": "Culture, Sports & Traditional Communities",
+      "sections": [
+        {
+          "number": "7.1",
+          "title": "Odisha Heritage & Arts",
+          "children": [
+            {
+              "number": "7.1.1",
+              "title": "Odia Language, Literature & Poetry",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Classical Odia literature, poetry reading circles, translation projects"
+                }
+              ]
+            },
+            {
+              "number": "7.1.2",
+              "title": "Traditional Handlooms & Handicrafts",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Sambalpuri weaves, Pattachitra, Silver Filigree artisan support"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "7.2",
+          "title": "Sports & Athletics Networks",
+          "children": [
+            {
+              "number": "7.2.1",
+              "title": "Hockey, Football & Athletic Clubs",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Grassroots sports coaching, state sports hostels, athlete funding"
+                }
+              ]
+            },
+            {
+              "number": "7.2.2",
+              "title": "Indigenous Games & Yoga Clubs",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Traditional wrestling, yoga camps, physical wellness"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-08",
+      "number": "08",
+      "title": "Environment, Science & Technology",
+      "sections": [
+        {
+          "number": "8.1",
+          "title": "Environmental Conservation & Climate",
+          "children": [
+            {
+              "number": "8.1.1",
+              "title": "Forest & Wildlife Conservation",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Similipal, Bhitarkanika, Chilika ecology and community protection"
+                }
+              ]
+            },
+            {
+              "number": "8.1.2",
+              "title": "Disaster Preparedness & Climate Action",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Cyclone resilience, coastal tree plantation, flood mitigation"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "8.2",
+          "title": "Open Science & Technology Innovation",
+          "children": [
+            {
+              "number": "8.2.1",
+              "title": "Coding & Open Source Developers",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Web development, open government data, AI learning groups"
+                }
+              ]
+            },
+            {
+              "number": "8.2.2",
+              "title": "Science Clubs & STEM Outreach",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Planetarium activities, science fairs, rural STEM workshops"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-09",
+      "number": "09",
+      "title": "Digital, International & Community Forums",
+      "sections": [
+        {
+          "number": "9.1",
+          "title": "Global Odia Diaspora Networks",
+          "children": [
+            {
+              "number": "9.1.1",
+              "title": "International Odia Societies (OSSA, OSA, UK, Middle East)",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Global connectivity, cultural festivals, overseas student guidance"
+                }
+              ]
+            },
+            {
+              "number": "9.1.2",
+              "title": "Knowledge & Skill Remittance",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Diaspora mentorship, technology transfer, philanthropy in Odisha"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "9.2",
+          "title": "Digital & Virtual Discussion Hubs",
+          "children": [
+            {
+              "number": "9.2.1",
+              "title": "Online Knowledge Commons",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Open educational resources, webinar recordings, digital libraries"
+                }
+              ]
+            },
+            {
+              "number": "9.2.2",
+              "title": "Ask CSO Community Helpdesk",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Peer-to-peer Q&A, guidance verification, navigation help"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-10",
+      "number": "10",
+      "title": "Community Directory, Safety & Governance",
+      "sections": [
+        {
+          "number": "10.1",
+          "title": "Community Guidelines & Moderation",
+          "children": [
+            {
+              "number": "10.1.1",
+              "title": "Code of Conduct & Civic Standards",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Respectful discourse, anti-harassment policy, verification norms"
+                }
+              ]
+            },
+            {
+              "number": "10.1.2",
+              "title": "Content Verification & Fact-Checking",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Misinformation prevention, official source citation standards"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "10.2",
+          "title": "Safety, Support & Grievance Redressal",
+          "children": [
+            {
+              "number": "10.2.1",
+              "title": "Reporting Safety Concerns",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Community safety desk, emergency helpline directory"
+                }
+              ]
+            },
+            {
+              "number": "10.2.2",
+              "title": "Feedback & Continuous Improvement",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Feature requests, community voting, portal improvements"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -108,6 +108,7 @@ const modal=h=>{const o=document.createElement('div');o.className='ov';o.innerHT
 const pop=(a,items)=>{$$('.pp').forEach(x=>x.remove());const m=document.createElement('div');m.className='pp';const r=a.getBoundingClientRect();m.style.top=r.bottom+4+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-210))+'px';items.forEach(([l,f,on])=>{const b=document.createElement('button');b.textContent=(on?'✓ ':'')+l;b.onclick=()=>{f();m.remove()};m.append(b)});document.body.append(m);localize(m);setTimeout(()=>addEventListener('click',()=>m.remove(),{once:true}),0)};
 const go=s=>{location.hash=s};
 let lastQ='';
+const getSearchInput=()=>$('#cso-ask-input')||$('#sf input')||$('#sq');
 const save=()=>ls.s('cso',S);
 const THEMES=['light','dark','system','reading','sepia'];
 const THEME_ICONS={light:'☀️',dark:'🌙',system:'💻',reading:'📖',sepia:'☕'};
@@ -129,28 +130,24 @@ function heroLang(){
   hi:['नौकरियाँ, योजनाएँ, अध्ययन सामग्री और लेख खोजें...','लोकप्रिय खोजें:']
  };
  const w=words[S.lang]||words.en;
- $('#sq').placeholder=w[0];
- $('.chips span').textContent=w[1];
+ const inp=getSearchInput();
+ if(inp)inp.placeholder=w[0];
+ const cp=$('.chips span');
+ if(cp)cp.textContent=w[1];
 }
 function nav(){
  const w=$('#navw');
- w.innerHTML='<button type="button" class="cso-nav-mobile" aria-expanded="false" aria-controls="cso-nav-items"><span aria-hidden="true">☰</span> Menu</button>'+
+ w.innerHTML='<button type="button" class="cso-nav-mobile" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu"><span aria-hidden="true">☰</span> Menu</button>'+
  '<div id="cso-nav-items" class="cso-nav-items">'+
  '<a href="#" data-h="" class="cso-nav-home"><span aria-hidden="true">🏠</span> '+esc(translateText('Home'))+'</a>'+
  NAV.map(([s,t,i])=>
  '<div class="ni">'+
  '<div class="cso-nav-parent">'+
- '<a href="'+(s==='jobs-careers'?'jobs-careers/':s==='schemes-benefits'?'schemes-benefits/':s==='study-library'?'study-library/':s==='community'?'community/':s==='about'?'about/':'#'+s)+'"'+((s==='jobs-careers'||s==='schemes-benefits'||s==='study-library'||s==='community'||s==='about')?'':' data-m="'+s+'"')+'><span aria-hidden="true">'+i+'</span> '+esc(translateText(t))+'</a>'+
+ '<a href="'+s+'/"><span aria-hidden="true">'+i+'</span> '+esc(translateText(t))+'</a>'+
  '<button type="button" class="cso-nav-arrow" aria-label="Toggle '+esc(t)+' menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-nav-dd-'+s+'">⌄</button>'+
  '</div>'+
  '<div class="dd" id="cso-nav-dd-'+s+'">'+MENUS[s].map((x,index)=>
-  '<a href="'+(s==='jobs-careers'
-      ? 'jobs-careers/?section='+index
-      : s==='schemes-benefits'
-      ? 'schemes-benefits/?section='+index
-      : s==='study-library'
-       ? 'study-library/?section='+index
-       : s==='community' ? 'community/?section='+index : s==='about' ? 'about/?section='+index : '#'+slug(x))+'"'+((s==='jobs-careers'||s==='schemes-benefits'||s==='study-library'||s==='community'||s==='about')?'':' data-h="'+slug(x)+'"')+'>'+esc(translateText(x))+'</a>'
+  '<a href="'+s+'/?section='+index+'"><span class="dd-bullet" aria-hidden="true">›</span><span>'+esc(translateText(x))+'</span></a>'
  ).join('')+'</div>'+
  '</div>'
  ).join('')+'</div>';
@@ -190,26 +187,37 @@ document.addEventListener('click',e=>{
   if(toggle)toggle.setAttribute('aria-expanded','false');
  }else if(!e.target.closest('#navw')){
   csoCloseNavDropdowns();
+  const items=$('#cso-nav-items');
+  if(items&&items.classList.contains('cso-mobile-open')){
+   items.classList.remove('cso-mobile-open');
+   const toggle=$('#navw .cso-nav-mobile');
+   if(toggle)toggle.setAttribute('aria-expanded','false');
+  }
  }
 });
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){
   csoCloseNavDropdowns();
   const items=$('#cso-nav-items');
-  if(items)items.classList.remove('cso-mobile-open');
-  const toggle=$('#navw .cso-nav-mobile');
-  if(toggle)toggle.setAttribute('aria-expanded','false');
+  if(items&&items.classList.contains('cso-mobile-open')){
+   items.classList.remove('cso-mobile-open');
+   const toggle=$('#navw .cso-nav-mobile');
+   if(toggle){
+    toggle.setAttribute('aria-expanded','false');
+    toggle.focus();
+   }
+  }
  }
 });
 document.addEventListener('focusout',e=>{
  const navw=document.getElementById('navw');
  if(!navw)return;
  const openItem=navw.querySelector('.ni.cso-open');
- if(openItem&&(!e.relatedTarget||!openItem.contains(e.relatedTarget))){
+ if(openItem&&e.relatedTarget&&!openItem.contains(e.relatedTarget)){
   csoCloseNavDropdowns();
  }
  const items=document.getElementById('cso-nav-items');
- if(items&&items.classList.contains('cso-mobile-open')&&(!e.relatedTarget||!navw.contains(e.relatedTarget))){
+ if(items&&items.classList.contains('cso-mobile-open')&&e.relatedTarget&&!navw.contains(e.relatedTarget)){
   items.classList.remove('cso-mobile-open');
   const toggle=navw.querySelector('.cso-nav-mobile');
   if(toggle)toggle.setAttribute('aria-expanded','false');
@@ -218,7 +226,10 @@ document.addEventListener('focusout',e=>{
 });
 /* CSO navigation upgrade v1 */
 function setActive(h){
-  $$('#navw a').forEach(a=>a.classList.remove('on'));
+  $$('#navw a').forEach(a=>{
+    a.classList.remove('on');
+    a.removeAttribute('aria-current');
+  });
 
   const p=!h
     ?$('#navw .cso-nav-home')
@@ -232,7 +243,10 @@ function setActive(h){
             MENUS[menu].some(x=>slug(x)===h));
       });
 
-  if(p)p.classList.add('on');
+  if(p){
+    p.classList.add('on');
+    p.setAttribute('aria-current', 'page');
+  }
 }
 
 /* CSO Unified Authentication Integration v1 */
@@ -1169,7 +1183,7 @@ function csoSearchResultsHTML(query){
     first,first+CSO_SEARCH_PAGE_SIZE
   );
 
-  let html='<div class="cso-search-results">';
+  let html='<div class="cso-search-results" role="region" aria-label="Search results" aria-live="polite">';
 
   html+='<p>Results for <b>'+esc(query)+'</b></p>';
 
@@ -1226,11 +1240,11 @@ function csoSearchResultsHTML(query){
       (first+1)+'–'+(first+visible.length)+
       ' of '+total+' results</p>';
 
-    html+='<div class="lst">';
+    html+='<div class="lst" role="feed" aria-label="Matching search results">';
 
     visible.forEach(item=>{
       if(item.type==='home'){
-        html+='<a class="card rs" data-h="'+
+        html+='<a class="card rs" tabindex="0" role="article" data-h="'+
           esc(item.id)+'">'+
           '<b>'+csoHighlight(item.title,query)+'</b>'+
           '<small>Homepage & Updates</small>'+
@@ -1238,7 +1252,7 @@ function csoSearchResultsHTML(query){
             '<small>'+csoHighlight(item.description,query)+'</small>':'')+
           '</a>';
       }else{
-        html+='<a class="card rs" href="'+
+        html+='<a class="card rs" tabindex="0" role="article" href="'+
           esc(item.url)+'">'+
           '<b>'+csoHighlight(item.title,query)+'</b>'+
           '<small>'+csoHighlight(item.dashboard,query)+
@@ -1252,22 +1266,35 @@ function csoSearchResultsHTML(query){
 
     html+='</div>';
   }else{
-    html+='<p class="mut">No matching content found '+
-      'in this category.</p>';
+    const currentCategoryName = filters.find(([key])=>key===selected)?.[1] || selected;
+    html+='<div class="cso-no-results-card" role="status" aria-live="polite">';
+    html+='<div class="cso-no-results-icon" aria-hidden="true">🔍</div>';
+    html+='<h3>No results found for "<b>'+esc(query)+'</b>"</h3>';
+    html+='<p class="mut">We could not find matching results in '+
+      (selected==='all'?'our verified Common Sense Odisha database':esc(currentCategoryName))+
+      '. Try checking for typos or explore the suggested fallback searches below.</p>';
 
     if(total===0&&CSO_DIRECTORY_LOADED){
       const suggestion=csoSpellingSuggestion(query);
 
       if(suggestion&&suggestion!==csoNormalize(query).trim()){
         html+='<p class="cso-search-suggestion">'+
-          'Did you mean <button type="button" '+
-          'data-cso-suggestion="'+esc(suggestion)+'" '+
-          'style="border:0;background:none;color:#1767a1;'+
-          'text-decoration:underline;cursor:pointer;'+
-          'font:inherit;padding:0">'+
+          'Did you mean <button type="button" class="cso-suggestion-btn" '+
+          'data-cso-suggestion="'+esc(suggestion)+'">'+
           esc(suggestion)+'</button>?</p>';
       }
     }
+
+    html+='<div class="cso-fallback-section">';
+    html+='<p class="cso-fallback-heading">Suggested fallback searches:</p>';
+    html+='<div class="cso-fallback-chips" role="group" aria-label="Suggested fallback searches">';
+    const fallbacks=['Odisha Jobs','Scholarship','Study Library','OPSC','OSSTET','Career Guidance'];
+    fallbacks.forEach(term=>{
+      html+='<button type="button" class="cso-fallback-chip" data-cso-search="'+esc(term)+'">'+
+        esc(term)+'</button>';
+    });
+    html+='</div></div>';
+    html+='</div>';
   }
 
   if(pages>1){
@@ -1303,7 +1330,17 @@ function csoHandleSearchClick(event){
 
   if(suggestion){
     const query=suggestion.dataset.csoSuggestion;
-    const input=$('#sq');
+    const input=getSearchInput();
+    if(input)input.value=query;
+    runSearch(query);
+    return;
+  }
+
+  const fallback=event.target.closest('[data-cso-search]');
+
+  if(fallback){
+    const query=fallback.dataset.csoSearch;
+    const input=getSearchInput();
     if(input)input.value=query;
     runSearch(query);
     return;
@@ -1327,6 +1364,21 @@ function csoHandleSearchClick(event){
     csoSaveSearchState();
     route();
   }
+}
+
+function csoHandleSearchKeydown(event){
+  if(event.key!=='ArrowDown'&&event.key!=='ArrowUp')return;
+  const cards=Array.from(v.querySelectorAll('.card.rs'));
+  if(!cards.length)return;
+  const currentIndex=cards.indexOf(document.activeElement);
+  let nextIndex=0;
+  if(event.key==='ArrowDown'){
+    nextIndex=currentIndex===-1?0:(currentIndex<cards.length-1?currentIndex+1:0);
+  }else if(event.key==='ArrowUp'){
+    nextIndex=currentIndex===-1?cards.length-1:(currentIndex>0?currentIndex-1:cards.length-1);
+  }
+  event.preventDefault();
+  cards[nextIndex].focus();
 }
 
 /* CSO-IN Trending Topics Phase 2 */
@@ -1508,7 +1560,7 @@ function csoStudentDashboardHTML(){
   const cards = [
     ['📚', 'Study Library', 'Notes, PDFs and learning resources', 'study-library/'],
     ['💼', 'Jobs & Careers', 'Explore recruitment and career opportunities', 'jobs-careers/'],
-    ['🎓', 'Exams & Preparation', 'Explore examinations and preparation resources', 'education-explorer/'],
+    ['🎓', 'Exams & Preparation', 'Explore examinations and preparation resources', 'study/examinations/'],
     ['🤲', 'Schemes & Benefits', 'Discover scholarships and government benefits', 'schemes-benefits/'],
     ['🧭', 'Career Guidance', 'Explore career pathways and guidance', 'career-guidance/'],
     ['👥', 'CSO Community', 'Connect with learners across Odisha', 'community/']
@@ -1713,13 +1765,14 @@ function route(){
     return;
   }
 
-  if(!h){mn.hidden=false;v.hidden=true}else{mn.hidden=true;v.hidden=false;v.innerHTML=view(h);after(h);if(h==='search')v.onclick=csoHandleSearchClick;
+  if(!h){mn.hidden=false;v.hidden=true}else{mn.hidden=true;v.hidden=false;v.innerHTML=view(h);after(h);if(h==='search'){v.onclick=csoHandleSearchClick;v.onkeydown=csoHandleSearchKeydown;}
     else if(h==='latest-updates'){
       v.onclick=csoAllUpdatesClick;
       v.oninput=csoAllUpdatesInput;
+      v.onkeydown=null;
       csoUpdateDirectoryResults();
     }
-    else v.onclick=null;
+    else {v.onclick=null;v.onkeydown=null;}
     if(h!=='latest-updates')v.oninput=null;
   }if(h!=='search')scrollTo(0,0);setActive(h);localize(v)}
 const runSearch=q=>{q=q.trim();if(!q)return toast('Type something to search');lastQ=q;CSO_SEARCH_FILTER='all';CSO_SEARCH_PAGE=1;csoSaveSearchState();if(location.hash==='#search')route();else go('search');csoLoadDirectories().then(()=>{if(location.hash==='#search'&&lastQ===q)route()})};
@@ -1808,8 +1861,11 @@ document.addEventListener('click',e=>{
  const a=e.target.closest('a[href="#"]');if(!a||a.classList.contains('opt'))return;e.preventDefault();
  const s=a.dataset.route||slug(clean(a.textContent)),M={'view-all':'latest-updates','view-all-topics':'popular-topics','view-all-tools':'important-tools','learn-more':'trust-layer','join-now':'community','browse-library':'study-library','home':''};
  if(s==='get-started')return compass();if(a.classList.contains('adm'))return admin();
+ if(s==='community'||s==='join-now'){location.href='community/';return}
+ if(s==='about'){location.href='about/';return}
+ if(s==='browse-library'){location.href='study-library/';return}
  go(s in M?M[s]:s)});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'){const d=e.target.closest('.it[data-h]');if(d)go(d.dataset.h)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){const d=e.target.closest('.it[data-h], .card.rs[data-h]');if(d)go(d.dataset.h)}});
 function compass(){const m=modal('<h3>CSO Opportunity Compass</h3><p class="mut">What are you looking for?</p><div class="lst" style="grid-template-columns:1fr">'+[['job-opportunity-finder/','💼 I want a Job'],['study/','🎓 I want to Study'],['schemes-benefits/','🤲 I want a Scheme'],['career-guidance/','🧭 I want Career Guidance']].map(([s,t])=>'<a class="card rs" data-h="'+s+'">'+t+'</a>').join('')+'</div>');m.addEventListener('click',e=>{if(e.target.closest('[data-h]'))m.close()})}
 function admin(){
   const m=modal(`
@@ -1932,8 +1988,338 @@ $$('.lu .tabs button').forEach(s=>{
   };
 });
 lu();
-$('#sf').onsubmit=e=>{e.preventDefault();runSearch($('#sq').value)};$('#smic').onclick=()=>voice($('#sq'),$('#sf'));
-$$('.chips .search-chip').forEach(c=>c.onclick=()=>{$('#sq').value=ORIGINAL_TEXT.get(c.firstChild)||c.textContent;runSearch($('#sq').value)});
+let selectedSuggestIndex = -1;
+let currentSuggestions = [];
+
+function closeSearchAutocomplete() {
+  const dropdown = $('#cso-search-autocomplete');
+  const input = getSearchInput();
+  if (dropdown) {
+    dropdown.hidden = true;
+    dropdown.innerHTML = '';
+  }
+  if (input) {
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+  }
+  selectedSuggestIndex = -1;
+  currentSuggestions = [];
+}
+
+function updateSelectedSuggestItem(items) {
+  const input = getSearchInput();
+  items.forEach((el, idx) => {
+    const isSelected = idx === selectedSuggestIndex;
+    el.setAttribute('aria-selected', String(isSelected));
+    el.classList.toggle('selected', isSelected);
+    if (isSelected) {
+      if (input) input.setAttribute('aria-activedescendant', el.id);
+      el.scrollIntoView({ block: 'nearest' });
+    }
+  });
+  if (selectedSuggestIndex === -1 && input) {
+    input.removeAttribute('aria-activedescendant');
+  }
+}
+
+function activateSuggestItem(item) {
+  if (!item) return;
+  const input = getSearchInput();
+  if (item.type === 'home' && item.id) {
+    go(item.id);
+  } else if (item.url) {
+    if (item.url.startsWith('http://') || item.url.startsWith('https://')) {
+      window.location.href = item.url;
+    } else {
+      window.location.assign(new URL(item.url, document.baseURI).href);
+    }
+  } else if (item.title) {
+    if (input) input.value = item.title;
+    runSearch(item.title);
+  }
+}
+
+function renderSearchAutocomplete(query, suggestions) {
+  const dropdown = $('#cso-search-autocomplete');
+  const input = getSearchInput();
+  if (!dropdown || !input) return;
+
+  if (!suggestions.length) {
+    const suggestion = csoSpellingSuggestion(query);
+    let emptyHtml = '<div class="cso-autocomplete-empty" role="status">';
+    emptyHtml += '<p class="cso-autocomplete-empty-title">No suggestions found for "<b>' + esc(query) + '</b>"</p>';
+    if (suggestion && suggestion !== csoNormalize(query).trim()) {
+      emptyHtml += '<p class="cso-search-suggestion">Did you mean: <button type="button" class="cso-suggestion-btn" data-cso-suggest-term="' + esc(suggestion) + '">' + esc(suggestion) + '</button>?</p>';
+    }
+    emptyHtml += '<p class="cso-autocomplete-empty-sub">Popular searches:</p>';
+    emptyHtml += '<div class="cso-fallback-chips" role="group" aria-label="Suggested searches">';
+    const popular = ['Odisha Jobs', 'Scholarship', 'Study Library', 'OPSC', 'OSSTET'];
+    popular.forEach(term => {
+      emptyHtml += '<button type="button" class="cso-fallback-chip" data-cso-suggest-term="' + esc(term) + '">' + esc(term) + '</button>';
+    });
+    emptyHtml += '</div></div>';
+
+    dropdown.innerHTML = emptyHtml;
+    dropdown.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    input.removeAttribute('aria-activedescendant');
+    return;
+  }
+
+  let html = '<div class="cso-autocomplete-list">';
+  suggestions.forEach((item, index) => {
+    const optId = 'cso-opt-' + index;
+    html += '<div class="cso-autocomplete-item" id="' + optId + '" role="option" tabindex="-1" aria-selected="false" data-index="' + index + '">';
+    html += '<span class="cso-autocomplete-badge" data-cat="' + esc(item.badge) + '">' + esc(item.badge) + '</span>';
+    html += '<div class="cso-autocomplete-content">';
+    html += '<div class="cso-autocomplete-title">' + csoHighlight(item.title, query) + '</div>';
+    if (item.description) {
+      html += '<div class="cso-autocomplete-meta">' + csoHighlight(item.description, query) + '</div>';
+    }
+    html += '</div>';
+    html += '<span class="cso-autocomplete-arrow" aria-hidden="true">→</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  dropdown.innerHTML = html;
+  dropdown.hidden = false;
+  input.setAttribute('aria-expanded', 'true');
+}
+
+function onSearchAutocompleteInput() {
+  const input = getSearchInput();
+  if (!input) return;
+  const q = input.value.trim();
+  const dropdown = $('#cso-search-autocomplete');
+  if (!dropdown) return;
+
+  if (q.length < 2) {
+    closeSearchAutocomplete();
+    return;
+  }
+
+  csoLoadDirectories();
+
+  const localMatches = find(q).map(([title, id, source]) => ({
+    title,
+    description: source || 'Homepage & Updates',
+    badge: 'Home',
+    url: '',
+    id,
+    type: 'home'
+  }));
+
+  const dirMatches = csoDirectoryMatches(q).map(item => {
+    let cat = 'Directory';
+    if (item.url.startsWith('jobs-careers')) cat = 'Jobs';
+    else if (item.url.startsWith('schemes-benefits')) cat = 'Schemes';
+    else if (item.url.startsWith('study-library')) cat = 'Study';
+    else if (item.url.startsWith('community')) cat = 'Community';
+    else if (item.url.startsWith('about')) cat = 'About';
+    return {
+      title: item.title,
+      description: item.trail || item.dashboard || item.description || '',
+      badge: cat,
+      url: item.url,
+      id: '',
+      type: 'directory'
+    };
+  });
+
+  const topicMatches = TOPICS
+    .filter(([t, dest, desc]) => csoNormalize(t + ' ' + (desc || '')).includes(csoNormalize(q)))
+    .map(([title, destination, description]) => ({
+      title,
+      description: description || 'Trending Topic',
+      badge: 'Topic',
+      url: destination,
+      id: '',
+      type: 'topic'
+    }));
+
+  const combined = [];
+  const seenTitles = new Set();
+  [...localMatches, ...dirMatches, ...topicMatches].forEach(item => {
+    const key = item.title.toLowerCase().trim();
+    if (!seenTitles.has(key)) {
+      seenTitles.add(key);
+      combined.push(item);
+    }
+  });
+
+  currentSuggestions = combined.slice(0, 7);
+  selectedSuggestIndex = -1;
+  renderSearchAutocomplete(q, currentSuggestions);
+}
+
+function setupGlobalSearch() {
+  const input = getSearchInput();
+  const form = $('#sf');
+  const dropdown = $('#cso-search-autocomplete');
+  const kbd = $('#cso-search-kbd');
+
+  if (kbd) {
+    const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent || '');
+    kbd.innerHTML = isMac
+      ? '<span class="cso-kbd-key">⌘</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>'
+      : '<span class="cso-kbd-key">Ctrl</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>';
+  }
+
+  document.addEventListener('keydown', e => {
+    const active = document.activeElement;
+    const isEditable = active && (
+      active.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName) ||
+      active.getAttribute('role') === 'textbox'
+    );
+    const searchInp = getSearchInput();
+    const dd = $('#cso-search-autocomplete');
+
+    // 1. Ctrl + K or Cmd + K
+    if ((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      if (searchInp) {
+        searchInp.focus();
+        searchInp.select();
+      }
+      return;
+    }
+
+    // 2. / shortcut (only when not in an editable element)
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !isEditable) {
+      e.preventDefault();
+      if (searchInp) {
+        searchInp.focus();
+        searchInp.select();
+      }
+      return;
+    }
+
+    // 3. Escape key: clear search or dismiss autocomplete dropdowns and return focus
+    if (e.key === 'Escape') {
+      const isDropdownOpen = dd && !dd.hidden;
+      if (isDropdownOpen) {
+        e.preventDefault();
+        closeSearchAutocomplete();
+        if (searchInp) searchInp.focus();
+        return;
+      }
+      if (active === searchInp) {
+        e.preventDefault();
+        if (searchInp.value) {
+          searchInp.value = '';
+          closeSearchAutocomplete();
+        } else {
+          searchInp.blur();
+        }
+        return;
+      }
+    }
+  });
+
+  if (input) {
+    input.addEventListener('input', onSearchAutocompleteInput);
+
+    input.addEventListener('keydown', e => {
+      const dd = $('#cso-search-autocomplete');
+      if (!dd || dd.hidden) {
+        if (e.key === 'ArrowDown' && input.value.trim().length >= 2) {
+          onSearchAutocompleteInput();
+          e.preventDefault();
+        }
+        return;
+      }
+
+      const items = Array.from(dd.querySelectorAll('.cso-autocomplete-item'));
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!items.length) return;
+        selectedSuggestIndex = (selectedSuggestIndex + 1) % items.length;
+        updateSelectedSuggestItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!items.length) return;
+        if (selectedSuggestIndex <= 0) {
+          selectedSuggestIndex = -1;
+          updateSelectedSuggestItem(items);
+          input.focus();
+        } else {
+          selectedSuggestIndex = selectedSuggestIndex - 1;
+          updateSelectedSuggestItem(items);
+        }
+      } else if (e.key === 'Enter') {
+        if (selectedSuggestIndex >= 0 && currentSuggestions[selectedSuggestIndex]) {
+          e.preventDefault();
+          activateSuggestItem(currentSuggestions[selectedSuggestIndex]);
+          closeSearchAutocomplete();
+        } else {
+          closeSearchAutocomplete();
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeSearchAutocomplete();
+        input.focus();
+      }
+    });
+  }
+
+  if (dropdown) {
+    dropdown.addEventListener('click', e => {
+      const fallbackChip = e.target.closest('[data-cso-suggest-term]');
+      if (fallbackChip) {
+        const term = fallbackChip.dataset.csoSuggestTerm;
+        const searchInp = getSearchInput();
+        if (searchInp) searchInp.value = term;
+        closeSearchAutocomplete();
+        runSearch(term);
+        return;
+      }
+
+      const itemEl = e.target.closest('.cso-autocomplete-item');
+      if (itemEl) {
+        const idx = parseInt(itemEl.dataset.index, 10);
+        if (!isNaN(idx) && currentSuggestions[idx]) {
+          activateSuggestItem(currentSuggestions[idx]);
+          closeSearchAutocomplete();
+        }
+      }
+    });
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#sf')) {
+      closeSearchAutocomplete();
+    }
+  });
+
+  if (form) {
+    form.onsubmit = e => {
+      e.preventDefault();
+      closeSearchAutocomplete();
+      const searchInp = getSearchInput();
+      runSearch(searchInp ? searchInp.value : '');
+    };
+  }
+
+  const smic = $('#smic');
+  if (smic && form) {
+    smic.onclick = () => voice(getSearchInput(), form);
+  }
+
+  $$('.chips .search-chip').forEach(c => {
+    c.onclick = () => {
+      const searchInp = getSearchInput();
+      const val = ORIGINAL_TEXT.get(c.firstChild) || c.textContent;
+      if (searchInp) searchInp.value = val;
+      closeSearchAutocomplete();
+      runSearch(val);
+    };
+  });
+}
+
+setupGlobalSearch();
 $('#af').onsubmit=e=>{e.preventDefault();const i=$('#aq'),q=i.value.trim();if(!q)return;const c=$('#chat'),r=find(q,1).slice(0,3);c.insertAdjacentHTML('beforeend','<p class="u">'+esc(q)+'</p><p>'+(r.length?'Here is what I found:<br>'+r.map(([t,s])=>'<a data-h="'+s+'">'+esc(t)+'</a>').join('<br>'):'I do not have verified information on that yet. Content is being added.')+'</p>');localize(c);c.scrollTop=1e9;i.value=''};
 $('#amic').onclick=()=>voice($('#aq'),$('#af'));
 $$('.q span').forEach(c=>c.onclick=()=>{$('#aq').value=c.textContent;$('#af').requestSubmit()});

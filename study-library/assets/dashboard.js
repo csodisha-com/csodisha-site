@@ -4,6 +4,7 @@
   const $ = id => document.getElementById(id);
 
   const sectionsNav = $('side-navigation');
+  const sidebar = $('sidebar');
   const grid = $('dashboard-grid');
   const overview = $('overview');
   const explorer = $('explorer');
@@ -21,6 +22,132 @@
   const pageDescription = $('page-description');
   const breadcrumb = $('breadcrumb');
   const menuToggle = $('menu-toggle');
+
+  const SUBPAGE_TITLE = 'Study Library';
+  const SITE_SUFFIX = 'Common Sense Odisha';
+  const OVERVIEW_DESCRIPTION = 'Explore courses, textbooks, study materials, syllabi and learning resources.';
+
+  function slugify(text) {
+    return String(text || '')
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function getSectionSlug(section) {
+    if (!section) return '';
+    if (section.slug) return String(section.slug);
+    return slugify(section.title);
+  }
+
+  function isSingleWrapperSection(sectionIndex) {
+    if (sectionIndex < 0 || sectionIndex >= sections.length) return false;
+    const ch = sections[sectionIndex].children || [];
+    return ch.length === 1 && Array.isArray(ch[0].children) && ch[0].children.length > 0;
+  }
+
+  function resolveSectionIndex(val) {
+    if (val === null || val === undefined) return -1;
+    const raw = String(val).trim();
+    if (!raw) return -1;
+    if (/^\d+$/.test(raw)) {
+      const num = parseInt(raw, 10);
+      if (num >= 0 && num < sections.length) return num;
+    }
+    const cleanVal = slugify(raw);
+    if (!cleanVal) return -1;
+
+    // 1. Exact slug match or exact title slug match
+    let idx = sections.findIndex(s => {
+      const sSlug = getSectionSlug(s);
+      return sSlug === cleanVal || slugify(s.title) === cleanVal;
+    });
+    if (idx !== -1) return idx;
+
+    // 2. Normalized match (ignoring 'and')
+    const normVal = cleanVal.replace(/-?and-?/g, '-').replace(/^-+|-+$/g, '');
+    if (normVal) {
+      idx = sections.findIndex(s => {
+        const sNorm = getSectionSlug(s).replace(/-?and-?/g, '-').replace(/^-+|-+$/g, '');
+        return sNorm === normVal;
+      });
+      if (idx !== -1) return idx;
+    }
+
+    // 3. Substring match
+    idx = sections.findIndex(s => {
+      const sSlug = getSectionSlug(s);
+      return sSlug.includes(cleanVal) || cleanVal.includes(sSlug);
+    });
+    if (idx !== -1) return idx;
+
+    // 4. Token overlap match
+    const valWords = cleanVal.split('-').filter(w => w.length > 2 && w !== 'and');
+    if (valWords.length > 0) {
+      idx = sections.findIndex(s => {
+        const sSlug = getSectionSlug(s);
+        return valWords.some(w => sSlug.includes(w));
+      });
+      if (idx !== -1) return idx;
+    }
+
+    return -1;
+  }
+
+  function updateDocumentTitle(title) {
+    if (!title || currentSection < 0) {
+      document.title = `${SUBPAGE_TITLE} Explorer | ${SITE_SUFFIX}`;
+    } else {
+      const clean = String(title).replace(/\s+Directory$/i, '').trim();
+      if (clean.toLowerCase() === SUBPAGE_TITLE.toLowerCase()) {
+        document.title = `${clean} | ${SITE_SUFFIX}`;
+      } else {
+        document.title = `${clean} - ${SUBPAGE_TITLE} | ${SITE_SUFFIX}`;
+      }
+    }
+  }
+
+  function updateUrlState(pushHistory = true, replaceUrl = false) {
+    try {
+      const url = new URL(window.location.href);
+      if (currentSection >= 0 && currentSection < sections.length) {
+        const slug = getSectionSlug(sections[currentSection]);
+        url.searchParams.set('section', slug);
+        const hasSingleWrapper = isSingleWrapperSection(currentSection);
+        const isWrapperOnly = hasSingleWrapper && path.length === 1 && path[0] === 0;
+
+        if (path.length > 0 && !isWrapperOnly) {
+          url.searchParams.set('path', path.join('.'));
+        } else {
+          url.searchParams.delete('path');
+        }
+
+        const state = {
+          sectionIndex: currentSection,
+          slug,
+          path: [...path]
+        };
+
+        if (replaceUrl || url.href === window.location.href) {
+          window.history.replaceState(state, '', url.toString());
+        } else if (pushHistory) {
+          window.history.pushState(state, '', url.toString());
+        }
+      } else {
+        url.searchParams.delete('section');
+        url.searchParams.delete('path');
+        const state = { sectionIndex: -1, slug: '', path: [] };
+        if (replaceUrl || url.href === window.location.href) {
+          window.history.replaceState(state, '', url.toString());
+        } else if (pushHistory) {
+          window.history.pushState(state, '', url.toString());
+        }
+      }
+    } catch (_) {
+      // Safe fallback when window history is restricted
+    }
+  }
 
   const icons = ['💼','🧭','📋','📚','🎓','🌍','📈','🏛️'];
 
@@ -52,16 +179,75 @@
     );
   }
 
+  let lastFocusedElement = null;
+
+  function ensureDrawerBackdrop() {
+    let backdrop = document.getElementById('sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'sidebar-backdrop';
+      backdrop.className = 'sidebar-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      const shell = document.querySelector('.app-shell') || document.body;
+      shell.insertBefore(backdrop, shell.firstChild);
+    }
+    return backdrop;
+  }
+
+  function getSidebarFocusables() {
+    if (!sidebar) return [];
+    return Array.from(sidebar.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(el => {
+      return el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement;
+    });
+  }
+
+  function openMobileMenu() {
+    lastFocusedElement = document.activeElement;
+    document.body.classList.add('menu-open');
+    menuToggle.setAttribute('aria-expanded', 'true');
+    sidebar.setAttribute('aria-modal', 'true');
+    sidebar.setAttribute('role', 'dialog');
+    sidebar.setAttribute('aria-label', 'Directory Sections Menu');
+
+    // Focus close button or first actionable element in drawer
+    const focusables = getSidebarFocusables();
+    if (focusables.length) {
+      const closeBtn = document.getElementById('sidebar-close');
+      if (closeBtn && focusables.includes(closeBtn)) {
+        closeBtn.focus();
+      } else {
+        focusables[0].focus();
+      }
+    }
+  }
+
   function closeMobileMenu() {
+    if (!document.body.classList.contains('menu-open')) {
+      menuToggle.setAttribute('aria-expanded', 'false');
+      return;
+    }
     document.body.classList.remove('menu-open');
     menuToggle.setAttribute('aria-expanded', 'false');
+    sidebar.removeAttribute('aria-modal');
+    sidebar.removeAttribute('role');
+
+    // Return focus safely to last focused element or toggle button
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function' && document.contains(lastFocusedElement)) {
+      lastFocusedElement.focus();
+    } else if (menuToggle && typeof menuToggle.focus === 'function') {
+      menuToggle.focus();
+    }
   }
 
   function setActiveSidebar() {
     sectionsNav.querySelectorAll('.side-link').forEach(button => {
       const index = Number(button.dataset.sectionIndex);
-      button.classList.toggle('active', index === currentSection);
-      if (index === currentSection) {
+      const isActive = index === currentSection;
+      button.classList.toggle('active', isActive);
+      button.classList.toggle('on', isActive);
+      if (isActive) {
         button.setAttribute('aria-current', 'page');
       } else {
         button.removeAttribute('aria-current');
@@ -73,59 +259,117 @@
     breadcrumb.replaceChildren();
 
     function addCrumb(label, action, isCurrent = false) {
-      if (breadcrumb.childNodes.length) {
-        breadcrumb.append(el('span', '', ' / '));
-      }
+      const item = el('li', 'breadcrumb-item');
 
       if (isCurrent) {
-        const current = el('strong', '', label);
-        current.setAttribute('aria-current', 'page');
-        breadcrumb.append(current);
+        item.setAttribute('aria-current', 'page');
+        if (action) {
+          let link;
+          if (typeof action === 'string') {
+            link = el('a', 'breadcrumb-link breadcrumb-current', label);
+            link.href = action;
+          } else {
+            link = el('button', 'breadcrumb-link breadcrumb-current', label);
+            link.type = 'button';
+            link.addEventListener('click', action);
+          }
+          link.setAttribute('aria-current', 'page');
+          item.append(link);
+        } else {
+          const current = el('strong', 'breadcrumb-current', label);
+          current.setAttribute('aria-current', 'page');
+          item.append(current);
+        }
       } else {
-        const button = el('button', 'breadcrumb-link', label);
-        button.type = 'button';
-        button.addEventListener('click', action);
-        breadcrumb.append(button);
+        let link;
+        if (typeof action === 'string') {
+          link = el('a', 'breadcrumb-link', label);
+          link.href = action;
+        } else {
+          link = el('button', 'breadcrumb-link', label);
+          link.type = 'button';
+          link.addEventListener('click', action);
+        }
+        item.append(link);
       }
+
+      breadcrumb.append(item);
     }
 
-    addCrumb('CS Odisha', () => {
-      window.location.href = '../index.html';
-    });
+    addCrumb('CS Odisha', '../index.html');
 
     if (currentSection < 0) {
-      addCrumb('Study Library', showOverview, true);
+      addCrumb(SUBPAGE_TITLE, () => showOverview(true), true);
       return;
     }
 
-    addCrumb('Study Library', showOverview);
+    addCrumb(SUBPAGE_TITLE, () => showOverview(true), false);
 
     const section = sections[currentSection];
-    addCrumb(
-      section.title,
-      () => {
-        path = [];
-        renderExplorer();
-      },
-      path.length === 0
-    );
+    const sectionTitle = section.title.replace(/\s+Directory$/i, '').trim();
 
-    let node = section;
+    const hasSingleWrapper = isSingleWrapperSection(currentSection);
+    const effectivePath = hasSingleWrapper && path.length > 0 && path[0] === 0
+      ? path.slice(1)
+      : path;
+    const isAtSectionRoot = effectivePath.length === 0;
 
-    path.forEach((index, depth) => {
-      node = node.children[index];
+    const resetToSectionRoot = () => {
+      path = hasSingleWrapper ? [0] : [];
+      updateUrlState(true);
+      renderExplorer();
+    };
+
+    if (isAtSectionRoot) {
+      addCrumb(sectionTitle, resetToSectionRoot, true);
+      return;
+    }
+
+    addCrumb(sectionTitle, resetToSectionRoot, false);
+
+    let node = hasSingleWrapper ? section.children[0] : section;
+    effectivePath.forEach((index, depth) => {
+      node = (node.children || [])[index] || node;
       const targetDepth = depth + 1;
-      const label = (node.number ? node.number + ' ' : '') + node.title;
+      const isLeaf = targetDepth === effectivePath.length;
+      const label = (node.number ? node.number + ' ' : '') + String(node.title || '').replace(/\s+Directory$/i, '').trim();
 
       addCrumb(
         label,
         () => {
-          path = path.slice(0, targetDepth);
+          path = hasSingleWrapper
+            ? [0, ...effectivePath.slice(0, targetDepth)]
+            : effectivePath.slice(0, targetDepth);
+          updateUrlState(true);
           renderExplorer();
         },
-        targetDepth === path.length
+        isLeaf
       );
     });
+  }
+
+  function renderSearchBreadcrumb() {
+    breadcrumb.replaceChildren();
+
+    const c1 = el('li', 'breadcrumb-item');
+    const a1 = el('a', 'breadcrumb-link', 'CS Odisha');
+    a1.href = '../index.html';
+    c1.append(a1);
+    breadcrumb.append(c1);
+
+    const c2 = el('li', 'breadcrumb-item');
+    const b2 = el('button', 'breadcrumb-link', SUBPAGE_TITLE);
+    b2.type = 'button';
+    b2.addEventListener('click', () => showOverview(true));
+    c2.append(b2);
+    breadcrumb.append(c2);
+
+    const c3 = el('li', 'breadcrumb-item');
+    c3.setAttribute('aria-current', 'page');
+    const s3 = el('strong', 'breadcrumb-current', 'Search');
+    s3.setAttribute('aria-current', 'page');
+    c3.append(s3);
+    breadcrumb.append(c3);
   }
 
   const recentSection = $('recent-section');
@@ -141,16 +385,21 @@
       const button = el('button', 'recent-card');
       button.type = 'button';
 
-      const label = el('span', '', entry.title);
-      const arrow = el('span', '', '→');
-      arrow.setAttribute('aria-hidden', 'true');
+      button.append(el('span', 'card-icon', '⏱'));
+      const content = el('div', 'card-content');
+      content.append(el('span', 'card-title', entry.title));
+      button.append(content);
 
-      button.append(label, arrow);
+      const arrow = el('span', 'card-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      button.append(arrow);
+
       button.addEventListener('click', () => {
         currentSection = entry.sectionIndex;
         path = [...entry.nodePath];
         search.value = '';
         clearSearch.hidden = true;
+        updateUrlState(true);
         renderExplorer();
         closeMobileMenu();
       });
@@ -184,37 +433,38 @@
     renderRecent();
   });
 
-  function showOverview() {
+  function showOverview(pushHistory = true) {
     currentSection = -1;
     path = [];
     searchResults.hidden = true;
     explorer.hidden = true;
     overview.hidden = false;
     renderRecent();
-    pageTitle.textContent = 'Study Library Explorer';
-    pageDescription.textContent =
-      'Explore education, subjects, study materials, examinations and learning resources.';
+    pageTitle.textContent = `${SUBPAGE_TITLE} Explorer`;
+    pageDescription.textContent = OVERVIEW_DESCRIPTION;
     renderBreadcrumb();
     setActiveSidebar();
+    updateDocumentTitle('');
+    if (pushHistory) {
+      updateUrlState(true);
+    }
     closeMobileMenu();
   }
 
-  function openSection(index) {
-    currentSection = index;
-    path = [];
-
-    // Skip a single redundant directory wrapper when it has subcategories.
-    const children = sections[index].children || [];
-    if (
-      children.length === 1 &&
-      (children[0].children || []).length > 0
-    ) {
-      path = [0];
+  function openSection(index, pushHistory = true) {
+    if (index < 0 || index >= sections.length) {
+      showOverview(pushHistory);
+      return;
     }
+    currentSection = index;
+    path = isSingleWrapperSection(index) ? [0] : [];
 
     search.value = '';
     clearSearch.hidden = true;
     renderExplorer();
+    if (pushHistory) {
+      updateUrlState(true);
+    }
     closeMobileMenu();
   }
 
@@ -244,6 +494,8 @@
     explorerTitle.textContent = '';
     pageDescription.textContent = '';
     renderBreadcrumb();
+    setActiveSidebar();
+    updateDocumentTitle(cleanTitle);
 
     explorerDescription.textContent =
       children.length
@@ -268,34 +520,24 @@
       const nested = countNodes(child.children || []);
       const notes = countNotes([child]);
 
-      button.append(
-        el('span', 'card-icon', icon),
-        el('span', 'card-arrow', '›'),
-        el('span', 'card-title', title)
-      );
+      button.append(el('span', 'card-icon', icon));
 
-      if (nested > 0) {
-        button.append(
-          el('span', 'card-count',
-            `${nested.toLocaleString('en-IN')} categories`)
-        );
-      }
+      const content = el('div', 'card-content');
+      content.append(el('span', 'card-title', title));
 
-      if (notes > 0) {
-        button.append(
-          el('span', 'card-count',
-            `${notes.toLocaleString('en-IN')} entries & notes`)
-        );
-      }
+      const metaParts = [];
+      if (nested > 0) metaParts.push(`${nested.toLocaleString('en-IN')} categories`);
+      if (notes > 0) metaParts.push(`${notes.toLocaleString('en-IN')} entries`);
+      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
+      button.append(content);
 
-      if (nested === 0 && notes === 0) {
-        button.append(
-          el('span', 'card-count', 'Explore category')
-        );
-      }
+      const arrow = el('span', 'card-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      button.append(arrow);
 
       button.addEventListener('click', () => {
         path.push(index);
+        updateUrlState(true);
         renderExplorer();
       });
 
@@ -303,7 +545,11 @@
     });
 
     for (const entry of node.notes || []) {
-      const item = el('div', 'explorer-item leaf', entry.text);
+      const item = el('div', 'explorer-item leaf');
+      item.append(el('span', 'card-icon', '📌'));
+      const content = el('div', 'card-content');
+      content.append(el('span', 'card-title', entry.text));
+      item.append(content);
       explorerItems.append(item);
     }
 
@@ -313,7 +559,10 @@
       );
     }
 
-    backButton.textContent = path.length
+    const hasSingleWrapper = isSingleWrapperSection(currentSection);
+    const isAtSectionRoot = path.length === 0 || (hasSingleWrapper && path.length === 1 && path[0] === 0);
+
+    backButton.textContent = !isAtSectionRoot
       ? '← Previous level'
       : '← All sections';
 
@@ -357,6 +606,7 @@
     path = [...result.nodePath];
     search.value = '';
     clearSearch.hidden = true;
+    updateUrlState(true);
     renderExplorer();
     closeMobileMenu();
   }
@@ -377,7 +627,8 @@
 
     pageTitle.textContent = 'Search Study Library';
     pageDescription.textContent = `Results for "${search.value.trim()}"`;
-    breadcrumb.textContent = 'CS Odisha / Study Library / Search';
+    renderSearchBreadcrumb();
+    updateDocumentTitle(`Search: ${search.value.trim()}`);
 
     const results = [];
 
@@ -406,12 +657,17 @@
       const item = el('button', 'explorer-item');
       item.type = 'button';
 
-      const content = el('span');
-      content.append(el('strong', '', result.label));
-      content.append(el('div', '', result.trail));
+      item.append(el('span', 'card-icon', '🔎'));
 
+      const content = el('div', 'card-content');
+      content.append(el('span', 'card-title', result.label));
+      content.append(el('span', 'card-meta', result.trail));
       item.append(content);
-      item.append(el('span', '', '›'));
+
+      const arrow = el('span', 'card-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      item.append(arrow);
+
       item.addEventListener('click', () => openSearchResult(result));
 
       searchItems.append(item);
@@ -488,55 +744,80 @@
     overviewButton.type = 'button';
     overviewButton.dataset.sectionIndex = '-1';
     overviewButton.append(el('span', 'side-icon', '🏠'));
-    overviewButton.append(el('span', '', 'Overview'));
-    overviewButton.append(el('span', 'side-arrow', '›'));
-    overviewButton.addEventListener('click', showOverview);
+    overviewButton.append(el('span', 'side-title', 'Overview'));
+    overviewButton.append(el('span', 'side-count', String(sections.length)));
+    const overviewArrow = el('span', 'side-arrow', '›');
+    overviewArrow.setAttribute('aria-hidden', 'true');
+    overviewButton.append(overviewArrow);
+    overviewButton.addEventListener('click', () => showOverview(true));
     sectionsNav.append(overviewButton);
 
     sections.forEach((section, index) => {
       const navButton = el('button', 'side-link');
       navButton.type = 'button';
       navButton.dataset.sectionIndex = String(index);
-      navButton.append(el('span', 'side-icon', icons[index]));
-      navButton.append(el('span', '', section.title));
-      navButton.append(el('span', 'side-arrow', '›'));
-      navButton.addEventListener('click', () => openSection(index));
+      navButton.append(el('span', 'side-icon', icons[index % icons.length]));
+      navButton.append(el('span', 'side-title', section.title));
+      const categories = countNodes(section.children || []);
+      if (categories > 0) {
+        navButton.append(el('span', 'side-count', String(categories)));
+      }
+      const sideArrow = el('span', 'side-arrow', '›');
+      sideArrow.setAttribute('aria-hidden', 'true');
+      navButton.append(sideArrow);
+      navButton.addEventListener('click', () => openSection(index, true));
       sectionsNav.append(navButton);
 
       const card = el('button', 'dashboard-card');
       card.type = 'button';
-      card.append(el('span', 'card-icon', icons[index]));
-      card.append(el('span', 'card-arrow', '›'));
-      card.append(el('span', 'card-title', section.title));
-      const categories = countNodes(section.children || []);
+      card.append(el('span', 'card-icon', icons[index % icons.length]));
 
-      card.append(
-        el(
-          'span',
-          'card-count',
-          `${categories.toLocaleString('en-IN')} categories`
-        )
-      );
+      const content = el('div', 'card-content');
+      content.append(el('span', 'card-title', section.title));
+      const entries = countNotes(section.children || []);
+      const metaParts = [];
+      if (categories > 0) metaParts.push(`${categories.toLocaleString('en-IN')} categories`);
+      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
+      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
+      card.append(content);
 
+      const arrow = el('span', 'card-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      card.append(arrow);
 
-      card.addEventListener('click', () => openSection(index));
+      card.addEventListener('click', () => openSection(index, true));
       grid.append(card);
     });
   }
 
   backButton.addEventListener('click', () => {
-    if (path.length) {
+    const hasSingleWrapper = isSingleWrapperSection(currentSection);
+    const isAtSectionRoot = path.length === 0 || (hasSingleWrapper && path.length === 1 && path[0] === 0);
+
+    if (!isAtSectionRoot && path.length > 0) {
       path.pop();
+      updateUrlState(true);
       renderExplorer();
     } else {
-      showOverview();
+      showOverview(true);
     }
   });
 
+  const backdrop = ensureDrawerBackdrop();
+  backdrop.addEventListener('click', closeMobileMenu);
+
+  const sidebarClose = document.getElementById('sidebar-close');
+  if (sidebarClose) {
+    sidebarClose.addEventListener('click', closeMobileMenu);
+  }
+
   menuToggle.addEventListener('click', () => {
-    if (window.matchMedia('(max-width: 760px)').matches) {
-      const isOpen = document.body.classList.toggle('menu-open');
-      menuToggle.setAttribute('aria-expanded', String(isOpen));
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      if (document.body.classList.contains('menu-open')) {
+        closeMobileMenu();
+      } else {
+        openMobileMenu();
+      }
     } else {
       const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
       menuToggle.setAttribute('aria-expanded', String(!isCollapsed));
@@ -557,8 +838,116 @@
   });
 
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeMobileMenu();
+    if (event.key === 'Escape') {
+      if (document.body.classList.contains('menu-open')) {
+        event.preventDefault();
+        closeMobileMenu();
+        return;
+      }
+    }
+
+    if (event.key === 'Tab' && document.body.classList.contains('menu-open')) {
+      const focusables = getSidebarFocusables();
+      if (!focusables.length) return;
+
+      const firstFocusable = focusables[0];
+      const lastFocusable = focusables[focusables.length - 1];
+
+      if (event.shiftKey) {
+        if (document.activeElement === firstFocusable || !sidebar.contains(document.activeElement)) {
+          event.preventDefault();
+          lastFocusable.focus();
+        }
+      } else {
+        if (document.activeElement === lastFocusable || !sidebar.contains(document.activeElement)) {
+          event.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    }
   });
+
+  const mql = window.matchMedia('(min-width: 769px)');
+  if (mql && mql.addEventListener) {
+    mql.addEventListener('change', e => {
+      if (e.matches && document.body.classList.contains('menu-open')) {
+        closeMobileMenu();
+      }
+    });
+  }
+
+  function syncFromUrl(pushHistory = false) {
+    if (!sections || !sections.length) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const requestedSection = params.get('section');
+
+    if (requestedSection !== null && requestedSection !== '') {
+      const idx = resolveSectionIndex(requestedSection);
+      if (idx !== -1 && idx < sections.length) {
+        currentSection = idx;
+        path = [];
+
+        const hasSingleWrapper = isSingleWrapperSection(idx);
+        const requestedPath = params.get('path');
+        if (requestedPath !== null) {
+          const parts = requestedPath.split('.');
+          if (
+            parts.length > 0 &&
+            parts.length <= 30 &&
+            parts.every(part => /^(0|[1-9][0-9]*)$/.test(part))
+          ) {
+            const indexes = parts.map(Number);
+            let node = sections[currentSection];
+            let valid = true;
+            for (const pIdx of indexes) {
+              if (!Array.isArray(node.children) || pIdx >= node.children.length) {
+                valid = false;
+                break;
+              }
+              node = node.children[pIdx];
+            }
+            if (valid) {
+              path = indexes;
+            }
+          }
+        }
+
+        if (path.length === 0 && hasSingleWrapper) {
+          path = [0];
+        }
+
+        search.value = '';
+        clearSearch.hidden = true;
+        renderExplorer();
+        updateUrlState(false, true);
+        closeMobileMenu();
+        return;
+      }
+    }
+
+    showOverview(false);
+  }
+
+  window.addEventListener('popstate', () => {
+    syncFromUrl(false);
+  });
+
+  const homeLink = document.querySelector('.home-link');
+  if (homeLink) {
+    homeLink.addEventListener('click', e => {
+      e.preventDefault();
+      showOverview(true);
+    });
+  }
+
+  const brandLink = sidebar.querySelector('.brand');
+  if (brandLink) {
+    brandLink.addEventListener('click', e => {
+      e.preventDefault();
+      showOverview(true);
+    });
+  }
 
   fetch('./generated/directory.json')
     .then(response => {
@@ -581,58 +970,7 @@
       buildDashboard();
       renderStatistics(data);
 
-      // Open a section selected from the homepage dropdown.
-      // Without a section parameter, show the dashboard Overview.
-      const requestedSection = new URLSearchParams(
-        window.location.search
-      ).get('section');
-
-      if (
-        requestedSection !== null &&
-        /^(?:[0-9])$/.test(requestedSection) &&
-        Number(requestedSection) < sections.length
-      ) {
-        openSection(Number(requestedSection));
-
-        // Optional deep link to a nested directory entry.
-        // Example: ?section=0&path=0.1.2
-        const requestedPath = new URLSearchParams(
-          window.location.search
-        ).get('path');
-
-        if (requestedPath !== null) {
-          const parts = requestedPath.split('.');
-
-          if (
-            parts.length > 0 &&
-            parts.length <= 30 &&
-            parts.every(part => /^(0|[1-9][0-9]*)$/.test(part))
-          ) {
-            const indexes = parts.map(Number);
-            let node = sections[currentSection];
-            let valid = true;
-
-            for (const index of indexes) {
-              if (
-                !Array.isArray(node.children) ||
-                index >= node.children.length
-              ) {
-                valid = false;
-                break;
-              }
-
-              node = node.children[index];
-            }
-
-            if (valid) {
-              path = indexes;
-              renderExplorer();
-            }
-          }
-        }
-      } else {
-        showOverview();
-      }
+      syncFromUrl(false);
 
       loadStatus.hidden = true;
     })

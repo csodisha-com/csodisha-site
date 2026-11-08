@@ -1,0 +1,369 @@
+{
+  "title": "CSO About Directory",
+  "navigation": [
+    {
+      "id": "group-01",
+      "number": "01",
+      "title": "About CSO",
+      "sections": [
+        {
+          "number": "1.1",
+          "title": "Mission, Vision & Core Values",
+          "children": [
+            {
+              "number": "1.1.1",
+              "title": "The Common Sense Odisha Mission",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Empowering learners, jobseekers, and citizens of Odisha with authentic information, free educational resources, and civic clarity."
+                }
+              ]
+            },
+            {
+              "number": "1.1.2",
+              "title": "Vision: Self-Reliance & Informed Citizenship",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Be Self-Reliant | Build a Better Tomorrow. A state-wide knowledge ecosystem accessible to everyone."
+                }
+              ]
+            },
+            {
+              "number": "1.1.3",
+              "title": "Core Principles: Accuracy, Public Good & Non-Partisanship",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Uncompromising commitment to official verification, free access without paywalls, and neutral information service."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "1.2",
+          "title": "Platform Architecture & Open Ecosystem",
+          "children": [
+            {
+              "number": "1.2.1",
+              "title": "The Seven CSO Knowledge Pillars",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Jobs & Careers, Schemes & Benefits, Free Study Library, Opportunity Compass, Community Hub, Trust Layer, and Ask CSO navigator."
+                }
+              ]
+            },
+            {
+              "number": "1.2.2",
+              "title": "Digital Inclusion & Multi-Language Commitment",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Supporting Odia (ଓଡ଼ିଆ), Hindi (हिन्दी), and English with high-contrast, text-to-speech, and responsive mobile design."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-02",
+      "number": "02",
+      "title": "Our Approach",
+      "sections": [
+        {
+          "number": "2.1",
+          "title": "Information Architecture & Design Philosophy",
+          "children": [
+            {
+              "number": "2.1.1",
+              "title": "Direct Source Archiving & Verification",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Every job opening, scholarship, and scheme links directly to official government gazettes, notifications, and portals."
+                }
+              ]
+            },
+            {
+              "number": "2.1.2",
+              "title": "Zero Clickbait & De-cluttered Presentation",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Eliminating sensory overload, fake urgency timers, and sensationalized titles in public service publishing."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "2.2",
+          "title": "Interactive Tools & Decision Support",
+          "children": [
+            {
+              "number": "2.2.1",
+              "title": "Calculators & Career Decision Aids",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Age cutoff calculators, marks-to-CGPA converters, eligibility checklists, and personalized pathways."
+                }
+              ]
+            },
+            {
+              "number": "2.2.2",
+              "title": "Localised Search & Smart Indexing",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Full client-side indexing across thousands of directory items without tracking user queries."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-03",
+      "number": "03",
+      "title": "Trust & Transparency",
+      "sections": [
+        {
+          "number": "3.1",
+          "title": "The CSO Trust Layer Standards",
+          "children": [
+            {
+              "number": "3.1.1",
+              "title": "Verified Badges & Source Documentation",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Clear indicators separating official government notifications from editorial guides."
+                }
+              ]
+            },
+            {
+              "number": "3.1.2",
+              "title": "Timestamping & Verification Audits",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Regular re-verification of ongoing deadlines, exam dates, and application portals."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "3.2",
+          "title": "Corrections & Editorial Accountability",
+          "children": [
+            {
+              "number": "3.2.1",
+              "title": "Public Error Reporting & Review Process",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Structured reporting desk allowing citizens to submit evidence-backed corrections."
+                }
+              ]
+            },
+            {
+              "number": "3.2.2",
+              "title": "Correction Log & Transparency Archive",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Publicly documented corrections with timestamp and revised official notice references."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-04",
+      "number": "04",
+      "title": "Team & Community",
+      "sections": [
+        {
+          "number": "4.1",
+          "title": "Editorial & Research Team",
+          "children": [
+            {
+              "number": "4.1.1",
+              "title": "Education & Examination Researchers",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Syllabus analysts, textbook curators, and exam pattern specialists across Odisha."
+                }
+              ]
+            },
+            {
+              "number": "4.1.2",
+              "title": "Public Policy & Welfare Analysts",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Reviewers tracking central and state government welfare schemes and guidelines."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "4.2",
+          "title": "Community Contributors & Volunteers",
+          "children": [
+            {
+              "number": "4.2.1",
+              "title": "Peer Reviewers & Subject Matter Experts",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Volunteer professors, teachers, and professionals validating learning materials."
+                }
+              ]
+            },
+            {
+              "number": "4.2.2",
+              "title": "District Student Ambassadors",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Local ambassadors bringing grassroots awareness to rural and remote districts."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-05",
+      "number": "05",
+      "title": "Policies & Standards",
+      "sections": [
+        {
+          "number": "5.1",
+          "title": "Legal & Operational Policies",
+          "children": [
+            {
+              "number": "5.1.1",
+              "title": "Privacy Policy & Zero Data Commercialisation",
+              "children": [],
+              "notes": [
+                {
+                  "text": "We never sell citizen data, embed third-party surveillance trackers, or profile users."
+                }
+              ]
+            },
+            {
+              "number": "5.1.2",
+              "title": "Terms of Use & Fair Access Policy",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Guidelines governing fair access, open knowledge reproduction, and academic integrity."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "5.2",
+          "title": "Intellectual Property & Disclaimers",
+          "children": [
+            {
+              "number": "5.2.1",
+              "title": "Copyright Policy & Attribution",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Proper attribution for educational fair use and original open-source assets."
+                }
+              ]
+            },
+            {
+              "number": "5.2.2",
+              "title": "Government Source Disclaimer",
+              "children": [],
+              "notes": [
+                {
+                  "text": "CSO is an independent civic portal and is not officially affiliated with any government department."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group-06",
+      "number": "06",
+      "title": "Contact & FAQs",
+      "sections": [
+        {
+          "number": "6.1",
+          "title": "Frequently Asked Questions",
+          "children": [
+            {
+              "number": "6.1.1",
+              "title": "General Questions about CSO Services",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Is CSO free? How do I report a mistake? How do I suggest new study notes?"
+                }
+              ]
+            },
+            {
+              "number": "6.1.2",
+              "title": "Account & Student Dashboard FAQs",
+              "children": [],
+              "notes": [
+                {
+                  "text": "How to create a free account, bookmark schemes, and track examination calendars."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "6.2",
+          "title": "Communication & Support Channels",
+          "children": [
+            {
+              "number": "6.2.1",
+              "title": "Official Email & Communication Desk",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Reach our team directly for feedback, partnerships, and technical inquiries."
+                }
+              ]
+            },
+            {
+              "number": "6.2.2",
+              "title": "Media & Research Collaboration",
+              "children": [],
+              "notes": [
+                {
+                  "text": "Collaborating with educational institutions, universities, and civil society organizations."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

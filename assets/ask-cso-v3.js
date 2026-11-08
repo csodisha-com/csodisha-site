@@ -115,7 +115,7 @@
       '<button type="button" id="cso-ask3-clear">Clear results</button></div>';
 
     document.getElementById("cso-ask3-search").onclick = () => {
-      const searchInput = document.getElementById("sq");
+      const searchInput = document.getElementById("cso-ask-input") || document.getElementById("sq") || document.querySelector("#sf input");
       const searchForm = document.getElementById("sf");
       if (searchInput && searchForm) {
         searchInput.value = currentQuery;
@@ -140,11 +140,14 @@
   suggest.hidden = true;
   form.insertAdjacentElement("afterend", suggest);
 
+  let askSuggestIndex = -1;
+
   function updateSuggestions() {
     const q = normalize(input.value);
     if (q.length < 2 || !loaded) {
       suggest.hidden = true;
       suggest.replaceChildren();
+      askSuggestIndex = -1;
       return;
     }
 
@@ -153,10 +156,14 @@
       .slice(0,6);
 
     suggest.replaceChildren();
+    askSuggestIndex = -1;
 
-    found.forEach(item => {
+    found.forEach((item, index) => {
       const button = document.createElement("button");
       button.type = "button";
+      button.setAttribute("role", "option");
+      button.setAttribute("aria-selected", "false");
+      button.id = "cso-ask-opt-" + index;
       button.textContent = item.title;
       button.onclick = () => {
         input.value = item.title;
@@ -171,6 +178,74 @@
 
   input.addEventListener("input", updateSuggestions);
 
+  input.addEventListener("keydown", event => {
+    if (suggest.hidden) return;
+    const buttons = Array.from(suggest.querySelectorAll("button"));
+    if (!buttons.length) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      askSuggestIndex = (askSuggestIndex + 1) % buttons.length;
+      buttons.forEach((b, i) => {
+        const isSel = i === askSuggestIndex;
+        b.classList.toggle("active", isSel);
+        b.setAttribute("aria-selected", isSel ? "true" : "false");
+      });
+      buttons[askSuggestIndex].focus();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      askSuggestIndex = askSuggestIndex <= 0 ? buttons.length - 1 : askSuggestIndex - 1;
+      buttons.forEach((b, i) => {
+        const isSel = i === askSuggestIndex;
+        b.classList.toggle("active", isSel);
+        b.setAttribute("aria-selected", isSel ? "true" : "false");
+      });
+      buttons[askSuggestIndex].focus();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      suggest.hidden = true;
+      askSuggestIndex = -1;
+      input.focus();
+    }
+  });
+
+  suggest.addEventListener("keydown", event => {
+    const buttons = Array.from(suggest.querySelectorAll("button"));
+    if (event.key === "Escape") {
+      event.preventDefault();
+      suggest.hidden = true;
+      askSuggestIndex = -1;
+      input.focus();
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      askSuggestIndex = (askSuggestIndex + 1) % buttons.length;
+      buttons.forEach((b, i) => {
+        const isSel = i === askSuggestIndex;
+        b.classList.toggle("active", isSel);
+        b.setAttribute("aria-selected", isSel ? "true" : "false");
+      });
+      buttons[askSuggestIndex].focus();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (askSuggestIndex <= 0) {
+        askSuggestIndex = -1;
+        buttons.forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        input.focus();
+      } else {
+        askSuggestIndex--;
+        buttons.forEach((b, i) => {
+          const isSel = i === askSuggestIndex;
+          b.classList.toggle("active", isSel);
+          b.setAttribute("aria-selected", isSel ? "true" : "false");
+        });
+        buttons[askSuggestIndex].focus();
+      }
+    }
+  });
+
   form.addEventListener("submit", event => {
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -183,6 +258,22 @@
       event.stopImmediatePropagation();
       input.value = button.dataset.question;
       render(input.value);
+    }, true);
+  });
+
+  shell.querySelectorAll(".cso-ask2-modes button").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopImmediatePropagation();
+      shell.querySelectorAll(".cso-ask2-modes button").forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-selected", "false");
+      });
+      button.classList.add("active");
+      button.setAttribute("aria-selected", "true");
+      if (button.dataset.topic) {
+        input.value = button.dataset.topic;
+        render(input.value);
+      }
     }, true);
   });
 

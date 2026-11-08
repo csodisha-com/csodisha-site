@@ -87,15 +87,19 @@
 <nav><div class="w" id="navw"></div></nav>
 
 <div class="app-shell">
+    <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
 
     <aside class="sidebar" id="sidebar" aria-label="Jobs and Careers navigation">
-      <a aria-label="Jobs and Careers Dashboard Home" title="Jobs and Careers Dashboard Home" class="brand" href="./">
-        <span class="brand-logo"><span class="cso-sidebar-logo" role="img" aria-label="Common Sense Odisha"><span>C</span><span>S</span><span>O</span></span></span>
-        <span class="brand-name">
-          <strong>CS ODISHA</strong>
-          <small>JOBS & CAREERS</small>
-        </span>
-      </a>
+      <div class="sidebar-header">
+        <a aria-label="Jobs and Careers Dashboard Home" title="Jobs and Careers Dashboard Home" class="brand" href="./">
+          <span class="brand-logo"><span class="cso-sidebar-logo" role="img" aria-label="Common Sense Odisha"><span>C</span><span>S</span><span>O</span></span></span>
+          <span class="brand-name">
+            <strong>CS ODISHA</strong>
+            <small>JOBS & CAREERS</small>
+          </span>
+        </a>
+        <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close sections menu">✕</button>
+      </div>
 
       <div class="sidebar-heading">DIRECTORY SECTIONS</div>
       <nav id="side-navigation" aria-label="Directory sections"></nav>
@@ -108,8 +112,11 @@
     <div class="workspace">
       <header class="topbar">
         <button class="menu-toggle" id="menu-toggle"
-                type="button" aria-label="Toggle navigation"
-                aria-controls="sidebar" aria-expanded="false">☰</button>
+                type="button" aria-label="Directory Menu"
+                aria-controls="sidebar" aria-expanded="false">
+          <span class="menu-toggle-icon" aria-hidden="true">☰</span>
+          <span class="menu-toggle-label">Sections</span>
+        </button>
 
         <div class="top-search">
           <span aria-hidden="true">⌕</span>
@@ -129,9 +136,9 @@
 
 
 
-        <div class="breadcrumb" id="breadcrumb">
-          CS Odisha / Jobs & Careers / Overview
-        </div>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb" id="breadcrumb"></ol>
+        </nav>
 
         <section class="welcome cso-compact-welcome">
   <h1 id="page-title">Jobs &amp; Careers Explorer</h1>
@@ -166,8 +173,8 @@
           <div class="dashboard-grid" id="dashboard-grid"></div>
 
           <section class="statistics-section" aria-label="Directory statistics">
-            <h2>Directory at a Glance</h2>
-            <div class="statistics-grid" id="statistics-grid"></div>
+            <h2 class="statistics-title">Directory at a Glance</h2>
+            <div class="statistics-grid" id="statistics-grid" role="region" aria-label="Directory statistics metrics"></div>
           </section>
 
           <section class="recent-section" id="recent-section"
