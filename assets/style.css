@@ -5572,6 +5572,7 @@ mark.cso-search-highlight {
   border: none !important;
   box-shadow: none !important;
   padding: 0 !important;
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.55)) !important;
 }
 
 .cso-footer-logo {
@@ -5591,6 +5592,138 @@ mark.cso-search-highlight {
   object-fit: contain !important;
   display: inline-block !important;
 }
+
+/* ==========================================================================
+   Modern Midnight Navy Top Header Strip & High-Contrast Utility Controls
+   ========================================================================== */
+
+.top,
+.top-bar,
+.header-utility,
+.cso-header-top {
+  background-color: #0a182c !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Admin Portal button: distinct red shield style on dark bar */
+.top .adm,
+.top-bar .adm,
+.header-utility .adm,
+.cso-header-top .adm {
+  background: rgba(220, 38, 38, 0.15) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(220, 38, 38, 0.35) !important;
+}
+
+.top .adm small,
+.top-bar .adm small,
+.header-utility .adm small,
+.cso-header-top .adm small {
+  color: #fca5a5 !important;
+  opacity: 0.85 !important;
+}
+
+.top .adm:hover,
+.top-bar .adm:hover,
+.header-utility .adm:hover,
+.cso-header-top .adm:hover {
+  background: rgba(220, 38, 38, 0.25) !important;
+  border-color: rgba(220, 38, 38, 0.55) !important;
+  color: #ffffff !important;
+}
+
+/* Language, Accessibility, Font Size, Theme & Auth Controls */
+.top .pill,
+.top .btn,
+.top-bar .pill,
+.top-bar .btn,
+.header-utility .pill,
+.header-utility .btn,
+.cso-header-top .pill,
+.cso-header-top .btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.top .pill:hover,
+.top .btn:hover,
+.top-bar .pill:hover,
+.top-bar .btn:hover,
+.header-utility .pill:hover,
+.header-utility .btn:hover,
+.cso-header-top .pill:hover,
+.cso-header-top .btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+/* Font resize (A- A A+) buttons within zoom pill */
+.top .pill .fz,
+.top-bar .pill .fz,
+.header-utility .pill .fz,
+.cso-header-top .pill .fz {
+  color: #cbd5e1 !important;
+  background: transparent !important;
+}
+
+.top .pill .fz:hover,
+.top-bar .pill .fz:hover,
+.header-utility .pill .fz:hover,
+.cso-header-top .pill .fz:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Desktop auth container and buttons */
+.top .acct,
+.top-bar .acct,
+.header-utility .acct,
+.cso-header-top .acct {
+  color: #cbd5e1 !important;
+}
+
+.top .acct .cso-login-button,
+.top-bar .acct .cso-login-button,
+.header-utility .acct .cso-login-button,
+.cso-header-top .acct .cso-login-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.top .acct .cso-login-button:hover,
+.top-bar .acct .cso-login-button:hover,
+.header-utility .acct .cso-login-button:hover,
+.cso-header-top .acct .cso-login-button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.top .acct .btn.p,
+.top-bar .acct .btn.p,
+.header-utility .acct .btn.p,
+.cso-header-top .acct .btn.p {
+  background: #f25d07 !important;
+  color: #ffffff !important;
+  border: 1px solid #ea580c !important;
+}
+
+.top .acct .btn.p:hover,
+.top-bar .acct .btn.p:hover,
+.header-utility .acct .btn.p:hover,
+.cso-header-top .acct .btn.p:hover {
+  background: #ff7828 !important;
+  border-color: #f97316 !important;
+}
+
+.top .acct .cso-desktop-auth-icon {
+  color: #94a3b8 !important;
+}
+
 
 
 

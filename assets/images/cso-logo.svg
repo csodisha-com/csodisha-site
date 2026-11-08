@@ -7,7 +7,8 @@
     </linearGradient>
     <linearGradient id="csoWhite" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#E2E8F0"/>
+      <stop offset="60%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#DBEAFE"/>
     </linearGradient>
     <linearGradient id="csoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#16A34A"/>
@@ -27,15 +28,16 @@
     <path d="M 185 55 C 105 45 42 75 42 120 C 42 165 105 195 185 185 C 196 183 200 170 190 165 C 135 158 84 142 84 120 C 84 98 135 82 190 75 C 200 70 196 57 185 55 Z"
           fill="url(#csoSaffron)" />
 
-    <!-- S: Elegant Origami / Folded Ribbon in Crisp White with Subtle Border -->
+    <!-- S: Elegant Origami / Folded Ribbon in Crisp White with Self-Defending Dark Edge -->
     <g>
       <!-- S top ribbon -->
       <path d="M 292 68 C 265 48 215 50 205 76 C 197 96 220 112 248 122 C 285 135 298 152 292 172 C 284 196 242 198 205 180 C 195 175 188 184 196 191 C 242 214 304 208 316 172 C 326 142 292 124 262 113 C 230 102 222 90 226 76 C 231 60 264 58 290 73 C 298 77 304 69 292 68 Z"
             fill="url(#csoWhite)"
-            stroke="#CBD5E1"
-            stroke-width="1.2" />
+            stroke="#1E293B"
+            stroke-width="1.2"
+            stroke-linejoin="round" />
       <!-- S center subtle crease line -->
-      <path d="M 248 122 L 262 113" stroke="#94A3B8" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <path d="M 248 122 L 262 113" stroke="#475569" stroke-width="1.2" stroke-linecap="round" opacity="0.8"/>
     </g>
 
     <!-- O: India Green Circular Base with Chakra -->
