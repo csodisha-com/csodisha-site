@@ -3042,7 +3042,7 @@ footer {
 }
 
 .cso-compass {
-  margin-bottom: clamp(24px, 3vw, 40px);
+  margin-bottom: clamp(16px, 2vw, 24px);
 }
 
 /* ==========================================================================
@@ -3257,8 +3257,7 @@ footer {
 }
 
 .statistics-grid,
-#statistics-grid,
-#homepage-statistics-grid {
+#statistics-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
   gap: clamp(12px, 1.5vw, 20px) !important;
@@ -3356,8 +3355,7 @@ footer {
 
 @media (max-width: 992px) {
   .statistics-grid,
-  #statistics-grid,
-  #homepage-statistics-grid {
+  #statistics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;
   }
@@ -3365,8 +3363,7 @@ footer {
 
 @media (max-width: 520px) {
   .statistics-grid,
-  #statistics-grid,
-  #homepage-statistics-grid {
+  #statistics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
   }
@@ -3378,8 +3375,7 @@ footer {
 
 @media (max-width: 380px) {
   .statistics-grid,
-  #statistics-grid,
-  #homepage-statistics-grid {
+  #statistics-grid {
     grid-template-columns: 1fr !important;
   }
 }
