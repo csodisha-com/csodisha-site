@@ -56,9 +56,10 @@ body {
 }
 
 .admin-page-loader.fade-out {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: none !important;
 }
 
 .admin-spinner {

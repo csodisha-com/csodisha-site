@@ -722,10 +722,7 @@
   });
 
   // Initialization
-  document.addEventListener('DOMContentLoaded', () => {
-    // Safety fallback: Ensure loader is ALWAYS dismissed after maximum 3 seconds
-    setTimeout(dismissPageLoader, 3000);
-
+  function initAdminDashboard() {
     loadSubmissions();
     loadAlerts();
 
@@ -742,6 +739,12 @@
     } else {
       dismissPageLoader();
     }
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminDashboard);
+  } else {
+    initAdminDashboard();
+  }
 
 })();
