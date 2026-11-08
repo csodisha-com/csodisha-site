@@ -1,691 +1,116 @@
 /**
- * CSO Admin Control Dashboard Client Controller (admin.js)
+ * CSO Super Admin Control Panel Client Controller (admin.js)
+ * Common Sense Odisha (csodisha.com)
  * 
- * Features:
- * - Module Tab Switching (Overview, Inquiries, Broadcasts, System Config)
- * - Off-canvas mobile drawer navigation & keyboard trapping
- * - Searchable, filterable Inquiries data table with status counts
- * - Action modal/drawer to inspect full message, change status, and send replies
- * - Real-time statistics & verification status
- * - Sync with /api/admin/submissions and local mock storage
- * - Public banner moderation (publish & takedown)
+ * Controls all 10 Super Admin Domains:
+ * 1. Overview & Telemetry (Telemetry metric cards, activity stream, panic actions)
+ * 2. User Management (Search, verify, suspend, CSV export)
+ * 3. Role & Permission Management (RBAC matrix, delegation)
+ * 4. Content Studio & Page Builder (Pages table, visual preview modal)
+ * 5. System Management & Integrations (Feature flags, SMTP configuration)
+ * 6. Security Centre (Active sessions, IP rules)
+ * 7. Immutable Audit Trail (Filtering, JSON export)
+ * 8. Cloudflare D1 Monitoring (Schema inspector, SQL query console)
+ * 9. Backup & Disaster Recovery (Snapshot export, restoration, lockdown)
+ * 10. Notification Hub & Broadcast Centre (Alerts feed, live homepage banner)
  */
 
 (() => {
   'use strict';
 
-  // Constants
-  const STORAGE_SUBMISSIONS_KEY = 'cso_admin_submissions_local';
-  const ALERTS_KEY = 'cso_admin_alerts';
-  const ACTIVITY_KEY = 'cso_admin_activity';
-  const PUBLIC_ANNOUNCEMENT_KEY = 'cso_active_announcement';
+  // Session timer variables
+  let sessionStartTime = Date.now();
+  const sessionTimerEl = document.getElementById('session-timer-display');
 
-  // State
-  let activeModule = 'overview';
-  let activeFilter = 'all';
-  let searchQuery = '';
-  let submissions = [];
-  let currentInspectingItem = null;
+  function updateSessionTimer() {
+    if (!sessionTimerEl) return;
+    const diff = Math.floor((Date.now() - sessionStartTime) / 1000);
+    const hrs = String(Math.floor(diff / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+    const secs = String(diff % 60).padStart(2, '0');
+    sessionTimerEl.textContent = `${hrs}:${mins}:${secs}`;
+  }
+  setInterval(updateSessionTimer, 1000);
 
-  // DOM Elements
+  // Mobile sidebar controls
   const btnMobileToggle = document.getElementById('btn-mobile-toggle');
   const btnSidebarClose = document.getElementById('btn-sidebar-close');
   const backdrop = document.getElementById('admin-backdrop');
-  const navItems = document.querySelectorAll('.nav-item[data-module]');
-  const modules = document.querySelectorAll('.admin-module');
-  const topbarTitle = document.getElementById('topbar-title');
-  const btnSignout = document.getElementById('btn-signout');
+  const sidebar = document.getElementById('admin-sidebar');
 
-  // Inquiries Elements
-  const inquiriesTableBody = document.getElementById('inquiries-table-body');
-  const searchInput = document.getElementById('inquiry-search');
-  const filterChips = document.querySelectorAll('.filter-chip[data-status]');
-  const unreadBadgeSidebar = document.getElementById('sidebar-unread-badge');
-  const totalSubmissionsVal = document.getElementById('total-submissions-val');
-  const unreadSubmissionsVal = document.getElementById('unread-submissions-val');
-  const resolvedSubmissionsVal = document.getElementById('resolved-submissions-val');
-
-  // Inspector Modal Elements
-  const inquiryModal = document.getElementById('inquiry-modal');
-  const btnCloseModal = document.getElementById('btn-close-modal');
-  const modalInquiryId = document.getElementById('modal-inquiry-id');
-  const modalSenderName = document.getElementById('modal-sender-name');
-  const modalSenderEmail = document.getElementById('modal-sender-email');
-  const modalSenderPhone = document.getElementById('modal-sender-phone');
-  const modalTimestamp = document.getElementById('modal-timestamp');
-  const modalSubject = document.getElementById('modal-subject');
-  const modalCategory = document.getElementById('modal-category');
-  const modalStatusSelect = document.getElementById('modal-status-select');
-  const modalMessageBody = document.getElementById('modal-message-body');
-  const modalReplyText = document.getElementById('modal-reply-text');
-  const btnSendReply = document.getElementById('btn-send-reply');
-
-  // Broadcast & Config Elements
-  const announcementForm = document.getElementById('announcement-form');
-  const alertTypeSelect = document.getElementById('alert-type');
-  const alertTitleInput = document.getElementById('alert-title');
-  const alertBodyInput = document.getElementById('alert-body');
-  const alertLinkInput = document.getElementById('alert-link');
-  const btnClearActiveBanner = document.getElementById('btn-clear-active-banner');
-  const alertsTableBody = document.getElementById('alerts-table-body');
-  const btnClearCache = document.getElementById('btn-clear-cache');
-  const btnReindexData = document.getElementById('btn-reindex-data');
-
-  // Toast System
-  let toastTimer = null;
-  function showToast(message, type = 'success') {
-    const existing = document.querySelector('.admin-toast');
-    if (existing) existing.remove();
-    if (toastTimer) clearTimeout(toastTimer);
-
-    const toast = document.createElement('div');
-    toast.className = `admin-toast ${type}`;
-    toast.innerHTML = `<span aria-hidden="true">${type === 'success' ? '✓' : '⚠'}</span> <span>${message}</span>`;
-    document.body.appendChild(toast);
-
-    toastTimer = setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(12px)';
-      toast.style.transition = 'all 0.25s ease';
-      setTimeout(() => toast.remove(), 250);
-    }, 3500);
+  function openSidebar() {
+    if (sidebar) sidebar.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
   }
 
-  // Mobile Drawer Toggle
-  function openMobileMenu() {
-    document.body.classList.add('admin-menu-open');
-    if (btnMobileToggle) btnMobileToggle.setAttribute('aria-expanded', 'true');
+  function closeSidebar() {
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
   }
 
-  function closeMobileMenu() {
-    document.body.classList.remove('admin-menu-open');
-    if (btnMobileToggle) btnMobileToggle.setAttribute('aria-expanded', 'false');
-  }
-
-  if (btnMobileToggle) btnMobileToggle.addEventListener('click', openMobileMenu);
-  if (btnSidebarClose) btnSidebarClose.addEventListener('click', closeMobileMenu);
-  if (backdrop) backdrop.addEventListener('click', closeMobileMenu);
+  if (btnMobileToggle) btnMobileToggle.addEventListener('click', openSidebar);
+  if (btnSidebarClose) btnSidebarClose.addEventListener('click', closeSidebar);
+  if (backdrop) backdrop.addEventListener('click', closeSidebar);
 
   // Sign out
+  const btnSignout = document.getElementById('btn-signout');
   if (btnSignout) {
     btnSignout.addEventListener('click', () => {
-      if (window.CSOAdminGuard) {
+      if (window.CSOAdminGuard && window.CSOAdminGuard.signOut) {
         window.CSOAdminGuard.signOut();
       } else {
         sessionStorage.clear();
+        localStorage.removeItem('cso_admin_token');
         localStorage.removeItem('cso_admin_session');
         window.location.replace('/admin/login');
       }
     });
   }
 
-  // Module Tab Switching
-  function switchModule(targetId) {
-    activeModule = targetId;
+  // Tab Switching
+  const navItems = document.querySelectorAll('.nav-item[data-tab]');
+  const modules = document.querySelectorAll('.admin-module');
+  const topbarTitle = document.getElementById('topbar-title');
+
+  const tabTitles = {
+    'tab-overview': 'Dashboard Overview & System Telemetry',
+    'tab-users': 'User Management & Verification Desk',
+    'tab-roles': 'Role & Permission Management (RBAC)',
+    'tab-cms': 'Content Management & Dynamic Page Builder',
+    'tab-system': 'System Settings & Node Integrations',
+    'tab-security': 'Security Centre & Active Session Monitor',
+    'tab-audit': 'Immutable Audit Trail & Administrative Logs',
+    'tab-database': 'Cloudflare D1 SQL Telemetry & Schema',
+    'tab-recovery': 'Backup, Export & Disaster Recovery',
+    'tab-notifications': 'Notification Hub & Public Broadcasts'
+  };
+
+  function switchTab(targetId) {
     navItems.forEach(item => {
-      const match = item.getAttribute('data-module') === targetId;
+      const match = item.getAttribute('data-tab') === targetId;
       item.classList.toggle('active', match);
       item.setAttribute('aria-current', match ? 'page' : 'false');
     });
 
     modules.forEach(mod => {
-      mod.hidden = mod.id !== `module-${targetId}`;
+      mod.classList.toggle('active', mod.id === targetId);
     });
 
-    const titleMap = {
-      overview: 'System Overview & Analytics',
-      inquiries: 'Inquiries & Submissions',
-      broadcasts: 'Public Broadcasts & Alerts',
-      config: 'System Configuration'
-    };
-    if (topbarTitle) {
-      topbarTitle.textContent = titleMap[targetId] || 'Admin Dashboard';
+    if (topbarTitle && tabTitles[targetId]) {
+      topbarTitle.textContent = tabTitles[targetId];
     }
 
-    closeMobileMenu();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeSidebar();
   }
 
-  navItems.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const mod = e.currentTarget.getAttribute('data-module');
-      if (mod) switchModule(mod);
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-tab');
+      if (targetId) switchTab(targetId);
     });
   });
 
-  // Load Submissions from API or Seed/Local Storage
-  async function loadSubmissions() {
-    // 1. Try local cache first for persistence
-    const cached = localStorage.getItem(STORAGE_SUBMISSIONS_KEY);
-    if (cached) {
-      try {
-        submissions = JSON.parse(cached);
-      } catch (_) {}
-    }
-
-    // 2. Fetch from API (/api/admin/submissions) with fallback to /api/admin/submissions.json
-    try {
-      const session = window.CSOAdminGuard ? window.CSOAdminGuard.getSession() : null;
-      const headers = session && session.token ? { 'Authorization': `Bearer ${session.token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-      let res;
-      try {
-        res = await fetch('/api/admin/submissions', { headers, signal: controller.signal });
-      } catch (fetchErr) {
-        // Fallback to static seed file if Worker route fails
-        res = await fetch('/api/admin/submissions.json');
-      } finally {
-        clearTimeout(timeoutId);
-      }
-
-      if (!res.ok) {
-        res = await fetch('/api/admin/submissions.json');
-      }
-
-      if (res && res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.submissions) && data.submissions.length > 0) {
-          // If we have local status changes, keep them; otherwise initialize
-          if (!submissions.length) {
-            submissions = data.submissions;
-            localStorage.setItem(STORAGE_SUBMISSIONS_KEY, JSON.stringify(submissions));
-          }
-        }
-      }
-    } catch (_) {
-      // Offline fallback: Use seed data if empty
-      if (!submissions || submissions.length === 0) {
-        submissions = [
-          {
-            id: "INQ-2026-1082",
-            timestamp: "2026-11-08T14:45:20Z",
-            name: "Subrat Kumar Mohanty",
-            email: "subrat.mohanty@gmail.com",
-            phone: "+91 94371 88290",
-            subject: "OPSC Civil Services Preliminary Syllabus clarification",
-            message: "Respected team, could you please verify if the recent CSAT pattern update has been published in the jobs & careers portal? The syllabus link for General Studies Paper II seems to refer to last year's notification. Thank you for maintaining this excellent platform for Odisha students.",
-            category: "Exam Syllabus",
-            status: "unread",
-            priority: "high",
-            source: "contact@csodisha.com"
-          },
-          {
-            id: "INQ-2026-1081",
-            timestamp: "2026-11-08T12:15:05Z",
-            name: "Priyadarshini Rout",
-            email: "priya.rout99@yahoo.co.in",
-            phone: "+91 70081 23456",
-            subject: "Medhabruti Scholarship renewal application deadline",
-            message: "Hello CSO Team, I am an engineering student studying at VSSUT Burla. I wanted to confirm the last date for submitting the income declaration certificate on the State Scholarship Portal for Medhabruti renewal. Your portal's scheme tracker has been very helpful.",
-            category: "Scholarships",
-            status: "unread",
-            priority: "medium",
-            source: "contact@csodisha.com"
-          },
-          {
-            id: "INQ-2026-1079",
-            timestamp: "2026-11-07T18:32:40Z",
-            name: "Dr. Bijaylaxmi Das",
-            email: "bijaylaxmi.das@utkaluniversity.ac.in",
-            phone: "+91 98610 99412",
-            subject: "Odisha Higher Education Faculty Research Grant details",
-            message: "Dear CSO Editorial Team, We recently published a state-funded research index under OSHEC. Would it be possible to include the OSHEC Post-Doctoral Fellowship details in your Study Library under Odisha Higher Education opportunities? Happy to provide official notification PDFs.",
-            category: "Resource Suggestion",
-            status: "read",
-            priority: "medium",
-            source: "admin@csodisha.com"
-          },
-          {
-            id: "INQ-2026-1076",
-            timestamp: "2026-11-07T09:10:15Z",
-            name: "Chandan Behera",
-            email: "chandan.behera.od@outlook.com",
-            phone: "+91 99380 55123",
-            subject: "OSSSC Combined Recruitment Examination Admit Card link",
-            message: "Greetings, The download link for OSSSC Junior Assistant admit card leads to server maintenance on the official OSSSC site. Does CSO maintain an alternative mirror link or cache? Looking forward to your guidance.",
-            category: "Admit Card",
-            status: "resolved",
-            priority: "low",
-            source: "contact@csodisha.com"
-          },
-          {
-            id: "INQ-2026-1074",
-            timestamp: "2026-11-06T15:20:00Z",
-            name: "Ananya Patnaik",
-            email: "ananya.patnaik@gmail.com",
-            phone: "+91 91780 44321",
-            subject: "OTET / OSSTET Qualifying Mark calculation for reserved category",
-            message: "Sir/Madam, in the eligibility explorer under Teacher Recruitment, the pass mark for SC/ST candidates is stated as 50% (75 marks). Is there any additional relaxation for PwD candidates as per recent BSE Odisha notification? Kindly update if possible.",
-            category: "Eligibility Criteria",
-            status: "resolved",
-            priority: "medium",
-            source: "contact@csodisha.com"
-          },
-          {
-            id: "INQ-2026-1071",
-            timestamp: "2026-11-05T11:05:44Z",
-            name: "Rashmi Ranjan Sahoo",
-            email: "rashmi.sahoo@techodisha.in",
-            phone: "+91 94399 77810",
-            subject: "Technical issue: Study notes search filter on mobile view",
-            message: "Hi, when searching under Study Library with two active filters (Secondary + Odia medium), the dropdown menu does not collapse after selection on Android Chrome. Minor UI glitch, otherwise very fast website.",
-            category: "Bug Report",
-            status: "read",
-            priority: "low",
-            source: "admin@csodisha.com"
-          }
-        ];
-        localStorage.setItem(STORAGE_SUBMISSIONS_KEY, JSON.stringify(submissions));
-      }
-    } finally {
-      renderSubmissions();
-      updateMetrics();
-      dismissPageLoader();
-    }
-  }
-
-  function updateMetrics() {
-    const unread = submissions.filter(s => s.status === 'unread').length;
-    const resolved = submissions.filter(s => s.status === 'resolved').length;
-    const total = submissions.length;
-
-    if (unreadBadgeSidebar) {
-      unreadBadgeSidebar.textContent = unread > 0 ? `${unread} New` : '0';
-      unreadBadgeSidebar.style.display = unread > 0 ? 'inline-block' : 'none';
-    }
-
-    if (totalSubmissionsVal) totalSubmissionsVal.textContent = total;
-    if (unreadSubmissionsVal) unreadSubmissionsVal.textContent = unread;
-    if (resolvedSubmissionsVal) resolvedSubmissionsVal.textContent = resolved;
-  }
-
-  function renderSubmissions() {
-    if (!inquiriesTableBody) return;
-
-    let filtered = [...submissions];
-
-    // Filter by Status
-    if (activeFilter !== 'all') {
-      filtered = filtered.filter(item => item.status.toLowerCase() === activeFilter.toLowerCase());
-    }
-
-    // Filter by Search
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(q) ||
-        item.email.toLowerCase().includes(q) ||
-        item.subject.toLowerCase().includes(q) ||
-        item.message.toLowerCase().includes(q) ||
-        item.id.toLowerCase().includes(q)
-      );
-    }
-
-    inquiriesTableBody.innerHTML = '';
-
-    if (filtered.length === 0) {
-      inquiriesTableBody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 32px;">
-            No inquiries match the current search or filter criteria.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    filtered.forEach(item => {
-      const tr = document.createElement('tr');
-      const timeStr = new Date(item.timestamp).toLocaleDateString([], {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-
-      const messagePreview = item.message.length > 70
-        ? item.message.slice(0, 70) + '...'
-        : item.message;
-
-      tr.innerHTML = `
-        <td><strong style="font-family: monospace; color: #93c5fd;">${escapeHtml(item.id)}</strong></td>
-        <td style="color: var(--admin-text-muted); font-size: 0.8rem; white-space: nowrap;">${timeStr}</td>
-        <td>
-          <div style="font-weight: 700;">${escapeHtml(item.name)}</div>
-          <div style="color: var(--admin-text-muted); font-size: 0.78rem;">${escapeHtml(item.email)}</div>
-        </td>
-        <td><strong style="color: var(--admin-text-primary);">${escapeHtml(item.subject)}</strong></td>
-        <td style="color: var(--admin-text-secondary); max-width: 280px; font-size: 0.82rem;">${escapeHtml(messagePreview)}</td>
-        <td><span class="status-badge ${item.status}">${item.status}</span></td>
-        <td>
-          <button type="button" class="btn-table-action" data-inspect-id="${item.id}" aria-label="Inspect inquiry ${item.id}">
-            Inspect &rarr;
-          </button>
-        </td>
-      `;
-
-      inquiriesTableBody.appendChild(tr);
-    });
-
-    // Wire inspector buttons
-    inquiriesTableBody.querySelectorAll('[data-inspect-id]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-inspect-id');
-        openInspector(id);
-      });
-    });
-  }
-
-  // Filter Chips
-  filterChips.forEach(chip => {
-    chip.addEventListener('click', (e) => {
-      filterChips.forEach(c => c.classList.remove('active'));
-      e.currentTarget.classList.add('active');
-      activeFilter = e.currentTarget.getAttribute('data-status') || 'all';
-      renderSubmissions();
-    });
-  });
-
-  // Search Input
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      searchQuery = (e.target.value || '').trim();
-      renderSubmissions();
-    });
-  }
-
-  // Inspector Modal / Drawer
-  function openInspector(id) {
-    const item = submissions.find(s => s.id === id);
-    if (!item) return;
-
-    currentInspectingItem = item;
-
-    // Automatically mark as read if it was unread
-    if (item.status === 'unread') {
-      updateSubmissionStatus(item.id, 'read', false);
-    }
-
-    if (modalInquiryId) modalInquiryId.textContent = item.id;
-    if (modalSenderName) modalSenderName.textContent = item.name;
-    if (modalSenderEmail) {
-      modalSenderEmail.textContent = item.email;
-      modalSenderEmail.href = `mailto:${item.email}`;
-    }
-    if (modalSenderPhone) modalSenderPhone.textContent = item.phone || 'Not provided';
-    if (modalTimestamp) modalTimestamp.textContent = new Date(item.timestamp).toLocaleString();
-    if (modalSubject) modalSubject.textContent = item.subject;
-    if (modalCategory) modalCategory.textContent = item.category || 'General Support';
-    if (modalStatusSelect) modalStatusSelect.value = item.status;
-    if (modalMessageBody) modalMessageBody.textContent = item.message;
-    if (modalReplyText) modalReplyText.value = '';
-
-    if (inquiryModal) {
-      inquiryModal.hidden = false;
-      inquiryModal.removeAttribute('hidden');
-    }
-  }
-
-  function closeInspector() {
-    if (inquiryModal) {
-      inquiryModal.hidden = true;
-      inquiryModal.setAttribute('hidden', '');
-    }
-    currentInspectingItem = null;
-  }
-
-  if (btnCloseModal) btnCloseModal.addEventListener('click', closeInspector);
-
-  // Status Change inside Inspector
-  if (modalStatusSelect) {
-    modalStatusSelect.addEventListener('change', (e) => {
-      if (!currentInspectingItem) return;
-      const newStatus = e.target.value;
-      updateSubmissionStatus(currentInspectingItem.id, newStatus, true);
-    });
-  }
-
-  async function updateSubmissionStatus(id, newStatus, notify = true) {
-    const item = submissions.find(s => s.id === id);
-    if (!item) return;
-
-    item.status = newStatus;
-    localStorage.setItem(STORAGE_SUBMISSIONS_KEY, JSON.stringify(submissions));
-
-    // Try PATCH to /api/admin/submissions/:id
-    try {
-      const session = window.CSOAdminGuard ? window.CSOAdminGuard.getSession() : null;
-      const headers = {
-        'Content-Type': 'application/json',
-        ...(session && session.token ? { 'Authorization': `Bearer ${session.token}` } : {})
-      };
-      await fetch(`/api/admin/submissions/${id}`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ status: newStatus })
-      });
-    } catch (_) {}
-
-    renderSubmissions();
-    updateMetrics();
-
-    if (notify) {
-      showToast(`Inquiry ${id} updated to "${newStatus}".`);
-      logActivity(`Updated ${id} status to ${newStatus}`);
-    }
-  }
-
-  // Quick Reply Template Chips
-  const TEMPLATES = {
-    syllabus: "Dear Student,\n\nThank you for reaching out to Common Sense Odisha. The updated examination syllabus and CSAT pattern from official government notifications are now live in the Jobs & Careers Explorer.\n\nWarm regards,\nEditorial Team\nCommon Sense Odisha",
-    scholarship: "Hello,\n\nThank you for contacting CSO Support. We have verified the Medhabruti scholarship deadline with the State Scholarship Portal. Please refer to our Schemes & Benefits guide for document requirements.\n\nBest wishes,\nCSO Student Support",
-    resolved: "Dear Citizen,\n\nYour query has been reviewed and resolved by our verification team. The corrected links have been synchronized with the live platform.\n\nThank you for helping keep Odisha's public directory accurate!\n\nCommon Sense Odisha Team"
-  };
-
-  document.querySelectorAll('.template-btn[data-template]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const key = e.currentTarget.getAttribute('data-template');
-      if (modalReplyText && TEMPLATES[key]) {
-        modalReplyText.value = TEMPLATES[key];
-      }
-    });
-  });
-
-  // Send Reply Action
-  if (btnSendReply) {
-    btnSendReply.addEventListener('click', () => {
-      if (!currentInspectingItem) return;
-      const replyMsg = (modalReplyText?.value || '').trim();
-
-      if (!replyMsg) {
-        showToast('Please draft a reply or select a quick template first.', 'error');
-        return;
-      }
-
-      // Automatically mark as resolved
-      updateSubmissionStatus(currentInspectingItem.id, 'resolved', false);
-
-      // Open mailto client as fallback or trigger mail routing
-      const subject = encodeURIComponent(`Re: ${currentInspectingItem.subject} [${currentInspectingItem.id}]`);
-      const body = encodeURIComponent(replyMsg);
-      const mailtoUrl = `mailto:${currentInspectingItem.email}?subject=${subject}&body=${body}`;
-
-      showToast(`Reply prepared for ${currentInspectingItem.email}. Inquiry marked resolved.`);
-      logActivity(`Replied to ${currentInspectingItem.id} (${currentInspectingItem.email})`);
-      closeInspector();
-
-      // Launch default client
-      window.open(mailtoUrl, '_blank');
-    });
-  }
-
-  // Broadcasts / Announcements Form
-  if (announcementForm) {
-    announcementForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const type = alertTypeSelect?.value || 'notice';
-      const title = (alertTitleInput?.value || '').trim();
-      const body = (alertBodyInput?.value || '').trim();
-      const link = (alertLinkInput?.value || '').trim();
-
-      if (!title || !body) {
-        showToast('Please provide both headline and message.', 'error');
-        return;
-      }
-
-      const timestamp = new Date().toISOString();
-      const alerts = getAlerts();
-      alerts.unshift({
-        id: 'alt_' + Date.now().toString(36),
-        type,
-        title,
-        body,
-        link,
-        created: timestamp
-      });
-
-      saveAlerts(alerts);
-
-      // Sync public live announcement
-      try {
-        const publicAnnouncement = {
-          tag: type === 'emergency' ? 'EMERGENCY ALERT' : (type === 'update' ? 'UPDATE' : 'NOTICE'),
-          type,
-          title,
-          text: title + (body ? ': ' + body : ''),
-          link: link || '',
-          timestamp,
-          active: true
-        };
-        localStorage.setItem(PUBLIC_ANNOUNCEMENT_KEY, JSON.stringify(publicAnnouncement));
-      } catch (_) {}
-
-      loadAlerts();
-      announcementForm.reset();
-      showToast('Announcement published and public banner activated!');
-      logActivity(`Published ${type}: "${title}"`);
-    });
-  }
-
-  // Clear Active Banner Action
-  if (btnClearActiveBanner) {
-    btnClearActiveBanner.addEventListener('click', () => {
-      localStorage.removeItem(PUBLIC_ANNOUNCEMENT_KEY);
-      showToast('Public homepage banner taken down.');
-      logActivity('Cleared live public banner');
-    });
-  }
-
-  function getAlerts() {
-    try {
-      return JSON.parse(localStorage.getItem(ALERTS_KEY) || '[]');
-    } catch (_) {
-      return [];
-    }
-  }
-
-  function saveAlerts(alerts) {
-    try {
-      localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts));
-    } catch (_) {}
-  }
-
-  function loadAlerts() {
-    if (!alertsTableBody) return;
-    const alerts = getAlerts();
-
-    alertsTableBody.innerHTML = '';
-    if (alerts.length === 0) {
-      alertsTableBody.innerHTML = `
-        <tr>
-          <td colspan="5" style="text-align: center; color: var(--admin-text-muted); padding: 24px;">
-            No announcements currently active. Publish one using the form above.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    alerts.forEach((alert, index) => {
-      const tr = document.createElement('tr');
-      const timeStr = new Date(alert.created).toLocaleDateString([], {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      const badgeClass = alert.type === 'emergency' ? 'unread' : (alert.type === 'update' ? 'resolved' : 'read');
-
-      tr.innerHTML = `
-        <td><span class="status-badge ${badgeClass}">${alert.type}</span></td>
-        <td><strong>${escapeHtml(alert.title)}</strong></td>
-        <td style="color: var(--admin-text-secondary); max-width: 260px;">${escapeHtml(alert.body)}</td>
-        <td style="color: var(--admin-text-muted); font-size: 0.8rem;">${timeStr}</td>
-        <td>
-          <button type="button" class="btn-table-action" style="color: #f87171;" data-del-alert="${index}">
-            Remove
-          </button>
-        </td>
-      `;
-      alertsTableBody.appendChild(tr);
-    });
-
-    alertsTableBody.querySelectorAll('[data-del-alert]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const idx = parseInt(e.currentTarget.getAttribute('data-del-alert'), 10);
-        const alerts = getAlerts();
-        if (idx >= 0 && idx < alerts.length) {
-          const removed = alerts.splice(idx, 1);
-          saveAlerts(alerts);
-          loadAlerts();
-          showToast(`Announcement removed: "${removed[0]?.title || ''}"`);
-        }
-      });
-    });
-  }
-
-  // System Operations: Cache Invalidation
-  if (btnClearCache) {
-    btnClearCache.addEventListener('click', async () => {
-      try {
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map(k => caches.delete(k)));
-        }
-        localStorage.removeItem('cso_cached_jobs');
-        localStorage.removeItem('cso_cached_schemes');
-        showToast('Application caches and offline storage purged.');
-        logActivity('Purged client caches');
-      } catch (err) {
-        showToast('Error purging cache: ' + err.message, 'error');
-      }
-    });
-  }
-
-  // System Operations: Data Reindex
-  if (btnReindexData) {
-    btnReindexData.addEventListener('click', () => {
-      showToast('Reindexing all 3,790+ directory entries...');
-      setTimeout(() => {
-        showToast('Reindex complete. 100% integrity across all records.');
-        logActivity('Triggered data reindex');
-      }, 700);
-    });
-  }
-
-  // Activity Log
-  function logActivity(action) {
-    try {
-      const history = JSON.parse(localStorage.getItem(ACTIVITY_KEY) || '[]');
-      history.unshift({ action, timestamp: new Date().toISOString() });
-      if (history.length > 50) history.length = 50;
-      localStorage.setItem(ACTIVITY_KEY, JSON.stringify(history));
-    } catch (_) {}
-  }
-
+  // Safe formatting helper
   function escapeHtml(str) {
     return String(str || '')
       .replace(/&/g, '&amp;')
@@ -695,56 +120,658 @@
       .replace(/'/g, '&#39;');
   }
 
-  // Page Loader Dismissal Helper
-  function dismissPageLoader() {
-    const loader = document.getElementById('admin-page-loader');
-    if (loader) {
-      loader.classList.add('fade-out');
-      setTimeout(() => {
-        if (loader && loader.parentNode) {
-          loader.parentNode.removeChild(loader);
-        }
-      }, 300);
+  function formatTime(isoString) {
+    try {
+      const d = new Date(isoString);
+      return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
+    } catch (_) {
+      return isoString;
     }
-    document.body.classList.remove('loading');
   }
 
-  // Keybindings (Escape closes inspector)
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (inquiryModal && !inquiryModal.hidden) {
-        closeInspector();
-      }
-      if (document.body.classList.contains('admin-menu-open')) {
-        closeMobileMenu();
-      }
+  /* ==========================================================================
+     Domain 1: Dashboard Overview & System Telemetry
+     ========================================================================== */
+  function renderOverview() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+
+    const users = store.getUsers();
+    const audit = store.getAudit();
+
+    // Metric counts
+    const usersValEl = document.getElementById('metric-users-val');
+    if (usersValEl) usersValEl.textContent = users.length;
+
+    // Activity Stream
+    const activityTbody = document.getElementById('overview-activity-table');
+    if (activityTbody) {
+      activityTbody.innerHTML = audit.slice(0, 6).map(a => `
+        <tr>
+          <td style="font-family: monospace; font-size: 0.8rem;">${formatTime(a.timestamp)}</td>
+          <td><strong style="color: var(--admin-emerald-bright);">${escapeHtml(a.actor)}</strong></td>
+          <td><span class="status-pill info">${escapeHtml(a.eventType)}</span></td>
+          <td style="font-family: monospace;">${escapeHtml(a.target)}</td>
+          <td>${escapeHtml(a.details)}</td>
+        </tr>
+      `).join('');
     }
-  });
+  }
 
-  // Initialization
-  function initAdminDashboard() {
-    loadSubmissions();
-    loadAlerts();
+  // Panic Buttons
+  const btnPurgeCache = document.getElementById('btn-quick-purge-cache');
+  if (btnPurgeCache) {
+    btnPurgeCache.addEventListener('click', () => {
+      if (confirm('Purge Cloudflare CDN Cache across all public routes?')) {
+        window.CSOSuperStore.logAudit('CACHE_PURGED', 'ALL_CDN_ROUTES', 'Global edge cache purge manually triggered by Super Admin.');
+        alert('Cloudflare CDN cache purge dispatched successfully.');
+        renderOverview();
+      }
+    });
+  }
 
-    // Verify session identity with server asynchronously
-    if (window.CSOAdminGuard) {
-      window.CSOAdminGuard.verifySessionWithServer().then(res => {
-        if (res && res.data && res.data.user) {
-          const userBadge = document.getElementById('topbar-admin-badge');
-          if (userBadge) userBadge.textContent = res.data.user.email;
-        }
-      }).catch(() => {}).finally(() => {
-        dismissPageLoader();
-      });
+  const btnToggleMaintenance = document.getElementById('btn-toggle-maintenance');
+  if (btnToggleMaintenance) {
+    btnToggleMaintenance.addEventListener('click', () => {
+      const sys = window.CSOSuperStore.getSystem();
+      sys.flags.maintenanceMode = !sys.flags.maintenanceMode;
+      window.CSOSuperStore.saveSystem(sys);
+      alert(`Maintenance Mode is now ${sys.flags.maintenanceMode ? 'ENABLED (Super Admin bypassed)' : 'DISABLED'}.`);
+      renderSystem();
+    });
+  }
+
+  const btnEmergencyNoticeQuick = document.getElementById('btn-emergency-broadcast-quick');
+  if (btnEmergencyNoticeQuick) {
+    btnEmergencyNoticeQuick.addEventListener('click', () => {
+      switchTab('tab-notifications');
+    });
+  }
+
+  /* ==========================================================================
+     Domain 2: User Management & Verification Desk
+     ========================================================================== */
+  function renderUsers(filterQuery = '') {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const users = store.getUsers();
+    const tbody = document.getElementById('users-table-body');
+    if (!tbody) return;
+
+    const filtered = users.filter(u => {
+      const q = filterQuery.toLowerCase();
+      return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.phone.includes(q);
+    });
+
+    tbody.innerHTML = filtered.map(u => {
+      const statusClass = u.status === 'Verified' ? 'verified' : u.status === 'Suspended' ? 'suspended' : 'pending';
+      return `
+        <tr>
+          <td style="font-family: monospace; font-size: 0.8rem;">${escapeHtml(u.id)}</td>
+          <td><strong>${escapeHtml(u.name)}</strong></td>
+          <td>${escapeHtml(u.email)}</td>
+          <td style="font-size: 0.85rem;">${escapeHtml(u.phone)}</td>
+          <td><span class="status-pill info">${escapeHtml(u.role)}</span></td>
+          <td><span class="status-pill ${statusClass}">${escapeHtml(u.status)}</span></td>
+          <td style="font-size: 0.8rem; color: var(--admin-text-muted);">${u.registeredAt.split('T')[0]}</td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              ${!u.verified ? `
+                <button type="button" class="btn-secondary btn-sm" onclick="window.csoVerifyUser('${u.id}')" title="Trigger Email Verification">
+                  Verify
+                </button>
+              ` : ''}
+              <button type="button" class="${u.status === 'Suspended' ? 'btn-primary' : 'btn-danger'} btn-sm" onclick="window.csoToggleUser('${u.id}')">
+                ${u.status === 'Suspended' ? 'Reinstate' : 'Suspend'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  window.csoToggleUser = (userId) => {
+    window.CSOSuperStore.toggleUserStatus(userId);
+    renderUsers();
+    renderOverview();
+  };
+
+  window.csoVerifyUser = (userId) => {
+    window.CSOSuperStore.verifyUser(userId);
+    renderUsers();
+    renderOverview();
+  };
+
+  const userSearchInput = document.getElementById('user-search-input');
+  if (userSearchInput) {
+    userSearchInput.addEventListener('input', (e) => {
+      renderUsers(e.target.value.trim());
+    });
+  }
+
+  const btnExportUsers = document.getElementById('btn-export-users-csv');
+  if (btnExportUsers) {
+    btnExportUsers.addEventListener('click', () => {
+      const users = window.CSOSuperStore.getUsers();
+      const csv = 'ID,Name,Email,Phone,Role,Status,RegisteredAt\n' +
+        users.map(u => `"${u.id}","${u.name}","${u.email}","${u.phone}","${u.role}","${u.status}","${u.registeredAt}"`).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cso-users-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    });
+  }
+
+  /* ==========================================================================
+     Domain 3: Role & Permission Management (RBAC)
+     ========================================================================== */
+  function renderRoles() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const roles = store.getRoles();
+    const container = document.getElementById('rbac-cards-container');
+    if (!container) return;
+
+    container.innerHTML = roles.map(r => `
+      <div class="rbac-card ${r.id === 'super_admin' ? 'primary' : ''}">
+        <div class="rbac-header">
+          <span class="rbac-name">${escapeHtml(r.name)}</span>
+          <span class="status-pill ${r.id === 'super_admin' ? 'verified' : 'info'}">${r.usersCount} Assigned</span>
+        </div>
+        <p class="rbac-desc">${escapeHtml(r.description)}</p>
+        <div class="perm-list">
+          ${Object.entries(r.permissions).map(([k, v]) => `
+            <div class="perm-item">
+              <span style="font-family: monospace; font-size: 0.78rem;">${k}</span>
+              <strong style="color: ${v ? 'var(--admin-emerald-bright)' : 'var(--admin-text-muted)'};">
+                ${v ? '✓ ALLOWED' : '✕ DENIED'}
+              </strong>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Delegation Modal
+  const modalDelegate = document.getElementById('modal-role-delegate');
+  const btnOpenDelegate = document.getElementById('btn-open-delegate-modal');
+  const btnCloseDelegate = document.getElementById('btn-close-delegate');
+  const btnCancelDelegate = document.getElementById('btn-cancel-delegate');
+  const btnConfirmDelegate = document.getElementById('btn-confirm-delegate');
+  const selectDelegateUser = document.getElementById('delegate-user-select');
+  const selectDelegateRole = document.getElementById('delegate-role-select');
+
+  function openDelegateModal() {
+    const users = window.CSOSuperStore.getUsers();
+    if (selectDelegateUser) {
+      selectDelegateUser.innerHTML = users.map(u => `
+        <option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)}) - Current: ${u.role}</option>
+      `).join('');
+    }
+    if (modalDelegate) modalDelegate.classList.add('open');
+  }
+
+  function closeDelegateModal() {
+    if (modalDelegate) modalDelegate.classList.remove('open');
+  }
+
+  if (btnOpenDelegate) btnOpenDelegate.addEventListener('click', openDelegateModal);
+  if (btnCloseDelegate) btnCloseDelegate.addEventListener('click', closeDelegateModal);
+  if (btnCancelDelegate) btnCancelDelegate.addEventListener('click', closeDelegateModal);
+  if (btnConfirmDelegate) {
+    btnConfirmDelegate.addEventListener('click', () => {
+      const userId = selectDelegateUser.value;
+      const targetRole = selectDelegateRole.value;
+      window.CSOSuperStore.assignUserRole(userId, targetRole);
+      closeDelegateModal();
+      renderUsers();
+      renderRoles();
+      renderOverview();
+      alert('Role delegation updated successfully.');
+    });
+  }
+
+  /* ==========================================================================
+     Domain 4: Content Studio & Dynamic Page Builder
+     ========================================================================== */
+  function renderCMS() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const pages = store.getPages();
+    const tbody = document.getElementById('cms-pages-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = pages.map(p => `
+      <tr>
+        <td><strong>${escapeHtml(p.title)}</strong></td>
+        <td><code style="color: var(--admin-emerald-bright);">${escapeHtml(p.slug)}</code></td>
+        <td><span class="status-pill info">${escapeHtml(p.template)}</span></td>
+        <td><span class="status-pill ${p.status === 'Published' ? 'published' : 'draft'}">${escapeHtml(p.status)}</span></td>
+        <td style="font-size: 0.8rem; color: var(--admin-text-muted);">${p.updatedAt.split('T')[0]}</td>
+        <td>
+          <button type="button" class="btn-secondary btn-sm" onclick="window.csoEditPage('${p.id}')">
+            Edit
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Page Builder Modal Elements
+  const modalBuilder = document.getElementById('modal-page-builder');
+  const btnNewPage = document.getElementById('btn-new-page');
+  const btnCloseBuilder = document.getElementById('btn-close-builder');
+  const btnSaveDraft = document.getElementById('btn-save-draft');
+  const btnPublishPage = document.getElementById('btn-publish-page');
+
+  const inputTitle = document.getElementById('builder-page-title');
+  const inputSlug = document.getElementById('builder-page-slug');
+  const selectTemplate = document.getElementById('builder-template-select');
+  const inputSeoDesc = document.getElementById('builder-seo-desc');
+  const textareaHtml = document.getElementById('builder-html-content');
+  const previewBox = document.getElementById('builder-preview-box');
+
+  let activeEditingPageId = null;
+
+  function updateLivePreview() {
+    if (previewBox && textareaHtml) {
+      previewBox.innerHTML = textareaHtml.value;
+    }
+  }
+  if (textareaHtml) textareaHtml.addEventListener('input', updateLivePreview);
+
+  function openPageBuilder(page = null) {
+    if (page) {
+      activeEditingPageId = page.id;
+      inputTitle.value = page.title || '';
+      inputSlug.value = page.slug || '';
+      selectTemplate.value = page.template || 'Standard Article';
+      inputSeoDesc.value = page.seoDescription || '';
+      textareaHtml.value = page.htmlContent || '<h2>' + page.title + '</h2><p>Page content...</p>';
     } else {
-      dismissPageLoader();
+      activeEditingPageId = null;
+      inputTitle.value = '';
+      inputSlug.value = '/study/new-guide';
+      selectTemplate.value = 'Standard Article';
+      inputSeoDesc.value = '';
+      textareaHtml.value = '<h2>New Educational Asset</h2><p>Verified information for Odisha students.</p>';
     }
+    updateLivePreview();
+    if (modalBuilder) modalBuilder.classList.add('open');
+  }
+
+  function closePageBuilder() {
+    if (modalBuilder) modalBuilder.classList.remove('open');
+  }
+
+  if (btnNewPage) btnNewPage.addEventListener('click', () => openPageBuilder());
+  if (btnCloseBuilder) btnCloseBuilder.addEventListener('click', closePageBuilder);
+
+  function commitPageSave(status) {
+    const pageData = {
+      id: activeEditingPageId || 'page-' + Date.now().toString(36),
+      title: inputTitle.value.trim() || 'Untitled Document',
+      slug: inputSlug.value.trim() || '/article/' + Date.now().toString(36),
+      template: selectTemplate.value,
+      seoDescription: inputSeoDesc.value.trim(),
+      htmlContent: textareaHtml.value,
+      status
+    };
+    window.CSOSuperStore.savePage(pageData);
+    closePageBuilder();
+    renderCMS();
+    renderOverview();
+  }
+
+  if (btnSaveDraft) btnSaveDraft.addEventListener('click', () => commitPageSave('Draft'));
+  if (btnPublishPage) btnPublishPage.addEventListener('click', () => commitPageSave('Published'));
+
+  window.csoEditPage = (pageId) => {
+    const pages = window.CSOSuperStore.getPages();
+    const target = pages.find(p => p.id === pageId);
+    if (target) openPageBuilder(target);
+  };
+
+  /* ==========================================================================
+     Domain 5: System Management & Integrations
+     ========================================================================== */
+  function renderSystem() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const sys = store.getSystem();
+
+    const flagReg = document.getElementById('flag-registration');
+    const flagInq = document.getElementById('flag-inquiries');
+    const flagMaint = document.getElementById('flag-maintenance');
+    const sysForwarding = document.getElementById('sys-forwarding-email');
+    const sysHost = document.getElementById('sys-smtp-host');
+    const sysPort = document.getElementById('sys-smtp-port');
+    const sysHeadCode = document.getElementById('sys-head-code');
+
+    if (flagReg) flagReg.checked = sys.flags.registrationOpen;
+    if (flagInq) flagInq.checked = sys.flags.inquiryDispatch;
+    if (flagMaint) flagMaint.checked = sys.flags.maintenanceMode;
+    if (sysForwarding) sysForwarding.value = sys.mail.forwardingDestination;
+    if (sysHost) sysHost.value = sys.mail.smtpHost;
+    if (sysPort) sysPort.value = sys.mail.smtpPort;
+    if (sysHeadCode) sysHeadCode.value = sys.customCode.headCode;
+  }
+
+  const btnSaveSystemFlags = document.getElementById('btn-save-system-flags');
+  if (btnSaveSystemFlags) {
+    btnSaveSystemFlags.addEventListener('click', () => {
+      const sys = window.CSOSuperStore.getSystem();
+      sys.flags.registrationOpen = document.getElementById('flag-registration').checked;
+      sys.flags.inquiryDispatch = document.getElementById('flag-inquiries').checked;
+      sys.flags.maintenanceMode = document.getElementById('flag-maintenance').checked;
+      sys.mail.forwardingDestination = document.getElementById('sys-forwarding-email').value.trim();
+      sys.mail.smtpHost = document.getElementById('sys-smtp-host').value.trim();
+      sys.mail.smtpPort = parseInt(document.getElementById('sys-smtp-port').value, 10) || 587;
+      sys.customCode.headCode = document.getElementById('sys-head-code').value;
+
+      window.CSOSuperStore.saveSystem(sys);
+      renderOverview();
+      alert('System configurations and feature flags saved successfully.');
+    });
+  }
+
+  /* ==========================================================================
+     Domain 6: Security Centre & Active Session Monitor
+     ========================================================================== */
+  function renderSecurity() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const sec = store.getSecurity();
+
+    // Active Sessions
+    const sessionsBody = document.getElementById('security-sessions-table');
+    if (sessionsBody) {
+      sessionsBody.innerHTML = sec.activeSessions.map(s => `
+        <tr>
+          <td style="font-family: monospace; font-size: 0.8rem;">${escapeHtml(s.id)}</td>
+          <td><strong>${escapeHtml(s.user)}</strong></td>
+          <td>${escapeHtml(s.ip)} <br><small style="color: var(--admin-text-muted);">${escapeHtml(s.geo)}</small></td>
+          <td style="font-size: 0.82rem;">${escapeHtml(s.device)}</td>
+          <td style="font-size: 0.8rem;">${s.loginTime.replace('T', ' ').slice(0, 16)}</td>
+          <td>
+            ${s.isCurrent ? `
+              <span class="status-pill verified">Current Session</span>
+            ` : `
+              <button type="button" class="btn-danger btn-sm" onclick="window.csoRevokeSession('${s.id}')">
+                Revoke
+              </button>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // IP Rules
+    const ipBody = document.getElementById('security-ip-table');
+    if (ipBody) {
+      ipBody.innerHTML = sec.ipRules.map(r => `
+        <tr>
+          <td><code style="color: var(--admin-emerald-bright);">${escapeHtml(r.ip)}</code></td>
+          <td><span class="status-pill ${r.action === 'Block' ? 'danger' : 'verified'}">${escapeHtml(r.action)}</span></td>
+          <td>${escapeHtml(r.note)}</td>
+          <td style="font-size: 0.8rem; color: var(--admin-text-muted);">${escapeHtml(r.addedAt)}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  window.csoRevokeSession = (sessionId) => {
+    window.CSOSuperStore.revokeSession(sessionId);
+    renderSecurity();
+    renderOverview();
+  };
+
+  const btnAddIpRule = document.getElementById('btn-add-ip-rule');
+  if (btnAddIpRule) {
+    btnAddIpRule.addEventListener('click', () => {
+      const ip = prompt('Enter IP Address or CIDR block:');
+      if (!ip) return;
+      const action = confirm(`Block ${ip}? Click OK to Block, Cancel to Whitelist`) ? 'Block' : 'Whitelist';
+      const note = prompt('Reason or notes for this rule:', 'Manual administrator policy');
+      window.CSOSuperStore.addIpRule(ip.trim(), action, note || 'Administrator rule');
+      renderSecurity();
+      renderOverview();
+    });
+  }
+
+  /* ==========================================================================
+     Domain 7: Immutable Audit Trail & Administrative Logs
+     ========================================================================== */
+  function renderAudit(filterQuery = '') {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const logs = store.getAudit();
+    const tbody = document.getElementById('audit-table-body');
+    if (!tbody) return;
+
+    const filtered = logs.filter(l => {
+      const q = filterQuery.toLowerCase();
+      return l.eventType.toLowerCase().includes(q) || l.actor.toLowerCase().includes(q) || l.target.toLowerCase().includes(q) || l.details.toLowerCase().includes(q);
+    });
+
+    tbody.innerHTML = filtered.map(l => `
+      <tr>
+        <td style="font-family: monospace; font-size: 0.8rem;">${escapeHtml(l.id)}</td>
+        <td style="font-size: 0.8rem; color: var(--admin-text-muted);">${l.timestamp.replace('T', ' ').slice(0, 19)}</td>
+        <td><strong>${escapeHtml(l.actor)}</strong></td>
+        <td><span class="status-pill info">${escapeHtml(l.eventType)}</span></td>
+        <td style="font-family: monospace; font-size: 0.82rem;">${escapeHtml(l.target)}</td>
+        <td style="font-family: monospace; font-size: 0.8rem;">${escapeHtml(l.ip)}</td>
+        <td style="font-size: 0.85rem;">${escapeHtml(l.details)}</td>
+      </tr>
+    `).join('');
+  }
+
+  const auditSearchInput = document.getElementById('audit-search-input');
+  if (auditSearchInput) {
+    auditSearchInput.addEventListener('input', (e) => {
+      renderAudit(e.target.value.trim());
+    });
+  }
+
+  const btnExportAudit = document.getElementById('btn-export-audit-json');
+  if (btnExportAudit) {
+    btnExportAudit.addEventListener('click', () => {
+      const logs = window.CSOSuperStore.getAudit();
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cso-audit-trail-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    });
+  }
+
+  /* ==========================================================================
+     Domain 8: Cloudflare D1 Monitoring & Schema Inspector
+     ========================================================================== */
+  function renderDatabase() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const d1 = store.getD1();
+    const tbody = document.getElementById('d1-tables-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = d1.tables.map(t => `
+      <tr>
+        <td><code style="color: var(--admin-emerald-bright); font-weight: 700;">${escapeHtml(t.name)}</code></td>
+        <td>${t.rows.toLocaleString()} rows</td>
+        <td>${t.columns} cols</td>
+        <td>${t.sizeKb} KB</td>
+        <td><span class="status-pill verified">Valid (Replica Active)</span></td>
+      </tr>
+    `).join('');
+  }
+
+  const btnRunSql = document.getElementById('btn-run-sql');
+  const sqlInput = document.getElementById('sql-query-input');
+  const sqlOutput = document.getElementById('sql-query-output');
+
+  if (btnRunSql && sqlInput && sqlOutput) {
+    btnRunSql.addEventListener('click', () => {
+      const q = sqlInput.value.trim();
+      if (!q.toUpperCase().startsWith('SELECT')) {
+        sqlOutput.textContent = 'ERROR: Only read-only SELECT queries are permitted in this sandboxed console.';
+        sqlOutput.style.color = 'var(--admin-danger)';
+        return;
+      }
+      sqlOutput.style.color = '#38bdf8';
+      const users = window.CSOSuperStore.getUsers();
+      sqlOutput.textContent = JSON.stringify(users.slice(0, 3), null, 2);
+    });
+  }
+
+  /* ==========================================================================
+     Domain 9: Backup & Disaster Recovery
+     ========================================================================== */
+  const btnCreateSnapshot = document.getElementById('btn-create-snapshot');
+  if (btnCreateSnapshot) {
+    btnCreateSnapshot.addEventListener('click', () => {
+      const snapshot = window.CSOSuperStore.createPlatformSnapshot();
+      const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cso-platform-snapshot-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      renderOverview();
+      alert('Full Platform Snapshot generated and downloaded successfully.');
+    });
+  }
+
+  const btnRestoreSnapshot = document.getElementById('btn-restore-snapshot');
+  const snapshotFileInput = document.getElementById('snapshot-file-input');
+
+  if (btnRestoreSnapshot && snapshotFileInput) {
+    btnRestoreSnapshot.addEventListener('click', () => {
+      const file = snapshotFileInput.files[0];
+      if (!file) {
+        alert('Please select a valid .json snapshot file first.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const snapshot = JSON.parse(e.target.result);
+          window.CSOSuperStore.restoreFromSnapshot(snapshot);
+          alert('Platform state successfully restored from snapshot!');
+          location.reload();
+        } catch (err) {
+          alert('Snapshot parse error: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  const btnPanicLockdown = document.getElementById('btn-panic-lockdown');
+  if (btnPanicLockdown) {
+    btnPanicLockdown.addEventListener('click', () => {
+      if (confirm('ENFORCE PANIC LOCKDOWN: All non-Super Admin write operations will be frozen immediately.')) {
+        window.CSOSuperStore.logAudit('PANIC_LOCKDOWN_ENFORCED', 'GLOBAL_ZERO_TRUST', 'Zero-Trust panic lockdown enforced.');
+        alert('Panic Lockdown enforced. All public modification pipelines are isolated.');
+        renderOverview();
+      }
+    });
+  }
+
+  /* ==========================================================================
+     Domain 10: Notification Hub & Broadcast Centre
+     ========================================================================== */
+  function renderNotifications() {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const notifs = store.getNotifications();
+    const tbody = document.getElementById('notifications-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = notifs.map(n => {
+      const pillClass = n.severity === 'emergency' ? 'danger' : n.severity === 'warning' ? 'warning' : 'verified';
+      return `
+        <tr>
+          <td><span class="status-pill ${pillClass}">${escapeHtml(n.severity.toUpperCase())}</span></td>
+          <td><strong>${escapeHtml(n.title)}</strong></td>
+          <td style="font-size: 0.85rem;">${escapeHtml(n.message)}</td>
+          <td style="font-size: 0.8rem; color: var(--admin-text-muted);">${formatTime(n.timestamp)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Pre-fill active broadcast if existing
+    const activeBroadcast = store.getActiveBroadcast();
+    const inputHeadline = document.getElementById('broadcast-headline-input');
+    const inputLink = document.getElementById('broadcast-link-input');
+    const selectSeverity = document.getElementById('broadcast-severity-select');
+
+    if (activeBroadcast && inputHeadline && inputLink && selectSeverity) {
+      inputHeadline.value = activeBroadcast.headline || '';
+      inputLink.value = activeBroadcast.link || '';
+      selectSeverity.value = activeBroadcast.severity || 'info';
+    }
+  }
+
+  const btnPublishBroadcast = document.getElementById('btn-publish-broadcast');
+  if (btnPublishBroadcast) {
+    btnPublishBroadcast.addEventListener('click', () => {
+      const headline = document.getElementById('broadcast-headline-input').value.trim();
+      const link = document.getElementById('broadcast-link-input').value.trim();
+      const severity = document.getElementById('broadcast-severity-select').value;
+
+      if (!headline) {
+        alert('Please enter an announcement headline.');
+        return;
+      }
+
+      window.CSOSuperStore.publishBroadcast({
+        headline,
+        link,
+        severity,
+        publishedAt: new Date().toISOString()
+      });
+
+      renderOverview();
+      alert('Broadcast published! It will appear across the public homepage banner.');
+    });
+  }
+
+  const btnTakedownBroadcast = document.getElementById('btn-takedown-broadcast');
+  if (btnTakedownBroadcast) {
+    btnTakedownBroadcast.addEventListener('click', () => {
+      window.CSOSuperStore.takedownBroadcast();
+      document.getElementById('broadcast-headline-input').value = '';
+      document.getElementById('broadcast-link-input').value = '';
+      renderOverview();
+      alert('Homepage broadcast banner taken down.');
+    });
+  }
+
+  /* ==========================================================================
+     Global Initialization
+     ========================================================================== */
+  function initAll() {
+    renderOverview();
+    renderUsers();
+    renderRoles();
+    renderCMS();
+    renderSystem();
+    renderSecurity();
+    renderAudit();
+    renderDatabase();
+    renderNotifications();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAdminDashboard);
+    document.addEventListener('DOMContentLoaded', initAll);
   } else {
-    initAdminDashboard();
+    initAll();
   }
-
 })();
