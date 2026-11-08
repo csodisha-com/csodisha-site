@@ -202,8 +202,8 @@
     }
     authEl.innerHTML =
       '<div class="cso-desktop-auth-buttons">' +
-        '<a href="' + root + '#login" class="cso-auth-item-link cso-login-link" style="color:#cbd5e1;font-weight:600;font-size:0.82rem;padding:6px 12px;text-decoration:none">Login</a>' +
-        '<a href="' + root + '#signup" class="cso-signup-pill" style="background:#ff671f;color:#ffffff;border-radius:6px;padding:5px 14px;font-weight:700;font-size:0.82rem;text-decoration:none">Sign Up</a>' +
+        '<a href="' + root + '#login" class="cso-auth-item-link cso-login-link login-btn">Login</a>' +
+        '<a href="' + root + '#signup" class="cso-signup-pill signup-btn">Sign Up</a>' +
       '</div>' +
       '<div class="cso-mobile-auth-wrapper">' +
         '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +

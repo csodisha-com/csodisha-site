@@ -5705,61 +5705,104 @@ mark.cso-search-highlight {
   display: none !important;
 }
 
-/* Login link & button */
+/* Login link & button - warm saffron / orange */
+.login-btn,
+.btn-login,
+.header-login-btn,
 .top .acct .cso-login-button,
 .top-bar .acct .cso-login-button,
 .header-utility .acct .cso-login-button,
 .cso-header-top .acct .cso-login-button,
 .cso-auth-item-link.cso-login-link,
-.top .acct a.cso-auth-item-link {
-  color: #cbd5e1 !important;
-  font-weight: 600 !important;
-  font-size: 0.82rem !important;
-  padding: 6px 12px !important;
+.top .acct a.cso-auth-item-link,
+a[href*="login"].cso-auth-item-link {
   background: transparent !important;
-  border: none !important;
-  text-decoration: none !important;
-  border-radius: 6px !important;
-  transition: color 0.18s ease, background 0.18s ease !important;
-}
-
-.top .acct .cso-login-button:hover,
-.top-bar .acct .cso-login-button:hover,
-.header-utility .acct .cso-login-button:hover,
-.cso-header-top .acct .cso-login-button:hover,
-.cso-auth-item-link.cso-login-link:hover,
-.top .acct a.cso-auth-item-link:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Sign Up CTA pill */
-.top .acct .btn.p,
-.top-bar .acct .btn.p,
-.header-utility .acct .btn.p,
-.cso-header-top .acct .btn.p,
-.cso-signup-pill {
-  background: #ff671f !important;
-  color: #ffffff !important;
+  color: #FF7700 !important;
+  border: 1.5px solid #FF7700 !important;
   border-radius: 6px !important;
   padding: 5px 14px !important;
   font-weight: 700 !important;
   font-size: 0.82rem !important;
   text-decoration: none !important;
-  border: none !important;
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  transition: background 0.18s ease, transform 0.18s ease !important;
+  gap: 6px !important;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease !important;
 }
 
+.login-btn svg,
+.btn-login svg,
+.header-login-btn svg,
+.top .acct .cso-login-button svg {
+  color: #FF7700 !important;
+  fill: #FF7700 !important;
+  stroke: #FF7700 !important;
+}
+
+.login-btn:hover,
+.btn-login:hover,
+.header-login-btn:hover,
+.top .acct .cso-login-button:hover,
+.top-bar .acct .cso-login-button:hover,
+.header-utility .acct .cso-login-button:hover,
+.cso-header-top .acct .cso-login-button:hover,
+.cso-auth-item-link.cso-login-link:hover,
+.top .acct a.cso-auth-item-link:hover,
+a[href*="login"].cso-auth-item-link:hover {
+  background: #FF7700 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.login-btn:hover svg,
+.btn-login:hover svg,
+.header-login-btn:hover svg,
+.top .acct .cso-login-button:hover svg {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Sign Up CTA pill - solid emerald green */
+.signup-btn,
+.btn-signup,
+.header-signup-btn,
+.top .acct .btn.p,
+.top-bar .acct .btn.p,
+.header-utility .acct .btn.p,
+.cso-header-top .acct .btn.p,
+.cso-signup-pill,
+a[href*="signup"].cso-signup-pill,
+a[href*="register"].cso-signup-pill {
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid #10B981 !important;
+  border-radius: 6px !important;
+  padding: 5px 14px !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+}
+
+.signup-btn:hover,
+.btn-signup:hover,
+.header-signup-btn:hover,
 .top .acct .btn.p:hover,
 .top-bar .acct .btn.p:hover,
 .header-utility .acct .btn.p:hover,
 .cso-header-top .acct .btn.p:hover,
-.cso-signup-pill:hover {
-  background: #ff7828 !important;
-  color: #ffffff !important;
+.cso-signup-pill:hover,
+a[href*="signup"].cso-signup-pill:hover,
+a[href*="register"].cso-signup-pill:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
 }
 
 /* ==========================================================================
