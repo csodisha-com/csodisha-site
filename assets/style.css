@@ -6018,8 +6018,22 @@ nav a.on,
    Hero Brand Title: Authentic Indian Tricolor Typography
    ========================================================================== */
 
-.hero-brand-title {
+/* Ensure parent wrapper centers its children */
+.hero-content,
+.hero-inner,
+.hero-banner,
+.cso-hero-content {
   display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
+/* Strict horizontal centering for the title plate */
+.hero-brand-title {
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   flex-wrap: wrap !important;
@@ -6031,7 +6045,10 @@ nav a.on,
   text-transform: uppercase !important;
   line-height: 1.15 !important;
   margin: 0 auto clamp(10px, 1.4vw, 16px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
   text-align: center !important;
+  align-self: center !important;
   /* Semi-transparent dark backing pill for guaranteed legibility across any sunset/graphic */
   background: rgba(8, 18, 32, 0.72) !important;
   backdrop-filter: blur(8px) !important;
@@ -6042,6 +6059,12 @@ nav a.on,
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
   width: fit-content !important;
   max-width: 95% !important;
+}
+
+/* Ensure each word span respects centering */
+.hero-brand-title .hero-word {
+  text-align: center !important;
+  display: inline-block !important;
 }
 
 /* Saffron Word: COMMON */
