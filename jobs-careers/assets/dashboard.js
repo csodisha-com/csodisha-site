@@ -691,29 +691,37 @@
   function renderStatistics(data) {
     const container = $('statistics-grid');
     if (!container) return;
-    const stats = data.statistics || {};
 
-    const topLevelCount = sections.reduce(
-      (total, section) => total + (section.children || []).length,
+    const mainCount = sections.reduce(
+      (total, group) => total + (group.children || []).length,
       0
     );
 
-    const numberedCount = sections.reduce(
-      (total, section) => total + countNodes(section.children || []),
+    const subCount = sections.reduce(
+      (total, group) => total + (group.children || []).reduce(
+        (sum, section) => sum + (section.children || []).length,
+        0
+      ),
       0
     );
 
-    const noteCount = Number(stats.unnumbered_entries_and_notes);
+    const detailCount = sections.reduce(
+      (total, group) => total + (group.children || []).reduce(
+        (sectionTotal, section) =>
+          sectionTotal + (section.children || []).reduce(
+            (subTotal, sub) => subTotal + (sub.children || []).length,
+            0
+          ),
+        0
+      ),
+      0
+    );
 
     const items = [
-      ['🗂️', 'Main Sections', sections.length],
-      ['📁', 'Top-Level Categories', topLevelCount],
-      ['📋', 'Numbered Categories', numberedCount],
-      [
-        '📝',
-        'Entries & Notes',
-        Number.isFinite(noteCount) ? noteCount : '—'
-      ]
+      ['🗂️', 'Navigation Groups', sections.length],
+      ['📁', 'Main Sections', mainCount],
+      ['📋', 'Subcategories', subCount],
+      ['📝', 'Detailed Entries', detailCount]
     ];
 
     container.replaceChildren();
@@ -724,165 +732,14 @@
       const content = el('div', 'stat-content');
 
       content.append(
-        el(
-          'strong',
-          'stat-value',
-          typeof value === 'number'
-            ? value.toLocaleString('en-IN')
-            : value
-        )
+        el('strong', 'stat-value', value.toLocaleString('en-IN'))
       );
 
       content.append(el('span', 'stat-label', label));
-
       card.append(symbol, content);
       container.append(card);
     });
   }
-
-  const QUICK_SUBLINKS = [
-    [
-      { label: 'OPSC', path: [0, 1, 0] },
-      { label: 'OSSC', path: [0, 1, 1] },
-      { label: 'Banking', path: [0, 0, 2] },
-      { label: 'Railways', path: [0, 0, 3] }
-    ],
-    [
-      { label: '10th/12th Pass', path: [0, 0] },
-      { label: 'Graduate Jobs', path: [0, 1] },
-      { label: 'Government Career', path: [3] },
-      { label: 'Private Sector', path: [4] }
-    ],
-    [
-      { label: 'Education Criteria', path: [0, 0] },
-      { label: 'Age Cutoffs', path: [0, 1] },
-      { label: 'Reservation Rules', path: [0, 2] },
-      { label: 'Physical Standards', path: [0, 3] }
-    ],
-    [
-      { label: 'OTET / OSSTET', path: [2, 2] },
-      { label: 'UGC NET / CTET', path: [2, 2] },
-      { label: 'Recruitment Exams', path: [2, 1] },
-      { label: 'Skill Certifications', path: [3] }
-    ],
-    [
-      { label: 'Odisha Scholarships', path: [0, 0] },
-      { label: 'Post-Matric Aid', path: [0, 2] },
-      { label: 'Central Schemes', path: [0, 1] },
-      { label: 'Fellowships', path: [0, 4] }
-    ],
-    [
-      { label: 'Study Abroad', path: [0] },
-      { label: 'Global Employment', path: [1] },
-      { label: 'Research Internships', path: [2] },
-      { label: 'Fellowships', path: [4] }
-    ],
-    [
-      { label: 'Career Planning', path: [0] },
-      { label: 'Application & Resume', path: [1] },
-      { label: 'Interview Preparation', path: [2] },
-      { label: 'Professional Skills', path: [3] }
-    ],
-    [
-      { label: 'Odisha Institutions', path: [0, 0] },
-      { label: 'Recruitment Portals', path: [1] },
-      { label: 'Regulatory Bodies', path: [2] },
-      { label: 'Verification & Safety', path: [4] }
-    ]
-  ];
-
-  function openDirectPath(sectionIndex, nodePath) {
-    currentSection = sectionIndex;
-    path = [...nodePath];
-    search.value = '';
-    clearSearch.hidden = true;
-    updateUrlState(true);
-    renderExplorer();
-    closeMobileMenu();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function applyQuickFilter(filterKey) {
-    const chips = document.querySelectorAll('.cso-quick-chip');
-    chips.forEach(c => {
-      const isMatch = c.dataset.filter === filterKey;
-      c.classList.toggle('active', isMatch);
-      c.setAttribute('aria-pressed', String(isMatch));
-    });
-
-    const cards = grid.querySelectorAll('.cso-interactive-card');
-    if (!cards.length) return;
-
-    if (filterKey === 'all') {
-      cards.forEach(card => {
-        card.style.display = '';
-      });
-      return;
-    }
-
-    const filterTerms = {
-      'opsc-ossc': ['opsc', 'ossc', 'public service commission', 'staff selection commission'],
-      'teaching': ['teaching', 'b.ed', 'otet', 'osstet', 'ctet', 'ugc net', 'teacher'],
-      '10th-12th': ['10th', '12th', 'class 10', 'class 12', 'school-level', 'matric', 'secondary'],
-      'police-defense': ['police', 'defense', 'defence', 'army', 'navy', 'air force', 'security'],
-      'private-it': ['private', 'information technology', 'software', 'corporate']
-    }[filterKey] || [];
-
-    cards.forEach(card => {
-      const idx = parseInt(card.dataset.sectionIndex, 10);
-      const section = sections[idx];
-      if (!section) {
-        card.style.display = '';
-        return;
-      }
-
-      function testNode(node) {
-        const text = ((node.title || '') + ' ' + (node.text || '')).toLowerCase();
-        if (filterTerms.some(t => text.includes(t))) return true;
-        if (Array.isArray(node.notes)) {
-          for (const nt of node.notes) {
-            const ntText = ((nt.title || '') + ' ' + (nt.text || '')).toLowerCase();
-            if (filterTerms.some(t => ntText.includes(t))) return true;
-          }
-        }
-        if (Array.isArray(node.children)) {
-          for (const ch of node.children) {
-            if (testNode(ch)) return true;
-          }
-        }
-        return false;
-      }
-
-      const matches = testNode(section);
-      card.style.display = matches ? '' : 'none';
-    });
-  }
-
-  function initQuickFilters() {
-    const chipsContainer = $('cso-filter-chips');
-    if (!chipsContainer) return;
-
-    chipsContainer.addEventListener('click', event => {
-      const chip = event.target.closest('.cso-quick-chip');
-      if (!chip) return;
-      const filter = chip.dataset.filter || 'all';
-      if (overview.hidden) {
-        showOverview(true);
-      }
-      applyQuickFilter(filter);
-    });
-  }
-
-  const CATEGORY_DESCRIPTIONS = [
-    'Latest vacancies, state exams, notifications, civil services, and recruitment boards.',
-    'Career guidance based on 10th, +2, graduation, and private sector roles.',
-    'Essential educational criteria, age cutoffs, relaxations, and physical standards.',
-    'Entrance tests, teacher qualifications (OTET/OSSTET), and professional certifications.',
-    'State & central scholarship schemes, stipend portals, and student financial aid.',
-    'Global opportunities, international fellowships, overseas jobs, and study visas.',
-    'Skill roadmaps, resume building, interview techniques, and career advancement.',
-    'State recruitment portals, official departments, commission sites, and safety verification.'
-  ];
 
   function buildDashboard() {
     if (sectionsNav) {
@@ -923,60 +780,26 @@
         sectionsNav.append(navButton);
       }
 
-      // Modern Minimalist Category Card
-      const card = el('div', 'cso-jobs-card cso-interactive-card dashboard-card');
+      const card = el('button', 'dashboard-card');
+      card.type = 'button';
       card.dataset.sectionIndex = String(index);
+      card.append(el('span', 'card-icon', icons[index % icons.length]));
 
-      // Card Header: Icon + Title + Entries Badge
-      const cardHeader = el('div', 'cso-jobs-card__header');
-      const titleWrap = el('div', 'cso-jobs-card__title-wrap');
-      
-      const iconWrap = el('div', 'cso-jobs-card__icon');
-      iconWrap.setAttribute('aria-hidden', 'true');
-      iconWrap.textContent = icons[index % icons.length];
-      titleWrap.append(iconWrap);
+      const content = el('div', 'card-content');
+      content.append(el('span', 'card-title', section.title));
+      const metaParts = [];
+      if (categories > 0) metaParts.push(`${categories.toLocaleString('en-IN')} categories`);
+      if (entries > 0) metaParts.push(`${entries.toLocaleString('en-IN')} entries`);
+      content.append(el('span', 'card-meta', metaParts.length ? metaParts.join(' · ') : 'Explore category'));
+      card.append(content);
 
-      const mainTitle = el('h3', 'cso-jobs-card__title', section.title);
-      titleWrap.append(mainTitle);
-      cardHeader.append(titleWrap);
-
-      const badgeText = entries > 0 ? `${entries.toLocaleString('en-IN')} Entries` : (categories > 0 ? `${categories} Categories` : '');
-      if (badgeText) {
-        const badge = el('span', 'cso-jobs-card__badge', badgeText);
-        cardHeader.append(badge);
-      }
-      card.append(cardHeader);
-
-      // Card Body: Clean 1-line description
-      const descText = CATEGORY_DESCRIPTIONS[index] || section.title;
-      const cardDesc = el('p', 'cso-jobs-card__desc', descText);
-      card.append(cardDesc);
-
-      // Card Footer: Minimal inline dot-separated links
-      const subLinksData = QUICK_SUBLINKS[index] || [];
-      if (subLinksData.length > 0) {
-        const linksWrap = el('div', 'cso-jobs-card__links');
-        subLinksData.forEach((linkInfo, linkIdx) => {
-          if (linkIdx > 0) {
-            const sep = el('span', 'cso-jobs-card__link-sep', '•');
-            linksWrap.append(sep);
-          }
-          const linkBtn = el('button', 'cso-jobs-card__link-item', linkInfo.label);
-          linkBtn.type = 'button';
-          linkBtn.addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            openDirectPath(index, linkInfo.path);
-          });
-          linksWrap.append(linkBtn);
-        });
-        card.append(linksWrap);
-      }
+      const arrow = el('span', 'card-arrow', '›');
+      arrow.setAttribute('aria-hidden', 'true');
+      card.append(arrow);
 
       card.addEventListener('click', () => openSection(index, true));
       grid.append(card);
     });
-
-    initQuickFilters();
   }
 
   backButton.addEventListener('click', () => {
