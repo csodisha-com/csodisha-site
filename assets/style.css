@@ -5822,7 +5822,7 @@ nav a.on,
    Navigation Dropdown Menus & Submenu High-Contrast Styling
    ========================================================================== */
 
-/* Nav Dropdown Container */
+/* Force parent list & container to flush-left */
 .nav-dropdown,
 .dropdown-menu,
 .site-header__nav .dropdown,
@@ -5839,9 +5839,25 @@ nav a.on,
   padding: 8px 0 !important;
   min-width: 240px !important;
   z-index: 1000 !important;
+  text-align: left !important;
+  padding-left: 0 !important;
+  list-style: none !important;
 }
 
-/* Individual Dropdown Links */
+.nav-dropdown li,
+.dropdown-menu li,
+.site-header__nav ul ul li,
+.has-dropdown ul li,
+.cso-nav-items .dd li,
+.dd li {
+  width: 100% !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+/* Force all anchor links and text nodes strictly to the left edge */
 .nav-dropdown a,
 .dropdown-menu a,
 .site-header__nav ul ul a,
@@ -5852,11 +5868,12 @@ nav a.on,
 .cso-site-dropdown a,
 .cso-auth-dropdown-menu a {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-start !important; /* Force left alignment */
   text-align: left !important;
   gap: 10px !important;
-  padding: 8px 14px !important;
+  padding: 9px 16px !important;
   width: 100% !important;
   box-sizing: border-box !important;
   color: #e2e8f0 !important; /* Crisp readable light text */
@@ -5868,6 +5885,19 @@ nav a.on,
   margin: 0 !important;
   border: none !important;
   transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
+}
+
+/* Ensure child text elements and spans do not float or right-align */
+.nav-dropdown a *,
+.dropdown-menu a *,
+.site-header__nav ul ul a *,
+.has-dropdown ul a *,
+.cso-nav-items .dd a *,
+.dd a *,
+.cso-site-dropdown a * {
+  text-align: left !important;
+  margin-left: 0 !important;
+  justify-self: flex-start !important;
 }
 
 /* Dropdown Item Hover & Focus */
@@ -5885,10 +5915,10 @@ nav a.on,
 .dd a:focus {
   background: rgba(16, 149, 93, 0.22) !important; /* Subtle emerald tint */
   color: #38bdf8 !important; /* Accent cyan / highlight */
-  padding-left: 18px !important;
+  padding-left: 19px !important;
 }
 
-/* If chevron/bullet is on the left */
+/* Tiny left chevron bullet (if present) */
 .nav-dropdown a .arrow,
 .dropdown-menu a .arrow,
 .has-dropdown ul a .arrow,
@@ -5896,7 +5926,10 @@ nav a.on,
 .dd a .dd-bullet,
 .cso-site-dropdown a .dd-bullet,
 .nav-dropdown a::before {
+  margin-right: 8px !important;
+  margin-left: 0 !important;
   flex-shrink: 0 !important;
+  text-align: left !important;
   opacity: 0.7 !important;
   font-size: 0.8rem !important;
   color: #94a3b8 !important;
@@ -5911,6 +5944,7 @@ nav a.on,
 .cso-site-dropdown a span {
   text-align: left !important;
   flex: 1 !important;
+  margin-left: 0 !important;
 }
 
 /* If there is a trailing right arrow */
