@@ -5818,6 +5818,83 @@ nav a.on,
   border-bottom: none !important;
 }
 
+/* ==========================================================================
+   Navigation Dropdown Menus & Submenu High-Contrast Styling
+   ========================================================================== */
+
+/* Nav Dropdown Container */
+.nav-dropdown,
+.dropdown-menu,
+.site-header__nav .dropdown,
+.site-header__nav ul ul,
+.has-dropdown ul,
+.cso-nav-items .dd,
+.dd,
+.cso-site-dropdown,
+.cso-auth-dropdown-menu {
+  background: #0f1e33 !important; /* Deep navy matching site palette */
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35) !important;
+  padding: 8px 0 !important;
+  min-width: 240px !important;
+  z-index: 1000 !important;
+}
+
+/* Individual Dropdown Links */
+.nav-dropdown a,
+.dropdown-menu a,
+.site-header__nav ul ul a,
+.has-dropdown ul a,
+.dropdown-item,
+.cso-nav-items .dd a,
+.dd a,
+.cso-site-dropdown a,
+.cso-auth-dropdown-menu a {
+  color: #e2e8f0 !important; /* Crisp readable light text */
+  font-size: 0.86rem !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
+}
+
+/* Dropdown Item Hover & Focus */
+.nav-dropdown a:hover,
+.dropdown-menu a:hover,
+.site-header__nav ul ul a:hover,
+.has-dropdown ul a:hover,
+.dropdown-item:hover,
+.dropdown-item:focus,
+.cso-nav-items .dd a:hover,
+.dd a:hover,
+.cso-site-dropdown a:hover,
+.cso-auth-dropdown-menu a:hover,
+.cso-nav-items .dd a:focus,
+.dd a:focus {
+  background: rgba(16, 149, 93, 0.22) !important; /* Subtle emerald tint */
+  color: #38bdf8 !important; /* Accent cyan / highlight */
+  padding-left: 19px !important;
+}
+
+/* Dropdown Arrows / Indicators / Bullets */
+.nav-dropdown a::after,
+.dropdown-menu a .arrow,
+.has-dropdown ul a .arrow,
+.cso-nav-items .dd a .dd-bullet,
+.dd a .dd-bullet,
+.cso-site-dropdown a .dd-bullet {
+  color: #94a3b8 !important;
+}
+
+
 
 
 
