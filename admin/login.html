@@ -83,8 +83,6 @@
   <script>
     (function() {
       'use strict';
-      const AUTH_KEY = 'cso_admin_session';
-      const DASHBOARD_URL = '/admin/';
       const TARGET_EMAIL = 'admin@csodisha.com';
       const TARGET_PASSKEY = 'Admin@CSO#2026';
 
@@ -96,27 +94,6 @@
       const errorMsg = document.getElementById('login-error-msg');
       const submitBtn = document.getElementById('btn-submit-login');
 
-      // Helper: save session without needing admin-guard.js
-      function saveSession(user, remember) {
-        const session = {
-          user: String(user || TARGET_EMAIL).trim().toLowerCase(),
-          token: 'cso_adm_' + Math.random().toString(36).substring(2) + Date.now().toString(36),
-          loginAt: Date.now(),
-          expiresAt: Date.now() + 8 * 60 * 60 * 1000 // 8 hours duration
-        };
-        try {
-          sessionStorage.setItem('cso_admin_token', session.token);
-          sessionStorage.setItem(AUTH_KEY, JSON.stringify(session));
-          if (remember) {
-            localStorage.setItem('cso_admin_token', session.token);
-            localStorage.setItem(AUTH_KEY, JSON.stringify(session));
-          }
-        } catch (e) {
-          console.warn('Unable to persist session', e);
-        }
-        return session;
-      }
-
       // Toggle passkey visibility
       toggleBtn.addEventListener('click', () => {
         const isPass = passInput.type === 'password';
@@ -125,14 +102,13 @@
         toggleBtn.setAttribute('aria-label', isPass ? 'Hide passkey' : 'Show passkey');
       });
 
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
         errorMsg.hidden = true;
         errorMsg.textContent = '';
 
         const email = (emailInput.value || '').trim().toLowerCase();
         const passkey = (passInput.value || '').trim();
-        const remember = rememberCheckbox.checked;
 
         if (!email || !passkey) {
           errorMsg.hidden = false;
@@ -150,25 +126,23 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span>Verifying Session...</span>';
 
-        // Save session locally
-        const session = saveSession(email, remember);
+        // Store verification token
+        const tokenVal = 'cso_adm_verified_session';
+        const sessionData = JSON.stringify({
+          user: TARGET_EMAIL,
+          token: tokenVal,
+          loginAt: Date.now()
+        });
 
-        // Optional server verify ping with 3s timeout
-        try {
-          const controller = new AbortController();
-          const tId = setTimeout(() => controller.abort(), 3000);
-          await fetch('/api/admin/verify', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${session.token}`,
-              'Accept': 'application/json'
-            },
-            signal: controller.signal
-          }).finally(() => clearTimeout(tId));
-        } catch (_) {}
+        sessionStorage.setItem('cso_admin_token', tokenVal);
+        sessionStorage.setItem('cso_admin_session', sessionData);
 
-        // Authenticated successfully: direct to dashboard
-        window.location.replace(DASHBOARD_URL);
+        if (rememberCheckbox && rememberCheckbox.checked) {
+          localStorage.setItem('cso_admin_token', tokenVal);
+          localStorage.setItem('cso_admin_session', sessionData);
+        }
+
+        window.location.href = '/admin/';
       });
     })();
   </script>
