@@ -163,16 +163,32 @@
       } catch (_) {}
     }
 
-    // 2. Fetch from API (/api/admin/submissions)
+    // 2. Fetch from API (/api/admin/submissions) with fallback to /api/admin/submissions.json
     try {
       const session = window.CSOAdminGuard ? window.CSOAdminGuard.getSession() : null;
-      const headers = session && session.token ? { 'Authorization': `Bearer ${session.token}` } : {};
+      const headers = session && session.token ? { 'Authorization': `Bearer ${session.token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
       
-      const res = await fetch('/api/admin/submissions', { headers });
-      if (res.ok) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      let res;
+      try {
+        res = await fetch('/api/admin/submissions', { headers, signal: controller.signal });
+      } catch (fetchErr) {
+        // Fallback to static seed file if Worker route fails
+        res = await fetch('/api/admin/submissions.json');
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (!res.ok) {
+        res = await fetch('/api/admin/submissions.json');
+      }
+
+      if (res && res.ok) {
         const data = await res.json();
         if (Array.isArray(data.submissions) && data.submissions.length > 0) {
-          // If we have local status changes, merge them
+          // If we have local status changes, keep them; otherwise initialize
           if (!submissions.length) {
             submissions = data.submissions;
             localStorage.setItem(STORAGE_SUBMISSIONS_KEY, JSON.stringify(submissions));
@@ -264,10 +280,11 @@
         ];
         localStorage.setItem(STORAGE_SUBMISSIONS_KEY, JSON.stringify(submissions));
       }
+    } finally {
+      renderSubmissions();
+      updateMetrics();
+      dismissPageLoader();
     }
-
-    renderSubmissions();
-    updateMetrics();
   }
 
   function updateMetrics() {
@@ -678,6 +695,20 @@
       .replace(/'/g, '&#39;');
   }
 
+  // Page Loader Dismissal Helper
+  function dismissPageLoader() {
+    const loader = document.getElementById('admin-page-loader');
+    if (loader) {
+      loader.classList.add('fade-out');
+      setTimeout(() => {
+        if (loader && loader.parentNode) {
+          loader.parentNode.removeChild(loader);
+        }
+      }, 300);
+    }
+    document.body.classList.remove('loading');
+  }
+
   // Keybindings (Escape closes inspector)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -692,6 +723,9 @@
 
   // Initialization
   document.addEventListener('DOMContentLoaded', () => {
+    // Safety fallback: Ensure loader is ALWAYS dismissed after maximum 3 seconds
+    setTimeout(dismissPageLoader, 3000);
+
     loadSubmissions();
     loadAlerts();
 
@@ -702,7 +736,11 @@
           const userBadge = document.getElementById('topbar-admin-badge');
           if (userBadge) userBadge.textContent = res.data.user.email;
         }
+      }).catch(() => {}).finally(() => {
+        dismissPageLoader();
       });
+    } else {
+      dismissPageLoader();
     }
   });
 

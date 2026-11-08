@@ -41,6 +41,48 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Page Initialization Loader */
+.admin-page-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--admin-bg);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.admin-page-loader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.admin-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3.5px solid var(--admin-border);
+  border-top-color: var(--admin-emerald-bright);
+  border-radius: 50%;
+  animation: adminSpinnerSpin 0.75s linear infinite;
+}
+
+@keyframes adminSpinnerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-loader-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  letter-spacing: 0.02em;
+}
+
 /* ==========================================================================
    Accessibility & Minimum Touch Targets (WCAG 2.5.5 / 2.5.8)
    ========================================================================== */

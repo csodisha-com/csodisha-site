@@ -71,6 +71,7 @@
 
   /**
    * Verify session token asynchronously against /api/admin/verify
+   * Includes a strict 4-second timeout using AbortController.
    * Returns a promise resolving to { ok: boolean, data?: object, error?: string }
    */
   async function verifySessionWithServer(session) {
@@ -79,20 +80,30 @@
       return { ok: false, error: 'Unauthorized' };
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
     try {
       const response = await fetch(VERIFY_API_URL, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${currentSession.token}`,
           'Accept': 'application/json'
-        }
+        },
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
         return { ok: true, data };
+      } else if (response.status === 401 || response.status === 403) {
+        // Explicitly rejected by server
+        clearSession();
+        return { ok: false, error: 'Session expired or rejected' };
       } else {
-        // Fallback: If running purely statically or mock, client token format is checked
+        // Fallback: If 404 or other server status, allow verified local session token
         if (currentSession.token.startsWith('cso_adm_')) {
           return {
             ok: true,
@@ -104,8 +115,11 @@
         }
         return { ok: false, error: 'Invalid or expired token' };
       }
-    } catch (_) {
-      // Offline / Static fallback: If token is validly formatted, allow session
+    } catch (err) {
+      clearTimeout(timeoutId);
+
+      // Aborted / Timeout / Network error fallback
+      // If client token is validly formatted, gracefully allow local session instead of hanging
       if (currentSession.token && currentSession.token.startsWith('cso_adm_')) {
         return {
           ok: true,
@@ -115,7 +129,7 @@
           }
         };
       }
-      return { ok: false, error: 'Connection error' };
+      return { ok: false, error: err.name === 'AbortError' ? 'Verification timed out' : 'Connection error' };
     }
   }
 
