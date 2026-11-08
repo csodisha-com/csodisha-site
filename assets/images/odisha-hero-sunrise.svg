@@ -1,0 +1,297 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Sky Sunrise Gradient -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0B2347" />
+      <stop offset="30%" stop-color="#153C6B" />
+      <stop offset="65%" stop-color="#C97D45" />
+      <stop offset="100%" stop-color="#EAA97E" />
+    </linearGradient>
+
+    <!-- Sun Glow Gradient -->
+    <radialGradient id="sunGlow" cx="50%" cy="58%" r="45%">
+      <stop offset="0%" stop-color="#FFF6D1" stop-opacity="0.9" />
+      <stop offset="25%" stop-color="#FFD175" stop-opacity="0.6" />
+      <stop offset="60%" stop-color="#FF8A3D" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FF8A3D" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Sun Core -->
+    <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="40%" stop-color="#FFF4B8" />
+      <stop offset="100%" stop-color="#FFBE53" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Water Gradient (Chilika Lake) -->
+    <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B2633E" stop-opacity="0.7" />
+      <stop offset="35%" stop-color="#6E3D31" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#1A273A" stop-opacity="0.95" />
+    </linearGradient>
+
+    <!-- Silhouette Tint Gradients -->
+    <linearGradient id="templeRightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3B1E28" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#241424" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#110B18" />
+    </linearGradient>
+
+    <linearGradient id="wheelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF1D0" stop-opacity="0.32" />
+      <stop offset="70%" stop-color="#D97A38" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#5C2518" stop-opacity="0.35" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sky Base -->
+  <rect width="1200" height="480" fill="url(#skyGrad)" />
+
+  <!-- Center Sun Rays & Orb behind Konark Wheel -->
+  <circle cx="600" cy="275" r="260" fill="url(#sunGlow)" />
+  <circle cx="600" cy="275" r="70" fill="url(#sunCore)" opacity="0.8" />
+
+  <!-- Radial Sunbeams radiating from center -->
+  <g opacity="0.18" stroke="#FFE9A8" stroke-width="1.5">
+    <line x1="600" y1="275" x2="100" y2="40" />
+    <line x1="600" y1="275" x2="250" y2="20" />
+    <line x1="600" y1="275" x2="420" y2="10" />
+    <line x1="600" y1="275" x2="600" y2="0" />
+    <line x1="600" y1="275" x2="780" y2="10" />
+    <line x1="600" y1="275" x2="950" y2="20" />
+    <line x1="600" y1="275" x2="1100" y2="40" />
+    <line x1="600" y1="275" x2="150" y2="130" />
+    <line x1="600" y1="275" x2="1050" y2="130" />
+  </g>
+
+  <!-- ========================================================================
+       CENTER BACKGROUND: The Majestic Konark Sun Temple Chariot Wheel
+       ======================================================================== -->
+  <g id="konark-wheel" transform="translate(600, 275)" opacity="0.32">
+    <!-- Outer Rim & Carved Borders -->
+    <circle cx="0" cy="0" r="145" fill="none" stroke="url(#wheelGrad)" stroke-width="12" />
+    <circle cx="0" cy="0" r="139" fill="none" stroke="#FFE7BA" stroke-width="1.5" stroke-dasharray="3,3" />
+    <circle cx="0" cy="0" r="132" fill="none" stroke="#5C2518" stroke-width="2" />
+    <circle cx="0" cy="0" r="95" fill="none" stroke="url(#wheelGrad)" stroke-width="4" />
+    <!-- Hub (Central Axel) with Lotus Medallion -->
+    <circle cx="0" cy="0" r="34" fill="#3D1815" stroke="#FFE5B4" stroke-width="3" />
+    <circle cx="0" cy="0" r="24" fill="#692415" stroke="#FFA351" stroke-width="1.5" />
+    <circle cx="0" cy="0" r="12" fill="#FFE9BE" />
+    <circle cx="0" cy="0" r="5" fill="#3D1815" />
+
+    <!-- 8 Primary Thick Spokes (Carved with relief motifs) -->
+    <g stroke="url(#wheelGrad)" stroke-width="7" stroke-linecap="round">
+      <!-- 0 deg -->
+      <line x1="0" y1="-34" x2="0" y2="-132" />
+      <circle cx="0" cy="-84" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 45 deg -->
+      <line x1="24" y1="-24" x2="93" y2="-93" />
+      <circle cx="60" cy="-60" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 90 deg -->
+      <line x1="34" y1="0" x2="132" y2="0" />
+      <circle cx="84" cy="0" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 135 deg -->
+      <line x1="24" y1="24" x2="93" y2="93" />
+      <circle cx="60" cy="60" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 180 deg -->
+      <line x1="0" y1="34" x2="0" y2="132" />
+      <circle cx="0" cy="84" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 225 deg -->
+      <line x1="-24" y1="24" x2="-93" y2="93" />
+      <circle cx="-60" cy="60" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 270 deg -->
+      <line x1="-34" y1="0" x2="-132" y2="0" />
+      <circle cx="-84" cy="0" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+      <!-- 315 deg -->
+      <line x1="-24" y1="-24" x2="-93" y2="-93" />
+      <circle cx="-60" cy="-60" r="7" fill="#FFE6BA" stroke="#4A1C14" stroke-width="2" />
+    </g>
+
+    <!-- 8 Secondary Thin Spokes -->
+    <g stroke="#FFE3B0" stroke-width="2.5" opacity="0.8">
+      <line x1="12" y1="-31" x2="51" y2="-122" />
+      <line x1="31" y1="-12" x2="122" y2="-51" />
+      <line x1="31" y1="12" x2="122" y2="51" />
+      <line x1="12" y1="31" x2="51" y2="122" />
+      <line x1="-12" y1="31" x2="-51" y2="122" />
+      <line x1="-31" y1="12" x2="-122" y2="51" />
+      <line x1="-31" y1="-12" x2="-122" y2="-51" />
+      <line x1="-12" y1="-31" x2="-51" y2="-122" />
+    </g>
+
+    <!-- Outer Rim Medallions (Representing 24 hours / seasons) -->
+    <g fill="#FFE9C2" opacity="0.75">
+      <circle cx="0" cy="-139" r="3.5" />
+      <circle cx="98" cy="-98" r="3.5" />
+      <circle cx="139" cy="0" r="3.5" />
+      <circle cx="98" cy="98" r="3.5" />
+      <circle cx="0" cy="139" r="3.5" />
+      <circle cx="-98" cy="98" r="3.5" />
+      <circle cx="-139" cy="0" r="3.5" />
+      <circle cx="-98" cy="-98" r="3.5" />
+    </g>
+  </g>
+
+  <!-- ========================================================================
+       LEFT & BOTTOM-LEFT: Chilika Lagoon, Traditional Wooden Boats & Migratory Birds
+       ======================================================================== -->
+  <!-- Water Body (Chilika Lake Arc) -->
+  <path d="M0,320 Q240,300 480,340 T900,360 L1200,380 L1200,480 L0,480 Z" fill="url(#waterGrad)" opacity="0.85" />
+  
+  <!-- Subtle Water Waves & Shimmer -->
+  <g stroke="#FFD89C" stroke-width="1.2" opacity="0.35" fill="none">
+    <path d="M10,365 C60,363 110,368 180,365" />
+    <path d="M70,390 C140,387 220,393 310,389" />
+    <path d="M30,425 C90,422 170,428 260,424" />
+    <path d="M160,445 C230,442 320,448 400,444" />
+    <path d="M220,345 C270,343 330,347 380,345" />
+  </g>
+
+  <!-- Silhouette Palm Groves (Left Shore) -->
+  <g fill="#21101E" opacity="0.65">
+    <!-- Tall Palm Tree 1 -->
+    <path d="M-10,480 Q15,310 10,210 Q20,310 5,480 Z" />
+    <!-- Fronds -->
+    <path d="M10,210 Q-30,170 -60,205 Q-20,185 10,210 Z" />
+    <path d="M10,210 Q-15,150 -35,160 Q-5,165 10,210 Z" />
+    <path d="M10,210 Q15,130 25,145 Q15,160 10,210 Z" />
+    <path d="M10,210 Q40,140 65,165 Q35,175 10,210 Z" />
+    <path d="M10,210 Q60,180 80,225 Q45,200 10,210 Z" />
+    
+    <!-- Medium Palm Tree 2 -->
+    <path d="M45,480 Q62,350 60,260 Q70,350 55,480 Z" />
+    <path d="M60,260 Q20,230 0,255 Q30,240 60,260 Z" />
+    <path d="M60,260 Q50,205 35,215 Q55,225 60,260 Z" />
+    <path d="M60,260 Q80,195 95,210 Q85,225 60,260 Z" />
+    <path d="M60,260 Q105,225 125,260 Q90,245 60,260 Z" />
+
+    <!-- Distant Palm Tree 3 -->
+    <path d="M120,480 Q130,380 135,310 Q138,380 128,480 Z" />
+    <path d="M135,310 Q105,285 90,305 Q115,295 135,310 Z" />
+    <path d="M135,310 Q135,270 145,280 Q140,295 135,310 Z" />
+    <path d="M135,310 Q160,285 175,310 Q155,300 135,310 Z" />
+  </g>
+
+  <!-- Traditional Chilika Wooden Boat 1 (Foreground / Midground) -->
+  <g id="chilika-boat-1" transform="translate(180, 365)" fill="#180C17" opacity="0.85">
+    <!-- Slender Curved Wooden Hull -->
+    <path d="M0,25 C30,38 120,38 165,18 C140,22 45,23 5,12 Z" />
+    <!-- Center thatch canopy shelter (Nauka Chhala) -->
+    <path d="M55,18 Q85,2 115,18 Z" fill="#2E1727" />
+    <!-- Boatman silhouette standing at rear holding steering oar -->
+    <circle cx="28" cy="4" r="4.5" />
+    <path d="M26,8 L32,8 L30,22 L24,22 Z" />
+    <!-- Long Steering Oar dipping into water -->
+    <line x1="26" y1="12" x2="10" y2="38" stroke="#180C17" stroke-width="2" stroke-linecap="round" />
+    <ellipse cx="9" cy="38" rx="2" ry="4" transform="rotate(-30, 9, 38)" />
+  </g>
+
+  <!-- Traditional Chilika Wooden Boat 2 (Distant Fisherman with Net) -->
+  <g id="chilika-boat-2" transform="translate(360, 340) scale(0.65)" fill="#291424" opacity="0.65">
+    <path d="M0,22 C25,32 90,32 130,16 C110,20 35,20 4,12 Z" />
+    <circle cx="105" cy="4" r="4" />
+    <path d="M103,8 L108,8 L106,20 L101,20 Z" />
+    <!-- Casting net arc -->
+    <path d="M104,10 Q130,-5 145,15" fill="none" stroke="#FFA351" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.7" />
+    <!-- Long punt pole -->
+    <line x1="102" y1="8" x2="115" y2="35" stroke="#291424" stroke-width="1.8" />
+  </g>
+
+  <!-- Migratory Birds Flight (Chilika Flamingos / Siberian Cranes) -->
+  <g fill="#FFF0D4" opacity="0.55">
+    <!-- Leading bird 1 -->
+    <path d="M160,110 Q172,102 185,108 Q174,106 160,110 Q148,106 135,108 Q148,102 160,110 Z" />
+    <!-- Bird 2 -->
+    <path d="M195,95 Q204,89 215,93 Q206,92 195,95 Q184,92 175,93 Q186,89 195,95 Z" transform="scale(0.85) translate(40, -10)" />
+    <!-- Bird 3 -->
+    <path d="M225,120 Q234,115 243,118 Q236,117 225,120 Q216,117 208,118 Q217,115 225,120 Z" transform="scale(0.7) translate(100, 20)" />
+    <!-- Distant V-formation flock -->
+    <path d="M270,80 Q276,75 284,78 Q278,77 270,80 Q264,77 258,78 Q265,75 270,80 Z" transform="scale(0.55) translate(220, 25)" />
+    <path d="M295,70 Q301,65 309,68 Q303,67 295,70 Q289,67 283,68 Q290,65 295,70 Z" transform="scale(0.5) translate(280, 20)" />
+    <path d="M320,62 Q326,58 333,60 Q328,59 320,62 Q314,59 308,60 Q315,58 320,62 Z" transform="scale(0.45) translate(350, 15)" />
+  </g>
+
+  <!-- ========================================================================
+       RIGHT & BOTTOM-RIGHT: Puri Jagannath Temple & Mukteshwar Torana
+       ======================================================================== -->
+  <!-- Layer 1: Mukteshwar Temple Torana & Deula (Mid-right, ~820px) -->
+  <g id="mukteshwar-temple" transform="translate(800, 220)" fill="url(#templeRightGrad)" opacity="0.6">
+    <!-- Mukteshwar Torana (Iconic Curved Archway) -->
+    <path d="M0,170 L8,170 L8,80 Q35,45 70,80 L70,170 L78,170 L78,75 Q35,32 0,75 Z" />
+    <path d="M12,78 Q35,52 66,78" fill="none" stroke="#FFE7BA" stroke-width="2.5" opacity="0.5" />
+    <!-- Little finials on arch -->
+    <circle cx="39" cy="46" r="4" fill="#FFE7BA" opacity="0.6" />
+
+    <!-- Mukteshwar Shikara (Deula) behind arch -->
+    <path d="M85,170 L85,110 Q92,70 115,35 Q138,70 145,110 L145,170 Z" />
+    <!-- Amalaka & Kalasa -->
+    <ellipse cx="115" cy="33" rx="14" ry="4" fill="#FFE7BA" opacity="0.5" />
+    <path d="M115,29 L115,16" stroke="#FFE7BA" stroke-width="2" />
+    <circle cx="115" cy="15" r="2.5" fill="#FFA351" />
+  </g>
+
+  <!-- Layer 2: The Magnificent Jagannath Temple, Puri (Right foreground, 920px - 1180px) -->
+  <g id="jagannath-temple" transform="translate(930, 80)" fill="url(#templeRightGrad)" opacity="0.82">
+    <!-- Main Bada Deula (Sanctum Vimana - Soaring Curvilinear Tower ~65m profile) -->
+    <!-- Base / Bada -->
+    <rect x="70" y="270" width="130" height="130" />
+    
+    <!-- Curved Gandi (Tower body with ratha projections) -->
+    <path d="M70,270 Q82,140 120,40 Q130,22 135,16 Q140,22 150,40 Q188,140 200,270 Z" />
+
+    <!-- Horizontal decorative ridges (Potalas) characteristic of Kalinga Architecture -->
+    <g stroke="#E89658" stroke-width="1.2" opacity="0.35">
+      <line x1="74" y1="240" x2="196" y2="240" />
+      <line x1="79" y1="210" x2="191" y2="210" />
+      <line x1="86" y1="180" x2="184" y2="180" />
+      <line x1="95" y1="150" x2="175" y2="150" />
+      <line x1="105" y1="120" x2="165" y2="120" />
+      <line x1="116" y1="90" x2="154" y2="90" />
+      <line x1="124" y1="65" x2="146" y2="65" />
+    </g>
+
+    <!-- Mastaka (Top assembly) -->
+    <!-- Beki (Neck) -->
+    <rect x="127" y="13" width="16" height="5" />
+    <!-- Fluted Ribbed Amalaka Disc -->
+    <ellipse cx="135" cy="11" rx="20" ry="5.5" fill="#FFE2B0" />
+    <!-- Khapuri & Kalasa (Sacred Water Pot) -->
+    <ellipse cx="135" cy="6" rx="11" ry="3.5" />
+    <path d="M131,5 L135,-3 L139,5 Z" fill="#FFE2B0" />
+    <!-- Nilachakra (The Sacred 8-spoke Blue/Golden Wheel atop Jagannath Temple) -->
+    <circle cx="135" cy="-8" r="8" fill="none" stroke="#FFD76A" stroke-width="2.5" />
+    <circle cx="135" cy="-8" r="3" fill="#FF7D3C" />
+    <!-- Patitapabana Flag (Fluttering sacred pennant) -->
+    <path d="M135,-16 L135,-2 L137,-2 L137,-16 Z" fill="#FFD76A" />
+    <path d="M137,-16 Q158,-22 178,-15 Q158,-12 137,-8 Z" fill="#FF4E2A" />
+
+    <!-- Jagamohana (Assembly Hall - Stepped Pyramidal Pidha Deula) -->
+    <path d="M5,400 L5,340 L25,340 L35,310 L45,310 L55,275 L65,275 L80,240 L100,240 L100,400 Z" />
+    <!-- Amalaka on Jagamohana -->
+    <ellipse cx="90" cy="237" rx="12" ry="3.5" fill="#FFE2B0" opacity="0.6" />
+    <line x1="90" y1="235" x2="90" y2="225" stroke="#FFE2B0" stroke-width="1.8" />
+
+    <!-- Nata Mandira & Bhoga Mandapa (Foreground lower stepped halls) -->
+    <path d="M-45,400 L-45,370 L-35,370 L-25,350 L-10,350 L5,330 L25,330 L25,400 Z" opacity="0.9" />
+    <ellipse cx="8" cy="328" rx="8" ry="2.5" fill="#FFE2B0" opacity="0.5" />
+  </g>
+
+  <!-- Distant Temple Outlines along Horizon (Lingaraj / Dhauli hints) -->
+  <g fill="#241424" opacity="0.35">
+    <path d="M720,380 L725,330 Q738,290 748,330 L755,380 Z" />
+    <path d="M765,380 L768,345 Q775,320 782,345 L788,380 Z" />
+  </g>
+
+  <!-- Coastal Coconut Palms on Right Shoreline -->
+  <g fill="#170A18" opacity="0.8">
+    <path d="M1160,480 Q1145,360 1140,260 Q1152,360 1172,480 Z" />
+    <path d="M1140,260 Q1100,215 1070,240 Q1110,230 1140,260 Z" />
+    <path d="M1140,260 Q1120,195 1105,205 Q1130,215 1140,260 Z" />
+    <path d="M1140,260 Q1155,185 1175,200 Q1160,215 1140,260 Z" />
+    <path d="M1140,260 Q1185,210 1210,245 Q1175,235 1140,260 Z" />
+    <path d="M1140,260 Q1195,245 1220,285 Q1180,265 1140,260 Z" />
+  </g>
+
+  <!-- Golden Sunrise Horizon Mist / Atmospheric Glow at base -->
+  <rect x="0" y="340" width="1200" height="140" fill="url(#sunGlow)" opacity="0.22" style="mix-blend-mode: screen;" />
+</svg>
