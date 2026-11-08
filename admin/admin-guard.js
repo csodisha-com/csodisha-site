@@ -11,9 +11,9 @@
 (function (window) {
   'use strict';
 
-  // Hardcoded emergency kill-switch at LINE 1: Never redirect if on login page
-  const initialPath = window.location.pathname.toLowerCase();
-  if (initialPath.includes('login') || initialPath === '/admin/login' || initialPath === '/admin/login.html') {
+  // Hardcoded emergency kill-switch at LINE 1: Never run guard on login page
+  const initialPath = (window.location.pathname || '').toLowerCase();
+  if (initialPath.includes('/admin/login') || initialPath.includes('login')) {
     return;
   }
 

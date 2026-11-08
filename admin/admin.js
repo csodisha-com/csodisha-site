@@ -114,7 +114,7 @@
       } else {
         sessionStorage.clear();
         localStorage.removeItem('cso_admin_session');
-        window.location.replace('/admin/login.html');
+        window.location.replace('/admin/login');
       }
     });
   }

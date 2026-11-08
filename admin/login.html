@@ -165,13 +165,8 @@
           }).finally(() => clearTimeout(tId));
         } catch (_) {}
 
-        // Redirect to dashboard or sanitized return destination
-        const params = new URLSearchParams(window.location.search);
-        let destination = params.get('return') || DASHBOARD_URL;
-        if (!destination.startsWith('/admin') || destination.includes('login')) {
-          destination = DASHBOARD_URL;
-        }
-        window.location.replace(destination);
+        // Authenticated successfully: direct to dashboard
+        window.location.replace(DASHBOARD_URL);
       });
     })();
   </script>
