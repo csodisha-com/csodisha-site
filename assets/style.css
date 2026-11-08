@@ -6149,6 +6149,194 @@ nav a.on,
   }
 }
 
+/* ==========================================================================
+   Jobs & Careers Explorer: Modern Full-Width Dashboard Overhaul
+   ========================================================================== */
+
+.cso-jobs-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+/* Clean Hero Banner */
+.cso-jobs-hero {
+  background: var(--cso-card-bg);
+  border: 1px solid var(--cso-border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.cso-jobs-hero__title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--cso-text);
+  margin: 4px 0 6px;
+}
+
+.cso-jobs-hero__sub {
+  font-size: 0.88rem;
+  color: var(--cso-text-muted);
+  margin: 0 0 18px;
+}
+
+/* Opportunity Finder Strip */
+.cso-jobs-finder-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(3, 72, 39, 0.08) 0%, rgba(8, 18, 32, 0.04) 100%);
+  border: 1px solid rgba(3, 72, 39, 0.2);
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+}
+
+.cso-jobs-finder-strip__text {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--cso-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cso-jobs-finder-strip__btn {
+  background: #034827;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.cso-jobs-finder-strip__btn:hover { background: #056637; }
+
+/* 2-Column Responsive Grid */
+.cso-jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 840px) {
+  .cso-jobs-grid {
+    grid-template-columns: 1fr;
+  }
+  .cso-jobs-finder-strip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Modern Minimalist Cards */
+.cso-jobs-card {
+  background: var(--cso-card-bg);
+  border: 1px solid var(--cso-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cso-jobs-card:hover {
+  transform: translateY(-2px);
+  border-color: #034827;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.cso-jobs-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.cso-jobs-card__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cso-jobs-card__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(3, 72, 39, 0.08);
+  color: #034827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+
+.cso-jobs-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cso-text);
+  margin: 0;
+}
+
+.cso-jobs-card__desc {
+  font-size: 0.84rem;
+  color: var(--cso-text-muted);
+  margin: 4px 0 10px;
+  line-height: 1.4;
+}
+
+.cso-jobs-card__badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--cso-surface);
+  color: var(--cso-text-muted);
+  border: 1px solid var(--cso-border);
+}
+
+.cso-jobs-card__links {
+  font-size: 0.78rem;
+  color: var(--cso-text-muted);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.cso-jobs-card__link-item {
+  color: var(--cso-link);
+  text-decoration: none;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.cso-jobs-card__link-item:hover {
+  text-decoration: underline;
+}
+
+.cso-jobs-card__link-sep {
+  color: var(--cso-text-muted);
+  opacity: 0.5;
+  user-select: none;
+}
+
 
 
 

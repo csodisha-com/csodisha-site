@@ -88,124 +88,89 @@
 </header>
 <nav><div class="w" id="navw"></div></nav>
 
-<div class="app-shell">
-    <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
-
-    <aside class="sidebar" id="sidebar" aria-label="Jobs and Careers navigation">
-      <div class="sidebar-header">
-        <a aria-label="Jobs and Careers Dashboard Home" title="Jobs and Careers Dashboard Home" class="brand" href="./">
-          <span class="brand-logo"><img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-sidebar-emblem" width="44" height="44"></span>
-          <span class="brand-name">
-            <strong>CS ODISHA</strong>
-            <small>JOBS & CAREERS</small>
-          </span>
-        </a>
-        <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close sections menu">✕</button>
-      </div>
-
-      <div class="sidebar-heading">DIRECTORY SECTIONS</div>
-      <nav id="side-navigation" aria-label="Directory sections"></nav>
-    </aside>
-
-    <div class="workspace">
-      <header class="topbar">
-        <button class="menu-toggle" id="menu-toggle"
-                type="button" aria-label="Directory Menu"
-                aria-controls="sidebar" aria-expanded="false">
-          <span class="menu-toggle-icon" aria-hidden="true">☰</span>
-          <span class="menu-toggle-label">Sections</span>
-        </button>
-
-        <div class="top-search cso-search-box-wrap">
-          <span class="search-lens" aria-hidden="true">🔍</span>
-          <input id="directory-search" type="search"
-                 placeholder="Search jobs, careers, courses, scholarships..."
-                 aria-label="Search Jobs and Careers directory">
-          <kbd class="cso-search-kbd" id="cso-search-kbd" aria-hidden="true" title="Shortcut: Press Ctrl+K or / to search">
-            <span class="cso-kbd-key">Ctrl</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>
-          </kbd>
-          <button id="clear-search" class="clear-search"
-                  type="button" aria-label="Clear search"
-                  title="Clear search" hidden>×</button>
-        </div>
-
-        <a class="home-link" href="./" aria-label="Jobs and Careers Overview">⌂ Overview</a>
-      </header>
-
-      <div class="cso-filter-chips-row" id="cso-filter-chips" role="group" aria-label="Quick filters">
-        <button type="button" class="cso-quick-chip active" data-filter="all">All</button>
-        <button type="button" class="cso-quick-chip" data-filter="opsc-ossc">OPSC / OSSC</button>
-        <button type="button" class="cso-quick-chip" data-filter="teaching">Teaching &amp; B.Ed</button>
-        <button type="button" class="cso-quick-chip" data-filter="10th-12th">10th/12th Pass</button>
-        <button type="button" class="cso-quick-chip" data-filter="police-defense">Police &amp; Defense</button>
-        <button type="button" class="cso-quick-chip" data-filter="private-it">Private &amp; IT</button>
-      </div>
-
-      <main class="main-content">
-
-
-
-
-        <nav aria-label="Breadcrumb">
-          <ol class="breadcrumb" id="breadcrumb"></ol>
-        </nav>
-
-        <section class="welcome cso-compact-welcome">
-  <h1 id="page-title">Jobs &amp; Careers Explorer</h1>
+<div class="cso-jobs-page">
+  <!-- a) Compact Explorer Hero -->
+  <section class="cso-jobs-hero">
+    <nav aria-label="Breadcrumb" style="margin-bottom: 8px;">
+      <ol class="breadcrumb" id="breadcrumb" style="display: flex; gap: 8px; list-style: none; padding: 0; margin: 0; font-size: 0.84rem; color: var(--cso-text-muted);">
+      </ol>
+    </nav>
+    <h1 class="cso-jobs-hero__title" id="page-title">Jobs &amp; Careers Explorer</h1>
+    <p class="cso-jobs-hero__sub">Browse verified state recruitments, exam notices, scholarships, and career paths.</p>
     <p id="page-description" hidden></p>
-</section>
 
-        
-<section class="cso-opportunity-cta-banner" aria-label="Job guidance finder">
-  <div class="cso-cta-banner-content">
-    <div class="cso-cta-banner-icon" aria-hidden="true">🧭</div>
-    <div class="cso-cta-banner-text">
-      <strong>Need help choosing a job direction?</strong>
-      <span>Discover personalised job pathways and state eligibility matching.</span>
+    <!-- Integrated Search Bar -->
+    <div class="cso-search-box-wrap" style="position: relative; max-width: 100%; margin-bottom: 14px;">
+      <span class="search-lens" aria-hidden="true" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--cso-text-muted);">🔍</span>
+      <input id="directory-search" type="search"
+             placeholder="Search jobs, careers, courses, scholarships..."
+             aria-label="Search Jobs and Careers directory"
+             style="width: 100%; box-sizing: border-box; padding: 12px 90px 12px 42px; border-radius: 10px; border: 1.5px solid var(--cso-border); background: var(--cso-surface); color: var(--cso-text); font-size: 0.95rem; outline: none;">
+      <kbd class="cso-search-kbd" id="cso-search-kbd" aria-hidden="true" title="Shortcut: Press Ctrl+K or / to search" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--cso-border); background: var(--cso-card-bg); color: var(--cso-text-muted);">
+        <span class="cso-kbd-key">Ctrl</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span>
+      </kbd>
+      <button id="clear-search" class="clear-search"
+              type="button" aria-label="Clear search"
+              title="Clear search" hidden style="position: absolute; right: 75px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; color: var(--cso-text-muted);">×</button>
     </div>
-  </div>
-  <a class="cso-cta-banner-btn" href="../job-opportunity-finder/">
-    <span>Open CSO Job Opportunity Finder</span>
-    <span class="cso-cta-arrow" aria-hidden="true">→</span>
-  </a>
-</section>
 
-
-<section id="overview" aria-label="Directory overview">
-          <h2>Explore All Categories</h2>
-          <div class="dashboard-grid cso-interactive-grid" id="dashboard-grid"></div>
-
-          <section class="recent-section" id="recent-section"
-                   aria-label="Recently viewed categories" hidden>
-            <div class="recent-heading">
-              <h2>Recently Viewed Categories</h2>
-              <button id="clear-recent" type="button">
-                Clear History
-              </button>
-            </div>
-            <div class="recent-grid" id="recent-grid"></div>
-          </section>
-        </section>
-
-        <section id="explorer" class="explorer" hidden>
-          <div class="explorer-header">
-            <button id="back-button" type="button">← Back</button>
-            <h2 id="explorer-title">Directory</h2>
-          </div>
-          <p id="explorer-description"></p>
-          <div id="explorer-items" class="explorer-items"></div>
-        </section>
-
-        <section id="search-results" hidden>
-          <h2>Search Results</h2>
-          <p id="search-status"></p>
-          <div id="search-items" class="explorer-items"></div>
-        </section>
-
-        <p id="load-status" role="status">Loading directory...</p>
-      </main>
+    <!-- Quick filter chips -->
+    <div class="cso-filter-chips-row" id="cso-filter-chips" role="group" aria-label="Quick filters" style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <button type="button" class="cso-quick-chip active" data-filter="all">All</button>
+      <button type="button" class="cso-quick-chip" data-filter="opsc-ossc">OPSC / OSSC</button>
+      <button type="button" class="cso-quick-chip" data-filter="teaching">Teaching &amp; B.Ed</button>
+      <button type="button" class="cso-quick-chip" data-filter="10th-12th">10th/12th Pass</button>
+      <button type="button" class="cso-quick-chip" data-filter="police-defense">Police &amp; Defense</button>
+      <button type="button" class="cso-quick-chip" data-filter="private-it">Private &amp; IT</button>
     </div>
-  </div>
+  </section>
+
+  <!-- b) Opportunity Finder Accent Strip -->
+  <section class="cso-jobs-finder-strip" aria-label="Job guidance finder">
+    <div class="cso-jobs-finder-strip__text">
+      <span style="font-size: 1.25rem;" aria-hidden="true">🧭</span>
+      <span>Not sure where to begin? Discover personalised job pathways and state eligibility matching.</span>
+    </div>
+    <a class="cso-jobs-finder-strip__btn" href="../job-opportunity-finder/">
+      Open Opportunity Finder &rarr;
+    </a>
+  </section>
+
+  <!-- c) Refined 2-Column Category Grid & Dynamic Content -->
+  <main class="main-content" style="padding: 0;">
+    <section id="overview" aria-label="Directory overview">
+      <div class="cso-jobs-grid" id="dashboard-grid"></div>
+
+      <section class="recent-section" id="recent-section"
+               aria-label="Recently viewed categories" hidden style="margin-top: 32px;">
+        <div class="recent-heading" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h2 style="font-size: 1.25rem; margin: 0;">Recently Viewed Categories</h2>
+          <button id="clear-recent" type="button" style="background: none; border: 1px solid var(--cso-border); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--cso-text-muted);">
+            Clear History
+          </button>
+        </div>
+        <div class="recent-grid cso-jobs-grid" id="recent-grid"></div>
+      </section>
+    </section>
+
+    <section id="explorer" class="explorer" hidden>
+      <div class="explorer-header" style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+        <button id="back-button" type="button" style="background: var(--cso-surface); border: 1px solid var(--cso-border); padding: 6px 14px; border-radius: 6px; font-size: 0.88rem; cursor: pointer; color: var(--cso-text);">← Back</button>
+        <h2 id="explorer-title" style="margin: 0; font-size: 1.4rem;">Directory</h2>
+      </div>
+      <p id="explorer-description" style="color: var(--cso-text-muted); font-size: 0.92rem; margin-bottom: 20px;"></p>
+      <div id="explorer-items" class="explorer-items"></div>
+    </section>
+
+    <section id="search-results" hidden>
+      <h2 style="font-size: 1.4rem; margin-bottom: 8px;">Search Results</h2>
+      <p id="search-status" style="color: var(--cso-text-muted); font-size: 0.9rem; margin-bottom: 16px;"></p>
+      <div id="search-items" class="explorer-items"></div>
+    </section>
+
+    <p id="load-status" role="status" style="text-align: center; color: var(--cso-text-muted); font-size: 0.9rem; padding: 20px;">Loading directory...</p>
+  </main>
+</div>
   <!-- CSO-IN shared header functionality -->
   <!-- CSO global footer v1 -->
 <footer><div class="w cso-footer-grid">

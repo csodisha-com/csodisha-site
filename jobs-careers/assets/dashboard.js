@@ -204,6 +204,7 @@
   }
 
   function openMobileMenu() {
+    if (!menuToggle || !sidebar) return;
     lastFocusedElement = document.activeElement;
     document.body.classList.add('menu-open');
     menuToggle.setAttribute('aria-expanded', 'true');
@@ -225,13 +226,15 @@
 
   function closeMobileMenu() {
     if (!document.body.classList.contains('menu-open')) {
-      menuToggle.setAttribute('aria-expanded', 'false');
+      if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
       return;
     }
     document.body.classList.remove('menu-open');
-    menuToggle.setAttribute('aria-expanded', 'false');
-    sidebar.removeAttribute('aria-modal');
-    sidebar.removeAttribute('role');
+    if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
+    if (sidebar) {
+      sidebar.removeAttribute('aria-modal');
+      sidebar.removeAttribute('role');
+    }
 
     // Return focus safely to last focused element or toggle button
     if (lastFocusedElement && typeof lastFocusedElement.focus === 'function' && document.contains(lastFocusedElement)) {
@@ -242,6 +245,7 @@
   }
 
   function setActiveSidebar() {
+    if (!sectionsNav) return;
     sectionsNav.querySelectorAll('.side-link').forEach(button => {
       const index = Number(button.dataset.sectionIndex);
       const isActive = index === currentSection;
@@ -296,7 +300,7 @@
       breadcrumb.append(item);
     }
 
-    addCrumb('CS Odisha', '../index.html');
+    addCrumb('Home', '../index.html');
 
     if (currentSection < 0) {
       addCrumb(SUBPAGE_TITLE, () => showOverview(true), true);
@@ -352,7 +356,7 @@
     breadcrumb.replaceChildren();
 
     const c1 = el('li', 'breadcrumb-item');
-    const a1 = el('a', 'breadcrumb-link', 'CS Odisha');
+    const a1 = el('a', 'breadcrumb-link', 'Home');
     a1.href = '../index.html';
     c1.append(a1);
     breadcrumb.append(c1);
@@ -869,94 +873,106 @@
     });
   }
 
+  const CATEGORY_DESCRIPTIONS = [
+    'Latest vacancies, state exams, notifications, civil services, and recruitment boards.',
+    'Career guidance based on 10th, +2, graduation, and private sector roles.',
+    'Essential educational criteria, age cutoffs, relaxations, and physical standards.',
+    'Entrance tests, teacher qualifications (OTET/OSSTET), and professional certifications.',
+    'State & central scholarship schemes, stipend portals, and student financial aid.',
+    'Global opportunities, international fellowships, overseas jobs, and study visas.',
+    'Skill roadmaps, resume building, interview techniques, and career advancement.',
+    'State recruitment portals, official departments, commission sites, and safety verification.'
+  ];
+
   function buildDashboard() {
-    sectionsNav.replaceChildren();
+    if (sectionsNav) {
+      sectionsNav.replaceChildren();
+
+      const overviewButton = el('button', 'side-link');
+      overviewButton.type = 'button';
+      overviewButton.dataset.sectionIndex = '-1';
+      overviewButton.append(el('span', 'side-icon', '🏠'));
+      overviewButton.append(el('span', 'side-title', 'Overview'));
+      overviewButton.append(el('span', 'side-count', String(sections.length)));
+      const overviewArrow = el('span', 'side-arrow', '›');
+      overviewArrow.setAttribute('aria-hidden', 'true');
+      overviewButton.append(overviewArrow);
+      overviewButton.addEventListener('click', () => showOverview(true));
+      sectionsNav.append(overviewButton);
+    }
+
     grid.replaceChildren();
 
-    const overviewButton = el('button', 'side-link');
-    overviewButton.type = 'button';
-    overviewButton.dataset.sectionIndex = '-1';
-    overviewButton.append(el('span', 'side-icon', '🏠'));
-    overviewButton.append(el('span', 'side-title', 'Overview'));
-    overviewButton.append(el('span', 'side-count', String(sections.length)));
-    const overviewArrow = el('span', 'side-arrow', '›');
-    overviewArrow.setAttribute('aria-hidden', 'true');
-    overviewButton.append(overviewArrow);
-    overviewButton.addEventListener('click', () => showOverview(true));
-    sectionsNav.append(overviewButton);
-
     sections.forEach((section, index) => {
-      const navButton = el('button', 'side-link');
-      navButton.type = 'button';
-      navButton.dataset.sectionIndex = String(index);
-      navButton.append(el('span', 'side-icon', icons[index % icons.length]));
-      navButton.append(el('span', 'side-title', section.title));
       const categories = countNodes(section.children || []);
-      if (categories > 0) {
-        navButton.append(el('span', 'side-count', String(categories)));
-      }
-      const sideArrow = el('span', 'side-arrow', '›');
-      sideArrow.setAttribute('aria-hidden', 'true');
-      navButton.append(sideArrow);
-      navButton.addEventListener('click', () => openSection(index, true));
-      sectionsNav.append(navButton);
+      const entries = countNotes(section.children || []);
 
-      // Rich Interactive Category Card
-      const card = el('div', 'cso-interactive-card dashboard-card');
+      if (sectionsNav) {
+        const navButton = el('button', 'side-link');
+        navButton.type = 'button';
+        navButton.dataset.sectionIndex = String(index);
+        navButton.append(el('span', 'side-icon', icons[index % icons.length]));
+        navButton.append(el('span', 'side-title', section.title));
+        if (categories > 0) {
+          navButton.append(el('span', 'side-count', String(categories)));
+        }
+        const sideArrow = el('span', 'side-arrow', '›');
+        sideArrow.setAttribute('aria-hidden', 'true');
+        navButton.append(sideArrow);
+        navButton.addEventListener('click', () => openSection(index, true));
+        sectionsNav.append(navButton);
+      }
+
+      // Modern Minimalist Category Card
+      const card = el('div', 'cso-jobs-card cso-interactive-card dashboard-card');
       card.dataset.sectionIndex = String(index);
 
-      // Top Row: Header Trigger
-      const cardHeader = el('div', 'cso-card-header');
+      // Card Header: Icon + Title + Entries Badge
+      const cardHeader = el('div', 'cso-jobs-card__header');
+      const titleWrap = el('div', 'cso-jobs-card__title-wrap');
       
-      const iconWrap = el('div', 'cso-card-icon-wrap');
-      const iconSpan = el('span', 'card-icon', icons[index % icons.length]);
-      iconWrap.append(iconSpan);
-      cardHeader.append(iconWrap);
+      const iconWrap = el('div', 'cso-jobs-card__icon');
+      iconWrap.setAttribute('aria-hidden', 'true');
+      iconWrap.textContent = icons[index % icons.length];
+      titleWrap.append(iconWrap);
 
-      const titleGroup = el('div', 'cso-card-title-group');
-      const mainTitle = el('h3', 'cso-card-title', section.title);
-      titleGroup.append(mainTitle);
+      const mainTitle = el('h3', 'cso-jobs-card__title', section.title);
+      titleWrap.append(mainTitle);
+      cardHeader.append(titleWrap);
 
-      const entries = countNotes(section.children || []);
-      const badgesRow = el('div', 'cso-card-badges');
-      if (categories > 0) {
-        const catBadge = el('span', 'cso-count-badge', `${categories.toLocaleString('en-IN')} Categories`);
-        badgesRow.append(catBadge);
+      const badgeText = entries > 0 ? `${entries.toLocaleString('en-IN')} Entries` : (categories > 0 ? `${categories} Categories` : '');
+      if (badgeText) {
+        const badge = el('span', 'cso-jobs-card__badge', badgeText);
+        cardHeader.append(badge);
       }
-      if (entries > 0) {
-        const entryBadge = el('span', 'cso-count-badge subtle', `${entries.toLocaleString('en-IN')} Entries`);
-        badgesRow.append(entryBadge);
-      }
-      titleGroup.append(badgesRow);
-      cardHeader.append(titleGroup);
-
-      const cardArrow = el('span', 'cso-card-arrow', '›');
-      cardArrow.setAttribute('aria-hidden', 'true');
-      cardHeader.append(cardArrow);
-
-      cardHeader.addEventListener('click', () => openSection(index, true));
       card.append(cardHeader);
 
-      // Bottom Row: 2-3 Quick Sub-links
+      // Card Body: Clean 1-line description
+      const descText = CATEGORY_DESCRIPTIONS[index] || section.title;
+      const cardDesc = el('p', 'cso-jobs-card__desc', descText);
+      card.append(cardDesc);
+
+      // Card Footer: Minimal inline dot-separated links
       const subLinksData = QUICK_SUBLINKS[index] || [];
       if (subLinksData.length > 0) {
-        const subLinksContainer = el('div', 'cso-card-sublinks');
-        const subLinksLabel = el('span', 'cso-sublinks-label', 'Quick links:');
-        subLinksContainer.append(subLinksLabel);
-
-        subLinksData.forEach(linkInfo => {
-          const pill = el('button', 'cso-card-sublink-pill', linkInfo.label);
-          pill.type = 'button';
-          pill.addEventListener('click', (ev) => {
+        const linksWrap = el('div', 'cso-jobs-card__links');
+        subLinksData.forEach((linkInfo, linkIdx) => {
+          if (linkIdx > 0) {
+            const sep = el('span', 'cso-jobs-card__link-sep', '•');
+            linksWrap.append(sep);
+          }
+          const linkBtn = el('button', 'cso-jobs-card__link-item', linkInfo.label);
+          linkBtn.type = 'button';
+          linkBtn.addEventListener('click', (ev) => {
             ev.stopPropagation();
             openDirectPath(index, linkInfo.path);
           });
-          subLinksContainer.append(pill);
+          linksWrap.append(linkBtn);
         });
-
-        card.append(subLinksContainer);
+        card.append(linksWrap);
       }
 
+      card.addEventListener('click', () => openSection(index, true));
       grid.append(card);
     });
 
@@ -984,22 +1000,24 @@
     sidebarClose.addEventListener('click', closeMobileMenu);
   }
 
-  menuToggle.addEventListener('click', () => {
-    if (window.matchMedia('(max-width: 768px)').matches) {
-      if (document.body.classList.contains('menu-open')) {
-        closeMobileMenu();
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        if (document.body.classList.contains('menu-open')) {
+          closeMobileMenu();
+        } else {
+          openMobileMenu();
+        }
       } else {
-        openMobileMenu();
+        const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+        menuToggle.setAttribute('aria-expanded', String(!isCollapsed));
+        menuToggle.setAttribute(
+          'aria-label',
+          isCollapsed ? 'Expand navigation' : 'Collapse navigation'
+        );
       }
-    } else {
-      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
-      menuToggle.setAttribute('aria-expanded', String(!isCollapsed));
-      menuToggle.setAttribute(
-        'aria-label',
-        isCollapsed ? 'Expand navigation' : 'Collapse navigation'
-      );
-    }
-  });
+    });
+  }
 
   search.addEventListener('input', renderSearch);
 
