@@ -3,7 +3,7 @@
  * 
  * Responsibilities:
  * - Immediate client-side session token validation in sessionStorage/localStorage
- * - Redirection to /admin/login.html if unauthenticated
+ * - Redirection to /admin/login if unauthenticated
  * - Asynchronous session verification against /api/admin/verify
  * - Global sign-out handler that purges session tokens and returns to login gate
  */
@@ -11,9 +11,15 @@
 (function (window) {
   'use strict';
 
+  // Hardcoded emergency kill-switch at LINE 1: Never redirect if on login page
+  const initialPath = window.location.pathname.toLowerCase();
+  if (initialPath.includes('login') || initialPath === '/admin/login' || initialPath === '/admin/login.html') {
+    return;
+  }
+
   try {
     const AUTH_KEY = 'cso_admin_session';
-    const LOGIN_URL = '/admin/login.html';
+    const LOGIN_URL = '/admin/login';
     const DASHBOARD_URL = '/admin/';
     const VERIFY_API_URL = '/api/admin/verify';
 
@@ -138,17 +144,17 @@
      * Route Guard: Run immediately on protected dashboard pages
      */
     function enforceDashboardAuth() {
-      const currentPath = window.location.pathname;
+      const currentPath = window.location.pathname.toLowerCase();
       // Never redirect if we are already on the login page
-      if (currentPath.includes('login')) {
+      if (currentPath.includes('login') || currentPath === '/admin/login' || currentPath === '/admin/login.html') {
         return false;
       }
 
       const session = getSession();
 
       if (!session) {
-        const returnUrl = encodeURIComponent(window.location.pathname);
-        window.location.replace(`/admin/login.html?return=${returnUrl}`);
+        // Do not pass complex return params for now to guarantee no loops
+        window.location.replace(LOGIN_URL);
         return false;
       }
 
@@ -176,7 +182,8 @@
     };
 
     // Immediate protection execution if not on the login page
-    if (!window.location.pathname.includes('login')) {
+    const execPath = window.location.pathname.toLowerCase();
+    if (!execPath.includes('login') && execPath !== '/admin/login' && execPath !== '/admin/login.html') {
       enforceDashboardAuth();
     }
   } catch (guardErr) {
