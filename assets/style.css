@@ -2518,6 +2518,7 @@ footer .cso-footer-odisha-map {
   display: block;
   width: 100%;
   max-width: 155px;
+  max-height: 110px;
   height: auto;
   margin: 0 auto 12px;
   object-fit: contain;
@@ -2525,7 +2526,8 @@ footer .cso-footer-odisha-map {
 
 @media (max-width: 600px) {
   footer .cso-footer-odisha-map {
-    max-width: 140px;
+    max-width: 130px;
+    max-height: 95px;
     margin-bottom: 10px;
   }
 }
