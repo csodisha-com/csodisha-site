@@ -2441,6 +2441,72 @@ addEventListener('hashchange',route);route();csoLoadPublishedUpdates();if(locati
 
 /* CSO signup mobile number v1 */
 
+/* CSO Public Live Broadcast Banner Synchronization */
+function initPublicBroadcastBanner() {
+  const banner = document.getElementById('cso-broadcast-banner');
+  if (!banner) return;
+
+  const tagEl = document.getElementById('broadcast-tag');
+  const textEl = document.getElementById('broadcast-text');
+  const linkEl = document.getElementById('broadcast-link');
+  const closeBtn = document.getElementById('broadcast-close');
+
+  try {
+    const raw = localStorage.getItem('cso_active_announcement');
+    if (!raw) return;
+
+    const data = JSON.parse(raw);
+    if (!data || !data.active || !data.text) return;
+
+    // Check if dismissed in this session
+    const dismissedKey = 'cso_dismissed_' + (data.timestamp || data.text);
+    if (sessionStorage.getItem(dismissedKey)) return;
+
+    if (tagEl) {
+      tagEl.textContent = (data.tag || 'NOTICE').toUpperCase();
+      if (data.type === 'emergency') {
+        tagEl.style.background = '#e63946';
+      } else if (data.type === 'update') {
+        tagEl.style.background = '#0fa968';
+      } else {
+        tagEl.style.background = '#ff5722';
+      }
+    }
+
+    if (textEl) {
+      textEl.textContent = data.text;
+    }
+
+    if (linkEl) {
+      if (data.link && typeof data.link === 'string' && data.link.trim() !== '' && data.link !== '#') {
+        linkEl.href = data.link.trim();
+        linkEl.style.display = 'inline';
+      } else {
+        linkEl.style.display = 'none';
+      }
+    }
+
+    banner.style.display = 'flex';
+
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        banner.style.display = 'none';
+        try {
+          sessionStorage.setItem(dismissedKey, '1');
+        } catch (_) {}
+      };
+    }
+  } catch (err) {
+    console.warn('Error rendering broadcast banner', err);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPublicBroadcastBanner);
+} else {
+  initPublicBroadcastBanner();
+}
+
 /* CSO-IN: Compass normal page navigation v1 */
 document.addEventListener('click', function(event) {
   const card = event.target.closest('.cso-compass a.opt');

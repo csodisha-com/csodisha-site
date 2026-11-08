@@ -169,7 +169,13 @@
               <textarea id="alert-body" class="admin-textarea" placeholder="Provide full context, official dates, or instructions for citizens..." required></textarea>
             </div>
 
+            <div class="form-group">
+              <label for="alert-link">Optional Action Link (URL or relative path)</label>
+              <input type="text" id="alert-link" class="admin-input" placeholder="e.g. /jobs-careers/ or https://opsc.gov.in">
+            </div>
+
             <div class="admin-form-actions">
+              <button type="button" class="btn-danger" id="btn-clear-active-banner" style="margin-right: auto;">Clear Active Banner</button>
               <button type="reset" class="btn-secondary">Clear</button>
               <button type="submit" class="btn-emerald">Publish Notice</button>
             </div>

@@ -30,6 +30,8 @@
   const alertTypeSelect = document.getElementById('alert-type');
   const alertTitleInput = document.getElementById('alert-title');
   const alertBodyInput = document.getElementById('alert-body');
+  const alertLinkInput = document.getElementById('alert-link');
+  const clearActiveBannerBtn = document.getElementById('btn-clear-active-banner');
   const clearCacheBtn = document.getElementById('btn-clear-cache');
   const reindexDataBtn = document.getElementById('btn-reindex-data');
   const resetDefaultsBtn = document.getElementById('btn-reset-defaults');
@@ -306,26 +308,59 @@
       const type = alertTypeSelect?.value || 'notice';
       const title = (alertTitleInput?.value || '').trim();
       const body = (alertBodyInput?.value || '').trim();
+      const link = (alertLinkInput?.value || '').trim();
 
       if (!title || !body) {
         showToast('Please provide both a title and message for the announcement.', 'error');
         return;
       }
 
+      const timestamp = new Date().toISOString();
       const alerts = getAlerts();
       alerts.unshift({
         id: 'alt_' + Date.now().toString(36),
         type,
         title,
         body,
-        created: new Date().toISOString()
+        link,
+        created: timestamp
       });
 
       saveAlerts(alerts);
+
+      // Publish to public live broadcast banner
+      try {
+        const publicAnnouncement = {
+          tag: type === 'emergency' ? 'EMERGENCY ALERT' : (type === 'update' ? 'UPDATE' : 'NOTICE'),
+          type,
+          title,
+          text: title + (body ? ': ' + body : ''),
+          link: link || '',
+          timestamp,
+          active: true
+        };
+        localStorage.setItem('cso_active_announcement', JSON.stringify(publicAnnouncement));
+      } catch (err) {
+        console.warn('Unable to sync public announcement', err);
+      }
+
       loadAlerts();
       announcementForm.reset();
-      showToast('Announcement published successfully!');
+      showToast('Announcement published and live banner activated on homepage!');
       logActivity(`Published ${type}: "${title}"`);
+    });
+  }
+
+  // Clear Active Public Banner Action
+  if (clearActiveBannerBtn) {
+    clearActiveBannerBtn.addEventListener('click', () => {
+      try {
+        localStorage.removeItem('cso_active_announcement');
+        showToast('Live public banner taken down.');
+        logActivity('Cleared live public banner');
+      } catch (err) {
+        showToast('Error removing live banner: ' + err.message, 'error');
+      }
     });
   }
 

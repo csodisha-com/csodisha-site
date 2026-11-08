@@ -6337,6 +6337,61 @@ nav a.on,
   user-select: none;
 }
 
+/* CSO Public Broadcast Announcement Banner */
+.cso-broadcast-banner {
+  background: linear-gradient(90deg, #0f241a 0%, #034827 50%, #0f241a 100%);
+  border-bottom: 1.5px solid #ff9933;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 900;
+  width: 100%;
+  box-sizing: border-box;
+}
+.cso-broadcast-banner__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.cso-broadcast-banner__tag {
+  background: #ff5722;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.cso-broadcast-banner__text {
+  font-weight: 500;
+  color: #f8fafc;
+}
+.cso-broadcast-banner__link {
+  color: #38bdf8;
+  text-decoration: underline;
+  font-weight: 600;
+}
+.cso-broadcast-banner__close {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  margin-left: 8px;
+}
+.cso-broadcast-banner__close:hover {
+  color: #ffffff;
+}
+
+
 
 
 
