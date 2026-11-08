@@ -1142,8 +1142,11 @@ body.rm *::after {
 .cso-nav-items .ni.cso-open > .dd {
   display: block;
 }
-.cso-nav-mobile {
-  display: none;
+.cso-nav-mobile,
+.menu-toggle,
+#cso-menu-toggle,
+.header-menu-toggle {
+  display: none !important;
   border: 1px solid #ffffff55;
   border-radius: 8px;
   padding: 10px 14px;
@@ -1153,15 +1156,27 @@ body.rm *::after {
   font-weight: 700;
   cursor: pointer;
 }
-@media (min-width: 801px) {
+@media (min-width: 769px) {
+  .cso-nav-mobile,
+  .menu-toggle,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: none !important;
+  }
+  .cso-nav-items {
+    display: flex !important;
+  }
   .cso-nav-items > .ni:last-child .dd {
     left: auto;
     right: 0;
   }
 }
-@media (max-width: 800px) {
-  .cso-nav-mobile {
-    display: inline-flex;
+@media (max-width: 768px) {
+  .cso-nav-mobile,
+  .menu-toggle,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: inline-flex !important;
   }
   .cso-nav-items {
     display: none;
@@ -1170,7 +1185,7 @@ body.rm *::after {
     padding-bottom: 10px;
   }
   .cso-nav-items.cso-mobile-open {
-    display: flex;
+    display: flex !important;
   }
   .cso-nav-items > a,
   .cso-nav-parent > a {
@@ -1329,7 +1344,7 @@ nav {
   font-weight: 700;
   min-height: 44px;
   min-width: 44px;
-  display: inline-flex;
+  display: none !important;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1341,7 +1356,14 @@ nav {
   background: rgba(255, 255, 255, .22);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
+  .cso-nav-mobile,
+  .menu-toggle,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: inline-flex !important;
+  }
+
   nav {
     border-radius: 0 0 14px 14px;
   }
@@ -1401,7 +1423,7 @@ body.rm .cso-nav-mobile {
 }
 
 /* Keep rightmost dropdown inside the screen */
-@media (min-width: 801px) {
+@media (min-width: 769px) {
   .cso-nav-items > .ni:last-child .dd {
     left: auto;
     right: 0;
@@ -4380,4 +4402,42 @@ mark.cso-search-highlight {
   outline: 2px solid var(--cso-link);
   outline-offset: 2px;
   border-color: var(--cso-link);
+}
+
+/* ==========================================================================
+   Responsive Header Menu Toggle & Navigation Visibility Rules
+   Strict Parity: Desktop (min-width: 769px) vs Mobile/Tablet (max-width: 768px)
+   ========================================================================== */
+.cso-nav-mobile,
+.menu-toggle,
+#cso-menu-toggle,
+.header-menu-toggle {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .cso-nav-mobile,
+  .menu-toggle,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: none !important;
+  }
+  .cso-nav-items {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .cso-nav-mobile,
+  .menu-toggle,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: inline-flex !important;
+  }
+  .cso-nav-items {
+    display: none;
+  }
+  .cso-nav-items.cso-mobile-open {
+    display: flex !important;
+  }
 }

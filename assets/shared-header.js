@@ -226,7 +226,7 @@
     if (!navw) return;
 
     navw.innerHTML =
-      '<button type="button" class="cso-nav-mobile" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu">' +
+      '<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu">' +
       '<span aria-hidden="true">☰</span> Menu</button>' +
       '<div id="cso-nav-items" class="cso-nav-items">' +
       '<a href="' + root + '" class="cso-nav-home' + (!activeSection && (pathname === '/' || pathname.endsWith('/index.html') || pathname === '') ? ' on' : '') + '"><span aria-hidden="true">🏠</span> Home</a>' +
@@ -315,6 +315,18 @@
       const toggle = navw.querySelector('.cso-nav-mobile');
       if (toggle) toggle.setAttribute('aria-expanded', 'false');
       closeDropdowns();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      closeDropdowns();
+      const items = document.getElementById('cso-nav-items');
+      if (items && items.classList.contains('cso-mobile-open')) {
+        items.classList.remove('cso-mobile-open');
+        const toggle = document.querySelector('#navw .cso-nav-mobile');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }
     }
   });
 

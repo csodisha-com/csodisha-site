@@ -2515,7 +2515,10 @@ body.menu-open {
 }
 
 /* Clear Trigger Button ("Directory Menu" / "Sections") */
-.menu-toggle {
+.menu-toggle,
+.cso-nav-mobile,
+#cso-menu-toggle,
+.header-menu-toggle {
   border: 1px solid var(--cso-border, #e2e8f0);
   border-radius: 12px;
   background: var(--cso-card-bg, #ffffff);
@@ -2524,7 +2527,7 @@ body.menu-open {
   min-width: 44px;
   padding: 0 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  display: inline-flex;
+  display: none !important;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -2559,6 +2562,13 @@ body.menu-open {
 }
 
 @media (max-width: 768px) {
+  .menu-toggle,
+  .cso-nav-mobile,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: inline-flex !important;
+  }
+
   .app-shell {
     display: block !important;
     padding: 8px 8px 32px !important;
@@ -2729,6 +2739,12 @@ body.menu-open {
 }
 
 @media (min-width: 769px) {
+  .menu-toggle,
+  .cso-nav-mobile,
+  #cso-menu-toggle,
+  .header-menu-toggle {
+    display: none !important;
+  }
   .sidebar-close {
     display: none !important;
   }
