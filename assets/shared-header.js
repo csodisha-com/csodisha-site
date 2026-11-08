@@ -128,11 +128,11 @@
     if (!ctl) return;
 
     ctl.innerHTML =
-      '<button class="pill" id="cso-ctl-lang" type="button">🌐 ' + (LN[S.lang] || 'English') + ' ⌄</button>' +
-      '<button class="pill" id="cso-ctl-theme" type="button" aria-label="Change theme" title="Theme: ' + (S.theme || 'system') + '">' +
+      '<button class="pill cso-ctl-lang" id="cso-ctl-lang" type="button" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">' + (LN[S.lang] || 'English') + '</span> ⌄</button>' +
+      '<button class="pill cso-ctl-theme" id="cso-ctl-theme" type="button" aria-label="Change theme" title="Theme: ' + (S.theme || 'system') + '">' +
       (THEME_ICONS[S.theme || 'system'] || '💻') + '</button>' +
-      '<button class="pill" id="cso-ctl-a11y" type="button">♿ Accessibility ⌄</button>' +
-      '<span class="pill">' +
+      '<button class="pill cso-ctl-a11y" id="cso-ctl-a11y" type="button">♿ Accessibility ⌄</button>' +
+      '<span class="pill cso-ctl-zoom">' +
       '<button class="fz" id="cso-ctl-fm" type="button" aria-label="Smaller text">A–</button>' +
       '<button class="fz" id="cso-ctl-fr" type="button" aria-label="Normal text">A</button>' +
       '<button class="fz" id="cso-ctl-fp" type="button" aria-label="Larger text">A+</button>' +
@@ -200,7 +200,46 @@
         return;
       }
     }
-    authEl.innerHTML = '<a href="' + root + '#login" style="font-size:13px;color:var(--tx);text-decoration:none;font-weight:600">Sign In</a>';
+    authEl.innerHTML =
+      '<div class="cso-desktop-auth-buttons">' +
+        '<a href="' + root + '#login" class="cso-auth-item-link" style="font-size:13px;color:var(--tx);text-decoration:none;font-weight:600">Sign In</a>' +
+      '</div>' +
+      '<div class="cso-mobile-auth-wrapper">' +
+        '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
+          '<span class="auth-icon" aria-hidden="true">👤</span>' +
+          '<span class="auth-label">Account</span>' +
+          '<span class="auth-arrow" aria-hidden="true">▾</span>' +
+        '</button>' +
+        '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
+          '<a href="' + root + '#login" class="cso-auth-item">Login</a>' +
+          '<a href="' + root + '#signup" class="cso-auth-item">Sign Up</a>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function closeAuthDropdown() {
+    const trigger = document.getElementById('cso-auth-trigger');
+    const menu = document.getElementById('cso-auth-menu');
+    if (trigger && menu) {
+      trigger.setAttribute('aria-expanded', 'false');
+      menu.hidden = true;
+      menu.classList.remove('cso-open');
+    }
+  }
+
+  function toggleAuthDropdown(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const trigger = document.getElementById('cso-auth-trigger');
+    const menu = document.getElementById('cso-auth-menu');
+    if (!trigger || !menu) return;
+    const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+    const nextOpen = !isOpen;
+    trigger.setAttribute('aria-expanded', String(nextOpen));
+    menu.hidden = !nextOpen;
+    menu.classList.toggle('cso-open', nextOpen);
   }
 
   const pathname = window.location.pathname;
@@ -226,8 +265,18 @@
     if (!navw) return;
 
     navw.innerHTML =
+      '<div class="cso-nav-bar-container">' +
       '<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu">' +
       '<span aria-hidden="true">☰</span> Menu</button>' +
+      '<div class="cso-mobile-acc-cluster">' +
+      '<button type="button" class="pill cso-ctl-a11y-mobile acc-btn" id="cso-ctl-a11y-mobile" aria-label="Accessibility options">♿ Options</button>' +
+      '<span class="pill cso-ctl-zoom-mobile acc-btn">' +
+      '<button type="button" class="fz" id="cso-ctl-fm-mobile" aria-label="Smaller text">A–</button>' +
+      '<button type="button" class="fz" id="cso-ctl-fr-mobile" aria-label="Normal text">A</button>' +
+      '<button type="button" class="fz" id="cso-ctl-fp-mobile" aria-label="Larger text">A+</button>' +
+      '</span>' +
+      '</div>' +
+      '</div>' +
       '<div id="cso-nav-items" class="cso-nav-items">' +
       '<a href="' + root + '" class="cso-nav-home' + (!activeSection && (pathname === '/' || pathname.endsWith('/index.html') || pathname === '') ? ' on' : '') + '"><span aria-hidden="true">🏠</span> Home</a>' +
       NAV.map(([s, t, i]) =>
@@ -249,6 +298,14 @@
   }
 
   document.addEventListener('click', e => {
+    const authTrigger = e.target.closest('#cso-auth-trigger');
+    if (authTrigger) {
+      toggleAuthDropdown(e);
+      return;
+    }
+    if (!e.target.closest('.cso-mobile-auth-wrapper')) {
+      closeAuthDropdown();
+    }
     const mobile = e.target.closest('#navw .cso-nav-mobile');
     if (mobile) {
       const items = document.getElementById('cso-nav-items');
@@ -267,6 +324,45 @@
         closeDropdowns(parent);
         parent.classList.toggle('cso-open', open);
         arrow.setAttribute('aria-expanded', String(open));
+      }
+      return;
+    }
+    const a11yMobile = e.target.closest('#cso-ctl-a11y-mobile');
+    if (a11yMobile) {
+      showPopup(a11yMobile, [
+        ['High contrast', () => { S.hc = +!S.hc; saveSettings(); applySettings(); }, !!S.hc],
+        ['Underline links', () => { S.ul = +!S.ul; saveSettings(); applySettings(); }, !!S.ul],
+        ['Reduce motion', () => { S.rm = +!S.rm; saveSettings(); applySettings(); }, !!S.rm],
+        ['Reset', () => { S.hc = S.ul = S.rm = 0; S.zoom = 1; saveSettings(); applySettings(); }]
+      ]);
+      return;
+    }
+    if (e.target.closest('#cso-ctl-fm-mobile')) {
+      S.zoom = Math.max(0.85, Math.min(1.3, +(S.zoom - 0.05).toFixed(2)));
+      saveSettings();
+      applySettings();
+      return;
+    }
+    if (e.target.closest('#cso-ctl-fr-mobile')) {
+      S.zoom = 1;
+      saveSettings();
+      applySettings();
+      return;
+    }
+    if (e.target.closest('#cso-ctl-fp-mobile')) {
+      S.zoom = Math.max(0.85, Math.min(1.3, +(S.zoom + 0.05).toFixed(2)));
+      saveSettings();
+      applySettings();
+      return;
+    }
+    const footerLang = e.target.closest('.cso-footer-lang-pill');
+    if (footerLang) {
+      const l = footerLang.getAttribute('data-cso-lang');
+      if (l && LN[l]) {
+        S.lang = l;
+        saveSettings();
+        applySettings();
+        renderControls();
       }
       return;
     }
@@ -289,6 +385,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+      closeAuthDropdown();
       closeDropdowns();
       const items = document.getElementById('cso-nav-items');
       if (items && items.classList.contains('cso-mobile-open')) {

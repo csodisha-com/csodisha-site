@@ -3,7 +3,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Common Sense Odisha - jobs, schemes, study library and community for Odisha."><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><title>Common Sense Odisha</title>
 <link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/cso-tools-v2.css">
-<link rel="stylesheet" href="assets/ask-cso-v3.css">
 </head><body>
 <svg width="0" height="0" style="position:absolute"><defs><symbol id="lg" viewBox="0 0 120 56"><text x="0" y="40" font-size="46" font-weight="900" font-family="Arial" letter-spacing="-3"><tspan fill="#f2a31b">C</tspan><tspan fill="#2c8f3e">S</tspan><tspan fill="#1d4ed8">O</tspan></text><path d="M96 17l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#f26a1b"/><path d="M2 50Q45 40 118 48" stroke="#f26a1b" stroke-width="3" fill="none"/></symbol><symbol id="temple" viewBox="0 0 100 140"><path d="M55 10C62 32 72 58 74 112H34C36 58 48 32 55 10Z" fill="currentColor"/><circle cx="55" cy="7" r="4" fill="currentColor"/><ellipse cx="55" cy="34" rx="13" ry="4" fill="#0002"/><path d="M2 112L6 92H30L26 112ZM6 92L10 80H26L30 92ZM10 80L14 70H22L26 80Z" fill="currentColor"/><path d="M74 112L78 92H98L98 112Z" fill="currentColor"/><rect x="0" y="112" width="100" height="16" fill="currentColor"/><path d="M48 112v-14h14v14z" fill="#0003"/></symbol><symbol id="palm" viewBox="0 0 60 120"><path d="M30 118Q35 70 28 30" stroke="#6b4423" stroke-width="4" fill="none"/><g stroke="#2f7a3a" stroke-width="3" fill="none" stroke-linecap="round"><path d="M28 30Q10 18 0 36"/><path d="M28 30Q12 8 2 14"/><path d="M28 30Q28 6 40 2"/><path d="M28 30Q46 14 58 28"/><path d="M28 30Q48 30 56 46"/><path d="M28 30Q8 34 4 50"/></g></symbol></defs></svg>
 <header class="top" role="banner">
@@ -11,7 +10,10 @@
 <a class="adm" href="#" role="button" aria-haspopup="dialog" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
 <span id="ctl" style="display:contents"></span>
 <span class="sp"></span>
-<div class="acct"><span style="font-size:26px" aria-hidden="true">👤</span><span id="auth" style="display:contents"></span></div>
+<div class="acct">
+  <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+  <span id="auth" style="display:contents"></span>
+</div>
 </header>
 <nav aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
 <main class="w">
@@ -35,67 +37,6 @@
 <a class="opt" style="background:#fff4e6" href="study/"><span class="ic" style="background:#ffe6c2" aria-hidden="true">🎓</span><span><b>I want to Study</b><small>Discover admissions, examinations and study resources.</small></span><span class="go" style="color:var(--or);border-color:var(--or)" aria-hidden="true">→</span></a>
 <a class="opt" style="background:#e9f8ef" href="scheme-opportunity-finder/"><span class="ic" style="background:#d4f1df" aria-hidden="true">🤲</span><span><b>I want a Scheme</b><small>Explore scholarships, government schemes and available benefits.</small></span><span class="go" aria-hidden="true">→</span></a>
 <a class="opt" style="background:#f1eaff" href="career-guidance/"><span class="ic" style="background:#e4d7ff" aria-hidden="true">🧭</span><span><b>I want Career Guidance</b><small>Explore career paths, guidance and practical resources.</small></span><span class="go" aria-hidden="true">→</span></a></div></section>
-
-<div class="g1">
-<section class="card sec" style="margin:12px 0 0"><h2><span style="color:#1d4ed8;font-size:34px">🛡</span><span>CSO Trust Layer<br><small>Official sources, clear evidence and transparent corrections.</small></span><a class="btn" style="margin-left:auto;font-size:13px" href="trust-layer/">Learn More →</a></h2>
-<div class="row c2">
-<a class="tl card cso-trust-link" href="trust-layer/#official-source" aria-label="Official Source"><span class="ic" style="border-radius:8px;background:#dff3e8">📄</span><span><b>Official Source</b><small>Find original notices and source links</small></span></a>
-<a class="tl card cso-trust-link" href="trust-layer/#last-verified" aria-label="Last Verified"><span class="ic" style="border-radius:8px;background:#e1e8ff">📅</span><span><b>Last Verified</b><small>See recorded review dates when available</small></span></a>
-<a class="tl card cso-trust-link" href="trust-layer/#deadline-status" aria-label="Deadline & Status"><span class="ic" style="border-radius:8px;background:#ffe5d3">⏰</span><span><b>Deadline &amp; Status</b><small>Check deadlines and application status</small></span></a>
-<a class="tl card cso-trust-link" href="trust-layer/#report-correct" aria-label="Report & Correct"><span class="ic" style="border-radius:8px;background:#eadcff">👤</span><span><b>Report &amp; Correct</b><small>Flag incorrect or outdated information</small></span></a></div></section>
-
-<!-- CSO-ASK-2-20261030 -->
-<!-- CSO-ASK-3-WHOLE-SITE -->
-<section class="card sec cso-ask2 cso-ask-section ask-wrap" aria-labelledby="cso-ask2-title">
-  <div class="cso-ask2-heading">
-    <div>
-      <h2 id="cso-ask2-title">💬 Ask CSO</h2>
-      <p>Explore jobs, schemes, education and official updates.</p>
-    </div>
-    <span class="cso-ask2-label">Knowledge Navigator</span>
-  </div>
-
-  <div class="cso-ask2-modes cso-ask-modes" aria-label="Explore by topic" role="tablist">
-    <button type="button" class="cso-mode-btn active" data-topic="jobs" role="tab" aria-selected="true">Jobs</button>
-    <button type="button" class="cso-mode-btn" data-topic="schemes" role="tab" aria-selected="false">Schemes</button>
-    <button type="button" class="cso-mode-btn" data-topic="study" role="tab" aria-selected="false">Study</button>
-    <button type="button" class="cso-mode-btn" data-topic="updates" role="tab" aria-selected="false">Updates</button>
-  </div>
-
-  <form class="ask cso-ask2-form cso-ask-form" id="af" role="search">
-    <span class="cso-ask-search-icon" aria-hidden="true">🔍</span>
-    <label class="cso-ask2-sr" for="aq">Search CSO information</label>
-    <input id="aq" type="search" autocomplete="off"
-      placeholder="Ask about jobs, schemes, exams or education..."
-      aria-label="Ask CSO">
-    <button type="button" class="mic cso-ask-mic" id="amic"
-      title="Voice search, where supported"
-      aria-label="Search using voice">🎙</button>
-    <button type="submit" class="cso-ask-submit" aria-label="Search CSO">➤</button>
-  </form>
-
-  <div class="cso-ask2-prompts cso-ask-prompts" aria-label="Suggested questions">
-    <button type="button" class="cso-prompt-chip" data-question="graduation exams">Exams after graduation</button>
-    <button type="button" class="cso-prompt-chip" data-question="scholarship">Find scholarships</button>
-    <button type="button" class="cso-prompt-chip" data-question="application documents">Required documents</button>
-    <button type="button" class="cso-prompt-chip" data-question="syllabus and pdf guidelines" data-action="pdf">Explain a PDF</button>
-    <button type="button" class="cso-prompt-chip" data-question="odia hindi support" data-action="language">Odia &amp; Hindi support</button>
-  </div>
-
-  <div class="chat cso-ask2-results" id="chat"
-    role="region" aria-label="Ask CSO results" aria-live="polite" hidden></div>
-
-  <div class="cso-ask2-footnote cso-ask-disclaimer" role="note">
-    <span class="cso-ask-footnote-icon" aria-hidden="true">🛡</span>
-    <div class="cso-ask-footnote-text">
-      CSO searches available information; it does not independently verify
-      every result. Confirm eligibility, dates and requirements in the
-      original official notice.
-      <a href="trust-layer/">How CSO handles sources →</a>
-    </div>
-  </div>
-</section>
-</div>
 
 <section class="card sec cso-stats-glance" aria-label="CSO Knowledge Directory at a glance">
 <h2><span style="color:var(--bl);font-size:24px">📊</span><span>Directory at a Glance<br><small>Comprehensive state-wide repository across employment, education, schemes and culture</small></span></h2>
@@ -131,8 +72,8 @@
 </div>
 </section>
 
-<section class="card sec"><h2><span style="color:var(--or)">🔥</span><span style="color:var(--bl)">Trending &amp; Popular Topics</span><small>Explore education, careers, schemes and public services</small><a href="#" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Topics →</a></h2>
-<div class="row c6">
+<section class="card sec cso-trending-topics-sec" id="cso-trending-topics"><h2><span style="color:var(--or)">🔥</span><span style="color:var(--bl)">Trending &amp; Popular Topics</span><small>Explore education, careers, schemes and public services</small><a href="#" data-route="view-all-topics" data-h="popular-topics" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Topics →</a></h2>
+<div class="row c6 topics-grid trending-grid">
 <div class="card tp"><svg class="im" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" width="100%" height="100"><rect width="200" height="100" fill="#dfe6ef"/><rect x="50" y="18" width="100" height="58" rx="4" fill="#1f2733"/><text x="100" y="57" text-anchor="middle" fill="#fff" font-size="24" font-weight="700" font-family="Arial">JOBS</text><rect x="36" y="76" width="128" height="7" rx="3" fill="#8a97a8"/></svg><div class="t"><b>💼 Jobs &amp; Recruitment</b><small>Latest vacancies, exam notifications and career opportunities</small></div></div>
 <div class="card tp"><svg class="im" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" width="100%" height="100"><rect width="200" height="100" fill="#e6ecf5"/><rect x="76" y="48" width="48" height="24" fill="#2a4a8a"/><path d="M100 18L160 40 100 62 40 40Z" fill="#1d3a6b"/><path d="M156 42v22" stroke="#f2a31b" stroke-width="3"/><rect x="30" y="78" width="140" height="9" fill="#c0392b"/><rect x="40" y="87" width="120" height="7" fill="#2c8f3e"/></svg><div class="t"><b>🎓 Exams &amp; Preparation</b><small>UGC NET, CTET, OTET, OSSTET, OPSC and more</small></div></div>
 <div class="card tp"><svg class="im" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" width="100%" height="100"><rect width="200" height="100" fill="#dcefcc"/><rect x="98" y="40" width="4" height="30" fill="#4a7a35"/><circle cx="90" cy="34" r="14" fill="#3c9a45"/><circle cx="112" cy="30" r="12" fill="#57b45e"/><g fill="#f2b21b" stroke="#c98a00"><circle cx="64" cy="82" r="11"/><circle cx="100" cy="78" r="11"/><circle cx="136" cy="82" r="11"/></g></svg><div class="t"><b>🌱 Scholarships &amp; Schemes</b><small>Government and private schemes for students and general public</small></div></div>
@@ -140,14 +81,14 @@
 <div class="card tp"><svg class="im" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" width="100%" height="100"><rect width="200" height="100" fill="#f7c58f"/><circle cx="150" cy="26" r="14" fill="#fff2c2"/><path d="M0 100L60 38 100 70 150 30 200 100Z" fill="#2a3550"/><circle cx="148" cy="24" r="4" fill="#111"/><path d="M148 28v10" stroke="#111" stroke-width="3"/></svg><div class="t"><b>🧭 Career Guidance</b><small>Courses, eligibility, career paths and opportunities</small></div></div>
 <div class="card tp"><svg class="im" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" width="100%" height="100"><rect width="200" height="100" fill="#f6dca8"/><circle cx="150" cy="26" r="14" fill="#ffd76a"/><path d="M0 88Q100 74 200 88V100H0Z" fill="#7a9a45"/><use href="#temple" x="58" y="6" width="84" height="92" style="color:#8a5a2b"/><use href="#palm" x="4" y="30" width="34" height="70"/></svg><div class="t"><b>🛕 Odisha Special</b><small>State news, opportunities, schemes, culture and public services</small></div></div></div></section>
 
-<section class="card sec"><h2><span style="color:var(--bl)">🔧</span><span style="color:var(--bl)">Important Tools</span><small>Six practical, interactive tools for applications, study and careers</small><a href="#" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Tools →</a></h2>
-<div class="row c6">
-<div class="card tl"><span class="ic" style="border-radius:8px;background:#fde4ec">📅</span><span><b>Age &amp; Eligibility Date Calculator</b><small>Calculate your age on an exam or application cutoff date</small></span></div>
-<div class="card tl"><span class="ic" style="border-radius:8px;background:#e8e0ff">🧮</span><span><b>Marks, Percentage &amp; CGPA Calculator</b><small>Calculate marks, percentage and institution-based CGPA</small></span></div>
-<div class="card tl"><span class="ic" style="border-radius:8px;background:#dff3e8">📋</span><span><b>Application Document Checklist</b><small>Create and track your application document list</small></span></div>
-<div class="card tl"><span class="ic" style="border-radius:8px;background:#ffe9d3">⏳</span><span><b>Exam Countdown &amp; Study Planner</b><small>Count down to exams and plan revision sessions</small></span></div>
-<div class="card tl"><span class="ic" style="border-radius:8px;background:#e1ecff">📄</span><span><b>Resume &amp; Biodata Builder</b><small>Build and print a resume or biodata locally</small></span></div>
-<div class="card tl"><span class="ic" style="border-radius:8px;background:#dff3ff">🧠</span><span><b>Flashcard &amp; Self-Quiz Maker</b><small>Make flashcards, import Q&amp;A and test yourself</small></span></div></div></section>
+<section class="card sec cso-tools-sec" id="cso-tools"><h2><span style="color:var(--bl)">🔧</span><span style="color:var(--bl)">Important Tools</span><small>Six practical, interactive tools for applications, study and careers</small><a href="#" data-route="view-all-tools" data-h="important-tools" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Tools →</a></h2>
+<div class="row c6 tools-grid" id="cso-tools-grid">
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#fde4ec">📅</span><span><b>Age &amp; Eligibility Date Calculator</b><small>Calculate your age on an exam or application cutoff date</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#e8e0ff">🧮</span><span><b>Marks, Percentage &amp; CGPA Calculator</b><small>Calculate marks, percentage and institution-based CGPA</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#dff3e8">📋</span><span><b>Application Document Checklist</b><small>Create and track your application document list</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#ffe9d3">⏳</span><span><b>Exam Countdown &amp; Study Planner</b><small>Count down to exams and plan revision sessions</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#e1ecff">📄</span><span><b>Resume &amp; Biodata Builder</b><small>Build and print a resume or biodata locally</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#dff3ff">🧠</span><span><b>Flashcard &amp; Self-Quiz Maker</b><small>Make flashcards, import Q&amp;A and test yourself</small></span></div></div></section>
 
 <div class="g3">
 <div class="card"><h2 style="font-size:20px;margin:0 0 6px;color:var(--bl)">👥 Join the CSO Community</h2><p style="max-width:70%">Ask questions, get answers, share knowledge and connect with learners across Odisha.</p><a class="btn p" href="community/join/" style="display:inline-block">Join Now →</a><svg class="dc" width="110" height="90" viewBox="0 0 110 90"><circle cx="30" cy="26" r="12" fill="#f2c9a0"/><path d="M8 88Q10 48 30 46Q50 48 52 88Z" fill="#2c8f3e"/><circle cx="72" cy="30" r="12" fill="#e8b88a"/><path d="M50 88Q52 52 72 50Q92 52 94 88Z" fill="#f26a1b"/><rect x="70" y="2" width="36" height="20" rx="6" fill="#ffd76a"/></svg></div>
@@ -155,30 +96,44 @@
 <div class="card"><h2 style="font-size:20px;margin:0 0 6px;color:var(--bl)">✈ Stay Updated</h2><p>Stay informed about CSO announcements and new resources.</p><div class="sub" role="status" style="display:block;padding:12px 14px;border-radius:8px;border:1px solid var(--bd,#cbd5e1)"><strong>📩 Email Updates — Coming Soon</strong><p style="margin:6px 0 0;font-size:13px">Email subscriptions are not available yet. Please check CSO Latest Updates for announcements.</p></div><p id="soc"><b>Follow Us</b> <span style="font-size:12px">(Official links coming soon)</span></p></div></div>
 </main>
 
-<footer><div class="w">
-<div><div class="cso-footer-wordmark" role="img" aria-label="CSO — Common Sense Odisha"><div class="cso-footer-wordmark-letters"><span>C</span><span>S</span><span>O</span></div><div class="cso-footer-wordmark-name">Common Sense Odisha</div></div><p style="font-size:12px">© 2026 Common Sense Odisha (CSO).<br>All rights reserved.</p></div>
-<div><h4>Quick Links</h4><a href="./">Home</a><a href="jobs-careers/">Jobs &amp; Careers</a><a href="schemes-benefits/">Schemes &amp; Benefits</a><a href="study-library/">Study Library</a><a href="community/">Community</a><a href="about/">About</a></div>
-<div><h4>Resources</h4><a href="#latest-updates">Latest Updates</a><a href="#popular-topics">Popular Topics</a><a href="#important-tools">Important Tools</a></div>
-<div><h4>Support</h4><a href="support/">Help &amp; Support</a><a href="support/#report-error">Report an Error</a><a href="support/#suggest-resource">Suggest a Resource</a><a href="support/#contact">Contact Us</a><a href="support/#faqs">FAQs</a></div>
-<div><h4>Legal</h4><a href="privacy-policy/">Privacy Policy</a><a href="terms-of-use/">Terms of Use</a><a href="disclaimer/">Disclaimer</a><a href="copyright-policy/">Copyright Policy</a></div>
-<div style="text-align:center;padding-top:50px"><img class="cso-footer-odisha-map" src="assets/odisha-footer-map.svg" alt="Odisha map silhouette" loading="lazy"><b style="color:#fff">Be Self-Reliant<br>Build a Better Tomorrow</b></div></div>
-<div class="fb"><div class="w" style="display:flex"><span>English &nbsp;|&nbsp; ଓଡ଼ିଆ &nbsp;|&nbsp; हिन्दी</span><span>Think Independently &nbsp;|&nbsp; Build a Better Tomorrow &nbsp; ⬆</span></div></div></footer>
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <div class="cso-footer-logo-badge" role="img" aria-label="CSO Logo"><span>C</span><span>S</span><span>O</span></div>
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="jobs-careers/">Jobs &amp; Careers</a>
+      <a href="schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="study-library/">Study Library</a>
+      <a href="community/">Community</a>
+      <a href="about/">About CSO</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="support/#faqs">Help &amp; FAQs</a>
+      <a href="support/#report-error">Report an Error</a>
+      <a href="support/#suggest-resource">Suggest Resource</a>
+      <a href="privacy-policy/">Privacy Policy</a>
+      <a href="terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+    <div class="cso-footer-lang-pills">
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+    </div>
+  </div>
+</div></footer>
 <script src="assets/odia.js"></script><script src="assets/hindi.js"></script><script src="assets/india-districts.js"></script><script src="assets/cso-tools-v2.js"></script><script src="assets/cso-auth-client.js"></script><script src="assets/app.js"></script>
-<!-- CSO Trust Layer navigation fix -->
-<script>
-document.addEventListener('click', function(event) {
-  const link = event.target.closest('a.cso-trust-link');
-
-  if (!link) return;
-
-  event.preventDefault();
-  event.stopPropagation();
-  event.stopImmediatePropagation();
-
-  window.location.assign(link.href);
-}, true);
-</script>
-
-
-<script src="assets/ask-cso-v3.js"></script>
 </body></html>

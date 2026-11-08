@@ -116,7 +116,7 @@ const dark=()=>{const t=document.documentElement.dataset.theme;return t==='dark'
 function apply(){const d=document.documentElement;d.dataset.theme=THEMES.includes(S.theme)?S.theme:'system';d.lang=S.lang;document.body.style.zoom=S.zoom;document.body.classList.toggle('hc',!!S.hc);document.body.classList.toggle('ul',!!S.ul);document.body.classList.toggle('rm',!!S.rm)}
 const LN={en:'English',or:'ଓଡ଼ିଆ',hi:'हिन्दी'};
 function ctl(){
- $('#ctl').innerHTML='<button class="pill" id="bl">🌐 '+LN[S.lang]+' ⌄</button><button class="pill" id="bt" aria-label="Change theme" title="Theme: '+(S.theme||'system')+'">'+THEME_ICONS[S.theme||'system']+'</button><button class="pill" id="ba">♿ Accessibility ⌄</button><span class="pill"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>';
+ $('#ctl').innerHTML='<button class="pill cso-ctl-lang" id="bl" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">'+LN[S.lang]+'</span> ⌄</button><button class="pill cso-ctl-theme" id="bt" aria-label="Change theme" title="Theme: '+(S.theme||'system')+'">'+THEME_ICONS[S.theme||'system']+'</button><button class="pill cso-ctl-a11y" id="ba">♿ Accessibility ⌄</button><span class="pill cso-ctl-zoom"><button class="fz" id="fm" aria-label="Smaller text">A–</button><button class="fz" id="fr" aria-label="Normal text">A</button><button class="fz" id="fp" aria-label="Larger text">A+</button></span>';
  $('#bl').onclick=e=>pop(e.target,Object.keys(LN).map(k=>[LN[k],()=>{S.lang=k;save();apply();ctl();nav();authUI();lu();route();localize();toast('Language: '+LN[k])},S.lang===k]));
  $('#bt').onclick=()=>{const i=THEMES.indexOf(S.theme||'system');S.theme=THEMES[(i+1)%THEMES.length];save();apply();ctl()};
  $('#ba').onclick=e=>pop(e.target,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply()}]]);
@@ -137,7 +137,17 @@ function heroLang(){
 }
 function nav(){
  const w=$('#navw');
- w.innerHTML='<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu"><span aria-hidden="true">☰</span> Menu</button>'+
+ w.innerHTML='<div class="cso-nav-bar-container">'+
+ '<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu"><span aria-hidden="true">☰</span> Menu</button>'+
+ '<div class="cso-mobile-acc-cluster">'+
+ '<button type="button" class="pill cso-ctl-a11y-mobile acc-btn" id="ba-mobile" aria-label="Accessibility options">♿ Options</button>'+
+ '<span class="pill cso-ctl-zoom-mobile acc-btn">'+
+ '<button type="button" class="fz" id="fm-mobile" aria-label="Smaller text">A–</button>'+
+ '<button type="button" class="fz" id="fr-mobile" aria-label="Normal text">A</button>'+
+ '<button type="button" class="fz" id="fp-mobile" aria-label="Larger text">A+</button>'+
+ '</span>'+
+ '</div>'+
+ '</div>'+
  '<div id="cso-nav-items" class="cso-nav-items">'+
  '<a href="#" data-h="" class="cso-nav-home"><span aria-hidden="true">🏠</span> '+esc(translateText('Home'))+'</a>'+
  NAV.map(([s,t,i])=>
@@ -179,6 +189,40 @@ document.addEventListener('click',e=>{
   arrow.setAttribute('aria-expanded',String(open));
   return;
  }
+ const a11yMobile=e.target.closest('#ba-mobile');
+ if(a11yMobile){
+  pop(a11yMobile,[['High contrast',()=>{S.hc=+!S.hc;save();apply()},S.hc],['Underline links',()=>{S.ul=+!S.ul;save();apply()},S.ul],['Reduce motion',()=>{S.rm=+!S.rm;save();apply()},S.rm],['Reset',()=>{S.hc=S.ul=S.rm=0;S.zoom=1;save();apply()}]]);
+  return;
+ }
+ const z=d=>{S.zoom=d?Math.max(.85,Math.min(1.3,+(S.zoom+d).toFixed(2))):1;save();apply()};
+ if(e.target.closest('#fm-mobile')){z(-.05);return;}
+ if(e.target.closest('#fr-mobile')){z(0);return;}
+ if(e.target.closest('#fp-mobile')){z(.05);return;}
+ const footerLang = e.target.closest('.cso-footer-lang-pill');
+ if (footerLang) {
+  const l = footerLang.getAttribute('data-cso-lang');
+  if (l && LN[l]) {
+   S.lang = l;
+   save();
+   apply();
+   ctl();
+   nav();
+   authUI();
+   lu();
+   route();
+   localize();
+   toast('Language: ' + LN[l]);
+  }
+  return;
+ }
+ const authTrigger = e.target.closest('#cso-auth-trigger');
+ if (authTrigger) {
+  toggleAuthDropdown(e);
+  return;
+ }
+ if (!e.target.closest('.cso-mobile-auth-wrapper')) {
+  closeAuthDropdown();
+ }
  if(e.target.closest('#navw a')){
   csoCloseNavDropdowns();
   const items=$('#cso-nav-items');
@@ -197,6 +241,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){
+  closeAuthDropdown();
   csoCloseNavDropdowns();
   const items=$('#cso-nav-items');
   if(items&&items.classList.contains('cso-mobile-open')){
@@ -323,12 +368,69 @@ function authUI() {
   }
 
   root.innerHTML =
-    '<button class="btn" id="li" type="button">Login</button>' +
-    '<button class="btn p" id="su" type="button">Sign Up</button>';
+    '<div class="cso-desktop-auth-buttons">' +
+      '<button class="btn cso-login-button" id="li" type="button">Login</button>' +
+      '<button class="btn p" id="su" type="button">Sign Up</button>' +
+    '</div>' +
+    '<div class="cso-mobile-auth-wrapper">' +
+      '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
+        '<span class="auth-icon" aria-hidden="true">👤</span>' +
+        '<span class="auth-label">Account</span>' +
+        '<span class="auth-arrow" aria-hidden="true">▾</span>' +
+      '</button>' +
+      '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
+        '<a href="#login" class="cso-auth-item" id="cso-m-li">Login</a>' +
+        '<a href="#signup" class="cso-auth-item" id="cso-m-su">Sign Up</a>' +
+      '</div>' +
+    '</div>';
 
-  $('#li').classList.add('cso-login-button');
-  $('#li').onclick = login;
-  $('#su').onclick = signup;
+  const li = $('#li');
+  if (li) li.onclick = login;
+  const su = $('#su');
+  if (su) su.onclick = signup;
+
+  const mLi = $('#cso-m-li');
+  if (mLi) {
+    mLi.onclick = e => {
+      e.preventDefault();
+      closeAuthDropdown();
+      login();
+    };
+  }
+  const mSu = $('#cso-m-su');
+  if (mSu) {
+    mSu.onclick = e => {
+      e.preventDefault();
+      closeAuthDropdown();
+      signup();
+    };
+  }
+}
+
+function closeAuthDropdown() {
+  const trigger = $('#cso-auth-trigger') || document.getElementById('cso-auth-trigger');
+  const menu = $('#cso-auth-menu') || document.getElementById('cso-auth-menu');
+  if (trigger && menu) {
+    trigger.setAttribute('aria-expanded', 'false');
+    menu.hidden = true;
+    menu.classList.remove('cso-open');
+  }
+}
+
+function toggleAuthDropdown(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const trigger = document.getElementById('cso-auth-trigger');
+  const menu = document.getElementById('cso-auth-menu');
+  if (!trigger || !menu) return;
+
+  const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+  const nextOpen = !isOpen;
+  trigger.setAttribute('aria-expanded', String(nextOpen));
+  menu.hidden = !nextOpen;
+  menu.classList.toggle('cso-open', nextOpen);
 }
 
 let csoAuthRestorePromise = null;
@@ -2331,10 +2433,6 @@ function setupGlobalSearch() {
 }
 
 setupGlobalSearch();
-$('#af').onsubmit=e=>{e.preventDefault();const i=$('#aq'),q=i.value.trim();if(!q)return;const c=$('#chat'),r=find(q,1).slice(0,3);c.insertAdjacentHTML('beforeend','<p class="u">'+esc(q)+'</p><p>'+(r.length?'Here is what I found:<br>'+r.map(([t,s])=>'<a data-h="'+s+'">'+esc(t)+'</a>').join('<br>'):'I do not have verified information on that yet. Content is being added.')+'</p>');localize(c);c.scrollTop=1e9;i.value=''};
-$('#amic').onclick=()=>voice($('#aq'),$('#af'));
-$$('.q span').forEach(c=>c.onclick=()=>{$('#aq').value=c.textContent;$('#af').requestSubmit()});
-
 
 const up=document.createElement('button');up.id='top';up.textContent='↑';up.hidden=true;up.setAttribute('aria-label','Back to top');up.onclick=()=>scrollTo({top:0,behavior:'smooth'});document.body.append(up);
 addEventListener('scroll',()=>{up.hidden=scrollY<400});
