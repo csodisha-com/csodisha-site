@@ -287,6 +287,8 @@ async function loadMasterNavigation() {
         renderRecentActivityWorkspace();
       } else if (moduleId === 'module-01-005') {
         renderAdministrativeNotificationsWorkspace();
+      } else if (moduleId === 'module-01-006') {
+        renderPendingApprovalsWorkspace();
       } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -308,6 +310,316 @@ async function loadMasterNavigation() {
       } else {
         renderStandardModuleInspector(folderId, moduleId);
       }
+    }
+
+    /**
+     * VIEW 1f: Pending Approvals & Moderation Queue (module-01-006)
+     */
+    function renderPendingApprovalsWorkspace() {
+      let activeStatus = 'PENDING';
+      let activeType = 'ALL';
+
+      function getPendingCount() {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.getApprovals === 'function') {
+          return window.CSOSuperStore.getApprovals('ALL', 'PENDING').length;
+        }
+        return 0;
+      }
+
+      dom.moduleHeaderActions.innerHTML = `
+        <span class="text-xs font-mono px-2.5 py-1 rounded bg-amber-500/10 text-brand-amber border border-amber-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          Pending Triage: <strong id="headerPendingCount">${getPendingCount()}</strong>
+        </span>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <!-- Moderation Queue Bar -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Public Submissions & Verification Queue
+                <span class="text-xs font-mono font-normal text-slate-400">(Triage Engine)</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Community-contributed exam resources, forum topics, and portal corrections requiring Super Admin sign-off.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <span>Auto-Publish On Approval:</span>
+              <span class="px-2 py-0.5 rounded bg-brand-emerald/10 text-brand-emerald font-bold border border-brand-emerald/30">ENABLED</span>
+            </div>
+          </div>
+
+          <!-- Filter Controls Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-brand-border/60">
+            <!-- Status Tabs -->
+            <div class="sm:col-span-2 flex items-center gap-2 overflow-x-auto text-xs font-semibold">
+              <button class="approval-status-tab px-3 py-1.5 rounded-lg bg-brand-emerald text-white transition" data-status="PENDING">Pending Triage</button>
+              <button class="approval-status-tab px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-status="APPROVED">Approved</button>
+              <button class="approval-status-tab px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-status="REJECTED">Rejected</button>
+              <button class="approval-status-tab px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-status="ALL">All Items</button>
+            </div>
+
+            <!-- Type Filter Dropdown -->
+            <div>
+              <select id="approvalTypeSelect" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-emerald focus:ring-1 focus:ring-brand-emerald transition">
+                <option value="ALL">All Types</option>
+                <option value="RESOURCE">Study Resources (PDF / Notes)</option>
+                <option value="COMMUNITY">Community Posts / Discussions</option>
+                <option value="CORRECTION">Data Corrections & Updates</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approvals Table Container -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-white text-sm">Submission Moderation Queue</h3>
+            <span id="approvalCountBadge" class="text-xs font-mono text-slate-400">Loading queue...</span>
+          </div>
+
+          <div id="approvalListContainer" class="space-y-3 font-mono text-xs">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      `;
+
+      function getTypePill(type) {
+        const t = (type || 'RESOURCE').toUpperCase();
+        if (t === 'RESOURCE') return { bg: 'bg-emerald-500/15 text-brand-emerald border-brand-emerald/30', label: 'RESOURCE' };
+        if (t === 'COMMUNITY') return { bg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30', label: 'COMMUNITY' };
+        if (t === 'CORRECTION') return { bg: 'bg-amber-500/15 text-amber-300 border-amber-500/30', label: 'CORRECTION' };
+        return { bg: 'bg-slate-700/40 text-slate-300 border-slate-600', label: t };
+      }
+
+      function getStatusBadge(status) {
+        const s = (status || 'PENDING').toUpperCase();
+        if (s === 'APPROVED') return 'bg-emerald-500/20 text-brand-emerald border border-brand-emerald/40';
+        if (s === 'REJECTED') return 'bg-red-500/20 text-brand-crimson border border-red-500/40';
+        return 'bg-amber-500/20 text-amber-300 border border-amber-500/40';
+      }
+
+      function formatTimeAgo(timestamp) {
+        if (!timestamp) return 'Recently';
+        const diffMs = Date.now() - timestamp;
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+        return `${Math.floor(diffHours / 24)}d ago`;
+      }
+
+      function refreshApprovalsView() {
+        const container = document.getElementById('approvalListContainer');
+        const badge = document.getElementById('approvalCountBadge');
+        const headerCount = document.getElementById('headerPendingCount');
+        if (headerCount) headerCount.textContent = getPendingCount();
+
+        let items = [];
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.getApprovals === 'function') {
+          items = window.CSOSuperStore.getApprovals(activeType, activeStatus);
+        }
+
+        if (badge) {
+          badge.textContent = `Showing ${items.length} item${items.length === 1 ? '' : 's'}`;
+        }
+
+        if (!container) return;
+
+        if (!items.length) {
+          container.innerHTML = `
+            <div class="py-12 text-center text-slate-400 font-sans">
+              <svg class="w-8 h-8 text-slate-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p class="text-sm font-semibold text-slate-300">No approval items found in this view.</p>
+              <p class="text-xs text-slate-500 mt-1">Try selecting another status tab or submission type filter.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = items.map(item => {
+          const typePill = getTypePill(item.type);
+          const statusCls = getStatusBadge(item.status);
+          const timeAgo = formatTimeAgo(item.submittedAt);
+          const isPending = (item.status === 'PENDING');
+
+          return `
+            <div class="p-4 rounded-xl bg-[#081220] border border-brand-border/70 hover:border-brand-border transition space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-brand-border/40">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-mono text-cyan-400 font-bold text-xs">${item.id}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold border tracking-wider ${typePill.bg}">
+                    ${typePill.label}
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${statusCls}">
+                    ${item.status}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-mono">
+                  Submitted: ${timeAgo} &bull; District: <strong class="text-slate-300">${item.district || 'Odisha'}</strong>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-bold text-white font-sans mb-1">${item.title}</h4>
+                <p class="text-xs text-slate-300 font-sans">${item.details || 'No additional submission notes provided.'}</p>
+                ${item.targetUrl ? `<a href="${item.targetUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:underline mt-1 font-mono">&rarr; Attached Document / URL</a>` : ''}
+                ${item.rejectionReason ? `<p class="text-xs text-red-300 font-sans mt-1"><strong>Rejection Reason:</strong> ${item.rejectionReason}</p>` : ''}
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-brand-border/40 text-xs">
+                <span class="text-[11px] text-slate-400 font-sans">
+                  By: <strong class="text-slate-200 font-mono">${item.submittedBy}</strong>
+                </span>
+
+                <div class="flex items-center gap-2">
+                  <button class="btn-inspect-appr px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-sans font-medium text-xs transition" data-id="${item.id}">
+                    Inspect
+                  </button>
+                  ${isPending ? `
+                    <button class="btn-approve-appr px-2.5 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white font-sans font-bold text-xs transition" data-id="${item.id}">
+                      Approve
+                    </button>
+                    <button class="btn-reject-appr px-2.5 py-1 rounded bg-red-950/80 hover:bg-red-900 border border-brand-crimson/50 text-red-200 font-sans font-bold text-xs transition" data-id="${item.id}">
+                      Reject
+                    </button>
+                  ` : `
+                    <button class="btn-delete-appr p-1.5 rounded hover:bg-red-500/10 text-slate-500 hover:text-brand-crimson transition" data-id="${item.id}" title="Remove record">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  `}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Wire Action Buttons
+        container.querySelectorAll('.btn-inspect-appr').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const item = items.find(x => x.id === id);
+            if (!item) return;
+
+            openModal(`Inspect Submission ${item.id}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div class="p-3 rounded-lg bg-[#081220] border border-brand-border space-y-1">
+                  <div class="text-slate-400 font-mono">Submission Title:</div>
+                  <strong class="text-white text-sm">${item.title}</strong>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="p-2.5 rounded-lg bg-[#081220] border border-brand-border">
+                    <span class="text-slate-400 block text-[11px]">Submitted By</span>
+                    <strong class="text-slate-200 font-mono">${item.submittedBy}</strong>
+                  </div>
+                  <div class="p-2.5 rounded-lg bg-[#081220] border border-brand-border">
+                    <span class="text-slate-400 block text-[11px]">District / Origin</span>
+                    <strong class="text-slate-200">${item.district || 'Odisha'}</strong>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-[#081220] border border-brand-border">
+                  <span class="text-slate-400 block text-[11px] mb-1">Details & Content:</span>
+                  <p class="text-slate-200 leading-relaxed">${item.details}</p>
+                </div>
+                ${item.targetUrl ? `
+                  <div class="p-2.5 rounded-lg bg-[#081220] border border-brand-border flex items-center justify-between">
+                    <span class="text-slate-400 text-[11px]">Attachment link:</span>
+                    <a href="${item.targetUrl}" target="_blank" rel="noopener noreferrer" class="text-cyan-400 font-mono hover:underline font-bold text-xs">Open Resource &rarr;</a>
+                  </div>
+                ` : ''}
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              ${item.status === 'PENDING' ? `
+                <button id="modalBtnApprove" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover">Approve & Publish</button>
+              ` : ''}
+            `);
+
+            document.getElementById('modalBtnApprove')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.approveItem === 'function') {
+                window.CSOSuperStore.approveItem(item.id);
+              }
+              showToast(`Submission ${item.id} approved and published!`, "success");
+              refreshApprovalsView();
+            });
+          });
+        });
+
+        container.querySelectorAll('.btn-approve-appr').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.approveItem === 'function') {
+              window.CSOSuperStore.approveItem(id);
+            }
+            showToast(`Submission ${id} approved successfully!`, "success");
+            refreshApprovalsView();
+          });
+        });
+
+        container.querySelectorAll('.btn-reject-appr').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            openModal(`Reject Submission ${id}`, `
+              <div class="space-y-3 font-sans">
+                <p class="text-xs text-slate-300">Specify the reason for rejection to append to moderation audit:</p>
+                <textarea id="inputRejectReason" rows="3" placeholder="e.g. Duplicate syllabus document, low-resolution scan, or unverified claims..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:ring-1 focus:ring-brand-emerald"></textarea>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmRejectModal" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-crimson text-white hover:bg-red-600 transition">Confirm Rejection</button>
+            `);
+
+            document.getElementById('btnConfirmRejectModal')?.addEventListener('click', () => {
+              const reasonInput = document.getElementById('inputRejectReason');
+              const reason = (reasonInput ? reasonInput.value : '').trim() || 'Did not meet submission guidelines';
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.rejectItem === 'function') {
+                window.CSOSuperStore.rejectItem(id, reason);
+              }
+              showToast(`Submission ${id} marked as rejected`, "warning");
+              refreshApprovalsView();
+            });
+          });
+        });
+
+        container.querySelectorAll('.btn-delete-appr').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.deleteApproval === 'function') {
+              window.CSOSuperStore.deleteApproval(id);
+            }
+            showToast(`Submission record ${id} removed`, "info");
+            refreshApprovalsView();
+          });
+        });
+      }
+
+      // Status Tabs Listeners
+      document.querySelectorAll('.approval-status-tab').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          activeStatus = e.currentTarget.getAttribute('data-status') || 'PENDING';
+          document.querySelectorAll('.approval-status-tab').forEach(b => {
+            b.className = "approval-status-tab px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition";
+          });
+          e.currentTarget.className = "approval-status-tab px-3 py-1.5 rounded-lg bg-brand-emerald text-white transition";
+          refreshApprovalsView();
+        });
+      });
+
+      // Type Filter Dropdown Listener
+      const typeSelect = document.getElementById('approvalTypeSelect');
+      if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+          activeType = e.target.value;
+          refreshApprovalsView();
+        });
+      }
+
+      // Initial populate
+      refreshApprovalsView();
     }
 
     /**

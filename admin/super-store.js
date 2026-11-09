@@ -843,6 +843,124 @@
       this.logAudit('BANNER_TAKEDOWN', 'HOMEPAGE_BROADCAST', 'Active homepage announcement removed.');
     },
 
+    // 13. Submission Moderation & Pending Approvals Queue (module-01-006)
+    getApprovals(type = 'ALL', status = 'PENDING') {
+      let list = null;
+      try {
+        const raw = localStorage.getItem('cso_pending_approvals');
+        if (raw) list = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!list || !Array.isArray(list) || list.length === 0) {
+        list = [
+          {
+            id: 'APPR-101',
+            type: 'RESOURCE',
+            title: 'OSSC Reasoning Practice Shortcuts (PDF)',
+            submittedBy: 'Bikash Mohapatra (bikash.m@gmail.com)',
+            district: 'Cuttack',
+            submittedAt: Date.now() - 7200000,
+            status: 'PENDING',
+            details: 'Candidate submitted a 12-page curated reasoning guide for OSSC CGL.',
+            targetUrl: 'https://csodisha.com/assets/docs/reasoning-guide-sample.pdf'
+          },
+          {
+            id: 'APPR-102',
+            type: 'COMMUNITY',
+            title: 'Discussion: OTET 2026 Final Year B.Ed Eligibility',
+            submittedBy: 'Swagatika Sahoo (swagatika.s@gmail.com)',
+            district: 'Balasore',
+            submittedAt: Date.now() - 14400000,
+            status: 'PENDING',
+            details: 'Student posted a query asking if 4th semester B.Ed candidates can appear in upcoming OTET.'
+          },
+          {
+            id: 'APPR-103',
+            type: 'CORRECTION',
+            title: 'Correction: OPSC Medical Officer Interview Schedule',
+            submittedBy: 'Dr. Alok Jena (alok.jena@gov.in)',
+            district: 'Khordha',
+            submittedAt: Date.now() - 86400000,
+            status: 'PENDING',
+            details: 'Reporting that OPSC updated the document verification dates to Nov 22.'
+          }
+        ];
+        try {
+          localStorage.setItem('cso_pending_approvals', JSON.stringify(list));
+        } catch (_) {}
+      }
+
+      // Filter by type (if !== 'ALL') and status (if !== 'ALL')
+      const t = (type || 'ALL').toUpperCase();
+      const s = (status || 'ALL').toUpperCase();
+
+      return list.filter(item => {
+        if (t !== 'ALL' && (item.type || '').toUpperCase() !== t) return false;
+        if (s !== 'ALL' && (item.status || '').toUpperCase() !== s) return false;
+        return true;
+      }).sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+    },
+
+    saveApprovals(list) {
+      save('cso_pending_approvals', list);
+    },
+
+    approveItem(id) {
+      let list = this.getApprovals('ALL', 'ALL');
+      const item = list.find(x => x.id === id);
+      if (item) {
+        item.status = 'APPROVED';
+        item.reviewedAt = Date.now();
+
+        // If type === 'RESOURCE', append to cso_super_resources
+        if (item.type === 'RESOURCE') {
+          try {
+            const resources = this.getResources();
+            const exists = resources.some(r => r.id === item.id || r.title === item.title);
+            if (!exists) {
+              resources.push({
+                id: item.id.replace('APPR', 'RES'),
+                title: item.title,
+                category: 'State Exams',
+                format: 'PDF',
+                downloads: 0,
+                status: 'Live'
+              });
+              this.saveResources(resources);
+            }
+          } catch (_) {}
+        }
+
+        this.saveApprovals(list);
+        this.logAudit('APPROVAL_GRANTED', 'MODERATION_QUEUE', `Submission ${id} ("${item.title}") approved by Super Admin.`);
+      }
+      return item;
+    },
+
+    rejectItem(id, reason = 'Did not meet submission guidelines') {
+      let list = this.getApprovals('ALL', 'ALL');
+      const item = list.find(x => x.id === id);
+      if (item) {
+        item.status = 'REJECTED';
+        item.rejectionReason = reason;
+        item.reviewedAt = Date.now();
+        this.saveApprovals(list);
+        this.logAudit('APPROVAL_REJECTED', 'MODERATION_QUEUE', `Submission ${id} rejected: "${reason}".`);
+      }
+      return item;
+    },
+
+    deleteApproval(id) {
+      let list = this.getApprovals('ALL', 'ALL');
+      const prevLen = list.length;
+      list = list.filter(x => x.id !== id);
+      if (list.length !== prevLen) {
+        this.saveApprovals(list);
+        this.logAudit('APPROVAL_RECORD_DELETED', 'MODERATION_QUEUE', `Submission record ${id} removed.`);
+      }
+      return list;
+    },
+
     // 12. Resources & Educational Matrix
     getResources() {
       return getOrSet(KEYS.RESOURCES, SEED_RESOURCES);
