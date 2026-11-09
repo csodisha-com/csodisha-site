@@ -316,11 +316,11 @@ async function loadMasterNavigation() {
       } else if (moduleId === 'module-02-011') {
         renderTrashAndRestoreWorkspace();
       } else if (moduleId === 'module-03-001') {
-        renderAboutUsWorkspace();
+        renderAboutUsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-002') {
-        renderContactUsWorkspace();
+        renderContactUsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-003') {
-        renderPrivacyPolicyWorkspace();
+        renderPrivacyPolicyWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -5231,46 +5231,51 @@ async function loadMasterNavigation() {
     }
 
     /**
-     * VIEW 3a: About Us & Mission Studio (module-03-001 / module-03-002)
+     * VIEW 3a: About Us & Mission Studio (module-03-001)
      */
-    function renderAboutUsWorkspace() {
+    function renderAboutUsWorkspace(container) {
+      const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
+      if (!root) return;
+
       // Header Breadcrumb
-      dom.breadcrumbFolder.textContent = "Website Information & Legal";
-      dom.breadcrumbModule.textContent = "About Us (module-03-001)";
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "About Us (module-03-001)";
 
       // Top Action Toolbar
-      dom.moduleHeaderActions.innerHTML = `
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnSaveAboutStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Save & Publish Changes
-          </button>
-          <a href="/about.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Preview Live Page ↗
-          </a>
-          <button id="btnToggleJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-            Raw JSON Editor
-          </button>
-          <button id="btnExportAboutConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export Config
-          </button>
-          <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            Import Config
-            <input id="inputImportAboutConfig" type="file" accept=".json,application/json" class="hidden">
-          </label>
-          <button id="btnResetAboutConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Reset to Default
-          </button>
-        </div>
-      `;
+      if (dom.moduleHeaderActions) {
+        dom.moduleHeaderActions.innerHTML = `
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnSaveAboutStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Save & Publish Changes
+            </button>
+            <a href="/about.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Preview Live Page ↗
+            </a>
+            <button id="btnToggleAboutJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              Raw JSON Editor
+            </button>
+            <button id="btnExportAboutConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export Config
+            </button>
+            <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Import Config
+              <input id="inputImportAboutConfig" type="file" accept=".json,application/json" class="hidden">
+            </label>
+            <button id="btnResetAboutConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset to Default
+            </button>
+          </div>
+        `;
+      }
 
       // Ingest About Config
-      let about = (window.CSOSuperStore && typeof window.CSOSuperStore.getAboutConfig === 'function')
+      let config = (window.CSOSuperStore && typeof window.CSOSuperStore.getAboutConfig === 'function')
         ? window.CSOSuperStore.getAboutConfig()
         : {
             meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
@@ -5282,15 +5287,16 @@ async function loadMasterNavigation() {
             },
             statements: {
               mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.",
-              vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools."
+              vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal, transparent access to top-tier career patterns, syllabus breakdowns, and government opportunities."
             },
             pillars: [],
-            milestones: [],
-            customSections: []
+            milestones: []
           };
 
-      let currentPillars = Array.isArray(about.pillars) ? JSON.parse(JSON.stringify(about.pillars)) : [];
-      let currentMilestones = Array.isArray(about.milestones) ? JSON.parse(JSON.stringify(about.milestones)) : [];
+      config.hero = config.hero || {};
+      config.statements = config.statements || {};
+      let currentPillars = Array.isArray(config.pillars) ? JSON.parse(JSON.stringify(config.pillars)) : [];
+      let currentMilestones = Array.isArray(config.milestones) ? JSON.parse(JSON.stringify(config.milestones)) : [];
 
       function syncJsonEditor() {
         const jsonTextarea = document.getElementById('textareaAboutRawJson');
@@ -5301,38 +5307,38 @@ async function loadMasterNavigation() {
       }
 
       function gatherFormState() {
-        const headlineInput = document.getElementById('inputAboutHeadline');
-        const subheadlineInput = document.getElementById('inputAboutSubheadline');
-        const badgeInput = document.getElementById('inputAboutBadge');
         const heroToggle = document.getElementById('toggleAboutHeroEnabled');
-        const missionText = document.getElementById('textareaAboutMission');
-        const visionText = document.getElementById('textareaAboutVision');
+        const headlineInput = document.getElementById('aboutInputHeadline') || document.getElementById('inputAboutHeadline');
+        const subheadlineInput = document.getElementById('aboutInputSubheadline') || document.getElementById('inputAboutSubheadline');
+        const badgeInput = document.getElementById('inputAboutBadge');
+        const missionInput = document.getElementById('aboutInputMission') || document.getElementById('textareaAboutMission');
+        const visionInput = document.getElementById('aboutInputVision') || document.getElementById('textareaAboutVision');
 
         return {
           meta: {
-            version: (about.meta && about.meta.version) || "1.0",
+            version: (config.meta && config.meta.version) || "1.0",
             lastEditedBy: "admin@csodisha.com",
-            updatedAt: (about.meta && about.meta.updatedAt) || new Date().toISOString()
+            updatedAt: (config.meta && config.meta.updatedAt) || new Date().toISOString()
           },
           hero: {
-            headline: headlineInput ? headlineInput.value.trim() : (about.hero?.headline || ''),
-            subheadline: subheadlineInput ? subheadlineInput.value.trim() : (about.hero?.subheadline || ''),
-            badge: badgeInput ? badgeInput.value.trim() : (about.hero?.badge || 'Official Mission Portal'),
-            enabled: heroToggle ? heroToggle.checked : (about.hero?.enabled !== false)
+            headline: headlineInput ? headlineInput.value.trim() : (config.hero?.headline || ''),
+            subheadline: subheadlineInput ? subheadlineInput.value.trim() : (config.hero?.subheadline || ''),
+            badge: badgeInput ? badgeInput.value.trim() : (config.hero?.badge || 'Official Mission Portal'),
+            enabled: heroToggle ? heroToggle.checked : (config.hero?.enabled !== false)
           },
           statements: {
-            mission: missionText ? missionText.value.trim() : (about.statements?.mission || ''),
-            vision: visionText ? visionText.value.trim() : (about.statements?.vision || '')
+            mission: missionInput ? missionInput.value.trim() : (config.statements?.mission || ''),
+            vision: visionInput ? visionInput.value.trim() : (config.statements?.vision || '')
           },
           pillars: currentPillars,
-          milestones: currentMilestones,
-          customSections: about.customSections || []
+          milestones: currentMilestones
         };
       }
 
       function renderPillarsList() {
         const container = document.getElementById('aboutPillarsContainer');
         if (!container) return;
+
         if (currentPillars.length === 0) {
           container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No institutional pillars configured. Add one below.</div>`;
           return;
@@ -5344,17 +5350,17 @@ async function loadMasterNavigation() {
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full ${p.active !== false ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
                 <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(p.id || `PIL-${idx+1}`)}</span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-400 border border-slate-700">Icon: ${escapeHtml(p.icon || 'shield')}</span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-400 border border-slate-700">${escapeHtml(p.icon || 'shield')}</span>
               </div>
               <div class="flex items-center gap-2">
                 <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
                   <input type="checkbox" class="pillar-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${p.active !== false ? 'checked' : ''}>
                   Active
                 </label>
-                <button data-move-up="${idx}" class="btn-pillar-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
+                <button data-move-pillar-up="${idx}" class="btn-pillar-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
                   ▲
                 </button>
-                <button data-move-down="${idx}" class="btn-pillar-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentPillars.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentPillars.length - 1 ? 'disabled' : ''}>
+                <button data-move-pillar-down="${idx}" class="btn-pillar-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentPillars.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentPillars.length - 1 ? 'disabled' : ''}>
                   ▼
                 </button>
                 <button data-remove-pillar="${idx}" class="btn-remove-pillar px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
@@ -5363,20 +5369,23 @@ async function loadMasterNavigation() {
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div class="md:col-span-1">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Pillar Title</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Title</label>
                 <input type="text" class="pillar-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(p.title || '')}">
               </div>
+              <div class="md:col-span-1">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Icon Keyword</label>
+                <input type="text" class="pillar-icon-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(p.icon || 'shield')}">
+              </div>
               <div class="md:col-span-2">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Pillar Description</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Description</label>
                 <input type="text" class="pillar-desc-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(p.description || '')}">
               </div>
             </div>
           </div>
         `).join('');
 
-        // Pillar event listeners
         container.querySelectorAll('.pillar-active-checkbox').forEach(cb => {
           cb.addEventListener('change', (e) => {
             const index = parseInt(e.target.getAttribute('data-index'), 10);
@@ -5397,6 +5406,16 @@ async function loadMasterNavigation() {
           });
         });
 
+        container.querySelectorAll('.pillar-icon-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentPillars[index]) {
+              currentPillars[index].icon = e.target.value;
+              syncJsonEditor();
+            }
+          });
+        });
+
         container.querySelectorAll('.pillar-desc-input').forEach(input => {
           input.addEventListener('input', (e) => {
             const index = parseInt(e.target.getAttribute('data-index'), 10);
@@ -5409,7 +5428,7 @@ async function loadMasterNavigation() {
 
         container.querySelectorAll('.btn-pillar-move-up').forEach(btn => {
           btn.addEventListener('click', (e) => {
-            const idx = parseInt(e.currentTarget.getAttribute('data-move-up'), 10);
+            const idx = parseInt(e.currentTarget.getAttribute('data-move-pillar-up'), 10);
             if (!isNaN(idx) && idx > 0) {
               const temp = currentPillars[idx];
               currentPillars[idx] = currentPillars[idx - 1];
@@ -5422,7 +5441,7 @@ async function loadMasterNavigation() {
 
         container.querySelectorAll('.btn-pillar-move-down').forEach(btn => {
           btn.addEventListener('click', (e) => {
-            const idx = parseInt(e.currentTarget.getAttribute('data-move-down'), 10);
+            const idx = parseInt(e.currentTarget.getAttribute('data-move-pillar-down'), 10);
             if (!isNaN(idx) && idx < currentPillars.length - 1) {
               const temp = currentPillars[idx];
               currentPillars[idx] = currentPillars[idx + 1];
@@ -5437,10 +5456,10 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const index = parseInt(e.currentTarget.getAttribute('data-remove-pillar'), 10);
             if (!isNaN(index) && index >= 0 && index < currentPillars.length) {
-              currentPillars.splice(index, 1);
+              const removed = currentPillars.splice(index, 1)[0];
               renderPillarsList();
               syncJsonEditor();
-              showToast("Pillar removed from active list.", "info");
+              showToast(`Pillar "${removed.title}" removed.`, "info");
             }
           });
         });
@@ -5449,8 +5468,9 @@ async function loadMasterNavigation() {
       function renderMilestonesList() {
         const container = document.getElementById('aboutMilestonesContainer');
         if (!container) return;
+
         if (currentMilestones.length === 0) {
-          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No roadmap milestones configured. Add one below.</div>`;
+          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No institutional milestones recorded. Add one below.</div>`;
           return;
         }
 
@@ -5458,30 +5478,47 @@ async function loadMasterNavigation() {
           <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-milestone-index="${idx}">
             <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(m.id || `MLS-${idx+1}`)}</span>
+                <span class="w-2.5 h-2.5 rounded-full ${m.active !== false ? 'bg-cyan-400' : 'bg-slate-500'}"></span>
+                <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(m.id || `MS-${idx+1}`)}</span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60 font-bold">${escapeHtml(m.year || '2026')}</span>
               </div>
-              <button data-remove-milestone="${idx}" class="btn-remove-milestone px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
-                Delete
-              </button>
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" class="milestone-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${m.active !== false ? 'checked' : ''}>
+                  Active
+                </label>
+                <button data-remove-milestone="${idx}" class="btn-remove-milestone px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                  Delete
+                </button>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div class="md:col-span-1">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Year</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Year / Epoch</label>
                 <input type="text" class="milestone-year-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(m.year || '')}">
               </div>
               <div class="md:col-span-1">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Achievement Title</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Milestone Title</label>
                 <input type="text" class="milestone-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(m.title || '')}">
               </div>
               <div class="md:col-span-2">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Description</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Impact / Narrative</label>
                 <input type="text" class="milestone-desc-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(m.description || '')}">
               </div>
             </div>
           </div>
         `).join('');
+
+        container.querySelectorAll('.milestone-active-checkbox').forEach(cb => {
+          cb.addEventListener('change', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentMilestones[index]) {
+              currentMilestones[index].active = e.target.checked;
+              syncJsonEditor();
+            }
+          });
+        });
 
         container.querySelectorAll('.milestone-year-input').forEach(input => {
           input.addEventListener('input', (e) => {
@@ -5517,34 +5554,34 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const index = parseInt(e.currentTarget.getAttribute('data-remove-milestone'), 10);
             if (!isNaN(index) && index >= 0 && index < currentMilestones.length) {
-              currentMilestones.splice(index, 1);
+              const removed = currentMilestones.splice(index, 1)[0];
               renderMilestonesList();
               syncJsonEditor();
-              showToast("Milestone removed from active list.", "info");
+              showToast(`Milestone "${removed.title}" removed.`, "info");
             }
           });
         });
       }
 
-      dom.workspaceRoot.innerHTML = `
+      root.innerHTML = `
         <div class="space-y-6 font-sans">
           <!-- Overview Card -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h2 class="text-base font-bold text-white flex items-center gap-2">
-                About Us & Institutional Mission Studio
+                About Us & Platform Mission Studio
                 <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-001</span>
               </h2>
-              <p class="text-xs text-slate-400 mt-0.5">Control public-facing institutional statements, core ideological pillars, and historical milestones.</p>
+              <p class="text-xs text-slate-400 mt-0.5">Control institutional identity, state exam mission pillars, foundational milestones, and core vision copy.</p>
             </div>
             <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
-              <span>Version: <strong class="text-cyan-400">${escapeHtml(about.meta?.version || '1.0')}</strong></span>
-              <span>Updated: <span id="aboutLastUpdated" class="text-emerald-400 font-bold">${new Date(about.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
+              <span>Version: <strong class="text-cyan-400">${escapeHtml(config.meta?.version || '1.0')}</strong></span>
+              <span>Updated: <span id="aboutLastUpdated" class="text-emerald-400 font-bold">${new Date(config.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
             </div>
           </div>
 
-          <!-- Card 4: Raw State & Developer Console (Expandable / Drawer) -->
-          <div id="aboutRawJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+          <!-- Card 5: Raw State Developer Console (Collapsible / Drawer) -->
+          <div id="aboutJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
@@ -5554,7 +5591,7 @@ async function loadMasterNavigation() {
               </div>
               <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
             </div>
-            <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for automated bulk updates and schema migrations.</p>
+            <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for batch imports, disaster recovery, and automated synchronization.</p>
             <textarea id="textareaAboutRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
             <div class="flex justify-end gap-2">
               <button id="btnApplyRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
@@ -5564,135 +5601,143 @@ async function loadMasterNavigation() {
             </div>
           </div>
 
-          <!-- Card 1: Hero & Core Statements Editor -->
+          <!-- Card 1: Hero Banner & Institutional Headline -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Hero & Core Institutional Statements
+                  Hero Banner & Primary Headline
                 </h3>
               </div>
               <label class="flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
-                <input id="toggleAboutHeroEnabled" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" ${(about.hero?.enabled !== false) ? 'checked' : ''}>
-                Enable Public Hero Section
+                <input id="toggleAboutHeroEnabled" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" ${(config.hero?.enabled !== false) ? 'checked' : ''}>
+                Hero Banner Visible
               </label>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Hero Headline <span class="text-rose-400">*</span></label>
-                <input id="inputAboutHeadline" type="text" value="${escapeHtml(about.hero?.headline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-medium">
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Headline <span class="text-rose-400">*</span></label>
+                <input id="aboutInputHeadline" type="text" value="${escapeHtml(config.hero?.headline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div class="sm:col-span-1">
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Portal Badge Text</label>
-                <input id="inputAboutBadge" type="text" value="${escapeHtml(about.hero?.badge || 'Official Mission Portal')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Badge / Tagline Pill</label>
+                <input id="inputAboutBadge" type="text" value="${escapeHtml(config.hero?.badge || 'Official Mission Portal')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-200 mb-1">Subheadline / Narrative Summary</label>
-              <input id="inputAboutSubheadline" type="text" value="${escapeHtml(about.hero?.subheadline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Subheadline / Supporting Narrative</label>
+              <textarea id="aboutInputSubheadline" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(config.hero?.subheadline || '')}</textarea>
+            </div>
+          </div>
+
+          <!-- Card 2: Mission & Vision Core Statements -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                Mission & Vision Declarations
+              </h3>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Mission Statement <span class="text-rose-400">*</span></label>
-                <textarea id="textareaAboutMission" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.statements?.mission || '')}</textarea>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Mission Statement <span class="text-rose-400">*</span></label>
+                <textarea id="aboutInputMission" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(config.statements?.mission || '')}</textarea>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Vision Statement <span class="text-rose-400">*</span></label>
-                <textarea id="textareaAboutVision" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.statements?.vision || '')}</textarea>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Vision Statement <span class="text-rose-400">*</span></label>
+                <textarea id="aboutInputVision" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(config.statements?.vision || '')}</textarea>
               </div>
             </div>
           </div>
 
-          <!-- Card 2: Core Ideological Pillars -->
+          <!-- Card 3: Institutional Pillars Repeater -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Ideological Pillars Manager (Extensible)
+                  Strategic Pillars (Extensible Repeater)
                 </h3>
               </div>
-              <span class="text-[11px] font-mono text-slate-400">Operational Tenets & Priorities</span>
+              <span class="text-[11px] font-mono text-slate-400">Core Institutional Values</span>
             </div>
 
-            <!-- Pillars List -->
             <div id="aboutPillarsContainer" class="space-y-3"></div>
 
-            <!-- Add Pillar Form -->
+            <!-- Add Pillar Inline Form -->
             <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
-              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add New Ideological Pillar</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div class="sm:col-span-1">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Pillar Title</label>
-                  <input id="inputNewPillarTitle" type="text" placeholder="e.g. Free Access" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Strategic Pillar</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Title</label>
+                  <input id="inputNewPillarTitle" type="text" placeholder="e.g. Total Syllabus Authenticity" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
-                <div class="sm:col-span-1">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Icon Token</label>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Icon Keyword</label>
                   <select id="selectNewPillarIcon" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-                    <option value="shield">shield</option>
-                    <option value="map">map</option>
-                    <option value="book">book</option>
-                    <option value="users">users</option>
-                    <option value="sparkles">sparkles</option>
-                    <option value="globe">globe</option>
+                    <option value="shield">shield (Authenticity / Security)</option>
+                    <option value="compass">compass (Direction / Guidance)</option>
+                    <option value="sparkles">sparkles (Excellence / Innovation)</option>
+                    <option value="target">target (Precision / Outcomes)</option>
+                    <option value="users">users (Candidate Community)</option>
+                    <option value="book">book (Knowledge & Curricula)</option>
                   </select>
                 </div>
-                <div class="sm:col-span-2">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Description</label>
-                  <input id="inputNewPillarDesc" type="text" placeholder="Description of this operational tenet" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Short Description</label>
+                  <input id="inputNewPillarDesc" type="text" placeholder="e.g. Verified by state subject experts" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
               </div>
               <div class="flex justify-end">
                 <button id="btnAddPillarAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  Add Pillar
+                  + Add Pillar
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Card 3: Milestone Roadmap Manager -->
+          <!-- Card 4: Historical Milestones & Impact Timeline -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Milestone Roadmap Manager (Extensible)
+                  Impact Milestones & History Timeline
                 </h3>
               </div>
-              <span class="text-[11px] font-mono text-slate-400">Institutional Journey & Progress</span>
+              <span class="text-[11px] font-mono text-slate-400">Institutional Evolution</span>
             </div>
 
-            <!-- Milestones List -->
             <div id="aboutMilestonesContainer" class="space-y-3"></div>
 
-            <!-- Add Milestone Form -->
+            <!-- Add Milestone Inline Form -->
             <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
-              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Milestone Event</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Impact Milestone</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div class="sm:col-span-1">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Year</label>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Year / Epoch</label>
                   <input id="inputNewMilestoneYear" type="text" placeholder="e.g. 2026" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
-                <div class="sm:col-span-1">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Achievement Title</label>
-                  <input id="inputNewMilestoneTitle" type="text" placeholder="e.g. Statewide Portal Launch" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-                </div>
                 <div class="sm:col-span-2">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Detailed Description</label>
-                  <input id="inputNewMilestoneDesc" type="text" placeholder="Summary of milestone impact" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Milestone Title</label>
+                  <input id="inputNewMilestoneTitle" type="text" placeholder="e.g. 30-District Digital Coverage" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Milestone Narrative / Significance</label>
+                <input id="inputNewMilestoneDesc" type="text" placeholder="Full context of platform achievement..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
               <div class="flex justify-end">
                 <button id="btnAddMilestoneAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  Add Milestone
+                  + Add Milestone
                 </button>
               </div>
             </div>
@@ -5705,8 +5750,8 @@ async function loadMasterNavigation() {
       syncJsonEditor();
 
       // Drawer toggle
-      document.getElementById('btnToggleJsonDrawer')?.addEventListener('click', () => {
-        const drawer = document.getElementById('aboutRawJsonDrawer');
+      document.getElementById('btnToggleAboutJsonDrawer')?.addEventListener('click', () => {
+        const drawer = document.getElementById('aboutJsonDrawer');
         if (drawer) {
           drawer.classList.toggle('hidden');
           syncJsonEditor();
@@ -5720,28 +5765,30 @@ async function loadMasterNavigation() {
         try {
           const parsed = JSON.parse(jsonText);
           if (parsed && typeof parsed === 'object') {
-            about = parsed;
-            currentPillars = Array.isArray(about.pillars) ? JSON.parse(JSON.stringify(about.pillars)) : [];
-            currentMilestones = Array.isArray(about.milestones) ? JSON.parse(JSON.stringify(about.milestones)) : [];
+            config = parsed;
+            config.hero = config.hero || {};
+            config.statements = config.statements || {};
+            currentPillars = Array.isArray(config.pillars) ? JSON.parse(JSON.stringify(config.pillars)) : [];
+            currentMilestones = Array.isArray(config.milestones) ? JSON.parse(JSON.stringify(config.milestones)) : [];
 
             // Update form fields
-            const h = document.getElementById('inputAboutHeadline');
-            const sub = document.getElementById('inputAboutSubheadline');
-            const bd = document.getElementById('inputAboutBadge');
+            const h = document.getElementById('aboutInputHeadline');
+            const sub = document.getElementById('aboutInputSubheadline');
+            const b = document.getElementById('inputAboutBadge');
+            const m = document.getElementById('aboutInputMission');
+            const v = document.getElementById('aboutInputVision');
             const tog = document.getElementById('toggleAboutHeroEnabled');
-            const ms = document.getElementById('textareaAboutMission');
-            const vs = document.getElementById('textareaAboutVision');
 
-            if (h) h.value = about.hero?.headline || '';
-            if (sub) sub.value = about.hero?.subheadline || '';
-            if (bd) bd.value = about.hero?.badge || 'Official Mission Portal';
-            if (tog) tog.checked = about.hero?.enabled !== false;
-            if (ms) ms.value = about.statements?.mission || '';
-            if (vs) vs.value = about.statements?.vision || '';
+            if (h) h.value = config.hero?.headline || '';
+            if (sub) sub.value = config.hero?.subheadline || '';
+            if (b) b.value = config.hero?.badge || '';
+            if (m) m.value = config.statements?.mission || '';
+            if (v) v.value = config.statements?.vision || '';
+            if (tog) tog.checked = config.hero?.enabled !== false;
 
             renderPillarsList();
             renderMilestonesList();
-            showToast("Raw JSON parsed and applied to workspace form.", "success");
+            showToast("Raw JSON parsed and applied to form.", "success");
           }
         } catch (err) {
           showToast("JSON Syntax Error: " + err.message, "danger");
@@ -5751,23 +5798,23 @@ async function loadMasterNavigation() {
       // Add Pillar Handler
       document.getElementById('btnAddPillarAction')?.addEventListener('click', () => {
         const titleInput = document.getElementById('inputNewPillarTitle');
-        const descInput = document.getElementById('inputNewPillarDesc');
         const iconInput = document.getElementById('selectNewPillarIcon');
+        const descInput = document.getElementById('inputNewPillarDesc');
 
         const title = titleInput?.value.trim() || '';
-        const desc = descInput?.value.trim() || '';
         const icon = iconInput?.value || 'shield';
+        const desc = descInput?.value.trim() || '';
 
-        if (!title) {
-          showToast("Pillar title is required.", "warning");
+        if (!title || !desc) {
+          showToast("Pillar title and description are required.", "warning");
           return;
         }
 
         currentPillars.push({
           id: `PIL-${String(currentPillars.length + 1).padStart(2, '0')}`,
           title: title,
-          description: desc,
           icon: icon,
+          description: desc,
           active: true
         });
 
@@ -5775,7 +5822,7 @@ async function loadMasterNavigation() {
         descInput.value = '';
         renderPillarsList();
         syncJsonEditor();
-        showToast("New pillar added to workspace.", "info");
+        showToast(`Strategic pillar "${title}" added to active draft.`, "info");
       });
 
       // Add Milestone Handler
@@ -5784,20 +5831,21 @@ async function loadMasterNavigation() {
         const titleInput = document.getElementById('inputNewMilestoneTitle');
         const descInput = document.getElementById('inputNewMilestoneDesc');
 
-        const year = yearInput?.value.trim() || '';
+        const year = yearInput?.value.trim() || String(new Date().getFullYear());
         const title = titleInput?.value.trim() || '';
         const desc = descInput?.value.trim() || '';
 
-        if (!year || !title) {
-          showToast("Milestone year and title are required.", "warning");
+        if (!title || !desc) {
+          showToast("Milestone title and description are required.", "warning");
           return;
         }
 
         currentMilestones.push({
-          id: `MLS-${String(currentMilestones.length + 1).padStart(2, '0')}`,
+          id: `MS-${String(currentMilestones.length + 1).padStart(2, '0')}`,
           year: year,
           title: title,
-          description: desc
+          description: desc,
+          active: true
         });
 
         yearInput.value = '';
@@ -5805,27 +5853,27 @@ async function loadMasterNavigation() {
         descInput.value = '';
         renderMilestonesList();
         syncJsonEditor();
-        showToast("New milestone added to workspace.", "info");
+        showToast(`Milestone "${title}" added to timeline draft.`, "info");
       });
 
-      // Save & Publish Studio Handler
+      // Save & Publish Handler
       document.getElementById('btnSaveAboutStudio')?.addEventListener('click', () => {
         const payload = gatherFormState();
 
-        if (!payload.hero.headline || !payload.statements.mission) {
-          showToast("Headline and Mission statement are required.", "warning");
+        if (!payload.hero.headline || !payload.statements.mission || !payload.statements.vision) {
+          showToast("Headline, Mission, and Vision statements cannot be blank.", "warning");
           return;
         }
 
         if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAboutConfig === 'function') {
           const saved = window.CSOSuperStore.saveAboutConfig(payload);
-          about = saved;
+          config = saved;
           const dateEl = document.getElementById('aboutLastUpdated');
           if (dateEl && saved.meta?.updatedAt) {
             dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
           }
           syncJsonEditor();
-          showToast("About Us changes saved & published successfully!", "success");
+          showToast("About Us & Mission configuration saved and published!", "success");
         }
       });
 
@@ -5833,7 +5881,7 @@ async function loadMasterNavigation() {
       document.getElementById('btnExportAboutConfig')?.addEventListener('click', () => {
         if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAboutManifest === 'function') {
           const filename = window.CSOSuperStore.exportAboutManifest();
-          showToast(`About configuration exported: ${filename}`, "success");
+          showToast(`Configuration manifest exported: ${filename}`, "success");
         }
       });
 
@@ -5850,13 +5898,12 @@ async function loadMasterNavigation() {
               let parsed;
               try {
                 parsed = JSON.parse(content);
-                // Handle bundle if exported
                 if (parsed && parsed.about) parsed = parsed.about;
               } catch (_) {}
 
               const imported = window.CSOSuperStore.importAboutConfig(JSON.stringify(parsed));
-              showToast("About Us configuration imported successfully!", "success");
-              renderAboutUsWorkspace();
+              showToast("About configuration imported successfully!", "success");
+              renderAboutUsWorkspace(root);
             }
           } catch (err) {
             showToast("Import failed: " + err.message, "danger");
@@ -5867,17 +5914,17 @@ async function loadMasterNavigation() {
 
       // Reset to Default Handler
       document.getElementById('btnResetAboutConfig')?.addEventListener('click', () => {
-        if (confirm("Are you sure you want to restore the default initial About Us configuration? All unsaved customizations will be reset.")) {
+        if (confirm("Are you sure you want to restore factory default About Us & Mission settings? All unsaved customizations will be reset.")) {
           if (window.CSOSuperStore && typeof window.CSOSuperStore.resetAboutConfig === 'function') {
             window.CSOSuperStore.resetAboutConfig();
-            showToast("About Us configuration restored to default factory seed.", "info");
-            renderAboutUsWorkspace();
+            showToast("About configuration restored to factory defaults.", "info");
+            renderAboutUsWorkspace(root);
           }
         }
       });
 
-      // Sync form input changes to raw JSON
-      ['inputAboutHeadline', 'inputAboutSubheadline', 'inputAboutBadge', 'textareaAboutMission', 'textareaAboutVision'].forEach(id => {
+      // Form input change listeners to sync with raw JSON
+      ['aboutInputHeadline', 'inputAboutBadge', 'aboutInputSubheadline', 'aboutInputMission', 'aboutInputVision'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', syncJsonEditor);
       });
       document.getElementById('toggleAboutHeroEnabled')?.addEventListener('change', syncJsonEditor);
@@ -5886,41 +5933,46 @@ async function loadMasterNavigation() {
     /**
      * VIEW 3b: Contact Us & Directory Studio (module-03-002 / module-03-003)
      */
-    function renderContactUsWorkspace() {
+    function renderContactUsWorkspace(container) {
+      const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
+      if (!root) return;
+
       // Header Breadcrumb
-      dom.breadcrumbFolder.textContent = "Website Information & Legal";
-      dom.breadcrumbModule.textContent = "Contact Us (module-03-002)";
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Contact Us (module-03-002)";
 
       // Top Action Toolbar
-      dom.moduleHeaderActions.innerHTML = `
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnSaveContactStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Save & Publish Contact Desk
-          </button>
-          <a href="/contact.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Preview Live Page ↗
-          </a>
-          <button id="btnToggleContactJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-            Raw JSON Editor
-          </button>
-          <button id="btnExportContactConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export Config
-          </button>
-          <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            Import Config
-            <input id="inputImportContactConfig" type="file" accept=".json,application/json" class="hidden">
-          </label>
-          <button id="btnResetContactConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Reset to Default
-          </button>
-        </div>
-      `;
+      if (dom.moduleHeaderActions) {
+        dom.moduleHeaderActions.innerHTML = `
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnSaveContactStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Save & Publish Contact Desk
+            </button>
+            <a href="/contact.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Preview Live Page ↗
+            </a>
+            <button id="btnToggleContactJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              Raw JSON Editor
+            </button>
+            <button id="btnExportContactConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export Config
+            </button>
+            <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Import Config
+              <input id="inputImportContactConfig" type="file" accept=".json,application/json" class="hidden">
+            </label>
+            <button id="btnResetContactConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset to Default
+            </button>
+          </div>
+        `;
+      }
 
       // Ingest Contact Config
       let contact = (window.CSOSuperStore && typeof window.CSOSuperStore.getContactConfig === 'function')
@@ -5942,6 +5994,8 @@ async function loadMasterNavigation() {
             }
           };
 
+      contact.endpoints = contact.endpoints || {};
+      contact.autoResponse = contact.autoResponse || {};
       let currentDepartments = Array.isArray(contact.departments) ? JSON.parse(JSON.stringify(contact.departments)) : [];
 
       function syncContactJsonEditor() {
@@ -5953,11 +6007,11 @@ async function loadMasterNavigation() {
       }
 
       function gatherContactFormState() {
-        const emailInput = document.getElementById('inputContactEmail');
-        const phoneInput = document.getElementById('inputContactPhone');
-        const hoursInput = document.getElementById('inputContactHours');
-        const slaInput = document.getElementById('inputContactSla');
-        const addrTextarea = document.getElementById('textareaContactAddress');
+        const emailInput = document.getElementById('contactInputEmail') || document.getElementById('inputContactEmail');
+        const phoneInput = document.getElementById('contactInputPhone') || document.getElementById('inputContactPhone');
+        const hoursInput = document.getElementById('contactInputHours') || document.getElementById('inputContactHours');
+        const slaInput = document.getElementById('contactInputSla') || document.getElementById('inputContactSla');
+        const addrTextarea = document.getElementById('contactInputAddress') || document.getElementById('textareaContactAddress');
 
         const autoToggle = document.getElementById('toggleAutoResponseEnabled');
         const autoSubject = document.getElementById('inputAutoResponseSubject');
@@ -6050,7 +6104,7 @@ async function loadMasterNavigation() {
         });
       }
 
-      dom.workspaceRoot.innerHTML = `
+      root.innerHTML = `
         <div class="space-y-6 font-sans">
           <!-- Overview Card -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -6068,7 +6122,7 @@ async function loadMasterNavigation() {
           </div>
 
           <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
-          <div id="contactRawJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+          <div id="contactJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
@@ -6100,30 +6154,30 @@ async function loadMasterNavigation() {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Primary Support Email <span class="text-rose-400">*</span></label>
-                <input id="inputContactEmail" type="email" value="${escapeHtml(contact.endpoints?.primaryEmail || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="contactInputEmail" type="email" value="${escapeHtml(contact.endpoints?.primaryEmail || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Helpline Phone Number <span class="text-rose-400">*</span></label>
-                <input id="inputContactPhone" type="text" value="${escapeHtml(contact.endpoints?.helplinePhone || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="contactInputPhone" type="text" value="${escapeHtml(contact.endpoints?.helplinePhone || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Operating Hours</label>
-                <input id="inputContactHours" type="text" value="${escapeHtml(contact.endpoints?.operatingHours || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="contactInputHours" type="text" value="${escapeHtml(contact.endpoints?.operatingHours || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">SLA Response Window</label>
-                <input id="inputContactSla" type="text" value="${escapeHtml(contact.endpoints?.slaResponseTime || 'Within 24 business hours')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="contactInputSla" type="text" value="${escapeHtml(contact.endpoints?.slaResponseTime || 'Within 24 business hours')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-200 mb-1">Physical / Postal Liaison Address <span class="text-rose-400">*</span></label>
-              <textarea id="textareaContactAddress" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(contact.endpoints?.postalAddress || '')}</textarea>
+              <textarea id="contactInputAddress" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(contact.endpoints?.postalAddress || '')}</textarea>
             </div>
           </div>
 
@@ -6224,7 +6278,7 @@ async function loadMasterNavigation() {
 
       // Drawer toggle
       document.getElementById('btnToggleContactJsonDrawer')?.addEventListener('click', () => {
-        const drawer = document.getElementById('contactRawJsonDrawer');
+        const drawer = document.getElementById('contactJsonDrawer');
         if (drawer) {
           drawer.classList.toggle('hidden');
           syncContactJsonEditor();
@@ -6239,14 +6293,16 @@ async function loadMasterNavigation() {
           const parsed = JSON.parse(jsonText);
           if (parsed && typeof parsed === 'object') {
             contact = parsed;
+            contact.endpoints = contact.endpoints || {};
+            contact.autoResponse = contact.autoResponse || {};
             currentDepartments = Array.isArray(contact.departments) ? JSON.parse(JSON.stringify(contact.departments)) : [];
 
             // Update form fields
-            const em = document.getElementById('inputContactEmail');
-            const ph = document.getElementById('inputContactPhone');
-            const hr = document.getElementById('inputContactHours');
-            const sla = document.getElementById('inputContactSla');
-            const ad = document.getElementById('textareaContactAddress');
+            const em = document.getElementById('contactInputEmail');
+            const ph = document.getElementById('contactInputPhone');
+            const hr = document.getElementById('contactInputHours');
+            const sla = document.getElementById('contactInputSla');
+            const ad = document.getElementById('contactInputAddress');
             const tog = document.getElementById('toggleAutoResponseEnabled');
             const sb = document.getElementById('inputAutoResponseSubject');
             const tm = document.getElementById('textareaAutoResponseTemplate');
@@ -6349,7 +6405,7 @@ async function loadMasterNavigation() {
 
               const imported = window.CSOSuperStore.importContactConfig(JSON.stringify(parsed));
               showToast("Contact configuration imported successfully!", "success");
-              renderContactUsWorkspace();
+              renderContactUsWorkspace(root);
             }
           } catch (err) {
             showToast("Import failed: " + err.message, "danger");
@@ -6364,13 +6420,13 @@ async function loadMasterNavigation() {
           if (window.CSOSuperStore && typeof window.CSOSuperStore.resetContactConfig === 'function') {
             window.CSOSuperStore.resetContactConfig();
             showToast("Contact configuration restored to factory defaults.", "info");
-            renderContactUsWorkspace();
+            renderContactUsWorkspace(root);
           }
         }
       });
 
       // Form input change listeners to sync with raw JSON
-      ['inputContactEmail', 'inputContactPhone', 'inputContactHours', 'inputContactSla', 'textareaContactAddress', 'inputAutoResponseSubject', 'textareaAutoResponseTemplate'].forEach(id => {
+      ['contactInputEmail', 'contactInputPhone', 'contactInputHours', 'contactInputSla', 'contactInputAddress', 'inputAutoResponseSubject', 'textareaAutoResponseTemplate'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', syncContactJsonEditor);
       });
       document.getElementById('toggleAutoResponseEnabled')?.addEventListener('change', syncContactJsonEditor);
@@ -6384,41 +6440,46 @@ async function loadMasterNavigation() {
     /**
      * VIEW 3c: Privacy Policy & Data Governance Studio (module-03-003)
      */
-    function renderPrivacyPolicyWorkspace() {
+    function renderPrivacyPolicyWorkspace(container) {
+      const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
+      if (!root) return;
+
       // Header Breadcrumb
-      dom.breadcrumbFolder.textContent = "Website Information & Legal";
-      dom.breadcrumbModule.textContent = "Privacy Policy (module-03-003)";
+      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Privacy Policy (module-03-003)";
 
       // Top Action Toolbar
-      dom.moduleHeaderActions.innerHTML = `
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnSavePrivacyStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Save & Publish Policy
-          </button>
-          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Preview Live Page ↗
-          </a>
-          <button id="btnTogglePrivacyJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-            Raw JSON Editor
-          </button>
-          <button id="btnExportPrivacyConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export Config
-          </button>
-          <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            Import Config
-            <input id="inputImportPrivacyConfig" type="file" accept=".json,application/json" class="hidden">
-          </label>
-          <button id="btnResetPrivacyConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Reset to Default
-          </button>
-        </div>
-      `;
+      if (dom.moduleHeaderActions) {
+        dom.moduleHeaderActions.innerHTML = `
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnSavePrivacyStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Save & Publish Policy
+            </button>
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Preview Live Page ↗
+            </a>
+            <button id="btnTogglePrivacyJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              Raw JSON Editor
+            </button>
+            <button id="btnExportPrivacyConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export Config
+            </button>
+            <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Import Config
+              <input id="inputImportPrivacyConfig" type="file" accept=".json,application/json" class="hidden">
+            </label>
+            <button id="btnResetPrivacyConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset to Default
+            </button>
+          </div>
+        `;
+      }
 
       // Ingest Privacy Config
       let privacy = (window.CSOSuperStore && typeof window.CSOSuperStore.getPrivacyConfig === 'function')
@@ -6439,6 +6500,8 @@ async function loadMasterNavigation() {
             }
           };
 
+      privacy.compliance = privacy.compliance || {};
+      privacy.retention = privacy.retention || {};
       let currentClauses = Array.isArray(privacy.clauses) ? JSON.parse(JSON.stringify(privacy.clauses)) : [];
 
       function syncPrivacyJsonEditor() {
@@ -6450,11 +6513,11 @@ async function loadMasterNavigation() {
       }
 
       function gatherPrivacyFormState() {
-        const versionInput = document.getElementById('inputPrivacyVersion');
-        const effDateInput = document.getElementById('inputPrivacyEffectiveDate');
-        const govActInput = document.getElementById('inputPrivacyGovAct');
-        const dpoEmailInput = document.getElementById('inputPrivacyDpoEmail');
-        const jurInput = document.getElementById('inputPrivacyJurisdiction');
+        const versionInput = document.getElementById('privacyInputVersion') || document.getElementById('inputPrivacyVersion');
+        const effDateInput = document.getElementById('privacyInputDate') || document.getElementById('inputPrivacyEffectiveDate');
+        const govActInput = document.getElementById('privacyInputAct') || document.getElementById('inputPrivacyGovAct');
+        const dpoEmailInput = document.getElementById('privacyInputDpo') || document.getElementById('inputPrivacyDpoEmail');
+        const jurInput = document.getElementById('privacyInputJurisdiction') || document.getElementById('inputPrivacyJurisdiction');
 
         const inqDaysInput = document.getElementById('inputRetentionInquiryDays');
         const auditDaysInput = document.getElementById('inputRetentionAuditDays');
@@ -6597,7 +6660,7 @@ async function loadMasterNavigation() {
         });
       }
 
-      dom.workspaceRoot.innerHTML = `
+      root.innerHTML = `
         <div class="space-y-6 font-sans">
           <!-- Overview Card -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -6615,7 +6678,7 @@ async function loadMasterNavigation() {
           </div>
 
           <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
-          <div id="privacyRawJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+          <div id="privacyJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
@@ -6647,29 +6710,29 @@ async function loadMasterNavigation() {
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Policy Version <span class="text-rose-400">*</span></label>
-                <input id="inputPrivacyVersion" type="text" value="${escapeHtml(privacy.meta?.version || '2.4')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="privacyInputVersion" type="text" value="${escapeHtml(privacy.meta?.version || '2.4')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Effective Date <span class="text-rose-400">*</span></label>
-                <input id="inputPrivacyEffectiveDate" type="date" value="${escapeHtml(privacy.compliance?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="privacyInputDate" type="date" value="${escapeHtml(privacy.compliance?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Data Protection Officer Email <span class="text-rose-400">*</span></label>
-                <input id="inputPrivacyDpoEmail" type="email" value="${escapeHtml(privacy.compliance?.dataProtectionOfficer || 'dpo@csodisha.com')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="privacyInputDpo" type="email" value="${escapeHtml(privacy.compliance?.dataProtectionOfficer || 'dpo@csodisha.com')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Governing Law / Statute <span class="text-rose-400">*</span></label>
-                <input id="inputPrivacyGovAct" type="text" value="${escapeHtml(privacy.compliance?.governingAct || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="privacyInputAct" type="text" value="${escapeHtml(privacy.compliance?.governingAct || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Legal Jurisdiction</label>
-                <input id="inputPrivacyJurisdiction" type="text" value="${escapeHtml(privacy.compliance?.jurisdiction || 'Odisha, India')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <input id="privacyInputJurisdiction" type="text" value="${escapeHtml(privacy.compliance?.jurisdiction || 'Odisha, India')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
             </div>
           </div>
@@ -6752,7 +6815,7 @@ async function loadMasterNavigation() {
 
       // Drawer toggle
       document.getElementById('btnTogglePrivacyJsonDrawer')?.addEventListener('click', () => {
-        const drawer = document.getElementById('privacyRawJsonDrawer');
+        const drawer = document.getElementById('privacyJsonDrawer');
         if (drawer) {
           drawer.classList.toggle('hidden');
           syncPrivacyJsonEditor();
@@ -6767,14 +6830,16 @@ async function loadMasterNavigation() {
           const parsed = JSON.parse(jsonText);
           if (parsed && typeof parsed === 'object') {
             privacy = parsed;
+            privacy.compliance = privacy.compliance || {};
+            privacy.retention = privacy.retention || {};
             currentClauses = Array.isArray(privacy.clauses) ? JSON.parse(JSON.stringify(privacy.clauses)) : [];
 
             // Update form inputs
-            const v = document.getElementById('inputPrivacyVersion');
-            const ed = document.getElementById('inputPrivacyEffectiveDate');
-            const dpo = document.getElementById('inputPrivacyDpoEmail');
-            const ga = document.getElementById('inputPrivacyGovAct');
-            const jur = document.getElementById('inputPrivacyJurisdiction');
+            const v = document.getElementById('privacyInputVersion');
+            const ed = document.getElementById('privacyInputDate');
+            const dpo = document.getElementById('privacyInputDpo');
+            const ga = document.getElementById('privacyInputAct');
+            const jur = document.getElementById('privacyInputJurisdiction');
             const inq = document.getElementById('inputRetentionInquiryDays');
             const aud = document.getElementById('inputRetentionAuditDays');
             const sum = document.getElementById('textareaRetentionSummary');
@@ -6874,7 +6939,7 @@ async function loadMasterNavigation() {
 
               const imported = window.CSOSuperStore.importPrivacyConfig(JSON.stringify(parsed));
               showToast("Privacy policy imported successfully!", "success");
-              renderPrivacyPolicyWorkspace();
+              renderPrivacyPolicyWorkspace(root);
             }
           } catch (err) {
             showToast("Import failed: " + err.message, "danger");
@@ -6889,13 +6954,13 @@ async function loadMasterNavigation() {
           if (window.CSOSuperStore && typeof window.CSOSuperStore.resetPrivacyConfig === 'function') {
             window.CSOSuperStore.resetPrivacyConfig();
             showToast("Privacy policy restored to factory defaults.", "info");
-            renderPrivacyPolicyWorkspace();
+            renderPrivacyPolicyWorkspace(root);
           }
         }
       });
 
       // Form input change listeners to sync with raw JSON
-      ['inputPrivacyVersion', 'inputPrivacyEffectiveDate', 'inputPrivacyDpoEmail', 'inputPrivacyGovAct', 'inputPrivacyJurisdiction', 'inputRetentionInquiryDays', 'inputRetentionAuditDays', 'textareaRetentionSummary'].forEach(id => {
+      ['privacyInputVersion', 'privacyInputDate', 'privacyInputDpo', 'privacyInputAct', 'privacyInputJurisdiction', 'inputRetentionInquiryDays', 'inputRetentionAuditDays', 'textareaRetentionSummary'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', syncPrivacyJsonEditor);
       });
     }
