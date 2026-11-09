@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Shipping & Digital Delivery Policy for Common Sense Odisha (csodisha.com) - Instant Cloudflare Anycast edge CDN delivery, offline caching and paperless materials.">
+  <title>Shipping &amp; Digital Delivery Policy | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .delivery-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .delivery-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--mut, #64748b);
+    }
+    .delivery-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .delivery-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .delivery-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .delivery-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .delivery-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .delivery-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .delivery-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+      line-height: 1.25;
+    }
+    .delivery-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--mut, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--bd, #e2e8f0);
+    }
+
+    .infra-card {
+      background: linear-gradient(135deg, rgba(239, 246, 255, 0.8), rgba(248, 250, 252, 0.9));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .infra-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .infra-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .infra-title-block h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #1e40af;
+    }
+    .infra-title-block p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      color: #1e3a8a;
+    }
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      font-size: 0.88rem;
+    }
+    .infra-grid-item {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .infra-grid-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 4px;
+    }
+    .infra-grid-val {
+      color: #1e293b;
+      word-break: break-word;
+    }
+    .infra-grid-val a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .infra-grid-val a:hover {
+      text-decoration: underline;
+    }
+
+    .mode-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .mode-card:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+    .mode-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .mode-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mode-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(14, 165, 233, 0.12);
+      color: #0284c7;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .mode-format-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    .mode-speed-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .mode-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--tx, #0f172a);
+      margin: 0;
+    }
+    .mode-desc {
+      color: var(--mut, #475569);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin: 8px 0 0;
+    }
+
+    @media (max-width: 640px) {
+      .delivery-hero {
+        padding: 24px 20px;
+      }
+      .infra-card {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="delivery-main">
+  <div class="delivery-breadcrumbs">
+    <a href="index.html">Home</a> &gt; <span>Shipping &amp; Digital Delivery</span>
+  </div>
+
+  <section class="delivery-hero">
+    <div class="delivery-badge-group">
+      <span class="delivery-badge" id="delivery-badge">Instant Edge Distribution</span>
+      <span class="delivery-version-badge" id="delivery-version-badge">Version 1.4</span>
+    </div>
+    <h1 id="delivery-title">Shipping &amp; Digital Delivery Policy</h1>
+    <div class="delivery-meta-strip">
+      <div><strong>Last Reviewed:</strong> <span id="delivery-last-reviewed">2026-11-01</span></div>
+      <div><strong>Fulfillment Mode:</strong> 100% Instant Paperless Digital Transmission</div>
+    </div>
+  </section>
+
+  <!-- CDN Distribution Infrastructure -->
+  <section class="infra-card">
+    <div class="infra-header">
+      <div class="infra-icon-box">⚡</div>
+      <div class="infra-title-block">
+        <h2>Global Anycast Edge CDN Infrastructure</h2>
+        <p>Ultra-low latency content distribution network tuned for Odisha aspirants</p>
+      </div>
+    </div>
+    <div class="infra-grid">
+      <div class="infra-grid-item">
+        <div class="infra-grid-label">Edge CDN Network</div>
+        <div class="infra-grid-val" id="delivery-cdn-provider">Cloudflare Global Anycast Edge Network</div>
+      </div>
+      <div class="infra-grid-item">
+        <div class="infra-grid-label">Odisha Serving Nodes</div>
+        <div class="infra-grid-val" id="delivery-odisha-nodes">Bhubaneswar Edge POP &amp; Kolkata Regional Data Center</div>
+      </div>
+      <div class="infra-grid-item">
+        <div class="infra-grid-label">Target Availability SLA</div>
+        <div class="infra-grid-val" id="delivery-downtime-sla">99.9% Uptime Commitment</div>
+      </div>
+      <div class="infra-grid-item">
+        <div class="infra-grid-label">Technical Escalations</div>
+        <div class="infra-grid-val"><a id="delivery-support-email" href="mailto:tech@csodisha.com">tech@csodisha.com</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Delivery Modes Container -->
+  <h2 style="font-size:1.2rem; color:var(--tx, #0f172a); margin: 0 0 16px;">Content Delivery Protocols &amp; Formats</h2>
+  <div id="delivery-modes-container">
+    <!-- Hydrated dynamically -->
+  </div>
+</main>
+
+<script>
+(function() {
+  function escapeText(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function hydrateDeliveryPolicy() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_delivery_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        meta: { version: "1.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Shipping & Digital Delivery Policy", badge: "Instant Edge Distribution", lastReviewed: "2026-11-01" },
+        modes: [
+          { id: "DEL-01", title: "Immediate Digital Access", format: "Direct Web / PDF Download", speed: "Instant (< 2 Seconds)", description: "Curated syllabus guides, previous question compilations, and model tests are delivered instantaneously via high-speed Cloudflare CDN edge nodes across Odisha.", active: true },
+          { id: "DEL-02", title: "Zero Physical Shipping Notice", format: "Paperless Digital", speed: "N/A", description: "Common Sense Odisha does not print, warehouse, or physically ship paper textbooks or hardcopy notes via postal services. All instructional assets remain 100% paperless.", active: true },
+          { id: "DEL-03", title: "Offline & Low-Bandwidth Caching", format: "Service Worker PWA", speed: "Immediate", description: "Aspirants in interior and rural districts can access cached study notes and previous questions even with intermittent 2G/3G connectivity.", active: true }
+        ],
+        infrastructure: {
+          cdnProvider: "Cloudflare Global Anycast Edge Network",
+          odishaNodes: "Bhubaneswar Edge POP & Kolkata Regional Data Center",
+          downtimeSla: "99.9% Uptime Commitment",
+          supportEmail: "tech@csodisha.com"
+        }
+      };
+    }
+
+    var doc = config.document || {};
+    var infra = config.infrastructure || {};
+
+    var badgeEl = document.getElementById('delivery-badge');
+    if (badgeEl && doc.badge) badgeEl.textContent = doc.badge;
+
+    var vBadgeEl = document.getElementById('delivery-version-badge');
+    if (vBadgeEl && config.meta && config.meta.version) {
+      vBadgeEl.textContent = "Version " + config.meta.version;
+    }
+
+    var titleEl = document.getElementById('delivery-title');
+    if (titleEl && doc.title) titleEl.textContent = doc.title;
+
+    var dateEl = document.getElementById('delivery-last-reviewed');
+    if (dateEl && doc.lastReviewed) dateEl.textContent = doc.lastReviewed;
+
+    var cdnEl = document.getElementById('delivery-cdn-provider');
+    if (cdnEl && infra.cdnProvider) cdnEl.textContent = infra.cdnProvider;
+
+    var nodesEl = document.getElementById('delivery-odisha-nodes');
+    if (nodesEl && infra.odishaNodes) nodesEl.textContent = infra.odishaNodes;
+
+    var slaEl = document.getElementById('delivery-downtime-sla');
+    if (slaEl && infra.downtimeSla) slaEl.textContent = infra.downtimeSla;
+
+    var emailEl = document.getElementById('delivery-support-email');
+    if (emailEl && infra.supportEmail) {
+      emailEl.textContent = infra.supportEmail;
+      emailEl.href = "mailto:" + infra.supportEmail;
+    }
+
+    var container = document.getElementById('delivery-modes-container');
+    var list = Array.isArray(config.modes) ? config.modes.filter(function(m) { return m.active !== false; }) : [];
+    if (container && list.length > 0) {
+      container.innerHTML = list.map(function(m, idx) {
+        var num = idx + 1;
+        return '<article class="mode-card">' +
+               '  <div class="mode-header">' +
+               '    <div class="mode-badge-wrap">' +
+               '      <span class="mode-num">#' + num + '</span>' +
+               '      <span class="mode-format-badge">' + escapeText(m.format || 'Digital') + '</span>' +
+               '      <span class="mode-speed-badge">' + escapeText(m.speed || 'Instant') + '</span>' +
+               '    </div>' +
+               '    <span style="font-size:0.75rem; font-family:monospace; color:#64748b;">' + escapeText(m.id || '') + '</span>' +
+               '  </div>' +
+               '  <h2 class="mode-title">' + escapeText(m.title || '') + '</h2>' +
+               '  <p class="mode-desc">' + escapeText(m.description || '') + '</p>' +
+               '</article>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateDeliveryPolicy);
+  } else {
+    hydrateDeliveryPolicy();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_delivery_config') {
+      hydrateDeliveryPolicy();
+    }
+  });
+})();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>

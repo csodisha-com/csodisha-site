@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Community Guidelines & Forum Code of Conduct for Common Sense Odisha (csodisha.com) - Candidate mutual respect, zero-tolerance exam leaks, anti-malpractice rules.">
+  <title>Community Guidelines | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .community-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .community-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--mut, #64748b);
+    }
+    .community-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .community-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .community-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .community-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .community-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.1);
+      color: #6366f1;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    .community-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .community-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+      line-height: 1.25;
+    }
+    .community-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--mut, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--bd, #e2e8f0);
+    }
+
+    .council-card {
+      background: linear-gradient(135deg, rgba(238, 242, 255, 0.8), rgba(248, 250, 252, 0.9));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .council-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .council-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #4f46e5;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .council-title-block h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #3730a3;
+    }
+    .council-title-block p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      color: #4338ca;
+    }
+    .council-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      font-size: 0.88rem;
+    }
+    .council-grid-item {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .council-grid-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #3730a3;
+      margin-bottom: 4px;
+    }
+    .council-grid-val {
+      color: #1e293b;
+      word-break: break-word;
+    }
+    .council-grid-val a {
+      color: #4f46e5;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .council-grid-val a:hover {
+      text-decoration: underline;
+    }
+
+    .rule-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .rule-card:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+    .rule-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .rule-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rule-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.12);
+      color: #4f46e5;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .rule-cat {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .rule-cat.conduct {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border-color: rgba(14, 165, 233, 0.2);
+    }
+    .rule-cat.integrity {
+      background: rgba(225, 29, 72, 0.1);
+      color: #e11d48;
+      border-color: rgba(225, 29, 72, 0.2);
+    }
+    .rule-cat.respect {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .rule-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--tx, #0f172a);
+      margin: 0;
+    }
+    .rule-desc {
+      color: var(--mut, #475569);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin: 8px 0 0;
+    }
+
+    .report-card {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-top: 32px;
+      color: #9f1239;
+    }
+    .report-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      color: #881337;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .report-card p {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #9f1239;
+    }
+
+    @media (max-width: 640px) {
+      .community-hero {
+        padding: 24px 20px;
+      }
+      .council-card {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="community-main">
+  <div class="community-breadcrumbs">
+    <a href="index.html">Home</a> &gt; <span>Community Guidelines</span>
+  </div>
+
+  <section class="community-hero">
+    <div class="community-badge-group">
+      <span class="community-badge" id="community-badge">Candidate Mutual Respect</span>
+      <span class="community-version-badge" id="community-version-badge">Version 2.0</span>
+    </div>
+    <h1 id="community-title">Community Guidelines &amp; Forum Code of Conduct</h1>
+    <div class="community-meta-strip">
+      <div><strong>Last Reviewed:</strong> <span id="community-last-reviewed">2026-11-01</span></div>
+      <div><strong>Statutory Alignment:</strong> Odisha Public Examinations (Prevention of Unfair Means) Act</div>
+    </div>
+  </section>
+
+  <!-- Moderation Council Card -->
+  <section class="council-card">
+    <div class="council-header">
+      <div class="council-icon-box">🛡️</div>
+      <div class="council-title-block">
+        <h2 id="community-team">Academic Community &amp; Forum Moderation Council</h2>
+        <p id="community-enforcement">Zero Tolerance for Hate Speech &amp; Exam Malpractice</p>
+      </div>
+    </div>
+    <div class="council-grid">
+      <div class="council-grid-item">
+        <div class="council-grid-label">Council Contact Email</div>
+        <div class="council-grid-val"><a id="community-email" href="mailto:community@csodisha.com">community@csodisha.com</a></div>
+      </div>
+      <div class="council-grid-item">
+        <div class="council-grid-label">Appeal Window</div>
+        <div class="council-grid-val" id="community-appeal-days">14 Days from Notice</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rules Container -->
+  <h2 style="font-size:1.2rem; color:var(--tx, #0f172a); margin: 0 0 16px;">Candidate Code of Conduct Rules</h2>
+  <div id="community-rules-container">
+    <!-- Hydrated dynamically -->
+  </div>
+
+  <!-- Violation Reporting Box -->
+  <section class="report-card">
+    <h3>
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      Violation &amp; Unfair Means Reporting Protocol
+    </h3>
+    <p id="community-reporting-procedure">To report inappropriate forum comments, suspected unfair means, or commercial spam, click the Flag button or email community@csodisha.com with direct link and screenshot.</p>
+  </section>
+</main>
+
+<script>
+(function() {
+  function escapeText(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getCategoryClass(cat) {
+    if (!cat) return '';
+    var c = String(cat).toLowerCase();
+    if (c.indexOf('conduct') !== -1) return 'conduct';
+    if (c.indexOf('integrity') !== -1 || c.indexOf('malpractice') !== -1) return 'integrity';
+    if (c.indexOf('respect') !== -1) return 'respect';
+    return '';
+  }
+
+  function hydrateCommunityPolicy() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_community_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Community Guidelines & Forum Code of Conduct", badge: "Candidate Mutual Respect", lastReviewed: "2026-11-01" },
+        moderation: {
+          team: "Academic Community & Forum Moderation Council",
+          email: "community@csodisha.com",
+          enforcementLevel: "Zero Tolerance for Hate Speech & Exam Malpractice",
+          appealWindowDays: 14
+        },
+        rules: [
+          { id: "COMM-01", number: "1", title: "Constructive Academic Discussion", category: "Conduct", description: "Discussions, comments, and study room interactions must remain strictly focused on academic preparation, syllabus doubts, and civil peer mentoring.", active: true },
+          { id: "COMM-02", number: "2", title: "Zero Tolerance for Question Paper Leaks or Cheating", category: "Integrity", description: "Posting, requesting, or circulating alleged leaked question papers, examination malpractice materials, or unfair means will result in immediate permanent ban and referral to cyber authorities under the Odisha Public Examinations (Prevention of Unfair Means) Act.", active: true },
+          { id: "COMM-03", number: "3", title: "No Commercial Spam or Paid Promotion", category: "Non-Commercial", description: "Promoting paid coaching batches, private Telegram links, affiliate courses, or commercial products is strictly prohibited on all portal discussion forums.", active: true },
+          { id: "COMM-04", number: "4", title: "Respectful Communication & Non-Discrimination", category: "Respect", description: "Harassment, abusive language, regional discrimination, gender-based disparagement, or caste-related slurs are grounds for instant account termination.", active: true }
+        ],
+        reportingProcedure: "To report inappropriate forum comments, suspected unfair means, or commercial spam, click the Flag button or email community@csodisha.com with direct link and screenshot."
+      };
+    }
+
+    var doc = config.document || {};
+    var mod = config.moderation || {};
+
+    var badgeEl = document.getElementById('community-badge');
+    if (badgeEl && doc.badge) badgeEl.textContent = doc.badge;
+
+    var vBadgeEl = document.getElementById('community-version-badge');
+    if (vBadgeEl && config.meta && config.meta.version) {
+      vBadgeEl.textContent = "Version " + config.meta.version;
+    }
+
+    var titleEl = document.getElementById('community-title');
+    if (titleEl && doc.title) titleEl.textContent = doc.title;
+
+    var dateEl = document.getElementById('community-last-reviewed');
+    if (dateEl && doc.lastReviewed) dateEl.textContent = doc.lastReviewed;
+
+    var teamEl = document.getElementById('community-team');
+    if (teamEl && mod.team) teamEl.textContent = mod.team;
+
+    var enfEl = document.getElementById('community-enforcement');
+    if (enfEl && mod.enforcementLevel) enfEl.textContent = mod.enforcementLevel;
+
+    var appealEl = document.getElementById('community-appeal-days');
+    if (appealEl && mod.appealWindowDays) appealEl.textContent = mod.appealWindowDays + " Days from Notice";
+
+    var emailEl = document.getElementById('community-email');
+    if (emailEl && mod.email) {
+      emailEl.textContent = mod.email;
+      emailEl.href = "mailto:" + mod.email;
+    }
+
+    var repEl = document.getElementById('community-reporting-procedure');
+    if (repEl && config.reportingProcedure) repEl.textContent = config.reportingProcedure;
+
+    var container = document.getElementById('community-rules-container');
+    var list = Array.isArray(config.rules) ? config.rules.filter(function(r) { return r.active !== false; }) : [];
+    if (container && list.length > 0) {
+      container.innerHTML = list.map(function(r, idx) {
+        var num = r.number || (idx + 1);
+        var catClass = getCategoryClass(r.category);
+        return '<article class="rule-card">' +
+               '  <div class="rule-header">' +
+               '    <div class="rule-badge-wrap">' +
+               '      <span class="rule-num">§' + num + '</span>' +
+               '      <span class="rule-cat ' + catClass + '">' + escapeText(r.category || 'Conduct') + '</span>' +
+               '    </div>' +
+               '    <span style="font-size:0.75rem; font-family:monospace; color:#64748b;">' + escapeText(r.id || '') + '</span>' +
+               '  </div>' +
+               '  <h2 class="rule-title">' + escapeText(r.title || '') + '</h2>' +
+               '  <p class="rule-desc">' + escapeText(r.description || '') + '</p>' +
+               '</article>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateCommunityPolicy);
+  } else {
+    hydrateCommunityPolicy();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_community_config') {
+      hydrateCommunityPolicy();
+    }
+  });
+})();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>

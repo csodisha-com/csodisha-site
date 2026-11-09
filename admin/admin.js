@@ -351,6 +351,12 @@ async function loadMasterNavigation() {
         renderCorrectionsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-010') {
         renderAccessibilityWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-011') {
+        renderRefundWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-012') {
+        renderDeliveryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-013') {
+        renderCommunityWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -10355,6 +10361,1155 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW 3k: Refund & Cancellation Policy Studio (module-03-011)
+     */
+    function renderRefundWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Refund & Cancellation Policy (module-03-011)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getRefundConfig() : {
+          meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: { title: "Refund & Cancellation Policy", badge: "100% Free Public Resource Guarantee", lastReviewed: "2026-11-01" },
+          provisions: [
+            { id: "REF-01", title: "Universal Free Access Guarantee", category: "Public Resource", body: "Common Sense Odisha provides syllabi, exam analyses, and educational resources completely free of charge. No payment gateway is integrated, and no fees are ever assessed.", active: true },
+            { id: "REF-02", title: "Third-Party Fraud Warning", category: "Advisory", body: "Candidates are cautioned against fraudulent third-party agents soliciting money under our brand name. We never request payments, bank details, or UPI transfers.", active: true },
+            { id: "REF-03", title: "Digital Materials Cancellation Terms", category: "Digital Services", body: "Because all digital preparatory materials and downloads are provided freely without commercial transaction, formal billing cancellations and refund requests are not applicable.", active: true }
+          ],
+          supportDesk: { email: "grievance@csodisha.com", note: "Report any fraudulent fee solicitations directly to our grievance desk." }
+        };
+
+        const doc = config.document || {};
+        const desk = config.supportDesk || {};
+        const provisions = Array.isArray(config.provisions) ? config.provisions : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Refund &amp; Cancellation Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-011</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Configure free access guarantees, third-party fraud warnings, and non-commercial grievance routing.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="refund-policy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>Preview Live</span>
+                </a>
+                <button type="button" id="btnToggleRefundJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportRefundConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportRefundConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetRefundConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveRefundConfig" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Document Metadata -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Document Metadata</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.2')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Document Title</label>
+                  <input type="text" id="refundInputTitle" value="${escapeHtml(doc.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Policy Badge</label>
+                  <input type="text" id="refundInputBadge" value="${escapeHtml(doc.badge || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Last Reviewed Date</label>
+                  <input type="date" id="refundInputLastReviewed" value="${escapeHtml(doc.lastReviewed || '2026-11-01')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Grievance & Fraud Redressal Desk -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Grievance &amp; Fee Fraud Redressal Desk</h3>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Fraud / Grievance Redressal Email</label>
+                  <input type="email" id="refundInputGrievanceEmail" value="${escapeHtml(desk.email || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Desk Guidance Note</label>
+                  <input type="text" id="refundInputDeskNote" value="${escapeHtml(desk.note || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Policy Provisions Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Statutory Provisions &amp; Non-Commercial Guarantees</h3>
+                </div>
+                <button type="button" id="btnAddRefundProvision" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-xs rounded border border-emerald-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Provision</span>
+                </button>
+              </div>
+
+              <div id="refundProvisionsContainer" class="space-y-3">
+                ${provisions.map((pr, idx) => `
+                  <div class="refund-provision-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="prov-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${escapeHtml(pr.id || '')}" placeholder="ID">
+                        <input type="text" class="prov-category-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(pr.category || 'Public Resource')}" placeholder="Category">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                          <input type="checkbox" class="prov-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" ${pr.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-prov text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Provision">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="prov-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(pr.title || '')}" placeholder="Provision Title">
+                    </div>
+                    <div>
+                      <textarea class="prov-body-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Provision Details">${escapeHtml(pr.body || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="refundJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_refund_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatRefundRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyRefundRawJsonChanges" class="px-3 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaRefundRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-emerald-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-emerald-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncRefundJsonEditor = () => {
+          const currentConfig = harvestRefundForm();
+          const jsonTextarea = document.getElementById('textareaRefundRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestRefundForm = () => {
+          const provEls = document.querySelectorAll('.refund-provision-item');
+          const provList = [];
+          provEls.forEach(el => {
+            provList.push({
+              id: el.querySelector('.prov-id-input')?.value.trim() || '',
+              category: el.querySelector('.prov-category-input')?.value.trim() || 'Public Resource',
+              active: el.querySelector('.prov-active-toggle')?.checked ?? true,
+              title: el.querySelector('.prov-title-input')?.value.trim() || '',
+              body: el.querySelector('.prov-body-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.2",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            document: {
+              title: document.getElementById('refundInputTitle')?.value.trim() || '',
+              badge: document.getElementById('refundInputBadge')?.value.trim() || '',
+              lastReviewed: document.getElementById('refundInputLastReviewed')?.value.trim() || '2026-11-01'
+            },
+            provisions: provList,
+            supportDesk: {
+              email: document.getElementById('refundInputGrievanceEmail')?.value.trim() || '',
+              note: document.getElementById('refundInputDeskNote')?.value.trim() || ''
+            }
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleRefundJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('refundJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncRefundJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatRefundRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaRefundRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyRefundRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaRefundRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveRefundConfig === 'function') {
+                window.CSOSuperStore.saveRefundConfig(parsed);
+                showToast("JSON applied and refund policy saved!", "success");
+                renderRefundWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddRefundProvision')?.addEventListener('click', () => {
+          const container = document.getElementById('refundProvisionsContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.refund-provision-item').length + 1;
+          const newId = 'REF-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "refund-provision-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="prov-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${newId}" placeholder="ID">
+                <input type="text" class="prov-category-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Public Resource" placeholder="Category">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                  <input type="checkbox" class="prov-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-prov text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Provision">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="prov-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Provision Title">
+            </div>
+            <div>
+              <textarea class="prov-body-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Provision Details"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachRefundItemListeners(div);
+          syncRefundJsonEditor();
+        });
+
+        const attachRefundItemListeners = (parent) => {
+          parent.querySelector('.btn-remove-prov')?.addEventListener('click', () => {
+            parent.remove();
+            syncRefundJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', syncRefundJsonEditor);
+          });
+          parent.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', syncRefundJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.refund-provision-item').forEach(attachRefundItemListeners);
+
+        document.getElementById('btnSaveRefundConfig')?.addEventListener('click', () => {
+          const newConfig = harvestRefundForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveRefundConfig === 'function') {
+            window.CSOSuperStore.saveRefundConfig(newConfig);
+            showToast("Refund policy saved successfully!", "success");
+            syncRefundJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportRefundConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportRefundManifest === 'function') {
+            window.CSOSuperStore.exportRefundManifest();
+            showToast("Refund manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportRefundConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.refund) parsed = parsed.refund;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importRefundConfig === 'function') {
+                window.CSOSuperStore.importRefundConfig(JSON.stringify(parsed));
+                showToast("Refund policy imported successfully!", "success");
+                renderRefundWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetRefundConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default refund policy? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetRefundConfig === 'function') {
+              window.CSOSuperStore.resetRefundConfig();
+              showToast("Refund policy restored to defaults.", "info");
+              renderRefundWorkspace(root);
+            }
+          }
+        });
+
+        ['refundInputTitle', 'refundInputBadge', 'refundInputLastReviewed', 'refundInputGrievanceEmail', 'refundInputDeskNote'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncRefundJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-011 (Refund & Cancellation)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 3l: Shipping & Digital Delivery Policy Studio (module-03-012)
+     */
+    function renderDeliveryWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Shipping & Digital Delivery (module-03-012)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getDeliveryConfig() : {
+          meta: { version: "1.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: { title: "Shipping & Digital Delivery Policy", badge: "Instant Edge Distribution", lastReviewed: "2026-11-01" },
+          modes: [
+            { id: "DEL-01", title: "Immediate Digital Access", format: "Direct Web / PDF Download", speed: "Instant (< 2 Seconds)", description: "Curated syllabus guides, previous question compilations, and model tests are delivered instantaneously via high-speed Cloudflare CDN edge nodes across Odisha.", active: true },
+            { id: "DEL-02", title: "Zero Physical Shipping Notice", format: "Paperless Digital", speed: "N/A", description: "Common Sense Odisha does not print, warehouse, or physically ship paper textbooks or hardcopy notes via postal services. All instructional assets remain 100% paperless.", active: true },
+            { id: "DEL-03", title: "Offline & Low-Bandwidth Caching", format: "Service Worker PWA", speed: "Immediate", description: "Aspirants in interior and rural districts can access cached study notes and previous questions even with intermittent 2G/3G connectivity.", active: true }
+          ],
+          infrastructure: {
+            cdnProvider: "Cloudflare Global Anycast Edge Network",
+            odishaNodes: "Bhubaneswar Edge POP & Kolkata Regional Data Center",
+            downtimeSla: "99.9% Uptime Commitment",
+            supportEmail: "tech@csodisha.com"
+          }
+        };
+
+        const doc = config.document || {};
+        const infra = config.infrastructure || {};
+        const modes = Array.isArray(config.modes) ? config.modes : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Digital Delivery &amp; Distribution Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-blue-950/80 text-blue-400 border border-blue-800/60">module-03-012</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Configure instant edge CDN delivery parameters, paperless digital terms, and regional caching notes.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="delivery-policy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>Preview Live</span>
+                </a>
+                <button type="button" id="btnToggleDeliveryJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportDeliveryConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportDeliveryConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetDeliveryConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveDeliveryConfig" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Document Metadata -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Document Metadata</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.4')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Document Title</label>
+                  <input type="text" id="deliveryInputTitle" value="${escapeHtml(doc.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Distribution Badge</label>
+                  <input type="text" id="deliveryInputBadge" value="${escapeHtml(doc.badge || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Last Reviewed Date</label>
+                  <input type="date" id="deliveryInputLastReviewed" value="${escapeHtml(doc.lastReviewed || '2026-11-01')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Technical Edge Distribution Infrastructure -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">CDN &amp; Distribution Architecture</h3>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">CDN Provider</label>
+                  <input type="text" id="deliveryInputCdn" value="${escapeHtml(infra.cdnProvider || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Odisha Edge POPs</label>
+                  <input type="text" id="deliveryInputNodes" value="${escapeHtml(infra.odishaNodes || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Uptime SLA</label>
+                  <input type="text" id="deliveryInputSla" value="${escapeHtml(infra.downtimeSla || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Tech Support Email</label>
+                  <input type="email" id="deliveryInputSupportEmail" value="${escapeHtml(infra.supportEmail || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Delivery Modes Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Content Delivery Modes &amp; Formats</h3>
+                </div>
+                <button type="button" id="btnAddDeliveryMode" class="px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 text-xs rounded border border-blue-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Mode</span>
+                </button>
+              </div>
+
+              <div id="deliveryModesContainer" class="space-y-3">
+                ${modes.map((dm, idx) => `
+                  <div class="delivery-mode-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-blue-950/80 text-blue-400 border border-blue-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="dm-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-blue-400" value="${escapeHtml(dm.id || '')}" placeholder="ID">
+                        <input type="text" class="dm-format-input w-48 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(dm.format || 'Digital Download')}" placeholder="Format">
+                        <input type="text" class="dm-speed-input w-40 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="${escapeHtml(dm.speed || 'Instant')}" placeholder="Delivery Speed">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                          <input type="checkbox" class="dm-active-toggle rounded bg-slate-900 border-slate-700 text-blue-500" ${dm.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-dm text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Mode">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="dm-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(dm.title || '')}" placeholder="Mode Title">
+                    </div>
+                    <div>
+                      <textarea class="dm-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Mode Description & Protocol">${escapeHtml(dm.description || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="deliveryJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_delivery_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatDeliveryRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyDeliveryRawJsonChanges" class="px-3 py-0.5 bg-blue-600 hover:bg-blue-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaDeliveryRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-blue-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-blue-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncDeliveryJsonEditor = () => {
+          const currentConfig = harvestDeliveryForm();
+          const jsonTextarea = document.getElementById('textareaDeliveryRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestDeliveryForm = () => {
+          const dmEls = document.querySelectorAll('.delivery-mode-item');
+          const dmList = [];
+          dmEls.forEach(el => {
+            dmList.push({
+              id: el.querySelector('.dm-id-input')?.value.trim() || '',
+              format: el.querySelector('.dm-format-input')?.value.trim() || 'Direct Web Download',
+              speed: el.querySelector('.dm-speed-input')?.value.trim() || 'Instant',
+              active: el.querySelector('.dm-active-toggle')?.checked ?? true,
+              title: el.querySelector('.dm-title-input')?.value.trim() || '',
+              description: el.querySelector('.dm-desc-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.4",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            document: {
+              title: document.getElementById('deliveryInputTitle')?.value.trim() || '',
+              badge: document.getElementById('deliveryInputBadge')?.value.trim() || '',
+              lastReviewed: document.getElementById('deliveryInputLastReviewed')?.value.trim() || '2026-11-01'
+            },
+            modes: dmList,
+            infrastructure: {
+              cdnProvider: document.getElementById('deliveryInputCdn')?.value.trim() || '',
+              odishaNodes: document.getElementById('deliveryInputNodes')?.value.trim() || '',
+              downtimeSla: document.getElementById('deliveryInputSla')?.value.trim() || '',
+              supportEmail: document.getElementById('deliveryInputSupportEmail')?.value.trim() || ''
+            }
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleDeliveryJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('deliveryJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncDeliveryJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatDeliveryRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaDeliveryRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyDeliveryRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaDeliveryRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveDeliveryConfig === 'function') {
+                window.CSOSuperStore.saveDeliveryConfig(parsed);
+                showToast("JSON applied and delivery policy saved!", "success");
+                renderDeliveryWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddDeliveryMode')?.addEventListener('click', () => {
+          const container = document.getElementById('deliveryModesContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.delivery-mode-item').length + 1;
+          const newId = 'DEL-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "delivery-mode-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-blue-950/80 text-blue-400 border border-blue-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="dm-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-blue-400" value="${newId}" placeholder="ID">
+                <input type="text" class="dm-format-input w-48 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Digital Download" placeholder="Format">
+                <input type="text" class="dm-speed-input w-40 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="Instant" placeholder="Delivery Speed">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                  <input type="checkbox" class="dm-active-toggle rounded bg-slate-900 border-slate-700 text-blue-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-dm text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Mode">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="dm-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Mode Title">
+            </div>
+            <div>
+              <textarea class="dm-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Mode Description & Protocol"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachDeliveryItemListeners(div);
+          syncDeliveryJsonEditor();
+        });
+
+        const attachDeliveryItemListeners = (parent) => {
+          parent.querySelector('.btn-remove-dm')?.addEventListener('click', () => {
+            parent.remove();
+            syncDeliveryJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', syncDeliveryJsonEditor);
+          });
+          parent.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', syncDeliveryJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.delivery-mode-item').forEach(attachDeliveryItemListeners);
+
+        document.getElementById('btnSaveDeliveryConfig')?.addEventListener('click', () => {
+          const newConfig = harvestDeliveryForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveDeliveryConfig === 'function') {
+            window.CSOSuperStore.saveDeliveryConfig(newConfig);
+            showToast("Delivery policy saved successfully!", "success");
+            syncDeliveryJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportDeliveryConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportDeliveryManifest === 'function') {
+            window.CSOSuperStore.exportDeliveryManifest();
+            showToast("Delivery manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportDeliveryConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.delivery) parsed = parsed.delivery;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importDeliveryConfig === 'function') {
+                window.CSOSuperStore.importDeliveryConfig(JSON.stringify(parsed));
+                showToast("Delivery policy imported successfully!", "success");
+                renderDeliveryWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetDeliveryConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default delivery settings? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetDeliveryConfig === 'function') {
+              window.CSOSuperStore.resetDeliveryConfig();
+              showToast("Delivery policy restored to defaults.", "info");
+              renderDeliveryWorkspace(root);
+            }
+          }
+        });
+
+        ['deliveryInputTitle', 'deliveryInputBadge', 'deliveryInputLastReviewed', 'deliveryInputCdn', 'deliveryInputNodes', 'deliveryInputSla', 'deliveryInputSupportEmail'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncDeliveryJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-012 (Shipping / Delivery)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 3m: Community Guidelines & Code of Conduct Studio (module-03-013)
+     */
+    function renderCommunityWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Community Guidelines (module-03-013)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getCommunityConfig() : {
+          meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: { title: "Community Guidelines & Forum Code of Conduct", badge: "Candidate Mutual Respect", lastReviewed: "2026-11-01" },
+          moderation: {
+            team: "Academic Community & Forum Moderation Council",
+            email: "community@csodisha.com",
+            enforcementLevel: "Zero Tolerance for Hate Speech & Exam Malpractice",
+            appealWindowDays: 14
+          },
+          rules: [
+            { id: "COMM-01", number: "1", title: "Constructive Academic Discussion", category: "Conduct", description: "Discussions, comments, and study room interactions must remain strictly focused on academic preparation, syllabus doubts, and civil peer mentoring.", active: true },
+            { id: "COMM-02", number: "2", title: "Zero Tolerance for Question Paper Leaks or Cheating", category: "Integrity", description: "Posting, requesting, or circulating alleged leaked question papers, examination malpractice materials, or unfair means will result in immediate permanent ban and referral to cyber authorities under the Odisha Public Examinations (Prevention of Unfair Means) Act.", active: true },
+            { id: "COMM-03", number: "3", title: "No Commercial Spam or Paid Promotion", category: "Non-Commercial", description: "Promoting paid coaching batches, private Telegram links, affiliate courses, or commercial products is strictly prohibited on all portal discussion forums.", active: true },
+            { id: "COMM-04", number: "4", title: "Respectful Communication & Non-Discrimination", category: "Respect", description: "Harassment, abusive language, regional discrimination, gender-based disparagement, or caste-related slurs are grounds for instant account termination.", active: true }
+          ],
+          reportingProcedure: "To report inappropriate forum comments, suspected unfair means, or commercial spam, click the Flag button or email community@csodisha.com with direct link and screenshot."
+        };
+
+        const doc = config.document || {};
+        const mod = config.moderation || {};
+        const rules = Array.isArray(config.rules) ? config.rules : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Community Standards &amp; Conduct Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-800/60">module-03-013</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Enforce candidate mutual respect, zero-tolerance exam integrity, and anti-spam community moderation.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="community-guidelines.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>Preview Live</span>
+                </a>
+                <button type="button" id="btnToggleCommunityJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportCommunityConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportCommunityConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetCommunityConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveCommunityConfig" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Document Metadata -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Document Metadata</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '2.0')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Document Title</label>
+                  <input type="text" id="commInputTitle" value="${escapeHtml(doc.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Community Badge</label>
+                  <input type="text" id="commInputBadge" value="${escapeHtml(doc.badge || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Last Reviewed Date</label>
+                  <input type="date" id="commInputLastReviewed" value="${escapeHtml(doc.lastReviewed || '2026-11-01')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Moderation Council & Enforcement Standards -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Community Moderation &amp; Enforcement Council</h3>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Council Name</label>
+                  <input type="text" id="commInputTeam" value="${escapeHtml(mod.team || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Moderation Email</label>
+                  <input type="email" id="commInputEmail" value="${escapeHtml(mod.email || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Appeal Window (Days)</label>
+                  <input type="number" id="commInputAppealDays" value="${mod.appealWindowDays || 14}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Enforcement Philosophy</label>
+                <input type="text" id="commInputEnforcement" value="${escapeHtml(mod.enforcementLevel || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+              </div>
+            </div>
+
+            <!-- Card 3: Code of Conduct Rules Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Candidate Code of Conduct Rules</h3>
+                </div>
+                <button type="button" id="btnAddCommunityRule" class="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-xs rounded border border-indigo-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Rule</span>
+                </button>
+              </div>
+
+              <div id="communityRulesContainer" class="space-y-3">
+                ${rules.map((ru, idx) => `
+                  <div class="community-rule-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-indigo-950/80 text-indigo-400 border border-indigo-800 text-xs font-bold rounded">§${ru.number || (idx + 1)}</span>
+                        <input type="text" class="rule-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-indigo-400" value="${escapeHtml(ru.id || '')}" placeholder="ID">
+                        <input type="text" class="rule-category-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(ru.category || 'Conduct')}" placeholder="Category">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                          <input type="checkbox" class="rule-active-toggle rounded bg-slate-900 border-slate-700 text-indigo-500" ${ru.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-rule text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Rule">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="rule-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(ru.title || '')}" placeholder="Rule Title">
+                    </div>
+                    <div>
+                      <textarea class="rule-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Rule Description">${escapeHtml(ru.description || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Card 4: Violation Reporting Protocol -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Violation Reporting Protocol</h3>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Reporting Instructions</label>
+                <textarea id="commInputReporting" rows="3" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition leading-relaxed">${escapeHtml(config.reportingProcedure || '')}</textarea>
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="communityJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_community_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatCommunityRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyCommunityRawJsonChanges" class="px-3 py-0.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaCommunityRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncCommunityJsonEditor = () => {
+          const currentConfig = harvestCommunityForm();
+          const jsonTextarea = document.getElementById('textareaCommunityRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestCommunityForm = () => {
+          const ruleEls = document.querySelectorAll('.community-rule-item');
+          const ruleList = [];
+          ruleEls.forEach((el, idx) => {
+            ruleList.push({
+              id: el.querySelector('.rule-id-input')?.value.trim() || '',
+              number: String(idx + 1),
+              category: el.querySelector('.rule-category-input')?.value.trim() || 'Conduct',
+              active: el.querySelector('.rule-active-toggle')?.checked ?? true,
+              title: el.querySelector('.rule-title-input')?.value.trim() || '',
+              description: el.querySelector('.rule-desc-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "2.0",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            document: {
+              title: document.getElementById('commInputTitle')?.value.trim() || '',
+              badge: document.getElementById('commInputBadge')?.value.trim() || '',
+              lastReviewed: document.getElementById('commInputLastReviewed')?.value.trim() || '2026-11-01'
+            },
+            moderation: {
+              team: document.getElementById('commInputTeam')?.value.trim() || '',
+              email: document.getElementById('commInputEmail')?.value.trim() || '',
+              enforcementLevel: document.getElementById('commInputEnforcement')?.value.trim() || '',
+              appealWindowDays: parseInt(document.getElementById('commInputAppealDays')?.value || '14', 10)
+            },
+            rules: ruleList,
+            reportingProcedure: document.getElementById('commInputReporting')?.value.trim() || ''
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleCommunityJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('communityJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncCommunityJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatCommunityRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCommunityRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyCommunityRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCommunityRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCommunityConfig === 'function') {
+                window.CSOSuperStore.saveCommunityConfig(parsed);
+                showToast("JSON applied and community guidelines saved!", "success");
+                renderCommunityWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddCommunityRule')?.addEventListener('click', () => {
+          const container = document.getElementById('communityRulesContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.community-rule-item').length + 1;
+          const newId = 'COMM-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "community-rule-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-indigo-950/80 text-indigo-400 border border-indigo-800 text-xs font-bold rounded">§${nextIdx}</span>
+                <input type="text" class="rule-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-indigo-400" value="${newId}" placeholder="ID">
+                <input type="text" class="rule-category-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Conduct" placeholder="Category">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                  <input type="checkbox" class="rule-active-toggle rounded bg-slate-900 border-slate-700 text-indigo-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-rule text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Rule">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="rule-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Rule Title">
+            </div>
+            <div>
+              <textarea class="rule-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Rule Description"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachCommunityItemListeners(div);
+          syncCommunityJsonEditor();
+        });
+
+        const attachCommunityItemListeners = (parent) => {
+          parent.querySelector('.btn-remove-rule')?.addEventListener('click', () => {
+            parent.remove();
+            syncCommunityJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', syncCommunityJsonEditor);
+          });
+          parent.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', syncCommunityJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.community-rule-item').forEach(attachCommunityItemListeners);
+
+        document.getElementById('btnSaveCommunityConfig')?.addEventListener('click', () => {
+          const newConfig = harvestCommunityForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCommunityConfig === 'function') {
+            window.CSOSuperStore.saveCommunityConfig(newConfig);
+            showToast("Community guidelines saved successfully!", "success");
+            syncCommunityJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportCommunityConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportCommunityManifest === 'function') {
+            window.CSOSuperStore.exportCommunityManifest();
+            showToast("Community manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportCommunityConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.community) parsed = parsed.community;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importCommunityConfig === 'function') {
+                window.CSOSuperStore.importCommunityConfig(JSON.stringify(parsed));
+                showToast("Community guidelines imported successfully!", "success");
+                renderCommunityWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetCommunityConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default community guidelines? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetCommunityConfig === 'function') {
+              window.CSOSuperStore.resetCommunityConfig();
+              showToast("Community guidelines restored to defaults.", "info");
+              renderCommunityWorkspace(root);
+            }
+          }
+        });
+
+        ['commInputTitle', 'commInputBadge', 'commInputLastReviewed', 'commInputTeam', 'commInputEmail', 'commInputAppealDays', 'commInputEnforcement', 'commInputReporting'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncCommunityJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-013 (Community Guidelines)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 

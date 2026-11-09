@@ -3751,6 +3751,280 @@
       return filename;
     },
 
+    
+    // 35. Refund & Cancellation Policy Engine (module-03-011)
+    getRefundConfig() {
+      const raw = localStorage.getItem("cso_refund_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_refund_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Refund & Cancellation Policy", badge: "100% Free Public Resource Guarantee", lastReviewed: "2026-11-01" },
+        provisions: [
+          { id: "REF-01", title: "Universal Free Access Guarantee", category: "Public Resource", body: "Common Sense Odisha provides syllabi, exam analyses, and educational resources completely free of charge. No payment gateway is integrated, and no fees are ever assessed.", active: true },
+          { id: "REF-02", title: "Third-Party Fraud Warning", category: "Advisory", body: "Candidates are cautioned against fraudulent third-party agents soliciting money under our brand name. We never request payments, bank details, or UPI transfers.", active: true },
+          { id: "REF-03", title: "Digital Materials Cancellation Terms", category: "Digital Services", body: "Because all digital preparatory materials and downloads are provided freely without commercial transaction, formal billing cancellations and refund requests are not applicable.", active: true }
+        ],
+        supportDesk: { email: "grievance@csodisha.com", note: "Report any fraudulent fee solicitations directly to our grievance desk." }
+      };
+      localStorage.setItem("cso_refund_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveRefundConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid refund configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_refund_config", JSON.stringify(config));
+      this.logAudit("REFUND_CONFIG_UPDATED", "REFUND_POLICY", "Refund policy configuration saved.");
+      return config;
+    },
+
+    importRefundConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveRefundConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import refund policy: " + err.message);
+      }
+    },
+
+    resetRefundConfig() {
+      const initial = {
+        meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Refund & Cancellation Policy", badge: "100% Free Public Resource Guarantee", lastReviewed: "2026-11-01" },
+        provisions: [
+          { id: "REF-01", title: "Universal Free Access Guarantee", category: "Public Resource", body: "Common Sense Odisha provides syllabi, exam analyses, and educational resources completely free of charge. No payment gateway is integrated, and no fees are ever assessed.", active: true },
+          { id: "REF-02", title: "Third-Party Fraud Warning", category: "Advisory", body: "Candidates are cautioned against fraudulent third-party agents soliciting money under our brand name. We never request payments, bank details, or UPI transfers.", active: true },
+          { id: "REF-03", title: "Digital Materials Cancellation Terms", category: "Digital Services", body: "Because all digital preparatory materials and downloads are provided freely without commercial transaction, formal billing cancellations and refund requests are not applicable.", active: true }
+        ],
+        supportDesk: { email: "grievance@csodisha.com", note: "Report any fraudulent fee solicitations directly to our grievance desk." }
+      };
+      localStorage.setItem("cso_refund_config", JSON.stringify(initial));
+      this.logAudit("REFUND_CONFIG_RESET", "REFUND_POLICY", "Refund configuration restored to defaults.");
+      return initial;
+    },
+
+    exportRefundManifest() {
+      const config = this.getRefundConfig();
+      const timestamp = Date.now();
+      const filename = "cso-refund-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        refund: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("REFUND_MANIFEST_EXPORTED", "DATA_EXPORT", "Refund manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 36. Shipping & Digital Delivery Policy Engine (module-03-012)
+    getDeliveryConfig() {
+      const raw = localStorage.getItem("cso_delivery_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_delivery_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Shipping & Digital Delivery Policy", badge: "Instant Edge Distribution", lastReviewed: "2026-11-01" },
+        modes: [
+          { id: "DEL-01", title: "Immediate Digital Access", format: "Direct Web / PDF Download", speed: "Instant (< 2 Seconds)", description: "Curated syllabus guides, previous question compilations, and model tests are delivered instantaneously via high-speed Cloudflare CDN edge nodes across Odisha.", active: true },
+          { id: "DEL-02", title: "Zero Physical Shipping Notice", format: "Paperless Digital", speed: "N/A", description: "Common Sense Odisha does not print, warehouse, or physically ship paper textbooks or hardcopy notes via postal services. All instructional assets remain 100% paperless.", active: true },
+          { id: "DEL-03", title: "Offline & Low-Bandwidth Caching", format: "Service Worker PWA", speed: "Immediate", description: "Aspirants in interior and rural districts can access cached study notes and previous questions even with intermittent 2G/3G connectivity.", active: true }
+        ],
+        infrastructure: {
+          cdnProvider: "Cloudflare Global Anycast Edge Network",
+          odishaNodes: "Bhubaneswar Edge POP & Kolkata Regional Data Center",
+          downtimeSla: "99.9% Uptime Commitment",
+          supportEmail: "tech@csodisha.com"
+        }
+      };
+      localStorage.setItem("cso_delivery_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveDeliveryConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid delivery configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_delivery_config", JSON.stringify(config));
+      this.logAudit("DELIVERY_CONFIG_UPDATED", "DELIVERY_POLICY", "Delivery policy configuration saved.");
+      return config;
+    },
+
+    importDeliveryConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveDeliveryConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import delivery policy: " + err.message);
+      }
+    },
+
+    resetDeliveryConfig() {
+      const initial = {
+        meta: { version: "1.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Shipping & Digital Delivery Policy", badge: "Instant Edge Distribution", lastReviewed: "2026-11-01" },
+        modes: [
+          { id: "DEL-01", title: "Immediate Digital Access", format: "Direct Web / PDF Download", speed: "Instant (< 2 Seconds)", description: "Curated syllabus guides, previous question compilations, and model tests are delivered instantaneously via high-speed Cloudflare CDN edge nodes across Odisha.", active: true },
+          { id: "DEL-02", title: "Zero Physical Shipping Notice", format: "Paperless Digital", speed: "N/A", description: "Common Sense Odisha does not print, warehouse, or physically ship paper textbooks or hardcopy notes via postal services. All instructional assets remain 100% paperless.", active: true },
+          { id: "DEL-03", title: "Offline & Low-Bandwidth Caching", format: "Service Worker PWA", speed: "Immediate", description: "Aspirants in interior and rural districts can access cached study notes and previous questions even with intermittent 2G/3G connectivity.", active: true }
+        ],
+        infrastructure: {
+          cdnProvider: "Cloudflare Global Anycast Edge Network",
+          odishaNodes: "Bhubaneswar Edge POP & Kolkata Regional Data Center",
+          downtimeSla: "99.9% Uptime Commitment",
+          supportEmail: "tech@csodisha.com"
+        }
+      };
+      localStorage.setItem("cso_delivery_config", JSON.stringify(initial));
+      this.logAudit("DELIVERY_CONFIG_RESET", "DELIVERY_POLICY", "Delivery configuration restored to defaults.");
+      return initial;
+    },
+
+    exportDeliveryManifest() {
+      const config = this.getDeliveryConfig();
+      const timestamp = Date.now();
+      const filename = "cso-delivery-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        delivery: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("DELIVERY_MANIFEST_EXPORTED", "DATA_EXPORT", "Delivery manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 37. Community Guidelines & Code of Conduct Engine (module-03-013)
+    getCommunityConfig() {
+      const raw = localStorage.getItem("cso_community_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_community_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Community Guidelines & Forum Code of Conduct", badge: "Candidate Mutual Respect", lastReviewed: "2026-11-01" },
+        moderation: {
+          team: "Academic Community & Forum Moderation Council",
+          email: "community@csodisha.com",
+          enforcementLevel: "Zero Tolerance for Hate Speech & Exam Malpractice",
+          appealWindowDays: 14
+        },
+        rules: [
+          { id: "COMM-01", number: "1", title: "Constructive Academic Discussion", category: "Conduct", description: "Discussions, comments, and study room interactions must remain strictly focused on academic preparation, syllabus doubts, and civil peer mentoring.", active: true },
+          { id: "COMM-02", number: "2", title: "Zero Tolerance for Question Paper Leaks or Cheating", category: "Integrity", description: "Posting, requesting, or circulating alleged leaked question papers, examination malpractice materials, or unfair means will result in immediate permanent ban and referral to cyber authorities under the Odisha Public Examinations (Prevention of Unfair Means) Act.", active: true },
+          { id: "COMM-03", number: "3", title: "No Commercial Spam or Paid Promotion", category: "Non-Commercial", description: "Promoting paid coaching batches, private Telegram links, affiliate courses, or commercial products is strictly prohibited on all portal discussion forums.", active: true },
+          { id: "COMM-04", number: "4", title: "Respectful Communication & Non-Discrimination", category: "Respect", description: "Harassment, abusive language, regional discrimination, gender-based disparagement, or caste-related slurs are grounds for instant account termination.", active: true }
+        ],
+        reportingProcedure: "To report inappropriate forum comments, suspected unfair means, or commercial spam, click the Flag button or email community@csodisha.com with direct link and screenshot."
+      };
+      localStorage.setItem("cso_community_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveCommunityConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid community configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_community_config", JSON.stringify(config));
+      this.logAudit("COMMUNITY_CONFIG_UPDATED", "COMMUNITY_GUIDELINES", "Community guidelines configuration saved.");
+      return config;
+    },
+
+    importCommunityConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveCommunityConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import community guidelines: " + err.message);
+      }
+    },
+
+    resetCommunityConfig() {
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Community Guidelines & Forum Code of Conduct", badge: "Candidate Mutual Respect", lastReviewed: "2026-11-01" },
+        moderation: {
+          team: "Academic Community & Forum Moderation Council",
+          email: "community@csodisha.com",
+          enforcementLevel: "Zero Tolerance for Hate Speech & Exam Malpractice",
+          appealWindowDays: 14
+        },
+        rules: [
+          { id: "COMM-01", number: "1", title: "Constructive Academic Discussion", category: "Conduct", description: "Discussions, comments, and study room interactions must remain strictly focused on academic preparation, syllabus doubts, and civil peer mentoring.", active: true },
+          { id: "COMM-02", number: "2", title: "Zero Tolerance for Question Paper Leaks or Cheating", category: "Integrity", description: "Posting, requesting, or circulating alleged leaked question papers, examination malpractice materials, or unfair means will result in immediate permanent ban and referral to cyber authorities under the Odisha Public Examinations (Prevention of Unfair Means) Act.", active: true },
+          { id: "COMM-03", number: "3", title: "No Commercial Spam or Paid Promotion", category: "Non-Commercial", description: "Promoting paid coaching batches, private Telegram links, affiliate courses, or commercial products is strictly prohibited on all portal discussion forums.", active: true },
+          { id: "COMM-04", number: "4", title: "Respectful Communication & Non-Discrimination", category: "Respect", description: "Harassment, abusive language, regional discrimination, gender-based disparagement, or caste-related slurs are grounds for instant account termination.", active: true }
+        ],
+        reportingProcedure: "To report inappropriate forum comments, suspected unfair means, or commercial spam, click the Flag button or email community@csodisha.com with direct link and screenshot."
+      };
+      localStorage.setItem("cso_community_config", JSON.stringify(initial));
+      this.logAudit("COMMUNITY_CONFIG_RESET", "COMMUNITY_GUIDELINES", "Community guidelines restored to defaults.");
+      return initial;
+    },
+
+    exportCommunityManifest() {
+      const config = this.getCommunityConfig();
+      const timestamp = Date.now();
+      const filename = "cso-community-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        community: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("COMMUNITY_MANIFEST_EXPORTED", "DATA_EXPORT", "Community manifest exported (" + filename + ").");
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
@@ -4065,6 +4339,9 @@
           editorial: this.getEditorialConfig(),
           corrections: this.getCorrectionsConfig(),
           accessibility: this.getAccessibilityConfig(),
+          refund: this.getRefundConfig(),
+          delivery: this.getDeliveryConfig(),
+          community: this.getCommunityConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
