@@ -285,6 +285,8 @@ async function loadMasterNavigation() {
         renderQuickActionsWorkspace();
       } else if (moduleId === 'module-01-004') {
         renderRecentActivityWorkspace();
+      } else if (moduleId === 'module-01-005') {
+        renderAdministrativeNotificationsWorkspace();
       } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -306,6 +308,266 @@ async function loadMasterNavigation() {
       } else {
         renderStandardModuleInspector(folderId, moduleId);
       }
+    }
+
+    /**
+     * VIEW 1e: Administrative Notifications (module-01-005)
+     */
+    function renderAdministrativeNotificationsWorkspace() {
+      let activeFilter = 'ALL';
+
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnCreateNoticeAction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          + Create Notice
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <!-- Notifications Command Bar -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Executive Administrative Notice Hub
+                <span class="text-xs font-mono font-normal text-slate-400">(Internal Operations)</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">High-priority operational warnings, student inquiry triage alerts, and security telemetry triggers.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnMarkAllRead" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-brand-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Mark All as Read
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-2 pt-3 border-t border-brand-border/60 overflow-x-auto text-xs font-semibold">
+            <button class="notif-tab-btn px-3 py-1.5 rounded-lg bg-brand-emerald text-white transition" data-filter="ALL">All Notices</button>
+            <button class="notif-tab-btn px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-filter="UNREAD">Unread</button>
+            <button class="notif-tab-btn px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-filter="SYSTEM">System</button>
+            <button class="notif-tab-btn px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-filter="SECURITY">Security</button>
+            <button class="notif-tab-btn px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition" data-filter="STUDENT">Student Desk</button>
+          </div>
+        </div>
+
+        <!-- Notifications Stream Container -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-white text-sm">Active Administrative Notices</h3>
+            <span id="notifCountBadge" class="text-xs font-mono text-slate-400">Loading notices...</span>
+          </div>
+
+          <div id="notifListContainer" class="space-y-3 font-mono text-xs">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      `;
+
+      function getPriorityConfig(priority) {
+        const p = (priority || 'MEDIUM').toUpperCase();
+        if (p === 'URGENT') return { bg: 'bg-red-500/15 text-brand-crimson border-brand-crimson/30', label: 'URGENT' };
+        if (p === 'HIGH') return { bg: 'bg-amber-500/15 text-amber-300 border-amber-500/30', label: 'HIGH' };
+        if (p === 'LOW') return { bg: 'bg-slate-700/40 text-slate-400 border-slate-600', label: 'LOW' };
+        return { bg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30', label: 'MEDIUM' };
+      }
+
+      function formatTimeAgo(timestamp) {
+        if (!timestamp) return 'Just now';
+        const diffMs = Date.now() - timestamp;
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+        const diffDays = Math.floor(diffHours / 24);
+        return `${diffDays}d ago`;
+      }
+
+      function refreshNotifsView() {
+        const container = document.getElementById('notifListContainer');
+        const badge = document.getElementById('notifCountBadge');
+        if (!container) return;
+
+        let items = [];
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.getNotifications === 'function') {
+          items = window.CSOSuperStore.getNotifications(activeFilter);
+        }
+
+        if (badge) {
+          badge.textContent = `Showing ${items.length} notice${items.length === 1 ? '' : 's'}`;
+        }
+
+        if (!items.length) {
+          container.innerHTML = `
+            <div class="py-12 text-center text-slate-400 font-sans">
+              <svg class="w-8 h-8 text-slate-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <p class="text-sm font-semibold text-slate-300">No notifications found in this category.</p>
+              <p class="text-xs text-slate-500 mt-1">Select another filter or create a new notice above.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = items.map(n => {
+          const prio = getPriorityConfig(n.priority);
+          const timeAgo = formatTimeAgo(n.createdAt);
+          const isUnread = !n.read;
+
+          return `
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-4 rounded-xl bg-[#081220] border ${isUnread ? 'border-brand-emerald/40 shadow-sm shadow-brand-emerald/5' : 'border-brand-border/60'} hover:border-brand-border transition">
+              <div class="flex items-start gap-3 min-w-0 flex-1">
+                <span class="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${isUnread ? 'bg-brand-emerald animate-ping' : 'bg-slate-600'}"></span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold border tracking-wider ${prio.bg}">
+                      ${prio.label}
+                    </span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                      ${n.category || 'SYSTEM'}
+                    </span>
+                    <span class="font-mono text-cyan-400 font-bold text-[11px]">${n.id}</span>
+                  </div>
+                  <h4 class="text-sm font-bold text-white font-sans mb-1">${n.title}</h4>
+                  <p class="text-xs text-slate-300 font-sans leading-relaxed">${n.message}</p>
+                </div>
+              </div>
+
+              <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-brand-border/40">
+                <span class="text-[10px] text-slate-400 font-mono">${timeAgo}</span>
+                <div class="flex items-center gap-1.5">
+                  <button class="btn-toggle-read px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-sans font-medium text-[11px] transition" data-id="${n.id}" data-read="${n.read}">
+                    ${isUnread ? 'Mark Read' : 'Mark Unread'}
+                  </button>
+                  <button class="btn-delete-notif p-1.5 rounded hover:bg-red-500/10 text-slate-500 hover:text-brand-crimson transition" data-id="${n.id}" title="Delete notice">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Wire individual card buttons
+        container.querySelectorAll('.btn-toggle-read').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const currentRead = e.currentTarget.getAttribute('data-read') === 'true';
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.markNotificationRead === 'function') {
+              window.CSOSuperStore.markNotificationRead(id, !currentRead);
+            }
+            refreshNotifsView();
+          });
+        });
+
+        container.querySelectorAll('.btn-delete-notif').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.deleteNotification === 'function') {
+              window.CSOSuperStore.deleteNotification(id);
+            }
+            showToast(`Notice ${id} deleted`, "info");
+            refreshNotifsView();
+          });
+        });
+      }
+
+      // Filter tabs event listeners
+      document.querySelectorAll('.notif-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          activeFilter = e.currentTarget.getAttribute('data-filter') || 'ALL';
+          document.querySelectorAll('.notif-tab-btn').forEach(b => {
+            b.className = "notif-tab-btn px-3 py-1.5 rounded-lg bg-[#081220] hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-brand-border transition";
+          });
+          e.currentTarget.className = "notif-tab-btn px-3 py-1.5 rounded-lg bg-brand-emerald text-white transition";
+          refreshNotifsView();
+        });
+      });
+
+      // Mark all read button
+      const btnMarkAll = document.getElementById('btnMarkAllRead');
+      if (btnMarkAll) {
+        btnMarkAll.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.markAllNotificationsRead === 'function') {
+            window.CSOSuperStore.markAllNotificationsRead();
+          }
+          showToast("All administrative notices marked as read", "success");
+          refreshNotifsView();
+        });
+      }
+
+      // Create Notice modal
+      const btnCreate = document.getElementById('btnCreateNoticeAction');
+      if (btnCreate) {
+        btnCreate.addEventListener('click', () => {
+          openModal("Create New Administrative Notice", `
+            <div class="space-y-3 font-sans">
+              <div>
+                <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Notice Title</label>
+                <input type="text" id="inputNoticeTitle" placeholder="e.g. Scheduled D1 Maintenance Window" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:ring-1 focus:ring-brand-emerald" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Category</label>
+                  <select id="selectNoticeCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs focus:ring-1 focus:ring-brand-emerald">
+                    <option value="SYSTEM">System Alert</option>
+                    <option value="SECURITY">Security / WAF</option>
+                    <option value="STUDENT">Student Desk</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Priority</label>
+                  <select id="selectNoticePriority" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs focus:ring-1 focus:ring-brand-emerald">
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM" selected>Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Message Body</label>
+                <textarea id="inputNoticeMessage" rows="3" placeholder="Provide full details and instructions for administrators..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-brand-emerald"></textarea>
+              </div>
+            </div>
+          `, `
+            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button id="btnSubmitNoticeModal" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover transition">Publish Notice</button>
+          `);
+
+          document.getElementById('btnSubmitNoticeModal')?.addEventListener('click', () => {
+            const titleInput = document.getElementById('inputNoticeTitle');
+            const catSelect = document.getElementById('selectNoticeCategory');
+            const prioSelect = document.getElementById('selectNoticePriority');
+            const msgInput = document.getElementById('inputNoticeMessage');
+
+            const title = (titleInput ? titleInput.value : '').trim();
+            const message = (msgInput ? msgInput.value : '').trim();
+
+            if (!title || !message) {
+              showToast("Please provide both notice title and message body", "warning");
+              return;
+            }
+
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.createNotification === 'function') {
+              window.CSOSuperStore.createNotification({
+                title,
+                category: catSelect ? catSelect.value : 'SYSTEM',
+                priority: prioSelect ? prioSelect.value : 'MEDIUM',
+                message
+              });
+            }
+
+            closeModal();
+            showToast("New administrative notice registered successfully", "success");
+            refreshNotifsView();
+          });
+        });
+      }
+
+      // Initial populate
+      refreshNotifsView();
     }
 
     /**

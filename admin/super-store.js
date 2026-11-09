@@ -714,12 +714,114 @@
       return getOrSet(KEYS.D1, SEED_D1);
     },
 
-    // 8. Notifications & Broadcasts
-    getNotifications() {
-      return getOrSet(KEYS.NOTIFICATIONS, SEED_NOTIFICATIONS);
+    // 8. Notifications & Broadcasts (module-01-005)
+    getNotifications(filter = 'ALL') {
+      let list = null;
+      try {
+        const raw = localStorage.getItem('cso_admin_notifications') || localStorage.getItem(KEYS.NOTIFICATIONS);
+        if (raw) list = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!list || !Array.isArray(list) || list.length === 0) {
+        list = [
+          {
+            id: 'NOTIF-001',
+            title: 'Student Inquiries Pending Review',
+            category: 'STUDENT',
+            priority: 'HIGH',
+            message: 'New admissions and syllabus queries logged via contact.html require review.',
+            read: false,
+            createdAt: Date.now() - 3600000
+          },
+          {
+            id: 'NOTIF-002',
+            title: 'Edge Deployment Active',
+            category: 'SYSTEM',
+            priority: 'LOW',
+            message: 'Cloudflare Pages deployment verified at Singapore (SIN) edge.',
+            read: false,
+            createdAt: Date.now() - 7200000
+          },
+          {
+            id: 'NOTIF-003',
+            title: 'SHA-256 Auth Enforcement Active',
+            category: 'SECURITY',
+            priority: 'MEDIUM',
+            message: 'Zero-trust credential hashing and 2-hour sliding sessions are enabled.',
+            read: true,
+            createdAt: Date.now() - 86400000
+          }
+        ];
+        try {
+          localStorage.setItem('cso_admin_notifications', JSON.stringify(list));
+          localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify(list));
+        } catch (_) {}
+      }
+
+      // Filter options: ALL, UNREAD, READ, SYSTEM, SECURITY, STUDENT
+      const f = (filter || 'ALL').toUpperCase();
+      let filtered = list;
+      if (f === 'UNREAD') {
+        filtered = list.filter(n => !n.read);
+      } else if (f === 'READ') {
+        filtered = list.filter(n => n.read);
+      } else if (f !== 'ALL') {
+        filtered = list.filter(n => (n.category || '').toUpperCase() === f);
+      }
+
+      return filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     },
+
     saveNotifications(notifs) {
+      save('cso_admin_notifications', notifs);
       save(KEYS.NOTIFICATIONS, notifs);
+    },
+
+    markNotificationRead(id, isRead = true) {
+      let list = this.getNotifications('ALL');
+      const item = list.find(n => n.id === id);
+      if (item) {
+        item.read = isRead;
+        this.saveNotifications(list);
+        this.logAudit('NOTIFICATION_STATUS_UPDATED', 'NOTIFICATIONS', `Notification ${id} marked as ${isRead ? 'read' : 'unread'}.`);
+      }
+      return item;
+    },
+
+    markAllNotificationsRead() {
+      let list = this.getNotifications('ALL');
+      list.forEach(n => n.read = true);
+      this.saveNotifications(list);
+      this.logAudit('ALL_NOTIFICATIONS_READ', 'NOTIFICATIONS', 'All administrative notifications marked as read.');
+      return list;
+    },
+
+    deleteNotification(id) {
+      let list = this.getNotifications('ALL');
+      const prevLength = list.length;
+      list = list.filter(n => n.id !== id);
+      if (list.length !== prevLength) {
+        this.saveNotifications(list);
+        this.logAudit('NOTIFICATION_DELETED', 'NOTIFICATIONS', `Notification ${id} removed from system.`);
+      }
+      return list;
+    },
+
+    createNotification(notifData) {
+      let list = this.getNotifications('ALL');
+      const newNotif = {
+        id: 'NOTIF-' + Date.now().toString().slice(-4),
+        title: (notifData.title || 'Administrative Notice').trim(),
+        category: (notifData.category || 'SYSTEM').toUpperCase(),
+        priority: (notifData.priority || 'MEDIUM').toUpperCase(),
+        message: (notifData.message || '').trim(),
+        read: false,
+        createdAt: Date.now()
+      };
+      list.unshift(newNotif);
+      this.saveNotifications(list);
+      this.logAudit('NOTIFICATION_CREATED', 'NOTIFICATIONS', `New administrative alert created: "${newNotif.title}" [Priority: ${newNotif.priority}].`);
+      return newNotif;
     },
     getActiveBroadcast() {
       try {
