@@ -51,14 +51,34 @@ async function loadMasterNavigation() {
         { id: "INQ-440", sender: "Manoj Kumar Samal", email: "samal.manoj@gmail.com", phone: "+91 70081 29482", district: "Kendrapara", subject: "Medhabruti Portal OTP not coming", time: "48m ago", status: "In Progress" },
         { id: "INQ-439", sender: "Alok Tripathy", email: "tripathy.alok@gmail.com", phone: "+91 98610 55812", district: "Puri", subject: "Correction in OSSC Admit Card Name", time: "3h ago", status: "Resolved" }
       ],
-      broadcast: {
-        headline: "OSSC CGL 2026 Preliminary Admit Card Download Link Live",
-        context: "Candidates can now access direct hall ticket download links. Verification guidelines updated.",
-        severity: "emerald",
-        ctaText: "Download Admit Card",
-        ctaUrl: "/resources.html#ossc-cgl",
-        active: true
-      }
+      broadcast: (() => {
+        try {
+          const raw = localStorage.getItem('cso_active_announcement');
+          if (raw) {
+            const data = JSON.parse(raw);
+            if (data && typeof data === 'object') {
+              return {
+                headline: data.headline || data.text || "OSSC CGL 2026 Preliminary Admit Card Download Link Live",
+                context: data.context || "Candidates can now access direct hall ticket download links. Verification guidelines updated.",
+                severity: data.severity || "emerald",
+                ctaText: data.ctaText || "Download Admit Card",
+                ctaUrl: data.ctaUrl || data.url || data.link || "/resources.html#ossc-cgl",
+                active: data.active !== undefined ? !!data.active : (data.isActive !== undefined ? !!data.isActive : true),
+                updatedAt: data.updatedAt || Date.now()
+              };
+            }
+          }
+        } catch (_) {}
+        return {
+          headline: "OSSC CGL 2026 Preliminary Admit Card Download Link Live",
+          context: "Candidates can now access direct hall ticket download links. Verification guidelines updated.",
+          severity: "emerald",
+          ctaText: "Download Admit Card",
+          ctaUrl: "/resources.html#ossc-cgl",
+          active: true,
+          updatedAt: Date.now()
+        };
+      })()
     };
 
     /**
@@ -410,9 +430,9 @@ async function loadMasterNavigation() {
         <div class="p-5 rounded-xl bg-brand-card border border-brand-border shadow-lg">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-brand-border">
             <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full ${CSOState.broadcast.active ? 'bg-brand-emerald animate-ping' : 'bg-slate-600'}"></span>
+              <span id="broadcastStatusDot" class="w-2.5 h-2.5 rounded-full ${CSOState.broadcast.active ? 'bg-brand-emerald animate-ping' : 'bg-slate-600'}"></span>
               <h3 class="font-bold text-white text-sm">Homepage Live Broadcast Banner</h3>
-              <span class="text-[11px] font-mono px-2 py-0.5 rounded ${CSOState.broadcast.active ? 'bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40' : 'bg-slate-800 text-slate-400'}">${CSOState.broadcast.active ? 'STATUS: LIVE' : 'STATUS: INACTIVE'}</span>
+              <span id="broadcastStatusPill" class="text-[11px] font-mono px-2 py-0.5 rounded ${CSOState.broadcast.active ? 'bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40' : 'bg-slate-800 text-slate-400'}">${CSOState.broadcast.active ? 'STATUS: LIVE' : 'STATUS: INACTIVE'}</span>
             </div>
             <button id="btnToggleBroadcast" class="px-3 py-1.5 text-xs font-bold rounded-lg ${CSOState.broadcast.active ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-brand-emerald hover:bg-brand-emeraldHover text-white'} transition">
               ${CSOState.broadcast.active ? 'Take Down Live Banner' : 'Publish Banner'}
@@ -514,22 +534,118 @@ async function loadMasterNavigation() {
       const prevHead = document.getElementById('previewHeadline');
       const prevCtx = document.getElementById('previewContext');
 
-      inHead.addEventListener('input', () => prevHead.textContent = inHead.value);
-      inCtx.addEventListener('input', () => prevCtx.textContent = inCtx.value);
+      if (inHead && prevHead) inHead.addEventListener('input', () => prevHead.textContent = inHead.value);
+      if (inCtx && prevCtx) inCtx.addEventListener('input', () => prevCtx.textContent = inCtx.value);
 
-      btnToggle.addEventListener('click', () => {
-        CSOState.broadcast.active = !CSOState.broadcast.active;
-        showToast(CSOState.broadcast.active ? "Homepage broadcast banner is now LIVE" : "Homepage broadcast banner taken down", CSOState.broadcast.active ? "success" : "warning");
-        renderOverviewWorkspace();
-      });
+      if (btnSave) {
+        btnSave.addEventListener('click', () => {
+          const headline = inHead ? inHead.value.trim() : CSOState.broadcast.headline;
+          const context = inCtx ? inCtx.value.trim() : CSOState.broadcast.context;
+          const ctaText = inCta ? inCta.value.trim() : CSOState.broadcast.ctaText;
+          const ctaUrl = inUrl ? inUrl.value.trim() : CSOState.broadcast.ctaUrl;
 
-      btnSave.addEventListener('click', () => {
-        CSOState.broadcast.headline = inHead.value;
-        CSOState.broadcast.context = inCtx.value;
-        CSOState.broadcast.ctaText = inCta.value;
-        CSOState.broadcast.ctaUrl = inUrl.value;
-        showToast("Broadcast content saved successfully", "success");
-      });
+          const broadcast = {
+            headline,
+            context,
+            ctaText,
+            ctaUrl,
+            severity: "emerald",
+            active: true,
+            updatedAt: Date.now()
+          };
+
+          CSOState.broadcast = broadcast;
+          try {
+            localStorage.setItem('cso_active_announcement', JSON.stringify(broadcast));
+          } catch (_) {}
+
+          // Audit logging
+          try {
+            const raw = localStorage.getItem('cso_super_audit');
+            const logs = raw ? JSON.parse(raw) : [];
+            logs.unshift({
+              id: 'AUD-' + Math.floor(1000 + Math.random() * 9000),
+              timestamp: new Date().toISOString(),
+              actor: 'admin@csodisha.com',
+              eventType: 'BROADCAST_UPDATED',
+              target: 'HOMEPAGE_BROADCAST',
+              ip: '103.21.124.9',
+              details: `Broadcast banner updated: "${headline}" [Active: true]`
+            });
+            if (logs.length > 200) logs.pop();
+            localStorage.setItem('cso_super_audit', JSON.stringify(logs));
+          } catch (_) {}
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.logAudit === 'function') {
+            try {
+              window.CSOSuperStore.logAudit('BROADCAST_UPDATED', 'HOMEPAGE_BROADCAST', `Broadcast banner updated: "${headline}" [Active: true]`);
+            } catch (_) {}
+          }
+
+          showToast("Broadcast banner content saved and published to homepage", "success");
+          renderOverviewWorkspace();
+        });
+      }
+
+      if (btnToggle) {
+        btnToggle.addEventListener('click', () => {
+          CSOState.broadcast.active = !CSOState.broadcast.active;
+          CSOState.broadcast.updatedAt = Date.now();
+
+          const broadcast = {
+            headline: inHead ? inHead.value.trim() : CSOState.broadcast.headline,
+            context: inCtx ? inCtx.value.trim() : CSOState.broadcast.context,
+            ctaText: inCta ? inCta.value.trim() : CSOState.broadcast.ctaText,
+            ctaUrl: inUrl ? inUrl.value.trim() : CSOState.broadcast.ctaUrl,
+            severity: "emerald",
+            active: CSOState.broadcast.active,
+            updatedAt: CSOState.broadcast.updatedAt
+          };
+
+          CSOState.broadcast = broadcast;
+          try {
+            localStorage.setItem('cso_active_announcement', JSON.stringify(broadcast));
+          } catch (_) {}
+
+          // Update button text and status pill directly
+          const pill = document.getElementById('broadcastStatusPill');
+          const dot = document.getElementById('broadcastStatusDot');
+          if (pill) {
+            pill.className = `text-[11px] font-mono px-2 py-0.5 rounded ${broadcast.active ? 'bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40' : 'bg-slate-800 text-slate-400'}`;
+            pill.textContent = broadcast.active ? 'STATUS: LIVE' : 'STATUS: INACTIVE';
+          }
+          if (dot) {
+            dot.className = `w-2.5 h-2.5 rounded-full ${broadcast.active ? 'bg-brand-emerald animate-ping' : 'bg-slate-600'}`;
+          }
+          btnToggle.className = `px-3 py-1.5 text-xs font-bold rounded-lg ${broadcast.active ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-brand-emerald hover:bg-brand-emeraldHover text-white'} transition`;
+          btnToggle.textContent = broadcast.active ? 'Take Down Live Banner' : 'Publish Banner';
+
+          // Audit logging
+          try {
+            const raw = localStorage.getItem('cso_super_audit');
+            const logs = raw ? JSON.parse(raw) : [];
+            logs.unshift({
+              id: 'AUD-' + Math.floor(1000 + Math.random() * 9000),
+              timestamp: new Date().toISOString(),
+              actor: 'admin@csodisha.com',
+              eventType: 'BROADCAST_STATUS_TOGGLED',
+              target: 'HOMEPAGE_BROADCAST',
+              ip: '103.21.124.9',
+              details: `Broadcast banner status toggled: ${broadcast.active ? 'LIVE' : 'INACTIVE'}`
+            });
+            if (logs.length > 200) logs.pop();
+            localStorage.setItem('cso_super_audit', JSON.stringify(logs));
+          } catch (_) {}
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.logAudit === 'function') {
+            try {
+              window.CSOSuperStore.logAudit('BROADCAST_STATUS_TOGGLED', 'HOMEPAGE_BROADCAST', `Broadcast banner status toggled: ${broadcast.active ? 'LIVE' : 'INACTIVE'}`);
+            } catch (_) {}
+          }
+
+          showToast(broadcast.active ? "Homepage broadcast banner is now LIVE" : "Homepage broadcast banner taken down", broadcast.active ? "success" : "warning");
+        });
+      }
 
       document.getElementById('btnExportOverview').addEventListener('click', () => {
         downloadSnapshotFile({
