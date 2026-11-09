@@ -11986,6 +11986,292 @@
       this.logAudit("HOMEPAGE_LAYOUT_EXPORTED", "DATA_EXPORT", `Homepage layout manifest exported (${filename}).`);
       return filename;
     },
+    // ==========================================
+    // FOLDER 11 (WEBSITE APPEARANCE STUDIO) - BATCH 2
+    // ==========================================
+
+    // --- MODULE 11-008: Banners & Sliders ---
+    getBannersSlidersConfig() {
+      return _hydrateConfig("cso_banners_sliders_config", "slides", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { autoplay: true, slideDurationMs: 6000, transitionEffect: "fade" },
+        items: [
+          { id: "SLD-01", title: "OPSC OAS 2026 Comprehensive Strategy Vault", subtitle: "Complete Syllabus, Gazette Digests & 30-District Aspirant Forum", ctaLabel: "Explore Resources", ctaUrl: "/jobs-careers/?filter=opsc", imageUrl: "/assets/images/banner-oas-2026.webp", priority: 1, active: true },
+          { id: "SLD-02", title: "Free Statewide Mock Test Series 2026", subtitle: "Real-time statewide candidate rank benchmarking and detailed solutions", ctaLabel: "Attempt Mock Free", ctaUrl: "/study-library/mock-tests", imageUrl: "/assets/images/banner-mock-series.webp", priority: 2, active: true },
+          { id: "SLD-03", title: "Odisha State Scholarship Portal (SSP) Guide", subtitle: "Eligibility guidelines, document checklist & application tracker", ctaLabel: "Check Eligibility", ctaUrl: "/schemes-benefits/?scheme=medhabruti", imageUrl: "/assets/images/banner-scholarship.webp", priority: 3, active: true }
+        ]
+      }));
+    },
+
+    saveBannersSlidersConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.slides || cfg.items || [];
+      cfg.items = list;
+      cfg.slides = list;
+      localStorage.setItem("cso_banners_sliders_config", JSON.stringify(cfg));
+      this.logAudit("BANNERS_SLIDERS_UPDATED", "APPEARANCE", `Banners & sliders updated (${list.length} slides).`);
+      return true;
+    },
+
+    resetBannersSlidersConfig() {
+      localStorage.removeItem("cso_banners_sliders_config");
+      const fresh = this.getBannersSlidersConfig();
+      this.logAudit("BANNERS_SLIDERS_RESET", "APPEARANCE", "Banners & sliders reset to defaults.");
+      return fresh;
+    },
+
+    exportBannersSlidersManifest() {
+      const config = this.getBannersSlidersConfig();
+      const filename = "banners_sliders_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BANNERS_SLIDERS_EXPORTED", "DATA_EXPORT", `Banners & sliders manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-009: Buttons & Cards ---
+    getButtonsCardsConfig() {
+      return _hydrateConfig("cso_buttons_cards_config", "uiComponents", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { defaultBorderRadius: "rounded-xl", activeShadowElevation: "shadow-lg shadow-black/40", buttonPadding: "px-4 py-2.5" },
+        items: [
+          { id: "UI-BTN-01", componentRole: "Primary Action Button", borderRadius: "12px", borderStyle: "border border-emerald-500/30", backgroundGradient: "from-emerald-600 to-emerald-700", hoverEffect: "hover:scale-[1.02] hover:shadow-emerald-500/20", active: true },
+          { id: "UI-BTN-02", componentRole: "Secondary Ghost Button", borderRadius: "12px", borderStyle: "border border-slate-700", backgroundGradient: "bg-slate-900/60 hover:bg-slate-800", hoverEffect: "hover:border-slate-500", active: true },
+          { id: "UI-CRD-01", componentRole: "Exam Information Card", borderRadius: "16px", borderStyle: "border border-slate-800/80", backgroundGradient: "bg-slate-900/50 backdrop-blur-md", hoverEffect: "hover:border-emerald-500/40 hover:-translate-y-0.5", active: true },
+          { id: "UI-CRD-02", componentRole: "Study Module Vault Card", borderRadius: "16px", borderStyle: "border border-slate-800", backgroundGradient: "bg-slate-950/80", hoverEffect: "hover:border-sky-500/40", active: true }
+        ]
+      }));
+    },
+
+    saveButtonsCardsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.uiComponents || cfg.items || [];
+      cfg.items = list;
+      cfg.uiComponents = list;
+      localStorage.setItem("cso_buttons_cards_config", JSON.stringify(cfg));
+      this.logAudit("BUTTONS_CARDS_UPDATED", "APPEARANCE", `Buttons & cards updated (${list.length} components).`);
+      return true;
+    },
+
+    resetButtonsCardsConfig() {
+      localStorage.removeItem("cso_buttons_cards_config");
+      const fresh = this.getButtonsCardsConfig();
+      this.logAudit("BUTTONS_CARDS_RESET", "APPEARANCE", "Buttons & cards reset to defaults.");
+      return fresh;
+    },
+
+    exportButtonsCardsManifest() {
+      const config = this.getButtonsCardsConfig();
+      const filename = "buttons_cards_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BUTTONS_CARDS_EXPORTED", "DATA_EXPORT", `Buttons & cards manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-010: Reusable Components ---
+    getReusableComponentsConfig() {
+      return _hydrateConfig("cso_reusable_components_config", "components", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "RCO-01", componentTag: "cso-status-badge", name: "Recruitment Status Pill", htmlSnippet: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Active</span>`, usageScope: "Jobs & Careers, Admit Cards", active: true },
+          { id: "RCO-02", componentTag: "cso-gazette-callout", name: "Official Gazette Alert Box", htmlSnippet: `<div class="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-300 text-xs flex gap-3 items-center">Verified Gazette</div>`, usageScope: "Notifications, Study Library", active: true },
+          { id: "RCO-03", componentTag: "cso-district-chip", name: "Odisha 30-District Tag", htmlSnippet: `<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">Balasore</span>`, usageScope: "Community Forums, Job Filters", active: true }
+        ]
+      }));
+    },
+
+    saveReusableComponentsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.components || cfg.items || [];
+      cfg.items = list;
+      cfg.components = list;
+      localStorage.setItem("cso_reusable_components_config", JSON.stringify(cfg));
+      this.logAudit("REUSABLE_COMPONENTS_UPDATED", "APPEARANCE", `Reusable components updated (${list.length} components).`);
+      return true;
+    },
+
+    resetReusableComponentsConfig() {
+      localStorage.removeItem("cso_reusable_components_config");
+      const fresh = this.getReusableComponentsConfig();
+      this.logAudit("REUSABLE_COMPONENTS_RESET", "APPEARANCE", "Reusable components reset to defaults.");
+      return fresh;
+    },
+
+    exportReusableComponentsManifest() {
+      const config = this.getReusableComponentsConfig();
+      const filename = "reusable_components_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("REUSABLE_COMPONENTS_EXPORTED", "DATA_EXPORT", `Reusable components manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-011: Desktop & Mobile Preview ---
+    getPreviewStudioConfig() {
+      return _hydrateConfig("cso_preview_studio_config", "devices", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { currentSimulationUrl: "https://csodisha.com/", simulateNetworkLatency: false },
+        items: [
+          { id: "PRV-01", deviceName: "Mobile (iPhone 15 Pro / Pixel)", widthPx: 393, heightPx: 852, userAgentCategory: "Mobile Safari / Chrome", orientation: "Portrait", scaleFactor: "100%", active: true },
+          { id: "PRV-02", deviceName: "Tablet (iPad Mini / Air)", widthPx: 768, heightPx: 1024, userAgentCategory: "Tablet Mobile", orientation: "Portrait", scaleFactor: "85%", active: true },
+          { id: "PRV-03", deviceName: "Standard Desktop Display", widthPx: 1440, heightPx: 900, userAgentCategory: "Desktop Chrome", orientation: "Landscape", scaleFactor: "75%", active: true },
+          { id: "PRV-04", deviceName: "Ultrawide Enterprise Monitor", widthPx: 1920, heightPx: 1080, userAgentCategory: "Desktop Workstation", orientation: "Landscape", scaleFactor: "60%", active: true }
+        ]
+      }));
+    },
+
+    savePreviewStudioConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.devices || cfg.items || [];
+      cfg.items = list;
+      cfg.devices = list;
+      localStorage.setItem("cso_preview_studio_config", JSON.stringify(cfg));
+      this.logAudit("PREVIEW_STUDIO_UPDATED", "APPEARANCE", `Preview studio devices updated (${list.length} devices).`);
+      return true;
+    },
+
+    resetPreviewStudioConfig() {
+      localStorage.removeItem("cso_preview_studio_config");
+      const fresh = this.getPreviewStudioConfig();
+      this.logAudit("PREVIEW_STUDIO_RESET", "APPEARANCE", "Preview studio reset to defaults.");
+      return fresh;
+    },
+
+    exportPreviewStudioManifest() {
+      const config = this.getPreviewStudioConfig();
+      const filename = "preview_studio_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PREVIEW_STUDIO_EXPORTED", "DATA_EXPORT", `Preview studio manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-012: Accessibility Styling ---
+    getAccessibilityStylingConfig() {
+      return _hydrateConfig("cso_accessibility_styling_config", "rules", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { complianceTarget: "WCAG 2.1 AA", highContrastModeAvailable: true, dyslexiaFontToggle: true },
+        items: [
+          { id: "ACC-01", ruleName: "Interactive Element Focus Ring", selector: ":focus-visible", cssDeclaration: "outline: 2px solid #059669; outline-offset: 2px;", status: "Enforced Globally", active: true },
+          { id: "ACC-02", ruleName: "Contrast Ratio Protection", selector: ".text-slate-400, .text-slate-300", cssDeclaration: "min-contrast-ratio: 4.5:1 against #020617", status: "Enforced Globally", active: true },
+          { id: "ACC-03", ruleName: "Screen Reader Only Content Guard", selector: ".sr-only", cssDeclaration: "position: absolute; width: 1px; height: 1px; overflow: hidden;", status: "Enforced Globally", active: true },
+          { id: "ACC-04", ruleName: "Reduced Motion Accommodation", selector: "@media (prefers-reduced-motion: reduce)", cssDeclaration: "animation-duration: 0.01ms !important; transition-duration: 0.01ms !important;", status: "Enforced Globally", active: true }
+        ]
+      }));
+    },
+
+    saveAccessibilityStylingConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.rules || cfg.items || [];
+      cfg.items = list;
+      cfg.rules = list;
+      localStorage.setItem("cso_accessibility_styling_config", JSON.stringify(cfg));
+      this.logAudit("ACCESSIBILITY_STYLING_UPDATED", "APPEARANCE", `Accessibility styling updated (${list.length} rules).`);
+      return true;
+    },
+
+    resetAccessibilityStylingConfig() {
+      localStorage.removeItem("cso_accessibility_styling_config");
+      const fresh = this.getAccessibilityStylingConfig();
+      this.logAudit("ACCESSIBILITY_STYLING_RESET", "APPEARANCE", "Accessibility styling reset to defaults.");
+      return fresh;
+    },
+
+    exportAccessibilityStylingManifest() {
+      const config = this.getAccessibilityStylingConfig();
+      const filename = "accessibility_styling_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ACCESSIBILITY_STYLING_EXPORTED", "DATA_EXPORT", `Accessibility styling manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-013: Custom 404 Page ---
+    getCustom404Config() {
+      return _hydrateConfig("cso_custom_404_config", "sections", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { enableSmartSearch: true, showQuickNavShortcuts: true, logMissingUrlsToAudit: true },
+        items: [
+          { id: "P404-01", sectionKey: "HERO_MESSAGE", title: "404 Main Headline", content: "Exam Notice or Resource Not Located", description: "Display headline shown to candidate when a URL fails", active: true },
+          { id: "P404-02", sectionKey: "RECOVERY_SUBTEXT", title: "Guidance Subtitle", content: "The recruitment circular or page may have migrated to an updated gazette archive.", description: "Helpful redirect suggestion", active: true },
+          { id: "P404-03", sectionKey: "PRIMARY_ACTION", title: "Primary Route CTA", content: "Search Jobs & Careers (/jobs-careers/?section=0)", description: "Direct button bringing user back to active recruitment", active: true },
+          { id: "P404-04", sectionKey: "SECONDARY_ACTION", title: "Secondary Route CTA", content: "Return to Homepage (/)", description: "Fallback route", active: true }
+        ]
+      }));
+    },
+
+    saveCustom404Config(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.sections || cfg.items || [];
+      cfg.items = list;
+      cfg.sections = list;
+      localStorage.setItem("cso_custom_404_config", JSON.stringify(cfg));
+      this.logAudit("CUSTOM_404_UPDATED", "APPEARANCE", `Custom 404 page updated (${list.length} sections).`);
+      return true;
+    },
+
+    resetCustom404Config() {
+      localStorage.removeItem("cso_custom_404_config");
+      const fresh = this.getCustom404Config();
+      this.logAudit("CUSTOM_404_RESET", "APPEARANCE", "Custom 404 page reset to defaults.");
+      return fresh;
+    },
+
+    exportCustom404Manifest() {
+      const config = this.getCustom404Config();
+      const filename = "custom_404_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("CUSTOM_404_EXPORTED", "DATA_EXPORT", `Custom 404 manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-014: Design Version History ---
+    getDesignVersionsConfig() {
+      return _hydrateConfig("cso_design_versions_config", "versions", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "VER-03", releaseTag: "v2.4-AspirantEmerald", author: "Root Admin", notes: "Integrated high-contrast accessibility tokens & glassmorphism header", deployedAt: "2026-11-08 19:40", isCurrent: true, active: true },
+          { id: "VER-02", releaseTag: "v2.3-AutumnDigest", author: "UI Lead", notes: "Enhanced mobile drawer typography & Odisha district tag components", deployedAt: "2026-10-22 14:15", isCurrent: false, active: true },
+          { id: "VER-01", releaseTag: "v2.0-FoundationDark", author: "Root Admin", notes: "Initial production dark theme deployment with Slate-950 canvas", deployedAt: "2026-09-15 10:00", isCurrent: false, active: true }
+        ]
+      }));
+    },
+
+    saveDesignVersionsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.versions || cfg.items || [];
+      cfg.items = list;
+      cfg.versions = list;
+      localStorage.setItem("cso_design_versions_config", JSON.stringify(cfg));
+      this.logAudit("DESIGN_VERSIONS_UPDATED", "APPEARANCE", `Design version history updated (${list.length} releases).`);
+      return true;
+    },
+
+    resetDesignVersionsConfig() {
+      localStorage.removeItem("cso_design_versions_config");
+      const fresh = this.getDesignVersionsConfig();
+      this.logAudit("DESIGN_VERSIONS_RESET", "APPEARANCE", "Design version history reset to defaults.");
+      return fresh;
+    },
+
+    exportDesignVersionsManifest() {
+      const config = this.getDesignVersionsConfig();
+      const filename = "design_versions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("DESIGN_VERSIONS_EXPORTED", "DATA_EXPORT", `Design versions manifest exported (${filename}).`);
+      return filename;
+    },
+
 
 
 
@@ -12622,6 +12908,14 @@
           headerDesign: this.getHeaderDesignConfig(),
           footerDesign: this.getFooterDesignConfig(),
           homepageLayout: this.getHomepageLayoutConfig(),
+          bannersSliders: this.getBannersSlidersConfig(),
+          buttonsCards: this.getButtonsCardsConfig(),
+          reusableComponents: this.getReusableComponentsConfig(),
+          previewStudio: this.getPreviewStudioConfig(),
+          accessibilityStyling: this.getAccessibilityStylingConfig(),
+          custom404: this.getCustom404Config(),
+          designVersions: this.getDesignVersionsConfig(),
+
 
 
 

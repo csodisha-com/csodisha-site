@@ -845,17 +845,17 @@
         {
           "id": "module-11-008",
           "title": "Banners & Sliders",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-11-009",
           "title": "Buttons & Cards",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-11-010",
           "title": "Reusable Components",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-11-011",
@@ -865,17 +865,17 @@
         {
           "id": "module-11-012",
           "title": "Accessibility Styling",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-11-013",
           "title": "Custom 404 Page",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-11-014",
           "title": "Design Version History",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

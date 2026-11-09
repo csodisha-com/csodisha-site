@@ -572,6 +572,14 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-11-005') { renderHeaderDesignWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-11-006') { renderFooterDesignWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-11-007') { renderHomepageLayoutWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-008') { renderBannersSlidersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-009') { renderButtonsCardsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-010') { renderReusableComponentsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-011') { renderDesktopMobilePreviewWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-012') { renderAccessibilityStylingWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-013') { renderCustom404Workspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-014') { renderDesignVersionsWorkspace(dom.workspaceRoot); return; }
+
 
 
 
@@ -897,6 +905,21 @@ async function loadMasterNavigation() {
         renderFooterDesignWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-11-007') {
         renderHomepageLayoutWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-008') {
+        renderBannersSlidersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-009') {
+        renderButtonsCardsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-010') {
+        renderReusableComponentsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-011') {
+        renderDesktopMobilePreviewWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-012') {
+        renderAccessibilityStylingWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-013') {
+        renderCustom404Workspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-014') {
+        renderDesignVersionsWorkspace(dom.workspaceRoot);
+
 
 
 
@@ -46457,6 +46480,1767 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-11-007', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // FOLDER 11 (WEBSITE APPEARANCE STUDIO) - BATCH 2 WORKSPACES
+    // ==========================================
+
+    /**
+     * MODULE 11-008: Banners & Sliders
+     */
+    function renderBannersSlidersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getBannersSlidersConfig();
+        let slides = Array.isArray(config.slides || config.items) ? [...(config.slides || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = slides.filter(s => s.active !== false).length;
+          const filtered = slides.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.title || '').toLowerCase().includes(term) ||
+                   (s.subtitle || '').toLowerCase().includes(term) ||
+                   (s.ctaLabel || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">CAROUSEL ENGINE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Banners &amp; Slider Showcase</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Hero carousel slides, promotional cards, CTA targets, and slide duration controls</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSlide" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Slide
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slider Settings Card -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Slides</div>
+                  <div class="text-2xl font-bold text-white mt-1">${slides.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeCount} active in rotation</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Autoplay Engine</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.autoplay ? 'Enabled' : 'Paused'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Pauses on user hover</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Slide Duration</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${(config.settings?.slideDurationMs || 6000) / 1000}s</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Transition: ${config.settings?.transitionEffect || 'fade'}</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Asset Compression</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">WebP 85%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Next-gen lossless format</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSlidersSearch" placeholder="Search by title, subtitle, CTA, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${slides.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Slide ID</th>
+                      <th class="px-4 py-3 max-w-sm">Title &amp; Subtitle</th>
+                      <th class="px-4 py-3">CTA Button &amp; URL</th>
+                      <th class="px-4 py-3 font-mono">Image Asset Path</th>
+                      <th class="px-4 py-3">Priority</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No banner slides match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-rose-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-sm">
+                          <div class="text-white font-medium">${item.title}</div>
+                          <div class="text-[10px] text-slate-400 line-clamp-1">${item.subtitle}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="text-rose-400 font-medium">${item.ctaLabel}</div>
+                          <div class="text-[10px] text-slate-400 font-mono truncate max-w-xs">${item.ctaUrl}</div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-slate-300 truncate max-w-xs">${item.imageUrl}</td>
+                        <td class="px-4 py-3 font-mono text-white font-bold">#${item.priority || 1}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Slide" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Slide" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSlidersSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSlidersSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-008', 'Banners & Sliders Schema', {
+              id: 'string (unique slide ID, e.g. SLD-04)',
+              title: 'string (headline title displayed on banner slide)',
+              subtitle: 'string (supporting narrative / description)',
+              ctaLabel: 'string (button call-to-action text)',
+              ctaUrl: 'string (destination portal route)',
+              imageUrl: 'string (WebP / SVG slide background image)',
+              priority: 'number (carousel order weight)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportBannersSlidersManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset banners and sliders to factory defaults?')) {
+              store.resetBannersSlidersConfig();
+              config = store.getBannersSlidersConfig();
+              slides = [...(config.slides || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSlide')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Banner Slide',
+              fields: [
+                { name: 'title', label: 'Slide Title', type: 'text', placeholder: 'e.g. OSSC CGL 2026 Free Mock Marathon', required: true },
+                { name: 'subtitle', label: 'Subtitle Description', type: 'text', placeholder: 'e.g. 5,000+ candidates competing statewide with instant rankings', required: true },
+                { name: 'ctaLabel', label: 'CTA Button Text', type: 'text', placeholder: 'e.g. Start Mock Test', defaultValue: 'Explore Now', required: true },
+                { name: 'ctaUrl', label: 'CTA Link Destination', type: 'text', placeholder: 'e.g. /study-library/mock-tests', defaultValue: '/study-library/mock-tests', required: true },
+                { name: 'imageUrl', label: 'Image URL', type: 'text', placeholder: 'e.g. /assets/images/banner-mock.webp', defaultValue: '/assets/images/banner-default.webp' },
+                { name: 'priority', label: 'Priority Order Weight', type: 'number', placeholder: '4', defaultValue: '4' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'SLD-' + String(slides.length + 1).padStart(2, '0'),
+                  title: data.title.trim(),
+                  subtitle: data.subtitle.trim(),
+                  ctaLabel: data.ctaLabel.trim(),
+                  ctaUrl: data.ctaUrl.trim(),
+                  imageUrl: data.imageUrl.trim(),
+                  priority: parseInt(data.priority, 10) || 1,
+                  active: true
+                };
+                slides.push(newRecord);
+                config.slides = slides;
+                config.items = slides;
+                store.saveBannersSlidersConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = slides.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.slides = slides;
+                config.items = slides;
+                store.saveBannersSlidersConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = slides.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Slide: ' + item.title,
+                fields: [
+                  { name: 'title', label: 'Title', type: 'text', defaultValue: item.title, required: true },
+                  { name: 'subtitle', label: 'Subtitle', type: 'text', defaultValue: item.subtitle, required: true },
+                  { name: 'ctaLabel', label: 'CTA Button Text', type: 'text', defaultValue: item.ctaLabel, required: true },
+                  { name: 'ctaUrl', label: 'CTA URL', type: 'text', defaultValue: item.ctaUrl, required: true },
+                  { name: 'imageUrl', label: 'Image URL', type: 'text', defaultValue: item.imageUrl, required: true },
+                  { name: 'priority', label: 'Priority', type: 'number', defaultValue: String(item.priority || 1) }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  item.subtitle = data.subtitle.trim();
+                  item.ctaLabel = data.ctaLabel.trim();
+                  item.ctaUrl = data.ctaUrl.trim();
+                  item.imageUrl = data.imageUrl.trim();
+                  item.priority = parseInt(data.priority, 10) || 1;
+                  config.slides = slides;
+                  config.items = slides;
+                  store.saveBannersSlidersConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete slide ' + id + '?')) {
+                slides = slides.filter(s => s.id !== id);
+                config.slides = slides;
+                config.items = slides;
+                store.saveBannersSlidersConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-009: Buttons & Cards
+     */
+    function renderButtonsCardsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getButtonsCardsConfig();
+        let components = Array.isArray(config.uiComponents || config.items) ? [...(config.uiComponents || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = components.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.componentRole || '').toLowerCase().includes(term) ||
+                   (c.backgroundGradient || '').toLowerCase().includes(term) ||
+                   (c.hoverEffect || '').toLowerCase().includes(term) ||
+                   (c.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">UI SURFACES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Buttons &amp; Card Surfaces</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Border radii, elevation drop shadows, hover state transitions, and glassmorphic card foundations</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddComponent" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New UI Style
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Interactive Preview Strip -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-800 bg-slate-950/60">
+                  <div class="text-[10px] text-slate-400 mb-2">Primary Button Preview</div>
+                  <button class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-xs font-bold text-white shadow-lg shadow-emerald-600/20 hover:scale-105 transition-all">Start OPSC Mock</button>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-800 bg-slate-950/60">
+                  <div class="text-[10px] text-slate-400 mb-2">Ghost Button Preview</div>
+                  <button class="px-4 py-2 rounded-xl border border-slate-700 bg-slate-900/60 text-xs font-semibold text-slate-200 hover:border-slate-500 transition-all">View Syllabus PDF</button>
+                </div>
+                <div class="p-3 rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md hover:border-emerald-500/40 transition-all">
+                  <div class="text-[10px] text-emerald-400 font-semibold">Active Gazette Card</div>
+                  <div class="text-xs font-bold text-white mt-1">OPSC OAS 2026 Prelims</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Admit Cards Out • 30 Districts</div>
+                </div>
+                <div class="p-3 rounded-2xl border border-slate-800 bg-slate-950/80 hover:border-sky-500/40 transition-all">
+                  <div class="text-[10px] text-sky-400 font-semibold">Vault Resource Card</div>
+                  <div class="text-xs font-bold text-white mt-1">Odia Vernacular Notes</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">4,820 Aspirant Downloads</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoButtonsSearch" placeholder="Search by component role, gradient, hover effect, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${components.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Component ID</th>
+                      <th class="px-4 py-3">Component Role</th>
+                      <th class="px-4 py-3">Border Radius</th>
+                      <th class="px-4 py-3">Border Style</th>
+                      <th class="px-4 py-3 font-mono">Background / Gradient</th>
+                      <th class="px-4 py-3">Hover Transition</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No button/card styles match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-emerald-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.componentRole}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300">${item.borderRadius}</td>
+                        <td class="px-4 py-3 font-mono text-slate-400 text-[11px]">${item.borderStyle}</td>
+                        <td class="px-4 py-3 font-mono text-slate-200 text-[11px]">${item.backgroundGradient}</td>
+                        <td class="px-4 py-3 font-mono text-emerald-300 text-[10px]">${item.hoverEffect}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Component Style" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Component Style" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoButtonsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoButtonsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-009', 'Buttons & Cards Schema', {
+              id: 'string (unique style ID, e.g. UI-BTN-03)',
+              componentRole: 'string (e.g. Primary Action Button, Exam Information Card)',
+              borderRadius: 'string (e.g. 12px, 16px, rounded-xl)',
+              borderStyle: 'string (Tailwind border utility)',
+              backgroundGradient: 'string (Tailwind background / gradient utility)',
+              hoverEffect: 'string (hover scale / shadow elevation utility)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportButtonsCardsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset buttons & cards styling to factory defaults?')) {
+              store.resetButtonsCardsConfig();
+              config = store.getButtonsCardsConfig();
+              components = [...(config.uiComponents || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddComponent')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add UI Button or Card Style',
+              fields: [
+                { name: 'componentRole', label: 'Component Role', type: 'text', placeholder: 'e.g. Danger Destructive Button', required: true },
+                { name: 'borderRadius', label: 'Border Radius', type: 'text', placeholder: 'e.g. 12px', defaultValue: '12px', required: true },
+                { name: 'borderStyle', label: 'Border Style Utility', type: 'text', placeholder: 'e.g. border border-rose-500/30', defaultValue: 'border border-rose-500/30' },
+                { name: 'backgroundGradient', label: 'Background / Gradient', type: 'text', placeholder: 'e.g. from-rose-600 to-rose-700', defaultValue: 'bg-rose-600', required: true },
+                { name: 'hoverEffect', label: 'Hover Transition', type: 'text', placeholder: 'e.g. hover:scale-105 hover:bg-rose-500', defaultValue: 'hover:scale-[1.02]' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'UI-STY-' + String(components.length + 1).padStart(2, '0'),
+                  componentRole: data.componentRole.trim(),
+                  borderRadius: data.borderRadius.trim(),
+                  borderStyle: data.borderStyle.trim(),
+                  backgroundGradient: data.backgroundGradient.trim(),
+                  hoverEffect: data.hoverEffect.trim(),
+                  active: true
+                };
+                components.push(newRecord);
+                config.uiComponents = components;
+                config.items = components;
+                store.saveButtonsCardsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = components.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.uiComponents = components;
+                config.items = components;
+                store.saveButtonsCardsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = components.find(c => c.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit UI Style: ' + item.componentRole,
+                fields: [
+                  { name: 'componentRole', label: 'Component Role', type: 'text', defaultValue: item.componentRole, required: true },
+                  { name: 'borderRadius', label: 'Border Radius', type: 'text', defaultValue: item.borderRadius, required: true },
+                  { name: 'borderStyle', label: 'Border Style', type: 'text', defaultValue: item.borderStyle },
+                  { name: 'backgroundGradient', label: 'Background Gradient', type: 'text', defaultValue: item.backgroundGradient, required: true },
+                  { name: 'hoverEffect', label: 'Hover Transition', type: 'text', defaultValue: item.hoverEffect }
+                ],
+                onSave: (data) => {
+                  item.componentRole = data.componentRole.trim();
+                  item.borderRadius = data.borderRadius.trim();
+                  item.borderStyle = data.borderStyle.trim();
+                  item.backgroundGradient = data.backgroundGradient.trim();
+                  item.hoverEffect = data.hoverEffect.trim();
+                  config.uiComponents = components;
+                  config.items = components;
+                  store.saveButtonsCardsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete component style ' + id + '?')) {
+                components = components.filter(c => c.id !== id);
+                config.uiComponents = components;
+                config.items = components;
+                store.saveButtonsCardsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-010: Reusable Components
+     */
+    function renderReusableComponentsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getReusableComponentsConfig();
+        let components = Array.isArray(config.components || config.items) ? [...(config.components || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = components.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.name || '').toLowerCase().includes(term) ||
+                   (c.componentTag || '').toLowerCase().includes(term) ||
+                   (c.usageScope || '').toLowerCase().includes(term) ||
+                   (c.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">COMPONENT LIBRARY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Reusable UI Components</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Recruitment status badges, gazette callout boxes, 30-district chips, and modular web snippets</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddComponent" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Component
+                  </button>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoReusableSearch" placeholder="Search by name, custom tag, usage scope, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${components.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Tag / ID</th>
+                      <th class="px-4 py-3">Component Name</th>
+                      <th class="px-4 py-3">Live HTML Render</th>
+                      <th class="px-4 py-3 max-w-xs font-mono">HTML Snippet</th>
+                      <th class="px-4 py-3">Usage Scope</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No reusable components match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <span class="font-mono text-cyan-400 font-semibold">&lt;${item.componentTag}&gt;</span>
+                          <div class="text-[9px] font-mono text-slate-500">${item.id}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white">${item.name}</td>
+                        <td class="px-4 py-3">
+                          <div class="p-1.5 rounded-lg bg-slate-950/80 border border-slate-800 inline-block">
+                            ${item.htmlSnippet}
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 max-w-xs font-mono text-[10px] text-slate-300 truncate" title="${item.htmlSnippet.replace(/"/g, '&quot;')}">${item.htmlSnippet}</td>
+                        <td class="px-4 py-3 text-cyan-300 text-[11px]">${item.usageScope}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Component" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Component" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoReusableSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoReusableSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-010', 'Reusable Components Schema', {
+              id: 'string (unique component ID, e.g. RCO-04)',
+              componentTag: 'string (custom tag or element identifier, e.g. cso-status-badge)',
+              name: 'string (human-readable component name)',
+              htmlSnippet: 'string (markup snippet with Tailwind styling)',
+              usageScope: 'string (modules / pages utilizing the component)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportReusableComponentsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset reusable components to factory defaults?')) {
+              store.resetReusableComponentsConfig();
+              config = store.getReusableComponentsConfig();
+              components = [...(config.components || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddComponent')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Register Reusable Component',
+              fields: [
+                { name: 'componentTag', label: 'Custom Tag Identifier', type: 'text', placeholder: 'e.g. cso-verified-tick', required: true },
+                { name: 'name', label: 'Component Name', type: 'text', placeholder: 'e.g. Official Commission Verified Checkmark', required: true },
+                { name: 'htmlSnippet', label: 'HTML Markup Snippet', type: 'textarea', placeholder: '<span class="text-emerald-400 font-bold">✓ Verified</span>', required: true },
+                { name: 'usageScope', label: 'Usage Scope', type: 'text', placeholder: 'e.g. Answer Keys, Exam Notices', defaultValue: 'Global' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'RCO-' + String(components.length + 1).padStart(2, '0'),
+                  componentTag: data.componentTag.trim().toLowerCase(),
+                  name: data.name.trim(),
+                  htmlSnippet: data.htmlSnippet.trim(),
+                  usageScope: data.usageScope.trim(),
+                  active: true
+                };
+                components.push(newRecord);
+                config.components = components;
+                config.items = components;
+                store.saveReusableComponentsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = components.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.components = components;
+                config.items = components;
+                store.saveReusableComponentsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = components.find(c => c.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Component: ' + item.name,
+                fields: [
+                  { name: 'componentTag', label: 'Tag Identifier', type: 'text', defaultValue: item.componentTag, required: true },
+                  { name: 'name', label: 'Component Name', type: 'text', defaultValue: item.name, required: true },
+                  { name: 'htmlSnippet', label: 'HTML Snippet', type: 'textarea', defaultValue: item.htmlSnippet, required: true },
+                  { name: 'usageScope', label: 'Usage Scope', type: 'text', defaultValue: item.usageScope || '' }
+                ],
+                onSave: (data) => {
+                  item.componentTag = data.componentTag.trim().toLowerCase();
+                  item.name = data.name.trim();
+                  item.htmlSnippet = data.htmlSnippet.trim();
+                  item.usageScope = data.usageScope.trim();
+                  config.components = components;
+                  config.items = components;
+                  store.saveReusableComponentsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete component ' + id + '?')) {
+                components = components.filter(c => c.id !== id);
+                config.components = components;
+                config.items = components;
+                store.saveReusableComponentsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-011: Desktop & Mobile Preview
+     */
+    function renderDesktopMobilePreviewWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPreviewStudioConfig();
+        let devices = Array.isArray(config.devices || config.items) ? [...(config.devices || config.items)] : [];
+        let selectedDevice = devices[0] || { widthPx: 393, heightPx: 852, deviceName: "Mobile" };
+        let currentUrl = config.settings?.currentSimulationUrl || 'https://csodisha.com/';
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">DEVICE SIMULATOR</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Desktop &amp; Mobile Responsive Studio</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Viewport device emulation, live resolution testing, and multi-screen layout audit</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddDevice" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Device Preset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Device Selector Pills -->
+              <div class="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-slate-800 bg-slate-900/60">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">Preset Viewports:</span>
+                ${devices.map(d => `
+                  <button data-device-id="${d.id}" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
+                    selectedDevice.id === d.id ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                  }">
+                    <span>${d.deviceName}</span>
+                    <span class="text-[10px] opacity-75 font-mono">(${d.widthPx}x${d.heightPx})</span>
+                  </button>
+                `).join('')}
+              </div>
+
+              <!-- URL Bar & Device Frame Controls -->
+              <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="text-xs font-mono text-emerald-400 font-bold px-2 py-1 rounded bg-slate-800 border border-slate-700">HTTPS</div>
+                <input type="text" id="csoSimUrlInput" value="${currentUrl}" class="flex-1 px-3 py-1.5 text-xs font-mono rounded-lg bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-blue-500" />
+                <button id="csoReloadPreview" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 flex items-center gap-1.5 font-medium">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  Refresh Simulation
+                </button>
+              </div>
+
+              <!-- Interactive Simulator Stage -->
+              <div class="p-6 rounded-2xl border border-slate-800 bg-slate-950/80 flex flex-col items-center justify-center min-h-[480px] overflow-hidden">
+                <div class="text-[11px] font-mono text-slate-400 mb-3 flex items-center gap-2">
+                  <span>Simulating: <strong class="text-white">${selectedDevice.deviceName}</strong></span>
+                  <span>•</span>
+                  <span>Viewport: <strong class="text-blue-400">${selectedDevice.widthPx}px × ${selectedDevice.heightPx}px</strong></span>
+                  <span>•</span>
+                  <span>Scale: <strong class="text-emerald-400">${selectedDevice.scaleFactor || '100%'}</strong></span>
+                </div>
+
+                <!-- Device Shell Mockup -->
+                <div class="rounded-3xl border-4 border-slate-700 bg-slate-900 shadow-2xl p-2 transition-all flex flex-col items-center" style="max-width: 100%; width: ${Math.min(selectedDevice.widthPx, 840)}px;">
+                  <div class="w-16 h-3 rounded-full bg-slate-800 mb-2"></div>
+                  <div class="w-full bg-slate-950 rounded-2xl p-4 border border-slate-800 space-y-4 text-left">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                      <div class="text-xs font-bold text-white">Common Sense Odisha</div>
+                      <span class="px-2 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-400 font-mono">Live Demo</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                      <div class="text-xs font-semibold text-white">OPSC OAS 2026 Strategy Vault</div>
+                      <div class="text-[10px] text-slate-400 mt-0.5">Responsive canvas rendering verified across mobile &amp; tablet viewports.</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                      <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-300">✓ Touch Target: 48px</div>
+                      <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-300">✓ Horizontal Overflow: Zero</div>
+                    </div>
+                  </div>
+                  <div class="w-24 h-1 rounded-full bg-slate-800 mt-2"></div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-011', 'Desktop & Mobile Preview Schema', {
+              id: 'string (unique preset ID, e.g. PRV-05)',
+              deviceName: 'string (descriptor, e.g. Mobile, Tablet, Ultrawide)',
+              widthPx: 'number (viewport width in pixels)',
+              heightPx: 'number (viewport height in pixels)',
+              userAgentCategory: 'string (browser / device family)',
+              orientation: 'string (Portrait | Landscape)',
+              scaleFactor: 'string (zoom rendering percentage)',
+              active: 'boolean (active preset flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPreviewStudioManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset preview presets to factory defaults?')) {
+              store.resetPreviewStudioConfig();
+              config = store.getPreviewStudioConfig();
+              devices = [...(config.devices || config.items)];
+              selectedDevice = devices[0];
+              render();
+            }
+          });
+
+          container.querySelectorAll('button[data-device-id]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-device-id');
+              const found = devices.find(d => d.id === id);
+              if (found) {
+                selectedDevice = found;
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#csoReloadPreview')?.addEventListener('click', () => {
+            const input = container.querySelector('#csoSimUrlInput');
+            if (input) currentUrl = input.value.trim();
+            render();
+          });
+
+          container.querySelector('#btnCSOAddDevice')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Viewport Simulation Preset',
+              fields: [
+                { name: 'deviceName', label: 'Device Preset Name', type: 'text', placeholder: 'e.g. Foldable Phone (Outer Screen)', required: true },
+                { name: 'widthPx', label: 'Width (px)', type: 'number', placeholder: '375', defaultValue: '375', required: true },
+                { name: 'heightPx', label: 'Height (px)', type: 'number', placeholder: '667', defaultValue: '667', required: true },
+                { name: 'orientation', label: 'Orientation', type: 'select', options: ['Portrait', 'Landscape'], defaultValue: 'Portrait' },
+                { name: 'scaleFactor', label: 'Scale Factor', type: 'text', placeholder: 'e.g. 100%', defaultValue: '100%' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'PRV-' + String(devices.length + 1).padStart(2, '0'),
+                  deviceName: data.deviceName.trim(),
+                  widthPx: parseInt(data.widthPx, 10) || 375,
+                  heightPx: parseInt(data.heightPx, 10) || 667,
+                  userAgentCategory: 'Custom Viewport',
+                  orientation: data.orientation,
+                  scaleFactor: data.scaleFactor.trim(),
+                  active: true
+                };
+                devices.push(newRecord);
+                config.devices = devices;
+                config.items = devices;
+                store.savePreviewStudioConfig(config);
+                selectedDevice = newRecord;
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-012: Accessibility Styling
+     */
+    function renderAccessibilityStylingWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAccessibilityStylingConfig();
+        let rules = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = rules.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.ruleName || '').toLowerCase().includes(term) ||
+                   (r.selector || '').toLowerCase().includes(term) ||
+                   (r.cssDeclaration || '').toLowerCase().includes(term) ||
+                   (r.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">A11Y AUDIT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-012</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Accessibility &amp; WCAG Styling</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">High-contrast borders, focus rings, reduced motion adaptations, and screen-reader accessibility rules</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddRule" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add A11y Rule
+                  </button>
+                </div>
+              </div>
+
+              <!-- Compliance Overview -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Compliance Target</div>
+                  <div class="text-xl font-bold text-emerald-400 mt-1">${config.settings?.complianceTarget || 'WCAG 2.1 AA'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Meets Rights of Persons with Disabilities Act (India)</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">High Contrast Toggle</div>
+                  <div class="text-xl font-bold text-white mt-1">${config.settings?.highContrastModeAvailable ? 'Active' : 'Off'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Quick switcher in header user cluster</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Dyslexia Font Support</div>
+                  <div class="text-xl font-bold text-blue-400 mt-1">${config.settings?.dyslexiaFontToggle ? 'Enabled' : 'Disabled'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">OpenDyslexic optional font substitution</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoA11ySearch" placeholder="Search by rule name, selector, CSS declaration, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${rules.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Rule ID</th>
+                      <th class="px-4 py-3">Rule Name</th>
+                      <th class="px-4 py-3 font-mono">CSS Selector</th>
+                      <th class="px-4 py-3 font-mono">Declaration Snippet</th>
+                      <th class="px-4 py-3">Enforcement Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No accessibility rules match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-emerald-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.ruleName}</td>
+                        <td class="px-4 py-3 font-mono text-blue-300">${item.selector}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300 text-[11px] max-w-xs truncate" title="${item.cssDeclaration}">${item.cssDeclaration}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${item.status || 'Enforced'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit A11y Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete A11y Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoA11ySearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoA11ySearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-012', 'Accessibility Styling Schema', {
+              id: 'string (unique rule ID, e.g. ACC-05)',
+              ruleName: 'string (human-readable accessibility requirement)',
+              selector: 'string (CSS selector targeted by the rule)',
+              cssDeclaration: 'string (CSS properties applied)',
+              status: 'string (Enforced Globally | Experimental)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAccessibilityStylingManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset accessibility styling rules to factory defaults?')) {
+              store.resetAccessibilityStylingConfig();
+              config = store.getAccessibilityStylingConfig();
+              rules = [...(config.rules || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddRule')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Accessibility Rule',
+              fields: [
+                { name: 'ruleName', label: 'Rule Name', type: 'text', placeholder: 'e.g. Underline Links in Body Prose', required: true },
+                { name: 'selector', label: 'CSS Selector', type: 'text', placeholder: 'e.g. article p a', required: true },
+                { name: 'cssDeclaration', label: 'CSS Declaration', type: 'text', placeholder: 'e.g. text-decoration: underline; text-underline-offset: 3px;', required: true }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'ACC-' + String(rules.length + 1).padStart(2, '0'),
+                  ruleName: data.ruleName.trim(),
+                  selector: data.selector.trim(),
+                  cssDeclaration: data.cssDeclaration.trim(),
+                  status: 'Enforced Globally',
+                  active: true
+                };
+                rules.push(newRecord);
+                config.rules = rules;
+                config.items = rules;
+                store.saveAccessibilityStylingConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = rules.find(r => r.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.rules = rules;
+                config.items = rules;
+                store.saveAccessibilityStylingConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = rules.find(r => r.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit A11y Rule: ' + item.ruleName,
+                fields: [
+                  { name: 'ruleName', label: 'Rule Name', type: 'text', defaultValue: item.ruleName, required: true },
+                  { name: 'selector', label: 'CSS Selector', type: 'text', defaultValue: item.selector, required: true },
+                  { name: 'cssDeclaration', label: 'CSS Declaration', type: 'text', defaultValue: item.cssDeclaration, required: true }
+                ],
+                onSave: (data) => {
+                  item.ruleName = data.ruleName.trim();
+                  item.selector = data.selector.trim();
+                  item.cssDeclaration = data.cssDeclaration.trim();
+                  config.rules = rules;
+                  config.items = rules;
+                  store.saveAccessibilityStylingConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete rule ' + id + '?')) {
+                rules = rules.filter(r => r.id !== id);
+                config.rules = rules;
+                config.items = rules;
+                store.saveAccessibilityStylingConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-013: Custom 404 Page
+     */
+    function renderCustom404Workspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCustom404Config();
+        let sections = Array.isArray(config.sections || config.items) ? [...(config.sections || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = sections.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.title || '').toLowerCase().includes(term) ||
+                   (s.content || '').toLowerCase().includes(term) ||
+                   (s.sectionKey || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">RECOVERY ROUTING</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-013</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Custom 404 &amp; Missing Page Studio</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Helpful error recovery headlines, smart search redirects, and broken circular redirection CTAs</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSection" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white shadow-lg shadow-amber-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add 404 Block
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live 404 Preview Card -->
+              <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur text-center max-w-xl mx-auto space-y-3">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/20">404</div>
+                <h3 class="text-lg font-bold text-white">${sections.find(s => s.sectionKey === 'HERO_MESSAGE')?.content || 'Resource Not Located'}</h3>
+                <p class="text-xs text-slate-400 max-w-md mx-auto">${sections.find(s => s.sectionKey === 'RECOVERY_SUBTEXT')?.content || 'The circular or page may have moved.'}</p>
+                <div class="flex items-center justify-center gap-3 pt-2">
+                  <span class="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-xs font-semibold text-white shadow-md shadow-emerald-600/20">Search Recruitment Circulars</span>
+                  <span class="px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-medium text-slate-300">Return to Homepage</span>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="cso404Search" placeholder="Search by title, content, key, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${sections.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Block Key</th>
+                      <th class="px-4 py-3">Section Title</th>
+                      <th class="px-4 py-3 max-w-sm">Configured Content</th>
+                      <th class="px-4 py-3">Purpose &amp; Description</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No 404 blocks match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-amber-400 font-semibold">${item.sectionKey || item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.title}</td>
+                        <td class="px-4 py-3 max-w-sm text-slate-200">${item.content}</td>
+                        <td class="px-4 py-3 text-slate-400 text-[11px]">${item.description || ''}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit 404 Block" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete 404 Block" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#cso404Search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#cso404Search');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-013', 'Custom 404 Page Schema', {
+              id: 'string (unique block ID, e.g. P404-05)',
+              sectionKey: 'string (machine slug, e.g. HERO_MESSAGE, RECOVERY_SUBTEXT)',
+              title: 'string (human-readable title)',
+              content: 'string (text content or button label with target)',
+              description: 'string (role explanation)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportCustom404Manifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset custom 404 page settings to factory defaults?')) {
+              store.resetCustom404Config();
+              config = store.getCustom404Config();
+              sections = [...(config.sections || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSection')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add 404 Recovery Block',
+              fields: [
+                { name: 'sectionKey', label: 'Section Key / Slug', type: 'text', placeholder: 'e.g. DISTRICT_HELP_CTA', required: true },
+                { name: 'title', label: 'Block Title', type: 'text', placeholder: 'e.g. Contact District Desk', required: true },
+                { name: 'content', label: 'Display Content', type: 'text', placeholder: 'e.g. Reach out to district support desk (/support)', required: true },
+                { name: 'description', label: 'Description', type: 'text', placeholder: 'e.g. Fallback helpdesk button' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'P404-' + String(sections.length + 1).padStart(2, '0'),
+                  sectionKey: data.sectionKey.trim().toUpperCase(),
+                  title: data.title.trim(),
+                  content: data.content.trim(),
+                  description: data.description.trim(),
+                  active: true
+                };
+                sections.push(newRecord);
+                config.sections = sections;
+                config.items = sections;
+                store.saveCustom404Config(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.sections = sections;
+                config.items = sections;
+                store.saveCustom404Config(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit 404 Block: ' + item.title,
+                fields: [
+                  { name: 'sectionKey', label: 'Section Key', type: 'text', defaultValue: item.sectionKey, required: true },
+                  { name: 'title', label: 'Block Title', type: 'text', defaultValue: item.title, required: true },
+                  { name: 'content', label: 'Content', type: 'text', defaultValue: item.content, required: true },
+                  { name: 'description', label: 'Description', type: 'text', defaultValue: item.description || '' }
+                ],
+                onSave: (data) => {
+                  item.sectionKey = data.sectionKey.trim().toUpperCase();
+                  item.title = data.title.trim();
+                  item.content = data.content.trim();
+                  item.description = data.description.trim();
+                  config.sections = sections;
+                  config.items = sections;
+                  store.saveCustom404Config(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete 404 block ' + id + '?')) {
+                sections = sections.filter(s => s.id !== id);
+                config.sections = sections;
+                config.items = sections;
+                store.saveCustom404Config(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-014: Design Version History
+     */
+    function renderDesignVersionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getDesignVersionsConfig();
+        let versions = Array.isArray(config.versions || config.items) ? [...(config.versions || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const currentRelease = versions.find(v => v.isCurrent);
+          const filtered = versions.filter(v => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (v.releaseTag || '').toLowerCase().includes(term) ||
+                   (v.notes || '').toLowerCase().includes(term) ||
+                   (v.author || '').toLowerCase().includes(term) ||
+                   (v.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">DESIGN SNAPSHOTS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-014</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Design Version History &amp; Snapshots</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Production theme release checkpoints, rollback points, design tokens, and audit changelogs</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOCreateSnapshot" class="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white shadow-lg shadow-purple-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Tag Release Version
+                  </button>
+                </div>
+              </div>
+
+              <!-- Current Release Banner -->
+              <div class="p-4 rounded-xl border border-purple-500/30 bg-purple-500/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div class="text-[10px] uppercase font-bold text-purple-400 tracking-wider">Current Production Design State</div>
+                  <div class="text-xl font-bold text-white mt-0.5">${currentRelease?.releaseTag || 'v2.4-AspirantEmerald'}</div>
+                  <div class="text-xs text-slate-300 mt-1">${currentRelease?.notes || 'Active dark theme release'}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[11px] text-slate-400">Deployed by: <span class="text-white font-medium">${currentRelease?.author || 'Root Admin'}</span></div>
+                  <div class="text-[10px] font-mono text-purple-300 mt-0.5">${currentRelease?.deployedAt || ''}</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoVersionsSearch" placeholder="Search by release tag, changelog notes, author, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${versions.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Version ID</th>
+                      <th class="px-4 py-3">Release Tag</th>
+                      <th class="px-4 py-3 max-w-sm">Release Notes / Changelog</th>
+                      <th class="px-4 py-3">Author</th>
+                      <th class="px-4 py-3">Deployed At</th>
+                      <th class="px-4 py-3">Production Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No design versions match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-purple-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-bold text-white font-mono">${item.releaseTag}</td>
+                        <td class="px-4 py-3 max-w-sm text-slate-300">
+                          <p class="text-xs line-clamp-2">${item.notes}</p>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.author}</td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${item.deployedAt}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.isCurrent ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.isCurrent ? '● Active Production' : 'Archived Snapshot'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="rollback" data-id="${item.id}" title="Activate / Rollback to this Version" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-purple-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Notes" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-purple-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Version Snapshot" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoVersionsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoVersionsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-014', 'Design Version History Schema', {
+              id: 'string (unique version ID, e.g. VER-04)',
+              releaseTag: 'string (semver release name, e.g. v2.5-WinterProse)',
+              author: 'string (designer / admin user)',
+              notes: 'string (summary of changes and theme adaptations)',
+              deployedAt: 'string (YYYY-MM-DD HH:MM)',
+              isCurrent: 'boolean (active deployment marker)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportDesignVersionsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset design version history to factory defaults?')) {
+              store.resetDesignVersionsConfig();
+              config = store.getDesignVersionsConfig();
+              versions = [...(config.versions || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOCreateSnapshot')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Tag Design Release Snapshot',
+              fields: [
+                { name: 'releaseTag', label: 'Release Tag', type: 'text', placeholder: 'e.g. v2.5-WinterEmerald', required: true },
+                { name: 'author', label: 'Author / Admin', type: 'text', placeholder: 'Root Admin', defaultValue: 'Root Admin', required: true },
+                { name: 'notes', label: 'Changelog Notes', type: 'textarea', placeholder: 'Describe changes in color tokens, typography, or layout components...', required: true },
+                { name: 'isCurrent', label: 'Deploy as Active Production Theme', type: 'select', options: ['true', 'false'], defaultValue: 'true' }
+              ],
+              onSave: (data) => {
+                const isCur = data.isCurrent === 'true';
+                if (isCur) {
+                  versions.forEach(v => { v.isCurrent = false; });
+                }
+                const newRecord = {
+                  id: 'VER-' + String(versions.length + 1).padStart(2, '0'),
+                  releaseTag: data.releaseTag.trim(),
+                  author: data.author.trim(),
+                  notes: data.notes.trim(),
+                  deployedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                  isCurrent: isCur,
+                  active: true
+                };
+                versions.unshift(newRecord);
+                config.versions = versions;
+                config.items = versions;
+                store.saveDesignVersionsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="rollback"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = versions.find(v => v.id === id);
+              if (item) {
+                versions.forEach(v => { v.isCurrent = false; });
+                item.isCurrent = true;
+                config.versions = versions;
+                config.items = versions;
+                store.saveDesignVersionsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = versions.find(v => v.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Release: ' + item.releaseTag,
+                fields: [
+                  { name: 'releaseTag', label: 'Release Tag', type: 'text', defaultValue: item.releaseTag, required: true },
+                  { name: 'author', label: 'Author', type: 'text', defaultValue: item.author, required: true },
+                  { name: 'notes', label: 'Changelog Notes', type: 'textarea', defaultValue: item.notes, required: true }
+                ],
+                onSave: (data) => {
+                  item.releaseTag = data.releaseTag.trim();
+                  item.author = data.author.trim();
+                  item.notes = data.notes.trim();
+                  config.versions = versions;
+                  config.items = versions;
+                  store.saveDesignVersionsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete release snapshot ' + id + '?')) {
+                versions = versions.filter(v => v.id !== id);
+                config.versions = versions;
+                config.items = versions;
+                store.saveDesignVersionsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 
