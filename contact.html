@@ -192,7 +192,10 @@
         <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #0fa968;"></span>
         <h2 style="margin: 0; font-size: 1.15rem; color: var(--tx, #0f172a);">Institutional Contact Desk & Endpoints</h2>
       </div>
-      <span id="contact-hours-badge" style="font-size: 0.75rem; font-family: monospace; padding: 2px 8px; border-radius: 6px; background: rgba(15, 169, 104, 0.1); color: #0fa968; border: 1px solid rgba(15, 169, 104, 0.2);"></span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="contact-sla-badge" style="font-size: 0.75rem; font-family: monospace; padding: 2px 8px; border-radius: 6px; background: rgba(2, 132, 199, 0.1); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.2);">Within 24 business hours</span>
+        <span id="contact-hours-badge" style="font-size: 0.75rem; font-family: monospace; padding: 2px 8px; border-radius: 6px; background: rgba(15, 169, 104, 0.1); color: #0fa968; border: 1px solid rgba(15, 169, 104, 0.2);"></span>
+      </div>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px;">
@@ -431,45 +434,66 @@
     }
 
     function hydrateContactDirectory() {
-      let dir = null;
+      let conf = null;
       try {
-        const raw = localStorage.getItem('cso_contact_directory');
-        if (raw) dir = JSON.parse(raw);
+        const raw = localStorage.getItem('cso_contact_config') || localStorage.getItem('cso_contact_directory');
+        if (raw) conf = JSON.parse(raw);
       } catch (_) {}
 
-      if (!dir || typeof dir !== 'object') {
-        dir = {
+      // Normalize between cso_contact_config and legacy cso_contact_directory schemas
+      let endpoints = {};
+      let departments = [];
+
+      if (conf && conf.endpoints) {
+        endpoints = conf.endpoints;
+        departments = Array.isArray(conf.departments) ? conf.departments : [];
+      } else if (conf) {
+        endpoints = {
+          primaryEmail: conf.primaryEmail,
+          helplinePhone: conf.helplineNumber,
+          operatingHours: conf.operatingHours,
+          postalAddress: conf.postalAddress,
+          slaResponseTime: "Within 24 business hours"
+        };
+        departments = Array.isArray(conf.channels) ? conf.channels : [];
+      } else {
+        endpoints = {
           primaryEmail: "contact@csodisha.com",
-          helplineNumber: "+91 674 239 0000",
+          helplinePhone: "+91 674 239 0000",
           operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
           postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
-          channels: [
-            { id: "CHN-01", name: "Candidate Admission & Syllabus Helpdesk", email: "academic@csodisha.com", category: "Academic", hours: "10:00 - 17:00 IST", status: "Active" },
-            { id: "CHN-02", name: "Grievance & Statutory Redressal", email: "grievance@csodisha.com", category: "Legal", hours: "10:00 - 16:00 IST", status: "Active" },
-            { id: "CHN-03", name: "Technical Portal & CDN Operations", email: "admin@csodisha.com", category: "Technical", hours: "24/7 Monitoring", status: "Active" },
-            { id: "CHN-04", name: "District Community Outreach Desk", email: "outreach@csodisha.com", category: "Outreach", hours: "10:00 - 17:00 IST", status: "Active" }
-          ]
+          slaResponseTime: "Within 24 business hours"
         };
+        departments = [
+          { id: "DEPT-01", name: "Candidate Admission & Syllabus Helpdesk", email: "academic@csodisha.com", category: "Academic", hours: "10:00 - 17:00 IST", active: true },
+          { id: "DEPT-02", name: "Grievance & Statutory Redressal", email: "grievance@csodisha.com", category: "Legal", hours: "10:00 - 16:00 IST", active: true },
+          { id: "DEPT-03", name: "Technical Portal & CDN Operations", email: "admin@csodisha.com", category: "Technical", hours: "24/7 Monitoring", active: true },
+          { id: "DEPT-04", name: "District Community Outreach Desk", email: "outreach@csodisha.com", category: "Outreach", hours: "10:00 - 17:00 IST", active: true }
+        ];
       }
 
       const sec = document.getElementById('contact-directory-section');
       if (sec) sec.style.display = 'block';
 
       const emailEl = document.getElementById('dir-primary-email');
-      if (emailEl) emailEl.textContent = dir.primaryEmail || 'contact@csodisha.com';
+      if (emailEl) emailEl.textContent = endpoints.primaryEmail || 'contact@csodisha.com';
 
       const phoneEl = document.getElementById('dir-helpline-phone');
-      if (phoneEl) phoneEl.textContent = dir.helplineNumber || '+91 674 239 0000';
+      if (phoneEl) phoneEl.textContent = endpoints.helplinePhone || '+91 674 239 0000';
 
       const hoursEl = document.getElementById('contact-hours-badge');
-      if (hoursEl) hoursEl.textContent = dir.operatingHours || '09:30 AM - 05:30 PM IST (Mon - Sat)';
+      if (hoursEl) hoursEl.textContent = endpoints.operatingHours || '09:30 AM - 05:30 PM IST (Mon - Sat)';
+
+      const slaEl = document.getElementById('contact-sla-badge');
+      if (slaEl) slaEl.textContent = endpoints.slaResponseTime || 'Within 24 business hours';
 
       const addrEl = document.getElementById('dir-postal-address');
-      if (addrEl) addrEl.textContent = dir.postalAddress || 'Odisha, India';
+      if (addrEl) addrEl.textContent = endpoints.postalAddress || 'Odisha, India';
 
       const channelsGrid = document.getElementById('dir-channels-grid');
-      if (channelsGrid && Array.isArray(dir.channels) && dir.channels.length > 0) {
-        channelsGrid.innerHTML = dir.channels.map(function(c) {
+      const activeDepts = departments.filter(function(d) { return d.active !== false; });
+      if (channelsGrid && activeDepts.length > 0) {
+        channelsGrid.innerHTML = activeDepts.map(function(c) {
           return '<div style="background: var(--bg, #f8fafc); border: 1px solid var(--bd, #e2e8f0); border-radius: 8px; padding: 10px 14px;">' +
                  '<div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 2px;">' + escapeText(c.name) + '</div>' +
                  '<div style="font-size: 0.8rem; font-family: monospace; color: #0fa968; margin-bottom: 2px;">' + escapeText(c.email) + '</div>' +
@@ -489,7 +513,7 @@
     }
 
     window.addEventListener('storage', function(e) {
-      if (e.key === 'cso_contact_directory') {
+      if (e.key === 'cso_contact_config' || e.key === 'cso_contact_directory') {
         hydrateContactDirectory();
       }
     });

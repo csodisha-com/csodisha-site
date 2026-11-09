@@ -2734,88 +2734,112 @@
       return filename;
     },
 
-    // 26. Contact Information & Directory Engine (module-03-003)
-    getContactDirectory() {
+    // 26. Contact Us & Institutional Directory Engine (module-03-002 / module-03-003)
+    getContactConfig() {
       let config = null;
       try {
-        const raw = localStorage.getItem('cso_contact_directory');
+        const raw = localStorage.getItem('cso_contact_config');
         if (raw) config = JSON.parse(raw);
       } catch (_) {}
 
-      if (!config || typeof config !== 'object') {
+      if (!config || typeof config !== 'object' || !config.meta) {
         config = {
-          primaryEmail: "contact@csodisha.com",
-          helplineNumber: "+91 674 239 0000",
-          operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
-          postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
-          channels: [
-            { id: "CHN-01", name: "Candidate Admission & Syllabus Helpdesk", email: "academic@csodisha.com", category: "Academic", hours: "10:00 - 17:00 IST", status: "Active" },
-            { id: "CHN-02", name: "Grievance & Statutory Redressal", email: "grievance@csodisha.com", category: "Legal", hours: "10:00 - 16:00 IST", status: "Active" },
-            { id: "CHN-03", name: "Technical Portal & CDN Operations", email: "admin@csodisha.com", category: "Technical", hours: "24/7 Monitoring", status: "Active" },
-            { id: "CHN-04", name: "District Community Outreach Desk", email: "outreach@csodisha.com", category: "Outreach", hours: "10:00 - 17:00 IST", status: "Active" }
+          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          endpoints: {
+            primaryEmail: "contact@csodisha.com",
+            helplinePhone: "+91 674 239 0000",
+            operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
+            postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
+            slaResponseTime: "Within 24 business hours"
+          },
+          departments: [
+            { id: "DEPT-01", name: "Candidate Admission & Syllabus Helpdesk", email: "academic@csodisha.com", category: "Academic", hours: "10:00 - 17:00 IST", active: true },
+            { id: "DEPT-02", name: "Grievance & Statutory Redressal", email: "grievance@csodisha.com", category: "Legal", hours: "10:00 - 16:00 IST", active: true },
+            { id: "DEPT-03", name: "Technical Portal & CDN Operations", email: "admin@csodisha.com", category: "Technical", hours: "24/7 Monitoring", active: true },
+            { id: "DEPT-04", name: "District Community Outreach Desk", email: "outreach@csodisha.com", category: "Outreach", hours: "10:00 - 17:00 IST", active: true }
           ],
-          updatedAt: new Date().toISOString()
+          autoResponse: {
+            enabled: true,
+            subject: "Inquiry Acknowledged - Common Sense Odisha",
+            template: "Namaskar. We have received your query regarding Odisha state recruitment resources. Our academic desk will review your submission shortly."
+          }
         };
 
         try {
-          localStorage.setItem('cso_contact_directory', JSON.stringify(config));
+          localStorage.setItem('cso_contact_config', JSON.stringify(config));
         } catch (_) {}
       }
 
       return config;
     },
 
-    saveContactDirectory(config) {
+    saveContactConfig(config) {
       if (!config || typeof config !== 'object') return false;
-      config.updatedAt = new Date().toISOString();
-      save('cso_contact_directory', config);
-      this.logAudit('CONTACT_DIRECTORY_UPDATED', 'CONTACT_MANAGEMENT', `Contact directory, primary endpoints, and department channels updated.`);
+      if (!config.meta) config.meta = {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      save('cso_contact_config', config);
+      this.logAudit('CONTACT_CONFIG_UPDATED', 'CONTACT_MANAGEMENT', `Contact configuration, endpoints, and departments updated.`);
       return config;
     },
 
-    addContactChannel(channelData) {
-      if (!channelData || typeof channelData !== 'object') return false;
-      const directory = this.getContactDirectory();
-      if (!Array.isArray(directory.channels)) directory.channels = [];
+    importContactConfig(jsonString) {
+      if (!jsonString || typeof jsonString !== 'string') throw new Error("Invalid input format.");
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonString);
+      } catch (err) {
+        throw new Error("Invalid JSON syntax: " + err.message);
+      }
 
-      const newChannel = {
-        id: "CHN-" + Date.now().toString().slice(-4),
-        name: channelData.name || "General Desk",
-        email: channelData.email || "contact@csodisha.com",
-        category: channelData.category || "Academic",
-        hours: channelData.hours || "10:00 - 17:00 IST",
-        status: channelData.status || "Active"
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error("Imported data must be an object.");
+      }
+
+      if (!parsed.meta) parsed.meta = {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      parsed.meta.lastEditedBy = "admin@csodisha.com (Import)";
+      save('cso_contact_config', parsed);
+      this.logAudit('CONTACT_CONFIG_IMPORTED', 'CONTACT_MANAGEMENT', `Contact config imported from JSON payload.`);
+      return parsed;
+    },
+
+    resetContactConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        endpoints: {
+          primaryEmail: "contact@csodisha.com",
+          helplinePhone: "+91 674 239 0000",
+          operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
+          postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
+          slaResponseTime: "Within 24 business hours"
+        },
+        departments: [
+          { id: "DEPT-01", name: "Candidate Admission & Syllabus Helpdesk", email: "academic@csodisha.com", category: "Academic", hours: "10:00 - 17:00 IST", active: true },
+          { id: "DEPT-02", name: "Grievance & Statutory Redressal", email: "grievance@csodisha.com", category: "Legal", hours: "10:00 - 16:00 IST", active: true },
+          { id: "DEPT-03", name: "Technical Portal & CDN Operations", email: "admin@csodisha.com", category: "Technical", hours: "24/7 Monitoring", active: true },
+          { id: "DEPT-04", name: "District Community Outreach Desk", email: "outreach@csodisha.com", category: "Outreach", hours: "10:00 - 17:00 IST", active: true }
+        ],
+        autoResponse: {
+          enabled: true,
+          subject: "Inquiry Acknowledged - Common Sense Odisha",
+          template: "Namaskar. We have received your query regarding Odisha state recruitment resources. Our academic desk will review your submission shortly."
+        }
       };
 
-      directory.channels.push(newChannel);
-      this.saveContactDirectory(directory);
-      this.logAudit('CONTACT_CHANNEL_ADDED', 'CONTACT_MANAGEMENT', `Added department channel: ${newChannel.name} (${newChannel.id})`);
-      return newChannel;
+      save('cso_contact_config', initial);
+      this.logAudit('CONTACT_CONFIG_RESET', 'CONTACT_MANAGEMENT', `Contact configuration reset to factory defaults.`);
+      return initial;
     },
 
-    deleteContactChannel(id) {
-      if (!id) return false;
-      const directory = this.getContactDirectory();
-      if (!Array.isArray(directory.channels)) return false;
-
-      const idx = directory.channels.findIndex(c => c.id === id);
-      if (idx !== -1) {
-        const removed = directory.channels.splice(idx, 1)[0];
-        this.saveContactDirectory(directory);
-        this.logAudit('CONTACT_CHANNEL_DELETED', 'CONTACT_MANAGEMENT', `Deleted contact channel: ${removed.name} (${id})`);
-        return true;
-      }
-      return false;
-    },
-
-    exportContactDirectory() {
-      const config = this.getContactDirectory();
+    exportContactManifest() {
+      const config = this.getContactConfig();
       const timestamp = Date.now();
-      const filename = `cso-contact-directory-${timestamp}.json`;
+      const filename = `cso-contact-config-${timestamp}.json`;
       const bundle = {
         manifestVersion: "2026.11",
         exportedAt: new Date(timestamp).toISOString(),
-        directory: config
+        contact: config
       };
 
       const jsonStr = JSON.stringify(bundle, null, 2);
@@ -2829,8 +2853,74 @@
       a.remove();
       URL.revokeObjectURL(url);
 
-      this.logAudit('CONTACT_DIRECTORY_EXPORTED', 'DATA_EXPORT', `Contact directory manifest exported (${filename}).`);
+      this.logAudit('CONTACT_DIRECTORY_EXPORTED', 'DATA_EXPORT', `Contact configuration manifest exported (${filename}).`);
       return filename;
+    },
+
+    // Legacy Contact Directory aliases for backward-compatibility
+    getContactDirectory() {
+      const conf = this.getContactConfig();
+      return {
+        primaryEmail: conf.endpoints?.primaryEmail || "contact@csodisha.com",
+        helplineNumber: conf.endpoints?.helplinePhone || "+91 674 239 0000",
+        operatingHours: conf.endpoints?.operatingHours || "09:30 AM - 05:30 PM IST (Mon - Sat)",
+        postalAddress: conf.endpoints?.postalAddress || "CS Odisha Academic Intelligence Node, Bhubaneswar, Odisha",
+        channels: conf.departments || [],
+        updatedAt: conf.meta?.updatedAt || new Date().toISOString()
+      };
+    },
+
+    saveContactDirectory(config) {
+      if (!config || typeof config !== 'object') return false;
+      const conf = this.getContactConfig();
+      if (!conf.endpoints) conf.endpoints = {};
+      conf.endpoints.primaryEmail = config.primaryEmail || conf.endpoints.primaryEmail;
+      conf.endpoints.helplinePhone = config.helplineNumber || conf.endpoints.helplinePhone;
+      conf.endpoints.operatingHours = config.operatingHours || conf.endpoints.operatingHours;
+      conf.endpoints.postalAddress = config.postalAddress || conf.endpoints.postalAddress;
+      if (Array.isArray(config.channels)) {
+        conf.departments = config.channels;
+      }
+      return this.saveContactConfig(conf);
+    },
+
+    addContactChannel(channelData) {
+      if (!channelData || typeof channelData !== 'object') return false;
+      const config = this.getContactConfig();
+      if (!Array.isArray(config.departments)) config.departments = [];
+
+      const newDept = {
+        id: "DEPT-" + Date.now().toString().slice(-4),
+        name: channelData.name || "General Desk",
+        email: channelData.email || "contact@csodisha.com",
+        category: channelData.category || "Academic",
+        hours: channelData.hours || "10:00 - 17:00 IST",
+        active: channelData.active !== false
+      };
+
+      config.departments.push(newDept);
+      this.saveContactConfig(config);
+      this.logAudit('CONTACT_CHANNEL_ADDED', 'CONTACT_MANAGEMENT', `Added department channel: ${newDept.name} (${newDept.id})`);
+      return newDept;
+    },
+
+    deleteContactChannel(id) {
+      if (!id) return false;
+      const config = this.getContactConfig();
+      if (!Array.isArray(config.departments)) return false;
+
+      const idx = config.departments.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        const removed = config.departments.splice(idx, 1)[0];
+        this.saveContactConfig(config);
+        this.logAudit('CONTACT_CHANNEL_DELETED', 'CONTACT_MANAGEMENT', `Deleted contact channel: ${removed.name} (${id})`);
+        return true;
+      }
+      return false;
+    },
+
+    exportContactDirectory() {
+      return this.exportContactManifest();
     },
 
     // 14. Master Feature Registry Engine (module-01-008)

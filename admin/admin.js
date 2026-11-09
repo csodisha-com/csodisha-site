@@ -318,9 +318,9 @@ async function loadMasterNavigation() {
       } else if (moduleId === 'module-03-001') {
         renderAboutUsWorkspace();
       } else if (moduleId === 'module-03-002') {
-        renderContactDirectoryWorkspace();
+        renderContactUsWorkspace();
       } else if (moduleId === 'module-03-003') {
-        renderContactDirectoryWorkspace();
+        renderContactUsWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -5884,49 +5884,112 @@ async function loadMasterNavigation() {
     }
 
     /**
-     * VIEW 3c: Contact Information & Directory (module-03-003)
+     * VIEW 3b: Contact Us & Directory Studio (module-03-002 / module-03-003)
      */
-    function renderContactDirectoryWorkspace() {
+    function renderContactUsWorkspace() {
       // Header Breadcrumb
       dom.breadcrumbFolder.textContent = "Website Information & Legal";
-      dom.breadcrumbModule.textContent = "Contact Information & Directory (module-03-003)";
+      dom.breadcrumbModule.textContent = "Contact Us (module-03-002)";
 
-      // Top Action Bar
+      // Top Action Toolbar
       dom.moduleHeaderActions.innerHTML = `
-        <div class="flex items-center gap-2">
-          <button id="btnSaveContactDirectory" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnSaveContactStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Save Directory Changes
+            Save & Publish Contact Desk
           </button>
-          <a href="/contact.html" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+          <a href="/contact.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Preview Contact Desk ↗
+            Preview Live Page ↗
           </a>
-          <button id="btnExportContactJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+          <button id="btnToggleContactJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            Raw JSON Editor
+          </button>
+          <button id="btnExportContactConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export Directory (JSON)
+            Export Config
+          </button>
+          <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import Config
+            <input id="inputImportContactConfig" type="file" accept=".json,application/json" class="hidden">
+          </label>
+          <button id="btnResetContactConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Reset to Default
           </button>
         </div>
       `;
 
-      // Ingest Contact Directory
-      let dir = (window.CSOSuperStore && typeof window.CSOSuperStore.getContactDirectory === 'function')
-        ? window.CSOSuperStore.getContactDirectory()
+      // Ingest Contact Config
+      let contact = (window.CSOSuperStore && typeof window.CSOSuperStore.getContactConfig === 'function')
+        ? window.CSOSuperStore.getContactConfig()
         : {
-            primaryEmail: "contact@csodisha.com",
-            helplineNumber: "+91 674 239 0000",
-            operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
-            postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
-            channels: [],
-            updatedAt: new Date().toISOString()
+            meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+            endpoints: {
+              primaryEmail: "contact@csodisha.com",
+              helplinePhone: "+91 674 239 0000",
+              operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
+              postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
+              slaResponseTime: "Within 24 business hours"
+            },
+            departments: [],
+            autoResponse: {
+              enabled: true,
+              subject: "Inquiry Acknowledged - Common Sense Odisha",
+              template: "Namaskar. We have received your query regarding Odisha state recruitment resources."
+            }
           };
 
-      function renderChannelsTable() {
-        const tbody = document.getElementById('contactChannelsTableBody');
+      let currentDepartments = Array.isArray(contact.departments) ? JSON.parse(JSON.stringify(contact.departments)) : [];
+
+      function syncContactJsonEditor() {
+        const jsonTextarea = document.getElementById('textareaContactRawJson');
+        if (jsonTextarea) {
+          const snapshot = gatherContactFormState();
+          jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+        }
+      }
+
+      function gatherContactFormState() {
+        const emailInput = document.getElementById('inputContactEmail');
+        const phoneInput = document.getElementById('inputContactPhone');
+        const hoursInput = document.getElementById('inputContactHours');
+        const slaInput = document.getElementById('inputContactSla');
+        const addrTextarea = document.getElementById('textareaContactAddress');
+
+        const autoToggle = document.getElementById('toggleAutoResponseEnabled');
+        const autoSubject = document.getElementById('inputAutoResponseSubject');
+        const autoTemplate = document.getElementById('textareaAutoResponseTemplate');
+
+        return {
+          meta: {
+            version: (contact.meta && contact.meta.version) || "1.0",
+            lastEditedBy: "admin@csodisha.com",
+            updatedAt: (contact.meta && contact.meta.updatedAt) || new Date().toISOString()
+          },
+          endpoints: {
+            primaryEmail: emailInput ? emailInput.value.trim() : (contact.endpoints?.primaryEmail || 'contact@csodisha.com'),
+            helplinePhone: phoneInput ? phoneInput.value.trim() : (contact.endpoints?.helplinePhone || '+91 674 239 0000'),
+            operatingHours: hoursInput ? hoursInput.value.trim() : (contact.endpoints?.operatingHours || '09:30 AM - 05:30 PM IST (Mon - Sat)'),
+            postalAddress: addrTextarea ? addrTextarea.value.trim() : (contact.endpoints?.postalAddress || ''),
+            slaResponseTime: slaInput ? slaInput.value.trim() : (contact.endpoints?.slaResponseTime || 'Within 24 business hours')
+          },
+          departments: currentDepartments,
+          autoResponse: {
+            enabled: autoToggle ? autoToggle.checked : (contact.autoResponse?.enabled !== false),
+            subject: autoSubject ? autoSubject.value.trim() : (contact.autoResponse?.subject || 'Inquiry Acknowledged'),
+            template: autoTemplate ? autoTemplate.value.trim() : (contact.autoResponse?.template || '')
+          }
+        };
+      }
+
+      function renderDepartmentsTable() {
+        const tbody = document.getElementById('contactDepartmentsTableBody');
         if (!tbody) return;
 
-        const currentChannels = Array.isArray(dir.channels) ? dir.channels : [];
-        if (currentChannels.length === 0) {
+        if (currentDepartments.length === 0) {
           tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-xs text-slate-400 font-mono">No specialized channels configured. Add one below.</td></tr>`;
           return;
         }
@@ -5938,11 +6001,11 @@ async function loadMasterNavigation() {
           'Outreach': 'bg-amber-950/80 text-amber-400 border-amber-800/60'
         };
 
-        tbody.innerHTML = currentChannels.map((c) => {
+        tbody.innerHTML = currentDepartments.map((c, idx) => {
           const badgeClass = categoryBadges[c.category] || 'bg-slate-800 text-slate-300 border-slate-700';
           return `
             <tr class="border-b border-brand-border/60 hover:bg-slate-800/40 transition">
-              <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${escapeHtml(c.id || '')}</td>
+              <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${escapeHtml(c.id || `DEPT-${idx+1}`)}</td>
               <td class="px-4 py-3 font-semibold text-xs text-white">${escapeHtml(c.name || '')}</td>
               <td class="px-4 py-3 font-mono text-xs text-emerald-400">${escapeHtml(c.email || '')}</td>
               <td class="px-4 py-3">
@@ -5950,22 +6013,38 @@ async function loadMasterNavigation() {
               </td>
               <td class="px-4 py-3 text-xs text-slate-300 font-mono">${escapeHtml(c.hours || 'N/A')}</td>
               <td class="px-4 py-3 text-right">
-                <button data-delete-channel="${escapeHtml(c.id)}" class="btn-delete-channel px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
-                  Delete
-                </button>
+                <div class="flex items-center justify-end gap-2">
+                  <label class="flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer">
+                    <input type="checkbox" class="dept-active-toggle rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${c.active !== false ? 'checked' : ''}>
+                    Active
+                  </label>
+                  <button data-delete-dept="${idx}" class="btn-delete-dept px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           `;
         }).join('');
 
-        tbody.querySelectorAll('.btn-delete-channel').forEach(btn => {
+        tbody.querySelectorAll('.dept-active-toggle').forEach(cb => {
+          cb.addEventListener('change', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentDepartments[index]) {
+              currentDepartments[index].active = e.target.checked;
+              syncContactJsonEditor();
+            }
+          });
+        });
+
+        tbody.querySelectorAll('.btn-delete-dept').forEach(btn => {
           btn.addEventListener('click', (e) => {
-            const id = e.currentTarget.getAttribute('data-delete-channel');
-            if (id && window.CSOSuperStore && typeof window.CSOSuperStore.deleteContactChannel === 'function') {
-              window.CSOSuperStore.deleteContactChannel(id);
-              dir = window.CSOSuperStore.getContactDirectory();
-              renderChannelsTable();
-              showToast(`Department channel ${id} removed.`, "info");
+            const index = parseInt(e.currentTarget.getAttribute('data-delete-dept'), 10);
+            if (!isNaN(index) && index >= 0 && index < currentDepartments.length) {
+              const removed = currentDepartments.splice(index, 1)[0];
+              renderDepartmentsTable();
+              syncContactJsonEditor();
+              showToast(`Department channel "${removed.name}" removed.`, "info");
             }
           });
         });
@@ -5977,17 +6056,39 @@ async function loadMasterNavigation() {
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h2 class="text-base font-bold text-white flex items-center gap-2">
-                Contact Information & Department Directory
-                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-003</span>
+                Contact Information & Department Directory Studio
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-002</span>
               </h2>
-              <p class="text-xs text-slate-400 mt-0.5">Maintain state candidate helpdesks, emergency escalation channels, and physical liaison addresses.</p>
+              <p class="text-xs text-slate-400 mt-0.5">Control candidate helpdesks, response SLA windows, physical liaison addresses, and automated acknowledgments.</p>
             </div>
-            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg">
-              Last Updated: <span id="contactLastUpdated" class="text-emerald-400 font-bold">${new Date(dir.updatedAt).toLocaleDateString()}</span>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+              <span>Version: <strong class="text-cyan-400">${escapeHtml(contact.meta?.version || '1.0')}</strong></span>
+              <span>Updated: <span id="contactLastUpdated" class="text-emerald-400 font-bold">${new Date(contact.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
             </div>
           </div>
 
-          <!-- Card 1: Primary Institutional Communication Endpoints -->
+          <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
+          <div id="contactRawJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                  Raw State Developer Console (JSON)
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+            </div>
+            <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for automated bulk updates, webhook hooks, and schema migrations.</p>
+            <textarea id="textareaContactRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+            <div class="flex justify-end gap-2">
+              <button id="btnApplyContactRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Apply JSON Changes
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 1: Primary Institutional Endpoints -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
@@ -5998,34 +6099,41 @@ async function loadMasterNavigation() {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Primary General Email <span class="text-rose-400">*</span></label>
-                <input id="inputContactEmail" type="email" value="${escapeHtml(dir.primaryEmail || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Primary Support Email <span class="text-rose-400">*</span></label>
+                <input id="inputContactEmail" type="email" value="${escapeHtml(contact.endpoints?.primaryEmail || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Helpline Number <span class="text-rose-400">*</span></label>
-                <input id="inputContactPhone" type="text" value="${escapeHtml(dir.helplineNumber || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Helpline Phone Number <span class="text-rose-400">*</span></label>
+                <input id="inputContactPhone" type="text" value="${escapeHtml(contact.endpoints?.helplinePhone || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Operating Hours</label>
+                <input id="inputContactHours" type="text" value="${escapeHtml(contact.endpoints?.operatingHours || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">SLA Response Window</label>
+                <input id="inputContactSla" type="text" value="${escapeHtml(contact.endpoints?.slaResponseTime || 'Within 24 business hours')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-200 mb-1">Operational Hours</label>
-              <input id="inputContactHours" type="text" value="${escapeHtml(dir.operatingHours || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-200 mb-1">Physical / Postal Address <span class="text-rose-400">*</span></label>
-              <textarea id="textareaContactAddress" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(dir.postalAddress || '')}</textarea>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Physical / Postal Liaison Address <span class="text-rose-400">*</span></label>
+              <textarea id="textareaContactAddress" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(contact.endpoints?.postalAddress || '')}</textarea>
             </div>
           </div>
 
-          <!-- Card 2: Specialized Department Channels Directory -->
+          <!-- Card 2: Specialized Department Channels Directory (Extensible) -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Specialized Department Channels Directory
+                  Specialized Department Channels Directory (Extensible)
                 </h3>
               </div>
               <span class="text-[11px] font-mono text-slate-400">Targeted Resolution Desks</span>
@@ -6040,29 +6148,29 @@ async function loadMasterNavigation() {
                     <th class="px-4 py-2.5">Department Name</th>
                     <th class="px-4 py-2.5">Email Endpoint</th>
                     <th class="px-4 py-2.5">Category</th>
-                    <th class="px-4 py-2.5">Hours</th>
-                    <th class="px-4 py-2.5 text-right">Action</th>
+                    <th class="px-4 py-2.5">Active Hours</th>
+                    <th class="px-4 py-2.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody id="contactChannelsTableBody"></tbody>
+                <tbody id="contactDepartmentsTableBody"></tbody>
               </table>
             </div>
 
             <!-- Inline Form to Add Department Channel -->
-            <div class="p-4 rounded-lg bg-slate-900/60 border border-brand-border/80 space-y-3">
-              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Specialized Channel</h4>
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Specialized Department Channel</h4>
               <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div class="sm:col-span-1">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Channel Name</label>
-                  <input id="inputNewChannelName" type="text" placeholder="e.g. Scholarship Desk" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Department Name</label>
+                  <input id="inputNewDeptName" type="text" placeholder="e.g. Scholarship Desk" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
                 <div class="sm:col-span-1">
                   <label class="block text-[11px] font-medium text-slate-400 mb-1">Email Endpoint</label>
-                  <input id="inputNewChannelEmail" type="email" placeholder="e.g. scholar@csodisha.com" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <input id="inputNewDeptEmail" type="email" placeholder="e.g. scholar@csodisha.com" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
                 <div class="sm:col-span-1">
                   <label class="block text-[11px] font-medium text-slate-400 mb-1">Category</label>
-                  <select id="selectNewChannelCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <select id="selectNewDeptCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                     <option value="Academic">Academic</option>
                     <option value="Legal">Legal</option>
                     <option value="Technical">Technical</option>
@@ -6071,34 +6179,101 @@ async function loadMasterNavigation() {
                 </div>
                 <div class="sm:col-span-1">
                   <label class="block text-[11px] font-medium text-slate-400 mb-1">Active Hours</label>
-                  <input id="inputNewChannelHours" type="text" placeholder="e.g. 10:00 - 17:00 IST" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <input id="inputNewDeptHours" type="text" placeholder="e.g. 10:00 - 17:00 IST" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
               </div>
               <div class="flex justify-end">
-                <button id="btnAddChannelAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                <button id="btnAddDeptAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   + Add Channel
                 </button>
               </div>
             </div>
           </div>
+
+          <!-- Card 3: Automated Candidate Acknowledgment -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Automated Candidate Acknowledgment (Auto-Response SLA)
+                </h3>
+              </div>
+              <label class="flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
+                <input id="toggleAutoResponseEnabled" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" ${(contact.autoResponse?.enabled !== false) ? 'checked' : ''}>
+                Enable Auto-Responder
+              </label>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Acknowledgment Email Subject</label>
+              <input id="inputAutoResponseSubject" type="text" value="${escapeHtml(contact.autoResponse?.subject || 'Inquiry Acknowledged - Common Sense Odisha')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Confirmation Message Template</label>
+              <textarea id="textareaAutoResponseTemplate" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(contact.autoResponse?.template || '')}</textarea>
+            </div>
+          </div>
         </div>
       `;
 
-      renderChannelsTable();
+      renderDepartmentsTable();
+      syncContactJsonEditor();
 
-      // Form Bindings
-      const inputEmail = document.getElementById('inputContactEmail');
-      const inputPhone = document.getElementById('inputContactPhone');
-      const inputHours = document.getElementById('inputContactHours');
-      const textareaAddress = document.getElementById('textareaContactAddress');
+      // Drawer toggle
+      document.getElementById('btnToggleContactJsonDrawer')?.addEventListener('click', () => {
+        const drawer = document.getElementById('contactRawJsonDrawer');
+        if (drawer) {
+          drawer.classList.toggle('hidden');
+          syncContactJsonEditor();
+        }
+      });
 
-      // Add Channel Handler
-      document.getElementById('btnAddChannelAction')?.addEventListener('click', () => {
-        const nameInput = document.getElementById('inputNewChannelName');
-        const emailInput = document.getElementById('inputNewChannelEmail');
-        const categoryInput = document.getElementById('selectNewChannelCategory');
-        const hoursInput = document.getElementById('inputNewChannelHours');
+      // Apply raw JSON changes
+      document.getElementById('btnApplyContactRawJsonChanges')?.addEventListener('click', () => {
+        const jsonText = document.getElementById('textareaContactRawJson')?.value;
+        if (!jsonText) return;
+        try {
+          const parsed = JSON.parse(jsonText);
+          if (parsed && typeof parsed === 'object') {
+            contact = parsed;
+            currentDepartments = Array.isArray(contact.departments) ? JSON.parse(JSON.stringify(contact.departments)) : [];
+
+            // Update form fields
+            const em = document.getElementById('inputContactEmail');
+            const ph = document.getElementById('inputContactPhone');
+            const hr = document.getElementById('inputContactHours');
+            const sla = document.getElementById('inputContactSla');
+            const ad = document.getElementById('textareaContactAddress');
+            const tog = document.getElementById('toggleAutoResponseEnabled');
+            const sb = document.getElementById('inputAutoResponseSubject');
+            const tm = document.getElementById('textareaAutoResponseTemplate');
+
+            if (em) em.value = contact.endpoints?.primaryEmail || '';
+            if (ph) ph.value = contact.endpoints?.helplinePhone || '';
+            if (hr) hr.value = contact.endpoints?.operatingHours || '';
+            if (sla) sla.value = contact.endpoints?.slaResponseTime || '';
+            if (ad) ad.value = contact.endpoints?.postalAddress || '';
+            if (tog) tog.checked = contact.autoResponse?.enabled !== false;
+            if (sb) sb.value = contact.autoResponse?.subject || '';
+            if (tm) tm.value = contact.autoResponse?.template || '';
+
+            renderDepartmentsTable();
+            showToast("Raw JSON parsed and applied to contact form.", "success");
+          }
+        } catch (err) {
+          showToast("JSON Syntax Error: " + err.message, "danger");
+        }
+      });
+
+      // Add Department Channel Handler
+      document.getElementById('btnAddDeptAction')?.addEventListener('click', () => {
+        const nameInput = document.getElementById('inputNewDeptName');
+        const emailInput = document.getElementById('inputNewDeptEmail');
+        const categoryInput = document.getElementById('selectNewDeptCategory');
+        const hoursInput = document.getElementById('inputNewDeptHours');
 
         const name = nameInput?.value.trim() || '';
         const email = emailInput?.value.trim() || '';
@@ -6106,65 +6281,104 @@ async function loadMasterNavigation() {
         const hours = hoursInput?.value.trim() || '10:00 - 17:00 IST';
 
         if (!name || !email) {
-          showToast("Channel name and email are required.", "warning");
+          showToast("Department name and email are required.", "warning");
           return;
         }
 
-        if (window.CSOSuperStore && typeof window.CSOSuperStore.addContactChannel === 'function') {
-          window.CSOSuperStore.addContactChannel({
-            name: name,
-            email: email,
-            category: category,
-            hours: hours,
-            status: "Active"
-          });
-          dir = window.CSOSuperStore.getContactDirectory();
-          renderChannelsTable();
+        currentDepartments.push({
+          id: `DEPT-${String(currentDepartments.length + 1).padStart(2, '0')}`,
+          name: name,
+          email: email,
+          category: category,
+          hours: hours,
+          active: true
+        });
 
-          nameInput.value = '';
-          emailInput.value = '';
-          hoursInput.value = '';
-          showToast(`Specialized channel "${name}" added successfully.`, "success");
-        }
+        nameInput.value = '';
+        emailInput.value = '';
+        hoursInput.value = '';
+        renderDepartmentsTable();
+        syncContactJsonEditor();
+        showToast(`Specialized channel "${name}" added.`, "info");
       });
 
-      // Save Directory Changes
-      document.getElementById('btnSaveContactDirectory')?.addEventListener('click', () => {
-        const email = inputEmail?.value.trim() || '';
-        const phone = inputPhone?.value.trim() || '';
-        const address = textareaAddress?.value.trim() || '';
+      // Save & Publish Contact Desk Handler
+      document.getElementById('btnSaveContactStudio')?.addEventListener('click', () => {
+        const payload = gatherContactFormState();
 
-        if (!email || !phone || !address) {
-          showToast("General email, helpline phone, and postal address are required.", "warning");
+        if (!payload.endpoints.primaryEmail || !payload.endpoints.helplinePhone || !payload.endpoints.postalAddress) {
+          showToast("Email, helpline phone, and postal address are required.", "warning");
           return;
         }
 
-        const payload = {
-          primaryEmail: email,
-          helplineNumber: phone,
-          operatingHours: inputHours?.value.trim() || "09:30 AM - 05:30 PM IST (Mon - Sat)",
-          postalAddress: address,
-          channels: dir.channels || []
-        };
-
-        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveContactDirectory === 'function') {
-          const saved = window.CSOSuperStore.saveContactDirectory(payload);
-          dir = saved;
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveContactConfig === 'function') {
+          const saved = window.CSOSuperStore.saveContactConfig(payload);
+          contact = saved;
           const dateEl = document.getElementById('contactLastUpdated');
-          if (dateEl && saved.updatedAt) {
-            dateEl.textContent = new Date(saved.updatedAt).toLocaleDateString();
+          if (dateEl && saved.meta?.updatedAt) {
+            dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
           }
-          showToast("Contact Information & Directory saved successfully!", "success");
+          syncContactJsonEditor();
+          showToast("Contact information & directory published successfully!", "success");
         }
       });
 
-      // Export Directory Handler
-      document.getElementById('btnExportContactJson')?.addEventListener('click', () => {
-        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportContactDirectory === 'function') {
-          const filename = window.CSOSuperStore.exportContactDirectory();
-          showToast(`Contact directory exported: ${filename}`, "success");
+      // Export JSON Handler
+      document.getElementById('btnExportContactConfig')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportContactManifest === 'function') {
+          const filename = window.CSOSuperStore.exportContactManifest();
+          showToast(`Contact configuration exported: ${filename}`, "success");
         }
       });
+
+      // Import JSON Handler
+      document.getElementById('inputImportContactConfig')?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const content = event.target?.result;
+            if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importContactConfig === 'function') {
+              let parsed;
+              try {
+                parsed = JSON.parse(content);
+                if (parsed && parsed.contact) parsed = parsed.contact;
+              } catch (_) {}
+
+              const imported = window.CSOSuperStore.importContactConfig(JSON.stringify(parsed));
+              showToast("Contact configuration imported successfully!", "success");
+              renderContactUsWorkspace();
+            }
+          } catch (err) {
+            showToast("Import failed: " + err.message, "danger");
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Reset to Default Handler
+      document.getElementById('btnResetContactConfig')?.addEventListener('click', () => {
+        if (confirm("Are you sure you want to restore factory default contact settings? All unsaved customizations will be reset.")) {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.resetContactConfig === 'function') {
+            window.CSOSuperStore.resetContactConfig();
+            showToast("Contact configuration restored to factory defaults.", "info");
+            renderContactUsWorkspace();
+          }
+        }
+      });
+
+      // Form input change listeners to sync with raw JSON
+      ['inputContactEmail', 'inputContactPhone', 'inputContactHours', 'inputContactSla', 'textareaContactAddress', 'inputAutoResponseSubject', 'textareaAutoResponseTemplate'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', syncContactJsonEditor);
+      });
+      document.getElementById('toggleAutoResponseEnabled')?.addEventListener('change', syncContactJsonEditor);
+    }
+
+    // Retain legacy renderContactDirectoryWorkspace alias
+    function renderContactDirectoryWorkspace() {
+      renderContactUsWorkspace();
     }
 
     /**
