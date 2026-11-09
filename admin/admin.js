@@ -345,6 +345,12 @@ async function loadMasterNavigation() {
         renderCookiePolicyWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-007') {
         renderCopyrightWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-008') {
+        renderEditorialWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-009') {
+        renderCorrectionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-010') {
+        renderAccessibilityWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -9167,6 +9173,1189 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW 3h: Editorial Policy & Verification Standards Studio (module-03-008)
+     */
+    function renderEditorialWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Editorial Policy (module-03-008)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getEditorialConfig() : {
+          meta: { version: "1.5", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: { title: "Editorial Integrity & Verification Standards", badge: "Gazette-Backed Fact Checking", lastReviewed: "2026-11-01" },
+          standards: [
+            { id: "ED-01", title: "Dual-Source Gazette Verification", category: "Verification", body: "Every exam syllabus, eligibility cutoff, and recruitment date must be reconciled against an official government gazette or primary commission portal (OPSC, OSSC, OSSSC) before publication.", active: true },
+            { id: "ED-02", title: "Non-Commercial Academic Independence", category: "Independence", body: "Our editorial staff and syllabus curators maintain complete autonomy. No sponsored coaching material or unverified promotional claims are permitted.", active: true },
+            { id: "ED-03", title: "Plain Language Accessibility", category: "Pedagogy", body: "Complex recruitment notifications are translated into simplified, structured Odia and English breakdowns for equal candidate comprehension.", active: true }
+          ],
+          ethicsSummary: "Common Sense Odisha strictly rejects speculative clickbait, misleading recruitment dates, and unverified coaching predictions."
+        };
+
+        const doc = config.document || {};
+        const standards = Array.isArray(config.standards) ? config.standards : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Editorial Policy &amp; Standards Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-008</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Configure gazette-backed editorial standards, independence guidelines, and pedagogical ethics.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="editorial-policy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>Preview Live</span>
+                </a>
+                <button type="button" id="btnToggleEditorialJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportEditorialConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportEditorialConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetEditorialConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveEditorialConfig" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Document Metadata & Fact-Checking Badge -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Document Metadata &amp; Fact-Checking Badge</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.5')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Document Title</label>
+                  <input type="text" id="editorialInputTitle" value="${escapeHtml(doc.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Fact-Checking Badge</label>
+                  <input type="text" id="editorialInputBadge" value="${escapeHtml(doc.badge || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Last Reviewed Date</label>
+                  <input type="date" id="editorialInputLastReviewed" value="${escapeHtml(doc.lastReviewed || '2026-11-01')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Standards & Principles Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Editorial Standards &amp; Verification Rules</h3>
+                </div>
+                <button type="button" id="btnAddEditorialStandard" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-xs rounded border border-emerald-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Standard</span>
+                </button>
+              </div>
+
+              <div id="editorialStandardsContainer" class="space-y-3">
+                ${standards.map((st, idx) => `
+                  <div class="editorial-standard-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3" data-id="${escapeHtml(st.id || '')}">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="standard-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${escapeHtml(st.id || '')}" placeholder="ID">
+                        <input type="text" class="standard-category-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(st.category || 'Verification')}" placeholder="Category">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                          <input type="checkbox" class="standard-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" ${st.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-standard text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Standard">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="standard-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(st.title || '')}" placeholder="Standard Title">
+                    </div>
+                    <div>
+                      <textarea class="standard-body-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Standard Description & Guidelines">${escapeHtml(st.body || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Card 3: Non-Commercial Ethics Summary -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Ethics Summary &amp; Anti-Clickbait Commitment</h3>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Academic Integrity Commitment Statement</label>
+                <textarea id="editorialInputEthicsSummary" rows="3" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition leading-relaxed">${escapeHtml(config.ethicsSummary || '')}</textarea>
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="editorialJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_editorial_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatEditorialRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyEditorialRawJsonChanges" class="px-3 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaEditorialRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-emerald-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-emerald-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // JSON Drawer Sync Helper
+        const syncEditorialJsonEditor = () => {
+          const currentConfig = harvestEditorialForm();
+          const jsonTextarea = document.getElementById('textareaEditorialRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestEditorialForm = () => {
+          const standardsEls = document.querySelectorAll('.editorial-standard-item');
+          const standardsList = [];
+          standardsEls.forEach(el => {
+            standardsList.push({
+              id: el.querySelector('.standard-id-input')?.value.trim() || '',
+              category: el.querySelector('.standard-category-input')?.value.trim() || 'Verification',
+              active: el.querySelector('.standard-active-toggle')?.checked ?? true,
+              title: el.querySelector('.standard-title-input')?.value.trim() || '',
+              body: el.querySelector('.standard-body-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.5",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            document: {
+              title: document.getElementById('editorialInputTitle')?.value.trim() || '',
+              badge: document.getElementById('editorialInputBadge')?.value.trim() || '',
+              lastReviewed: document.getElementById('editorialInputLastReviewed')?.value.trim() || '2026-11-01'
+            },
+            standards: standardsList,
+            ethicsSummary: document.getElementById('editorialInputEthicsSummary')?.value.trim() || ''
+          };
+        };
+
+        // Attach Event Listeners
+        // Toggle JSON Drawer
+        document.getElementById('btnToggleEditorialJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('editorialJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncEditorialJsonEditor();
+            }
+          }
+        });
+
+        // Format JSON
+        document.getElementById('btnFormatEditorialRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaEditorialRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        // Apply JSON to Form
+        document.getElementById('btnApplyEditorialRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaEditorialRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveEditorialConfig === 'function') {
+                window.CSOSuperStore.saveEditorialConfig(parsed);
+                showToast("JSON payload applied and saved successfully!", "success");
+                renderEditorialWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        // Add Standard Handler
+        document.getElementById('btnAddEditorialStandard')?.addEventListener('click', () => {
+          const container = document.getElementById('editorialStandardsContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.editorial-standard-item').length + 1;
+          const newId = 'ED-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "editorial-standard-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.setAttribute('data-id', newId);
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="standard-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${newId}" placeholder="ID">
+                <input type="text" class="standard-category-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Verification" placeholder="Category">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                  <input type="checkbox" class="standard-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-standard text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Standard">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="standard-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Standard Title">
+            </div>
+            <div>
+              <textarea class="standard-body-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 leading-relaxed resize-y" rows="2" placeholder="Standard Description & Guidelines"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachEditorialItemListeners(div);
+          syncEditorialJsonEditor();
+        });
+
+        const attachEditorialItemListeners = (parent) => {
+          parent.querySelector('.btn-remove-standard')?.addEventListener('click', () => {
+            parent.remove();
+            syncEditorialJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', syncEditorialJsonEditor);
+          });
+          parent.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', syncEditorialJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.editorial-standard-item').forEach(attachEditorialItemListeners);
+
+        // Save Button Handler
+        document.getElementById('btnSaveEditorialConfig')?.addEventListener('click', () => {
+          const newConfig = harvestEditorialForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveEditorialConfig === 'function') {
+            window.CSOSuperStore.saveEditorialConfig(newConfig);
+            showToast("Editorial policy saved successfully!", "success");
+            syncEditorialJsonEditor();
+          }
+        });
+
+        // Export Button Handler
+        document.getElementById('btnExportEditorialConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportEditorialManifest === 'function') {
+            window.CSOSuperStore.exportEditorialManifest();
+            showToast("Editorial manifest exported.", "info");
+          }
+        });
+
+        // Import Button Handler
+        document.getElementById('inputImportEditorialConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.editorial) parsed = parsed.editorial;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importEditorialConfig === 'function') {
+                window.CSOSuperStore.importEditorialConfig(JSON.stringify(parsed));
+                showToast("Editorial policy imported successfully!", "success");
+                renderEditorialWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset Handler
+        document.getElementById('btnResetEditorialConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default editorial standards? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetEditorialConfig === 'function') {
+              window.CSOSuperStore.resetEditorialConfig();
+              showToast("Editorial policy restored to defaults.", "info");
+              renderEditorialWorkspace(root);
+            }
+          }
+        });
+
+        // Input sync
+        ['editorialInputTitle', 'editorialInputBadge', 'editorialInputLastReviewed', 'editorialInputEthicsSummary'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncEditorialJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-008 (Editorial Policy)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 3i: Corrections Policy & Retraction Protocol Studio (module-03-009)
+     */
+    function renderCorrectionsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Corrections Policy (module-03-009)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getCorrectionsConfig() : {
+          meta: { version: "1.3", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: { title: "Corrections & Retraction Policy", badge: "Transparent Accountability", lastReviewed: "2026-11-01" },
+          desk: {
+            deskName: "Editorial Fact-Check & Retraction Desk",
+            email: "corrections@csodisha.com",
+            turnaroundHours: 24,
+            portalSection: "Trust Layer & Verification Log"
+          },
+          workflow: [
+            { step: 1, title: "Candidate or Reader Flag", description: "Any user flags a discrepancy with primary gazette citation via corrections desk or feedback form." },
+            { step: 2, title: "Independent Verification", description: "Verification desk cross-references official gazette, corrigendum notices, and commission archives within 24 hours." },
+            { step: 3, title: "Transparent Retraction Note", description: "If an error exists, the article is updated immediately with an explicit, high-visibility retraction badge and timestamped revision note." }
+          ],
+          recentCorrections: [
+            { id: "CORR-2026-01", date: "2026-10-18", module: "OSSC CGL 2026", note: "Corrected age relaxation eligibility bracket for SEBC candidates in accordance with Corrigendum No. 418/OSSC.", verifiedBy: "Senior Fact Checker" },
+            { id: "CORR-2026-02", date: "2026-10-25", module: "OPSC OCS Preliminary", note: "Reconciled CSAT qualifying benchmark from 33% to notification standard.", verifiedBy: "Academic Director" }
+          ]
+        };
+
+        const doc = config.document || {};
+        const desk = config.desk || {};
+        const workflow = Array.isArray(config.workflow) ? config.workflow : [];
+        const recentCorrections = Array.isArray(config.recentCorrections) ? config.recentCorrections : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Corrections &amp; Retractions Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800/60">module-03-009</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Manage candidate error reporting channels, 24h verification SLA, and transparent corrigenda logs.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="corrections-policy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>Preview Live</span>
+                </a>
+                <button type="button" id="btnToggleCorrectionsJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportCorrectionsConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportCorrectionsConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetCorrectionsConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveCorrectionsConfig" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Document Metadata -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Document Metadata</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.3')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Document Title</label>
+                  <input type="text" id="correctionsInputTitle" value="${escapeHtml(doc.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Accountability Badge</label>
+                  <input type="text" id="correctionsInputBadge" value="${escapeHtml(doc.badge || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Last Reviewed Date</label>
+                  <input type="date" id="correctionsInputLastReviewed" value="${escapeHtml(doc.lastReviewed || '2026-11-01')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Dedicated Fact-Check & Retraction Desk Coordinates -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Fact-Check &amp; Corrections Desk Coordinates</h3>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Desk Name</label>
+                  <input type="text" id="correctionsInputDeskName" value="${escapeHtml(desk.deskName || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Submissions Email</label>
+                  <input type="email" id="correctionsInputEmail" value="${escapeHtml(desk.email || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Verification SLA (Hours)</label>
+                  <input type="number" id="correctionsInputTurnaroundHours" value="${desk.turnaroundHours || 24}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Public Portal Section</label>
+                  <input type="text" id="correctionsInputPortalSection" value="${escapeHtml(desk.portalSection || 'Trust Layer')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: 3-Stage Investigation Workflow -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Investigation &amp; Retraction Protocol Workflow</h3>
+                </div>
+              </div>
+
+              <div id="correctionsWorkflowContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${workflow.map((wf, idx) => `
+                  <div class="corrections-wf-item bg-slate-950/60 border border-slate-800 rounded-lg p-3 space-y-2" data-step="${idx + 1}">
+                    <div class="flex items-center justify-between">
+                      <span class="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 text-xs font-bold rounded">Step ${idx + 1}</span>
+                    </div>
+                    <input type="text" class="wf-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(wf.title || '')}" placeholder="Step Title">
+                    <textarea class="wf-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="3" placeholder="Step description">${escapeHtml(wf.description || '')}</textarea>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Card 4: Recent Corrections & Corrigenda Log -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Public Corrigenda &amp; Corrections Log</h3>
+                </div>
+                <button type="button" id="btnAddCorrectionItem" class="px-2.5 py-1 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 text-xs rounded border border-amber-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Log Entry</span>
+                </button>
+              </div>
+
+              <div id="correctionsLogContainer" class="space-y-3">
+                ${recentCorrections.map(rc => `
+                  <div class="correction-log-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <input type="text" class="log-id-input w-28 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-400" value="${escapeHtml(rc.id || '')}" placeholder="ID">
+                        <input type="date" class="log-date-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200" value="${escapeHtml(rc.date || '')}">
+                        <input type="text" class="log-module-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="${escapeHtml(rc.module || '')}" placeholder="Affected Exam / Article">
+                        <input type="text" class="log-verified-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="${escapeHtml(rc.verifiedBy || '')}" placeholder="Verified By">
+                      </div>
+                      <button type="button" class="btn-remove-log-entry text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Entry">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <textarea class="log-note-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Corrigendum or correction note details">${escapeHtml(rc.note || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="correctionsJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_corrections_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatCorrectionsRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyCorrectionsRawJsonChanges" class="px-3 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaCorrectionsRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-amber-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // JSON Drawer Sync Helper
+        const syncCorrectionsJsonEditor = () => {
+          const currentConfig = harvestCorrectionsForm();
+          const jsonTextarea = document.getElementById('textareaCorrectionsRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestCorrectionsForm = () => {
+          const wfEls = document.querySelectorAll('.corrections-wf-item');
+          const wfList = [];
+          wfEls.forEach((el, idx) => {
+            wfList.push({
+              step: idx + 1,
+              title: el.querySelector('.wf-title-input')?.value.trim() || '',
+              description: el.querySelector('.wf-desc-input')?.value.trim() || ''
+            });
+          });
+
+          const logEls = document.querySelectorAll('.correction-log-item');
+          const logsList = [];
+          logEls.forEach(el => {
+            logsList.push({
+              id: el.querySelector('.log-id-input')?.value.trim() || '',
+              date: el.querySelector('.log-date-input')?.value.trim() || '',
+              module: el.querySelector('.log-module-input')?.value.trim() || '',
+              verifiedBy: el.querySelector('.log-verified-input')?.value.trim() || '',
+              note: el.querySelector('.log-note-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.3",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            document: {
+              title: document.getElementById('correctionsInputTitle')?.value.trim() || '',
+              badge: document.getElementById('correctionsInputBadge')?.value.trim() || '',
+              lastReviewed: document.getElementById('correctionsInputLastReviewed')?.value.trim() || '2026-11-01'
+            },
+            desk: {
+              deskName: document.getElementById('correctionsInputDeskName')?.value.trim() || '',
+              email: document.getElementById('correctionsInputEmail')?.value.trim() || '',
+              turnaroundHours: parseInt(document.getElementById('correctionsInputTurnaroundHours')?.value || '24', 10),
+              portalSection: document.getElementById('correctionsInputPortalSection')?.value.trim() || 'Trust Layer'
+            },
+            workflow: wfList,
+            recentCorrections: logsList
+          };
+        };
+
+        // Attach Event Listeners
+        document.getElementById('btnToggleCorrectionsJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('correctionsJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncCorrectionsJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatCorrectionsRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCorrectionsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyCorrectionsRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCorrectionsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCorrectionsConfig === 'function') {
+                window.CSOSuperStore.saveCorrectionsConfig(parsed);
+                showToast("JSON applied and corrections saved!", "success");
+                renderCorrectionsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        // Add Log Entry
+        document.getElementById('btnAddCorrectionItem')?.addEventListener('click', () => {
+          const container = document.getElementById('correctionsLogContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.correction-log-item').length + 1;
+          const newId = 'CORR-2026-0' + nextIdx;
+          const today = new Date().toISOString().split('T')[0];
+          const div = document.createElement('div');
+          div.className = "correction-log-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <input type="text" class="log-id-input w-28 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-400" value="${newId}" placeholder="ID">
+                <input type="date" class="log-date-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200" value="${today}">
+                <input type="text" class="log-module-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="" placeholder="Affected Exam / Article">
+                <input type="text" class="log-verified-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="Fact Checking Desk" placeholder="Verified By">
+              </div>
+              <button type="button" class="btn-remove-log-entry text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Entry">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <textarea class="log-note-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Corrigendum or correction note details"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachCorrectionItemListeners(div);
+          syncCorrectionsJsonEditor();
+        });
+
+        const attachCorrectionItemListeners = (parent) => {
+          parent.querySelector('.btn-remove-log-entry')?.addEventListener('click', () => {
+            parent.remove();
+            syncCorrectionsJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', syncCorrectionsJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.correction-log-item').forEach(attachCorrectionItemListeners);
+        document.querySelectorAll('.corrections-wf-item input, .corrections-wf-item textarea').forEach(input => {
+          input.addEventListener('input', syncCorrectionsJsonEditor);
+        });
+
+        // Save
+        document.getElementById('btnSaveCorrectionsConfig')?.addEventListener('click', () => {
+          const newConfig = harvestCorrectionsForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCorrectionsConfig === 'function') {
+            window.CSOSuperStore.saveCorrectionsConfig(newConfig);
+            showToast("Corrections policy and log saved successfully!", "success");
+            syncCorrectionsJsonEditor();
+          }
+        });
+
+        // Export
+        document.getElementById('btnExportCorrectionsConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportCorrectionsManifest === 'function') {
+            window.CSOSuperStore.exportCorrectionsManifest();
+            showToast("Corrections manifest exported.", "info");
+          }
+        });
+
+        // Import
+        document.getElementById('inputImportCorrectionsConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.corrections) parsed = parsed.corrections;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importCorrectionsConfig === 'function') {
+                window.CSOSuperStore.importCorrectionsConfig(JSON.stringify(parsed));
+                showToast("Corrections policy imported successfully!", "success");
+                renderCorrectionsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset
+        document.getElementById('btnResetCorrectionsConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default corrections policy? All recent log modifications will be reset.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetCorrectionsConfig === 'function') {
+              window.CSOSuperStore.resetCorrectionsConfig();
+              showToast("Corrections policy restored to defaults.", "info");
+              renderCorrectionsWorkspace(root);
+            }
+          }
+        });
+
+        ['correctionsInputTitle', 'correctionsInputBadge', 'correctionsInputLastReviewed', 'correctionsInputDeskName', 'correctionsInputEmail', 'correctionsInputTurnaroundHours', 'correctionsInputPortalSection'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncCorrectionsJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-009 (Corrections Policy)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 3j: Accessibility Statement & WCAG 2.1 AA Studio (module-03-010)
+     */
+    function renderAccessibilityWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Accessibility Statement (module-03-010)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getAccessibilityConfig() : {
+          meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: {
+            title: "Web Accessibility Statement",
+            standard: "WCAG 2.1 Level AA & Rights of Persons with Disabilities Act (RPwD), 2016",
+            badge: "Inclusive Digital Access",
+            lastAudited: "2026-11-01"
+          },
+          officer: {
+            title: "Digital Accessibility Coordinator",
+            email: "accessibility@csodisha.com",
+            address: "Common Sense Odisha Academic Node, Bhubaneswar, Odisha - 751001",
+            responseSlaHours: 48
+          },
+          features: [
+            { id: "ACC-01", name: "High Contrast Theme Engine", status: "Supported", description: "Built-in dark mode and high-contrast color palette exceeding WCAG 4.5:1 ratio." },
+            { id: "ACC-02", name: "Screen Reader & ARIA Semantics", status: "Supported", description: "Landmarks, breadcrumbs, modal traps, and tables structured with semantic HTML5 and ARIA 1.2 roles." },
+            { id: "ACC-03", name: "Full Keyboard Navigation", status: "Supported", description: "All interactive controls, navigation trees, and modals are accessible via Tab/Shift+Tab and Enter/Esc." },
+            { id: "ACC-04", name: "Bilingual Multilingual Support", status: "Partial", description: "Core syllabi and critical exam notices translated into Odia script; continuous expansion ongoing." }
+          ],
+          commitmentStatement: "Common Sense Odisha is committed to ensuring digital accessibility for candidates with disabilities across all 30 districts of Odisha. We continuously improve user experience for everyone."
+        };
+
+        const doc = config.document || {};
+        const officer = config.officer || {};
+        const features = Array.isArray(config.features) ? config.features : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Accessibility &amp; Inclusion Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-sky-950/80 text-sky-400 border border-sky-800/60">module-03-010</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Configure WCAG 2.1 Level AA compliance, RPwD Act adherence, and accessibility officer coordinates.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="accessibility.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <span>Preview Live</span>
+                </a>
+                <button type="button" id="btnToggleAccessibilityJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportAccessibilityConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportAccessibilityConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetAccessibilityConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveAccessibilityConfig" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Standard & Document Metadata -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Document Metadata &amp; Compliance Level</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '2.1')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Document Title</label>
+                  <input type="text" id="accessInputTitle" value="${escapeHtml(doc.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Inclusion Badge</label>
+                  <input type="text" id="accessInputBadge" value="${escapeHtml(doc.badge || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Last Audited Date</label>
+                  <input type="date" id="accessInputLastAudited" value="${escapeHtml(doc.lastAudited || '2026-11-01')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Statutory Standard Citation</label>
+                <input type="text" id="accessInputStandard" value="${escapeHtml(doc.standard || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+              </div>
+            </div>
+
+            <!-- Card 2: Accessibility Officer Coordinates -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Digital Accessibility Coordinator</h3>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Coordinator Title</label>
+                  <input type="text" id="accessInputOfficerTitle" value="${escapeHtml(officer.title || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Inquiries Email</label>
+                  <input type="email" id="accessInputOfficerEmail" value="${escapeHtml(officer.email || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Response SLA (Hours)</label>
+                  <input type="number" id="accessInputOfficerSla" value="${officer.responseSlaHours || 48}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Physical / Postal Office Address</label>
+                <input type="text" id="accessInputOfficerAddress" value="${escapeHtml(officer.address || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition">
+              </div>
+            </div>
+
+            <!-- Card 3: Implemented Accessibility Features Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Conformance Features &amp; Assistive Tech Support</h3>
+                </div>
+                <button type="button" id="btnAddAccessFeature" class="px-2.5 py-1 bg-sky-600/20 hover:bg-sky-600/40 text-sky-300 text-xs rounded border border-sky-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Feature</span>
+                </button>
+              </div>
+
+              <div id="accessFeaturesContainer" class="space-y-3">
+                ${features.map(f => `
+                  <div class="access-feature-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <input type="text" class="feature-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="${escapeHtml(f.id || '')}" placeholder="ID">
+                        <input type="text" class="feature-name-input w-64 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-medium" value="${escapeHtml(f.name || '')}" placeholder="Feature Name">
+                        <select class="feature-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-300">
+                          <option value="Supported" ${f.status === 'Supported' ? 'selected' : ''}>Supported</option>
+                          <option value="Partial" ${f.status === 'Partial' ? 'selected' : ''}>Partial</option>
+                          <option value="Planned" ${f.status === 'Planned' ? 'selected' : ''}>Planned</option>
+                        </select>
+                      </div>
+                      <button type="button" class="btn-remove-feature text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Feature">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <textarea class="feature-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Feature implementation description">${escapeHtml(f.description || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Card 4: Inclusion Commitment Statement -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Statewide Inclusion Commitment</h3>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Statewide Accessibility Pledge</label>
+                <textarea id="accessInputCommitment" rows="3" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 transition leading-relaxed">${escapeHtml(config.commitmentStatement || '')}</textarea>
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="accessJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_accessibility_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatAccessRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyAccessRawJsonChanges" class="px-3 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaAccessRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-sky-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-sky-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // JSON Drawer Sync Helper
+        const syncAccessJsonEditor = () => {
+          const currentConfig = harvestAccessForm();
+          const jsonTextarea = document.getElementById('textareaAccessRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestAccessForm = () => {
+          const featureEls = document.querySelectorAll('.access-feature-item');
+          const featuresList = [];
+          featureEls.forEach(el => {
+            featuresList.push({
+              id: el.querySelector('.feature-id-input')?.value.trim() || '',
+              name: el.querySelector('.feature-name-input')?.value.trim() || '',
+              status: el.querySelector('.feature-status-select')?.value || 'Supported',
+              description: el.querySelector('.feature-desc-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "2.1",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            document: {
+              title: document.getElementById('accessInputTitle')?.value.trim() || '',
+              badge: document.getElementById('accessInputBadge')?.value.trim() || '',
+              lastAudited: document.getElementById('accessInputLastAudited')?.value.trim() || '2026-11-01',
+              standard: document.getElementById('accessInputStandard')?.value.trim() || ''
+            },
+            officer: {
+              title: document.getElementById('accessInputOfficerTitle')?.value.trim() || '',
+              email: document.getElementById('accessInputOfficerEmail')?.value.trim() || '',
+              address: document.getElementById('accessInputOfficerAddress')?.value.trim() || '',
+              responseSlaHours: parseInt(document.getElementById('accessInputOfficerSla')?.value || '48', 10)
+            },
+            features: featuresList,
+            commitmentStatement: document.getElementById('accessInputCommitment')?.value.trim() || ''
+          };
+        };
+
+        // Attach Event Listeners
+        document.getElementById('btnToggleAccessibilityJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('accessJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncAccessJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatAccessRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaAccessRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyAccessRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaAccessRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAccessibilityConfig === 'function') {
+                window.CSOSuperStore.saveAccessibilityConfig(parsed);
+                showToast("JSON applied and accessibility configuration saved!", "success");
+                renderAccessibilityWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        // Add Feature
+        document.getElementById('btnAddAccessFeature')?.addEventListener('click', () => {
+          const container = document.getElementById('accessFeaturesContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.access-feature-item').length + 1;
+          const newId = 'ACC-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "access-feature-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <input type="text" class="feature-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="${newId}" placeholder="ID">
+                <input type="text" class="feature-name-input w-64 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-medium" value="" placeholder="Feature Name">
+                <select class="feature-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-300">
+                  <option value="Supported">Supported</option>
+                  <option value="Partial">Partial</option>
+                  <option value="Planned">Planned</option>
+                </select>
+              </div>
+              <button type="button" class="btn-remove-feature text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Feature">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <textarea class="feature-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Feature implementation description"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachAccessFeatureListeners(div);
+          syncAccessJsonEditor();
+        });
+
+        const attachAccessFeatureListeners = (parent) => {
+          parent.querySelector('.btn-remove-feature')?.addEventListener('click', () => {
+            parent.remove();
+            syncAccessJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('input', syncAccessJsonEditor);
+            input.addEventListener('change', syncAccessJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.access-feature-item').forEach(attachAccessFeatureListeners);
+
+        // Save
+        document.getElementById('btnSaveAccessibilityConfig')?.addEventListener('click', () => {
+          const newConfig = harvestAccessForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAccessibilityConfig === 'function') {
+            window.CSOSuperStore.saveAccessibilityConfig(newConfig);
+            showToast("Accessibility statement saved successfully!", "success");
+            syncAccessJsonEditor();
+          }
+        });
+
+        // Export
+        document.getElementById('btnExportAccessibilityConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAccessibilityManifest === 'function') {
+            window.CSOSuperStore.exportAccessibilityManifest();
+            showToast("Accessibility manifest exported.", "info");
+          }
+        });
+
+        // Import
+        document.getElementById('inputImportAccessibilityConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.accessibility) parsed = parsed.accessibility;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importAccessibilityConfig === 'function') {
+                window.CSOSuperStore.importAccessibilityConfig(JSON.stringify(parsed));
+                showToast("Accessibility statement imported successfully!", "success");
+                renderAccessibilityWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset
+        document.getElementById('btnResetAccessibilityConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default accessibility settings? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetAccessibilityConfig === 'function') {
+              window.CSOSuperStore.resetAccessibilityConfig();
+              showToast("Accessibility statement restored to defaults.", "info");
+              renderAccessibilityWorkspace(root);
+            }
+          }
+        });
+
+        ['accessInputTitle', 'accessInputBadge', 'accessInputLastAudited', 'accessInputStandard', 'accessInputOfficerTitle', 'accessInputOfficerEmail', 'accessInputOfficerAddress', 'accessInputOfficerSla', 'accessInputCommitment'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncAccessJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-010 (Accessibility Statement)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 

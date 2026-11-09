@@ -3459,6 +3459,298 @@
       return filename;
     },
 
+    
+    // 32. Editorial Policy & Gazette Verification Standards Engine (module-03-008)
+    getEditorialConfig() {
+      const raw = localStorage.getItem("cso_editorial_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_editorial_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.5", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Editorial Integrity & Verification Standards", badge: "Gazette-Backed Fact Checking", lastReviewed: "2026-11-01" },
+        standards: [
+          { id: "ED-01", title: "Dual-Source Gazette Verification", category: "Verification", body: "Every exam syllabus, eligibility cutoff, and recruitment date must be reconciled against an official government gazette or primary commission portal (OPSC, OSSC, OSSSC) before publication.", active: true },
+          { id: "ED-02", title: "Non-Commercial Academic Independence", category: "Independence", body: "Our editorial staff and syllabus curators maintain complete autonomy. No sponsored coaching material or unverified promotional claims are permitted.", active: true },
+          { id: "ED-03", title: "Plain Language Accessibility", category: "Pedagogy", body: "Complex recruitment notifications are translated into simplified, structured Odia and English breakdowns for equal candidate comprehension.", active: true }
+        ],
+        ethicsSummary: "Common Sense Odisha strictly rejects speculative clickbait, misleading recruitment dates, and unverified coaching predictions."
+      };
+      localStorage.setItem("cso_editorial_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveEditorialConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid editorial configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_editorial_config", JSON.stringify(config));
+      this.logAudit("EDITORIAL_CONFIG_UPDATED", "EDITORIAL_POLICY", "Editorial policy configuration saved.");
+      return config;
+    },
+
+    importEditorialConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveEditorialConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import editorial policy: " + err.message);
+      }
+    },
+
+    resetEditorialConfig() {
+      const initial = {
+        meta: { version: "1.5", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Editorial Integrity & Verification Standards", badge: "Gazette-Backed Fact Checking", lastReviewed: "2026-11-01" },
+        standards: [
+          { id: "ED-01", title: "Dual-Source Gazette Verification", category: "Verification", body: "Every exam syllabus, eligibility cutoff, and recruitment date must be reconciled against an official government gazette or primary commission portal (OPSC, OSSC, OSSSC) before publication.", active: true },
+          { id: "ED-02", title: "Non-Commercial Academic Independence", category: "Independence", body: "Our editorial staff and syllabus curators maintain complete autonomy. No sponsored coaching material or unverified promotional claims are permitted.", active: true },
+          { id: "ED-03", title: "Plain Language Accessibility", category: "Pedagogy", body: "Complex recruitment notifications are translated into simplified, structured Odia and English breakdowns for equal candidate comprehension.", active: true }
+        ],
+        ethicsSummary: "Common Sense Odisha strictly rejects speculative clickbait, misleading recruitment dates, and unverified coaching predictions."
+      };
+      localStorage.setItem("cso_editorial_config", JSON.stringify(initial));
+      this.logAudit("EDITORIAL_CONFIG_RESET", "EDITORIAL_POLICY", "Editorial configuration restored to defaults.");
+      return initial;
+    },
+
+    exportEditorialManifest() {
+      const config = this.getEditorialConfig();
+      const timestamp = Date.now();
+      const filename = "cso-editorial-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        editorial: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("EDITORIAL_MANIFEST_EXPORTED", "DATA_EXPORT", "Editorial manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 33. Corrections Policy & Retraction Protocol Engine (module-03-009)
+    getCorrectionsConfig() {
+      const raw = localStorage.getItem("cso_corrections_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_corrections_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.3", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Corrections & Retraction Policy", badge: "Transparent Accountability", lastReviewed: "2026-11-01" },
+        desk: {
+          deskName: "Editorial Fact-Check & Retraction Desk",
+          email: "corrections@csodisha.com",
+          turnaroundHours: 24,
+          portalSection: "Trust Layer & Verification Log"
+        },
+        workflow: [
+          { step: 1, title: "Candidate or Reader Flag", description: "Any user flags a discrepancy with primary gazette citation via corrections desk or feedback form." },
+          { step: 2, title: "Independent Verification", description: "Verification desk cross-references official gazette, corrigendum notices, and commission archives within 24 hours." },
+          { step: 3, title: "Transparent Retraction Note", description: "If an error exists, the article is updated immediately with an explicit, high-visibility retraction badge and timestamped revision note." }
+        ],
+        recentCorrections: [
+          { id: "CORR-2026-01", date: "2026-10-18", module: "OSSC CGL 2026", note: "Corrected age relaxation eligibility bracket for SEBC candidates in accordance with Corrigendum No. 418/OSSC.", verifiedBy: "Senior Fact Checker" },
+          { id: "CORR-2026-02", date: "2026-10-25", module: "OPSC OCS Preliminary", note: "Reconciled CSAT qualifying benchmark from 33% to notification standard.", verifiedBy: "Academic Director" }
+        ]
+      };
+      localStorage.setItem("cso_corrections_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveCorrectionsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid corrections configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_corrections_config", JSON.stringify(config));
+      this.logAudit("CORRECTIONS_CONFIG_UPDATED", "CORRECTIONS_POLICY", "Corrections policy configuration saved.");
+      return config;
+    },
+
+    importCorrectionsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveCorrectionsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import corrections policy: " + err.message);
+      }
+    },
+
+    resetCorrectionsConfig() {
+      const initial = {
+        meta: { version: "1.3", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Corrections & Retraction Policy", badge: "Transparent Accountability", lastReviewed: "2026-11-01" },
+        desk: {
+          deskName: "Editorial Fact-Check & Retraction Desk",
+          email: "corrections@csodisha.com",
+          turnaroundHours: 24,
+          portalSection: "Trust Layer & Verification Log"
+        },
+        workflow: [
+          { step: 1, title: "Candidate or Reader Flag", description: "Any user flags a discrepancy with primary gazette citation via corrections desk or feedback form." },
+          { step: 2, title: "Independent Verification", description: "Verification desk cross-references official gazette, corrigendum notices, and commission archives within 24 hours." },
+          { step: 3, title: "Transparent Retraction Note", description: "If an error exists, the article is updated immediately with an explicit, high-visibility retraction badge and timestamped revision note." }
+        ],
+        recentCorrections: [
+          { id: "CORR-2026-01", date: "2026-10-18", module: "OSSC CGL 2026", note: "Corrected age relaxation eligibility bracket for SEBC candidates in accordance with Corrigendum No. 418/OSSC.", verifiedBy: "Senior Fact Checker" },
+          { id: "CORR-2026-02", date: "2026-10-25", module: "OPSC OCS Preliminary", note: "Reconciled CSAT qualifying benchmark from 33% to notification standard.", verifiedBy: "Academic Director" }
+        ]
+      };
+      localStorage.setItem("cso_corrections_config", JSON.stringify(initial));
+      this.logAudit("CORRECTIONS_CONFIG_RESET", "CORRECTIONS_POLICY", "Corrections configuration restored to defaults.");
+      return initial;
+    },
+
+    exportCorrectionsManifest() {
+      const config = this.getCorrectionsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-corrections-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        corrections: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CORRECTIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "Corrections manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 34. Accessibility Statement & WCAG 2.1 AA Engine (module-03-010)
+    getAccessibilityConfig() {
+      const raw = localStorage.getItem("cso_accessibility_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_accessibility_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: {
+          title: "Web Accessibility Statement",
+          standard: "WCAG 2.1 Level AA & Rights of Persons with Disabilities Act (RPwD), 2016",
+          badge: "Inclusive Digital Access",
+          lastAudited: "2026-11-01"
+        },
+        officer: {
+          title: "Digital Accessibility Coordinator",
+          email: "accessibility@csodisha.com",
+          address: "Common Sense Odisha Academic Node, Bhubaneswar, Odisha - 751001",
+          responseSlaHours: 48
+        },
+        features: [
+          { id: "ACC-01", name: "High Contrast Theme Engine", status: "Supported", description: "Built-in dark mode and high-contrast color palette exceeding WCAG 4.5:1 ratio." },
+          { id: "ACC-02", name: "Screen Reader & ARIA Semantics", status: "Supported", description: "Landmarks, breadcrumbs, modal traps, and tables structured with semantic HTML5 and ARIA 1.2 roles." },
+          { id: "ACC-03", name: "Full Keyboard Navigation", status: "Supported", description: "All interactive controls, navigation trees, and modals are accessible via Tab/Shift+Tab and Enter/Esc." },
+          { id: "ACC-04", name: "Bilingual Multilingual Support", status: "Partial", description: "Core syllabi and critical exam notices translated into Odia script; continuous expansion ongoing." }
+        ],
+        commitmentStatement: "Common Sense Odisha is committed to ensuring digital accessibility for candidates with disabilities across all 30 districts of Odisha. We continuously improve user experience for everyone."
+      };
+      localStorage.setItem("cso_accessibility_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveAccessibilityConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid accessibility configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_accessibility_config", JSON.stringify(config));
+      this.logAudit("ACCESSIBILITY_CONFIG_UPDATED", "ACCESSIBILITY_STATEMENT", "Accessibility statement configuration saved.");
+      return config;
+    },
+
+    importAccessibilityConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveAccessibilityConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import accessibility config: " + err.message);
+      }
+    },
+
+    resetAccessibilityConfig() {
+      const initial = {
+        meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: {
+          title: "Web Accessibility Statement",
+          standard: "WCAG 2.1 Level AA & Rights of Persons with Disabilities Act (RPwD), 2016",
+          badge: "Inclusive Digital Access",
+          lastAudited: "2026-11-01"
+        },
+        officer: {
+          title: "Digital Accessibility Coordinator",
+          email: "accessibility@csodisha.com",
+          address: "Common Sense Odisha Academic Node, Bhubaneswar, Odisha - 751001",
+          responseSlaHours: 48
+        },
+        features: [
+          { id: "ACC-01", name: "High Contrast Theme Engine", status: "Supported", description: "Built-in dark mode and high-contrast color palette exceeding WCAG 4.5:1 ratio." },
+          { id: "ACC-02", name: "Screen Reader & ARIA Semantics", status: "Supported", description: "Landmarks, breadcrumbs, modal traps, and tables structured with semantic HTML5 and ARIA 1.2 roles." },
+          { id: "ACC-03", name: "Full Keyboard Navigation", status: "Supported", description: "All interactive controls, navigation trees, and modals are accessible via Tab/Shift+Tab and Enter/Esc." },
+          { id: "ACC-04", name: "Bilingual Multilingual Support", status: "Partial", description: "Core syllabi and critical exam notices translated into Odia script; continuous expansion ongoing." }
+        ],
+        commitmentStatement: "Common Sense Odisha is committed to ensuring digital accessibility for candidates with disabilities across all 30 districts of Odisha. We continuously improve user experience for everyone."
+      };
+      localStorage.setItem("cso_accessibility_config", JSON.stringify(initial));
+      this.logAudit("ACCESSIBILITY_CONFIG_RESET", "ACCESSIBILITY_STATEMENT", "Accessibility configuration restored to defaults.");
+      return initial;
+    },
+
+    exportAccessibilityManifest() {
+      const config = this.getAccessibilityConfig();
+      const timestamp = Date.now();
+      const filename = "cso-accessibility-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        accessibility: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("ACCESSIBILITY_MANIFEST_EXPORTED", "DATA_EXPORT", "Accessibility manifest exported (" + filename + ").");
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
@@ -3770,6 +4062,9 @@
           resources: this.getResources(),
           inquiries: this.getInquiries(),
           audit: this.getAudit(),
+          editorial: this.getEditorialConfig(),
+          corrections: this.getCorrectionsConfig(),
+          accessibility: this.getAccessibilityConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

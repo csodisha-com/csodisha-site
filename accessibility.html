@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Web Accessibility Statement for Common Sense Odisha (csodisha.com) - WCAG 2.1 Level AA conformance, RPwD Act 2016 compliance, and assistive tech support.">
+  <title>Accessibility Statement | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .access-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .access-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--mut, #64748b);
+    }
+    .access-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .access-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .access-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .access-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .access-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    .access-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .access-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+      line-height: 1.25;
+    }
+    .access-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--mut, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--bd, #e2e8f0);
+    }
+
+    .officer-card {
+      background: linear-gradient(135deg, rgba(240, 249, 255, 0.8), rgba(248, 250, 252, 0.9));
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .officer-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .officer-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #0284c7;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .officer-title-block h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #0369a1;
+    }
+    .officer-title-block p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      color: #075985;
+    }
+    .officer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      font-size: 0.88rem;
+    }
+    .officer-grid-item {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .officer-grid-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 4px;
+    }
+    .officer-grid-val {
+      color: #1e293b;
+      word-break: break-word;
+    }
+    .officer-grid-val a {
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .officer-grid-val a:hover {
+      text-decoration: underline;
+    }
+
+    .feature-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+    }
+    .feature-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .feature-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feature-id {
+      font-family: monospace;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .feature-status {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .feature-status.supported {
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .feature-status.partial {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    .feature-status.planned {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+    .feature-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--tx, #0f172a);
+      margin: 0;
+    }
+    .feature-desc {
+      color: var(--mut, #475569);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin: 8px 0 0;
+    }
+
+    .commitment-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-top: 32px;
+      color: #166534;
+    }
+    .commitment-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      color: #14532d;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .commitment-card p {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #166534;
+    }
+
+    @media (max-width: 640px) {
+      .access-hero {
+        padding: 24px 20px;
+      }
+      .officer-card {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="access-main">
+  <div class="access-breadcrumbs">
+    <a href="index.html">Home</a> &gt; <span>Accessibility Statement</span>
+  </div>
+
+  <section class="access-hero">
+    <div class="access-badge-group">
+      <span class="access-badge" id="access-badge">Inclusive Digital Access</span>
+      <span class="access-version-badge" id="access-version-badge">Version 2.1</span>
+    </div>
+    <h1 id="access-title">Web Accessibility Statement</h1>
+    <div class="access-meta-strip">
+      <div><strong>Standard:</strong> <span id="access-standard">WCAG 2.1 Level AA &amp; Rights of Persons with Disabilities Act (RPwD), 2016</span></div>
+      <div><strong>Last Audited:</strong> <span id="access-last-audited">2026-11-01</span></div>
+    </div>
+  </section>
+
+  <!-- Accessibility Coordinator Card -->
+  <section class="officer-card">
+    <div class="officer-header">
+      <div class="officer-icon-box">♿</div>
+      <div class="officer-title-block">
+        <h2 id="access-officer-title">Digital Accessibility Coordinator</h2>
+        <p>Statutory point of contact for barrier assistance, alternate formats &amp; assistive tech feedback</p>
+      </div>
+    </div>
+    <div class="officer-grid">
+      <div class="officer-grid-item">
+        <div class="officer-grid-label">Assistance Email</div>
+        <div class="officer-grid-val"><a id="access-officer-email" href="mailto:accessibility@csodisha.com">accessibility@csodisha.com</a></div>
+      </div>
+      <div class="officer-grid-item">
+        <div class="officer-grid-label">Response SLA</div>
+        <div class="officer-grid-val" id="access-officer-sla">Assistance within 48 Hours</div>
+      </div>
+      <div class="officer-grid-item" style="grid-column: 1 / -1;">
+        <div class="officer-grid-label">Academic Center Address</div>
+        <div class="officer-grid-val" id="access-officer-address">Common Sense Odisha Academic Node, Bhubaneswar, Odisha - 751001</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Container -->
+  <h2 style="font-size:1.2rem; color:var(--tx, #0f172a); margin: 0 0 16px;">Implemented Conformance Measures</h2>
+  <div id="access-features-container">
+    <!-- Populated dynamically -->
+  </div>
+
+  <!-- Statewide Inclusion Commitment -->
+  <section class="commitment-card">
+    <h3>
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Statewide Inclusion Commitment
+    </h3>
+    <p id="access-commitment-statement">Common Sense Odisha is committed to ensuring digital accessibility for candidates with disabilities across all 30 districts of Odisha. We continuously improve user experience for everyone.</p>
+  </section>
+</main>
+
+<script>
+(function() {
+  function escapeText(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function hydrateAccessibilityPolicy() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_accessibility_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: {
+          title: "Web Accessibility Statement",
+          standard: "WCAG 2.1 Level AA & Rights of Persons with Disabilities Act (RPwD), 2016",
+          badge: "Inclusive Digital Access",
+          lastAudited: "2026-11-01"
+        },
+        officer: {
+          title: "Digital Accessibility Coordinator",
+          email: "accessibility@csodisha.com",
+          address: "Common Sense Odisha Academic Node, Bhubaneswar, Odisha - 751001",
+          responseSlaHours: 48
+        },
+        features: [
+          { id: "ACC-01", name: "High Contrast Theme Engine", status: "Supported", description: "Built-in dark mode and high-contrast color palette exceeding WCAG 4.5:1 ratio." },
+          { id: "ACC-02", name: "Screen Reader & ARIA Semantics", status: "Supported", description: "Landmarks, breadcrumbs, modal traps, and tables structured with semantic HTML5 and ARIA 1.2 roles." },
+          { id: "ACC-03", name: "Full Keyboard Navigation", status: "Supported", description: "All interactive controls, navigation trees, and modals are accessible via Tab/Shift+Tab and Enter/Esc." },
+          { id: "ACC-04", name: "Bilingual Multilingual Support", status: "Partial", description: "Core syllabi and critical exam notices translated into Odia script; continuous expansion ongoing." }
+        ],
+        commitmentStatement: "Common Sense Odisha is committed to ensuring digital accessibility for candidates with disabilities across all 30 districts of Odisha. We continuously improve user experience for everyone."
+      };
+    }
+
+    var doc = config.document || {};
+    var officer = config.officer || {};
+
+    var badgeEl = document.getElementById('access-badge');
+    if (badgeEl && doc.badge) badgeEl.textContent = doc.badge;
+
+    var vBadgeEl = document.getElementById('access-version-badge');
+    if (vBadgeEl && config.meta && config.meta.version) {
+      vBadgeEl.textContent = "Version " + config.meta.version;
+    }
+
+    var titleEl = document.getElementById('access-title');
+    if (titleEl && doc.title) titleEl.textContent = doc.title;
+
+    var standardEl = document.getElementById('access-standard');
+    if (standardEl && doc.standard) standardEl.textContent = doc.standard;
+
+    var dateEl = document.getElementById('access-last-audited');
+    if (dateEl && doc.lastAudited) dateEl.textContent = doc.lastAudited;
+
+    // Officer
+    var offTitleEl = document.getElementById('access-officer-title');
+    if (offTitleEl && officer.title) offTitleEl.textContent = officer.title;
+
+    var offEmailEl = document.getElementById('access-officer-email');
+    if (offEmailEl && officer.email) {
+      offEmailEl.textContent = officer.email;
+      offEmailEl.href = "mailto:" + officer.email;
+    }
+
+    var offSlaEl = document.getElementById('access-officer-sla');
+    if (offSlaEl && officer.responseSlaHours) {
+      offSlaEl.textContent = "Assistance within " + officer.responseSlaHours + " Hours";
+    }
+
+    var offAddressEl = document.getElementById('access-officer-address');
+    if (offAddressEl && officer.address) offAddressEl.textContent = officer.address;
+
+    // Commitment
+    var commitEl = document.getElementById('access-commitment-statement');
+    if (commitEl && config.commitmentStatement) commitEl.textContent = config.commitmentStatement;
+
+    // Features
+    var container = document.getElementById('access-features-container');
+    var features = Array.isArray(config.features) ? config.features : [];
+    if (container && features.length > 0) {
+      container.innerHTML = features.map(function(f) {
+        var statusLower = (f.status || 'supported').toLowerCase();
+        return '<article class="feature-card">' +
+               '  <div class="feature-header">' +
+               '    <h3 class="feature-title">' + escapeText(f.name || '') + '</h3>' +
+               '    <div class="feature-badge-wrap">' +
+               '      <span class="feature-id">' + escapeText(f.id || '') + '</span>' +
+               '      <span class="feature-status ' + statusLower + '">' + escapeText(f.status || 'Supported') + '</span>' +
+               '    </div>' +
+               '  </div>' +
+               '  <p class="feature-desc">' + escapeText(f.description || '') + '</p>' +
+               '</article>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateAccessibilityPolicy);
+  } else {
+    hydrateAccessibilityPolicy();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_accessibility_config') {
+      hydrateAccessibilityPolicy();
+    }
+  });
+})();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>

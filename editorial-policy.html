@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Editorial Integrity, Verification Standards & Fact-Checking Policy for Common Sense Odisha (csodisha.com) - Official gazette reconciliation and pedagogical independence.">
+  <title>Editorial Policy &amp; Standards | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .editorial-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .editorial-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--mut, #64748b);
+    }
+    .editorial-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .editorial-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .editorial-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .editorial-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .editorial-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .editorial-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .editorial-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+      line-height: 1.25;
+    }
+    .editorial-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--mut, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--bd, #e2e8f0);
+    }
+
+    .standard-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .standard-card:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+    .standard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .standard-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .standard-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.12);
+      color: #0fa968;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .standard-cat {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .standard-cat.verif {
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border-color: rgba(15, 169, 104, 0.2);
+    }
+    .standard-cat.indep {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border-color: rgba(14, 165, 233, 0.2);
+    }
+    .standard-cat.pedagogy {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .standard-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--tx, #0f172a);
+      margin: 0;
+    }
+    .standard-body {
+      color: var(--mut, #475569);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .ethics-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-top: 32px;
+      color: #334155;
+    }
+    .ethics-box h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ethics-box p {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.65;
+      color: #475569;
+    }
+
+    @media (max-width: 640px) {
+      .editorial-hero {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="editorial-main">
+  <div class="editorial-breadcrumbs">
+    <a href="index.html">Home</a> &gt; <span>Editorial Policy</span>
+  </div>
+
+  <section class="editorial-hero">
+    <div class="editorial-badge-group">
+      <span class="editorial-badge" id="editorial-badge">Gazette-Backed Fact Checking</span>
+      <span class="editorial-version-badge" id="editorial-version-badge">Version 1.5</span>
+    </div>
+    <h1 id="editorial-title">Editorial Integrity &amp; Verification Standards</h1>
+    <div class="editorial-meta-strip">
+      <div><strong>Last Reviewed:</strong> <span id="editorial-last-reviewed">2026-11-01</span></div>
+      <div><strong>Primary Governance:</strong> Press Council of India Norms &amp; Gazette Cross-Verification Protocol</div>
+    </div>
+  </section>
+
+  <!-- Standards Container -->
+  <div id="editorial-standards-container">
+    <!-- Standards hydrated dynamically -->
+  </div>
+
+  <!-- Non-Commercial Ethics Commitment Box -->
+  <section class="ethics-box" id="editorial-ethics-box">
+    <h3>
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Non-Commercial Academic Independence &amp; Anti-Clickbait Guarantee
+    </h3>
+    <p id="editorial-ethics-summary">Common Sense Odisha strictly rejects speculative clickbait, misleading recruitment dates, and unverified coaching predictions. We operate exclusively as an independent public intelligence portal for aspirants across Odisha.</p>
+  </section>
+</main>
+
+<script>
+(function() {
+  function escapeText(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getCategoryClass(cat) {
+    if (!cat) return '';
+    var c = String(cat).toLowerCase();
+    if (c.indexOf('verif') !== -1 || c.indexOf('gazette') !== -1) return 'verif';
+    if (c.indexOf('indep') !== -1 || c.indexOf('autonomy') !== -1) return 'indep';
+    if (c.indexOf('pedagog') !== -1 || c.indexOf('access') !== -1) return 'pedagogy';
+    return '';
+  }
+
+  function hydrateEditorialPolicy() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_editorial_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        meta: { version: "1.5", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Editorial Integrity & Verification Standards", badge: "Gazette-Backed Fact Checking", lastReviewed: "2026-11-01" },
+        standards: [
+          { id: "ED-01", title: "Dual-Source Gazette Verification", category: "Verification", body: "Every exam syllabus, eligibility cutoff, and recruitment date must be reconciled against an official government gazette or primary commission portal (OPSC, OSSC, OSSSC) before publication.", active: true },
+          { id: "ED-02", title: "Non-Commercial Academic Independence", category: "Independence", body: "Our editorial staff and syllabus curators maintain complete autonomy. No sponsored coaching material or unverified promotional claims are permitted.", active: true },
+          { id: "ED-03", title: "Plain Language Accessibility", category: "Pedagogy", body: "Complex recruitment notifications are translated into simplified, structured Odia and English breakdowns for equal candidate comprehension.", active: true }
+        ],
+        ethicsSummary: "Common Sense Odisha strictly rejects speculative clickbait, misleading recruitment dates, and unverified coaching predictions."
+      };
+    }
+
+    var doc = config.document || {};
+
+    var badgeEl = document.getElementById('editorial-badge');
+    if (badgeEl && doc.badge) badgeEl.textContent = doc.badge;
+
+    var vBadgeEl = document.getElementById('editorial-version-badge');
+    if (vBadgeEl && config.meta && config.meta.version) {
+      vBadgeEl.textContent = "Version " + config.meta.version;
+    }
+
+    var titleEl = document.getElementById('editorial-title');
+    if (titleEl && doc.title) titleEl.textContent = doc.title;
+
+    var dateEl = document.getElementById('editorial-last-reviewed');
+    if (dateEl && doc.lastReviewed) dateEl.textContent = doc.lastReviewed;
+
+    var ethicsEl = document.getElementById('editorial-ethics-summary');
+    if (ethicsEl && config.ethicsSummary) ethicsEl.textContent = config.ethicsSummary;
+
+    var container = document.getElementById('editorial-standards-container');
+    var list = Array.isArray(config.standards) ? config.standards.filter(function(st) { return st.active !== false; }) : [];
+    if (container && list.length > 0) {
+      container.innerHTML = list.map(function(st, idx) {
+        var num = idx + 1;
+        var catClass = getCategoryClass(st.category);
+        return '<article class="standard-card">' +
+               '  <div class="standard-header">' +
+               '    <div class="standard-badge-wrap">' +
+               '      <span class="standard-num">#' + num + '</span>' +
+               '      <span class="standard-cat ' + catClass + '">' + escapeText(st.category || 'Standards') + '</span>' +
+               '    </div>' +
+               '    <span style="font-size:0.75rem; font-family:monospace; color:#64748b;">' + escapeText(st.id || '') + '</span>' +
+               '  </div>' +
+               '  <h2 class="standard-title">' + escapeText(st.title || '') + '</h2>' +
+               '  <div class="standard-body" style="margin-top: 10px;">' + escapeText(st.body || '') + '</div>' +
+               '</article>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateEditorialPolicy);
+  } else {
+    hydrateEditorialPolicy();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_editorial_config') {
+      hydrateEditorialPolicy();
+    }
+  });
+})();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>
