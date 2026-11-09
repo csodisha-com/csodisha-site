@@ -2923,6 +2923,129 @@
       return this.exportContactManifest();
     },
 
+    // 27. Privacy Policy & Statutory Compliance Engine (module-03-003)
+    getPrivacyConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_privacy_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object' || !config.meta) {
+        config = {
+          meta: { version: "2.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          compliance: {
+            effectiveDate: "2026-11-01",
+            governingAct: "Digital Personal Data Protection Act (DPDP), 2023 & Information Technology Act, 2000",
+            dataProtectionOfficer: "dpo@csodisha.com",
+            jurisdiction: "Odisha, India"
+          },
+          clauses: [
+            { id: "PRIV-01", number: "1", title: "Scope & Academic Non-Commercial Nature", body: "Common Sense Odisha (csodisha.com) operates as a free, non-monetized educational intelligence platform for candidates across Odisha. We do not sell, rent, or trade candidate personal information.", active: true },
+            { id: "PRIV-02", number: "2", title: "Data We Collect", body: "We collect minimal candidate details submitted voluntarily via contact or grievance forms (name, email, district) solely to respond to academic and syllabus queries. We do not collect government ID numbers, financial instruments, or biometric data.", active: true },
+            { id: "PRIV-03", number: "3", title: "Local Storage & Session Tokens", body: "The portal uses client-side browser storage (localStorage and sessionStorage) strictly to preserve user interface preferences (theme, filters) and cryptographically signed session anchors for administrative authentication.", active: true },
+            { id: "PRIV-04", number: "4", title: "Edge Telemetry & Cloudflare Protection", body: "Network requests pass through Cloudflare Edge servers for bot mitigation, DDoS defense, and latency optimization. Minimal network telemetry (IP address, user-agent, round-trip time) is processed strictly for diagnostic security.", active: true },
+            { id: "PRIV-05", number: "5", title: "Candidate Rights & Grievance Desk", body: "Aspirants retain the statutory right to request inspection, correction, or permanent deletion of their inquiry records by contacting grievance@csodisha.com.", active: true }
+          ],
+          retention: {
+            inquiryDataDays: 90,
+            auditLogDays: 180,
+            policySummary: "All candidate inquiries are automatically purged from active triage within 90 days of resolution."
+          }
+        };
+
+        try {
+          localStorage.setItem('cso_privacy_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+
+      return config;
+    },
+
+    savePrivacyConfig(config) {
+      if (!config || typeof config !== 'object') return false;
+      if (!config.meta) config.meta = {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      save('cso_privacy_config', config);
+      this.logAudit('PRIVACY_CONFIG_UPDATED', 'PRIVACY_COMPLIANCE', `Privacy policy version, compliance parameters, and clauses updated.`);
+      return config;
+    },
+
+    importPrivacyConfig(jsonString) {
+      if (!jsonString || typeof jsonString !== 'string') throw new Error("Invalid input format.");
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonString);
+      } catch (err) {
+        throw new Error("Invalid JSON syntax: " + err.message);
+      }
+
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error("Imported data must be an object.");
+      }
+
+      if (!parsed.meta) parsed.meta = {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      parsed.meta.lastEditedBy = "admin@csodisha.com (Import)";
+      save('cso_privacy_config', parsed);
+      this.logAudit('PRIVACY_CONFIG_IMPORTED', 'PRIVACY_COMPLIANCE', `Privacy policy configuration imported from JSON payload.`);
+      return parsed;
+    },
+
+    resetPrivacyConfig() {
+      const initial = {
+        meta: { version: "2.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        compliance: {
+          effectiveDate: "2026-11-01",
+          governingAct: "Digital Personal Data Protection Act (DPDP), 2023 & Information Technology Act, 2000",
+          dataProtectionOfficer: "dpo@csodisha.com",
+          jurisdiction: "Odisha, India"
+        },
+        clauses: [
+          { id: "PRIV-01", number: "1", title: "Scope & Academic Non-Commercial Nature", body: "Common Sense Odisha (csodisha.com) operates as a free, non-monetized educational intelligence platform for candidates across Odisha. We do not sell, rent, or trade candidate personal information.", active: true },
+          { id: "PRIV-02", number: "2", title: "Data We Collect", body: "We collect minimal candidate details submitted voluntarily via contact or grievance forms (name, email, district) solely to respond to academic and syllabus queries. We do not collect government ID numbers, financial instruments, or biometric data.", active: true },
+          { id: "PRIV-03", number: "3", title: "Local Storage & Session Tokens", body: "The portal uses client-side browser storage (localStorage and sessionStorage) strictly to preserve user interface preferences (theme, filters) and cryptographically signed session anchors for administrative authentication.", active: true },
+          { id: "PRIV-04", number: "4", title: "Edge Telemetry & Cloudflare Protection", body: "Network requests pass through Cloudflare Edge servers for bot mitigation, DDoS defense, and latency optimization. Minimal network telemetry (IP address, user-agent, round-trip time) is processed strictly for diagnostic security.", active: true },
+          { id: "PRIV-05", number: "5", title: "Candidate Rights & Grievance Desk", body: "Aspirants retain the statutory right to request inspection, correction, or permanent deletion of their inquiry records by contacting grievance@csodisha.com.", active: true }
+        ],
+        retention: {
+          inquiryDataDays: 90,
+          auditLogDays: 180,
+          policySummary: "All candidate inquiries are automatically purged from active triage within 90 days of resolution."
+        }
+      };
+
+      save('cso_privacy_config', initial);
+      this.logAudit('PRIVACY_CONFIG_RESET', 'PRIVACY_COMPLIANCE', `Privacy policy configuration reset to initial factory seed.`);
+      return initial;
+    },
+
+    exportPrivacyManifest() {
+      const config = this.getPrivacyConfig();
+      const timestamp = Date.now();
+      const filename = `cso-privacy-config-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        privacy: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('PRIVACY_MANIFEST_EXPORTED', 'DATA_EXPORT', `Privacy policy manifest exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;

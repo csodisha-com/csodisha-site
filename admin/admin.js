@@ -320,7 +320,7 @@ async function loadMasterNavigation() {
       } else if (moduleId === 'module-03-002') {
         renderContactUsWorkspace();
       } else if (moduleId === 'module-03-003') {
-        renderContactUsWorkspace();
+        renderPrivacyPolicyWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -6379,6 +6379,525 @@ async function loadMasterNavigation() {
     // Retain legacy renderContactDirectoryWorkspace alias
     function renderContactDirectoryWorkspace() {
       renderContactUsWorkspace();
+    }
+
+    /**
+     * VIEW 3c: Privacy Policy & Data Governance Studio (module-03-003)
+     */
+    function renderPrivacyPolicyWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      dom.breadcrumbModule.textContent = "Privacy Policy (module-03-003)";
+
+      // Top Action Toolbar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnSavePrivacyStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Save & Publish Policy
+          </button>
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Preview Live Page ↗
+          </a>
+          <button id="btnTogglePrivacyJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            Raw JSON Editor
+          </button>
+          <button id="btnExportPrivacyConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Config
+          </button>
+          <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import Config
+            <input id="inputImportPrivacyConfig" type="file" accept=".json,application/json" class="hidden">
+          </label>
+          <button id="btnResetPrivacyConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Reset to Default
+          </button>
+        </div>
+      `;
+
+      // Ingest Privacy Config
+      let privacy = (window.CSOSuperStore && typeof window.CSOSuperStore.getPrivacyConfig === 'function')
+        ? window.CSOSuperStore.getPrivacyConfig()
+        : {
+            meta: { version: "2.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+            compliance: {
+              effectiveDate: "2026-11-01",
+              governingAct: "Digital Personal Data Protection Act (DPDP), 2023 & Information Technology Act, 2000",
+              dataProtectionOfficer: "dpo@csodisha.com",
+              jurisdiction: "Odisha, India"
+            },
+            clauses: [],
+            retention: {
+              inquiryDataDays: 90,
+              auditLogDays: 180,
+              policySummary: "All candidate inquiries are automatically purged from active triage within 90 days of resolution."
+            }
+          };
+
+      let currentClauses = Array.isArray(privacy.clauses) ? JSON.parse(JSON.stringify(privacy.clauses)) : [];
+
+      function syncPrivacyJsonEditor() {
+        const jsonTextarea = document.getElementById('textareaPrivacyRawJson');
+        if (jsonTextarea) {
+          const snapshot = gatherPrivacyFormState();
+          jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+        }
+      }
+
+      function gatherPrivacyFormState() {
+        const versionInput = document.getElementById('inputPrivacyVersion');
+        const effDateInput = document.getElementById('inputPrivacyEffectiveDate');
+        const govActInput = document.getElementById('inputPrivacyGovAct');
+        const dpoEmailInput = document.getElementById('inputPrivacyDpoEmail');
+        const jurInput = document.getElementById('inputPrivacyJurisdiction');
+
+        const inqDaysInput = document.getElementById('inputRetentionInquiryDays');
+        const auditDaysInput = document.getElementById('inputRetentionAuditDays');
+        const summaryTextarea = document.getElementById('textareaRetentionSummary');
+
+        return {
+          meta: {
+            version: versionInput ? versionInput.value.trim() : (privacy.meta?.version || "2.4"),
+            lastEditedBy: "admin@csodisha.com",
+            updatedAt: (privacy.meta && privacy.meta.updatedAt) || new Date().toISOString()
+          },
+          compliance: {
+            effectiveDate: effDateInput ? effDateInput.value.trim() : (privacy.compliance?.effectiveDate || '2026-11-01'),
+            governingAct: govActInput ? govActInput.value.trim() : (privacy.compliance?.governingAct || ''),
+            dataProtectionOfficer: dpoEmailInput ? dpoEmailInput.value.trim() : (privacy.compliance?.dataProtectionOfficer || 'dpo@csodisha.com'),
+            jurisdiction: jurInput ? jurInput.value.trim() : (privacy.compliance?.jurisdiction || 'Odisha, India')
+          },
+          clauses: currentClauses,
+          retention: {
+            inquiryDataDays: inqDaysInput ? parseInt(inqDaysInput.value, 10) || 90 : (privacy.retention?.inquiryDataDays || 90),
+            auditLogDays: auditDaysInput ? parseInt(auditDaysInput.value, 10) || 180 : (privacy.retention?.auditLogDays || 180),
+            policySummary: summaryTextarea ? summaryTextarea.value.trim() : (privacy.retention?.policySummary || '')
+          }
+        };
+      }
+
+      function renderClausesList() {
+        const container = document.getElementById('privacyClausesContainer');
+        if (!container) return;
+
+        if (currentClauses.length === 0) {
+          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No statutory clauses configured. Add one below.</div>`;
+          return;
+        }
+
+        container.innerHTML = currentClauses.map((cl, idx) => `
+          <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-clause-index="${idx}">
+            <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full ${cl.active !== false ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+                <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(cl.id || `PRIV-${idx+1}`)}</span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-400 border border-slate-700">Section § ${escapeHtml(cl.number || `${idx+1}`)}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" class="clause-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${cl.active !== false ? 'checked' : ''}>
+                  Active
+                </label>
+                <button data-move-clause-up="${idx}" class="btn-clause-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
+                  ▲
+                </button>
+                <button data-move-clause-down="${idx}" class="btn-clause-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentClauses.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentClauses.length - 1 ? 'disabled' : ''}>
+                  ▼
+                </button>
+                <button data-remove-clause="${idx}" class="btn-remove-clause px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div class="md:col-span-1">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
+                <input type="text" class="clause-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(cl.title || '')}">
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Statutory Body / Terms</label>
+                <textarea rows="2" class="clause-body-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" data-index="${idx}">${escapeHtml(cl.body || '')}</textarea>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.clause-active-checkbox').forEach(cb => {
+          cb.addEventListener('change', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentClauses[index]) {
+              currentClauses[index].active = e.target.checked;
+              syncPrivacyJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.clause-title-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentClauses[index]) {
+              currentClauses[index].title = e.target.value;
+              syncPrivacyJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.clause-body-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentClauses[index]) {
+              currentClauses[index].body = e.target.value;
+              syncPrivacyJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-clause-move-up').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.currentTarget.getAttribute('data-move-clause-up'), 10);
+            if (!isNaN(idx) && idx > 0) {
+              const temp = currentClauses[idx];
+              currentClauses[idx] = currentClauses[idx - 1];
+              currentClauses[idx - 1] = temp;
+              renderClausesList();
+              syncPrivacyJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-clause-move-down').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.currentTarget.getAttribute('data-move-clause-down'), 10);
+            if (!isNaN(idx) && idx < currentClauses.length - 1) {
+              const temp = currentClauses[idx];
+              currentClauses[idx] = currentClauses[idx + 1];
+              currentClauses[idx + 1] = temp;
+              renderClausesList();
+              syncPrivacyJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-remove-clause').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-remove-clause'), 10);
+            if (!isNaN(index) && index >= 0 && index < currentClauses.length) {
+              const removed = currentClauses.splice(index, 1)[0];
+              renderClausesList();
+              syncPrivacyJsonEditor();
+              showToast(`Clause "${removed.title}" removed.`, "info");
+            }
+          });
+        });
+      }
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Privacy Policy & Candidate Data Governance Studio
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-003</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Control statutory compliance disclosures, data protection officer coordinates, clause repeaters, and retention lifecycles.</p>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+              <span>Version: <strong class="text-cyan-400">${escapeHtml(privacy.meta?.version || '2.4')}</strong></span>
+              <span>Updated: <span id="privacyLastUpdated" class="text-emerald-400 font-bold">${new Date(privacy.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
+            </div>
+          </div>
+
+          <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
+          <div id="privacyRawJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                  Raw State Developer Console (JSON)
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+            </div>
+            <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for legal audits, compliance verification, and schema migrations.</p>
+            <textarea id="textareaPrivacyRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+            <div class="flex justify-end gap-2">
+              <button id="btnApplyPrivacyRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Apply JSON Changes
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 1: Policy Metadata & Statutory Compliance -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                Policy Metadata & Statutory Compliance
+              </h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Policy Version <span class="text-rose-400">*</span></label>
+                <input id="inputPrivacyVersion" type="text" value="${escapeHtml(privacy.meta?.version || '2.4')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Effective Date <span class="text-rose-400">*</span></label>
+                <input id="inputPrivacyEffectiveDate" type="date" value="${escapeHtml(privacy.compliance?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Data Protection Officer Email <span class="text-rose-400">*</span></label>
+                <input id="inputPrivacyDpoEmail" type="email" value="${escapeHtml(privacy.compliance?.dataProtectionOfficer || 'dpo@csodisha.com')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Governing Law / Statute <span class="text-rose-400">*</span></label>
+                <input id="inputPrivacyGovAct" type="text" value="${escapeHtml(privacy.compliance?.governingAct || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Legal Jurisdiction</label>
+                <input id="inputPrivacyJurisdiction" type="text" value="${escapeHtml(privacy.compliance?.jurisdiction || 'Odisha, India')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Sectional Privacy Clauses (Extensible Repeater) -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Sectional Privacy Clauses (Extensible)
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">Statutory Provisions & Disclosures</span>
+            </div>
+
+            <!-- Clauses List -->
+            <div id="privacyClausesContainer" class="space-y-3"></div>
+
+            <!-- Add Clause Inline Form -->
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Statutory Privacy Clause</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="sm:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Section Number</label>
+                  <input id="inputNewClauseNumber" type="text" placeholder="e.g. 6" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-3">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
+                  <input id="inputNewClauseTitle" type="text" placeholder="e.g. Third-Party Exam Gateways" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Content / Statutory Body</label>
+                <textarea id="textareaNewClauseBody" rows="2" placeholder="Full statutory terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+              </div>
+              <div class="flex justify-end">
+                <button id="btnAddClauseAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  + Add Clause
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Data Retention Lifecycles & Candidate Rights -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Data Retention Lifecycles & Candidate Purge Policy
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">Automatic Purge Triggers</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Inquiry Data Retention Window (Days)</label>
+                <input id="inputRetentionInquiryDays" type="number" min="7" max="365" value="${privacy.retention?.inquiryDataDays || 90}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Security Audit Log Retention (Days)</label>
+                <input id="inputRetentionAuditDays" type="number" min="30" max="730" value="${privacy.retention?.auditLogDays || 180}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Candidate Rights & Retention Assurance Summary</label>
+              <textarea id="textareaRetentionSummary" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(privacy.retention?.policySummary || '')}</textarea>
+            </div>
+          </div>
+        </div>
+      `;
+
+      renderClausesList();
+      syncPrivacyJsonEditor();
+
+      // Drawer toggle
+      document.getElementById('btnTogglePrivacyJsonDrawer')?.addEventListener('click', () => {
+        const drawer = document.getElementById('privacyRawJsonDrawer');
+        if (drawer) {
+          drawer.classList.toggle('hidden');
+          syncPrivacyJsonEditor();
+        }
+      });
+
+      // Apply raw JSON changes
+      document.getElementById('btnApplyPrivacyRawJsonChanges')?.addEventListener('click', () => {
+        const jsonText = document.getElementById('textareaPrivacyRawJson')?.value;
+        if (!jsonText) return;
+        try {
+          const parsed = JSON.parse(jsonText);
+          if (parsed && typeof parsed === 'object') {
+            privacy = parsed;
+            currentClauses = Array.isArray(privacy.clauses) ? JSON.parse(JSON.stringify(privacy.clauses)) : [];
+
+            // Update form inputs
+            const v = document.getElementById('inputPrivacyVersion');
+            const ed = document.getElementById('inputPrivacyEffectiveDate');
+            const dpo = document.getElementById('inputPrivacyDpoEmail');
+            const ga = document.getElementById('inputPrivacyGovAct');
+            const jur = document.getElementById('inputPrivacyJurisdiction');
+            const inq = document.getElementById('inputRetentionInquiryDays');
+            const aud = document.getElementById('inputRetentionAuditDays');
+            const sum = document.getElementById('textareaRetentionSummary');
+
+            if (v) v.value = privacy.meta?.version || '2.4';
+            if (ed) ed.value = privacy.compliance?.effectiveDate || '2026-11-01';
+            if (dpo) dpo.value = privacy.compliance?.dataProtectionOfficer || 'dpo@csodisha.com';
+            if (ga) ga.value = privacy.compliance?.governingAct || '';
+            if (jur) jur.value = privacy.compliance?.jurisdiction || 'Odisha, India';
+            if (inq) inq.value = privacy.retention?.inquiryDataDays || 90;
+            if (aud) aud.value = privacy.retention?.auditLogDays || 180;
+            if (sum) sum.value = privacy.retention?.policySummary || '';
+
+            renderClausesList();
+            showToast("Raw JSON parsed and applied to policy form.", "success");
+          }
+        } catch (err) {
+          showToast("JSON Syntax Error: " + err.message, "danger");
+        }
+      });
+
+      // Add Clause Handler
+      document.getElementById('btnAddClauseAction')?.addEventListener('click', () => {
+        const numInput = document.getElementById('inputNewClauseNumber');
+        const titleInput = document.getElementById('inputNewClauseTitle');
+        const bodyInput = document.getElementById('textareaNewClauseBody');
+
+        const num = numInput?.value.trim() || String(currentClauses.length + 1);
+        const title = titleInput?.value.trim() || '';
+        const body = bodyInput?.value.trim() || '';
+
+        if (!title || !body) {
+          showToast("Clause title and statutory terms are required.", "warning");
+          return;
+        }
+
+        currentClauses.push({
+          id: `PRIV-${String(currentClauses.length + 1).padStart(2, '0')}`,
+          number: num,
+          title: title,
+          body: body,
+          active: true
+        });
+
+        numInput.value = '';
+        titleInput.value = '';
+        bodyInput.value = '';
+        renderClausesList();
+        syncPrivacyJsonEditor();
+        showToast(`Clause "${title}" added to active draft.`, "info");
+      });
+
+      // Save & Publish Policy Handler
+      document.getElementById('btnSavePrivacyStudio')?.addEventListener('click', () => {
+        const payload = gatherPrivacyFormState();
+
+        if (!payload.compliance.governingAct || !payload.compliance.dataProtectionOfficer) {
+          showToast("Governing statute and DPO email are required.", "warning");
+          return;
+        }
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.savePrivacyConfig === 'function') {
+          const saved = window.CSOSuperStore.savePrivacyConfig(payload);
+          privacy = saved;
+          const dateEl = document.getElementById('privacyLastUpdated');
+          if (dateEl && saved.meta?.updatedAt) {
+            dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
+          }
+          syncPrivacyJsonEditor();
+          showToast("Privacy Policy published and active across portal!", "success");
+        }
+      });
+
+      // Export JSON Handler
+      document.getElementById('btnExportPrivacyConfig')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportPrivacyManifest === 'function') {
+          const filename = window.CSOSuperStore.exportPrivacyManifest();
+          showToast(`Privacy policy configuration exported: ${filename}`, "success");
+        }
+      });
+
+      // Import JSON Handler
+      document.getElementById('inputImportPrivacyConfig')?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const content = event.target?.result;
+            if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importPrivacyConfig === 'function') {
+              let parsed;
+              try {
+                parsed = JSON.parse(content);
+                if (parsed && parsed.privacy) parsed = parsed.privacy;
+              } catch (_) {}
+
+              const imported = window.CSOSuperStore.importPrivacyConfig(JSON.stringify(parsed));
+              showToast("Privacy policy imported successfully!", "success");
+              renderPrivacyPolicyWorkspace();
+            }
+          } catch (err) {
+            showToast("Import failed: " + err.message, "danger");
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Reset to Default Handler
+      document.getElementById('btnResetPrivacyConfig')?.addEventListener('click', () => {
+        if (confirm("Are you sure you want to restore factory default privacy policy settings? All unsaved customizations will be reset.")) {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.resetPrivacyConfig === 'function') {
+            window.CSOSuperStore.resetPrivacyConfig();
+            showToast("Privacy policy restored to factory defaults.", "info");
+            renderPrivacyPolicyWorkspace();
+          }
+        }
+      });
+
+      // Form input change listeners to sync with raw JSON
+      ['inputPrivacyVersion', 'inputPrivacyEffectiveDate', 'inputPrivacyDpoEmail', 'inputPrivacyGovAct', 'inputPrivacyJurisdiction', 'inputRetentionInquiryDays', 'inputRetentionAuditDays', 'textareaRetentionSummary'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', syncPrivacyJsonEditor);
+      });
     }
 
     /**
