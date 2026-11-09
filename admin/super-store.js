@@ -6551,362 +6551,363 @@
       this.logAudit("EXAMINATION_MGMT_MANIFEST_EXPORTED", "DATA_EXPORT", "Examination management manifest exported (" + filename + ").");
       return filename;
     },
-    // =========================================================================
+// =========================================================================
     // 58. Educational Resources Batch 3 (module-05-008 to module-05-011)
     // =========================================================================
 
-    // 58.1 Recruitment & Jobs Engine (module-05-008)
+    // --- MODULE 05-008: Recruitment & Jobs ---
     getRecruitmentJobsConfig() {
-      const raw = localStorage.getItem("cso_recruitment_jobs_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_recruitment_jobs_config", e);
-        }
-      }
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        filterDefaults: { commission: "All", cadre: "All", status: "Active" },
-        postings: [
-          { id: "JOB-01", title: "Odisha Civil Services Examination 2026 (Group A & B)", commission: "OPSC", vacancies: 399, payScale: "Level 12 (Rs. 56,100 - 1,77,500)", lastDate: "2026-11-30", applyUrl: "https://opsc.gov.in", status: "Open", active: true },
-          { id: "JOB-02", title: "Combined Graduate Level Recruitment (CGL-2026)", commission: "OSSC", vacancies: 624, payScale: "Level 9 (Rs. 35,400 - 1,12,400)", lastDate: "2026-12-15", applyUrl: "https://ossc.gov.in", status: "Open", active: true },
-          { id: "JOB-03", title: "Revenue Inspector, ARI & Amin Cadre Recruitment", commission: "OSSSSC", vacancies: 1890, payScale: "Level 4 - 8", lastDate: "2026-11-20", applyUrl: "https://osssc.gov.in", status: "Closing Soon", active: true },
-          { id: "JOB-04", title: "Odisha Police Sub-Inspector Recruitment", commission: "Odisha Police", vacancies: 720, payScale: "Level 9", lastDate: "2026-12-05", applyUrl: "https://odishapolice.gov.in", status: "Upcoming", active: true }
+      const DEFAULT_RECRUITMENT_JOBS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "JOB-01", code: "OPSC-OCS-26", title: "Odisha Civil Services (OAS/OPS) Examination 2026", commission: "OPSC", vacancies: 399, payScale: "Level 12 (Rs. 56,100 - 1,77,500)", lastDate: "2026-11-30", applyUrl: "https://opsc.gov.in", status: "Open", active: true },
+          { id: "JOB-02", code: "OSSC-CGL-26", title: "Combined Graduate Level (CGL) Recruitment", commission: "OSSC", vacancies: 624, payScale: "Level 9 (Rs. 35,400 - 1,12,400)", lastDate: "2026-12-15", applyUrl: "https://ossc.gov.in", status: "Open", active: true },
+          { id: "JOB-03", code: "OSSSC-CRE-26", title: "Revenue Inspector, ARI & Amin Combined Cadre", commission: "OSSSSC", vacancies: 1890, payScale: "Level 4 - 8", lastDate: "2026-11-20", applyUrl: "https://osssc.gov.in", status: "Closing Soon", active: true },
+          { id: "JOB-04", code: "POLICE-SI-26", title: "Odisha Police Sub-Inspector Direct Recruitment", commission: "Odisha Police", vacancies: 720, payScale: "Level 9", lastDate: "2026-12-05", applyUrl: "https://odishapolice.gov.in", status: "Upcoming", active: true }
         ]
       };
-      localStorage.setItem("cso_recruitment_jobs_config", JSON.stringify(initial));
-      return initial;
+      DEFAULT_RECRUITMENT_JOBS.postings = DEFAULT_RECRUITMENT_JOBS.items;
+
+      try {
+        const raw = localStorage.getItem('cso_recruitment_jobs_config');
+        if (!raw) {
+          localStorage.setItem('cso_recruitment_jobs_config', JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
+          return JSON.parse(JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
+        }
+        const parsed = JSON.parse(raw);
+        const list = parsed.items || parsed.postings;
+        if (!list || !Array.isArray(list) || list.length === 0) {
+          localStorage.setItem('cso_recruitment_jobs_config', JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
+          return JSON.parse(JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
+        }
+        parsed.items = list;
+        parsed.postings = list;
+        return parsed;
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
+      }
     },
 
-    saveRecruitmentJobsConfig(config) {
-      if (!config || typeof config !== "object") throw new Error("Invalid recruitment jobs payload");
-      config.meta = config.meta || {};
-      config.meta.updatedAt = new Date().toISOString();
-      config.meta.lastEditedBy = "admin@csodisha.com";
-      localStorage.setItem("cso_recruitment_jobs_config", JSON.stringify(config));
+    saveRecruitmentJobsConfig(cfg) {
+      if (!cfg || typeof cfg !== "object") return;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.items || cfg.postings || [];
+      cfg.items = list;
+      cfg.postings = list;
+      localStorage.setItem('cso_recruitment_jobs_config', JSON.stringify(cfg));
       this.logAudit("RECRUITMENT_JOBS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Recruitment postings and vacancies saved.");
-      return config;
+    },
+
+    resetRecruitmentJobsConfig() {
+      const DEFAULT_RECRUITMENT_JOBS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "JOB-01", code: "OPSC-OCS-26", title: "Odisha Civil Services (OAS/OPS) Examination 2026", commission: "OPSC", vacancies: 399, payScale: "Level 12 (Rs. 56,100 - 1,77,500)", lastDate: "2026-11-30", applyUrl: "https://opsc.gov.in", status: "Open", active: true },
+          { id: "JOB-02", code: "OSSC-CGL-26", title: "Combined Graduate Level (CGL) Recruitment", commission: "OSSC", vacancies: 624, payScale: "Level 9 (Rs. 35,400 - 1,12,400)", lastDate: "2026-12-15", applyUrl: "https://ossc.gov.in", status: "Open", active: true },
+          { id: "JOB-03", code: "OSSSC-CRE-26", title: "Revenue Inspector, ARI & Amin Combined Cadre", commission: "OSSSSC", vacancies: 1890, payScale: "Level 4 - 8", lastDate: "2026-11-20", applyUrl: "https://osssc.gov.in", status: "Closing Soon", active: true },
+          { id: "JOB-04", code: "POLICE-SI-26", title: "Odisha Police Sub-Inspector Direct Recruitment", commission: "Odisha Police", vacancies: 720, payScale: "Level 9", lastDate: "2026-12-05", applyUrl: "https://odishapolice.gov.in", status: "Upcoming", active: true }
+        ]
+      };
+      DEFAULT_RECRUITMENT_JOBS.postings = DEFAULT_RECRUITMENT_JOBS.items;
+      localStorage.setItem('cso_recruitment_jobs_config', JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
+      this.logAudit("RECRUITMENT_JOBS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Recruitment postings restored to factory defaults.");
+      return JSON.parse(JSON.stringify(DEFAULT_RECRUITMENT_JOBS));
     },
 
     importRecruitmentJobsConfig(jsonString) {
       try {
         const parsed = JSON.parse(jsonString);
         if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
-        return this.saveRecruitmentJobsConfig(parsed);
+        this.saveRecruitmentJobsConfig(parsed);
+        return parsed;
       } catch (err) {
         throw new Error("Failed to import recruitment jobs: " + err.message);
       }
     },
 
-    resetRecruitmentJobsConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        filterDefaults: { commission: "All", cadre: "All", status: "Active" },
-        postings: [
-          { id: "JOB-01", title: "Odisha Civil Services Examination 2026 (Group A & B)", commission: "OPSC", vacancies: 399, payScale: "Level 12 (Rs. 56,100 - 1,77,500)", lastDate: "2026-11-30", applyUrl: "https://opsc.gov.in", status: "Open", active: true },
-          { id: "JOB-02", title: "Combined Graduate Level Recruitment (CGL-2026)", commission: "OSSC", vacancies: 624, payScale: "Level 9 (Rs. 35,400 - 1,12,400)", lastDate: "2026-12-15", applyUrl: "https://ossc.gov.in", status: "Open", active: true },
-          { id: "JOB-03", title: "Revenue Inspector, ARI & Amin Cadre Recruitment", commission: "OSSSSC", vacancies: 1890, payScale: "Level 4 - 8", lastDate: "2026-11-20", applyUrl: "https://osssc.gov.in", status: "Closing Soon", active: true },
-          { id: "JOB-04", title: "Odisha Police Sub-Inspector Recruitment", commission: "Odisha Police", vacancies: 720, payScale: "Level 9", lastDate: "2026-12-05", applyUrl: "https://odishapolice.gov.in", status: "Upcoming", active: true }
-        ]
-      };
-      localStorage.setItem("cso_recruitment_jobs_config", JSON.stringify(initial));
-      this.logAudit("RECRUITMENT_JOBS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Recruitment postings restored to factory defaults.");
-      return initial;
-    },
-
     exportRecruitmentJobsManifest() {
       const config = this.getRecruitmentJobsConfig();
-      const timestamp = Date.now();
-      const filename = "cso-recruitment-jobs-config-" + timestamp + ".json";
-      const bundle = {
-        manifestVersion: "2026.11",
-        exportedAt: new Date(timestamp).toISOString(),
-        recruitmentJobs: config
-      };
-      const jsonStr = JSON.stringify(bundle, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const filename = "recruitment_jobs_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
       this.logAudit("RECRUITMENT_JOBS_MANIFEST_EXPORTED", "DATA_EXPORT", "Recruitment jobs manifest exported (" + filename + ").");
       return filename;
     },
 
-    // 58.2 Admit Cards & Results Engine (module-05-009)
+    // --- MODULE 05-009: Admit Cards & Results ---
     getAdmitCardsResultsConfig() {
-      const raw = localStorage.getItem("cso_admit_results_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_admit_results_config", e);
-        }
-      }
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        dispatchSettings: { autoCheckRelease: true, alertPrefix: "[OFFICIAL DISCLOSURE]", fallbackPortal: "https://csodisha.com" },
-        releases: [
-          { id: "REL-01", type: "Admit Card", title: "OSSC CGL 2026 Preliminary Exam Hall Ticket", commission: "OSSC", releaseDate: "2026-11-10", downloadUrl: "https://ossc.gov.in/hallticket", cutoffScore: "N/A", status: "Active Download", active: true },
-          { id: "REL-02", type: "Result", title: "OPSC OAS 2025 Mains Written Examination Qualified List", commission: "OPSC", releaseDate: "2026-11-05", downloadUrl: "https://opsc.gov.in/results", cutoffScore: "General: 842, SEBC: 818", status: "Declared", active: true },
-          { id: "REL-03", type: "Admit Card", title: "OSSSC Combined Recruitment Skill Test Call Letter", commission: "OSSSSC", releaseDate: "2026-11-12", downloadUrl: "https://osssc.gov.in/admit", cutoffScore: "N/A", status: "Upcoming", active: true },
-          { id: "REL-04", type: "Result", title: "OTET 2026 Special Category Answer Key & Merit Score", commission: "BSE Odisha", releaseDate: "2026-10-28", downloadUrl: "https://bseodisha.ac.in", cutoffScore: "Pass Mark: 60%", status: "Final Ratified", active: true }
-        ]
-      };
-      localStorage.setItem("cso_admit_results_config", JSON.stringify(initial));
-      return initial;
+      return this.getAdmitResultsConfig();
     },
 
-    saveAdmitCardsResultsConfig(config) {
-      if (!config || typeof config !== "object") throw new Error("Invalid admit cards & results payload");
-      config.meta = config.meta || {};
-      config.meta.updatedAt = new Date().toISOString();
-      config.meta.lastEditedBy = "admin@csodisha.com";
-      localStorage.setItem("cso_admit_results_config", JSON.stringify(config));
-      this.logAudit("ADMIT_RESULTS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Admit cards & exam results releases saved.");
-      return config;
+    getAdmitResultsConfig() {
+      const DEFAULT_ADMIT_RESULTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "REL-01", code: "OSSSC-CRE-AC", title: "OSSSC Combined Recruitment 2026 Prelims Admit Card", examName: "OSSSC Combined Recruitment 2026 Prelims", type: "Admit Card", commission: "OSSSSC", releaseDate: "2026-11-08", downloadUrl: "https://osssc.gov.in", cutoffScore: "N/A", status: "Available", active: true },
+          { id: "REL-02", code: "BSE-OTET-RES", title: "BSE Odisha OTET 2026 (Paper I & II) Merit Scorecard", examName: "BSE Odisha OTET 2026 (Paper I & II)", type: "Result", commission: "BSE Odisha", releaseDate: "2026-11-05", downloadUrl: "https://bseodisha.ac.in", cutoffScore: "Pass Mark: 60%", status: "Declared", active: true },
+          { id: "REL-03", code: "OSSC-CGL-AC", title: "OSSC CGL Tier-I Written Examination Hall Ticket", examName: "OSSC CGL Tier-I Written Examination", type: "Admit Card", commission: "OSSC", releaseDate: "2026-12-01", downloadUrl: "https://ossc.gov.in", cutoffScore: "N/A", status: "Scheduled", active: true }
+        ]
+      };
+      DEFAULT_ADMIT_RESULTS.releases = DEFAULT_ADMIT_RESULTS.items;
+
+      try {
+        const raw = localStorage.getItem('cso_admit_results_config');
+        if (!raw) {
+          localStorage.setItem('cso_admit_results_config', JSON.stringify(DEFAULT_ADMIT_RESULTS));
+          return JSON.parse(JSON.stringify(DEFAULT_ADMIT_RESULTS));
+        }
+        const parsed = JSON.parse(raw);
+        const list = parsed.items || parsed.releases;
+        if (!list || !Array.isArray(list) || list.length === 0) {
+          localStorage.setItem('cso_admit_results_config', JSON.stringify(DEFAULT_ADMIT_RESULTS));
+          return JSON.parse(JSON.stringify(DEFAULT_ADMIT_RESULTS));
+        }
+        parsed.items = list;
+        parsed.releases = list;
+        return parsed;
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_ADMIT_RESULTS));
+      }
+    },
+
+    saveAdmitCardsResultsConfig(cfg) {
+      this.saveAdmitResultsConfig(cfg);
+    },
+
+    saveAdmitResultsConfig(cfg) {
+      if (!cfg || typeof cfg !== "object") return;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.items || cfg.releases || [];
+      cfg.items = list;
+      cfg.releases = list;
+      localStorage.setItem('cso_admit_results_config', JSON.stringify(cfg));
+      this.logAudit("ADMIT_RESULTS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Admit cards and examination results saved.");
+    },
+
+    resetAdmitCardsResultsConfig() {
+      return this.resetAdmitResultsConfig();
+    },
+
+    resetAdmitResultsConfig() {
+      const DEFAULT_ADMIT_RESULTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "REL-01", code: "OSSSC-CRE-AC", title: "OSSSC Combined Recruitment 2026 Prelims Admit Card", examName: "OSSSC Combined Recruitment 2026 Prelims", type: "Admit Card", commission: "OSSSSC", releaseDate: "2026-11-08", downloadUrl: "https://osssc.gov.in", cutoffScore: "N/A", status: "Available", active: true },
+          { id: "REL-02", code: "BSE-OTET-RES", title: "BSE Odisha OTET 2026 (Paper I & II) Merit Scorecard", examName: "BSE Odisha OTET 2026 (Paper I & II)", type: "Result", commission: "BSE Odisha", releaseDate: "2026-11-05", downloadUrl: "https://bseodisha.ac.in", cutoffScore: "Pass Mark: 60%", status: "Declared", active: true },
+          { id: "REL-03", code: "OSSC-CGL-AC", title: "OSSC CGL Tier-I Written Examination Hall Ticket", examName: "OSSC CGL Tier-I Written Examination", type: "Admit Card", commission: "OSSC", releaseDate: "2026-12-01", downloadUrl: "https://ossc.gov.in", cutoffScore: "N/A", status: "Scheduled", active: true }
+        ]
+      };
+      DEFAULT_ADMIT_RESULTS.releases = DEFAULT_ADMIT_RESULTS.items;
+      localStorage.setItem('cso_admit_results_config', JSON.stringify(DEFAULT_ADMIT_RESULTS));
+      this.logAudit("ADMIT_RESULTS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Admit cards and results restored to factory defaults.");
+      return JSON.parse(JSON.stringify(DEFAULT_ADMIT_RESULTS));
     },
 
     importAdmitCardsResultsConfig(jsonString) {
       try {
         const parsed = JSON.parse(jsonString);
         if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
-        return this.saveAdmitCardsResultsConfig(parsed);
+        this.saveAdmitResultsConfig(parsed);
+        return parsed;
       } catch (err) {
         throw new Error("Failed to import admit cards/results: " + err.message);
       }
     },
 
-    resetAdmitCardsResultsConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        dispatchSettings: { autoCheckRelease: true, alertPrefix: "[OFFICIAL DISCLOSURE]", fallbackPortal: "https://csodisha.com" },
-        releases: [
-          { id: "REL-01", type: "Admit Card", title: "OSSC CGL 2026 Preliminary Exam Hall Ticket", commission: "OSSC", releaseDate: "2026-11-10", downloadUrl: "https://ossc.gov.in/hallticket", cutoffScore: "N/A", status: "Active Download", active: true },
-          { id: "REL-02", type: "Result", title: "OPSC OAS 2025 Mains Written Examination Qualified List", commission: "OPSC", releaseDate: "2026-11-05", downloadUrl: "https://opsc.gov.in/results", cutoffScore: "General: 842, SEBC: 818", status: "Declared", active: true },
-          { id: "REL-03", type: "Admit Card", title: "OSSSC Combined Recruitment Skill Test Call Letter", commission: "OSSSSC", releaseDate: "2026-11-12", downloadUrl: "https://osssc.gov.in/admit", cutoffScore: "N/A", status: "Upcoming", active: true },
-          { id: "REL-04", type: "Result", title: "OTET 2026 Special Category Answer Key & Merit Score", commission: "BSE Odisha", releaseDate: "2026-10-28", downloadUrl: "https://bseodisha.ac.in", cutoffScore: "Pass Mark: 60%", status: "Final Ratified", active: true }
-        ]
-      };
-      localStorage.setItem("cso_admit_results_config", JSON.stringify(initial));
-      this.logAudit("ADMIT_RESULTS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Admit cards & results restored to factory defaults.");
-      return initial;
-    },
-
     exportAdmitCardsResultsManifest() {
-      const config = this.getAdmitCardsResultsConfig();
-      const timestamp = Date.now();
-      const filename = "cso-admit-results-config-" + timestamp + ".json";
-      const bundle = {
-        manifestVersion: "2026.11",
-        exportedAt: new Date(timestamp).toISOString(),
-        admitCardsResults: config
-      };
-      const jsonStr = JSON.stringify(bundle, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      this.logAudit("ADMIT_RESULTS_MANIFEST_EXPORTED", "DATA_EXPORT", "Admit cards & results manifest exported (" + filename + ").");
+      const config = this.getAdmitResultsConfig();
+      const filename = "admit_results_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ADMIT_RESULTS_MANIFEST_EXPORTED", "DATA_EXPORT", "Admit cards and results manifest exported (" + filename + ").");
       return filename;
     },
 
-    // 58.3 Syllabus & Exam Patterns Engine (module-05-010)
+    // --- MODULE 05-010: Syllabus & Exam Patterns ---
     getSyllabusExamPatternsConfig() {
-      const raw = localStorage.getItem("cso_syllabus_patterns_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_syllabus_patterns_config", e);
-        }
-      }
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        patternSettings: { gazetteReferencedOnly: true, allowComparativeView: true, defaultNegativeMarking: "0.25 (1/4th)" },
-        schemes: [
-          { id: "SYL-01", examName: "OPSC Odisha Civil Services (OCS)", stages: "Prelims (Paper I & II), Mains (Written), Interview", totalMarks: 2250, negativeMarking: "0.33 for GS-I; CSAT Qualifying 33%", gazetteNotificationNo: "1422/OPSC-2026", verified: true, active: true },
-          { id: "SYL-02", examName: "OSSC Combined Graduate Level (CGL)", stages: "Prelims (CBRE MCQ), Mains (Written), Computer Skill", totalMarks: 400, negativeMarking: "0.25 marks per wrong answer", gazetteNotificationNo: "Emp-412/2026", verified: true, active: true },
-          { id: "SYL-03", examName: "OSSSC Combined Recruitment (RI / ARI / Amin)", stages: "Single Stage Written + Practical Skill Test", totalMarks: 200, negativeMarking: "0.50 marks per wrong answer", gazetteNotificationNo: "Rev-99/2026", verified: true, active: true }
-        ]
-      };
-      localStorage.setItem("cso_syllabus_patterns_config", JSON.stringify(initial));
-      return initial;
+      return this.getSyllabusPatternsConfig();
     },
 
-    saveSyllabusExamPatternsConfig(config) {
-      if (!config || typeof config !== "object") throw new Error("Invalid syllabus & exam patterns payload");
-      config.meta = config.meta || {};
-      config.meta.updatedAt = new Date().toISOString();
-      config.meta.lastEditedBy = "admin@csodisha.com";
-      localStorage.setItem("cso_syllabus_patterns_config", JSON.stringify(config));
+    getSyllabusPatternsConfig() {
+      const DEFAULT_SYLLABUS_PATTERNS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "SYL-01", code: "OPSC-OCS-PAT", examCode: "OPSC-OCS", examName: "OPSC OAS Civil Services Exam Pattern", title: "OPSC OAS Civil Services Exam Pattern", totalMarks: 2000, stages: "Prelims (400M) + Mains (1400M) + Personality (200M)", negativeMarking: "0.33 per wrong answer", pdfUrl: "/assets/pdf/opsc-oas-syllabus.pdf", verified: true, active: true },
+          { id: "SYL-02", code: "OSSC-CGL-PAT", examCode: "OSSC-CGL", examName: "OSSC Combined Graduate Level Pattern", title: "OSSC Combined Graduate Level Pattern", totalMarks: 350, stages: "Stage I Prelims (150M) + Stage II Mains (200M)", negativeMarking: "0.25 per wrong answer", pdfUrl: "/assets/pdf/ossc-cgl-syllabus.pdf", verified: true, active: true },
+          { id: "SYL-03", code: "OSSSC-CRE-PAT", examCode: "OSSSC-CRE", examName: "OSSSC Revenue Inspector & Amin Scheme", title: "OSSSC Revenue Inspector & Amin Scheme", totalMarks: 180, stages: "Single-Day OMR (180M) + Skill Test", negativeMarking: "0.50 per wrong answer", pdfUrl: "/assets/pdf/osssc-ri-pattern.pdf", verified: true, active: true }
+        ]
+      };
+      DEFAULT_SYLLABUS_PATTERNS.schemes = DEFAULT_SYLLABUS_PATTERNS.items;
+
+      try {
+        const raw = localStorage.getItem('cso_syllabus_patterns_config');
+        if (!raw) {
+          localStorage.setItem('cso_syllabus_patterns_config', JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
+          return JSON.parse(JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
+        }
+        const parsed = JSON.parse(raw);
+        const list = parsed.items || parsed.schemes;
+        if (!list || !Array.isArray(list) || list.length === 0) {
+          localStorage.setItem('cso_syllabus_patterns_config', JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
+          return JSON.parse(JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
+        }
+        parsed.items = list;
+        parsed.schemes = list;
+        return parsed;
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
+      }
+    },
+
+    saveSyllabusExamPatternsConfig(cfg) {
+      this.saveSyllabusPatternsConfig(cfg);
+    },
+
+    saveSyllabusPatternsConfig(cfg) {
+      if (!cfg || typeof cfg !== "object") return;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.items || cfg.schemes || [];
+      cfg.items = list;
+      cfg.schemes = list;
+      localStorage.setItem('cso_syllabus_patterns_config', JSON.stringify(cfg));
       this.logAudit("SYLLABUS_PATTERNS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Syllabus breakdowns and exam patterns saved.");
-      return config;
+    },
+
+    resetSyllabusExamPatternsConfig() {
+      return this.resetSyllabusPatternsConfig();
+    },
+
+    resetSyllabusPatternsConfig() {
+      const DEFAULT_SYLLABUS_PATTERNS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "SYL-01", code: "OPSC-OCS-PAT", examCode: "OPSC-OCS", examName: "OPSC OAS Civil Services Exam Pattern", title: "OPSC OAS Civil Services Exam Pattern", totalMarks: 2000, stages: "Prelims (400M) + Mains (1400M) + Personality (200M)", negativeMarking: "0.33 per wrong answer", pdfUrl: "/assets/pdf/opsc-oas-syllabus.pdf", verified: true, active: true },
+          { id: "SYL-02", code: "OSSC-CGL-PAT", examCode: "OSSC-CGL", examName: "OSSC Combined Graduate Level Pattern", title: "OSSC Combined Graduate Level Pattern", totalMarks: 350, stages: "Stage I Prelims (150M) + Stage II Mains (200M)", negativeMarking: "0.25 per wrong answer", pdfUrl: "/assets/pdf/ossc-cgl-syllabus.pdf", verified: true, active: true },
+          { id: "SYL-03", code: "OSSSC-CRE-PAT", examCode: "OSSSC-CRE", examName: "OSSSC Revenue Inspector & Amin Scheme", title: "OSSSC Revenue Inspector & Amin Scheme", totalMarks: 180, stages: "Single-Day OMR (180M) + Skill Test", negativeMarking: "0.50 per wrong answer", pdfUrl: "/assets/pdf/osssc-ri-pattern.pdf", verified: true, active: true }
+        ]
+      };
+      DEFAULT_SYLLABUS_PATTERNS.schemes = DEFAULT_SYLLABUS_PATTERNS.items;
+      localStorage.setItem('cso_syllabus_patterns_config', JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
+      this.logAudit("SYLLABUS_PATTERNS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Syllabus breakdowns restored to factory defaults.");
+      return JSON.parse(JSON.stringify(DEFAULT_SYLLABUS_PATTERNS));
     },
 
     importSyllabusExamPatternsConfig(jsonString) {
       try {
         const parsed = JSON.parse(jsonString);
         if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
-        return this.saveSyllabusExamPatternsConfig(parsed);
+        this.saveSyllabusPatternsConfig(parsed);
+        return parsed;
       } catch (err) {
         throw new Error("Failed to import syllabus/patterns: " + err.message);
       }
     },
 
-    resetSyllabusExamPatternsConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        patternSettings: { gazetteReferencedOnly: true, allowComparativeView: true, defaultNegativeMarking: "0.25 (1/4th)" },
-        schemes: [
-          { id: "SYL-01", examName: "OPSC Odisha Civil Services (OCS)", stages: "Prelims (Paper I & II), Mains (Written), Interview", totalMarks: 2250, negativeMarking: "0.33 for GS-I; CSAT Qualifying 33%", gazetteNotificationNo: "1422/OPSC-2026", verified: true, active: true },
-          { id: "SYL-02", examName: "OSSC Combined Graduate Level (CGL)", stages: "Prelims (CBRE MCQ), Mains (Written), Computer Skill", totalMarks: 400, negativeMarking: "0.25 marks per wrong answer", gazetteNotificationNo: "Emp-412/2026", verified: true, active: true },
-          { id: "SYL-03", examName: "OSSSC Combined Recruitment (RI / ARI / Amin)", stages: "Single Stage Written + Practical Skill Test", totalMarks: 200, negativeMarking: "0.50 marks per wrong answer", gazetteNotificationNo: "Rev-99/2026", verified: true, active: true }
-        ]
-      };
-      localStorage.setItem("cso_syllabus_patterns_config", JSON.stringify(initial));
-      this.logAudit("SYLLABUS_PATTERNS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Syllabus breakdowns restored to factory defaults.");
-      return initial;
-    },
-
     exportSyllabusExamPatternsManifest() {
-      const config = this.getSyllabusExamPatternsConfig();
-      const timestamp = Date.now();
-      const filename = "cso-syllabus-patterns-config-" + timestamp + ".json";
-      const bundle = {
-        manifestVersion: "2026.11",
-        exportedAt: new Date(timestamp).toISOString(),
-        syllabusPatterns: config
-      };
-      const jsonStr = JSON.stringify(bundle, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      this.logAudit("SYLLABUS_PATTERNS_MANIFEST_EXPORTED", "DATA_EXPORT", "Syllabus & patterns manifest exported (" + filename + ").");
+      const config = this.getSyllabusPatternsConfig();
+      const filename = "syllabus_patterns_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SYLLABUS_PATTERNS_MANIFEST_EXPORTED", "DATA_EXPORT", "Syllabus patterns manifest exported (" + filename + ").");
       return filename;
     },
 
-    // 58.4 Previous Year Questions Engine (module-05-011)
+    // --- MODULE 05-011: Previous Year Questions ---
     getPyqConfig() {
-      const raw = localStorage.getItem("cso_pyq_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_pyq_config", e);
-        }
-      }
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        repositorySettings: { includeAnswerKeys: true, searchableQuestions: true, ocrIndexed: true },
-        papers: [
-          { id: "PYQ-01", exam: "OPSC OAS Prelims", year: 2024, paperTitle: "General Studies Paper-I (Complete Question Paper with Official Key)", answerKeyStatus: "Official Ratified", downloadUrl: "/assets/pdf/opsc-oas-2024-gs1.pdf", active: true },
-          { id: "PYQ-02", exam: "OSSC CGL Mains", year: 2023, paperTitle: "Language Paper (English & Odia Combined Written)", answerKeyStatus: "Model Explanations Available", downloadUrl: "/assets/pdf/ossc-cgl-2023-mains.pdf", active: true },
-          { id: "PYQ-03", exam: "OSSSC RI / Amin", year: 2021, paperTitle: "Arithmetic & General Knowledge Official Paper", answerKeyStatus: "Official Ratified", downloadUrl: "/assets/pdf/osssc-ri-2021.pdf", active: true }
+      const DEFAULT_PYQ = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PYQ-01", code: "OAS-25-GS1", exam: "OPSC OAS", examTitle: "OPSC OAS Prelims General Studies Paper I", paperTitle: "OPSC OAS Prelims General Studies Paper I", year: 2025, stage: "Prelims", totalQuestions: 100, downloadCount: 5820, paperUrl: "/assets/pyq/opsc-oas-2025-gs1.pdf", answerKeyStatus: "Official Ratified", active: true },
+          { id: "PYQ-02", code: "OAS-25-CSAT", exam: "OPSC OAS", examTitle: "OPSC OAS Prelims General Studies Paper II (CSAT)", paperTitle: "OPSC OAS Prelims General Studies Paper II (CSAT)", year: 2025, stage: "Prelims", totalQuestions: 80, downloadCount: 4120, paperUrl: "/assets/pyq/opsc-oas-2025-csat.pdf", answerKeyStatus: "Official Ratified", active: true },
+          { id: "PYQ-03", code: "CGL-24-T1", exam: "OSSC CGL", examTitle: "OSSC CGL Tier-I Arithmetic & Reasoning", paperTitle: "OSSC CGL Tier-I Arithmetic & Reasoning", year: 2024, stage: "Tier-I", totalQuestions: 150, downloadCount: 7910, paperUrl: "/assets/pyq/ossc-cgl-2024-tier1.pdf", answerKeyStatus: "Model Explanations Available", active: true },
+          { id: "PYQ-04", code: "RI-23-MAIN", exam: "OSSSC", examTitle: "OSSSC RI & Amin Odia & General Studies", paperTitle: "OSSSC RI & Amin Odia & General Studies", year: 2023, stage: "Main", totalQuestions: 180, downloadCount: 9240, paperUrl: "/assets/pyq/osssc-ri-2023.pdf", answerKeyStatus: "Official Ratified", active: true }
         ]
       };
-      localStorage.setItem("cso_pyq_config", JSON.stringify(initial));
-      return initial;
+      DEFAULT_PYQ.papers = DEFAULT_PYQ.items;
+
+      try {
+        const raw = localStorage.getItem('cso_pyq_config');
+        if (!raw) {
+          localStorage.setItem('cso_pyq_config', JSON.stringify(DEFAULT_PYQ));
+          return JSON.parse(JSON.stringify(DEFAULT_PYQ));
+        }
+        const parsed = JSON.parse(raw);
+        const list = parsed.items || parsed.papers;
+        if (!list || !Array.isArray(list) || list.length === 0) {
+          localStorage.setItem('cso_pyq_config', JSON.stringify(DEFAULT_PYQ));
+          return JSON.parse(JSON.stringify(DEFAULT_PYQ));
+        }
+        parsed.items = list;
+        parsed.papers = list;
+        return parsed;
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_PYQ));
+      }
     },
 
-    savePyqConfig(config) {
-      if (!config || typeof config !== "object") throw new Error("Invalid PYQ payload");
-      config.meta = config.meta || {};
-      config.meta.updatedAt = new Date().toISOString();
-      config.meta.lastEditedBy = "admin@csodisha.com";
-      localStorage.setItem("cso_pyq_config", JSON.stringify(config));
+    savePyqConfig(cfg) {
+      if (!cfg || typeof cfg !== "object") return;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.items || cfg.papers || [];
+      cfg.items = list;
+      cfg.papers = list;
+      localStorage.setItem('cso_pyq_config', JSON.stringify(cfg));
       this.logAudit("PYQ_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Previous Year Question papers archive saved.");
-      return config;
+    },
+
+    resetPyqConfig() {
+      const DEFAULT_PYQ = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PYQ-01", code: "OAS-25-GS1", exam: "OPSC OAS", examTitle: "OPSC OAS Prelims General Studies Paper I", paperTitle: "OPSC OAS Prelims General Studies Paper I", year: 2025, stage: "Prelims", totalQuestions: 100, downloadCount: 5820, paperUrl: "/assets/pyq/opsc-oas-2025-gs1.pdf", answerKeyStatus: "Official Ratified", active: true },
+          { id: "PYQ-02", code: "OAS-25-CSAT", exam: "OPSC OAS", examTitle: "OPSC OAS Prelims General Studies Paper II (CSAT)", paperTitle: "OPSC OAS Prelims General Studies Paper II (CSAT)", year: 2025, stage: "Prelims", totalQuestions: 80, downloadCount: 4120, paperUrl: "/assets/pyq/opsc-oas-2025-csat.pdf", answerKeyStatus: "Official Ratified", active: true },
+          { id: "PYQ-03", code: "CGL-24-T1", exam: "OSSC CGL", examTitle: "OSSC CGL Tier-I Arithmetic & Reasoning", paperTitle: "OSSC CGL Tier-I Arithmetic & Reasoning", year: 2024, stage: "Tier-I", totalQuestions: 150, downloadCount: 7910, paperUrl: "/assets/pyq/ossc-cgl-2024-tier1.pdf", answerKeyStatus: "Model Explanations Available", active: true },
+          { id: "PYQ-04", code: "RI-23-MAIN", exam: "OSSSC", examTitle: "OSSSC RI & Amin Odia & General Studies", paperTitle: "OSSSC RI & Amin Odia & General Studies", year: 2023, stage: "Main", totalQuestions: 180, downloadCount: 9240, paperUrl: "/assets/pyq/osssc-ri-2023.pdf", answerKeyStatus: "Official Ratified", active: true }
+        ]
+      };
+      DEFAULT_PYQ.papers = DEFAULT_PYQ.items;
+      localStorage.setItem('cso_pyq_config', JSON.stringify(DEFAULT_PYQ));
+      this.logAudit("PYQ_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "PYQ repository restored to factory defaults.");
+      return JSON.parse(JSON.stringify(DEFAULT_PYQ));
     },
 
     importPyqConfig(jsonString) {
       try {
         const parsed = JSON.parse(jsonString);
         if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
-        return this.savePyqConfig(parsed);
+        this.savePyqConfig(parsed);
+        return parsed;
       } catch (err) {
         throw new Error("Failed to import PYQ config: " + err.message);
       }
     },
 
-    resetPyqConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        repositorySettings: { includeAnswerKeys: true, searchableQuestions: true, ocrIndexed: true },
-        papers: [
-          { id: "PYQ-01", exam: "OPSC OAS Prelims", year: 2024, paperTitle: "General Studies Paper-I (Complete Question Paper with Official Key)", answerKeyStatus: "Official Ratified", downloadUrl: "/assets/pdf/opsc-oas-2024-gs1.pdf", active: true },
-          { id: "PYQ-02", exam: "OSSC CGL Mains", year: 2023, paperTitle: "Language Paper (English & Odia Combined Written)", answerKeyStatus: "Model Explanations Available", downloadUrl: "/assets/pdf/ossc-cgl-2023-mains.pdf", active: true },
-          { id: "PYQ-03", exam: "OSSSC RI / Amin", year: 2021, paperTitle: "Arithmetic & General Knowledge Official Paper", answerKeyStatus: "Official Ratified", downloadUrl: "/assets/pdf/osssc-ri-2021.pdf", active: true }
-        ]
-      };
-      localStorage.setItem("cso_pyq_config", JSON.stringify(initial));
-      this.logAudit("PYQ_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Previous Year Question archive restored to factory defaults.");
-      return initial;
-    },
-
     exportPyqManifest() {
       const config = this.getPyqConfig();
-      const timestamp = Date.now();
-      const filename = "cso-pyq-config-" + timestamp + ".json";
-      const bundle = {
-        manifestVersion: "2026.11",
-        exportedAt: new Date(timestamp).toISOString(),
-        previousYearQuestions: config
-      };
-      const jsonStr = JSON.stringify(bundle, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const filename = "pyq_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
       this.logAudit("PYQ_MANIFEST_EXPORTED", "DATA_EXPORT", "PYQ archive manifest exported (" + filename + ").");
       return filename;
     },
+
     // =========================================================================
     // 59. Educational Resources Batch 4 (module-05-012 to module-05-015)
     // =========================================================================
 
     // 59.1 Question Bank Engine (module-05-012)
     getQuestionBankConfig() {
-      const raw = localStorage.getItem("cso_question_bank_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_question_bank_config", e);
-        }
-      }
-      const initial = {
+      return this._hydrateConfig("cso_question_bank_config", "questions", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
         bankSettings: { defaultLanguage: "Bilingual (English/Odia)", allowLatexFormulas: true, autoTagCognitiveLevel: true },
         questions: [
-          { id: "Q-1001", prompt: "Under which article of the Constitution of India is the High Court of Orissa established?", subject: "Indian Polity", examTarget: "OPSC OAS", difficulty: "Medium", type: "MCQ", marks: 2, options: ["Article 214", "Article 217", "Article 226", "Article 231"], correctOptionIndex: 0, explanation: "Article 214 provides that there shall be a High Court for each State.", active: true },
-          { id: "Q-1002", prompt: "Who was the first dynamic ruler of the Somavamshi dynasty who unified Coastal and Western Odisha?", subject: "Odisha History", examTarget: "OPSC / OSSC", difficulty: "Hard", type: "MCQ", marks: 2, options: ["Janmejaya I", "Yayati I", "Dharmaratha", "Udyotakesari"], correctOptionIndex: 1, explanation: "Yayati I is credited with the integration of Dakshina Kosala and Utkala.", active: true },
-          { id: "Q-1003", prompt: "A train running at 72 km/hr crosses a platform 200m long in 25 seconds. What is the length of the train?", subject: "Quantitative Aptitude", examTarget: "OSSC CGL", difficulty: "Easy", type: "MCQ", marks: 1, options: ["250 m", "300 m", "200 m", "350 m"], correctOptionIndex: 1, explanation: "Speed = 72 * (5/18) = 20 m/s. Total distance = 20 * 25 = 500m. Train length = 500 - 200 = 300m.", active: true }
+          { id: "Q-1001", prompt: "Under which article of the Constitution of India is the High Court of Orissa established? / ଭାରତୀୟ ସମ୍ବିଧାନର କେଉଁ ଧାରା ଅନୁସାରେ ଓଡ଼ିଶା ଉଚ୍ଚ ନ୍ୟାୟାଳୟ ପ୍ରତିଷ୍ଠିତ?", subject: "Polity", examTarget: "OPSC OAS", difficulty: "Medium", type: "MCQ", marks: 2, options: ["Article 214", "Article 217", "Article 226", "Article 231"], correctOptionIndex: 0, explanation: "Article 214 provides that there shall be a High Court for each State.", active: true },
+          { id: "Q-1002", prompt: "Who was the dynamic ruler of the Somavamshi dynasty who unified Coastal and Western Odisha? / ଉପକୂଳ ଓ ପଶ୍ଚିମ ଓଡ଼ିଶାକୁ ଏକତ୍ରିତ କରିଥିବା ସୋମବଂଶୀ ଶାସକ କିଏ ଥିଲେ?", subject: "Odisha History", examTarget: "OPSC / OSSC", difficulty: "Hard", type: "MCQ", marks: 2, options: ["Janmejaya I", "Yayati I", "Dharmaratha", "Udyotakesari"], correctOptionIndex: 1, explanation: "Yayati I is credited with the integration of Dakshina Kosala and Utkala.", active: true },
+          { id: "Q-1003", prompt: "A train running at 72 km/hr crosses a platform 200m long in 25 seconds. What is the length of the train? / ଘଣ୍ଟା ପ୍ରତି ୭୨ କିମି ବେଗରେ ଯାଉଥିବା ଏକ ଟ୍ରେନ ୨୫ ସେକେଣ୍ଡରେ ୨୦୦ ମିଟର ପ୍ଲାଟଫର୍ମ ଅତିକ୍ରମ କରେ, ତେବେ ଟ୍ରେନର ଲମ୍ବ କେତେ?", subject: "Quantitative Aptitude", examTarget: "OSSC CGL", difficulty: "Easy", type: "MCQ", marks: 1, options: ["250 m", "300 m", "200 m", "350 m"], correctOptionIndex: 1, explanation: "Speed = 72 * (5/18) = 20 m/s. Total distance = 20 * 25 = 500m. Train length = 500 - 200 = 300m.", active: true },
+          { id: "Q-1004", prompt: "In Odia Grammar, which case (ବିଭକ୍ତି) is used to express separation or source (ଅପାଦାନ କାରକ)? / ଓଡ଼ିଆ ବ୍ୟାକରଣରେ ଅପାଦାନ କାରକରେ କେଉଁ ବିଭକ୍ତି ହୁଏ?", subject: "Odia Grammar", examTarget: "All Odisha Exams", difficulty: "Medium", type: "MCQ", marks: 1, options: ["ଦ୍ୱିତୀୟା (2nd)", "ତୃତୀୟା (3rd)", "ପଞ୍ଚମୀ (5th)", "ସପ୍ତମୀ (7th)"], correctOptionIndex: 2, explanation: "ଅପାଦାନ କାରକରେ ପଞ୍ଚମୀ ବିଭକ୍ତି ପ୍ରଯୁକ୍ତ ହୁଏ (ଉଦାହରଣ: ଗଛରୁ ଫଳ ପଡ଼ିଲା).", active: true },
+          { id: "Q-1005", prompt: "Which is the highest mountain peak in the state of Odisha? / ଓଡ଼ିଶା ରାଜ୍ୟର ସର୍ବୋଚ୍ଚ ପର୍ବତ ଶୃଙ୍ଗ କେଉଁଟି?", subject: "Geography", examTarget: "OPSC OAS / OSSC", difficulty: "Easy", type: "MCQ", marks: 1, options: ["Deomali (୧,୬୭୨ ମି)", "Mahendragiri (୧,୫୦୧ ମି)", "Malayagiri (୧,୧୮୭ ମି)", "Gandhamardan (୧,୦୬୦ ମି)"], correctOptionIndex: 0, explanation: "Deomali in Koraput district is the highest mountain peak in Odisha with an elevation of 1,672 metres.", active: true }
         ]
-      };
-      localStorage.setItem("cso_question_bank_config", JSON.stringify(initial));
-      return initial;
+      }));
     },
 
     saveQuestionBankConfig(config) {
@@ -6914,6 +6915,8 @@
       config.meta = config.meta || {};
       config.meta.updatedAt = new Date().toISOString();
       config.meta.lastEditedBy = "admin@csodisha.com";
+      if (!config.questions && config.items) config.questions = config.items;
+      config.items = config.questions;
       localStorage.setItem("cso_question_bank_config", JSON.stringify(config));
       this.logAudit("QUESTION_BANK_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Question bank questions and repository settings saved.");
       return config;
@@ -6930,24 +6933,15 @@
     },
 
     resetQuestionBankConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        bankSettings: { defaultLanguage: "Bilingual (English/Odia)", allowLatexFormulas: true, autoTagCognitiveLevel: true },
-        questions: [
-          { id: "Q-1001", prompt: "Under which article of the Constitution of India is the High Court of Orissa established?", subject: "Indian Polity", examTarget: "OPSC OAS", difficulty: "Medium", type: "MCQ", marks: 2, options: ["Article 214", "Article 217", "Article 226", "Article 231"], correctOptionIndex: 0, explanation: "Article 214 provides that there shall be a High Court for each State.", active: true },
-          { id: "Q-1002", prompt: "Who was the first dynamic ruler of the Somavamshi dynasty who unified Coastal and Western Odisha?", subject: "Odisha History", examTarget: "OPSC / OSSC", difficulty: "Hard", type: "MCQ", marks: 2, options: ["Janmejaya I", "Yayati I", "Dharmaratha", "Udyotakesari"], correctOptionIndex: 1, explanation: "Yayati I is credited with the integration of Dakshina Kosala and Utkala.", active: true },
-          { id: "Q-1003", prompt: "A train running at 72 km/hr crosses a platform 200m long in 25 seconds. What is the length of the train?", subject: "Quantitative Aptitude", examTarget: "OSSC CGL", difficulty: "Easy", type: "MCQ", marks: 1, options: ["250 m", "300 m", "200 m", "350 m"], correctOptionIndex: 1, explanation: "Speed = 72 * (5/18) = 20 m/s. Total distance = 20 * 25 = 500m. Train length = 500 - 200 = 300m.", active: true }
-        ]
-      };
-      localStorage.setItem("cso_question_bank_config", JSON.stringify(initial));
+      localStorage.removeItem("cso_question_bank_config");
       this.logAudit("QUESTION_BANK_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Question bank restored to factory defaults.");
-      return initial;
+      return this.getQuestionBankConfig();
     },
 
     exportQuestionBankManifest() {
       const config = this.getQuestionBankConfig();
       const timestamp = Date.now();
-      const filename = "cso-question-bank-config-" + timestamp + ".json";
+      const filename = "cso-question-bank-manifest-" + timestamp + ".json";
       const bundle = {
         manifestVersion: "2026.11",
         exportedAt: new Date(timestamp).toISOString(),
@@ -6969,25 +6963,15 @@
 
     // 59.2 MCQ & Quiz Builder Engine (module-05-013)
     getQuizBuilderConfig() {
-      const raw = localStorage.getItem("cso_quiz_builder_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_quiz_builder_config", e);
-        }
-      }
-      const initial = {
+      return this._hydrateConfig("cso_quiz_builder_config", "quizzes", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        builderSettings: { defaultTimerPerQuestionSec: 60, shuffleOptions: true, showInstantExplanation: true },
+        builderSettings: { defaultTimerPerQuestionSec: 60, shuffleQuestions: true, showInstantExplanation: true },
         quizzes: [
-          { id: "QUIZ-01", title: "OPSC OAS Prelims Daily Mini-Mock #12: Odisha Polity & GK", questionCount: 15, durationMinutes: 20, negativeMarkPerQuestion: 0.33, examCategory: "OPSC OAS", active: true },
-          { id: "QUIZ-02", title: "OSSC CGL Quantitative Aptitude Speed Test: Arithmetic & DI", questionCount: 20, durationMinutes: 25, negativeMarkPerQuestion: 0.25, examCategory: "OSSC CGL", active: true },
-          { id: "QUIZ-03", title: "OTET Child Development & Pedagogy Practice Assessment", questionCount: 30, durationMinutes: 30, negativeMarkPerQuestion: 0, examCategory: "OTET", active: true }
+          { id: "QZ-01", title: "Daily Odisha GK Quiz #45 (Culture, History & Geography)", category: "General Studies", targetExam: "All Odisha Exams", questionsCount: 15, durationMinutes: 15, totalMarks: 30, passPercentage: 60, attemptsCount: 1420, active: true },
+          { id: "QZ-02", title: "Indian Polity Set: Preamble, Fundamental Rights & DPSP", category: "Indian Constitution", targetExam: "OPSC OAS & ASO", questionsCount: 20, durationMinutes: 20, totalMarks: 40, passPercentage: 70, attemptsCount: 980, active: true },
+          { id: "QZ-03", title: "Odia Vyakaran Drill: Sandhi, Samasa & Rudhi Prayoga", category: "Odia Language", targetExam: "OSSSC & Teacher Recruitment", questionsCount: 25, durationMinutes: 25, totalMarks: 25, passPercentage: 60, attemptsCount: 2150, active: true }
         ]
-      };
-      localStorage.setItem("cso_quiz_builder_config", JSON.stringify(initial));
-      return initial;
+      }));
     },
 
     saveQuizBuilderConfig(config) {
@@ -6995,8 +6979,10 @@
       config.meta = config.meta || {};
       config.meta.updatedAt = new Date().toISOString();
       config.meta.lastEditedBy = "admin@csodisha.com";
+      if (!config.quizzes && config.items) config.quizzes = config.items;
+      config.items = config.quizzes;
       localStorage.setItem("cso_quiz_builder_config", JSON.stringify(config));
-      this.logAudit("QUIZ_BUILDER_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "MCQ & Quiz Builder assessments saved.");
+      this.logAudit("QUIZ_BUILDER_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Quiz definitions and builder options saved.");
       return config;
     },
 
@@ -7006,29 +6992,20 @@
         if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
         return this.saveQuizBuilderConfig(parsed);
       } catch (err) {
-        throw new Error("Failed to import quiz builder config: " + err.message);
+        throw new Error("Failed to import quiz config: " + err.message);
       }
     },
 
     resetQuizBuilderConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        builderSettings: { defaultTimerPerQuestionSec: 60, shuffleOptions: true, showInstantExplanation: true },
-        quizzes: [
-          { id: "QUIZ-01", title: "OPSC OAS Prelims Daily Mini-Mock #12: Odisha Polity & GK", questionCount: 15, durationMinutes: 20, negativeMarkPerQuestion: 0.33, examCategory: "OPSC OAS", active: true },
-          { id: "QUIZ-02", title: "OSSC CGL Quantitative Aptitude Speed Test: Arithmetic & DI", questionCount: 20, durationMinutes: 25, negativeMarkPerQuestion: 0.25, examCategory: "OSSC CGL", active: true },
-          { id: "QUIZ-03", title: "OTET Child Development & Pedagogy Practice Assessment", questionCount: 30, durationMinutes: 30, negativeMarkPerQuestion: 0, examCategory: "OTET", active: true }
-        ]
-      };
-      localStorage.setItem("cso_quiz_builder_config", JSON.stringify(initial));
-      this.logAudit("QUIZ_BUILDER_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "MCQ & Quiz Builder restored to factory defaults.");
-      return initial;
+      localStorage.removeItem("cso_quiz_builder_config");
+      this.logAudit("QUIZ_BUILDER_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Quiz builder templates restored to factory defaults.");
+      return this.getQuizBuilderConfig();
     },
 
     exportQuizBuilderManifest() {
       const config = this.getQuizBuilderConfig();
       const timestamp = Date.now();
-      const filename = "cso-quiz-builder-config-" + timestamp + ".json";
+      const filename = "cso-quizzes-manifest-" + timestamp + ".json";
       const bundle = {
         manifestVersion: "2026.11",
         exportedAt: new Date(timestamp).toISOString(),
@@ -7044,31 +7021,21 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      this.logAudit("QUIZ_BUILDER_MANIFEST_EXPORTED", "DATA_EXPORT", "Quiz Builder manifest exported (" + filename + ").");
+      this.logAudit("QUIZ_BUILDER_MANIFEST_EXPORTED", "DATA_EXPORT", "Quiz definitions manifest exported (" + filename + ").");
       return filename;
     },
 
     // 59.3 Mock Tests Engine (module-05-014)
     getMockTestsConfig() {
-      const raw = localStorage.getItem("cso_mock_tests_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_mock_tests_config", e);
-        }
-      }
-      const initial = {
+      return this._hydrateConfig("cso_mock_tests_config", "tests", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        testEngineSettings: { simulateLiveCbreInterface: true, enforceSectionalTimers: true, allowRetakes: 3 },
+        testEngineSettings: { strictExamMode: true, allowRetakes: false, enforceStateRankings: true },
         tests: [
-          { id: "MOCK-01", title: "OPSC OAS Prelims Full-Length Test Series - Exam 01 (General Studies)", totalQuestions: 100, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.66 marks)", testType: "Full-Length Mock", active: true },
-          { id: "MOCK-02", title: "OPSC OAS Prelims Paper-II (CSAT Qualifying) Full Mock", totalQuestions: 80, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.83 marks)", testType: "Qualifying Mock", active: true },
-          { id: "MOCK-03", title: "OSSC CGL Prelims All-Odisha Live Simulation Test 2026", totalQuestions: 150, maxScore: 150, timeLimitMinutes: 150, negativeMarkRatio: "0.25 marks per error", testType: "Live Ranking Test", active: true }
+          { id: "MOCK-01", testName: "OPSC OAS Full Mock 1 (Full Length Prelims GS Paper 1)", examType: "OPSC OAS", totalQuestions: 100, durationMinutes: 120, maximumMarks: 200, negativeMarkPerQuestion: 0.66, registeredCandidates: 3420, active: true },
+          { id: "MOCK-02", testName: "OSSC CGL Tier-I Mock Test (CBRE Simulated Pattern)", examType: "OSSC CGL", totalQuestions: 150, durationMinutes: 150, maximumMarks: 150, negativeMarkPerQuestion: 0.25, registeredCandidates: 4890, active: true },
+          { id: "MOCK-03", testName: "OSSSC Combined Mock Test (RI, ARI & Amin Written Full Test)", examType: "OSSSSC Combined", totalQuestions: 180, durationMinutes: 180, maximumMarks: 180, negativeMarkPerQuestion: 0.50, registeredCandidates: 5610, active: true }
         ]
-      };
-      localStorage.setItem("cso_mock_tests_config", JSON.stringify(initial));
-      return initial;
+      }));
     },
 
     saveMockTestsConfig(config) {
@@ -7076,8 +7043,10 @@
       config.meta = config.meta || {};
       config.meta.updatedAt = new Date().toISOString();
       config.meta.lastEditedBy = "admin@csodisha.com";
+      if (!config.tests && config.items) config.tests = config.items;
+      config.items = config.tests;
       localStorage.setItem("cso_mock_tests_config", JSON.stringify(config));
-      this.logAudit("MOCK_TESTS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Full-length mock tests series saved.");
+      this.logAudit("MOCK_TESTS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Mock tests suite and exam rules saved.");
       return config;
     },
 
@@ -7092,24 +7061,15 @@
     },
 
     resetMockTestsConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        testEngineSettings: { simulateLiveCbreInterface: true, enforceSectionalTimers: true, allowRetakes: 3 },
-        tests: [
-          { id: "MOCK-01", title: "OPSC OAS Prelims Full-Length Test Series - Exam 01 (General Studies)", totalQuestions: 100, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.66 marks)", testType: "Full-Length Mock", active: true },
-          { id: "MOCK-02", title: "OPSC OAS Prelims Paper-II (CSAT Qualifying) Full Mock", totalQuestions: 80, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.83 marks)", testType: "Qualifying Mock", active: true },
-          { id: "MOCK-03", title: "OSSC CGL Prelims All-Odisha Live Simulation Test 2026", totalQuestions: 150, maxScore: 150, timeLimitMinutes: 150, negativeMarkRatio: "0.25 marks per error", testType: "Live Ranking Test", active: true }
-        ]
-      };
-      localStorage.setItem("cso_mock_tests_config", JSON.stringify(initial));
-      this.logAudit("MOCK_TESTS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Mock tests series restored to factory defaults.");
-      return initial;
+      localStorage.removeItem("cso_mock_tests_config");
+      this.logAudit("MOCK_TESTS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Mock tests restored to factory defaults.");
+      return this.getMockTestsConfig();
     },
 
     exportMockTestsManifest() {
       const config = this.getMockTestsConfig();
       const timestamp = Date.now();
-      const filename = "cso-mock-tests-config-" + timestamp + ".json";
+      const filename = "cso-mock-tests-manifest-" + timestamp + ".json";
       const bundle = {
         manifestVersion: "2026.11",
         exportedAt: new Date(timestamp).toISOString(),
@@ -7131,25 +7091,15 @@
 
     // 59.4 Answer Keys & Explanations Engine (module-05-015)
     getAnswerKeysExplanationsConfig() {
-      const raw = localStorage.getItem("cso_answer_keys_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse cso_answer_keys_config", e);
-        }
-      }
-      const initial = {
+      return this._hydrateConfig("cso_answer_keys_config", "keys", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
         resolutionPolicy: { allowCandidateGrievance: true, objectionWindowDays: 7, requireDualGazetteRatification: true },
-        keysRegistry: [
-          { id: "KEY-01", examName: "OPSC OAS Prelims 2026 - Paper 1 (General Studies)", answerKeyStatus: "Final Ratified", releaseDate: "2026-11-04", disputedQuestionsCount: 2, revisedMarksAwarded: true, active: true },
-          { id: "KEY-02", examName: "OSSC CGL 2026 Stage 1 CBRE", answerKeyStatus: "Provisional (Objections Open)", releaseDate: "2026-11-08", disputedQuestionsCount: 4, revisedMarksAwarded: false, active: true },
-          { id: "KEY-03", examName: "OSSSC Combined Recruitment Exam (RI/Amin)", answerKeyStatus: "Official Gazette Final", releaseDate: "2026-10-30", disputedQuestionsCount: 0, revisedMarksAwarded: false, active: true }
+        keys: [
+          { id: "KEY-01", examName: "BSE OTET 2026 Provisional Key (Paper I & II)", answerKeyStatus: "Provisional (Objections Open)", releaseDate: "2026-11-06", disputedQuestionsCount: 3, revisedMarksAwarded: false, active: true },
+          { id: "KEY-02", examName: "OPSC OAS 2025 Final Key (GS-I & CSAT Ratified)", answerKeyStatus: "Final Ratified", releaseDate: "2026-11-04", disputedQuestionsCount: 2, revisedMarksAwarded: true, active: true },
+          { id: "KEY-03", examName: "OSSC CTSRE Key (Combined Technical Services Exam)", answerKeyStatus: "Official Gazette Final", releaseDate: "2026-10-30", disputedQuestionsCount: 0, revisedMarksAwarded: false, active: true }
         ]
-      };
-      localStorage.setItem("cso_answer_keys_config", JSON.stringify(initial));
-      return initial;
+      }));
     },
 
     saveAnswerKeysExplanationsConfig(config) {
@@ -7157,6 +7107,10 @@
       config.meta = config.meta || {};
       config.meta.updatedAt = new Date().toISOString();
       config.meta.lastEditedBy = "admin@csodisha.com";
+      if (!config.keys && config.keysRegistry) config.keys = config.keysRegistry;
+      if (!config.keys && config.items) config.keys = config.items;
+      config.keysRegistry = config.keys;
+      config.items = config.keys;
       localStorage.setItem("cso_answer_keys_config", JSON.stringify(config));
       this.logAudit("ANSWER_KEYS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Answer keys registry and candidate grievance policies saved.");
       return config;
@@ -7173,18 +7127,9 @@
     },
 
     resetAnswerKeysExplanationsConfig() {
-      const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        resolutionPolicy: { allowCandidateGrievance: true, objectionWindowDays: 7, requireDualGazetteRatification: true },
-        keysRegistry: [
-          { id: "KEY-01", examName: "OPSC OAS Prelims 2026 - Paper 1 (General Studies)", answerKeyStatus: "Final Ratified", releaseDate: "2026-11-04", disputedQuestionsCount: 2, revisedMarksAwarded: true, active: true },
-          { id: "KEY-02", examName: "OSSC CGL 2026 Stage 1 CBRE", answerKeyStatus: "Provisional (Objections Open)", releaseDate: "2026-11-08", disputedQuestionsCount: 4, revisedMarksAwarded: false, active: true },
-          { id: "KEY-03", examName: "OSSSC Combined Recruitment Exam (RI/Amin)", answerKeyStatus: "Official Gazette Final", releaseDate: "2026-10-30", disputedQuestionsCount: 0, revisedMarksAwarded: false, active: true }
-        ]
-      };
-      localStorage.setItem("cso_answer_keys_config", JSON.stringify(initial));
+      localStorage.removeItem("cso_answer_keys_config");
       this.logAudit("ANSWER_KEYS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Answer keys registry restored to factory defaults.");
-      return initial;
+      return this.getAnswerKeysExplanationsConfig();
     },
 
     exportAnswerKeysExplanationsManifest() {
@@ -7214,28 +7159,15 @@
     // ENGINE 60.1: Resource Collections Engine (module-05-016)
     // -------------------------------------------------------------
     getResourceCollectionsConfig() {
-      const fallback = {
+      return this._hydrateConfig("cso_resource_collections_config", "collections", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
         collectionSettings: { enableDynamicBundling: true, highlightTrendingCollections: true },
         collections: [
-          { id: "COL-01", title: "OPSC OAS 2026 Prelims Foundation Bundle", category: "Civil Services", itemCount: 12, totalSize: "45.2 MB", badge: "Flagship Kit", targetExam: "OPSC OAS", downloadCount: 3820, active: true },
-          { id: "COL-02", title: "OSSC CGL Mathematics & Reasoning Master Pack", category: "Staff Selection", itemCount: 8, totalSize: "22.8 MB", badge: "High Yield", targetExam: "OSSC CGL", downloadCount: 5190, active: true },
-          { id: "COL-03", title: "Odisha History & Geography 30-Districts Gazetteer Archive", category: "General Studies", itemCount: 15, totalSize: "68.4 MB", badge: "State Heritage", targetExam: "All Odisha Exams", downloadCount: 2940, active: true }
+          { id: "COL-01", title: "OPSC OAS Foundation Bundle", category: "Civil Services", itemCount: 12, totalSize: "45.2 MB", badge: "Flagship Kit", targetExam: "OPSC OAS", downloadCount: 3820, active: true },
+          { id: "COL-02", title: "OSSC CGL Quant Pack", category: "Staff Selection", itemCount: 8, totalSize: "22.8 MB", badge: "High Yield", targetExam: "OSSC CGL", downloadCount: 5190, active: true },
+          { id: "COL-03", title: "30-Districts Gazetteer", category: "General Studies", itemCount: 15, totalSize: "68.4 MB", badge: "State Heritage", targetExam: "All Odisha Exams", downloadCount: 2940, active: true }
         ]
-      };
-      const raw = localStorage.getItem("cso_resource_collections_config");
-      if (!raw) return fallback;
-      try {
-        const parsed = JSON.parse(raw);
-        return {
-          meta: parsed.meta || fallback.meta,
-          collectionSettings: parsed.collectionSettings || fallback.collectionSettings,
-          collections: Array.isArray(parsed.collections) ? parsed.collections : fallback.collections
-        };
-      } catch (e) {
-        console.error("Failed to parse cso_resource_collections_config", e);
-        return fallback;
-      }
+      }));
     },
 
     saveResourceCollectionsConfig(config) {
@@ -7250,7 +7182,7 @@
           enableDynamicBundling: Boolean(config.collectionSettings?.enableDynamicBundling),
           highlightTrendingCollections: Boolean(config.collectionSettings?.highlightTrendingCollections)
         },
-        collections: Array.isArray(config.collections) ? config.collections.map(c => ({
+        collections: Array.isArray(config.collections || config.items) ? (config.collections || config.items).map(c => ({
           id: String(c.id || "COL-" + Math.floor(10 + Math.random() * 90)),
           title: String(c.title || "").trim(),
           category: String(c.category || "General Studies").trim(),
@@ -7262,6 +7194,7 @@
           active: c.active !== false
         })) : []
       };
+      clean.items = clean.collections;
       localStorage.setItem("cso_resource_collections_config", JSON.stringify(clean));
       this.logAudit("RESOURCE_COLLECTIONS_UPDATED", "EDUCATIONAL_RESOURCES", "Resource collections updated (" + clean.collections.length + " collections).");
       return true;
@@ -7285,32 +7218,25 @@
     // ENGINE 60.2: Downloads & Access Rules Engine (module-05-017)
     // -------------------------------------------------------------
     getDownloadsRulesConfig() {
-      const fallback = {
+      return this._hydrateConfig("cso_downloads_rules_config", "rules", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
         rulesSettings: { enforceRateLimiting: true, maxDownloadsPerHour: 50, requireAuthForProtectedPdfs: false },
+        rules: [
+          { id: "RULE-01", name: "Unrestricted Public Syllabi", userGroup: "Anonymous / Guest", dailyLimitMb: 500, allowedFormats: ["PDF", "HTML"], rateLimitPerHour: 100, active: true },
+          { id: "RULE-02", name: "High-Volume Mock Limiter", userGroup: "Registered Aspirants", dailyLimitMb: 2048, allowedFormats: ["PDF", "EPUB", "ZIP"], rateLimitPerHour: 30, active: true },
+          { id: "RULE-03", name: "Rural Low-Bandwidth Routing", userGroup: "District Mo Seva Kendras", dailyLimitMb: 5120, allowedFormats: ["PDF", "EPUB", "HTML", "TXT"], rateLimitPerHour: 200, active: true }
+        ],
         accessTiers: [
-          { id: "TIER-01", name: "Public Open Access", userGroup: "Anonymous / Guest", dailyLimitMb: 250, allowedFormats: ["PDF", "EPUB", "HTML"], active: true },
-          { id: "TIER-02", name: "Registered Aspirant", userGroup: "Registered Citizen", dailyLimitMb: 1024, allowedFormats: ["PDF", "EPUB", "ZIP", "CSV"], active: true },
-          { id: "TIER-03", name: "Faculty / Verified Educator", userGroup: "Verified Contributor", dailyLimitMb: 5120, allowedFormats: ["All Formats + High-Res Scans"], active: true }
+          { id: "RULE-01", name: "Unrestricted Public Syllabi", userGroup: "Anonymous / Guest", dailyLimitMb: 500, allowedFormats: ["PDF", "HTML"], active: true },
+          { id: "RULE-02", name: "High-Volume Mock Limiter", userGroup: "Registered Aspirants", dailyLimitMb: 2048, allowedFormats: ["PDF", "EPUB", "ZIP"], active: true },
+          { id: "RULE-03", name: "Rural Low-Bandwidth Routing", userGroup: "District Mo Seva Kendras", dailyLimitMb: 5120, allowedFormats: ["PDF", "EPUB", "HTML", "TXT"], active: true }
         ]
-      };
-      const raw = localStorage.getItem("cso_downloads_rules_config");
-      if (!raw) return fallback;
-      try {
-        const parsed = JSON.parse(raw);
-        return {
-          meta: parsed.meta || fallback.meta,
-          rulesSettings: parsed.rulesSettings || fallback.rulesSettings,
-          accessTiers: Array.isArray(parsed.accessTiers) ? parsed.accessTiers : fallback.accessTiers
-        };
-      } catch (e) {
-        console.error("Failed to parse cso_downloads_rules_config", e);
-        return fallback;
-      }
+      }));
     },
 
     saveDownloadsRulesConfig(config) {
       if (!config) return false;
+      const list = Array.isArray(config.rules || config.accessTiers || config.items) ? (config.rules || config.accessTiers || config.items) : [];
       const clean = {
         meta: {
           version: "1.0",
@@ -7322,23 +7248,26 @@
           maxDownloadsPerHour: Number(config.rulesSettings?.maxDownloadsPerHour || 50),
           requireAuthForProtectedPdfs: Boolean(config.rulesSettings?.requireAuthForProtectedPdfs)
         },
-        accessTiers: Array.isArray(config.accessTiers) ? config.accessTiers.map(t => ({
-          id: String(t.id || "TIER-" + Math.floor(10 + Math.random() * 90)),
+        rules: list.map(t => ({
+          id: String(t.id || "RULE-" + Math.floor(10 + Math.random() * 90)),
           name: String(t.name || "").trim(),
-          userGroup: String(t.userGroup || "General").trim(),
-          dailyLimitMb: Number(t.dailyLimitMb || 250),
-          allowedFormats: Array.isArray(t.allowedFormats) ? t.allowedFormats : String(t.allowedFormats || "PDF").split(",").map(f => f.trim()).filter(Boolean),
+          userGroup: String(t.userGroup || "General Citizens").trim(),
+          dailyLimitMb: Number(t.dailyLimitMb || 500),
+          allowedFormats: Array.isArray(t.allowedFormats) ? t.allowedFormats : ["PDF"],
+          rateLimitPerHour: Number(t.rateLimitPerHour || 50),
           active: t.active !== false
-        })) : []
+        }))
       };
+      clean.accessTiers = clean.rules;
+      clean.items = clean.rules;
       localStorage.setItem("cso_downloads_rules_config", JSON.stringify(clean));
-      this.logAudit("DOWNLOADS_RULES_UPDATED", "EDUCATIONAL_RESOURCES", "Downloads & Access rules updated (" + clean.accessTiers.length + " tiers).");
+      this.logAudit("DOWNLOADS_RULES_UPDATED", "EDUCATIONAL_RESOURCES", "Downloads & Access rules updated (" + clean.rules.length + " rules).");
       return true;
     },
 
     resetDownloadsRulesConfig() {
       localStorage.removeItem("cso_downloads_rules_config");
-      this.logAudit("DOWNLOADS_RULES_RESET", "SYSTEM_RESET", "Downloads & Access rules configuration reset to factory defaults.");
+      this.logAudit("DOWNLOADS_RULES_RESET", "SYSTEM_RESET", "Downloads rules configuration reset to factory defaults.");
       return this.getDownloadsRulesConfig();
     },
 
@@ -7354,28 +7283,15 @@
     // ENGINE 60.3: Government Schemes Engine (module-05-018)
     // -------------------------------------------------------------
     getGovernmentSchemesConfig() {
-      const fallback = {
+      return this._hydrateConfig("cso_government_schemes_config", "schemes", () => ({
         meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
         schemeSettings: { autoSyncDbtPortals: true, showIncomeCeilingRules: true },
         schemes: [
-          { id: "SCHM-01", name: "KALIA (Krushak Assistance for Livelihood and Income Augmentation)", department: "Agriculture & Farmers' Empowerment", beneficiaryGroup: "Small / Marginal Farmers & Landless Laborers", financialAssistance: "Rs. 10,000 per family/year", applicationMode: "Online DBT / Mo Seva Kendra", active: true },
-          { id: "SCHM-02", name: "Biju Swasthya Kalyan Yojana (BSKY) / Nabin Card", department: "Health & Family Welfare", beneficiaryGroup: "Economically Weaker Families & Women", financialAssistance: "Secondary & Tertiary care up to Rs. 5-10 Lakhs", applicationMode: "BSKY Health Card Portal", active: true },
-          { id: "SCHM-03", name: "Sudakshya Scheme for Girls in ITI & Polytechnic", department: "Skill Development & Technical Education", beneficiaryGroup: "Girl Students in Technical Trades", financialAssistance: "100% Tuition Waiver + Uniform & Maintenance Allowance", applicationMode: "SAMS Odisha Portal", active: true }
+          { id: "SCHM-01", name: "KALIA Chhatra Bruti", department: "Agriculture & Farmers' Empowerment", beneficiaryGroup: "Children of KALIA Beneficiary Farmers", financialAssistance: "Full technical / higher education support", applicationMode: "Online DBT / SAMS Odisha", active: true },
+          { id: "SCHM-02", name: "Mo School Abhiyan", department: "School & Mass Education", beneficiaryGroup: "Government School Alumni & Students", financialAssistance: "2x State matching contribution for school infrastructure", applicationMode: "Mo School Portal", active: true },
+          { id: "SCHM-03", name: "Odisha Skill Development (OSDA)", department: "Skill Development & Technical Education", beneficiaryGroup: "Youth Seeking Technical & Vocational Skills", financialAssistance: "Free World-Class Skill Training & Placement Assistance", applicationMode: "Skilled in Odisha Portal", active: true }
         ]
-      };
-      const raw = localStorage.getItem("cso_government_schemes_config");
-      if (!raw) return fallback;
-      try {
-        const parsed = JSON.parse(raw);
-        return {
-          meta: parsed.meta || fallback.meta,
-          schemeSettings: parsed.schemeSettings || fallback.schemeSettings,
-          schemes: Array.isArray(parsed.schemes) ? parsed.schemes : fallback.schemes
-        };
-      } catch (e) {
-        console.error("Failed to parse cso_government_schemes_config", e);
-        return fallback;
-      }
+      }));
     },
 
     saveGovernmentSchemesConfig(config) {
@@ -7390,7 +7306,7 @@
           autoSyncDbtPortals: Boolean(config.schemeSettings?.autoSyncDbtPortals),
           showIncomeCeilingRules: Boolean(config.schemeSettings?.showIncomeCeilingRules)
         },
-        schemes: Array.isArray(config.schemes) ? config.schemes.map(s => ({
+        schemes: Array.isArray(config.schemes || config.items) ? (config.schemes || config.items).map(s => ({
           id: String(s.id || "SCHM-" + Math.floor(10 + Math.random() * 90)),
           name: String(s.name || "").trim(),
           department: String(s.department || "General Administration").trim(),
@@ -7400,6 +7316,7 @@
           active: s.active !== false
         })) : []
       };
+      clean.items = clean.schemes;
       localStorage.setItem("cso_government_schemes_config", JSON.stringify(clean));
       this.logAudit("GOVERNMENT_SCHEMES_UPDATED", "EDUCATIONAL_RESOURCES", "Government schemes updated (" + clean.schemes.length + " schemes).");
       return true;
@@ -7419,6 +7336,256 @@
       return filename;
     },
 
+    // -------------------------------------------------------------
+    // ENGINE 60.4: Scholarships Engine (module-05-019)
+    // -------------------------------------------------------------
+    getScholarshipsConfig() {
+      return this._hydrateConfig("cso_scholarships_config", "scholarships", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        scholarshipSettings: { autoSyncStatePortal: true, notifyUpcomingDeadlines: true, enableMeritCalculator: true },
+        scholarships: [
+          { id: "SCHOL-01", name: "e-Medhabruti", level: "Higher Education (+3 / PG / Technical)", awardAmount: "Rs. 10,000 / Year", eligibility: "General/SC/ST with >= 60% marks & parent income < Rs. 6 LPA", deadline: "2026-12-15", portalUrl: "https://scholarship.odisha.gov.in", active: true },
+          { id: "SCHOL-02", name: "Post-Matric ST/SC/OBC", level: "Post-Matric (Class 11 to PG)", awardAmount: "Full Maintenance Allowance + Tuition", eligibility: "ST/SC income <= Rs. 2.5 LPA; OBC income <= Rs. 1.5 LPA", deadline: "2026-12-31", portalUrl: "https://scholarship.odisha.gov.in", active: true },
+          { id: "SCHOL-03", name: "Banishree", level: "Special Category (Differently Abled)", awardAmount: "Rs. 2,500 to Rs. 4,000 / Year + Escort Allowance", eligibility: "Students with >= 40% disability & parent income <= Rs. 60,000/yr", deadline: "2026-11-30", portalUrl: "https://scholarship.odisha.gov.in", active: true },
+          { id: "SCHOL-04", name: "Nirman Shramik Kalyan", level: "Children of Construction Workers", awardAmount: "Rs. 10,000 - Rs. 40,000 (Trade & Degree)", eligibility: "Children of registered building/other construction workers", deadline: "2027-01-15", portalUrl: "https://scholarship.odisha.gov.in", active: true }
+        ]
+      }));
+    },
+
+    saveScholarshipsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        scholarshipSettings: {
+          autoSyncStatePortal: Boolean(config.scholarshipSettings?.autoSyncStatePortal),
+          notifyUpcomingDeadlines: Boolean(config.scholarshipSettings?.notifyUpcomingDeadlines),
+          enableMeritCalculator: Boolean(config.scholarshipSettings?.enableMeritCalculator)
+        },
+        scholarships: Array.isArray(config.scholarships || config.items) ? (config.scholarships || config.items).map(s => ({
+          id: String(s.id || "SCHOL-" + Math.floor(10 + Math.random() * 90)),
+          name: String(s.name || "").trim(),
+          level: String(s.level || "Higher Education").trim(),
+          awardAmount: String(s.awardAmount || "N/A").trim(),
+          eligibility: String(s.eligibility || "General").trim(),
+          deadline: String(s.deadline || "").trim(),
+          portalUrl: String(s.portalUrl || "https://scholarship.odisha.gov.in").trim(),
+          active: s.active !== false
+        })) : []
+      };
+      clean.items = clean.scholarships;
+      localStorage.setItem("cso_scholarships_config", JSON.stringify(clean));
+      this.logAudit("SCHOLARSHIPS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Scholarships updated (" + clean.scholarships.length + " schemes).");
+      return true;
+    },
+
+    resetScholarshipsConfig() {
+      localStorage.removeItem("cso_scholarships_config");
+      this.logAudit("SCHOLARSHIPS_CONFIG_RESET", "SYSTEM_RESET", "Scholarships configuration reset to factory defaults.");
+      return this.getScholarshipsConfig();
+    },
+
+    exportScholarshipsManifest() {
+      const config = this.getScholarshipsConfig();
+      const filename = "scholarships_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SCHOLARSHIPS_MANIFEST_EXPORTED", "DATA_EXPORT", "Scholarships manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // -------------------------------------------------------------
+    // ENGINE 60.5: Career Explorer Engine (module-05-020)
+    // -------------------------------------------------------------
+    getCareerExplorerConfig() {
+      return this._hydrateConfig("cso_career_explorer_config", "pathways", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        explorerSettings: { showSalaryInsights: true, enableRoadmapGraph: true },
+        pathways: [
+          { id: "CAR-01", title: "OAS/OFS Cadre", stream: "Civil & Administrative Services", minQualification: "Any Bachelor Degree", entryExam: "OPSC OAS Combined Services", typicalSalary: "Rs. 56,100 - Rs. 1,77,500 (Level 12)", demandLevel: "High", active: true },
+          { id: "CAR-02", title: "Police Sub-Inspector", stream: "Police & Law Enforcement", minQualification: "Graduate in any discipline", entryExam: "Odisha Police Recruitment Board Exam", typicalSalary: "Rs. 35,400 - Rs. 1,12,400 (Level 9)", demandLevel: "High", active: true },
+          { id: "CAR-03", title: "Primary/High School Teacher", stream: "School Education", minQualification: "Graduation + B.Ed with OTET/OSSTET", entryExam: "OSSC Regular Teacher Recruitment", typicalSalary: "Rs. 35,400 (Level 9)", demandLevel: "Moderate", active: true },
+          { id: "CAR-04", title: "Revenue Inspector", stream: "Revenue & Land Administration", minQualification: "Bachelor Degree with Computer Skill", entryExam: "OSSSC Combined Recruitment Examination", typicalSalary: "Rs. 35,400 (Level 9)", demandLevel: "High", active: true }
+        ],
+        careerPaths: [
+          { id: "CAR-01", title: "OAS/OFS Cadre", stream: "Civil & Administrative Services", minQualification: "Any Bachelor Degree", entryExam: "OPSC OAS Combined Services", typicalSalary: "Rs. 56,100 - Rs. 1,77,500 (Level 12)", demandLevel: "High", active: true },
+          { id: "CAR-02", title: "Police Sub-Inspector", stream: "Police & Law Enforcement", minQualification: "Graduate in any discipline", entryExam: "Odisha Police Recruitment Board Exam", typicalSalary: "Rs. 35,400 - Rs. 1,12,400 (Level 9)", demandLevel: "High", active: true },
+          { id: "CAR-03", title: "Primary/High School Teacher", stream: "School Education", minQualification: "Graduation + B.Ed with OTET/OSSTET", entryExam: "OSSC Regular Teacher Recruitment", typicalSalary: "Rs. 35,400 (Level 9)", demandLevel: "Moderate", active: true },
+          { id: "CAR-04", title: "Revenue Inspector", stream: "Revenue & Land Administration", minQualification: "Bachelor Degree with Computer Skill", entryExam: "OSSSC Combined Recruitment Examination", typicalSalary: "Rs. 35,400 (Level 9)", demandLevel: "High", active: true }
+        ]
+      }));
+    },
+
+    saveCareerExplorerConfig(config) {
+      if (!config) return false;
+      const list = Array.isArray(config.pathways || config.careerPaths || config.items) ? (config.pathways || config.careerPaths || config.items) : [];
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        explorerSettings: {
+          showSalaryInsights: Boolean(config.explorerSettings?.showSalaryInsights),
+          enableRoadmapGraph: Boolean(config.explorerSettings?.enableRoadmapGraph)
+        },
+        pathways: list.map(c => ({
+          id: String(c.id || "CAR-" + Math.floor(10 + Math.random() * 90)),
+          title: String(c.title || "").trim(),
+          stream: String(c.stream || "General").trim(),
+          minQualification: String(c.minQualification || "Graduate").trim(),
+          entryExam: String(c.entryExam || "State Competitive Exam").trim(),
+          typicalSalary: String(c.typicalSalary || "State Pay Matrix").trim(),
+          demandLevel: String(c.demandLevel || "Moderate").trim(),
+          active: c.active !== false
+        }))
+      };
+      clean.careerPaths = clean.pathways;
+      clean.items = clean.pathways;
+      localStorage.setItem("cso_career_explorer_config", JSON.stringify(clean));
+      this.logAudit("CAREER_EXPLORER_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Career Explorer updated (" + clean.pathways.length + " career paths).");
+      return true;
+    },
+
+    resetCareerExplorerConfig() {
+      localStorage.removeItem("cso_career_explorer_config");
+      this.logAudit("CAREER_EXPLORER_CONFIG_RESET", "SYSTEM_RESET", "Career Explorer configuration reset to factory defaults.");
+      return this.getCareerExplorerConfig();
+    },
+
+    exportCareerExplorerManifest() {
+      const config = this.getCareerExplorerConfig();
+      const filename = "career_explorer_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("CAREER_EXPLORER_MANIFEST_EXPORTED", "DATA_EXPORT", "Career Explorer manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // -------------------------------------------------------------
+    // ENGINE 60.6: Student Dashboard Engine (module-05-021)
+    // -------------------------------------------------------------
+    getStudentDashboardConfig() {
+      return this._hydrateConfig("cso_student_dashboard_config", "modules", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        dashboardSettings: { enableStudyStreak: true, allowMockLeaderboard: true, enableOdiaLanguageToggle: true },
+        modules: [
+          { id: "MOD-01", name: "Bookmarked Notes", type: "Personal Study Shelf", targetAudience: "All Registered Students", refreshRateMinutes: 0, active: true },
+          { id: "MOD-02", name: "Mock Scorecards", type: "Performance & Percentile Tracker", targetAudience: "OPSC / OSSC Aspirants", refreshRateMinutes: 60, active: true },
+          { id: "MOD-03", name: "Revision Tracker", type: "Daily Streak & Topic Checklist", targetAudience: "Active Exam Candidates", refreshRateMinutes: 1440, active: true },
+          { id: "MOD-04", name: "District Circles", type: "Peer Discussion & Study Groups", targetAudience: "Odisha 30-Districts Youth", refreshRateMinutes: 30, active: true }
+        ],
+        widgets: [
+          { id: "MOD-01", name: "Bookmarked Notes", type: "Personal Study Shelf", targetAudience: "All Registered Students", refreshRateMinutes: 0, active: true },
+          { id: "MOD-02", name: "Mock Scorecards", type: "Performance & Percentile Tracker", targetAudience: "OPSC / OSSC Aspirants", refreshRateMinutes: 60, active: true },
+          { id: "MOD-03", name: "Revision Tracker", type: "Daily Streak & Topic Checklist", targetAudience: "Active Exam Candidates", refreshRateMinutes: 1440, active: true },
+          { id: "MOD-04", name: "District Circles", type: "Peer Discussion & Study Groups", targetAudience: "Odisha 30-Districts Youth", refreshRateMinutes: 30, active: true }
+        ]
+      }));
+    },
+
+    saveStudentDashboardConfig(config) {
+      if (!config) return false;
+      const list = Array.isArray(config.modules || config.widgets || config.items) ? (config.modules || config.widgets || config.items) : [];
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        dashboardSettings: {
+          enableStudyStreak: Boolean(config.dashboardSettings?.enableStudyStreak),
+          allowMockLeaderboard: Boolean(config.dashboardSettings?.allowMockLeaderboard),
+          enableOdiaLanguageToggle: Boolean(config.dashboardSettings?.enableOdiaLanguageToggle)
+        },
+        modules: list.map(w => ({
+          id: String(w.id || "MOD-" + Math.floor(10 + Math.random() * 90)),
+          name: String(w.name || "").trim(),
+          type: String(w.type || "Card").trim(),
+          targetAudience: String(w.targetAudience || "All Students").trim(),
+          refreshRateMinutes: Number(w.refreshRateMinutes || 60),
+          active: w.active !== false
+        }))
+      };
+      clean.widgets = clean.modules;
+      clean.items = clean.modules;
+      localStorage.setItem("cso_student_dashboard_config", JSON.stringify(clean));
+      this.logAudit("STUDENT_DASHBOARD_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Student Dashboard configuration updated (" + clean.modules.length + " modules).");
+      return true;
+    },
+
+    resetStudentDashboardConfig() {
+      localStorage.removeItem("cso_student_dashboard_config");
+      this.logAudit("STUDENT_DASHBOARD_CONFIG_RESET", "SYSTEM_RESET", "Student Dashboard configuration reset to factory defaults.");
+      return this.getStudentDashboardConfig();
+    },
+
+    exportStudentDashboardManifest() {
+      const config = this.getStudentDashboardConfig();
+      const filename = "student_dashboard_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("STUDENT_DASHBOARD_MANIFEST_EXPORTED", "DATA_EXPORT", "Student Dashboard manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // -------------------------------------------------------------
+    // ENGINE 60.7: Educational Tools Engine (module-05-022)
+    // -------------------------------------------------------------
+    getEducationalToolsConfig() {
+      return this._hydrateConfig("cso_educational_tools_config", "tools", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        toolSettings: { enableOfflineCalculators: true, logUsageAnalytics: true },
+        tools: [
+          { id: "TOOL-01", name: "OPSC/OSSC Age Calculator", category: "Exam Utilities", version: "2.1", embeddedRoute: "/education-explorer/#calc", status: "Live", active: true },
+          { id: "TOOL-02", name: "Negative Marking Estimator", category: "Score Analyzers", version: "1.8", embeddedRoute: "/tools/negative-marking", status: "Live", active: true },
+          { id: "TOOL-03", name: "CBCS CGPA Converter", category: "Academic Converters", version: "2.0", embeddedRoute: "/tools/grade-converter", status: "Live", active: true },
+          { id: "TOOL-04", name: "Virtual OMR Simulator", category: "Exam Simulations", version: "1.4", embeddedRoute: "/tools/omr-simulator", status: "Live", active: true }
+        ]
+      }));
+    },
+
+    saveEducationalToolsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        toolSettings: {
+          enableOfflineCalculators: Boolean(config.toolSettings?.enableOfflineCalculators),
+          logUsageAnalytics: Boolean(config.toolSettings?.logUsageAnalytics)
+        },
+        tools: Array.isArray(config.tools || config.items) ? (config.tools || config.items).map(t => ({
+          id: String(t.id || "TOOL-" + Math.floor(10 + Math.random() * 90)),
+          name: String(t.name || "").trim(),
+          category: String(t.category || "General Tool").trim(),
+          version: String(t.version || "1.0").trim(),
+          embeddedRoute: String(t.embeddedRoute || "/tools").trim(),
+          status: String(t.status || "Live").trim(),
+          active: t.active !== false
+        })) : []
+      };
+      clean.items = clean.tools;
+      localStorage.setItem("cso_educational_tools_config", JSON.stringify(clean));
+      this.logAudit("EDUCATIONAL_TOOLS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Educational Tools configuration updated (" + clean.tools.length + " tools).");
+      return true;
+    },
+
+    resetEducationalToolsConfig() {
+      localStorage.removeItem("cso_educational_tools_config");
+      this.logAudit("EDUCATIONAL_TOOLS_CONFIG_RESET", "SYSTEM_RESET", "Educational Tools configuration reset to factory defaults.");
+      return this.getEducationalToolsConfig();
+    },
+
+    exportEducationalToolsManifest() {
+      const config = this.getEducationalToolsConfig();
+      const filename = "educational_tools_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("EDUCATIONAL_TOOLS_MANIFEST_EXPORTED", "DATA_EXPORT", "Educational Tools manifest exported (" + filename + ").");
+      return filename;
+    },
 
 
 
@@ -7426,7 +7593,7 @@
 
 
 
-    exportPrivacyManifest() {
+        exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
       const filename = `cso-privacy-config-${timestamp}.json`;
@@ -7782,6 +7949,10 @@
       resourceCollections: this.getResourceCollectionsConfig(),
       downloadsRules: this.getDownloadsRulesConfig(),
       governmentSchemes: this.getGovernmentSchemesConfig(),
+      scholarships: this.getScholarshipsConfig(),
+      careerExplorer: this.getCareerExplorerConfig(),
+      studentDashboard: this.getStudentDashboardConfig(),
+      educationalTools: this.getEducationalToolsConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

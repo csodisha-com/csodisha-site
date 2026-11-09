@@ -374,17 +374,17 @@
         {
           "id": "module-05-020",
           "title": "Career Explorer",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-05-021",
           "title": "Student Dashboard",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-05-022",
           "title": "Educational Tools",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

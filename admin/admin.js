@@ -292,6 +292,30 @@ async function loadMasterNavigation() {
       dom.workspaceRoot.innerHTML = '';
       dom.moduleHeaderActions.innerHTML = '';
 
+      // --- PRIORITY DISPATCH FOR FOLDER 05 (EDUCATIONAL RESOURCES) ---
+      if (moduleId === 'module-05-001') { renderDigitalLibraryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-002') { renderStudyMaterialsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-003') { renderNotesPdfsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-004') { renderBooksReferencesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-005') { renderSubjectsTopicsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-006') { renderClassGradeWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-007') { renderExaminationManagementWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-008') { renderRecruitmentJobsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-009') { renderAdmitCardsResultsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-010') { renderSyllabusExamPatternsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-011') { renderPyqWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-012') { renderQuestionBankWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-013') { renderQuizBuilderWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-014') { renderMockTestsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-015') { renderAnswerKeysExplanationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-016') { renderResourceCollectionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-017') { renderDownloadsAccessRulesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-018') { renderGovernmentSchemesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-019') { renderScholarshipsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-020') { renderCareerExplorerWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-021') { renderStudentDashboardWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-05-022') { renderEducationalToolsWorkspace(dom.workspaceRoot); return; }
+
       // Route to specialized views
       if (moduleId === 'module-01-001') {
         renderOverviewWorkspace();
@@ -437,6 +461,14 @@ async function loadMasterNavigation() {
         renderDownloadsAccessRulesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-05-018') {
         renderGovernmentSchemesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-019') {
+        renderScholarshipsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-020') {
+        renderCareerExplorerWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-021') {
+        renderStudentDashboardWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-022') {
+        renderEducationalToolsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -19793,7 +19825,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getRecruitmentJobsConfig();
-        const postings = config.postings || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const postings = list;
         const filterDefaults = config.filterDefaults || {};
 
         const totalVacancies = postings.reduce((acc, p) => acc + (p.vacancies || 0), 0);
@@ -19974,6 +20010,7 @@ async function loadMasterNavigation() {
             cadre: root.querySelector('#job-filter-cadre').value.trim() || 'All',
             status: root.querySelector('#job-filter-status').value.trim() || 'Active'
           };
+          config.items = jobList;
           config.postings = jobList;
           window.CSOSuperStore.saveRecruitmentJobsConfig(config);
           alert('Recruitment & jobs configuration saved successfully!');
@@ -20097,7 +20134,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getAdmitCardsResultsConfig();
-        const releases = config.releases || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const releases = list;
         const settings = config.dispatchSettings || {};
 
         const admitCardCount = releases.filter(r => r.type === 'Admit Card' && r.active).length;
@@ -20270,6 +20311,7 @@ async function loadMasterNavigation() {
             autoCheckRelease: root.querySelector('#rel-auto-check').checked,
             fallbackPortal: 'https://csodisha.com'
           };
+          config.items = relList;
           config.releases = relList;
           window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
           alert('Admit cards & results configuration saved successfully!');
@@ -20386,7 +20428,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getSyllabusExamPatternsConfig();
-        const schemes = config.schemes || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const schemes = list;
         const settings = config.patternSettings || {};
 
         const verifiedCount = schemes.filter(s => s.verified && s.active).length;
@@ -20558,6 +20604,7 @@ async function loadMasterNavigation() {
             gazetteReferencedOnly: root.querySelector('#syl-gazette-only').checked,
             allowComparativeView: root.querySelector('#syl-comparative').checked
           };
+          config.items = sylList;
           config.schemes = sylList;
           window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
           alert('Syllabus & exam patterns configuration saved successfully!');
@@ -20683,7 +20730,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getPyqConfig();
-        const papers = config.papers || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const papers = list;
         const settings = config.repositorySettings || {};
 
         const activeCount = papers.filter(p => p.active).length;
@@ -20852,6 +20903,7 @@ async function loadMasterNavigation() {
             searchableQuestions: root.querySelector('#pyq-searchable').checked,
             ocrIndexed: root.querySelector('#pyq-ocr').checked
           };
+          config.items = pyqList;
           config.papers = pyqList;
           window.CSOSuperStore.savePyqConfig(config);
           alert('PYQ repository configuration saved successfully!');
@@ -20969,7 +21021,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getQuestionBankConfig();
-        const questions = config.questions || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const questions = list;
         const settings = config.bankSettings || {};
 
         const activeCount = questions.filter(q => q.active).length;
@@ -21272,7 +21328,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getQuizBuilderConfig();
-        const quizzes = config.quizzes || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const quizzes = list;
         const settings = config.builderSettings || {};
 
         const activeCount = quizzes.filter(q => q.active).length;
@@ -21559,7 +21619,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getMockTestsConfig();
-        const tests = config.tests || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const tests = list;
         const settings = config.testEngineSettings || {};
 
         const activeCount = tests.filter(t => t.active).length;
@@ -21851,7 +21915,11 @@ async function loadMasterNavigation() {
 
       try {
         const config = window.CSOSuperStore.getAnswerKeysExplanationsConfig();
-        const keys = config.keysRegistry || [];
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        const keys = list.length ? list : (config.keysRegistry || []);
         const policy = config.resolutionPolicy || {};
 
         const ratifiedCount = keys.filter(k => k.answerKeyStatus.includes('Final') && k.active).length;
@@ -22130,6 +22198,11 @@ async function loadMasterNavigation() {
      * MODULE 05-016: Resource Collections Workspace
      */
     function renderResourceCollectionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
       const root = container || dom.workspaceRoot;
       if (!root) return;
       root.innerHTML = '';
@@ -22137,8 +22210,12 @@ async function loadMasterNavigation() {
       root.classList.remove('hidden');
 
       try {
-        let config = superStore.getResourceCollectionsConfig();
-        let collections = Array.isArray(config.collections) ? [...config.collections] : [];
+        let config = store.getResourceCollectionsConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let collections = [...list];
         let filterCategory = 'All';
         let searchQuery = '';
 
@@ -22358,8 +22435,8 @@ async function loadMasterNavigation() {
 
               collections.unshift(newKit);
               config.collections = collections;
-              superStore.saveResourceCollectionsConfig(config);
-              superStore.showToast('Resource Bundle created successfully.', 'success');
+              store.saveResourceCollectionsConfig(config);
+              showToast('Resource Bundle created successfully.', 'success');
               render();
             });
           }
@@ -22371,8 +22448,8 @@ async function loadMasterNavigation() {
               if (item) {
                 item.active = !item.active;
                 config.collections = collections;
-                superStore.saveResourceCollectionsConfig(config);
-                superStore.showToast(`Bundle ${item.id} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                store.saveResourceCollectionsConfig(config);
+                showToast(`Bundle ${item.id} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
                 render();
               }
             });
@@ -22400,8 +22477,8 @@ async function loadMasterNavigation() {
               item.badge = badge.trim();
 
               config.collections = collections;
-              superStore.saveResourceCollectionsConfig(config);
-              superStore.showToast('Bundle details updated.', 'success');
+              store.saveResourceCollectionsConfig(config);
+              showToast('Bundle details updated.', 'success');
               render();
             });
           });
@@ -22412,8 +22489,8 @@ async function loadMasterNavigation() {
               if (confirm(`Are you sure you want to delete bundle ${id}?`)) {
                 collections = collections.filter(c => c.id !== id);
                 config.collections = collections;
-                superStore.saveResourceCollectionsConfig(config);
-                superStore.showToast('Bundle removed.', 'info');
+                store.saveResourceCollectionsConfig(config);
+                showToast('Bundle removed.', 'info');
                 render();
               }
             });
@@ -22443,10 +22520,10 @@ async function loadMasterNavigation() {
             btnSaveRaw.addEventListener('click', () => {
               try {
                 const parsed = JSON.parse(textarea.value);
-                superStore.saveResourceCollectionsConfig(parsed);
-                config = superStore.getResourceCollectionsConfig();
-                collections = Array.isArray(config.collections) ? [...config.collections] : [];
-                superStore.showToast('Resource Collections configuration saved.', 'success');
+                store.saveResourceCollectionsConfig(parsed);
+                config = store.getResourceCollectionsConfig();
+                collections = [...(config.items || config.collections || [])];
+                showToast('Resource Collections configuration saved.', 'success');
                 render();
               } catch (err) {
                 alert('Invalid JSON: ' + err.message);
@@ -22457,8 +22534,8 @@ async function loadMasterNavigation() {
           const btnExport = root.querySelector('#btn-export-collections');
           if (btnExport) {
             btnExport.addEventListener('click', () => {
-              const filename = superStore.exportResourceCollectionsManifest();
-              superStore.showToast(`Exported manifest: ${filename}`, 'success');
+              const filename = store.exportResourceCollectionsManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
             });
           }
 
@@ -22466,9 +22543,9 @@ async function loadMasterNavigation() {
           if (btnReset) {
             btnReset.addEventListener('click', () => {
               if (confirm('Reset Resource Collections to factory configuration? Any manual bundles will be lost.')) {
-                config = superStore.resetResourceCollectionsConfig();
-                collections = Array.isArray(config.collections) ? [...config.collections] : [];
-                superStore.showToast('Resource Collections reset to factory defaults.', 'info');
+                config = store.resetResourceCollectionsConfig();
+                collections = [...(config.items || config.collections || [])];
+                showToast('Resource Collections reset to factory defaults.', 'info');
                 render();
               }
             });
@@ -22490,6 +22567,11 @@ async function loadMasterNavigation() {
      * MODULE 05-017: Downloads & Access Rules Workspace
      */
     function renderDownloadsAccessRulesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
       const root = container || dom.workspaceRoot;
       if (!root) return;
       root.innerHTML = '';
@@ -22497,8 +22579,12 @@ async function loadMasterNavigation() {
       root.classList.remove('hidden');
 
       try {
-        let config = superStore.getDownloadsRulesConfig();
-        let tiers = Array.isArray(config.accessTiers) ? [...config.accessTiers] : [];
+        let config = store.getDownloadsRulesConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let tiers = [...list];
         let searchQuery = '';
 
         function render() {
@@ -22680,8 +22766,8 @@ async function loadMasterNavigation() {
             btnRateLimit.addEventListener('click', () => {
               config.rulesSettings = config.rulesSettings || {};
               config.rulesSettings.enforceRateLimiting = !config.rulesSettings.enforceRateLimiting;
-              superStore.saveDownloadsRulesConfig(config);
-              superStore.showToast(`Rate limiting ${config.rulesSettings.enforceRateLimiting ? 'enabled' : 'disabled'}.`, 'info');
+              store.saveDownloadsRulesConfig(config);
+              showToast(`Rate limiting ${config.rulesSettings.enforceRateLimiting ? 'enabled' : 'disabled'}.`, 'info');
               render();
             });
           }
@@ -22691,8 +22777,8 @@ async function loadMasterNavigation() {
             btnAuthReq.addEventListener('click', () => {
               config.rulesSettings = config.rulesSettings || {};
               config.rulesSettings.requireAuthForProtectedPdfs = !config.rulesSettings.requireAuthForProtectedPdfs;
-              superStore.saveDownloadsRulesConfig(config);
-              superStore.showToast(`Document authentication ${config.rulesSettings.requireAuthForProtectedPdfs ? 'enforced' : 'set to public'}.`, 'info');
+              store.saveDownloadsRulesConfig(config);
+              showToast(`Document authentication ${config.rulesSettings.requireAuthForProtectedPdfs ? 'enforced' : 'set to public'}.`, 'info');
               render();
             });
           }
@@ -22717,8 +22803,8 @@ async function loadMasterNavigation() {
 
               tiers.push(newTier);
               config.accessTiers = tiers;
-              superStore.saveDownloadsRulesConfig(config);
-              superStore.showToast('Access tier created successfully.', 'success');
+              store.saveDownloadsRulesConfig(config);
+              showToast('Access tier created successfully.', 'success');
               render();
             });
           }
@@ -22730,8 +22816,8 @@ async function loadMasterNavigation() {
               if (item) {
                 item.active = !item.active;
                 config.accessTiers = tiers;
-                superStore.saveDownloadsRulesConfig(config);
-                superStore.showToast(`Tier ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                store.saveDownloadsRulesConfig(config);
+                showToast(`Tier ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
                 render();
               }
             });
@@ -22756,8 +22842,8 @@ async function loadMasterNavigation() {
               item.allowedFormats = formatsStr.split(',').map(f => f.trim()).filter(Boolean);
 
               config.accessTiers = tiers;
-              superStore.saveDownloadsRulesConfig(config);
-              superStore.showToast('Tier details updated.', 'success');
+              store.saveDownloadsRulesConfig(config);
+              showToast('Tier details updated.', 'success');
               render();
             });
           });
@@ -22768,8 +22854,8 @@ async function loadMasterNavigation() {
               if (confirm(`Delete access tier ${id}?`)) {
                 tiers = tiers.filter(t => t.id !== id);
                 config.accessTiers = tiers;
-                superStore.saveDownloadsRulesConfig(config);
-                superStore.showToast('Access tier removed.', 'info');
+                store.saveDownloadsRulesConfig(config);
+                showToast('Access tier removed.', 'info');
                 render();
               }
             });
@@ -22799,10 +22885,10 @@ async function loadMasterNavigation() {
             btnSaveRaw.addEventListener('click', () => {
               try {
                 const parsed = JSON.parse(textarea.value);
-                superStore.saveDownloadsRulesConfig(parsed);
-                config = superStore.getDownloadsRulesConfig();
-                tiers = Array.isArray(config.accessTiers) ? [...config.accessTiers] : [];
-                superStore.showToast('Downloads & Access Rules saved.', 'success');
+                store.saveDownloadsRulesConfig(parsed);
+                config = store.getDownloadsRulesConfig();
+                tiers = [...(config.items || config.rules || config.accessTiers || [])];
+                showToast('Downloads & Access Rules saved.', 'success');
                 render();
               } catch (err) {
                 alert('Invalid JSON: ' + err.message);
@@ -22813,8 +22899,8 @@ async function loadMasterNavigation() {
           const btnExport = root.querySelector('#btn-export-rules');
           if (btnExport) {
             btnExport.addEventListener('click', () => {
-              const filename = superStore.exportDownloadsRulesManifest();
-              superStore.showToast(`Exported manifest: ${filename}`, 'success');
+              const filename = store.exportDownloadsRulesManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
             });
           }
 
@@ -22822,9 +22908,9 @@ async function loadMasterNavigation() {
           if (btnReset) {
             btnReset.addEventListener('click', () => {
               if (confirm('Reset Downloads & Access Rules to factory configuration?')) {
-                config = superStore.resetDownloadsRulesConfig();
-                tiers = Array.isArray(config.accessTiers) ? [...config.accessTiers] : [];
-                superStore.showToast('Rules reset to factory defaults.', 'info');
+                config = store.resetDownloadsRulesConfig();
+                tiers = [...(config.items || config.rules || config.accessTiers || [])];
+                showToast('Rules reset to factory defaults.', 'info');
                 render();
               }
             });
@@ -22846,6 +22932,11 @@ async function loadMasterNavigation() {
      * MODULE 05-018: Government Schemes Workspace
      */
     function renderGovernmentSchemesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
       const root = container || dom.workspaceRoot;
       if (!root) return;
       root.innerHTML = '';
@@ -22853,8 +22944,12 @@ async function loadMasterNavigation() {
       root.classList.remove('hidden');
 
       try {
-        let config = superStore.getGovernmentSchemesConfig();
-        let schemes = Array.isArray(config.schemes) ? [...config.schemes] : [];
+        let config = store.getGovernmentSchemesConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let schemes = [...list];
         let filterDept = 'All';
         let searchQuery = '';
 
@@ -23065,8 +23160,8 @@ async function loadMasterNavigation() {
 
               schemes.unshift(newScheme);
               config.schemes = schemes;
-              superStore.saveGovernmentSchemesConfig(config);
-              superStore.showToast('Government scheme added successfully.', 'success');
+              store.saveGovernmentSchemesConfig(config);
+              showToast('Government scheme added successfully.', 'success');
               render();
             });
           }
@@ -23078,8 +23173,8 @@ async function loadMasterNavigation() {
               if (item) {
                 item.active = !item.active;
                 config.schemes = schemes;
-                superStore.saveGovernmentSchemesConfig(config);
-                superStore.showToast(`Scheme ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                store.saveGovernmentSchemesConfig(config);
+                showToast(`Scheme ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
                 render();
               }
             });
@@ -23105,8 +23200,8 @@ async function loadMasterNavigation() {
               item.applicationMode = mode.trim();
 
               config.schemes = schemes;
-              superStore.saveGovernmentSchemesConfig(config);
-              superStore.showToast('Scheme details updated.', 'success');
+              store.saveGovernmentSchemesConfig(config);
+              showToast('Scheme details updated.', 'success');
               render();
             });
           });
@@ -23117,8 +23212,8 @@ async function loadMasterNavigation() {
               if (confirm(`Delete scheme ${id}?`)) {
                 schemes = schemes.filter(s => s.id !== id);
                 config.schemes = schemes;
-                superStore.saveGovernmentSchemesConfig(config);
-                superStore.showToast('Scheme removed.', 'info');
+                store.saveGovernmentSchemesConfig(config);
+                showToast('Scheme removed.', 'info');
                 render();
               }
             });
@@ -23148,10 +23243,10 @@ async function loadMasterNavigation() {
             btnSaveRaw.addEventListener('click', () => {
               try {
                 const parsed = JSON.parse(textarea.value);
-                superStore.saveGovernmentSchemesConfig(parsed);
-                config = superStore.getGovernmentSchemesConfig();
-                schemes = Array.isArray(config.schemes) ? [...config.schemes] : [];
-                superStore.showToast('Government schemes configuration saved.', 'success');
+                store.saveGovernmentSchemesConfig(parsed);
+                config = store.getGovernmentSchemesConfig();
+                schemes = [...(config.items || config.schemes || [])];
+                showToast('Government schemes configuration saved.', 'success');
                 render();
               } catch (err) {
                 alert('Invalid JSON: ' + err.message);
@@ -23162,8 +23257,8 @@ async function loadMasterNavigation() {
           const btnExport = root.querySelector('#btn-export-schemes');
           if (btnExport) {
             btnExport.addEventListener('click', () => {
-              const filename = superStore.exportGovernmentSchemesManifest();
-              superStore.showToast(`Exported manifest: ${filename}`, 'success');
+              const filename = store.exportGovernmentSchemesManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
             });
           }
 
@@ -23171,9 +23266,9 @@ async function loadMasterNavigation() {
           if (btnReset) {
             btnReset.addEventListener('click', () => {
               if (confirm('Reset Government Schemes to factory configuration? Any manual additions will be lost.')) {
-                config = superStore.resetGovernmentSchemesConfig();
-                schemes = Array.isArray(config.schemes) ? [...config.schemes] : [];
-                superStore.showToast('Government schemes reset to factory defaults.', 'info');
+                config = store.resetGovernmentSchemesConfig();
+                schemes = [...(config.items || config.schemes || [])];
+                showToast('Government schemes reset to factory defaults.', 'info');
                 render();
               }
             });
@@ -23190,6 +23285,1377 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * MODULE 05-019: Scholarships Workspace
+     */
+    function renderScholarshipsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getScholarshipsConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let scholarships = [...list];
+        let filterLevel = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = scholarships.filter(item => {
+            const matchesLevel = filterLevel === 'All' || item.level === filterLevel;
+            const matchesSearch = !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.eligibility && item.eligibility.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.level && item.level.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesLevel && matchesSearch;
+          });
+
+          const activeCount = scholarships.filter(s => s.active).length;
+          const levels = Array.from(new Set(scholarships.map(s => s.level).filter(Boolean)));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 6</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-019</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">State Scholarships Management</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Track Medhabruti, post-matric stipends, state merit assistance, and deadline alerts</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-scholarship" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Scholarship
+                  </button>
+                  <button id="btn-inspect-scholarships" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-scholarships" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-scholarships" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Scholarships</div>
+                  <div class="text-2xl font-bold text-white mt-1">${scholarships.length}</div>
+                  <div class="text-[11px] text-indigo-400 mt-1">${levels.length} Education Levels</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Portals</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Accepting Applications</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Portal Sync</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.scholarshipSettings?.autoSyncStatePortal ? 'Live Sync' : 'Manual'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">scholarship.odisha.gov.in</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Merit Calculator</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.scholarshipSettings?.enableMeritCalculator ? 'Enabled' : 'Disabled'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Eligibility Scoring Engine</div>
+                </div>
+              </div>
+
+              <!-- Main Filter & Table Card -->
+              <div class="bg-slate-900/50 rounded-2xl border border-slate-800 p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input id="scholarship-search-input" type="text" placeholder="Search scholarships, eligibility..." value="${escapeHtml(searchQuery)}" class="w-full sm:w-64 bg-slate-950 text-xs text-white placeholder-slate-500 px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500" />
+                    <select id="scholarship-level-filter" class="bg-slate-950 text-xs text-white px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500">
+                      <option value="All" ${filterLevel === 'All' ? 'selected' : ''}>All Levels</option>
+                      ${levels.map(l => `<option value="${escapeHtml(l)}" ${filterLevel === l ? 'selected' : ''}>${escapeHtml(l)}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="text-xs text-slate-400">
+                    Showing <span class="font-semibold text-white">${filtered.length}</span> of ${scholarships.length} scholarships
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">ID</th>
+                        <th class="px-4 py-3">Scholarship Name</th>
+                        <th class="px-4 py-3">Education Level</th>
+                        <th class="px-4 py-3">Assistance / Value</th>
+                        <th class="px-4 py-3">Eligibility Criteria</th>
+                        <th class="px-4 py-3">Deadline</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 bg-slate-900/20">
+                      ${filtered.map(item => `
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs">
+                            <div class="truncate" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+                            <a href="${escapeHtml(item.portalUrl || 'https://scholarship.odisha.gov.in')}" target="_blank" class="text-[10px] text-indigo-400 hover:underline flex items-center gap-1 mt-0.5">
+                              Portal Link
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                          </td>
+                          <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">${escapeHtml(item.level)}</span>
+                          </td>
+                          <td class="px-4 py-3 font-semibold text-emerald-400 whitespace-nowrap">${escapeHtml(item.awardAmount)}</td>
+                          <td class="px-4 py-3 text-slate-400 max-w-xs truncate" title="${escapeHtml(item.eligibility)}">${escapeHtml(item.eligibility)}</td>
+                          <td class="px-4 py-3 font-mono text-slate-400 whitespace-nowrap">${escapeHtml(item.deadline || 'Ongoing')}</td>
+                          <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <button class="btn-toggle-active-scholarship relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                            </button>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="btn-edit-scholarship text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Scholarship">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-delete-scholarship text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Scholarship">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500 italic">No scholarships found matching search criteria.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="scholarships-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Scholarships JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_scholarships_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-scholarships" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-scholarships" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-scholarships-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#scholarship-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const levelFilter = root.querySelector('#scholarship-level-filter');
+          if (levelFilter) {
+            levelFilter.addEventListener('change', (e) => {
+              filterLevel = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-scholarship');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Enter Scholarship Name:');
+              if (!name) return;
+              const level = prompt('Education Level (e.g. Higher Education, Post-Matric, Undergraduate):', 'Higher Education') || 'Higher Education';
+              const award = prompt('Award / Financial Value:', 'Rs. 10,000 / Year') || 'Rs. 10,000 / Year';
+              const eligibility = prompt('Eligibility Criteria:', 'Merit based on +2/+3 marks') || 'General';
+              const deadline = prompt('Application Deadline (YYYY-MM-DD):', '2026-12-31') || '2026-12-31';
+              const portalUrl = prompt('Official Portal URL:', 'https://scholarship.odisha.gov.in') || 'https://scholarship.odisha.gov.in';
+
+              const newScholarship = {
+                id: 'SCHOL-' + Math.floor(10 + Math.random() * 90),
+                name: name.trim(),
+                level: level.trim(),
+                awardAmount: award.trim(),
+                eligibility: eligibility.trim(),
+                deadline: deadline.trim(),
+                portalUrl: portalUrl.trim(),
+                active: true
+              };
+
+              scholarships.unshift(newScholarship);
+              config.scholarships = scholarships;
+              store.saveScholarshipsConfig(config);
+              showToast('Scholarship created successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active-scholarship').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = scholarships.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.scholarships = scholarships;
+                store.saveScholarshipsConfig(config);
+                showToast(`Scholarship ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-scholarship').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = scholarships.find(s => s.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Scholarship Name:', item.name);
+              if (name === null) return;
+              const level = prompt('Edit Education Level:', item.level) || item.level;
+              const award = prompt('Edit Award Amount:', item.awardAmount) || item.awardAmount;
+              const eligibility = prompt('Edit Eligibility:', item.eligibility) || item.eligibility;
+              const deadline = prompt('Edit Deadline (YYYY-MM-DD):', item.deadline) || item.deadline;
+              const portalUrl = prompt('Edit Portal URL:', item.portalUrl) || item.portalUrl;
+
+              item.name = name.trim();
+              item.level = level.trim();
+              item.awardAmount = award.trim();
+              item.eligibility = eligibility.trim();
+              item.deadline = deadline.trim();
+              item.portalUrl = portalUrl.trim();
+
+              config.scholarships = scholarships;
+              store.saveScholarshipsConfig(config);
+              showToast('Scholarship updated successfully.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-scholarship').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete scholarship ${id}?`)) {
+                scholarships = scholarships.filter(s => s.id !== id);
+                config.scholarships = scholarships;
+                store.saveScholarshipsConfig(config);
+                showToast('Scholarship removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-scholarships');
+          const drawer = root.querySelector('#scholarships-raw-drawer');
+          const textarea = root.querySelector('#raw-scholarships-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-scholarships');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-scholarships');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveScholarshipsConfig(parsed);
+                config = store.getScholarshipsConfig();
+                scholarships = [...(config.items || config.scholarships || [])];
+                showToast('Scholarships configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-scholarships');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportScholarshipsManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-scholarships');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Scholarships to factory configuration? Any manual changes will be lost.')) {
+                config = store.resetScholarshipsConfig();
+                scholarships = [...(config.items || config.scholarships || [])];
+                showToast('Scholarships reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-019', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-019 (Scholarships)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 05-020: Career Explorer Workspace
+     */
+    function renderCareerExplorerWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getCareerExplorerConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let careerPaths = [...list];
+        let filterStream = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = careerPaths.filter(item => {
+            const matchesStream = filterStream === 'All' || item.stream === filterStream;
+            const matchesSearch = !searchQuery ||
+              (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.minQualification && item.minQualification.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.entryExam && item.entryExam.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesStream && matchesSearch;
+          });
+
+          const activeCount = careerPaths.filter(c => c.active).length;
+          const streams = Array.from(new Set(careerPaths.map(c => c.stream).filter(Boolean)));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 6</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-020</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">Odisha Career Explorer Management</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Define career paths, government job roadmaps, pay matrices, and educational requirements</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-career" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Career Path
+                  </button>
+                  <button id="btn-inspect-careers" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-careers" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-careers" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Metrics Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Career Paths</div>
+                  <div class="text-2xl font-bold text-white mt-1">${careerPaths.length}</div>
+                  <div class="text-[11px] text-indigo-400 mt-1">${streams.length} Professional Streams</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Roadmaps</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Live in Explorer</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Salary Matrix</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.explorerSettings?.showSalaryInsights ? 'Enabled' : 'Hidden'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">7th Pay Commission Scale</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Roadmap Visualizer</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.explorerSettings?.enableRoadmapGraph ? 'Active' : 'Disabled'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Interactive Decision Tree</div>
+                </div>
+              </div>
+
+              <!-- Filter and Data Table -->
+              <div class="bg-slate-900/50 rounded-2xl border border-slate-800 p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input id="career-search-input" type="text" placeholder="Search career title, exams..." value="${escapeHtml(searchQuery)}" class="w-full sm:w-64 bg-slate-950 text-xs text-white placeholder-slate-500 px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500" />
+                    <select id="career-stream-filter" class="bg-slate-950 text-xs text-white px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500">
+                      <option value="All" ${filterStream === 'All' ? 'selected' : ''}>All Streams</option>
+                      ${streams.map(s => `<option value="${escapeHtml(s)}" ${filterStream === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="text-xs text-slate-400">
+                    Showing <span class="font-semibold text-white">${filtered.length}</span> of ${careerPaths.length} career options
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">ID</th>
+                        <th class="px-4 py-3">Career Title</th>
+                        <th class="px-4 py-3">Stream</th>
+                        <th class="px-4 py-3">Qualification</th>
+                        <th class="px-4 py-3">Competitive Exam</th>
+                        <th class="px-4 py-3">Pay Scale / Matrix</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 bg-slate-900/20">
+                      ${filtered.map(item => `
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                          <td class="px-4 py-3 font-medium text-white">${escapeHtml(item.title)}</td>
+                          <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">${escapeHtml(item.stream)}</span>
+                          </td>
+                          <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${escapeHtml(item.minQualification)}</td>
+                          <td class="px-4 py-3 text-cyan-300 font-mono whitespace-nowrap">${escapeHtml(item.entryExam)}</td>
+                          <td class="px-4 py-3 text-emerald-400 font-medium whitespace-nowrap">${escapeHtml(item.typicalSalary)}</td>
+                          <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <button class="btn-toggle-active-career relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                            </button>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="btn-edit-career text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Career">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-delete-career text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Career">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500 italic">No career paths found matching search criteria.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="careers-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Career Explorer JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_career_explorer_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-careers" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-careers" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-careers-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#career-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const streamFilter = root.querySelector('#career-stream-filter');
+          if (streamFilter) {
+            streamFilter.addEventListener('change', (e) => {
+              filterStream = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-career');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const title = prompt('Enter Career Title (e.g. Sub-Inspector of Police):');
+              if (!title) return;
+              const stream = prompt('Professional Stream (e.g. Police & Law Enforcement, Engineering, Healthcare):', 'Public Services') || 'Public Services';
+              const qual = prompt('Minimum Qualification:', 'Bachelor Degree') || 'Graduate';
+              const exam = prompt('Entry Examination / Selection Mode:', 'State Selection Board Exam') || 'Competitive Exam';
+              const salary = prompt('Pay Matrix / Salary Scale:', 'Rs. 35,400 (Level 9)') || 'Level 9';
+
+              const newPath = {
+                id: 'CAR-' + Math.floor(10 + Math.random() * 90),
+                title: title.trim(),
+                stream: stream.trim(),
+                minQualification: qual.trim(),
+                entryExam: exam.trim(),
+                typicalSalary: salary.trim(),
+                demandLevel: 'High',
+                active: true
+              };
+
+              careerPaths.unshift(newPath);
+              config.careerPaths = careerPaths;
+              store.saveCareerExplorerConfig(config);
+              showToast('Career path created successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active-career').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = careerPaths.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.careerPaths = careerPaths;
+                store.saveCareerExplorerConfig(config);
+                showToast(`Career ${item.title} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-career').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = careerPaths.find(c => c.id === id);
+              if (!item) return;
+
+              const title = prompt('Edit Career Title:', item.title);
+              if (title === null) return;
+              const stream = prompt('Edit Stream:', item.stream) || item.stream;
+              const qual = prompt('Edit Minimum Qualification:', item.minQualification) || item.minQualification;
+              const exam = prompt('Edit Entry Exam:', item.entryExam) || item.entryExam;
+              const salary = prompt('Edit Salary Scale:', item.typicalSalary) || item.typicalSalary;
+
+              item.title = title.trim();
+              item.stream = stream.trim();
+              item.minQualification = qual.trim();
+              item.entryExam = exam.trim();
+              item.typicalSalary = salary.trim();
+
+              config.careerPaths = careerPaths;
+              store.saveCareerExplorerConfig(config);
+              showToast('Career details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-career').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete career path ${id}?`)) {
+                careerPaths = careerPaths.filter(c => c.id !== id);
+                config.careerPaths = careerPaths;
+                store.saveCareerExplorerConfig(config);
+                showToast('Career path removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-careers');
+          const drawer = root.querySelector('#careers-raw-drawer');
+          const textarea = root.querySelector('#raw-careers-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-careers');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-careers');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveCareerExplorerConfig(parsed);
+                config = store.getCareerExplorerConfig();
+                careerPaths = [...(config.items || config.pathways || config.careerPaths || [])];
+                showToast('Career Explorer configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-careers');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportCareerExplorerManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-careers');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Career Explorer to factory defaults?')) {
+                config = store.resetCareerExplorerConfig();
+                careerPaths = [...(config.items || config.pathways || config.careerPaths || [])];
+                showToast('Career Explorer reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-020', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-020 (Career Explorer)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 05-021: Student Dashboard Workspace
+     */
+    function renderStudentDashboardWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getStudentDashboardConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let widgets = [...list];
+        let searchQuery = '';
+
+        function render() {
+          const filtered = widgets.filter(item => {
+            return !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.type && item.type.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.targetAudience && item.targetAudience.toLowerCase().includes(searchQuery.toLowerCase()));
+          });
+
+          const activeCount = widgets.filter(w => w.active).length;
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 6</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-021</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">Student Dashboard Configurator</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Control dynamic student feed widgets, streak trackers, bookmark shelves, and leaderboard cards</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-widget" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Widget
+                  </button>
+                  <button id="btn-inspect-dashboard" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-dashboard" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-dashboard" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Metrics Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Dashboard Widgets</div>
+                  <div class="text-2xl font-bold text-white mt-1">${widgets.length}</div>
+                  <div class="text-[11px] text-indigo-400 mt-1">${activeCount} Active on Feed</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Study Streak Engine</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.dashboardSettings?.enableStudyStreak ? 'Active' : 'Off'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Gamification & Badges</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Mock Leaderboard</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.dashboardSettings?.allowMockLeaderboard ? 'Public' : 'Hidden'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Percentile Rankings</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Odia Vernacular</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.dashboardSettings?.enableOdiaLanguageToggle ? 'Enabled' : 'Off'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Bilingual Feed</div>
+                </div>
+              </div>
+
+              <!-- Filter and Data Table -->
+              <div class="bg-slate-900/50 rounded-2xl border border-slate-800 p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input id="widget-search-input" type="text" placeholder="Search widgets, audience..." value="${escapeHtml(searchQuery)}" class="w-full sm:w-64 bg-slate-950 text-xs text-white placeholder-slate-500 px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500" />
+                  </div>
+                  <div class="text-xs text-slate-400">
+                    Showing <span class="font-semibold text-white">${filtered.length}</span> of ${widgets.length} widgets
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">ID</th>
+                        <th class="px-4 py-3">Widget Name</th>
+                        <th class="px-4 py-3">Component Type</th>
+                        <th class="px-4 py-3">Target Audience</th>
+                        <th class="px-4 py-3">Auto-Refresh</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 bg-slate-900/20">
+                      ${filtered.map(item => `
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                          <td class="px-4 py-3 font-medium text-white">${escapeHtml(item.name)}</td>
+                          <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">${escapeHtml(item.type)}</span>
+                          </td>
+                          <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${escapeHtml(item.targetAudience)}</td>
+                          <td class="px-4 py-3 font-mono text-slate-400 whitespace-nowrap">${item.refreshRateMinutes === 0 ? 'On Demand' : `${item.refreshRateMinutes} mins`}</td>
+                          <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <button class="btn-toggle-active-widget relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                            </button>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="btn-edit-widget text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Widget">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-delete-widget text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Widget">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="text-center py-8 text-slate-500 italic">No dashboard widgets found matching search criteria.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="dashboard-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Student Dashboard JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_student_dashboard_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-dashboard" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-dashboard" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-dashboard-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#widget-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-widget');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Enter Widget Name:');
+              if (!name) return;
+              const type = prompt('Component Type (e.g. Card, Tracker, Countdown, Leaderboard):', 'Card') || 'Card';
+              const audience = prompt('Target Audience:', 'All Students') || 'All Students';
+              const refresh = parseInt(prompt('Refresh Rate in minutes (0 for on demand):', '60') || '60', 10);
+
+              const newWidget = {
+                id: 'WGT-' + Math.floor(10 + Math.random() * 90),
+                name: name.trim(),
+                type: type.trim(),
+                targetAudience: audience.trim(),
+                refreshRateMinutes: isNaN(refresh) ? 60 : refresh,
+                active: true
+              };
+
+              widgets.unshift(newWidget);
+              config.widgets = widgets;
+              store.saveStudentDashboardConfig(config);
+              showToast('Dashboard widget added successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active-widget').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = widgets.find(w => w.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.widgets = widgets;
+                store.saveStudentDashboardConfig(config);
+                showToast(`Widget ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-widget').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = widgets.find(w => w.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Widget Name:', item.name);
+              if (name === null) return;
+              const type = prompt('Edit Component Type:', item.type) || item.type;
+              const audience = prompt('Edit Target Audience:', item.targetAudience) || item.targetAudience;
+              const refresh = parseInt(prompt('Edit Refresh Rate (mins):', String(item.refreshRateMinutes || 60)) || '60', 10);
+
+              item.name = name.trim();
+              item.type = type.trim();
+              item.targetAudience = audience.trim();
+              item.refreshRateMinutes = isNaN(refresh) ? item.refreshRateMinutes : refresh;
+
+              config.widgets = widgets;
+              store.saveStudentDashboardConfig(config);
+              showToast('Widget details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-widget').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete widget ${id}?`)) {
+                widgets = widgets.filter(w => w.id !== id);
+                config.widgets = widgets;
+                store.saveStudentDashboardConfig(config);
+                showToast('Widget removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-dashboard');
+          const drawer = root.querySelector('#dashboard-raw-drawer');
+          const textarea = root.querySelector('#raw-dashboard-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-dashboard');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-dashboard');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveStudentDashboardConfig(parsed);
+                config = store.getStudentDashboardConfig();
+                widgets = [...(config.items || config.modules || config.widgets || [])];
+                showToast('Student Dashboard configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-dashboard');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportStudentDashboardManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-dashboard');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Student Dashboard configuration to factory defaults?')) {
+                config = store.resetStudentDashboardConfig();
+                widgets = [...(config.items || config.modules || config.widgets || [])];
+                showToast('Student Dashboard reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-021', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-021 (Student Dashboard)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 05-022: Educational Tools Workspace
+     */
+    function renderEducationalToolsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getEducationalToolsConfig();
+        const list = config.items || config.postings || config.releases || config.schemes || 
+                     config.papers || config.questions || config.quizzes || config.tests || 
+                     config.keys || config.collections || config.rules || config.scholarships || 
+                     config.pathways || config.modules || config.tools || [];
+        let tools = [...list];
+        let filterCategory = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = tools.filter(item => {
+            const matchesCat = filterCategory === 'All' || item.category === filterCategory;
+            const matchesSearch = !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.embeddedRoute && item.embeddedRoute.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesCat && matchesSearch;
+          });
+
+          const activeCount = tools.filter(t => t.active).length;
+          const categories = Array.from(new Set(tools.map(t => t.category).filter(Boolean)));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 6</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-022</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">Educational Utilities & Interactive Tools</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage eligibility calculators, CGPA converters, cutoff estimators, and certificate wizards</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-tool" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Tool
+                  </button>
+                  <button id="btn-inspect-tools" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-tools" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-tools" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Metrics Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Registered Tools</div>
+                  <div class="text-2xl font-bold text-white mt-1">${tools.length}</div>
+                  <div class="text-[11px] text-indigo-400 mt-1">${categories.length} Utility Categories</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Modules</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Ready on Frontend</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Offline Execution</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.toolSettings?.enableOfflineCalculators ? 'Active' : 'Server Only'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Client-side WASM/JS</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Telemetry & Logging</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.toolSettings?.logUsageAnalytics ? 'Enabled' : 'Off'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Usage Counters</div>
+                </div>
+              </div>
+
+              <!-- Filter and Data Table -->
+              <div class="bg-slate-900/50 rounded-2xl border border-slate-800 p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input id="tool-search-input" type="text" placeholder="Search tool name, route..." value="${escapeHtml(searchQuery)}" class="w-full sm:w-64 bg-slate-950 text-xs text-white placeholder-slate-500 px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500" />
+                    <select id="tool-cat-filter" class="bg-slate-950 text-xs text-white px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500">
+                      <option value="All" ${filterCategory === 'All' ? 'selected' : ''}>All Categories</option>
+                      ${categories.map(c => `<option value="${escapeHtml(c)}" ${filterCategory === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="text-xs text-slate-400">
+                    Showing <span class="font-semibold text-white">${filtered.length}</span> of ${tools.length} educational tools
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">ID</th>
+                        <th class="px-4 py-3">Tool Name</th>
+                        <th class="px-4 py-3">Category</th>
+                        <th class="px-4 py-3">Embedded Route</th>
+                        <th class="px-4 py-3">Engine Version</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 bg-slate-900/20">
+                      ${filtered.map(item => `
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                          <td class="px-4 py-3 font-medium text-white">${escapeHtml(item.name)}</td>
+                          <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">${escapeHtml(item.category)}</span>
+                          </td>
+                          <td class="px-4 py-3 text-cyan-400 font-mono text-[11px] whitespace-nowrap">
+                            <a href="${escapeHtml(item.embeddedRoute)}" target="_blank" class="hover:underline flex items-center gap-1">
+                              ${escapeHtml(item.embeddedRoute)}
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-slate-400 whitespace-nowrap">v${escapeHtml(item.version)}</td>
+                          <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">${escapeHtml(item.status)}</span>
+                          </td>
+                          <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <button class="btn-toggle-active-tool relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                            </button>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="btn-edit-tool text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Tool">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-delete-tool text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Tool">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500 italic">No educational tools found matching search criteria.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="tools-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Educational Tools JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_educational_tools_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-tools" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-tools" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-tools-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#tool-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const catFilter = root.querySelector('#tool-cat-filter');
+          if (catFilter) {
+            catFilter.addEventListener('change', (e) => {
+              filterCategory = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-tool');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Enter Tool Name:');
+              if (!name) return;
+              const cat = prompt('Category (e.g. Exam Utilities, Document Wizards, Academic Converters):', 'Exam Utilities') || 'Exam Utilities';
+              const route = prompt('Embedded Route / URL:', '/education-explorer/#calc') || '/education-explorer';
+              const version = prompt('Engine Version:', '1.0') || '1.0';
+
+              const newTool = {
+                id: 'TOOL-' + Math.floor(10 + Math.random() * 90),
+                name: name.trim(),
+                category: cat.trim(),
+                version: version.trim(),
+                embeddedRoute: route.trim(),
+                status: 'Live',
+                active: true
+              };
+
+              tools.unshift(newTool);
+              config.tools = tools;
+              store.saveEducationalToolsConfig(config);
+              showToast('Educational tool created successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active-tool').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tools.find(t => t.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.tools = tools;
+                store.saveEducationalToolsConfig(config);
+                showToast(`Tool ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-tool').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tools.find(t => t.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Tool Name:', item.name);
+              if (name === null) return;
+              const cat = prompt('Edit Category:', item.category) || item.category;
+              const route = prompt('Edit Route:', item.embeddedRoute) || item.embeddedRoute;
+              const version = prompt('Edit Version:', item.version) || item.version;
+
+              item.name = name.trim();
+              item.category = cat.trim();
+              item.embeddedRoute = route.trim();
+              item.version = version.trim();
+
+              config.tools = tools;
+              store.saveEducationalToolsConfig(config);
+              showToast('Tool details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-tool').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete tool ${id}?`)) {
+                tools = tools.filter(t => t.id !== id);
+                config.tools = tools;
+                store.saveEducationalToolsConfig(config);
+                showToast('Tool removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-tools');
+          const drawer = root.querySelector('#tools-raw-drawer');
+          const textarea = root.querySelector('#raw-tools-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-tools');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-tools');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveEducationalToolsConfig(parsed);
+                config = store.getEducationalToolsConfig();
+                tools = [...(config.items || config.tools || [])];
+                showToast('Educational Tools configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-tools');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportEducationalToolsManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-tools');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Educational Tools to factory configuration? Any custom tools will be lost.')) {
+                config = store.resetEducationalToolsConfig();
+                tools = [...(config.items || config.tools || [])];
+                showToast('Educational Tools reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-022', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-022 (Educational Tools)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 
