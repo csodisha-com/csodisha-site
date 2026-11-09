@@ -625,6 +625,90 @@
       return newEntry;
     },
 
+    // Audit Query & Management Extensions (module-01-004)
+    getAllAuditLogs(filterType = 'ALL', search = '') {
+      let logs = this.getAudit();
+      if (!Array.isArray(logs)) logs = [];
+
+      // Normalize search term
+      const s = (search || '').toLowerCase().trim();
+
+      // Normalize filter type
+      const f = (filterType || 'ALL').toUpperCase();
+
+      return logs.filter(entry => {
+        // Normalize properties across different audit schemas (eventType / type, details / description)
+        const typeStr = (entry.eventType || entry.type || '').toUpperCase();
+        const descStr = (entry.details || entry.description || '').toLowerCase();
+        const idStr = (entry.id || '').toLowerCase();
+        const actorStr = (entry.actor || '').toLowerCase();
+
+        // 1. Filter match
+        let matchesType = true;
+        if (f !== 'ALL') {
+          if (f === 'AUTH') {
+            matchesType = typeStr.includes('AUTH');
+          } else if (f === 'BROADCAST') {
+            matchesType = typeStr.includes('BROADCAST') || typeStr.includes('BANNER') || typeStr.includes('FLASH');
+          } else if (f === 'EDGE') {
+            matchesType = typeStr.includes('EDGE') || typeStr.includes('CACHE') || typeStr.includes('CDN');
+          } else if (f === 'HEALTH') {
+            matchesType = typeStr.includes('HEALTH') || typeStr.includes('DIAG');
+          } else if (f === 'BACKUP') {
+            matchesType = typeStr.includes('BACKUP') || typeStr.includes('SNAPSHOT') || typeStr.includes('RESTORE');
+          } else if (f === 'SECURITY') {
+            matchesType = typeStr.includes('SECURITY') || typeStr.includes('LOCK') || typeStr.includes('ZERO_TRUST') || typeStr.includes('SESSION');
+          } else {
+            matchesType = typeStr === f;
+          }
+        }
+
+        if (!matchesType) return false;
+
+        // 2. Search match
+        if (s) {
+          const inDesc = descStr.includes(s);
+          const inType = typeStr.toLowerCase().includes(s);
+          const inId = idStr.includes(s);
+          const inActor = actorStr.includes(s);
+          if (!inDesc && !inType && !inId && !inActor) return false;
+        }
+
+        return true;
+      }).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    },
+
+    pruneAuditLogs(keepCount = 20) {
+      let logs = this.getAudit();
+      if (!Array.isArray(logs)) logs = [];
+
+      const initialCount = logs.length;
+      const pruned = logs.slice(0, keepCount);
+      save(KEYS.AUDIT, pruned);
+
+      this.logAudit('AUDIT_LOGS_PRUNED', 'AUDIT_STORAGE', `Audit trail pruned: retained newest ${pruned.length} records (removed ${Math.max(0, initialCount - pruned.length)} older entries).`);
+      return this.getAudit();
+    },
+
+    exportAuditLogs(filteredLogs) {
+      const dataToExport = filteredLogs || this.getAudit();
+      const jsonStr = JSON.stringify(dataToExport, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const filename = `cso-audit-stream-${Date.now()}.json`;
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('AUDIT_LOGS_EXPORTED', 'DATA_EXPORT', `Exported ${dataToExport.length} audit records to ${filename}.`);
+      return filename;
+    },
+
     // 7. D1 Telemetry
     getD1() {
       return getOrSet(KEYS.D1, SEED_D1);

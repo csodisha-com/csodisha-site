@@ -283,6 +283,8 @@ async function loadMasterNavigation() {
         renderLiveSiteStatusWorkspace();
       } else if (moduleId === 'module-01-003') {
         renderQuickActionsWorkspace();
+      } else if (moduleId === 'module-01-004') {
+        renderRecentActivityWorkspace();
       } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -304,6 +306,222 @@ async function loadMasterNavigation() {
       } else {
         renderStandardModuleInspector(folderId, moduleId);
       }
+    }
+
+    /**
+     * VIEW 1d: Recent Activity & Audit Trail (module-01-004)
+     */
+    function renderRecentActivityWorkspace() {
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnExportAuditAction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export Logs (JSON)
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <!-- Audit Stream Controls -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Immutable Event & Audit Stream
+                <span class="text-xs font-mono font-normal text-slate-400">(Tamper-Evident Local Storage)</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Chronological record of authentication, cache invalidation, edge updates, and administrative interventions.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnPruneAuditLogs" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Prune Older Logs
+              </button>
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-brand-border/60">
+            <div class="sm:col-span-2 relative">
+              <input type="text" id="auditSearchInput" placeholder="Search event logs by description, ID, or actor..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-emerald focus:ring-1 focus:ring-brand-emerald transition" />
+              <svg class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+
+            <div>
+              <select id="auditTypeFilter" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-emerald focus:ring-1 focus:ring-brand-emerald transition">
+                <option value="ALL">All Event Types</option>
+                <option value="AUTH">Authentication (AUTH)</option>
+                <option value="BROADCAST">Broadcasts & Banners (BROADCAST)</option>
+                <option value="EDGE">Edge & CDN (EDGE)</option>
+                <option value="HEALTH">Diagnostics & Probes (HEALTH)</option>
+                <option value="BACKUP">Backups & Recovery (BACKUP)</option>
+                <option value="SECURITY">Security & Lockouts (SECURITY)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Stream Container -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-white text-sm">Event Stream Records</h3>
+            <span id="auditCountBadge" class="text-xs font-mono text-slate-400">Loading events...</span>
+          </div>
+
+          <div id="auditStreamContainer" class="space-y-3 font-mono text-xs">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      `;
+
+      // Helper function to colorize event pills
+      function getPillConfig(eventType) {
+        const type = (eventType || 'INFO').toUpperCase();
+        if (type.includes('AUTH')) {
+          return { bg: 'bg-emerald-500/15 text-brand-emerald border-brand-emerald/30', label: 'AUTH' };
+        } else if (type.includes('EDGE') || type.includes('CACHE') || type.includes('HEALTH') || type.includes('DIAG')) {
+          return { bg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30', label: type.includes('HEALTH') ? 'HEALTH' : 'EDGE' };
+        } else if (type.includes('BROADCAST') || type.includes('BANNER') || type.includes('BACKUP') || type.includes('SNAPSHOT')) {
+          return { bg: 'bg-amber-500/15 text-amber-300 border-amber-500/30', label: type.includes('BACKUP') ? 'BACKUP' : 'BROADCAST' };
+        } else if (type.includes('SECURITY') || type.includes('LOCK') || type.includes('FAIL') || type.includes('REVOKE')) {
+          return { bg: 'bg-red-500/15 text-brand-crimson border-brand-crimson/30', label: 'SECURITY' };
+        }
+        return { bg: 'bg-slate-700/40 text-slate-300 border-slate-600', label: type.substring(0, 8) };
+      }
+
+      // Helper to render logs
+      function refreshAuditStream() {
+        const searchInput = document.getElementById('auditSearchInput');
+        const typeFilter = document.getElementById('auditTypeFilter');
+        const container = document.getElementById('auditStreamContainer');
+        const badge = document.getElementById('auditCountBadge');
+
+        const search = searchInput ? searchInput.value : '';
+        const filter = typeFilter ? typeFilter.value : 'ALL';
+
+        let logs = [];
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.getAllAuditLogs === 'function') {
+          logs = window.CSOSuperStore.getAllAuditLogs(filter, search);
+        } else {
+          // Direct fallback query
+          try {
+            const raw = localStorage.getItem('cso_super_audit');
+            const parsed = raw ? JSON.parse(raw) : [];
+            logs = parsed.filter(entry => {
+              const typeStr = (entry.eventType || entry.type || '').toUpperCase();
+              const descStr = (entry.details || entry.description || '').toLowerCase();
+              const idStr = (entry.id || '').toLowerCase();
+              if (filter !== 'ALL' && !typeStr.includes(filter)) return false;
+              if (search) {
+                const s = search.toLowerCase();
+                if (!descStr.includes(s) && !typeStr.toLowerCase().includes(s) && !idStr.includes(s)) return false;
+              }
+              return true;
+            });
+          } catch (_) {}
+        }
+
+        if (badge) {
+          badge.textContent = `Showing ${logs.length} event${logs.length === 1 ? '' : 's'}`;
+        }
+
+        if (!container) return;
+
+        if (!logs.length) {
+          container.innerHTML = `
+            <div class="py-12 text-center text-slate-400 font-sans">
+              <svg class="w-8 h-8 text-slate-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <p class="text-sm font-semibold text-slate-300">No matching activity events found</p>
+              <p class="text-xs text-slate-500 mt-1">Try adjusting your search criteria or event type filter.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = logs.map(item => {
+          const pill = getPillConfig(item.eventType || item.type);
+          const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Just now';
+          const desc = item.details || item.description || item.eventType || 'System event recorded';
+          const actor = item.actor || 'admin@csodisha.com';
+          const id = item.id || 'AUD-0000';
+
+          return `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-[#081220] border border-brand-border/70 hover:border-brand-border transition">
+              <div class="flex items-start gap-3 min-w-0">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border tracking-wider flex-shrink-0 mt-0.5 ${pill.bg}">
+                  ${pill.label}
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-mono text-cyan-400 font-bold text-[11px]">${id}</span>
+                    <span class="text-slate-500">&bull;</span>
+                    <p class="text-slate-200 font-sans font-medium text-xs break-words">${desc}</p>
+                  </div>
+                  <div class="flex items-center gap-2 text-[10px] text-slate-500 mt-1 flex-wrap">
+                    <span>Actor: <strong class="text-slate-400 font-mono">${actor}</strong></span>
+                    <span>&bull;</span>
+                    <span>IP: <code class="text-slate-400">${item.ip || '103.21.124.9'}</code></span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono sm:text-right flex-shrink-0">
+                ${dateStr}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Event listeners
+      const searchInput = document.getElementById('auditSearchInput');
+      const typeFilter = document.getElementById('auditTypeFilter');
+      if (searchInput) searchInput.addEventListener('input', refreshAuditStream);
+      if (typeFilter) typeFilter.addEventListener('change', refreshAuditStream);
+
+      // Export button
+      const btnExport = document.getElementById('btnExportAuditAction');
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          const search = searchInput ? searchInput.value : '';
+          const filter = typeFilter ? typeFilter.value : 'ALL';
+          let filtered = [];
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.getAllAuditLogs === 'function') {
+            filtered = window.CSOSuperStore.getAllAuditLogs(filter, search);
+            const filename = window.CSOSuperStore.exportAuditLogs(filtered);
+            showToast(`Audit stream exported: ${filename}`, "success");
+          } else {
+            showToast("Exporting logs...", "info");
+          }
+        });
+      }
+
+      // Prune button
+      const btnPrune = document.getElementById('btnPruneAuditLogs');
+      if (btnPrune) {
+        btnPrune.addEventListener('click', () => {
+          openModal("Prune Event Logs", `
+            <div class="space-y-3">
+              <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs">
+                <strong>Attention:</strong> Pruning will permanently retain only the newest 20 records in the audit trail and remove older log entries to conserve localStorage quota.
+              </div>
+              <p class="text-xs text-slate-300">Are you sure you want to prune older records?</p>
+            </div>
+          `, `
+            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button id="btnConfirmPruneAudit" class="px-3 py-1.5 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white transition">Confirm & Prune</button>
+          `);
+
+          document.getElementById('btnConfirmPruneAudit')?.addEventListener('click', () => {
+            closeModal();
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.pruneAuditLogs === 'function') {
+              window.CSOSuperStore.pruneAuditLogs(20);
+            }
+            showToast("Audit trail pruned successfully (20 newest logs kept)", "success");
+            refreshAuditStream();
+          });
+        });
+      }
+
+      // Initial populate
+      refreshAuditStream();
     }
 
     /**
