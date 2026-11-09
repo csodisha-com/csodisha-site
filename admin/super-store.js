@@ -9462,6 +9462,257 @@
       return filename;
     },
 
+    // --- MODULE 08-007: Subscriptions ---
+    getSubscriptionsConfig() {
+      const DEFAULT_SUBSCRIPTIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "SUB-101", userEmail: "aspirant.balasore@gmail.com", planName: "OAS Prelims Pro Annual", billingInterval: "Yearly", amountINR: 1499, autoRenew: true, nextBillingDate: "2027-11-08", status: "Active", active: true },
+          { id: "SUB-102", userEmail: "candidate.cuttack@gmail.com", planName: "Monthly Mock Pass", billingInterval: "Monthly", amountINR: 199, autoRenew: true, nextBillingDate: "2026-12-08", status: "Active", active: true },
+          { id: "SUB-103", userEmail: "student.bbsr@gmail.com", planName: "Full State Exams Suite", billingInterval: "Yearly", amountINR: 2499, autoRenew: false, nextBillingDate: "2027-05-15", status: "Active", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_subscriptions_config', 'subscriptions', () => DEFAULT_SUBSCRIPTIONS);
+    },
+    saveSubscriptionsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.subscriptions = cfg.items || cfg.subscriptions || [];
+      cfg.items = cfg.subscriptions;
+      localStorage.setItem('cso_subscriptions_config', JSON.stringify(cfg));
+      this.logAudit("SUBSCRIPTIONS_SAVED", "FINANCE", "Subscriptions registry updated with " + cfg.items.length + " entries.");
+    },
+    resetSubscriptionsConfig() {
+      const DEFAULT_SUBSCRIPTIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "SUB-101", userEmail: "aspirant.balasore@gmail.com", planName: "OAS Prelims Pro Annual", billingInterval: "Yearly", amountINR: 1499, autoRenew: true, nextBillingDate: "2027-11-08", status: "Active", active: true },
+          { id: "SUB-102", userEmail: "candidate.cuttack@gmail.com", planName: "Monthly Mock Pass", billingInterval: "Monthly", amountINR: 199, autoRenew: true, nextBillingDate: "2026-12-08", status: "Active", active: true },
+          { id: "SUB-103", userEmail: "student.bbsr@gmail.com", planName: "Full State Exams Suite", billingInterval: "Yearly", amountINR: 2499, autoRenew: false, nextBillingDate: "2027-05-15", status: "Active", active: true }
+        ]
+      };
+      localStorage.setItem('cso_subscriptions_config', JSON.stringify(DEFAULT_SUBSCRIPTIONS));
+      this.logAudit("SUBSCRIPTIONS_RESET", "FINANCE", "Subscriptions registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_SUBSCRIPTIONS));
+    },
+    exportSubscriptionsManifest() {
+      const config = this.getSubscriptionsConfig();
+      const filename = "subscriptions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SUBSCRIPTIONS_EXPORTED", "DATA_EXPORT", "Subscriptions manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-008: Memberships ---
+    getMembershipsConfig() {
+      const DEFAULT_MEMBERSHIPS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "MEM-01", tierCode: "ASPIRANT-FREE", tierName: "General Aspirant", annualFeeINR: 0, perks: "Access to free gazette digests & basic quizzes", memberCount: 42100, badgeColor: "#94a3b8", active: true },
+          { id: "MEM-02", tierCode: "SCHOLAR-PRO", tierName: "Scholar Club", annualFeeINR: 799, perks: "Full PYQ vault downloads + live test ranking", memberCount: 3840, badgeColor: "#38bdf8", active: true },
+          { id: "MEM-03", tierCode: "DISTRICT-VIP", tierName: "District Circle Patron", annualFeeINR: 1999, perks: "Priority mentor doubt clearing + all full mock sets", memberCount: 890, badgeColor: "#f59e0b", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_memberships_config', 'memberships', () => DEFAULT_MEMBERSHIPS);
+    },
+    saveMembershipsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.memberships = cfg.items || cfg.memberships || [];
+      cfg.items = cfg.memberships;
+      localStorage.setItem('cso_memberships_config', JSON.stringify(cfg));
+      this.logAudit("MEMBERSHIPS_SAVED", "FINANCE", "Memberships registry updated with " + cfg.items.length + " entries.");
+    },
+    resetMembershipsConfig() {
+      const DEFAULT_MEMBERSHIPS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "MEM-01", tierCode: "ASPIRANT-FREE", tierName: "General Aspirant", annualFeeINR: 0, perks: "Access to free gazette digests & basic quizzes", memberCount: 42100, badgeColor: "#94a3b8", active: true },
+          { id: "MEM-02", tierCode: "SCHOLAR-PRO", tierName: "Scholar Club", annualFeeINR: 799, perks: "Full PYQ vault downloads + live test ranking", memberCount: 3840, badgeColor: "#38bdf8", active: true },
+          { id: "MEM-03", tierCode: "DISTRICT-VIP", tierName: "District Circle Patron", annualFeeINR: 1999, perks: "Priority mentor doubt clearing + all full mock sets", memberCount: 890, badgeColor: "#f59e0b", active: true }
+        ]
+      };
+      localStorage.setItem('cso_memberships_config', JSON.stringify(DEFAULT_MEMBERSHIPS));
+      this.logAudit("MEMBERSHIPS_RESET", "FINANCE", "Memberships registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_MEMBERSHIPS));
+    },
+    exportMembershipsManifest() {
+      const config = this.getMembershipsConfig();
+      const filename = "memberships_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MEMBERSHIPS_EXPORTED", "DATA_EXPORT", "Memberships manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-009: Donations ---
+    getDonationsConfig() {
+      const DEFAULT_DONATIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "DON-01", receiptNo: "DON-2026-001", donorName: "R. K. Mohapatra", amountINR: 5000, cause: "Rural Aspirant Digital Resource Drive", paymentRef: "pay_Don7812", date: "2026-10-15", taxExempt80G: true, active: true },
+          { id: "DON-02", receiptNo: "DON-2026-002", donorName: "Anonymous Well-Wisher", amountINR: 1000, cause: "Free Server Bandwidth Fund", paymentRef: "pay_Don9931", date: "2026-11-01", taxExempt80G: false, active: true },
+          { id: "DON-03", receiptNo: "DON-2026-003", donorName: "P. Priyadarshini", amountINR: 2500, cause: "Tribal District Study Circles", paymentRef: "pay_Don1045", date: "2026-11-05", taxExempt80G: true, active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_donations_config', 'donations', () => DEFAULT_DONATIONS);
+    },
+    saveDonationsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.donations = cfg.items || cfg.donations || [];
+      cfg.items = cfg.donations;
+      localStorage.setItem('cso_donations_config', JSON.stringify(cfg));
+      this.logAudit("DONATIONS_SAVED", "FINANCE", "Donations registry updated with " + cfg.items.length + " entries.");
+    },
+    resetDonationsConfig() {
+      const DEFAULT_DONATIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "DON-01", receiptNo: "DON-2026-001", donorName: "R. K. Mohapatra", amountINR: 5000, cause: "Rural Aspirant Digital Resource Drive", paymentRef: "pay_Don7812", date: "2026-10-15", taxExempt80G: true, active: true },
+          { id: "DON-02", receiptNo: "DON-2026-002", donorName: "Anonymous Well-Wisher", amountINR: 1000, cause: "Free Server Bandwidth Fund", paymentRef: "pay_Don9931", date: "2026-11-01", taxExempt80G: false, active: true },
+          { id: "DON-03", receiptNo: "DON-2026-003", donorName: "P. Priyadarshini", amountINR: 2500, cause: "Tribal District Study Circles", paymentRef: "pay_Don1045", date: "2026-11-05", taxExempt80G: true, active: true }
+        ]
+      };
+      localStorage.setItem('cso_donations_config', JSON.stringify(DEFAULT_DONATIONS));
+      this.logAudit("DONATIONS_RESET", "FINANCE", "Donations registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_DONATIONS));
+    },
+    exportDonationsManifest() {
+      const config = this.getDonationsConfig();
+      const filename = "donations_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("DONATIONS_EXPORTED", "DATA_EXPORT", "Donations manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-010: Coupons & Offers ---
+    getCouponsOffersConfig() {
+      const DEFAULT_COUPONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "CPN-01", code: "OAS2026", discountType: "Percentage", discountValue: 20, minCartValueINR: 499, usageLimit: 500, usedCount: 142, expiryDate: "2026-12-31", active: true },
+          { id: "CPN-02", code: "DIWALI50", discountType: "Flat INR", discountValue: 100, minCartValueINR: 299, usageLimit: 1000, usedCount: 890, expiryDate: "2026-11-15", active: true },
+          { id: "CPN-03", code: "FIRSTODISHA", discountType: "Percentage", discountValue: 15, minCartValueINR: 199, usageLimit: 2000, usedCount: 420, expiryDate: "2027-03-31", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_coupons_config', 'coupons', () => DEFAULT_COUPONS);
+    },
+    saveCouponsOffersConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.coupons = cfg.items || cfg.coupons || [];
+      cfg.items = cfg.coupons;
+      localStorage.setItem('cso_coupons_config', JSON.stringify(cfg));
+      this.logAudit("COUPONS_OFFERS_SAVED", "FINANCE", "Coupons & Offers registry updated with " + cfg.items.length + " entries.");
+    },
+    resetCouponsOffersConfig() {
+      const DEFAULT_COUPONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "CPN-01", code: "OAS2026", discountType: "Percentage", discountValue: 20, minCartValueINR: 499, usageLimit: 500, usedCount: 142, expiryDate: "2026-12-31", active: true },
+          { id: "CPN-02", code: "DIWALI50", discountType: "Flat INR", discountValue: 100, minCartValueINR: 299, usageLimit: 1000, usedCount: 890, expiryDate: "2026-11-15", active: true },
+          { id: "CPN-03", code: "FIRSTODISHA", discountType: "Percentage", discountValue: 15, minCartValueINR: 199, usageLimit: 2000, usedCount: 420, expiryDate: "2027-03-31", active: true }
+        ]
+      };
+      localStorage.setItem('cso_coupons_config', JSON.stringify(DEFAULT_COUPONS));
+      this.logAudit("COUPONS_OFFERS_RESET", "FINANCE", "Coupons & Offers registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_COUPONS));
+    },
+    exportCouponsOffersManifest() {
+      const config = this.getCouponsOffersConfig();
+      const filename = "coupons_offers_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("COUPONS_OFFERS_EXPORTED", "DATA_EXPORT", "Coupons & Offers manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-011: Refunds & Disputes ---
+    getRefundsDisputesConfig() {
+      const DEFAULT_REFUNDS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "REF-01", disputeId: "DISP-2026-08", originalOrderRef: "ORD-2026-501", userEmail: "user.issue@gmail.com", amountINR: 499, reason: "Duplicate charge via UPI network glitch", status: "Resolved", refundTxnId: "rfnd_OkLd9912", filedDate: "2026-11-02", active: true },
+          { id: "REF-02", disputeId: "DISP-2026-09", originalOrderRef: "ORD-2026-502", userEmail: "student.query@gmail.com", amountINR: 299, reason: "Accidental double checkout", status: "Under Review", refundTxnId: "Pending", filedDate: "2026-11-07", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_refunds_config', 'refunds', () => DEFAULT_REFUNDS);
+    },
+    saveRefundsDisputesConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.refunds = cfg.items || cfg.refunds || [];
+      cfg.items = cfg.refunds;
+      localStorage.setItem('cso_refunds_config', JSON.stringify(cfg));
+      this.logAudit("REFUNDS_DISPUTES_SAVED", "FINANCE", "Refunds & Disputes registry updated with " + cfg.items.length + " entries.");
+    },
+    resetRefundsDisputesConfig() {
+      const DEFAULT_REFUNDS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "REF-01", disputeId: "DISP-2026-08", originalOrderRef: "ORD-2026-501", userEmail: "user.issue@gmail.com", amountINR: 499, reason: "Duplicate charge via UPI network glitch", status: "Resolved", refundTxnId: "rfnd_OkLd9912", filedDate: "2026-11-02", active: true },
+          { id: "REF-02", disputeId: "DISP-2026-09", originalOrderRef: "ORD-2026-502", userEmail: "student.query@gmail.com", amountINR: 299, reason: "Accidental double checkout", status: "Under Review", refundTxnId: "Pending", filedDate: "2026-11-07", active: true }
+        ]
+      };
+      localStorage.setItem('cso_refunds_config', JSON.stringify(DEFAULT_REFUNDS));
+      this.logAudit("REFUNDS_DISPUTES_RESET", "FINANCE", "Refunds & Disputes registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_REFUNDS));
+    },
+    exportRefundsDisputesManifest() {
+      const config = this.getRefundsDisputesConfig();
+      const filename = "refunds_disputes_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("REFUNDS_DISPUTES_EXPORTED", "DATA_EXPORT", "Refunds & Disputes manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-012: Invoices & Receipts ---
+    getInvoicesReceiptsConfig() {
+      const DEFAULT_INVOICES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "INV-901", invoiceNumber: "CSO-INV-2026-901", customerName: "Subhashree Nayak", state: "Odisha (21)", taxableAmountINR: 422.88, gstAmountINR: 76.12, totalAmountINR: 499.00, invoiceDate: "2026-11-08", hsnSac: "998431", status: "Paid", active: true },
+          { id: "INV-902", invoiceNumber: "CSO-INV-2026-902", customerName: "Manoj Das", state: "Odisha (21)", taxableAmountINR: 253.39, gstAmountINR: 45.61, totalAmountINR: 299.00, invoiceDate: "2026-11-08", hsnSac: "998431", status: "Paid", active: true },
+          { id: "INV-903", invoiceNumber: "CSO-INV-2026-903", customerName: "Amitav Patnaik", state: "Odisha (21)", taxableAmountINR: 846.61, gstAmountINR: 152.39, totalAmountINR: 999.00, invoiceDate: "2026-11-09", hsnSac: "998431", status: "Paid", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_invoices_config', 'invoices', () => DEFAULT_INVOICES);
+    },
+    saveInvoicesReceiptsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.invoices = cfg.items || cfg.invoices || [];
+      cfg.items = cfg.invoices;
+      localStorage.setItem('cso_invoices_config', JSON.stringify(cfg));
+      this.logAudit("INVOICES_RECEIPTS_SAVED", "FINANCE", "Invoices & Receipts registry updated with " + cfg.items.length + " entries.");
+    },
+    resetInvoicesReceiptsConfig() {
+      const DEFAULT_INVOICES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "INV-901", invoiceNumber: "CSO-INV-2026-901", customerName: "Subhashree Nayak", state: "Odisha (21)", taxableAmountINR: 422.88, gstAmountINR: 76.12, totalAmountINR: 499.00, invoiceDate: "2026-11-08", hsnSac: "998431", status: "Paid", active: true },
+          { id: "INV-902", invoiceNumber: "CSO-INV-2026-902", customerName: "Manoj Das", state: "Odisha (21)", taxableAmountINR: 253.39, gstAmountINR: 45.61, totalAmountINR: 299.00, invoiceDate: "2026-11-08", hsnSac: "998431", status: "Paid", active: true },
+          { id: "INV-903", invoiceNumber: "CSO-INV-2026-903", customerName: "Amitav Patnaik", state: "Odisha (21)", taxableAmountINR: 846.61, gstAmountINR: 152.39, totalAmountINR: 999.00, invoiceDate: "2026-11-09", hsnSac: "998431", status: "Paid", active: true }
+        ]
+      };
+      localStorage.setItem('cso_invoices_config', JSON.stringify(DEFAULT_INVOICES));
+      this.logAudit("INVOICES_RECEIPTS_RESET", "FINANCE", "Invoices & Receipts registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_INVOICES));
+    },
+    exportInvoicesReceiptsManifest() {
+      const config = this.getInvoicesReceiptsConfig();
+      const filename = "invoices_receipts_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("INVOICES_RECEIPTS_EXPORTED", "DATA_EXPORT", "Invoices & Receipts manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 

@@ -520,6 +520,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-08-004') { renderOrdersWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-08-005') { renderPaidResourcesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-08-006') { renderProductsPricingWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-007') { renderSubscriptionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-008') { renderMembershipsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-009') { renderDonationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-010') { renderCouponsOffersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-011') { renderRefundsDisputesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-012') { renderInvoicesReceiptsWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -738,6 +744,18 @@ async function loadMasterNavigation() {
         renderPaidResourcesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-08-006') {
         renderProductsPricingWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-007') {
+        renderSubscriptionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-008') {
+        renderMembershipsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-009') {
+        renderDonationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-010') {
+        renderCouponsOffersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-011') {
+        renderRefundsDisputesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-012') {
+        renderInvoicesReceiptsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -32571,6 +32589,1495 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // --- MODULE 08-007: Subscriptions Workspace ---
+    function renderSubscriptionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSubscriptionsConfig();
+        let subscriptions = Array.isArray(config.subscriptions || config.items) ? [...(config.subscriptions || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeSubs = subscriptions.filter(s => s.active !== false);
+          const totalRecurringVolume = activeSubs.reduce((acc, s) => acc + (Number(s.amountINR) || 0), 0);
+          const autoRenewCount = activeSubs.filter(s => s.autoRenew === true).length;
+          const filtered = subscriptions.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.userEmail || '').toLowerCase().includes(term) || (s.planName || '').toLowerCase().includes(term) || (s.id || '').toLowerCase().includes(term) || (s.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">RECURRING REVENUE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">User Subscriptions &amp; Billing Cycles</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage recurring memberships, scheduled renewal dates, automated billing statuses, and cancellation lifecycle</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-sub" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Subscription
+                  </button>
+                  <button id="btn-inspect-sub" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-sub" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-sub" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Active Subscriptions</span>
+                  <p class="text-2xl font-bold text-white mt-1">${activeSubs.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Recurring Run-Rate (ARR/MRR)</span>
+                  <p class="text-2xl font-bold text-indigo-400 mt-1">₹${totalRecurringVolume.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Auto-Renew Enabled</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${autoRenewCount} <span class="text-xs text-slate-500 font-normal">(${Math.round((autoRenewCount / (activeSubs.length || 1)) * 100)}%)</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="sub-search-input" value="${searchTerm}" placeholder="Filter by email, plan, or ID..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${subscriptions.length} entries</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Sub ID</th>
+                        <th class="py-3 px-4">User Email</th>
+                        <th class="py-3 px-4">Plan Name</th>
+                        <th class="py-3 px-4">Interval</th>
+                        <th class="py-3 px-4">Amount</th>
+                        <th class="py-3 px-4">Auto-Renew</th>
+                        <th class="py-3 px-4">Next Billing</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="9" class="py-8 text-center text-slate-500 font-sans">No subscriptions found matching filter.</td>
+                        </tr>
+                      ` : filtered.map(s => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-indigo-400">${s.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans">${s.userEmail || ''}</td>
+                          <td class="py-3 px-4 text-slate-200 font-sans font-medium">${s.planName || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[11px]">${s.billingInterval || 'Monthly'}</span></td>
+                          <td class="py-3 px-4 text-white font-bold">₹${Number(s.amountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.autoRenew ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${s.autoRenew ? 'Enabled' : 'Manual'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${s.nextBillingDate || 'N/A'}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${s.status || 'Active'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${s.id}" class="btn-toggle-sub px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${s.autoRenew ? 'Disable Renew' : 'Enable Renew'}
+                              </button>
+                              <button data-id="${s.id}" class="btn-del-sub px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Cancel
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#sub-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#sub-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-sub');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Register New Subscription',
+                subtitle: 'Add an active or scheduled user plan subscription record',
+                fields: [
+                  { name: 'userEmail', label: 'Subscriber Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true },
+                  { name: 'planName', label: 'Subscription Plan Name', type: 'text', placeholder: 'e.g. OAS Prelims Pro Annual', required: true },
+                  { name: 'billingInterval', label: 'Billing Interval', type: 'select', options: [
+                    { value: 'Monthly', label: 'Monthly' },
+                    { value: 'Quarterly', label: 'Quarterly' },
+                    { value: 'Yearly', label: 'Yearly' }
+                  ], default: 'Yearly' },
+                  { name: 'amountINR', label: 'Renewal Amount (INR)', type: 'number', placeholder: '1499', required: true },
+                  { name: 'nextBillingDate', label: 'Next Billing Date', type: 'text', placeholder: 'YYYY-MM-DD', default: new Date(Date.now() + 30*86400000).toISOString().slice(0, 10), required: true },
+                  { name: 'status', label: 'Initial Status', type: 'select', options: [
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Trial', label: 'Trial' },
+                    { value: 'Past Due', label: 'Past Due' }
+                  ], default: 'Active' }
+                ],
+                onSubmit: (data) => {
+                  const newSub = {
+                    id: 'SUB-' + Math.floor(100 + Math.random() * 900),
+                    userEmail: data.userEmail.trim(),
+                    planName: data.planName.trim(),
+                    billingInterval: data.billingInterval,
+                    amountINR: Number(data.amountINR) || 0,
+                    autoRenew: true,
+                    nextBillingDate: data.nextBillingDate.trim(),
+                    status: data.status,
+                    active: true
+                  };
+                  subscriptions.unshift(newSub);
+                  config.subscriptions = subscriptions;
+                  config.items = subscriptions;
+                  store.saveSubscriptionsConfig(config);
+                  showToast('Subscription registered successfully.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle AutoRenew
+          container.querySelectorAll('.btn-toggle-sub').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = subscriptions.find(s => s.id === id);
+              if (item) {
+                item.autoRenew = !item.autoRenew;
+                config.subscriptions = subscriptions;
+                config.items = subscriptions;
+                store.saveSubscriptionsConfig(config);
+                showToast(`Subscription ${id} auto-renew set to ${item.autoRenew}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Cancel Subscription
+          container.querySelectorAll('.btn-del-sub').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Are you sure you want to cancel subscription ${id}?`)) {
+                subscriptions = subscriptions.filter(s => s.id !== id);
+                config.subscriptions = subscriptions;
+                config.items = subscriptions;
+                store.saveSubscriptionsConfig(config);
+                showToast(`Subscription ${id} cancelled.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-sub');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Subscriptions Registry Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-sub');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportSubscriptionsManifest();
+              showToast('Subscriptions manifest JSON downloaded.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-sub');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset subscriptions directory to factory defaults?')) {
+                config = store.resetSubscriptionsConfig();
+                subscriptions = Array.isArray(config.subscriptions || config.items) ? [...(config.subscriptions || config.items)] : [];
+                showToast('Subscriptions directory restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-008: Memberships Workspace ---
+    function renderMembershipsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getMembershipsConfig();
+        let memberships = Array.isArray(config.memberships || config.items) ? [...(config.memberships || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeTiers = memberships.filter(m => m.active !== false);
+          const totalMembers = activeTiers.reduce((acc, m) => acc + (Number(m.memberCount) || 0), 0);
+          const filtered = memberships.filter(m => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (m.tierName || '').toLowerCase().includes(term) || (m.tierCode || '').toLowerCase().includes(term) || (m.perks || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">PATRON CIRCLE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Membership Tiers &amp; Aspirant Clubs</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Configure exclusive patron tiers, annual fees, download privileges, and badge color accents</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-mem" class="px-3.5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Tier
+                  </button>
+                  <button id="btn-inspect-mem" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-mem" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-mem" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Membership Tiers</span>
+                  <p class="text-2xl font-bold text-white mt-1">${memberships.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Registered Members</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">${totalMembers.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Premium Patron Count</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${memberships.filter(m => m.annualFeeINR > 0).reduce((acc, m) => acc + (Number(m.memberCount) || 0), 0).toLocaleString('en-IN')}</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="mem-search-input" value="${searchTerm}" placeholder="Filter tiers by name, code, perks..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${memberships.length} tiers</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Tier Code</th>
+                        <th class="py-3 px-4">Tier Name</th>
+                        <th class="py-3 px-4">Annual Fee</th>
+                        <th class="py-3 px-4">Perks &amp; Privileges</th>
+                        <th class="py-3 px-4">Enrolled Members</th>
+                        <th class="py-3 px-4">Badge Accent</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No membership tiers matching filter.</td>
+                        </tr>
+                      ` : filtered.map(m => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-sky-400">${m.tierCode || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-semibold">${m.tierName || ''}</td>
+                          <td class="py-3 px-4 text-white font-bold">${m.annualFeeINR === 0 ? '<span class="text-emerald-400">FREE</span>' : '₹' + Number(m.annualFeeINR).toLocaleString('en-IN') + '/yr'}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${m.perks || ''}</td>
+                          <td class="py-3 px-4 text-slate-200">${Number(m.memberCount || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <div class="flex items-center gap-1.5">
+                              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background-color: ${m.badgeColor || '#38bdf8'}"></span>
+                              <span class="text-[11px] text-slate-400 font-mono">${m.badgeColor || '#38bdf8'}</span>
+                            </div>
+                          </td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${m.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${m.active !== false ? 'Active' : 'Archived'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${m.id}" class="btn-toggle-mem px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${m.active !== false ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button data-id="${m.id}" class="btn-del-mem px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#mem-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#mem-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-mem');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Add New Membership Tier',
+                subtitle: 'Configure patron club pricing, entitlement perks, and visual badge scheme',
+                fields: [
+                  { name: 'tierCode', label: 'Tier Code', type: 'text', placeholder: 'e.g. VIP-CIRCLE', required: true },
+                  { name: 'tierName', label: 'Membership Tier Name', type: 'text', placeholder: 'e.g. District Circle Patron', required: true },
+                  { name: 'annualFeeINR', label: 'Annual Fee (INR, 0 for free)', type: 'number', placeholder: '799', required: true },
+                  { name: 'perks', label: 'Perks & Entitlements', type: 'text', placeholder: 'e.g. Full PYQ vault downloads + live test ranking', required: true },
+                  { name: 'badgeColor', label: 'Badge Hex Color', type: 'text', placeholder: '#38bdf8', default: '#38bdf8', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newMem = {
+                    id: 'MEM-0' + (memberships.length + 1),
+                    tierCode: data.tierCode.trim().toUpperCase(),
+                    tierName: data.tierName.trim(),
+                    annualFeeINR: Number(data.annualFeeINR) || 0,
+                    perks: data.perks.trim(),
+                    memberCount: 0,
+                    badgeColor: data.badgeColor.trim() || '#38bdf8',
+                    active: true
+                  };
+                  memberships.push(newMem);
+                  config.memberships = memberships;
+                  config.items = memberships;
+                  store.saveMembershipsConfig(config);
+                  showToast('Membership tier created.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle Active
+          container.querySelectorAll('.btn-toggle-mem').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = memberships.find(m => m.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.memberships = memberships;
+                config.items = memberships;
+                store.saveMembershipsConfig(config);
+                showToast(`Tier ${id} status toggled.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete Tier
+          container.querySelectorAll('.btn-del-mem').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Are you sure you want to delete tier ${id}?`)) {
+                memberships = memberships.filter(m => m.id !== id);
+                config.memberships = memberships;
+                config.items = memberships;
+                store.saveMembershipsConfig(config);
+                showToast(`Tier ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-mem');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Memberships Tier Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-mem');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportMembershipsManifest();
+              showToast('Memberships manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-mem');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset membership tiers to factory defaults?')) {
+                config = store.resetMembershipsConfig();
+                memberships = Array.isArray(config.memberships || config.items) ? [...(config.memberships || config.items)] : [];
+                showToast('Membership tiers restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-009: Donations Workspace ---
+    function renderDonationsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getDonationsConfig();
+        let donations = Array.isArray(config.donations || config.items) ? [...(config.donations || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalDonationsINR = donations.reduce((acc, d) => acc + (Number(d.amountINR) || 0), 0);
+          const taxExemptCount = donations.filter(d => d.taxExempt80G === true).length;
+          const filtered = donations.filter(d => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (d.donorName || '').toLowerCase().includes(term) || (d.receiptNo || '').toLowerCase().includes(term) || (d.cause || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">PHILANTHROPY &amp; PATRONAGE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Philanthropic Donations &amp; Grants</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track public welfare grants, rural aspirant scholarship funds, Section 80G receipts, and donor acknowledgements</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-don" class="px-3.5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Record Donation
+                  </button>
+                  <button id="btn-inspect-don" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-don" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-don" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Donations Received</span>
+                  <p class="text-2xl font-bold text-white mt-1">₹${totalDonationsINR.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Donor Count</span>
+                  <p class="text-2xl font-bold text-rose-400 mt-1">${donations.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">80G Tax-Exempt Receipts</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${taxExemptCount} <span class="text-xs text-slate-500 font-normal">issued</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="don-search-input" value="${searchTerm}" placeholder="Search donor name, receipt #, or cause..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${donations.length} records</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Receipt No</th>
+                        <th class="py-3 px-4">Donor Name</th>
+                        <th class="py-3 px-4">Donation Cause</th>
+                        <th class="py-3 px-4">Amount</th>
+                        <th class="py-3 px-4">Payment Ref</th>
+                        <th class="py-3 px-4">80G Status</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No donation records found.</td>
+                        </tr>
+                      ` : filtered.map(d => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-rose-400">${d.receiptNo || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${d.donorName || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${d.cause || ''}</td>
+                          <td class="py-3 px-4 text-emerald-400 font-bold">₹${Number(d.amountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${d.paymentRef || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${d.taxExempt80G ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${d.taxExempt80G ? '80G Eligible' : 'Standard'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${d.date || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <button data-id="${d.id}" class="btn-del-don px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#don-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#don-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Record Donation Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-don');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Record Philanthropic Grant / Donation',
+                subtitle: 'Log an inbound contribution to public study funds with 80G tax certification',
+                fields: [
+                  { name: 'donorName', label: 'Donor / Institution Name', type: 'text', placeholder: 'e.g. R. K. Mohapatra', required: true },
+                  { name: 'amountINR', label: 'Contribution Amount (INR)', type: 'number', placeholder: '5000', required: true },
+                  { name: 'cause', label: 'Designated Cause / Fund', type: 'text', placeholder: 'e.g. Rural Aspirant Digital Resource Drive', required: true },
+                  { name: 'paymentRef', label: 'Payment / UTR Reference', type: 'text', placeholder: 'pay_DonXXXX', required: true },
+                  { name: 'taxExempt80G', label: '80G Tax Exemption Receipt Required', type: 'select', options: [
+                    { value: 'true', label: 'Yes - 80G Eligible' },
+                    { value: 'false', label: 'No - Standard Contribution' }
+                  ], default: 'true' }
+                ],
+                onSubmit: (data) => {
+                  const newDon = {
+                    id: 'DON-0' + (donations.length + 1),
+                    receiptNo: 'DON-2026-00' + (donations.length + 1),
+                    donorName: data.donorName.trim(),
+                    amountINR: Number(data.amountINR) || 0,
+                    cause: data.cause.trim(),
+                    paymentRef: data.paymentRef.trim(),
+                    date: new Date().toISOString().slice(0, 10),
+                    taxExempt80G: data.taxExempt80G === 'true',
+                    active: true
+                  };
+                  donations.unshift(newDon);
+                  config.donations = donations;
+                  config.items = donations;
+                  store.saveDonationsConfig(config);
+                  showToast('Philanthropic donation logged.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Delete Donation
+          container.querySelectorAll('.btn-del-don').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove donation record ${id}?`)) {
+                donations = donations.filter(d => d.id !== id);
+                config.donations = donations;
+                config.items = donations;
+                store.saveDonationsConfig(config);
+                showToast(`Donation ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-don');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Donations Registry Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-don');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportDonationsManifest();
+              showToast('Donations ledger JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-don');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset donations ledger to factory defaults?')) {
+                config = store.resetDonationsConfig();
+                donations = Array.isArray(config.donations || config.items) ? [...(config.donations || config.items)] : [];
+                showToast('Donations ledger restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-010: Coupons & Offers Workspace ---
+    function renderCouponsOffersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCouponsOffersConfig();
+        let coupons = Array.isArray(config.coupons || config.items) ? [...(config.coupons || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCoupons = coupons.filter(c => c.active !== false);
+          const totalRedeemed = coupons.reduce((acc, c) => acc + (Number(c.usedCount) || 0), 0);
+          const filtered = coupons.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.code || '').toLowerCase().includes(term) || (c.discountType || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">DISCOUNTS &amp; PROMOS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Coupons, Vouchers &amp; Special Offers</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define promo codes, flat vs percentage discounts, minimum cart limits, usage caps, and expirations</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-cpn" class="px-3.5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Coupon
+                  </button>
+                  <button id="btn-inspect-cpn" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-cpn" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-cpn" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Coupon Codes</span>
+                  <p class="text-2xl font-bold text-white mt-1">${activeCoupons.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Redemptions</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${totalRedeemed.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Campaign Value</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">High Traction</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="cpn-search-input" value="${searchTerm}" placeholder="Search coupon code or discount type..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${coupons.length} coupons</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Coupon Code</th>
+                        <th class="py-3 px-4">Discount Type</th>
+                        <th class="py-3 px-4">Value</th>
+                        <th class="py-3 px-4">Min Cart</th>
+                        <th class="py-3 px-4">Usage / Cap</th>
+                        <th class="py-3 px-4">Expiry Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No coupons found matching search filter.</td>
+                        </tr>
+                      ` : filtered.map(c => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-amber-400 tracking-wider">${c.code || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${c.discountType || ''}</td>
+                          <td class="py-3 px-4 text-white font-bold">${c.discountType === 'Percentage' ? c.discountValue + '%' : '₹' + c.discountValue}</td>
+                          <td class="py-3 px-4 text-slate-400">₹${c.minCartValueINR || 0}</td>
+                          <td class="py-3 px-4 text-slate-300">${c.usedCount || 0} / <span class="text-slate-500">${c.usageLimit || '∞'}</span></td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${c.expiryDate || 'Never'}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${c.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${c.active !== false ? 'Active' : 'Expired / Paused'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${c.id}" class="btn-toggle-cpn px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${c.active !== false ? 'Pause' : 'Activate'}
+                              </button>
+                              <button data-id="${c.id}" class="btn-del-cpn px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#cpn-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#cpn-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-cpn');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Create Promo Code or Discount Coupon',
+                subtitle: 'Specify code string, redemption limits, minimum order cart size, and validity',
+                fields: [
+                  { name: 'code', label: 'Promo Code (Uppercase)', type: 'text', placeholder: 'e.g. SUMMEROAS', required: true },
+                  { name: 'discountType', label: 'Discount Mechanism', type: 'select', options: [
+                    { value: 'Percentage', label: 'Percentage (%) Off' },
+                    { value: 'Flat INR', label: 'Flat INR (₹) Off' }
+                  ], default: 'Percentage' },
+                  { name: 'discountValue', label: 'Discount Value (Percent or Amount)', type: 'number', placeholder: '20', required: true },
+                  { name: 'minCartValueINR', label: 'Minimum Cart Value (INR)', type: 'number', placeholder: '499', default: '299', required: true },
+                  { name: 'usageLimit', label: 'Max Redemptions Limit', type: 'number', placeholder: '500', default: '500', required: true },
+                  { name: 'expiryDate', label: 'Expiry Date', type: 'text', placeholder: 'YYYY-MM-DD', default: '2027-03-31', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newCpn = {
+                    id: 'CPN-0' + (coupons.length + 1),
+                    code: data.code.trim().toUpperCase(),
+                    discountType: data.discountType,
+                    discountValue: Number(data.discountValue) || 0,
+                    minCartValueINR: Number(data.minCartValueINR) || 0,
+                    usageLimit: Number(data.usageLimit) || 100,
+                    usedCount: 0,
+                    expiryDate: data.expiryDate.trim(),
+                    active: true
+                  };
+                  coupons.unshift(newCpn);
+                  config.coupons = coupons;
+                  config.items = coupons;
+                  store.saveCouponsOffersConfig(config);
+                  showToast(`Promo code ${newCpn.code} active.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle Active
+          container.querySelectorAll('.btn-toggle-cpn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = coupons.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.coupons = coupons;
+                config.items = coupons;
+                store.saveCouponsOffersConfig(config);
+                showToast(`Coupon ${item.code} state toggled.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-cpn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove coupon ${id}?`)) {
+                coupons = coupons.filter(c => c.id !== id);
+                config.coupons = coupons;
+                config.items = coupons;
+                store.saveCouponsOffersConfig(config);
+                showToast(`Coupon ${id} deleted.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-cpn');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Coupons & Offers Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-cpn');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportCouponsOffersManifest();
+              showToast('Coupons & Offers JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-cpn');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset coupon catalog to factory defaults?')) {
+                config = store.resetCouponsOffersConfig();
+                coupons = Array.isArray(config.coupons || config.items) ? [...(config.coupons || config.items)] : [];
+                showToast('Coupons catalog restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-011: Refunds & Disputes Workspace ---
+    function renderRefundsDisputesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getRefundsDisputesConfig();
+        let refunds = Array.isArray(config.refunds || config.items) ? [...(config.refunds || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const resolvedCount = refunds.filter(r => r.status === 'Resolved').length;
+          const pendingCount = refunds.filter(r => r.status !== 'Resolved').length;
+          const totalDisputeINR = refunds.reduce((acc, r) => acc + (Number(r.amountINR) || 0), 0);
+          const filtered = refunds.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.disputeId || '').toLowerCase().includes(term) || (r.userEmail || '').toLowerCase().includes(term) || (r.originalOrderRef || '').toLowerCase().includes(term) || (r.reason || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">RECONCILIATION</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Refunds, Chargebacks &amp; Dispute Cases</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Review duplicate payment disputes, process UPI/Card charge reversals, and update case settlement states</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-ref" class="px-3.5 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    File Dispute Case
+                  </button>
+                  <button id="btn-inspect-ref" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-ref" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-ref" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Disputed Volume</span>
+                  <p class="text-2xl font-bold text-white mt-1">₹${totalDisputeINR.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Resolved &amp; Refunded</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${resolvedCount} <span class="text-xs text-slate-500 font-normal">cases</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Open / In Review</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${pendingCount} <span class="text-xs text-slate-500 font-normal">cases</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="ref-search-input" value="${searchTerm}" placeholder="Search dispute ID, user email, order ref..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${refunds.length} cases</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Dispute ID</th>
+                        <th class="py-3 px-4">Order Ref</th>
+                        <th class="py-3 px-4">User Email</th>
+                        <th class="py-3 px-4">Dispute Amount</th>
+                        <th class="py-3 px-4">Reason</th>
+                        <th class="py-3 px-4">Refund Txn</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No dispute cases found.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-orange-400">${r.disputeId || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${r.originalOrderRef || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans">${r.userEmail || ''}</td>
+                          <td class="py-3 px-4 text-white font-bold">₹${Number(r.amountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${r.reason || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${r.refundTxnId || 'Pending'}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${r.status || 'Under Review'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${r.status !== 'Resolved' ? `
+                                <button data-id="${r.id}" class="btn-resolve-ref px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Approve Refund
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Settled</span>
+                              `}
+                              <button data-id="${r.id}" class="btn-del-ref px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Dismiss
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#ref-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#ref-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // File Dispute Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-ref');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Open Inbound Refund / Dispute Case',
+                subtitle: 'Record an aspirant charge dispute or accidental double payment claim',
+                fields: [
+                  { name: 'originalOrderRef', label: 'Original Order Number', type: 'text', placeholder: 'e.g. ORD-2026-505', required: true },
+                  { name: 'userEmail', label: 'Customer / Aspirant Email', type: 'text', placeholder: 'e.g. user@gmail.com', required: true },
+                  { name: 'amountINR', label: 'Claimed Dispute Amount (INR)', type: 'number', placeholder: '499', required: true },
+                  { name: 'reason', label: 'Dispute Reason / Clarification', type: 'text', placeholder: 'e.g. Duplicate debit while payment pending', required: true },
+                  { name: 'status', label: 'Initial Workflow Status', type: 'select', options: [
+                    { value: 'Under Review', label: 'Under Review' },
+                    { value: 'Pending Gateway Settlement', label: 'Pending Gateway Settlement' },
+                    { value: 'Resolved', label: 'Resolved (Immediate Payout)' }
+                  ], default: 'Under Review' }
+                ],
+                onSubmit: (data) => {
+                  const newRef = {
+                    id: 'REF-0' + (refunds.length + 1),
+                    disputeId: 'DISP-2026-0' + (refunds.length + 10),
+                    originalOrderRef: data.originalOrderRef.trim(),
+                    userEmail: data.userEmail.trim(),
+                    amountINR: Number(data.amountINR) || 0,
+                    reason: data.reason.trim(),
+                    status: data.status,
+                    refundTxnId: data.status === 'Resolved' ? 'rfnd_' + Math.random().toString(36).substr(2, 8) : 'Pending',
+                    filedDate: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  refunds.unshift(newRef);
+                  config.refunds = refunds;
+                  config.items = refunds;
+                  store.saveRefundsDisputesConfig(config);
+                  showToast(`Dispute case ${newRef.disputeId} registered.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Approve Refund
+          container.querySelectorAll('.btn-resolve-ref').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = refunds.find(r => r.id === id);
+              if (item) {
+                item.status = 'Resolved';
+                item.refundTxnId = 'rfnd_' + Math.random().toString(36).substr(2, 9);
+                config.refunds = refunds;
+                config.items = refunds;
+                store.saveRefundsDisputesConfig(config);
+                showToast(`Refund approved. Generated payout ref ${item.refundTxnId}.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Dismiss case
+          container.querySelectorAll('.btn-del-ref').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Dismiss or archive dispute case ${id}?`)) {
+                refunds = refunds.filter(r => r.id !== id);
+                config.refunds = refunds;
+                config.items = refunds;
+                store.saveRefundsDisputesConfig(config);
+                showToast(`Dispute case ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-ref');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Refunds & Disputes Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-ref');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportRefundsDisputesManifest();
+              showToast('Disputes ledger JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-ref');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset disputes ledger to factory defaults?')) {
+                config = store.resetRefundsDisputesConfig();
+                refunds = Array.isArray(config.refunds || config.items) ? [...(config.refunds || config.items)] : [];
+                showToast('Disputes ledger restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-012: Invoices & Receipts Workspace ---
+    function renderInvoicesReceiptsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getInvoicesReceiptsConfig();
+        let invoices = Array.isArray(config.invoices || config.items) ? [...(config.invoices || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalInvoicedINR = invoices.reduce((acc, inv) => acc + (Number(inv.totalAmountINR) || 0), 0);
+          const totalTaxCollectedINR = invoices.reduce((acc, inv) => acc + (Number(inv.gstAmountINR) || 0), 0);
+          const filtered = invoices.filter(inv => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (inv.invoiceNumber || '').toLowerCase().includes(term) || (inv.customerName || '').toLowerCase().includes(term) || (inv.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">GST TAX AUDIT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-012</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Tax Invoices, Bills &amp; Receipts</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Compliant B2C/B2B tax invoices with SAC/HSN codes, state jurisdiction, 18% GST split, and PDF records</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-inv" class="px-3.5 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Generate Invoice
+                  </button>
+                  <button id="btn-inspect-inv" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-inv" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-inv" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Invoiced Gross</span>
+                  <p class="text-2xl font-bold text-white mt-1">₹${totalInvoicedINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total GST Collected (18%)</span>
+                  <p class="text-2xl font-bold text-violet-400 mt-1">₹${totalTaxCollectedINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Invoices Dispatched</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${invoices.length} <span class="text-xs text-slate-500 font-normal">tax receipts</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="inv-search-input" value="${searchTerm}" placeholder="Search invoice number, customer name, status..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${invoices.length} invoices</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Invoice #</th>
+                        <th class="py-3 px-4">Customer</th>
+                        <th class="py-3 px-4">Jurisdiction</th>
+                        <th class="py-3 px-4">HSN / SAC</th>
+                        <th class="py-3 px-4">Taxable Amt</th>
+                        <th class="py-3 px-4">GST (18%)</th>
+                        <th class="py-3 px-4">Total Billed</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="10" class="py-8 text-center text-slate-500 font-sans">No invoices found.</td>
+                        </tr>
+                      ` : filtered.map(inv => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-violet-400">${inv.invoiceNumber || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${inv.customerName || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400">${inv.state || 'Odisha (21)'}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${inv.hsnSac || '998431'}</td>
+                          <td class="py-3 px-4 text-slate-300">₹${Number(inv.taxableAmountINR || 0).toFixed(2)}</td>
+                          <td class="py-3 px-4 text-violet-300">₹${Number(inv.gstAmountINR || 0).toFixed(2)}</td>
+                          <td class="py-3 px-4 text-white font-bold">₹${Number(inv.totalAmountINR || 0).toFixed(2)}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${inv.invoiceDate || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${inv.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${inv.status || 'Paid'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-num="${inv.invoiceNumber}" class="btn-print-inv px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer">
+                                View
+                              </button>
+                              <button data-id="${inv.id}" class="btn-del-inv px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition cursor-pointer">
+                                Void
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#inv-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#inv-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Generate Invoice Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-inv');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Generate GST Tax Invoice',
+                subtitle: 'Issue a tax compliant bill with automatic SGST/CGST split for Odisha state',
+                fields: [
+                  { name: 'customerName', label: 'Customer / Aspirant Name', type: 'text', placeholder: 'e.g. Subhashree Nayak', required: true },
+                  { name: 'totalAmountINR', label: 'Gross Billed Amount (INR)', type: 'number', placeholder: '499.00', required: true },
+                  { name: 'state', label: 'Place of Supply', type: 'text', placeholder: 'Odisha (21)', default: 'Odisha (21)', required: true },
+                  { name: 'hsnSac', label: 'HSN / SAC Code', type: 'text', placeholder: '998431', default: '998431', required: true },
+                  { name: 'status', label: 'Payment Status', type: 'select', options: [
+                    { value: 'Paid', label: 'Paid' },
+                    { value: 'Issued Unpaid', label: 'Issued Unpaid' }
+                  ], default: 'Paid' }
+                ],
+                onSubmit: (data) => {
+                  const gross = Number(data.totalAmountINR) || 0;
+                  const taxable = +(gross / 1.18).toFixed(2);
+                  const gst = +(gross - taxable).toFixed(2);
+                  const newInv = {
+                    id: 'INV-' + Math.floor(900 + Math.random() * 90),
+                    invoiceNumber: 'CSO-INV-2026-' + Math.floor(910 + Math.random() * 80),
+                    customerName: data.customerName.trim(),
+                    state: data.state.trim(),
+                    taxableAmountINR: taxable,
+                    gstAmountINR: gst,
+                    totalAmountINR: gross,
+                    invoiceDate: new Date().toISOString().slice(0, 10),
+                    hsnSac: data.hsnSac.trim() || '998431',
+                    status: data.status,
+                    active: true
+                  };
+                  invoices.unshift(newInv);
+                  config.invoices = invoices;
+                  config.items = invoices;
+                  store.saveInvoicesReceiptsConfig(config);
+                  showToast(`Invoice ${newInv.invoiceNumber} created.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // View Receipt details
+          container.querySelectorAll('.btn-print-inv').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const num = e.currentTarget.getAttribute('data-num');
+              const inv = invoices.find(i => i.invoiceNumber === num);
+              if (inv) {
+                alert(`TAX INVOICE DETAILS\n\nNumber: ${inv.invoiceNumber}\nRecipient: ${inv.customerName}\nPlace of Supply: ${inv.state}\nHSN/SAC: ${inv.hsnSac}\nTaxable Value: ₹${inv.taxableAmountINR}\nGST (18%): ₹${inv.gstAmountINR}\nTotal Amount: ₹${inv.totalAmountINR}\nStatus: ${inv.status}\nDate: ${inv.invoiceDate}`);
+              }
+            });
+          });
+
+          // Void Invoice
+          container.querySelectorAll('.btn-del-inv').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Void or cancel tax invoice ${id}?`)) {
+                invoices = invoices.filter(i => i.id !== id);
+                config.invoices = invoices;
+                config.items = invoices;
+                store.saveInvoicesReceiptsConfig(config);
+                showToast(`Invoice ${id} voided.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-inv');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Invoices & Receipts Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-inv');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportInvoicesReceiptsManifest();
+              showToast('Invoices register JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-inv');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset invoice register to factory defaults?')) {
+                config = store.resetInvoicesReceiptsConfig();
+                invoices = Array.isArray(config.invoices || config.items) ? [...(config.invoices || config.items)] : [];
+                showToast('Invoices register restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
     /**
