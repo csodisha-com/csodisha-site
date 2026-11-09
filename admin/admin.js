@@ -285,6 +285,55 @@ async function loadMasterNavigation() {
     /**
      * VIEW 1: Overview Command Centre (module-01-001)
      */
+    function getAuditEvents() {
+      try {
+        const raw = localStorage.getItem('cso_super_audit');
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list) && list.length > 0) return list;
+        }
+      } catch (_) {}
+      if (window.CSOSuperStore && typeof window.CSOSuperStore.getAudit === 'function') {
+        try {
+          return window.CSOSuperStore.getAudit();
+        } catch (_) {}
+      }
+      return [
+        { eventType: 'AUTH_SUCCESS', actor: 'admin@csodisha.com', details: 'Super admin authentication completed (SHA-256 Verified Session)', timestamp: new Date(Date.now() - 120000).toISOString(), ip: '103.21.124.9' },
+        { eventType: 'EDGE_DEPLOY', actor: 'system', details: 'Cloudflare Pages deployment published to csodisha.com', timestamp: new Date(Date.now() - 840000).toISOString(), ip: 'SIN-Edge' },
+        { eventType: 'INQUIRY_RECEIVED', actor: 'citizen', details: 'New student inquiry received: B.Ed Choice Filling Guidance', timestamp: new Date(Date.now() - 2880000).toISOString(), ip: '103.145.74.22' }
+      ];
+    }
+
+    function renderAuditEventsHtml(limit = 5) {
+      const logs = getAuditEvents().slice(0, limit);
+      return logs.map(item => {
+        const type = (item.eventType || 'INFO').toUpperCase();
+        let badgeColor = 'bg-brand-emerald/10 text-brand-emerald';
+        let shortType = 'AUTH';
+        if (type.includes('FAIL') || type.includes('LOCKOUT') || type.includes('REVOKE')) {
+          badgeColor = 'bg-red-500/10 text-brand-crimson';
+          shortType = 'WARN';
+        } else if (type.includes('EDGE') || type.includes('PURGE')) {
+          badgeColor = 'bg-cyan-500/10 text-cyan-400';
+          shortType = 'EDGE';
+        } else if (type.includes('INQ')) {
+          badgeColor = 'bg-amber-500/10 text-amber-400';
+          shortType = 'INQ';
+        }
+        const timeAgo = item.timestamp ? (new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' &bull; ' + (item.ip || '103.21.124.9')) : 'Just now';
+        return `
+          <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
+            <span class="text-[10px] ${badgeColor} px-1.5 py-0.5 rounded mt-0.5 font-bold">${shortType}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-slate-200 font-sans truncate">${item.details || item.eventType}</p>
+              <span class="text-[10px] text-slate-500">${timeAgo} &bull; ${item.actor || 'admin@csodisha.com'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderOverviewWorkspace() {
       dom.moduleHeaderActions.innerHTML = `
         <button id="btnExportOverview" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
@@ -419,27 +468,7 @@ async function loadMasterNavigation() {
               <span class="text-[11px] font-mono text-brand-emerald">Live UTC / IST</span>
             </h3>
             <div class="space-y-3 font-mono text-xs">
-              <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
-                <span class="text-[10px] text-brand-emerald px-1.5 py-0.5 rounded bg-brand-emerald/10 mt-0.5 font-bold">AUTH</span>
-                <div class="flex-1">
-                  <p class="text-slate-200 font-sans">Super admin authentication completed from 103.21.124.9 (Bhubaneswar)</p>
-                  <span class="text-[10px] text-slate-500">2 mins ago &bull; SHA-256 Verified Session</span>
-                </div>
-              </div>
-              <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
-                <span class="text-[10px] text-cyan-400 px-1.5 py-0.5 rounded bg-cyan-500/10 mt-0.5 font-bold">EDGE</span>
-                <div class="flex-1">
-                  <p class="text-slate-200 font-sans">Cloudflare Pages deployment 7326716 published to csodisha.com</p>
-                  <span class="text-[10px] text-slate-500">14 mins ago &bull; 0 broken links &bull; HTTP/2 200 OK</span>
-                </div>
-              </div>
-              <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
-                <span class="text-[10px] text-amber-400 px-1.5 py-0.5 rounded bg-amber-500/10 mt-0.5 font-bold">INQ</span>
-                <div class="flex-1">
-                  <p class="text-slate-200 font-sans">New student inquiry received: B.Ed Choice Filling Guidance</p>
-                  <span class="text-[10px] text-slate-500">48 mins ago &bull; Priyanka Rout (Sambalpur)</span>
-                </div>
-              </div>
+              ${renderAuditEventsHtml(4)}
             </div>
           </div>
 
@@ -1042,6 +1071,14 @@ async function loadMasterNavigation() {
                 </div>
                 <span class="px-2 py-0.5 rounded text-[10px] bg-brand-emerald/20 text-brand-emerald font-bold">ACTIVE</span>
               </div>
+            </div>
+
+            <h3 class="font-bold text-white text-sm mt-6 mb-3 flex items-center justify-between">
+              <span>Security & Authentication Audit Trail (Folder 16)</span>
+              <span class="text-[11px] font-mono text-brand-emerald">cso_super_audit</span>
+            </h3>
+            <div class="space-y-2 mb-6 font-mono text-xs max-h-56 overflow-y-auto">
+              ${renderAuditEventsHtml(6)}
             </div>
 
             <h3 class="font-bold text-white text-sm mt-6 mb-3">Edge Firewall & IP Restrictions</h3>
