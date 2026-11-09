@@ -514,6 +514,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-07-013') { renderDuplicateDetectionWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-07-014') { renderBrokenFileLinksWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-07-015') { renderMediaOptimizationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-001') { renderPaymentOverviewWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-002') { renderPaymentGatewaySettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-003') { renderTransactionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-004') { renderOrdersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-005') { renderPaidResourcesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-006') { renderProductsPricingWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -720,6 +726,18 @@ async function loadMasterNavigation() {
         renderBrokenFileLinksWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-07-015') {
         renderMediaOptimizationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-001') {
+        renderPaymentOverviewWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-002') {
+        renderPaymentGatewaySettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-003') {
+        renderTransactionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-004') {
+        renderOrdersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-005') {
+        renderPaidResourcesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-006') {
+        renderProductsPricingWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -31102,6 +31120,1457 @@ async function loadMasterNavigation() {
     }
 
 
+
+
+
+    // =========================================================================
+    // FOLDER 08: PAYMENTS & FINANCE (BATCH 1: MODULES 08-001 THROUGH 08-006)
+    // =========================================================================
+
+    /**
+     * MODULE 08-001: Payment Overview
+     */
+    function renderPaymentOverviewWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPaymentOverviewConfig();
+        let channels = Array.isArray(config.channels || config.items) ? [...(config.channels || config.items)] : [];
+        let summary = config.summary || { totalVolumeINR: 482500, successfulCount: 1420, refundCount: 12, netRevenueINR: 476100 };
+        let searchTerm = '';
+
+        function render() {
+          const activeChannels = channels.filter(c => c.active !== false);
+          const totalVol = channels.reduce((sum, c) => sum + (Number(c.volumeINR) || 0), 0);
+          const totalTx = channels.reduce((sum, c) => sum + (Number(c.txCount) || 0), 0);
+          const filtered = channels.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.channel || '').toLowerCase().includes(term) || (c.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">PAYMENTS &amp; REVENUE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Payment Overview &amp; Revenue Telemetry</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time gateway settlements, multi-channel processing health, and net collections</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-channel" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Channel
+                  </button>
+                  <button id="btn-inspect-overview" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-overview" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-overview" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Gross Collections (INR)</span>
+                  <p class="text-2xl font-bold text-white mt-1">₹${Number(summary.totalVolumeINR || totalVol).toLocaleString('en-IN')}</p>
+                  <div class="text-[11px] text-emerald-400 mt-1">Live Settlements Synchronized</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Successful Transactions</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${summary.successfulCount || totalTx}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Overall 98.9% success rate</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Refunds / Disputes</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${summary.refundCount || 12}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Chargeback ratio &lt; 0.2%</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Processing Channels</span>
+                  <p class="text-2xl font-bold text-blue-400 mt-1">${activeChannels.length} / ${channels.length}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Multi-rail failover active</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <input type="text" id="overview-search" placeholder="Search payment channels, health status..." value="${escapeHtml(searchTerm)}" class="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Channel Name</th>
+                        <th class="px-4 py-3">Volume (INR)</th>
+                        <th class="px-4 py-3">Tx Count</th>
+                        <th class="px-4 py-3">Success Rate</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No payment channels registered. Click "New Channel" to add.</td></tr>
+                      ` : filtered.map((c, i) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="px-4 py-3">
+                            <div class="font-semibold text-white">${escapeHtml(c.channel)}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(c.id)}</div>
+                          </td>
+                          <td class="px-4 py-3 font-semibold text-emerald-400">₹${Number(c.volumeINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="px-4 py-3 font-mono">${c.txCount || 0}</td>
+                          <td class="px-4 py-3 font-semibold text-blue-400">${escapeHtml(c.successRate || 'N/A')}</td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${c.status === 'Healthy' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${escapeHtml(c.status || 'Active')}</span>
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="w-2 h-2 rounded-full inline-block ${c.active !== false ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-slate-600'}"></span>
+                          </td>
+                          <td class="px-4 py-3 text-right space-x-1">
+                            <button data-idx="${i}" class="btn-edit-channel px-2.5 py-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">Edit</button>
+                            <button data-idx="${i}" class="btn-del-channel px-2.5 py-1 text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 rounded-lg transition cursor-pointer">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind events
+          container.querySelector('#overview-search').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btn-add-channel').addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Payment Processing Channel',
+              subtitle: 'Register payment gateway rail or settlement channel',
+              fields: [
+                { key: 'channel', label: 'Channel Name', placeholder: 'e.g. Razorpay Standard, Cashfree UPI Direct', required: true },
+                { key: 'volumeINR', label: 'Processed Volume (INR)', type: 'number', defaultValue: 0, required: true },
+                { key: 'txCount', label: 'Transaction Count', type: 'number', defaultValue: 0, required: true },
+                { key: 'successRate', label: 'Success Rate', placeholder: 'e.g. 99.2%', defaultValue: '99.0%', required: true },
+                { key: 'status', label: 'Health Status', type: 'select', options: ['Healthy', 'Degraded', 'Maintenance', 'Offline'], defaultValue: 'Healthy' }
+              ],
+              onSave: (data) => {
+                const newId = 'METRIC-' + String(channels.length + 1).padStart(2, '0');
+                channels.push({
+                  id: newId,
+                  channel: data.channel.trim(),
+                  volumeINR: Number(data.volumeINR) || 0,
+                  txCount: Number(data.txCount) || 0,
+                  successRate: data.successRate.trim(),
+                  status: data.status,
+                  active: true
+                });
+                config.channels = channels;
+                config.items = channels;
+                store.savePaymentOverviewConfig(config);
+                showToast(`Channel "${data.channel}" added.`, 'success');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-channel').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = channels[idx];
+              openModuleCreateModal({
+                title: 'Payment Processing Channel',
+                subtitle: `Editing channel "${item.channel}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'channel', label: 'Channel Name', required: true },
+                  { key: 'volumeINR', label: 'Processed Volume (INR)', type: 'number', required: true },
+                  { key: 'txCount', label: 'Transaction Count', type: 'number', required: true },
+                  { key: 'successRate', label: 'Success Rate', required: true },
+                  { key: 'status', label: 'Health Status', type: 'select', options: ['Healthy', 'Degraded', 'Maintenance', 'Offline'] }
+                ],
+                onSave: (data) => {
+                  item.channel = data.channel.trim();
+                  item.volumeINR = Number(data.volumeINR) || 0;
+                  item.txCount = Number(data.txCount) || 0;
+                  item.successRate = data.successRate.trim();
+                  item.status = data.status;
+
+                  config.channels = channels;
+                  config.items = channels;
+                  store.savePaymentOverviewConfig(config);
+                  showToast(`Channel "${item.channel}" updated.`, 'success');
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('.btn-del-channel').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = channels[idx];
+              if (confirm(`Remove channel "${item.channel}"?`)) {
+                channels.splice(idx, 1);
+                config.channels = channels;
+                config.items = channels;
+                store.savePaymentOverviewConfig(config);
+                showToast('Channel removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#btn-inspect-overview').addEventListener('click', () => {
+            showSchemaModal('Payment Overview Configuration', config);
+          });
+
+          container.querySelector('#btn-export-overview').addEventListener('click', () => {
+            store.exportPaymentOverviewManifest();
+            showToast('Payment Overview manifest exported.', 'success');
+          });
+
+          container.querySelector('#btn-reset-overview').addEventListener('click', () => {
+            if (confirm('Restore payment overview metrics to factory default?')) {
+              config = store.resetPaymentOverviewConfig();
+              channels = Array.isArray(config.channels || config.items) ? [...(config.channels || config.items)] : [];
+              showToast('Payment overview restored to default.', 'info');
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 08-002: Payment Gateway Settings
+     */
+    function renderPaymentGatewaySettingsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPaymentGatewaySettingsConfig();
+        let gateways = Array.isArray(config.gateways || config.items) ? [...(config.gateways || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeGateways = gateways.filter(g => g.active !== false);
+          const filtered = gateways.filter(g => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (g.provider || '').toLowerCase().includes(term) || (g.keyId || '').toLowerCase().includes(term) || (g.environment || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">PAYMENT GATEWAYS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Payment Gateway Settings &amp; API Credentials</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage live API keys, Webhook secrets, and payment method routing (UPI / Cards / Net Banking)</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-gw" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Gateway
+                  </button>
+                  <button id="btn-inspect-gw" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-gw" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-gw" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Configured Providers</span>
+                  <p class="text-2xl font-bold text-white mt-1">${gateways.length}</p>
+                  <div class="text-[11px] text-indigo-400 mt-1">Razorpay, Cashfree, Stripe</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Routing Gateways</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${activeGateways.length}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Live traffic enabled</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">UPI Direct Rails</span>
+                  <p class="text-2xl font-bold text-blue-400 mt-1">${gateways.filter(g => g.upiEnabled).length}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Instant QR &amp; Collect Intent</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <input type="text" id="gw-search" placeholder="Search provider, key ID, environment..." value="${escapeHtml(searchTerm)}" class="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Provider</th>
+                        <th class="px-4 py-3">Environment</th>
+                        <th class="px-4 py-3">Key ID</th>
+                        <th class="px-4 py-3">UPI Enabled</th>
+                        <th class="px-4 py-3">Cards Enabled</th>
+                        <th class="px-4 py-3">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No payment gateways configured.</td></tr>
+                      ` : filtered.map((g, i) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="px-4 py-3">
+                            <div class="font-semibold text-white">${escapeHtml(g.provider)}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(g.id)}</div>
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${g.environment === 'Production' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${escapeHtml(g.environment || 'Production')}</span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-300">${escapeHtml(g.keyId || '')}</td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${g.upiEnabled ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-500'}">${g.upiEnabled ? 'Enabled' : 'Disabled'}</span>
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${g.cardsEnabled ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-slate-800 text-slate-500'}">${g.cardsEnabled ? 'Enabled' : 'Disabled'}</span>
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="w-2 h-2 rounded-full inline-block ${g.active !== false ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-slate-600'}"></span>
+                          </td>
+                          <td class="px-4 py-3 text-right space-x-1">
+                            <button data-idx="${i}" class="btn-edit-gw px-2.5 py-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">Edit</button>
+                            <button data-idx="${i}" class="btn-del-gw px-2.5 py-1 text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 rounded-lg transition cursor-pointer">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Events
+          container.querySelector('#gw-search').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btn-add-gw').addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Payment Gateway',
+              subtitle: 'Configure payment processor credentials and capabilities',
+              fields: [
+                { key: 'provider', label: 'Gateway Provider', type: 'select', options: ['Razorpay', 'Cashfree', 'Stripe', 'PayU', 'PhonePe PG'], defaultValue: 'Razorpay' },
+                { key: 'environment', label: 'Environment', type: 'select', options: ['Production', 'Sandbox / Test'], defaultValue: 'Production' },
+                { key: 'keyId', label: 'Public Key / App ID', placeholder: 'e.g. rzp_live_CSOdisha2026', required: true },
+                { key: 'webhookSecret', label: 'Webhook Secret', placeholder: 'e.g. whsec_live_9918', required: true },
+                { key: 'upiEnabled', label: 'Enable UPI Rails', type: 'checkbox', defaultChecked: true },
+                { key: 'cardsEnabled', label: 'Enable Cards & Net Banking', type: 'checkbox', defaultChecked: true }
+              ],
+              onSave: (data) => {
+                const newId = 'GW-' + String(gateways.length + 1).padStart(2, '0');
+                gateways.push({
+                  id: newId,
+                  provider: data.provider,
+                  environment: data.environment,
+                  keyId: data.keyId.trim(),
+                  webhookSecret: data.webhookSecret.trim(),
+                  upiEnabled: !!data.upiEnabled,
+                  cardsEnabled: !!data.cardsEnabled,
+                  active: true
+                });
+                config.gateways = gateways;
+                config.items = gateways;
+                store.savePaymentGatewaySettingsConfig(config);
+                showToast(`Gateway ${data.provider} configured.`, 'success');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-gw').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = gateways[idx];
+              openModuleCreateModal({
+                title: 'Payment Gateway',
+                subtitle: `Editing gateway "${item.provider}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'provider', label: 'Gateway Provider', type: 'select', options: ['Razorpay', 'Cashfree', 'Stripe', 'PayU', 'PhonePe PG'] },
+                  { key: 'environment', label: 'Environment', type: 'select', options: ['Production', 'Sandbox / Test'] },
+                  { key: 'keyId', label: 'Public Key / App ID', required: true },
+                  { key: 'webhookSecret', label: 'Webhook Secret', required: true },
+                  { key: 'upiEnabled', label: 'Enable UPI Rails', type: 'checkbox' },
+                  { key: 'cardsEnabled', label: 'Enable Cards & Net Banking', type: 'checkbox' }
+                ],
+                onSave: (data) => {
+                  item.provider = data.provider;
+                  item.environment = data.environment;
+                  item.keyId = data.keyId.trim();
+                  item.webhookSecret = data.webhookSecret.trim();
+                  item.upiEnabled = !!data.upiEnabled;
+                  item.cardsEnabled = !!data.cardsEnabled;
+
+                  config.gateways = gateways;
+                  config.items = gateways;
+                  store.savePaymentGatewaySettingsConfig(config);
+                  showToast(`Gateway ${item.provider} updated.`, 'success');
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('.btn-del-gw').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = gateways[idx];
+              if (confirm(`Remove gateway configuration "${item.provider}"?`)) {
+                gateways.splice(idx, 1);
+                config.gateways = gateways;
+                config.items = gateways;
+                store.savePaymentGatewaySettingsConfig(config);
+                showToast('Gateway configuration removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#btn-inspect-gw').addEventListener('click', () => {
+            showSchemaModal('Payment Gateway Configuration', config);
+          });
+
+          container.querySelector('#btn-export-gw').addEventListener('click', () => {
+            store.exportPaymentGatewaySettingsManifest();
+            showToast('Gateway settings manifest exported.', 'success');
+          });
+
+          container.querySelector('#btn-reset-gw').addEventListener('click', () => {
+            if (confirm('Restore gateway settings to factory default?')) {
+              config = store.resetPaymentGatewaySettingsConfig();
+              gateways = Array.isArray(config.gateways || config.items) ? [...(config.gateways || config.items)] : [];
+              showToast('Gateway settings restored to default.', 'info');
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 08-003: Transactions
+     */
+    function renderTransactionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getTransactionsConfig();
+        let txns = Array.isArray(config.transactions || config.items) ? [...(config.transactions || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'ALL';
+
+        function render() {
+          const totalAmount = txns.reduce((sum, t) => sum + (Number(t.amountINR) || 0), 0);
+          const successCount = txns.filter(t => t.status === 'Success').length;
+          const filtered = txns.filter(t => {
+            if (statusFilter !== 'ALL' && t.status !== statusFilter) return false;
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (t.refNo || '').toLowerCase().includes(term) || (t.customerEmail || '').toLowerCase().includes(term) || (t.gatewayRef || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">PAYMENT RECORDS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Transaction Ledger &amp; Audit Trail</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Comprehensive chronological journal of digital payments, UPI authorizations, and merchant references</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-txn" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Transaction
+                  </button>
+                  <button id="btn-inspect-tx" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-tx" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-tx" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Transactions</span>
+                  <p class="text-2xl font-bold text-white mt-1">${txns.length}</p>
+                  <div class="text-[11px] text-blue-400 mt-1">${successCount} Successful records</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Ledger Value</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">₹${totalAmount.toLocaleString('en-IN')}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Verified gross inflows</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Primary Rail</span>
+                  <p class="text-2xl font-bold text-indigo-400 mt-1">UPI (85%)</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Google Pay &amp; PhonePe dominant</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <input type="text" id="txn-search" placeholder="Search reference, customer email, gateway ID..." value="${escapeHtml(searchTerm)}" class="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <select id="txn-filter-status" class="bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                  <option value="ALL" ${statusFilter === 'ALL' ? 'selected' : ''}>All Statuses</option>
+                  <option value="Success" ${statusFilter === 'Success' ? 'selected' : ''}>Success</option>
+                  <option value="Pending" ${statusFilter === 'Pending' ? 'selected' : ''}>Pending</option>
+                  <option value="Failed" ${statusFilter === 'Failed' ? 'selected' : ''}>Failed</option>
+                  <option value="Refunded" ${statusFilter === 'Refunded' ? 'selected' : ''}>Refunded</option>
+                </select>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Reference No</th>
+                        <th class="px-4 py-3">Customer Email</th>
+                        <th class="px-4 py-3">Amount</th>
+                        <th class="px-4 py-3">Method</th>
+                        <th class="px-4 py-3">Gateway Ref</th>
+                        <th class="px-4 py-3">Timestamp</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No transactions match current filters.</td></tr>
+                      ` : filtered.map((t, i) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="px-4 py-3">
+                            <div class="font-semibold text-white font-mono">${escapeHtml(t.refNo)}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(t.id)}</div>
+                          </td>
+                          <td class="px-4 py-3 text-slate-200">${escapeHtml(t.customerEmail)}</td>
+                          <td class="px-4 py-3 font-semibold text-emerald-400">₹${Number(t.amountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="px-4 py-3 text-slate-300">${escapeHtml(t.method || 'UPI')}</td>
+                          <td class="px-4 py-3 font-mono text-[10px] text-slate-400">${escapeHtml(t.gatewayRef || '')}</td>
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${escapeHtml(t.timestamp || '')}</td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${t.status === 'Success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : t.status === 'Refunded' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">${escapeHtml(t.status || 'Success')}</span>
+                          </td>
+                          <td class="px-4 py-3 text-right space-x-1">
+                            <button data-idx="${i}" class="btn-edit-txn px-2.5 py-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">Edit</button>
+                            <button data-idx="${i}" class="btn-del-txn px-2.5 py-1 text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 rounded-lg transition cursor-pointer">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Events
+          container.querySelector('#txn-search').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#txn-filter-status').addEventListener('change', (e) => {
+            statusFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btn-add-txn').addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Transaction Entry',
+              subtitle: 'Manually record offline settlement, direct gateway transaction, or adjustment',
+              fields: [
+                { key: 'refNo', label: 'Reference Number', placeholder: 'e.g. CSO-TX-2026-004', required: true },
+                { key: 'customerEmail', label: 'Customer Email', placeholder: 'e.g. candidate@gmail.com', required: true },
+                { key: 'amountINR', label: 'Amount (INR)', type: 'number', defaultValue: 499, required: true },
+                { key: 'method', label: 'Payment Method', placeholder: 'e.g. UPI (Google Pay), Debit Card, Net Banking', defaultValue: 'UPI (Google Pay)', required: true },
+                { key: 'gatewayRef', label: 'Gateway Order / Payment Ref', placeholder: 'e.g. pay_Zk88120', required: true },
+                { key: 'status', label: 'Status', type: 'select', options: ['Success', 'Pending', 'Failed', 'Refunded'], defaultValue: 'Success' }
+              ],
+              onSave: (data) => {
+                const newId = 'TXN-' + (8800 + txns.length + 1);
+                txns.unshift({
+                  id: newId,
+                  refNo: data.refNo.trim(),
+                  customerEmail: data.customerEmail.trim(),
+                  amountINR: Number(data.amountINR) || 0,
+                  method: data.method.trim(),
+                  gatewayRef: data.gatewayRef.trim(),
+                  status: data.status,
+                  timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                  active: true
+                });
+                config.transactions = txns;
+                config.items = txns;
+                store.saveTransactionsConfig(config);
+                showToast(`Transaction ${data.refNo} logged.`, 'success');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-txn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = txns[idx];
+              openModuleCreateModal({
+                title: 'Transaction Record',
+                subtitle: `Editing transaction "${item.refNo}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'refNo', label: 'Reference Number', required: true },
+                  { key: 'customerEmail', label: 'Customer Email', required: true },
+                  { key: 'amountINR', label: 'Amount (INR)', type: 'number', required: true },
+                  { key: 'method', label: 'Payment Method', required: true },
+                  { key: 'gatewayRef', label: 'Gateway Ref', required: true },
+                  { key: 'status', label: 'Status', type: 'select', options: ['Success', 'Pending', 'Failed', 'Refunded'] }
+                ],
+                onSave: (data) => {
+                  item.refNo = data.refNo.trim();
+                  item.customerEmail = data.customerEmail.trim();
+                  item.amountINR = Number(data.amountINR) || 0;
+                  item.method = data.method.trim();
+                  item.gatewayRef = data.gatewayRef.trim();
+                  item.status = data.status;
+
+                  config.transactions = txns;
+                  config.items = txns;
+                  store.saveTransactionsConfig(config);
+                  showToast(`Transaction ${item.refNo} updated.`, 'success');
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('.btn-del-txn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = txns[idx];
+              if (confirm(`Remove transaction record "${item.refNo}"?`)) {
+                txns.splice(idx, 1);
+                config.transactions = txns;
+                config.items = txns;
+                store.saveTransactionsConfig(config);
+                showToast('Transaction record removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#btn-inspect-tx').addEventListener('click', () => {
+            showSchemaModal('Transactions Registry', config);
+          });
+
+          container.querySelector('#btn-export-tx').addEventListener('click', () => {
+            store.exportTransactionsManifest();
+            showToast('Transactions manifest exported.', 'success');
+          });
+
+          container.querySelector('#btn-reset-tx').addEventListener('click', () => {
+            if (confirm('Restore transaction records to factory default?')) {
+              config = store.resetTransactionsConfig();
+              txns = Array.isArray(config.transactions || config.items) ? [...(config.transactions || config.items)] : [];
+              showToast('Transactions restored to default.', 'info');
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 08-004: Orders
+     */
+    function renderOrdersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getOrdersConfig();
+        let orders = Array.isArray(config.orders || config.items) ? [...(config.orders || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const fulfilledCount = orders.filter(o => o.fulfillmentStatus === 'Fulfilled').length;
+          const filtered = orders.filter(o => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (o.orderNumber || '').toLowerCase().includes(term) || (o.itemName || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">ORDER FULFILLMENT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Orders &amp; Digital Fulfillment</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Customer order tracking, digital asset entitlement grants, and fulfillment workflows</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-order" class="px-3.5 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Order
+                  </button>
+                  <button id="btn-inspect-ord" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-ord" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-ord" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Orders Placed</span>
+                  <p class="text-2xl font-bold text-white mt-1">${orders.length}</p>
+                  <div class="text-[11px] text-violet-400 mt-1">E-Commerce entitlement tracking</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Fulfilled Digital Grants</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${fulfilledCount}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Immediate portal download access</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Order Value</span>
+                  <p class="text-2xl font-bold text-blue-400 mt-1">₹${orders.reduce((sum, o) => sum + (Number(o.amountINR) || 0), 0).toLocaleString('en-IN')}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Net gross merchandise value</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <input type="text" id="ord-search" placeholder="Search order number, item name..." value="${escapeHtml(searchTerm)}" class="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Order Number</th>
+                        <th class="px-4 py-3">Item Purchased</th>
+                        <th class="px-4 py-3">Amount</th>
+                        <th class="px-4 py-3">Fulfillment</th>
+                        <th class="px-4 py-3">Access Granted</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No orders recorded. Click "New Order" to create.</td></tr>
+                      ` : filtered.map((o, i) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="px-4 py-3">
+                            <div class="font-semibold text-white font-mono">${escapeHtml(o.orderNumber)}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(o.id)}</div>
+                          </td>
+                          <td class="px-4 py-3 font-medium text-slate-200">${escapeHtml(o.itemName)}</td>
+                          <td class="px-4 py-3 font-semibold text-emerald-400">₹${Number(o.amountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${o.fulfillmentStatus === 'Fulfilled' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${escapeHtml(o.fulfillmentStatus || 'Fulfilled')}</span>
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${o.accessGranted ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-500'}">${o.accessGranted ? 'Granted' : 'Revoked'}</span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${escapeHtml(o.createdAt || '')}</td>
+                          <td class="px-4 py-3 text-right space-x-1">
+                            <button data-idx="${i}" class="btn-edit-order px-2.5 py-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">Edit</button>
+                            <button data-idx="${i}" class="btn-del-order px-2.5 py-1 text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 rounded-lg transition cursor-pointer">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Events
+          container.querySelector('#ord-search').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btn-add-order').addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Customer Order',
+              subtitle: 'Issue manual purchase order or grant entitlement',
+              fields: [
+                { key: 'orderNumber', label: 'Order Number', placeholder: 'e.g. ORD-2026-504', required: true },
+                { key: 'itemName', label: 'Item / Course Name', placeholder: 'e.g. OAS Prelims High-Yield Notes Bundle', required: true },
+                { key: 'amountINR', label: 'Order Amount (INR)', type: 'number', defaultValue: 499, required: true },
+                { key: 'fulfillmentStatus', label: 'Fulfillment Status', type: 'select', options: ['Fulfilled', 'Processing', 'Cancelled', 'On Hold'], defaultValue: 'Fulfilled' },
+                { key: 'accessGranted', label: 'Grant Download / Portal Access', type: 'checkbox', defaultChecked: true }
+              ],
+              onSave: (data) => {
+                const newId = 'ORD-' + (500 + orders.length + 1);
+                orders.unshift({
+                  id: newId,
+                  orderNumber: data.orderNumber.trim(),
+                  itemName: data.itemName.trim(),
+                  amountINR: Number(data.amountINR) || 0,
+                  fulfillmentStatus: data.fulfillmentStatus,
+                  accessGranted: !!data.accessGranted,
+                  createdAt: new Date().toISOString().split('T')[0],
+                  active: true
+                });
+                config.orders = orders;
+                config.items = orders;
+                store.saveOrdersConfig(config);
+                showToast(`Order ${data.orderNumber} created.`, 'success');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-order').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = orders[idx];
+              openModuleCreateModal({
+                title: 'Customer Order',
+                subtitle: `Editing order "${item.orderNumber}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'orderNumber', label: 'Order Number', required: true },
+                  { key: 'itemName', label: 'Item Name', required: true },
+                  { key: 'amountINR', label: 'Amount (INR)', type: 'number', required: true },
+                  { key: 'fulfillmentStatus', label: 'Fulfillment Status', type: 'select', options: ['Fulfilled', 'Processing', 'Cancelled', 'On Hold'] },
+                  { key: 'accessGranted', label: 'Access Entitlement', type: 'checkbox' }
+                ],
+                onSave: (data) => {
+                  item.orderNumber = data.orderNumber.trim();
+                  item.itemName = data.itemName.trim();
+                  item.amountINR = Number(data.amountINR) || 0;
+                  item.fulfillmentStatus = data.fulfillmentStatus;
+                  item.accessGranted = !!data.accessGranted;
+
+                  config.orders = orders;
+                  config.items = orders;
+                  store.saveOrdersConfig(config);
+                  showToast(`Order ${item.orderNumber} updated.`, 'success');
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('.btn-del-order').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = orders[idx];
+              if (confirm(`Remove order "${item.orderNumber}"?`)) {
+                orders.splice(idx, 1);
+                config.orders = orders;
+                config.items = orders;
+                store.saveOrdersConfig(config);
+                showToast('Order removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#btn-inspect-ord').addEventListener('click', () => {
+            showSchemaModal('Orders Ledger', config);
+          });
+
+          container.querySelector('#btn-export-ord').addEventListener('click', () => {
+            store.exportOrdersManifest();
+            showToast('Orders manifest exported.', 'success');
+          });
+
+          container.querySelector('#btn-reset-ord').addEventListener('click', () => {
+            if (confirm('Restore orders ledger to factory default?')) {
+              config = store.resetOrdersConfig();
+              orders = Array.isArray(config.orders || config.items) ? [...(config.orders || config.items)] : [];
+              showToast('Orders ledger restored to default.', 'info');
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 08-005: Paid Resources
+     */
+    function renderPaidResourcesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPaidResourcesConfig();
+        let resources = Array.isArray(config.resources || config.items) ? [...(config.resources || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeResources = resources.filter(r => r.active !== false);
+          const totalSales = resources.reduce((sum, r) => sum + (Number(r.salesCount) || 0), 0);
+          const filtered = resources.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.title || '').toLowerCase().includes(term) || (r.code || '').toLowerCase().includes(term) || (r.resourceType || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">PREMIUM CATALOG</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Paid Resources &amp; Premium Assets</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Monetized test series, premium gazetteer e-books, and curriculum bundle offerings</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-pres" class="px-3.5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Resource
+                  </button>
+                  <button id="btn-inspect-pres" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-pres" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-pres" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Catalog Assets</span>
+                  <p class="text-2xl font-bold text-white mt-1">${resources.length}</p>
+                  <div class="text-[11px] text-amber-400 mt-1">${activeResources.length} live on store</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Cumulative Sales</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${totalSales.toLocaleString('en-IN')}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Paid resource student adoptions</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Average Unit Price</span>
+                  <p class="text-2xl font-bold text-blue-400 mt-1">₹${resources.length > 0 ? Math.round(resources.reduce((sum, r) => sum + (Number(r.priceINR) || 0), 0) / resources.length) : 0}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">High conversion pricing</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <input type="text" id="pres-search" placeholder="Search resource code, title, type..." value="${escapeHtml(searchTerm)}" class="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Resource Code</th>
+                        <th class="px-4 py-3">Title</th>
+                        <th class="px-4 py-3">Price</th>
+                        <th class="px-4 py-3">Type</th>
+                        <th class="px-4 py-3">Sales Count</th>
+                        <th class="px-4 py-3">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No paid resources cataloged. Click "New Resource" to create.</td></tr>
+                      ` : filtered.map((r, i) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="px-4 py-3">
+                            <div class="font-semibold text-white font-mono">${escapeHtml(r.code)}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(r.id)}</div>
+                          </td>
+                          <td class="px-4 py-3 font-medium text-slate-200">${escapeHtml(r.title)}</td>
+                          <td class="px-4 py-3 font-semibold text-emerald-400">₹${Number(r.priceINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700">${escapeHtml(r.resourceType || 'Resource')}</span>
+                          </td>
+                          <td class="px-4 py-3 font-mono font-semibold text-blue-400">${r.salesCount || 0}</td>
+                          <td class="px-4 py-3">
+                            <span class="w-2 h-2 rounded-full inline-block ${r.active !== false ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-slate-600'}"></span>
+                          </td>
+                          <td class="px-4 py-3 text-right space-x-1">
+                            <button data-idx="${i}" class="btn-edit-pres px-2.5 py-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">Edit</button>
+                            <button data-idx="${i}" class="btn-del-pres px-2.5 py-1 text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 rounded-lg transition cursor-pointer">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Events
+          container.querySelector('#pres-search').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btn-add-pres').addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Paid Resource',
+              subtitle: 'Catalog monetized learning asset or mock engine',
+              fields: [
+                { key: 'code', label: 'Product Code / SKU', placeholder: 'e.g. OAS-MOCK-PRO', required: true },
+                { key: 'title', label: 'Resource Title', placeholder: 'e.g. OPSC OAS Prelims 10 Full Mocks + Explanations', required: true },
+                { key: 'priceINR', label: 'Price (INR)', type: 'number', defaultValue: 499, required: true },
+                { key: 'resourceType', label: 'Resource Type', type: 'select', options: ['Mock Engine', 'E-Book', 'Curriculum Bundle', 'Video Course', 'PDF Notes'], defaultValue: 'Mock Engine' }
+              ],
+              onSave: (data) => {
+                const newId = 'PRES-' + String(resources.length + 1).padStart(2, '0');
+                resources.push({
+                  id: newId,
+                  code: data.code.trim().toUpperCase(),
+                  title: data.title.trim(),
+                  priceINR: Number(data.priceINR) || 0,
+                  resourceType: data.resourceType,
+                  salesCount: 0,
+                  active: true
+                });
+                config.resources = resources;
+                config.items = resources;
+                store.savePaidResourcesConfig(config);
+                showToast(`Resource "${data.title}" cataloged.`, 'success');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-pres').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = resources[idx];
+              openModuleCreateModal({
+                title: 'Paid Resource',
+                subtitle: `Editing resource "${item.title}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'code', label: 'Product Code / SKU', required: true },
+                  { key: 'title', label: 'Resource Title', required: true },
+                  { key: 'priceINR', label: 'Price (INR)', type: 'number', required: true },
+                  { key: 'resourceType', label: 'Resource Type', type: 'select', options: ['Mock Engine', 'E-Book', 'Curriculum Bundle', 'Video Course', 'PDF Notes'] }
+                ],
+                onSave: (data) => {
+                  item.code = data.code.trim().toUpperCase();
+                  item.title = data.title.trim();
+                  item.priceINR = Number(data.priceINR) || 0;
+                  item.resourceType = data.resourceType;
+
+                  config.resources = resources;
+                  config.items = resources;
+                  store.savePaidResourcesConfig(config);
+                  showToast(`Resource "${item.title}" updated.`, 'success');
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('.btn-del-pres').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = resources[idx];
+              if (confirm(`Remove resource "${item.title}"?`)) {
+                resources.splice(idx, 1);
+                config.resources = resources;
+                config.items = resources;
+                store.savePaidResourcesConfig(config);
+                showToast('Resource removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#btn-inspect-pres').addEventListener('click', () => {
+            showSchemaModal('Paid Resources Catalog', config);
+          });
+
+          container.querySelector('#btn-export-pres').addEventListener('click', () => {
+            store.exportPaidResourcesManifest();
+            showToast('Paid resources manifest exported.', 'success');
+          });
+
+          container.querySelector('#btn-reset-pres').addEventListener('click', () => {
+            if (confirm('Restore paid resources catalog to factory default?')) {
+              config = store.resetPaidResourcesConfig();
+              resources = Array.isArray(config.resources || config.items) ? [...(config.resources || config.items)] : [];
+              showToast('Paid resources catalog restored to default.', 'info');
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 08-006: Products & Pricing
+     */
+    function renderProductsPricingWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getProductsPricingConfig();
+        let products = Array.isArray(config.products || config.items) ? [...(config.products || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeProducts = products.filter(p => p.active !== false);
+          const filtered = products.filter(p => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (p.name || '').toLowerCase().includes(term) || (p.sku || '').toLowerCase().includes(term) || (p.tier || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">MERCHANDISE &amp; TIERS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Products &amp; Pricing Architecture</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define SKUs, regular vs. promotional sale pricing, tax slabs, and membership pass tiers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-prd" class="px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Product
+                  </button>
+                  <button id="btn-inspect-prd" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-prd" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-prd" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Active SKUs</span>
+                  <p class="text-2xl font-bold text-white mt-1">${products.length}</p>
+                  <div class="text-[11px] text-teal-400 mt-1">${activeProducts.length} live for checkout</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Pricing Range (Sale)</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">₹${products.length > 0 ? Math.min(...products.map(p => Number(p.salePriceINR) || 0)) : 0} – ₹${products.length > 0 ? Math.max(...products.map(p => Number(p.salePriceINR) || 0)) : 0}</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Accessible aspirant pricing</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">GST Tax Slabs</span>
+                  <p class="text-2xl font-bold text-blue-400 mt-1">18% / Exempt</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Full statutory compliance</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <input type="text" id="prd-search" placeholder="Search product name, SKU, tier..." value="${escapeHtml(searchTerm)}" class="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">SKU</th>
+                        <th class="px-4 py-3">Product Name</th>
+                        <th class="px-4 py-3">Tier</th>
+                        <th class="px-4 py-3">Regular Price</th>
+                        <th class="px-4 py-3">Sale Price</th>
+                        <th class="px-4 py-3">Tax Slab</th>
+                        <th class="px-4 py-3">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No products configured. Click "New Product" to add.</td></tr>
+                      ` : filtered.map((p, i) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="px-4 py-3">
+                            <div class="font-semibold text-white font-mono">${escapeHtml(p.sku)}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(p.id)}</div>
+                          </td>
+                          <td class="px-4 py-3 font-medium text-slate-200">${escapeHtml(p.name)}</td>
+                          <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700">${escapeHtml(p.tier || 'Standard')}</span>
+                          </td>
+                          <td class="px-4 py-3 text-slate-400 line-through">₹${Number(p.regularPriceINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="px-4 py-3 font-semibold text-emerald-400">₹${Number(p.salePriceINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="px-4 py-3 text-[11px] text-slate-400">${escapeHtml(p.taxSlab || '18% GST')}</td>
+                          <td class="px-4 py-3">
+                            <span class="w-2 h-2 rounded-full inline-block ${p.active !== false ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-slate-600'}"></span>
+                          </td>
+                          <td class="px-4 py-3 text-right space-x-1">
+                            <button data-idx="${i}" class="btn-edit-prd px-2.5 py-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">Edit</button>
+                            <button data-idx="${i}" class="btn-del-prd px-2.5 py-1 text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 rounded-lg transition cursor-pointer">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Events
+          container.querySelector('#prd-search').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btn-add-prd').addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Product & Pricing SKU',
+              subtitle: 'Define merchandise SKU, pricing, and tax classification',
+              fields: [
+                { key: 'sku', label: 'SKU Code', placeholder: 'e.g. SKU-OAS-PRE', required: true },
+                { key: 'name', label: 'Product Name', placeholder: 'e.g. OPSC OAS Prelims Access Pass', required: true },
+                { key: 'tier', label: 'Product Tier', type: 'select', options: ['Standard', 'Digital Asset', 'Subscription', 'Enterprise'], defaultValue: 'Standard' },
+                { key: 'regularPriceINR', label: 'Regular Price (INR)', type: 'number', defaultValue: 799, required: true },
+                { key: 'salePriceINR', label: 'Sale Price (INR)', type: 'number', defaultValue: 499, required: true },
+                { key: 'taxSlab', label: 'Tax Slab', type: 'select', options: ['18% GST', '12% GST', '5% GST', 'Exempt'], defaultValue: '18% GST' }
+              ],
+              onSave: (data) => {
+                const newId = 'PRD-' + String(products.length + 1).padStart(2, '0');
+                products.push({
+                  id: newId,
+                  sku: data.sku.trim().toUpperCase(),
+                  name: data.name.trim(),
+                  tier: data.tier,
+                  regularPriceINR: Number(data.regularPriceINR) || 0,
+                  salePriceINR: Number(data.salePriceINR) || 0,
+                  taxSlab: data.taxSlab,
+                  active: true
+                });
+                config.products = products;
+                config.items = products;
+                store.saveProductsPricingConfig(config);
+                showToast(`Product "${data.name}" added.`, 'success');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-prd').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = products[idx];
+              openModuleCreateModal({
+                title: 'Product & Pricing SKU',
+                subtitle: `Editing product "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'sku', label: 'SKU Code', required: true },
+                  { key: 'name', label: 'Product Name', required: true },
+                  { key: 'tier', label: 'Product Tier', type: 'select', options: ['Standard', 'Digital Asset', 'Subscription', 'Enterprise'] },
+                  { key: 'regularPriceINR', label: 'Regular Price (INR)', type: 'number', required: true },
+                  { key: 'salePriceINR', label: 'Sale Price (INR)', type: 'number', required: true },
+                  { key: 'taxSlab', label: 'Tax Slab', type: 'select', options: ['18% GST', '12% GST', '5% GST', 'Exempt'] }
+                ],
+                onSave: (data) => {
+                  item.sku = data.sku.trim().toUpperCase();
+                  item.name = data.name.trim();
+                  item.tier = data.tier;
+                  item.regularPriceINR = Number(data.regularPriceINR) || 0;
+                  item.salePriceINR = Number(data.salePriceINR) || 0;
+                  item.taxSlab = data.taxSlab;
+
+                  config.products = products;
+                  config.items = products;
+                  store.saveProductsPricingConfig(config);
+                  showToast(`Product "${item.name}" updated.`, 'success');
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('.btn-del-prd').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              const item = products[idx];
+              if (confirm(`Remove product "${item.name}"?`)) {
+                products.splice(idx, 1);
+                config.products = products;
+                config.items = products;
+                store.saveProductsPricingConfig(config);
+                showToast('Product removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelector('#btn-inspect-prd').addEventListener('click', () => {
+            showSchemaModal('Products & Pricing Architecture', config);
+          });
+
+          container.querySelector('#btn-export-prd').addEventListener('click', () => {
+            store.exportProductsPricingManifest();
+            showToast('Products manifest exported.', 'success');
+          });
+
+          container.querySelector('#btn-reset-prd').addEventListener('click', () => {
+            if (confirm('Restore products & pricing directory to factory default?')) {
+              config = store.resetProductsPricingConfig();
+              products = Array.isArray(config.products || config.items) ? [...(config.products || config.items)] : [];
+              showToast('Products & pricing directory restored to default.', 'info');
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
 
 
     /**

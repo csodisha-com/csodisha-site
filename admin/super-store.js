@@ -9202,6 +9202,266 @@
       return filename;
     },
 
+    // --- MODULE 08-001: Payment Overview ---
+    getPaymentOverviewConfig() {
+      const DEFAULT_PAYMENT_OVERVIEW = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalVolumeINR: 482500, successfulCount: 1420, refundCount: 12, netRevenueINR: 476100 },
+        items: [
+          { id: "METRIC-01", channel: "Razorpay Standard", volumeINR: 320400, txCount: 940, successRate: "99.2%", status: "Healthy", active: true },
+          { id: "METRIC-02", channel: "Cashfree UPI Direct", volumeINR: 112100, txCount: 380, successRate: "98.7%", status: "Healthy", active: true },
+          { id: "METRIC-03", channel: "Stripe International", volumeINR: 50000, txCount: 100, successRate: "97.5%", status: "Healthy", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_payment_overview_config', 'channels', () => DEFAULT_PAYMENT_OVERVIEW);
+    },
+    savePaymentOverviewConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.channels = cfg.items || cfg.channels || [];
+      cfg.items = cfg.channels;
+      localStorage.setItem('cso_payment_overview_config', JSON.stringify(cfg));
+      this.logAudit("PAYMENT_OVERVIEW_UPDATED", "FINANCE", "Payment Overview metrics updated.");
+      return true;
+    },
+    resetPaymentOverviewConfig() {
+      const DEFAULT_PAYMENT_OVERVIEW = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalVolumeINR: 482500, successfulCount: 1420, refundCount: 12, netRevenueINR: 476100 },
+        items: [
+          { id: "METRIC-01", channel: "Razorpay Standard", volumeINR: 320400, txCount: 940, successRate: "99.2%", status: "Healthy", active: true },
+          { id: "METRIC-02", channel: "Cashfree UPI Direct", volumeINR: 112100, txCount: 380, successRate: "98.7%", status: "Healthy", active: true },
+          { id: "METRIC-03", channel: "Stripe International", volumeINR: 50000, txCount: 100, successRate: "97.5%", status: "Healthy", active: true }
+        ]
+      };
+      localStorage.setItem('cso_payment_overview_config', JSON.stringify(DEFAULT_PAYMENT_OVERVIEW));
+      this.logAudit("PAYMENT_OVERVIEW_RESET", "FINANCE", "Payment Overview metrics restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_PAYMENT_OVERVIEW));
+    },
+    exportPaymentOverviewManifest() {
+      const config = this.getPaymentOverviewConfig();
+      const filename = "payment_overview_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PAYMENT_OVERVIEW_EXPORTED", "DATA_EXPORT", "Payment Overview manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-002: Payment Gateway Settings ---
+    getPaymentGatewaySettingsConfig() {
+      const DEFAULT_GATEWAY_SETTINGS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "GW-01", provider: "Razorpay", environment: "Production", keyId: "rzp_live_CSOdisha2026", webhookSecret: "whsec_live_rzp991", upiEnabled: true, cardsEnabled: true, active: true },
+          { id: "GW-02", provider: "Cashfree", environment: "Production", keyId: "cf_app_live_8820", webhookSecret: "cfsec_live_4412", upiEnabled: true, cardsEnabled: false, active: true },
+          { id: "GW-03", provider: "Stripe", environment: "Production", keyId: "pk_live_CSO_Global", webhookSecret: "whsec_stripe_001", upiEnabled: false, cardsEnabled: true, active: false }
+        ]
+      };
+      return this._hydrateConfig('cso_gateway_settings_config', 'gateways', () => DEFAULT_GATEWAY_SETTINGS);
+    },
+    savePaymentGatewaySettingsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.gateways = cfg.items || cfg.gateways || [];
+      cfg.items = cfg.gateways;
+      localStorage.setItem('cso_gateway_settings_config', JSON.stringify(cfg));
+      this.logAudit("GATEWAY_SETTINGS_UPDATED", "FINANCE", "Payment Gateway settings updated.");
+      return true;
+    },
+    resetPaymentGatewaySettingsConfig() {
+      const DEFAULT_GATEWAY_SETTINGS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "GW-01", provider: "Razorpay", environment: "Production", keyId: "rzp_live_CSOdisha2026", webhookSecret: "whsec_live_rzp991", upiEnabled: true, cardsEnabled: true, active: true },
+          { id: "GW-02", provider: "Cashfree", environment: "Production", keyId: "cf_app_live_8820", webhookSecret: "cfsec_live_4412", upiEnabled: true, cardsEnabled: false, active: true },
+          { id: "GW-03", provider: "Stripe", environment: "Production", keyId: "pk_live_CSO_Global", webhookSecret: "whsec_stripe_001", upiEnabled: false, cardsEnabled: true, active: false }
+        ]
+      };
+      localStorage.setItem('cso_gateway_settings_config', JSON.stringify(DEFAULT_GATEWAY_SETTINGS));
+      this.logAudit("GATEWAY_SETTINGS_RESET", "FINANCE", "Payment Gateway settings restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_GATEWAY_SETTINGS));
+    },
+    exportPaymentGatewaySettingsManifest() {
+      const config = this.getPaymentGatewaySettingsConfig();
+      const filename = "payment_gateways_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("GATEWAYS_MANIFEST_EXPORTED", "DATA_EXPORT", "Payment Gateways manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-003: Transactions ---
+    getTransactionsConfig() {
+      const DEFAULT_TRANSACTIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "TXN-8801", refNo: "CSO-TX-2026-001", customerEmail: "aspirant.balasore@gmail.com", amountINR: 499, method: "UPI (Google Pay)", gatewayRef: "pay_PkJd9124", status: "Success", timestamp: "2026-11-08 14:22:10", active: true },
+          { id: "TXN-8802", refNo: "CSO-TX-2026-002", customerEmail: "candidate.cuttack@gmail.com", amountINR: 299, method: "UPI (PhonePe)", gatewayRef: "pay_QlMe8311", status: "Success", timestamp: "2026-11-08 15:45:00", active: true },
+          { id: "TXN-8803", refNo: "CSO-TX-2026-003", customerEmail: "student.bbsr@gmail.com", amountINR: 999, method: "Debit Card (HDFC)", gatewayRef: "pay_MnOp1290", status: "Success", timestamp: "2026-11-09 09:12:45", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_transactions_config', 'transactions', () => DEFAULT_TRANSACTIONS);
+    },
+    saveTransactionsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.transactions = cfg.items || cfg.transactions || [];
+      cfg.items = cfg.transactions;
+      localStorage.setItem('cso_transactions_config', JSON.stringify(cfg));
+      this.logAudit("TRANSACTIONS_UPDATED", "FINANCE", "Transactions registry updated.");
+      return true;
+    },
+    resetTransactionsConfig() {
+      const DEFAULT_TRANSACTIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "TXN-8801", refNo: "CSO-TX-2026-001", customerEmail: "aspirant.balasore@gmail.com", amountINR: 499, method: "UPI (Google Pay)", gatewayRef: "pay_PkJd9124", status: "Success", timestamp: "2026-11-08 14:22:10", active: true },
+          { id: "TXN-8802", refNo: "CSO-TX-2026-002", customerEmail: "candidate.cuttack@gmail.com", amountINR: 299, method: "UPI (PhonePe)", gatewayRef: "pay_QlMe8311", status: "Success", timestamp: "2026-11-08 15:45:00", active: true },
+          { id: "TXN-8803", refNo: "CSO-TX-2026-003", customerEmail: "student.bbsr@gmail.com", amountINR: 999, method: "Debit Card (HDFC)", gatewayRef: "pay_MnOp1290", status: "Success", timestamp: "2026-11-09 09:12:45", active: true }
+        ]
+      };
+      localStorage.setItem('cso_transactions_config', JSON.stringify(DEFAULT_TRANSACTIONS));
+      this.logAudit("TRANSACTIONS_RESET", "FINANCE", "Transactions registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_TRANSACTIONS));
+    },
+    exportTransactionsManifest() {
+      const config = this.getTransactionsConfig();
+      const filename = "transactions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("TRANSACTIONS_EXPORTED", "DATA_EXPORT", "Transactions manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-004: Orders ---
+    getOrdersConfig() {
+      const DEFAULT_ORDERS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "ORD-501", orderNumber: "ORD-2026-501", itemName: "OAS 2026 Prelims Mock Test Series", amountINR: 499, fulfillmentStatus: "Fulfilled", accessGranted: true, createdAt: "2026-11-08", active: true },
+          { id: "ORD-502", orderNumber: "ORD-2026-502", itemName: "Odisha GK 30 Districts Capsule PDF", amountINR: 299, fulfillmentStatus: "Fulfilled", accessGranted: true, createdAt: "2026-11-08", active: true },
+          { id: "ORD-503", orderNumber: "ORD-2026-503", itemName: "OSSC CGL Full Master Bundle", amountINR: 999, fulfillmentStatus: "Fulfilled", accessGranted: true, createdAt: "2026-11-09", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_orders_config', 'orders', () => DEFAULT_ORDERS);
+    },
+    saveOrdersConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.orders = cfg.items || cfg.orders || [];
+      cfg.items = cfg.orders;
+      localStorage.setItem('cso_orders_config', JSON.stringify(cfg));
+      this.logAudit("ORDERS_UPDATED", "FINANCE", "Orders ledger updated.");
+      return true;
+    },
+    resetOrdersConfig() {
+      const DEFAULT_ORDERS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "ORD-501", orderNumber: "ORD-2026-501", itemName: "OAS 2026 Prelims Mock Test Series", amountINR: 499, fulfillmentStatus: "Fulfilled", accessGranted: true, createdAt: "2026-11-08", active: true },
+          { id: "ORD-502", orderNumber: "ORD-2026-502", itemName: "Odisha GK 30 Districts Capsule PDF", amountINR: 299, fulfillmentStatus: "Fulfilled", accessGranted: true, createdAt: "2026-11-08", active: true },
+          { id: "ORD-503", orderNumber: "ORD-2026-503", itemName: "OSSC CGL Full Master Bundle", amountINR: 999, fulfillmentStatus: "Fulfilled", accessGranted: true, createdAt: "2026-11-09", active: true }
+        ]
+      };
+      localStorage.setItem('cso_orders_config', JSON.stringify(DEFAULT_ORDERS));
+      this.logAudit("ORDERS_RESET", "FINANCE", "Orders ledger restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_ORDERS));
+    },
+    exportOrdersManifest() {
+      const config = this.getOrdersConfig();
+      const filename = "orders_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ORDERS_EXPORTED", "DATA_EXPORT", "Orders manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-005: Paid Resources ---
+    getPaidResourcesConfig() {
+      const DEFAULT_PAID_RESOURCES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PRES-01", code: "OAS-MOCK-PRO", title: "OPSC OAS Prelims 10 Full Mocks + Explanations", priceINR: 499, resourceType: "Mock Engine", salesCount: 420, active: true },
+          { id: "PRES-02", code: "OD-GK-HANDBOOK", title: "Comprehensive Odisha History & Geography Gazetteer PDF", priceINR: 299, resourceType: "E-Book", salesCount: 680, active: true },
+          { id: "PRES-03", code: "OSSC-CGL-KIT", title: "OSSC CGL Reasoning & Quantitative Master Pack", priceINR: 999, resourceType: "Curriculum Bundle", salesCount: 230, active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_paid_resources_config', 'resources', () => DEFAULT_PAID_RESOURCES);
+    },
+    savePaidResourcesConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.resources = cfg.items || cfg.resources || [];
+      cfg.items = cfg.resources;
+      localStorage.setItem('cso_paid_resources_config', JSON.stringify(cfg));
+      this.logAudit("PAID_RESOURCES_UPDATED", "FINANCE", "Paid Resources catalog updated.");
+      return true;
+    },
+    resetPaidResourcesConfig() {
+      const DEFAULT_PAID_RESOURCES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PRES-01", code: "OAS-MOCK-PRO", title: "OPSC OAS Prelims 10 Full Mocks + Explanations", priceINR: 499, resourceType: "Mock Engine", salesCount: 420, active: true },
+          { id: "PRES-02", code: "OD-GK-HANDBOOK", title: "Comprehensive Odisha History & Geography Gazetteer PDF", priceINR: 299, resourceType: "E-Book", salesCount: 680, active: true },
+          { id: "PRES-03", code: "OSSC-CGL-KIT", title: "OSSC CGL Reasoning & Quantitative Master Pack", priceINR: 999, resourceType: "Curriculum Bundle", salesCount: 230, active: true }
+        ]
+      };
+      localStorage.setItem('cso_paid_resources_config', JSON.stringify(DEFAULT_PAID_RESOURCES));
+      this.logAudit("PAID_RESOURCES_RESET", "FINANCE", "Paid Resources catalog restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_PAID_RESOURCES));
+    },
+    exportPaidResourcesManifest() {
+      const config = this.getPaidResourcesConfig();
+      const filename = "paid_resources_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PAID_RESOURCES_EXPORTED", "DATA_EXPORT", "Paid Resources manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-006: Products & Pricing ---
+    getProductsPricingConfig() {
+      const DEFAULT_PRODUCTS_PRICING = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PRD-01", sku: "SKU-OAS-PRE", name: "OPSC OAS Prelims Access Pass", tier: "Standard", regularPriceINR: 799, salePriceINR: 499, taxSlab: "18% GST", active: true },
+          { id: "PRD-02", sku: "SKU-GK-BOOK", name: "Odisha State Knowledge Capsule", tier: "Digital Asset", regularPriceINR: 399, salePriceINR: 299, taxSlab: "Exempt", active: true },
+          { id: "PRD-03", sku: "SKU-ANNUAL-VIP", name: "CS Odisha 1-Year All-Access Pass", tier: "Subscription", regularPriceINR: 1999, salePriceINR: 1499, taxSlab: "18% GST", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_products_pricing_config', 'products', () => DEFAULT_PRODUCTS_PRICING);
+    },
+    saveProductsPricingConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.products = cfg.items || cfg.products || [];
+      cfg.items = cfg.products;
+      localStorage.setItem('cso_products_pricing_config', JSON.stringify(cfg));
+      this.logAudit("PRODUCTS_PRICING_UPDATED", "FINANCE", "Products & Pricing directory updated.");
+      return true;
+    },
+    resetProductsPricingConfig() {
+      const DEFAULT_PRODUCTS_PRICING = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PRD-01", sku: "SKU-OAS-PRE", name: "OPSC OAS Prelims Access Pass", tier: "Standard", regularPriceINR: 799, salePriceINR: 499, taxSlab: "18% GST", active: true },
+          { id: "PRD-02", sku: "SKU-GK-BOOK", name: "Odisha State Knowledge Capsule", tier: "Digital Asset", regularPriceINR: 399, salePriceINR: 299, taxSlab: "Exempt", active: true },
+          { id: "PRD-03", sku: "SKU-ANNUAL-VIP", name: "CS Odisha 1-Year All-Access Pass", tier: "Subscription", regularPriceINR: 1999, salePriceINR: 1499, taxSlab: "18% GST", active: true }
+        ]
+      };
+      localStorage.setItem('cso_products_pricing_config', JSON.stringify(DEFAULT_PRODUCTS_PRICING));
+      this.logAudit("PRODUCTS_PRICING_RESET", "FINANCE", "Products & Pricing directory restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS_PRICING));
+    },
+    exportProductsPricingManifest() {
+      const config = this.getProductsPricingConfig();
+      const filename = "products_pricing_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PRODUCTS_PRICING_EXPORTED", "DATA_EXPORT", "Products & Pricing manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
