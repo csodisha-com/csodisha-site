@@ -317,6 +317,8 @@ async function loadMasterNavigation() {
         renderTrashAndRestoreWorkspace();
       } else if (moduleId === 'module-03-001') {
         renderSiteIdentityWorkspace();
+      } else if (moduleId === 'module-03-002') {
+        renderAboutMissionWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -5222,6 +5224,344 @@ async function loadMasterNavigation() {
         if (window.CSOSuperStore && typeof window.CSOSuperStore.exportBrandManifest === 'function') {
           const filename = window.CSOSuperStore.exportBrandManifest();
           showToast(`Brand manifest exported: ${filename}`, "success");
+        }
+      });
+    }
+
+    /**
+     * VIEW 3b: About Us & Mission Management (module-03-002)
+     */
+    function renderAboutMissionWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      dom.breadcrumbModule.textContent = "About Us & Mission Management (module-03-002)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnSaveAboutMission" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Save & Publish Mission
+          </button>
+          <a href="/about/" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Preview About Page ↗
+          </a>
+          <button id="btnExportAboutJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Manifest (JSON)
+          </button>
+        </div>
+      `;
+
+      // Ingest About Config
+      let about = (window.CSOSuperStore && typeof window.CSOSuperStore.getAboutConfig === 'function')
+        ? window.CSOSuperStore.getAboutConfig()
+        : {
+            headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+            subheadline: "A dedicated non-profit digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+            mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence and verified state syllabus breakdowns.",
+            vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal, transparent access to recruitment notifications, verified learning materials, and mentorship tools to realize their full potential.",
+            pillars: [],
+            milestones: [],
+            updatedAt: new Date().toISOString()
+          };
+
+      // Clone arrays for local mutation
+      let currentPillars = Array.isArray(about.pillars) ? JSON.parse(JSON.stringify(about.pillars)) : [];
+      let currentMilestones = Array.isArray(about.milestones) ? JSON.parse(JSON.stringify(about.milestones)) : [];
+
+      function renderPillarsList() {
+        const container = document.getElementById('aboutPillarsContainer');
+        if (!container) return;
+        if (currentPillars.length === 0) {
+          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No institutional pillars configured. Add one below.</div>`;
+          return;
+        }
+
+        container.innerHTML = currentPillars.map((p, idx) => `
+          <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group">
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span class="text-xs font-bold text-white">${escapeHtml(p.title || 'Untitled Pillar')}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${escapeHtml(p.id || `PIL-${idx+1}`)}</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(p.description || '')}</p>
+            </div>
+            <button data-remove-pillar="${idx}" class="btn-remove-pillar px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+              Remove
+            </button>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.btn-remove-pillar').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-remove-pillar'), 10);
+            if (!isNaN(index) && index >= 0 && index < currentPillars.length) {
+              currentPillars.splice(index, 1);
+              renderPillarsList();
+            }
+          });
+        });
+      }
+
+      function renderMilestonesList() {
+        const container = document.getElementById('aboutMilestonesContainer');
+        if (!container) return;
+        if (currentMilestones.length === 0) {
+          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No roadmap milestones configured. Add one below.</div>`;
+          return;
+        }
+
+        container.innerHTML = currentMilestones.map((m, idx) => `
+          <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group">
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800/80">${escapeHtml(m.year || 'Year')}</span>
+                <span class="text-xs font-bold text-white">${escapeHtml(m.title || 'Milestone Title')}</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(m.description || '')}</p>
+            </div>
+            <button data-remove-milestone="${idx}" class="btn-remove-milestone px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+              Remove
+            </button>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.btn-remove-milestone').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-remove-milestone'), 10);
+            if (!isNaN(index) && index >= 0 && index < currentMilestones.length) {
+              currentMilestones.splice(index, 1);
+              renderMilestonesList();
+            }
+          });
+        });
+      }
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                About Us & Institutional Mission Studio
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-002</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Control public-facing institutional statements, core ideological pillars, and historical milestones.</p>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg">
+              Last Updated: <span id="aboutLastUpdated" class="text-emerald-400 font-bold">${new Date(about.updatedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <!-- Card 1: Core Institutional Statements -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                Public Headlines & Statements
+              </h3>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Hero Headline <span class="text-rose-400">*</span></label>
+                <input id="inputAboutHeadline" type="text" value="${escapeHtml(about.headline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-medium">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Subheadline / Narrative Summary</label>
+                <input id="inputAboutSubheadline" type="text" value="${escapeHtml(about.subheadline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Mission Statement <span class="text-rose-400">*</span></label>
+                  <textarea id="textareaAboutMission" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.mission || '')}</textarea>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Vision Statement <span class="text-rose-400">*</span></label>
+                  <textarea id="textareaAboutVision" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.vision || '')}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Core Institutional Pillars -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Core Ideological Pillars
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">Guiding Operational Principles</span>
+            </div>
+
+            <!-- Pillars List -->
+            <div id="aboutPillarsContainer" class="space-y-2.5"></div>
+
+            <!-- Add Pillar Form -->
+            <div class="p-3.5 rounded-lg bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add New Core Pillar</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-1">
+                  <input id="inputNewPillarTitle" type="text" placeholder="Pillar Title (e.g., Free Access)" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-2">
+                  <input id="inputNewPillarDesc" type="text" placeholder="Description of this operational tenet" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button id="btnAddPillarAction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Add Pillar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Historical Milestone Roadmap -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Historical Milestone Roadmap
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">Institutional Journey & Progress</span>
+            </div>
+
+            <!-- Milestones List -->
+            <div id="aboutMilestonesContainer" class="space-y-2.5"></div>
+
+            <!-- Add Milestone Form -->
+            <div class="p-3.5 rounded-lg bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Milestone Achievement</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="sm:col-span-1">
+                  <input id="inputNewMilestoneYear" type="text" placeholder="Year (e.g., 2026)" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-1">
+                  <input id="inputNewMilestoneTitle" type="text" placeholder="Achievement Title" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-2">
+                  <input id="inputNewMilestoneDesc" type="text" placeholder="Detailed impact or summary" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button id="btnAddMilestoneAction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Add Milestone
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      renderPillarsList();
+      renderMilestonesList();
+
+      // Form Bindings
+      const inputHeadline = document.getElementById('inputAboutHeadline');
+      const inputSubheadline = document.getElementById('inputAboutSubheadline');
+      const textareaMission = document.getElementById('textareaAboutMission');
+      const textareaVision = document.getElementById('textareaAboutVision');
+
+      // Add Pillar Handler
+      document.getElementById('btnAddPillarAction')?.addEventListener('click', () => {
+        const titleInput = document.getElementById('inputNewPillarTitle');
+        const descInput = document.getElementById('inputNewPillarDesc');
+        const title = titleInput?.value.trim() || '';
+        const desc = descInput?.value.trim() || '';
+
+        if (!title) {
+          showToast("Pillar title is required.", "warning");
+          return;
+        }
+
+        currentPillars.push({
+          id: `PIL-${String(currentPillars.length + 1).padStart(2, '0')}`,
+          title: title,
+          description: desc,
+          icon: "sparkles"
+        });
+
+        titleInput.value = '';
+        descInput.value = '';
+        renderPillarsList();
+        showToast("Pillar added to active draft.", "info");
+      });
+
+      // Add Milestone Handler
+      document.getElementById('btnAddMilestoneAction')?.addEventListener('click', () => {
+        const yearInput = document.getElementById('inputNewMilestoneYear');
+        const titleInput = document.getElementById('inputNewMilestoneTitle');
+        const descInput = document.getElementById('inputNewMilestoneDesc');
+
+        const year = yearInput?.value.trim() || '';
+        const title = titleInput?.value.trim() || '';
+        const desc = descInput?.value.trim() || '';
+
+        if (!year || !title) {
+          showToast("Milestone year and title are required.", "warning");
+          return;
+        }
+
+        currentMilestones.push({
+          year: year,
+          title: title,
+          description: desc
+        });
+
+        yearInput.value = '';
+        titleInput.value = '';
+        descInput.value = '';
+        renderMilestonesList();
+        showToast("Milestone added to active draft.", "info");
+      });
+
+      // Save & Publish Mission Handler
+      document.getElementById('btnSaveAboutMission')?.addEventListener('click', () => {
+        const headline = inputHeadline?.value.trim() || '';
+        const mission = textareaMission?.value.trim() || '';
+        const vision = textareaVision?.value.trim() || '';
+
+        if (!headline || !mission) {
+          showToast("Headline and Mission statement are required.", "warning");
+          return;
+        }
+
+        const payload = {
+          headline: headline,
+          subheadline: inputSubheadline?.value.trim() || '',
+          mission: mission,
+          vision: vision,
+          pillars: currentPillars,
+          milestones: currentMilestones
+        };
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAboutConfig === 'function') {
+          const saved = window.CSOSuperStore.saveAboutConfig(payload);
+          const dateEl = document.getElementById('aboutLastUpdated');
+          if (dateEl && saved.updatedAt) {
+            dateEl.textContent = new Date(saved.updatedAt).toLocaleDateString();
+          }
+          showToast("About Us & Mission configuration saved & published!", "success");
+        }
+      });
+
+      // Export JSON Manifest Handler
+      document.getElementById('btnExportAboutJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAboutManifest === 'function') {
+          const filename = window.CSOSuperStore.exportAboutManifest();
+          showToast(`About manifest exported: ${filename}`, "success");
         }
       });
     }

@@ -111,6 +111,30 @@
           </div>
         </section>
 
+        <!-- Dynamic Institutional Mission & Ideology Showcase -->
+        <section id="about-mission-showcase" class="about-mission-section" style="margin-bottom: 2rem; display: none;">
+          <div style="background: rgba(15, 23, 42, 0.03); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0fa968;"></span>
+              <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0fa968;">Mission & Purpose</span>
+            </div>
+            <p id="about-mission-text" style="font-size: 1.05rem; line-height: 1.6; margin: 0; color: inherit;"></p>
+            <p id="about-vision-text" style="font-size: 0.95rem; line-height: 1.6; margin-top: 0.75rem; color: inherit; opacity: 0.85;"></p>
+          </div>
+
+          <!-- Dynamic Core Pillars Grid -->
+          <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Core Institutional Pillars</h2>
+            <div id="about-pillars-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;"></div>
+          </div>
+
+          <!-- Dynamic Historical Milestones -->
+          <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Platform Milestones & Journey</h2>
+            <div id="about-milestones-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+        </section>
+
         <section id="overview" aria-label="Directory overview">
           <h2>Explore All Categories</h2>
           <div class="dashboard-grid" id="dashboard-grid"></div>
@@ -194,5 +218,137 @@
 </div></footer>
 <script src="../assets/cso-auth-client.js" defer></script>
 <script src="../assets/shared-header.js" defer></script>
+<script>
+(function() {
+  function escapeText(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function hydrateAboutMission() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_about_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+        subheadline: "A dedicated non-profit digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+        mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence and verified state syllabus breakdowns.",
+        vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal, transparent access to recruitment notifications, verified learning materials, and mentorship tools to realize their full potential.",
+        pillars: [
+          {
+            title: "Verified Authenticity",
+            description: "All examination syllabi, government notifications, and study materials are cross-checked against official state gazettes and board notices."
+          },
+          {
+            title: "Universal 30-District Access",
+            description: "Low-bandwidth optimized, fast static delivery ensuring aspirants in rural and tribal districts can study without interruption."
+          },
+          {
+            title: "100% Free & Open Public Resource",
+            description: "No paywalls, subscriptions, or predatory monetization schemes on foundational public educational resources."
+          },
+          {
+            title: "Aspirant-Centric Architecture",
+            description: "Engineered specifically for state candidates preparing for OSSC, OPSC, OSSSC, Teaching (OTET/OSSTET), and Odisha Police."
+          }
+        ],
+        milestones: [
+          {
+            year: "2023",
+            title: "Odisha Education Gateway Inception",
+            description: "Conceptualized as a grassroots community repository for rural Odisha students lacking access to high-cost coaching institutes."
+          },
+          {
+            year: "2024",
+            title: "State Syllabus Digitization",
+            description: "Digitized 1,200+ pages of official OPSC and OSSC exam syllabi into interactive online study guides."
+          },
+          {
+            year: "2025",
+            title: "30-District Aspirant Milestone",
+            description: "Reached over 50,000 monthly active aspirants across all 30 revenue districts of Odisha with instant notification alerts."
+          },
+          {
+            year: "2026",
+            title: "Master Enterprise Admin & Architecture",
+            description: "Deployed the 241-module sovereign admin operations suite and unified offline-first study library."
+          }
+        ]
+      };
+    }
+
+    var showcase = document.getElementById('about-mission-showcase');
+    if (showcase) showcase.style.display = 'block';
+
+    var pageTitle = document.getElementById('page-title');
+    if (pageTitle && config.headline) {
+      pageTitle.textContent = config.headline;
+    }
+
+    var pageDesc = document.getElementById('page-description');
+    if (pageDesc && config.subheadline) {
+      pageDesc.textContent = config.subheadline;
+      pageDesc.removeAttribute('hidden');
+    }
+
+    var missionText = document.getElementById('about-mission-text');
+    if (missionText && config.mission) {
+      missionText.textContent = "Mission: " + config.mission;
+    }
+
+    var visionText = document.getElementById('about-vision-text');
+    if (visionText && config.vision) {
+      visionText.textContent = "Vision: " + config.vision;
+    }
+
+    var pillarsGrid = document.getElementById('about-pillars-grid');
+    if (pillarsGrid && Array.isArray(config.pillars) && config.pillars.length > 0) {
+      pillarsGrid.innerHTML = config.pillars.map(function(p) {
+        return '<div style="background: rgba(15, 23, 42, 0.02); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; padding: 1.25rem;">' +
+               '<div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; color: #0fa968;">' + escapeText(p.title) + '</div>' +
+               '<div style="font-size: 0.85rem; line-height: 1.5; opacity: 0.85;">' + escapeText(p.description) + '</div>' +
+               '</div>';
+      }).join('');
+    }
+
+    var milestonesList = document.getElementById('about-milestones-list');
+    if (milestonesList && Array.isArray(config.milestones) && config.milestones.length > 0) {
+      milestonesList.innerHTML = config.milestones.map(function(m) {
+        return '<div style="display: flex; gap: 1rem; align-items: baseline; background: rgba(15, 23, 42, 0.02); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; padding: 0.85rem 1.25rem;">' +
+               '<span style="font-family: monospace; font-weight: 700; font-size: 0.85rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(15, 169, 104, 0.1); color: #0fa968;">' + escapeText(m.year) + '</span>' +
+               '<div>' +
+                 '<div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0.25rem;">' + escapeText(m.title) + '</div>' +
+                 '<div style="font-size: 0.82rem; line-height: 1.45; opacity: 0.85;">' + escapeText(m.description) + '</div>' +
+               '</div>' +
+               '</div>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateAboutMission);
+  } else {
+    hydrateAboutMission();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_about_config') {
+      hydrateAboutMission();
+    }
+  });
+})();
+</script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e12846a8e51cc',t:'MTc5NDA3MjY5NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e12846a8e51cc',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

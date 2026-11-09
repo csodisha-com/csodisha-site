@@ -2601,6 +2601,112 @@
       return filename;
     },
 
+    // 25. About Us & Institutional Mission Engine (module-03-002)
+    getAboutConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_about_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object') {
+        config = {
+          headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+          subheadline: "A dedicated non-profit digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+          mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence and verified state syllabus breakdowns.",
+          vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal, transparent access to recruitment notifications, verified learning materials, and mentorship tools to realize their full potential.",
+          pillars: [
+            {
+              id: "PIL-01",
+              title: "Verified Authenticity",
+              description: "All examination syllabi, government notifications, and study materials are cross-checked against official state gazettes and board notices.",
+              icon: "shield"
+            },
+            {
+              id: "PIL-02",
+              title: "Universal 30-District Access",
+              description: "Low-bandwidth optimized, fast static delivery ensuring aspirants in rural and tribal districts can study without interruption.",
+              icon: "globe"
+            },
+            {
+              id: "PIL-03",
+              title: "100% Free & Open Public Resource",
+              description: "No paywalls, subscriptions, or predatory monetization schemes on foundational public educational resources.",
+              icon: "sparkles"
+            },
+            {
+              id: "PIL-04",
+              title: "Aspirant-Centric Architecture",
+              description: "Engineered specifically for state candidates preparing for OSSC, OPSC, OSSSC, Teaching (OTET/OSSTET), and Odisha Police.",
+              icon: "academic"
+            }
+          ],
+          milestones: [
+            {
+              year: "2023",
+              title: "Odisha Education Gateway Inception",
+              description: "Conceptualized as a grassroots community repository for rural Odisha students lacking access to high-cost coaching institutes."
+            },
+            {
+              year: "2024",
+              title: "State Syllabus Digitization",
+              description: "Digitized 1,200+ pages of official OPSC and OSSC exam syllabi into interactive online study guides."
+            },
+            {
+              year: "2025",
+              title: "30-District Aspirant Milestone",
+              description: "Reached over 50,000 monthly active aspirants across all 30 revenue districts of Odisha with instant notification alerts."
+            },
+            {
+              year: "2026",
+              title: "Master Enterprise Admin & Architecture",
+              description: "Deployed the 241-module sovereign admin operations suite and unified offline-first study library."
+            }
+          ],
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          localStorage.setItem('cso_about_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+
+      return config;
+    },
+
+    saveAboutConfig(config) {
+      if (!config || typeof config !== 'object') return false;
+      config.updatedAt = new Date().toISOString();
+      save('cso_about_config', config);
+      this.logAudit('ABOUT_CONFIG_UPDATED', 'ABOUT_MANAGEMENT', `About Us content, pillars, and institutional milestones updated.`);
+      return config;
+    },
+
+    exportAboutManifest() {
+      const config = this.getAboutConfig();
+      const timestamp = Date.now();
+      const filename = `cso-about-mission-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        about: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('ABOUT_MANIFEST_EXPORTED', 'DATA_EXPORT', `About Us & Mission manifest exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
