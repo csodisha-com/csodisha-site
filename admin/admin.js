@@ -324,6 +324,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-06-005') { renderMegaMenuWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-06-006') { renderFooterNavigationWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-06-007') { renderSidebarMenusWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-008') { renderBreadcrumbsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-009') { renderInternalLinksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-010') { renderMenuOrderingWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-011') { renderSocialLinksWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -492,6 +496,14 @@ async function loadMasterNavigation() {
         renderFooterNavigationWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-06-007') {
         renderSidebarMenusWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-008') {
+        renderBreadcrumbsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-009') {
+        renderInternalLinksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-010') {
+        renderMenuOrderingWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-011') {
+        renderSocialLinksWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -26820,6 +26832,1599 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * MODULE 06-008: Breadcrumbs & Schema.org Hierarchy
+     */
+    function renderBreadcrumbsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getBreadcrumbsConfig();
+        let rules = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'all';
+
+        function render() {
+          const activeRules = rules.filter(r => r.active !== false);
+          const filtered = rules.filter(r => {
+            const matchesSearch = (r.pageType || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (r.pattern || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (r.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'all' ||
+                                  (statusFilter === 'active' && r.active !== false) ||
+                                  (statusFilter === 'inactive' && r.active === false);
+            return matchesSearch && matchesStatus;
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 06 · Batch 3</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Breadcrumb Trails &amp; SEO Hierarchy</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Configure Schema.org BreadcrumbList metadata, path patterns, delimiters, and navigation trails across candidate portals.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-bc" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Breadcrumb Rule
+                  </button>
+                  <button id="btn-inspect-bc" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-bc" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-bc" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Trail Rules</div>
+                  <div class="text-2xl font-bold text-white mt-1">${rules.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Rules</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeRules.length} of ${rules.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Schema.org Format</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${config.settings?.enableSchemaOrg !== false ? 'JSON-LD Active' : 'Disabled'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Delimiter Symbol</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1 font-mono">${escapeHtml(config.settings?.delimiter || '/')}</div>
+                </div>
+              </div>
+
+              <!-- Global Breadcrumbs Settings Card -->
+              <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-6">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="chk-schema-org" ${config.settings?.enableSchemaOrg !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                    <span class="text-xs font-medium text-slate-300">Schema.org JSON-LD Microdata</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="chk-show-current" ${config.settings?.showCurrentPage !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                    <span class="text-xs font-medium text-slate-300">Show Current Page as Last Leaf</span>
+                  </label>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-400">Home Root Label:</span>
+                  <input type="text" id="input-home-label" value="${escapeHtml(config.settings?.homeLabel || 'Home')}" class="px-2.5 py-1 text-xs bg-slate-800 border border-slate-700 rounded-lg text-white w-28 focus:outline-none focus:border-blue-500">
+                  <button id="btn-save-bc-settings" class="px-3 py-1 text-xs font-semibold text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition cursor-pointer">Update Settings</button>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="bc-search" placeholder="Search page types, patterns, or rule IDs..." value="${escapeHtml(searchTerm)}" class="w-full pl-10 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500 font-medium">Filter:</span>
+                  <select id="bc-status-filter" class="px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Rules (${rules.length})</option>
+                    <option value="active" ${statusFilter === 'active' ? 'selected' : ''}>Active Only (${activeRules.length})</option>
+                    <option value="inactive" ${statusFilter === 'inactive' ? 'selected' : ''}>Inactive Only (${rules.length - activeRules.length})</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Rules Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3.5 px-4 w-24">Rule ID</th>
+                        <th class="py-3.5 px-4 w-44">Page Type Scope</th>
+                        <th class="py-3.5 px-4">Dynamic Breadcrumb Pattern</th>
+                        <th class="py-3.5 px-4 w-36">Schema Format</th>
+                        <th class="py-3.5 px-4 w-28 text-center">Status</th>
+                        <th class="py-3.5 px-4 w-28 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-xs">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="6" class="py-12 text-center text-slate-500">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-800/50 mb-3 text-slate-600">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <p class="font-medium text-slate-400">No breadcrumb rules found matching your filters.</p>
+                          </td>
+                        </tr>
+                      ` : filtered.map(rule => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(rule.id)}</td>
+                          <td class="py-3.5 px-4 font-semibold text-white">
+                            <span class="inline-flex items-center gap-1.5">
+                              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                              ${escapeHtml(rule.pageType)}
+                            </span>
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-300 font-mono text-[11px]">
+                            <div class="bg-slate-950/60 px-2.5 py-1.5 rounded border border-slate-800/80 inline-block text-amber-300">
+                              ${escapeHtml(rule.pattern)}
+                            </div>
+                          </td>
+                          <td class="py-3.5 px-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                              ${escapeHtml(rule.format || 'JSON-LD Microdata')}
+                            </span>
+                          </td>
+                          <td class="py-3.5 px-4 text-center">
+                            <button class="btn-toggle-bc-status cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${rule.active !== false ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(rule.id)}">
+                              <span class="w-1.5 h-1.5 rounded-full ${rule.active !== false ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}"></span>
+                              ${rule.active !== false ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td class="py-3.5 px-4 text-right">
+                            <div class="inline-flex items-center gap-1">
+                              <button class="btn-edit-bc p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(rule.id)}" title="Edit Rule">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                              </button>
+                              <button class="btn-del-bc p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(rule.id)}" title="Delete Rule">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#bc-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          const statusSelect = container.querySelector('#bc-status-filter');
+          if (statusSelect) {
+            statusSelect.addEventListener('change', (e) => {
+              statusFilter = e.target.value;
+              render();
+            });
+          }
+
+          const btnSaveSettings = container.querySelector('#btn-save-bc-settings');
+          if (btnSaveSettings) {
+            btnSaveSettings.addEventListener('click', () => {
+              config.settings = config.settings || {};
+              config.settings.enableSchemaOrg = container.querySelector('#chk-schema-org').checked;
+              config.settings.showCurrentPage = container.querySelector('#chk-show-current').checked;
+              config.settings.homeLabel = container.querySelector('#input-home-label').value.trim() || 'Home';
+              config.rules = rules;
+              config.items = rules;
+              store.saveBreadcrumbsConfig(config);
+              showToast('Breadcrumb settings updated successfully', 'success');
+              render();
+            });
+          }
+
+          // Add Rule Modal
+          const btnAdd = container.querySelector('#btn-add-bc');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => openRuleModal());
+          }
+
+          // Toggle Status
+          container.querySelectorAll('.btn-toggle-bc-status').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const rule = rules.find(r => r.id === id);
+              if (rule) {
+                rule.active = rule.active === false;
+                config.rules = rules;
+                config.items = rules;
+                store.saveBreadcrumbsConfig(config);
+                showToast(`Rule ${id} marked ${rule.active ? 'active' : 'inactive'}`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Edit Rule
+          container.querySelectorAll('.btn-edit-bc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const rule = rules.find(r => r.id === id);
+              if (rule) openRuleModal(rule);
+            });
+          });
+
+          // Delete Rule
+          container.querySelectorAll('.btn-del-bc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Are you sure you want to delete breadcrumb rule ${id}?`)) {
+                rules = rules.filter(r => r.id !== id);
+                config.rules = rules;
+                config.items = rules;
+                store.saveBreadcrumbsConfig(config);
+                showToast(`Rule ${id} deleted successfully`, 'warning');
+                render();
+              }
+            });
+          });
+
+          // Raw Schema Inspector
+          const btnInspect = container.querySelector('#btn-inspect-bc');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              showSchemaModal('Breadcrumbs Config Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-bc');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportBreadcrumbsManifest();
+              showToast(`Exported ${filename}`, 'success');
+            });
+          }
+
+          // Reset to Factory Defaults
+          const btnReset = container.querySelector('#btn-reset-bc');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Breadcrumb Configuration to factory defaults? All manual rules will be restored to seed.')) {
+                config = store.resetBreadcrumbsConfig();
+                rules = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+                showToast('Breadcrumbs reset to factory defaults', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        function openRuleModal(existingRule = null) {
+          const isEdit = !!existingRule;
+          const nextNum = rules.length + 1;
+          const defaultId = isEdit ? existingRule.id : `BC-${String(nextNum).padStart(2, '0')}`;
+
+          const modalHtml = `
+            <div id="bc-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <h3 class="text-base font-bold text-white">${isEdit ? 'Edit Breadcrumb Rule' : 'Add Breadcrumb Rule'}</h3>
+                  </div>
+                  <button id="modal-close-bc" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                </div>
+                <div class="p-6 space-y-4 overflow-y-auto">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Rule ID</label>
+                      <input type="text" id="rule-id" value="${escapeHtml(defaultId)}" ${isEdit ? 'readonly' : ''} class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Schema Format</label>
+                      <select id="rule-format" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                        <option value="JSON-LD Microdata" ${existingRule?.format === 'JSON-LD Microdata' ? 'selected' : ''}>JSON-LD Microdata</option>
+                        <option value="RDFa" ${existingRule?.format === 'RDFa' ? 'selected' : ''}>RDFa</option>
+                        <option value="Microformats" ${existingRule?.format === 'Microformats' ? 'selected' : ''}>Microformats</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Page Type Scope</label>
+                    <input type="text" id="rule-page-type" placeholder="e.g. Job Details, Study Material, Scheme Directory" value="${escapeHtml(existingRule?.pageType || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Dynamic Breadcrumb Pattern</label>
+                    <input type="text" id="rule-pattern" placeholder="e.g. Home > Jobs & Careers > [Commission] > [Exam Title]" value="${escapeHtml(existingRule?.pattern || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                    <p class="text-[11px] text-slate-400 mt-1">Use [Brackets] for dynamically interpolated contextual tokens.</p>
+                  </div>
+                  <div class="pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="rule-active" ${existingRule?.active !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                      <span class="text-xs font-medium text-slate-300">Rule Active &amp; Injected in Head</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end gap-3">
+                  <button id="modal-cancel-bc" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+                  <button id="modal-save-bc" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-lg cursor-pointer">${isEdit ? 'Save Changes' : 'Create Rule'}</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const existingOverlay = document.getElementById('bc-modal-overlay');
+          if (existingOverlay) existingOverlay.remove();
+          document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+          const overlay = document.getElementById('bc-modal-overlay');
+          const closeBtn = document.getElementById('modal-close-bc');
+          const cancelBtn = document.getElementById('modal-cancel-bc');
+          const saveBtn = document.getElementById('modal-save-bc');
+
+          const closeModal = () => { overlay.remove(); };
+          closeBtn.addEventListener('click', closeModal);
+          cancelBtn.addEventListener('click', closeModal);
+
+          saveBtn.addEventListener('click', () => {
+            const id = document.getElementById('rule-id').value.trim();
+            const pageType = document.getElementById('rule-page-type').value.trim();
+            const pattern = document.getElementById('rule-pattern').value.trim();
+            const format = document.getElementById('rule-format').value.trim();
+            const active = document.getElementById('rule-active').checked;
+
+            if (!id || !pageType || !pattern) {
+              alert('Please complete all required fields (Rule ID, Page Type, and Pattern).');
+              return;
+            }
+
+            const ruleObj = { id, pageType, pattern, format, active };
+
+            if (isEdit) {
+              const idx = rules.findIndex(r => r.id === existingRule.id);
+              if (idx !== -1) rules[idx] = ruleObj;
+            } else {
+              rules.push(ruleObj);
+            }
+
+            config.rules = rules;
+            config.items = rules;
+            store.saveBreadcrumbsConfig(config);
+            closeModal();
+            showToast(`Breadcrumb rule ${id} saved successfully`, 'success');
+            render();
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-06-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-008 (Breadcrumbs)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * MODULE 06-009: Internal Linking Engine & Keywords
+     */
+    function renderInternalLinksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getInternalLinksConfig();
+        let links = Array.isArray(config.links || config.items) ? [...(config.links || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'all';
+
+        function render() {
+          const activeLinks = links.filter(l => l.active !== false);
+          const totalMatches = links.reduce((sum, l) => sum + (parseInt(l.matchCount, 10) || 0), 0);
+          const filtered = links.filter(l => {
+            const matchesSearch = (l.keyword || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (l.targetUrl || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (l.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'all' ||
+                                  (statusFilter === 'active' && l.active !== false) ||
+                                  (statusFilter === 'inactive' && l.active === false);
+            return matchesSearch && matchesStatus;
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Folder 06 · Batch 3</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Automatic Internal Links &amp; Keyword Cross-Linking</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage automated keyword insertion, target page pathways, algorithmic linking density, and SEO internal link equity.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-il" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Keyword Rule
+                  </button>
+                  <button id="btn-inspect-il" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-il" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-il" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Configured Keywords</div>
+                  <div class="text-2xl font-bold text-white mt-1">${links.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Link Rules</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeLinks.length} of ${links.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total In-Article Injections</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1 font-mono">${totalMatches.toLocaleString()}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Article Limit</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.settings?.maxLinksPerArticle || 4} links/article</div>
+                </div>
+              </div>
+
+              <!-- Algorithm Settings Card -->
+              <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-6">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="chk-il-tab" ${config.settings?.openInNewTab ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                    <span class="text-xs font-medium text-slate-300">Open in New Tab (target="_blank")</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="chk-il-case" ${config.settings?.caseSensitive ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                    <span class="text-xs font-medium text-slate-300">Strict Case-Sensitive Matching</span>
+                  </label>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-400">Max Links per Document:</span>
+                  <input type="number" id="input-il-limit" min="1" max="20" value="${config.settings?.maxLinksPerArticle || 4}" class="px-2.5 py-1 text-xs bg-slate-800 border border-slate-700 rounded-lg text-white w-20 focus:outline-none focus:border-blue-500">
+                  <button id="btn-save-il-settings" class="px-3 py-1 text-xs font-semibold text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition cursor-pointer">Save Limit</button>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="il-search" placeholder="Search keywords, destinations, or rule IDs..." value="${escapeHtml(searchTerm)}" class="w-full pl-10 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500 font-medium">Filter:</span>
+                  <select id="il-status-filter" class="px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Keywords (${links.length})</option>
+                    <option value="active" ${statusFilter === 'active' ? 'selected' : ''}>Active Only (${activeLinks.length})</option>
+                    <option value="inactive" ${statusFilter === 'inactive' ? 'selected' : ''}>Inactive Only (${links.length - activeLinks.length})</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3.5 px-4 w-24">Rule ID</th>
+                        <th class="py-3.5 px-4 w-52">Target Anchor Keyword</th>
+                        <th class="py-3.5 px-4">Destination Target URL</th>
+                        <th class="py-3.5 px-4 w-28 text-center">Priority</th>
+                        <th class="py-3.5 px-4 w-32 text-center">Match Hits</th>
+                        <th class="py-3.5 px-4 w-28 text-center">Status</th>
+                        <th class="py-3.5 px-4 w-28 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-xs">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-12 text-center text-slate-500">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-800/50 mb-3 text-slate-600">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <p class="font-medium text-slate-400">No keyword cross-link rules found matching filters.</p>
+                          </td>
+                        </tr>
+                      ` : filtered.map(link => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(link.id)}</td>
+                          <td class="py-3.5 px-4 font-semibold text-white">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 border border-slate-700/80 text-amber-300 font-medium">
+                              <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                              ${escapeHtml(link.keyword)}
+                            </span>
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-300 font-mono text-[11px]">
+                            <span class="text-blue-400 hover:underline cursor-pointer">${escapeHtml(link.targetUrl)}</span>
+                          </td>
+                          <td class="py-3.5 px-4 text-center font-mono font-medium text-slate-300">
+                            P${link.priority || 1}
+                          </td>
+                          <td class="py-3.5 px-4 text-center font-mono text-indigo-300">
+                            ${(link.matchCount || 0).toLocaleString()} hits
+                          </td>
+                          <td class="py-3.5 px-4 text-center">
+                            <button class="btn-toggle-il-status cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${link.active !== false ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(link.id)}">
+                              <span class="w-1.5 h-1.5 rounded-full ${link.active !== false ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}"></span>
+                              ${link.active !== false ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td class="py-3.5 px-4 text-right">
+                            <div class="inline-flex items-center gap-1">
+                              <button class="btn-edit-il p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(link.id)}" title="Edit Keyword">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                              </button>
+                              <button class="btn-del-il p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(link.id)}" title="Delete Keyword">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#il-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          const statusSelect = container.querySelector('#il-status-filter');
+          if (statusSelect) {
+            statusSelect.addEventListener('change', (e) => {
+              statusFilter = e.target.value;
+              render();
+            });
+          }
+
+          const btnSaveSettings = container.querySelector('#btn-save-il-settings');
+          if (btnSaveSettings) {
+            btnSaveSettings.addEventListener('click', () => {
+              config.settings = config.settings || {};
+              config.settings.openInNewTab = container.querySelector('#chk-il-tab').checked;
+              config.settings.caseSensitive = container.querySelector('#chk-il-case').checked;
+              config.settings.maxLinksPerArticle = parseInt(container.querySelector('#input-il-limit').value, 10) || 4;
+              config.links = links;
+              config.items = links;
+              store.saveInternalLinksConfig(config);
+              showToast('Internal link settings updated successfully', 'success');
+              render();
+            });
+          }
+
+          // Add Keyword Modal
+          const btnAdd = container.querySelector('#btn-add-il');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => openKeywordModal());
+          }
+
+          // Toggle Status
+          container.querySelectorAll('.btn-toggle-il-status').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const link = links.find(l => l.id === id);
+              if (link) {
+                link.active = link.active === false;
+                config.links = links;
+                config.items = links;
+                store.saveInternalLinksConfig(config);
+                showToast(`Keyword ${id} marked ${link.active ? 'active' : 'inactive'}`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Edit Keyword
+          container.querySelectorAll('.btn-edit-il').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const link = links.find(l => l.id === id);
+              if (link) openKeywordModal(link);
+            });
+          });
+
+          // Delete Keyword
+          container.querySelectorAll('.btn-del-il').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Are you sure you want to delete keyword cross-link rule ${id}?`)) {
+                links = links.filter(l => l.id !== id);
+                config.links = links;
+                config.items = links;
+                store.saveInternalLinksConfig(config);
+                showToast(`Rule ${id} deleted successfully`, 'warning');
+                render();
+              }
+            });
+          });
+
+          // Raw Schema Inspector
+          const btnInspect = container.querySelector('#btn-inspect-il');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              showSchemaModal('Internal Links Config Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-il');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportInternalLinksManifest();
+              showToast(`Exported ${filename}`, 'success');
+            });
+          }
+
+          // Reset to Factory Defaults
+          const btnReset = container.querySelector('#btn-reset-il');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Internal Linking configuration to factory defaults?')) {
+                config = store.resetInternalLinksConfig();
+                links = Array.isArray(config.links || config.items) ? [...(config.links || config.items)] : [];
+                showToast('Internal links reset to factory defaults', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        function openKeywordModal(existingLink = null) {
+          const isEdit = !!existingLink;
+          const nextNum = links.length + 1;
+          const defaultId = isEdit ? existingLink.id : `IL-${String(nextNum).padStart(2, '0')}`;
+
+          const modalHtml = `
+            <div id="il-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                    <h3 class="text-base font-bold text-white">${isEdit ? 'Edit Keyword Link' : 'Add Keyword Link'}</h3>
+                  </div>
+                  <button id="modal-close-il" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                </div>
+                <div class="p-6 space-y-4 overflow-y-auto">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Rule ID</label>
+                      <input type="text" id="link-id" value="${escapeHtml(defaultId)}" ${isEdit ? 'readonly' : ''} class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Priority (1-10)</label>
+                      <input type="number" id="link-priority" min="1" max="10" value="${existingLink?.priority || 1}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Anchor Keyword / Phrase</label>
+                    <input type="text" id="link-keyword" placeholder="e.g. OAS 2026, Odisha GK, Medhabruti" value="${escapeHtml(existingLink?.keyword || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Target Destination URL</label>
+                    <input type="text" id="link-target-url" placeholder="e.g. /jobs-careers/?filter=oas" value="${escapeHtml(existingLink?.targetUrl || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Initial Match Count</label>
+                    <input type="number" id="link-match-count" min="0" value="${existingLink?.matchCount || 0}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                  </div>
+                  <div class="pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="link-active" ${existingLink?.active !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                      <span class="text-xs font-medium text-slate-300">Rule Active &amp; Injected in Content</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end gap-3">
+                  <button id="modal-cancel-il" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+                  <button id="modal-save-il" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-lg cursor-pointer">${isEdit ? 'Save Changes' : 'Create Keyword'}</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const existingOverlay = document.getElementById('il-modal-overlay');
+          if (existingOverlay) existingOverlay.remove();
+          document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+          const overlay = document.getElementById('il-modal-overlay');
+          const closeBtn = document.getElementById('modal-close-il');
+          const cancelBtn = document.getElementById('modal-cancel-il');
+          const saveBtn = document.getElementById('modal-save-il');
+
+          const closeModal = () => { overlay.remove(); };
+          closeBtn.addEventListener('click', closeModal);
+          cancelBtn.addEventListener('click', closeModal);
+
+          saveBtn.addEventListener('click', () => {
+            const id = document.getElementById('link-id').value.trim();
+            const keyword = document.getElementById('link-keyword').value.trim();
+            const targetUrl = document.getElementById('link-target-url').value.trim();
+            const priority = parseInt(document.getElementById('link-priority').value, 10) || 1;
+            const matchCount = parseInt(document.getElementById('link-match-count').value, 10) || 0;
+            const active = document.getElementById('link-active').checked;
+
+            if (!id || !keyword || !targetUrl) {
+              alert('Please complete all required fields (Rule ID, Keyword, and Target URL).');
+              return;
+            }
+
+            const linkObj = { id, keyword, targetUrl, priority, matchCount, active };
+
+            if (isEdit) {
+              const idx = links.findIndex(l => l.id === existingLink.id);
+              if (idx !== -1) links[idx] = linkObj;
+            } else {
+              links.push(linkObj);
+            }
+
+            config.links = links;
+            config.items = links;
+            store.saveInternalLinksConfig(config);
+            closeModal();
+            showToast(`Keyword rule ${id} saved successfully`, 'success');
+            render();
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-06-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-009 (Internal Links)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * MODULE 06-010: Menu Ordering & Layout Weight Matrix
+     */
+    function renderMenuOrderingWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getMenuOrderingConfig();
+        let orders = Array.isArray(config.orders || config.items) ? [...(config.orders || config.items)] : [];
+        let searchTerm = '';
+        let locationFilter = 'all';
+
+        function render() {
+          const activeOrders = orders.filter(o => o.active !== false);
+          const filtered = orders.filter(o => {
+            const matchesSearch = (o.menuName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (o.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (o.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesLocation = locationFilter === 'all' || o.location === locationFilter;
+            return matchesSearch && matchesLocation;
+          });
+
+          // Sort by weight ascending
+          filtered.sort((a, b) => (parseInt(a.weight, 10) || 0) - (parseInt(b.weight, 10) || 0));
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Folder 06 · Batch 3</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Menu Ordering &amp; Hierarchy Weights</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Control visual priority weights, numerical sequence gaps, and multi-location placement for all navigation trees.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-mo" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Order Entry
+                  </button>
+                  <button id="btn-rebalance-mo" class="px-3 py-2 text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Rebalance Gaps (10, 20, 30)
+                  </button>
+                  <button id="btn-inspect-mo" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-mo" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-mo" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Ordered Nodes</div>
+                  <div class="text-2xl font-bold text-white mt-1">${orders.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Placements</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeOrders.length} of ${orders.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Weight Model</div>
+                  <div class="text-2xl font-bold text-purple-400 mt-1">Strict Numerical</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Auto-Rebalance</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${config.settings?.autoRebalanceGaps !== false ? 'Enabled' : 'Manual'}</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="mo-search" placeholder="Search menu names, locations, or IDs..." value="${escapeHtml(searchTerm)}" class="w-full pl-10 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500 font-medium">Location:</span>
+                  <select id="mo-location-filter" class="px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="all" ${locationFilter === 'all' ? 'selected' : ''}>All Locations</option>
+                    <option value="Header Nav" ${locationFilter === 'Header Nav' ? 'selected' : ''}>Header Nav</option>
+                    <option value="Footer Nav" ${locationFilter === 'Footer Nav' ? 'selected' : ''}>Footer Nav</option>
+                    <option value="Sidebar" ${locationFilter === 'Sidebar' ? 'selected' : ''}>Sidebar</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3.5 px-4 w-20 text-center">Weight</th>
+                        <th class="py-3.5 px-4 w-24">Order ID</th>
+                        <th class="py-3.5 px-4">Menu Node Name</th>
+                        <th class="py-3.5 px-4 w-40">Target Location</th>
+                        <th class="py-3.5 px-4 w-32">Visibility Scope</th>
+                        <th class="py-3.5 px-4 w-28 text-center">Status</th>
+                        <th class="py-3.5 px-4 w-28 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-xs">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-12 text-center text-slate-500">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-800/50 mb-3 text-slate-600">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <p class="font-medium text-slate-400">No menu ordering records found matching filters.</p>
+                          </td>
+                        </tr>
+                      ` : filtered.map(order => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3.5 px-4 text-center font-mono font-bold text-amber-300">
+                            <span class="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/20">${order.weight}</span>
+                          </td>
+                          <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(order.id)}</td>
+                          <td class="py-3.5 px-4 font-semibold text-white">
+                            <span class="inline-flex items-center gap-1.5">
+                              <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                              ${escapeHtml(order.menuName)}
+                            </span>
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-300">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                              ${escapeHtml(order.location)}
+                            </span>
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-400">
+                            ${escapeHtml(order.visibility || 'Public')}
+                          </td>
+                          <td class="py-3.5 px-4 text-center">
+                            <button class="btn-toggle-mo-status cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${order.active !== false ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(order.id)}">
+                              <span class="w-1.5 h-1.5 rounded-full ${order.active !== false ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}"></span>
+                              ${order.active !== false ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td class="py-3.5 px-4 text-right">
+                            <div class="inline-flex items-center gap-1">
+                              <button class="btn-edit-mo p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(order.id)}" title="Edit Weight">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                              </button>
+                              <button class="btn-del-mo p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(order.id)}" title="Delete Order">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#mo-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          const locSelect = container.querySelector('#mo-location-filter');
+          if (locSelect) {
+            locSelect.addEventListener('change', (e) => {
+              locationFilter = e.target.value;
+              render();
+            });
+          }
+
+          // Rebalance Gaps button
+          const btnRebalance = container.querySelector('#btn-rebalance-mo');
+          if (btnRebalance) {
+            btnRebalance.addEventListener('click', () => {
+              orders.sort((a, b) => (parseInt(a.weight, 10) || 0) - (parseInt(b.weight, 10) || 0));
+              orders.forEach((o, idx) => {
+                o.weight = (idx + 1) * 10;
+              });
+              config.orders = orders;
+              config.items = orders;
+              store.saveMenuOrderingConfig(config);
+              showToast('Menu weights rebalanced with uniform 10-interval gaps', 'success');
+              render();
+            });
+          }
+
+          // Add Order Modal
+          const btnAdd = container.querySelector('#btn-add-mo');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => openOrderModal());
+          }
+
+          // Toggle Status
+          container.querySelectorAll('.btn-toggle-mo-status').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const ord = orders.find(o => o.id === id);
+              if (ord) {
+                ord.active = ord.active === false;
+                config.orders = orders;
+                config.items = orders;
+                store.saveMenuOrderingConfig(config);
+                showToast(`Menu node ${id} marked ${ord.active ? 'active' : 'inactive'}`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Edit Order
+          container.querySelectorAll('.btn-edit-mo').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const ord = orders.find(o => o.id === id);
+              if (ord) openOrderModal(ord);
+            });
+          });
+
+          // Delete Order
+          container.querySelectorAll('.btn-del-mo').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Are you sure you want to delete menu ordering record ${id}?`)) {
+                orders = orders.filter(o => o.id !== id);
+                config.orders = orders;
+                config.items = orders;
+                store.saveMenuOrderingConfig(config);
+                showToast(`Record ${id} deleted successfully`, 'warning');
+                render();
+              }
+            });
+          });
+
+          // Raw Schema Inspector
+          const btnInspect = container.querySelector('#btn-inspect-mo');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              showSchemaModal('Menu Ordering Config Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-mo');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportMenuOrderingManifest();
+              showToast(`Exported ${filename}`, 'success');
+            });
+          }
+
+          // Reset to Factory Defaults
+          const btnReset = container.querySelector('#btn-reset-mo');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Menu Ordering configuration to factory defaults?')) {
+                config = store.resetMenuOrderingConfig();
+                orders = Array.isArray(config.orders || config.items) ? [...(config.orders || config.items)] : [];
+                showToast('Menu ordering reset to factory defaults', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        function openOrderModal(existingOrder = null) {
+          const isEdit = !!existingOrder;
+          const nextNum = orders.length + 1;
+          const defaultId = isEdit ? existingOrder.id : `MO-${String(nextNum).padStart(2, '0')}`;
+          const defaultWeight = isEdit ? existingOrder.weight : nextNum * 10;
+
+          const modalHtml = `
+            <div id="mo-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                    <h3 class="text-base font-bold text-white">${isEdit ? 'Edit Menu Order & Weight' : 'Add Menu Order Node'}</h3>
+                  </div>
+                  <button id="modal-close-mo" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                </div>
+                <div class="p-6 space-y-4 overflow-y-auto">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Order ID</label>
+                      <input type="text" id="order-id" value="${escapeHtml(defaultId)}" ${isEdit ? 'readonly' : ''} class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Visual Weight</label>
+                      <input type="number" id="order-weight" min="1" max="1000" step="5" value="${defaultWeight}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Menu Node Name</label>
+                    <input type="text" id="order-menu-name" placeholder="e.g. Jobs & Careers, Study Library" value="${escapeHtml(existingOrder?.menuName || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Menu Location</label>
+                      <select id="order-location" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                        <option value="Header Nav" ${existingOrder?.location === 'Header Nav' ? 'selected' : ''}>Header Nav</option>
+                        <option value="Footer Nav" ${existingOrder?.location === 'Footer Nav' ? 'selected' : ''}>Footer Nav</option>
+                        <option value="Sidebar" ${existingOrder?.location === 'Sidebar' ? 'selected' : ''}>Sidebar</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Visibility Scope</label>
+                      <select id="order-visibility" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                        <option value="Public" ${existingOrder?.visibility === 'Public' ? 'selected' : ''}>Public (All)</option>
+                        <option value="Registered Only" ${existingOrder?.visibility === 'Registered Only' ? 'selected' : ''}>Registered Only</option>
+                        <option value="Admin Only" ${existingOrder?.visibility === 'Admin Only' ? 'selected' : ''}>Admin Only</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="order-active" ${existingOrder?.active !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                      <span class="text-xs font-medium text-slate-300">Active in Menu Structure</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end gap-3">
+                  <button id="modal-cancel-mo" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+                  <button id="modal-save-mo" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-lg cursor-pointer">${isEdit ? 'Save Changes' : 'Create Entry'}</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const existingOverlay = document.getElementById('mo-modal-overlay');
+          if (existingOverlay) existingOverlay.remove();
+          document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+          const overlay = document.getElementById('mo-modal-overlay');
+          const closeBtn = document.getElementById('modal-close-mo');
+          const cancelBtn = document.getElementById('modal-cancel-mo');
+          const saveBtn = document.getElementById('modal-save-mo');
+
+          const closeModal = () => { overlay.remove(); };
+          closeBtn.addEventListener('click', closeModal);
+          cancelBtn.addEventListener('click', closeModal);
+
+          saveBtn.addEventListener('click', () => {
+            const id = document.getElementById('order-id').value.trim();
+            const menuName = document.getElementById('order-menu-name').value.trim();
+            const location = document.getElementById('order-location').value.trim();
+            const weight = parseInt(document.getElementById('order-weight').value, 10) || 10;
+            const visibility = document.getElementById('order-visibility').value.trim();
+            const active = document.getElementById('order-active').checked;
+
+            if (!id || !menuName) {
+              alert('Please enter both Order ID and Menu Node Name.');
+              return;
+            }
+
+            const orderObj = { id, menuName, location, weight, visibility, active };
+
+            if (isEdit) {
+              const idx = orders.findIndex(o => o.id === existingOrder.id);
+              if (idx !== -1) orders[idx] = orderObj;
+            } else {
+              orders.push(orderObj);
+            }
+
+            config.orders = orders;
+            config.items = orders;
+            store.saveMenuOrderingConfig(config);
+            closeModal();
+            showToast(`Menu order ${id} saved successfully`, 'success');
+            render();
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-06-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-010 (Menu Ordering)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * MODULE 06-011: Social Links & Community Outbound Channels
+     */
+    function renderSocialLinksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getSocialLinksConfig();
+        let links = Array.isArray(config.links || config.items) ? [...(config.links || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'all';
+
+        function render() {
+          const activeLinks = links.filter(l => l.active !== false);
+          const filtered = links.filter(l => {
+            const matchesSearch = (l.platform || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (l.handle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (l.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'all' ||
+                                  (statusFilter === 'active' && l.active !== false) ||
+                                  (statusFilter === 'inactive' && l.active === false);
+            return matchesSearch && matchesStatus;
+          });
+
+          // Sort by orderWeight
+          filtered.sort((a, b) => (parseInt(a.orderWeight, 10) || 0) - (parseInt(b.orderWeight, 10) || 0));
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-pink-500/20 text-pink-300 border border-pink-500/30">Folder 06 · Batch 3</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Social Links &amp; Aspirant Broadcast Channels</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage official social channels, follower reach counters, handles, outbound target URLs, and brand accent colors.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-soc" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Social Channel
+                  </button>
+                  <button id="btn-inspect-soc" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-soc" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-soc" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Social Channels</div>
+                  <div class="text-2xl font-bold text-white mt-1">${links.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Channels</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeLinks.length} of ${links.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Click Analytics</div>
+                  <div class="text-2xl font-bold text-pink-400 mt-1">${config.settings?.trackClickAnalytics !== false ? 'Tracking Active' : 'Off'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Target Window</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1 font-mono">${config.settings?.openInNewTab !== false ? '_blank' : '_self'}</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="soc-search" placeholder="Search platforms, handles, or IDs..." value="${escapeHtml(searchTerm)}" class="w-full pl-10 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500 font-medium">Filter:</span>
+                  <select id="soc-status-filter" class="px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Platforms (${links.length})</option>
+                    <option value="active" ${statusFilter === 'active' ? 'selected' : ''}>Active Only (${activeLinks.length})</option>
+                    <option value="inactive" ${statusFilter === 'inactive' ? 'selected' : ''}>Inactive Only (${links.length - activeLinks.length})</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3.5 px-4 w-16 text-center">Order</th>
+                        <th class="py-3.5 px-4 w-24">Channel ID</th>
+                        <th class="py-3.5 px-4 w-44">Platform &amp; Brand</th>
+                        <th class="py-3.5 px-4 w-48">Official Handle</th>
+                        <th class="py-3.5 px-4">Outbound URL</th>
+                        <th class="py-3.5 px-4 w-32 text-center">Audience Reach</th>
+                        <th class="py-3.5 px-4 w-28 text-center">Status</th>
+                        <th class="py-3.5 px-4 w-28 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-xs">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-12 text-center text-slate-500">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-800/50 mb-3 text-slate-600">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <p class="font-medium text-slate-400">No social channels found matching your filters.</p>
+                          </td>
+                        </tr>
+                      ` : filtered.map(link => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3.5 px-4 text-center font-mono font-medium text-slate-400">${link.orderWeight || 1}</td>
+                          <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(link.id)}</td>
+                          <td class="py-3.5 px-4 font-semibold text-white">
+                            <div class="flex items-center gap-2">
+                              <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${escapeHtml(link.badgeColor || '#0284c7')}"></span>
+                              <span>${escapeHtml(link.platform)}</span>
+                            </div>
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-300 font-medium">
+                            ${escapeHtml(link.handle)}
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                            <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline flex items-center gap-1">
+                              ${escapeHtml(link.url)}
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                          </td>
+                          <td class="py-3.5 px-4 text-center font-semibold text-emerald-400">
+                            ${escapeHtml(link.followersCount || '0')}
+                          </td>
+                          <td class="py-3.5 px-4 text-center">
+                            <button class="btn-toggle-soc-status cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${link.active !== false ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(link.id)}">
+                              <span class="w-1.5 h-1.5 rounded-full ${link.active !== false ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}"></span>
+                              ${link.active !== false ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td class="py-3.5 px-4 text-right">
+                            <div class="inline-flex items-center gap-1">
+                              <button class="btn-edit-soc p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(link.id)}" title="Edit Channel">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                              </button>
+                              <button class="btn-del-soc p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(link.id)}" title="Delete Channel">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#soc-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          const statusSelect = container.querySelector('#soc-status-filter');
+          if (statusSelect) {
+            statusSelect.addEventListener('change', (e) => {
+              statusFilter = e.target.value;
+              render();
+            });
+          }
+
+          // Add Channel Modal
+          const btnAdd = container.querySelector('#btn-add-soc');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => openSocialModal());
+          }
+
+          // Toggle Status
+          container.querySelectorAll('.btn-toggle-soc-status').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const lnk = links.find(l => l.id === id);
+              if (lnk) {
+                lnk.active = lnk.active === false;
+                config.links = links;
+                config.items = links;
+                store.saveSocialLinksConfig(config);
+                showToast(`Channel ${id} marked ${lnk.active ? 'active' : 'inactive'}`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Edit Channel
+          container.querySelectorAll('.btn-edit-soc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const lnk = links.find(l => l.id === id);
+              if (lnk) openSocialModal(lnk);
+            });
+          });
+
+          // Delete Channel
+          container.querySelectorAll('.btn-del-soc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Are you sure you want to delete channel ${id}?`)) {
+                links = links.filter(l => l.id !== id);
+                config.links = links;
+                config.items = links;
+                store.saveSocialLinksConfig(config);
+                showToast(`Channel ${id} deleted successfully`, 'warning');
+                render();
+              }
+            });
+          });
+
+          // Raw Schema Inspector
+          const btnInspect = container.querySelector('#btn-inspect-soc');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              showSchemaModal('Social Links Config Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-soc');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportSocialLinksManifest();
+              showToast(`Exported ${filename}`, 'success');
+            });
+          }
+
+          // Reset to Factory Defaults
+          const btnReset = container.querySelector('#btn-reset-soc');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Social Links configuration to factory defaults?')) {
+                config = store.resetSocialLinksConfig();
+                links = Array.isArray(config.links || config.items) ? [...(config.links || config.items)] : [];
+                showToast('Social links reset to factory defaults', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        function openSocialModal(existingLink = null) {
+          const isEdit = !!existingLink;
+          const nextNum = links.length + 1;
+          const defaultId = isEdit ? existingLink.id : `SOC-${String(nextNum).padStart(2, '0')}`;
+          const defaultWeight = isEdit ? existingLink.orderWeight : nextNum;
+
+          const modalHtml = `
+            <div id="soc-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-pink-400"></span>
+                    <h3 class="text-base font-bold text-white">${isEdit ? 'Edit Social Channel' : 'Add Social Channel'}</h3>
+                  </div>
+                  <button id="modal-close-soc" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                </div>
+                <div class="p-6 space-y-4 overflow-y-auto">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Channel ID</label>
+                      <input type="text" id="soc-id" value="${escapeHtml(defaultId)}" ${isEdit ? 'readonly' : ''} class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Display Order</label>
+                      <input type="number" id="soc-order" min="1" max="100" value="${defaultWeight}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Platform Name</label>
+                      <input type="text" id="soc-platform" placeholder="e.g. Telegram, WhatsApp" value="${escapeHtml(existingLink?.platform || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-300 mb-1">Brand Accent Color</label>
+                      <input type="text" id="soc-color" placeholder="#0284c7" value="${escapeHtml(existingLink?.badgeColor || '#0284c7')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-blue-500">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Public Handle / Channel Name</label>
+                    <input type="text" id="soc-handle" placeholder="e.g. @CSOdisha_Official" value="${escapeHtml(existingLink?.handle || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Target Destination URL</label>
+                    <input type="text" id="soc-url" placeholder="https://t.me/csodisha" value="${escapeHtml(existingLink?.url || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Followers / Subscriber Reach</label>
+                    <input type="text" id="soc-followers" placeholder="e.g. 48,200" value="${escapeHtml(existingLink?.followersCount || '')}" class="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div class="pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="soc-active" ${existingLink?.active !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                      <span class="text-xs font-medium text-slate-300">Channel Visible &amp; Active</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end gap-3">
+                  <button id="modal-cancel-soc" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+                  <button id="modal-save-soc" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-lg cursor-pointer">${isEdit ? 'Save Changes' : 'Create Channel'}</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const existingOverlay = document.getElementById('soc-modal-overlay');
+          if (existingOverlay) existingOverlay.remove();
+          document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+          const overlay = document.getElementById('soc-modal-overlay');
+          const closeBtn = document.getElementById('modal-close-soc');
+          const cancelBtn = document.getElementById('modal-cancel-soc');
+          const saveBtn = document.getElementById('modal-save-soc');
+
+          const closeModal = () => { overlay.remove(); };
+          closeBtn.addEventListener('click', closeModal);
+          cancelBtn.addEventListener('click', closeModal);
+
+          saveBtn.addEventListener('click', () => {
+            const id = document.getElementById('soc-id').value.trim();
+            const platform = document.getElementById('soc-platform').value.trim();
+            const badgeColor = document.getElementById('soc-color').value.trim() || '#0284c7';
+            const handle = document.getElementById('soc-handle').value.trim();
+            const url = document.getElementById('soc-url').value.trim();
+            const followersCount = document.getElementById('soc-followers').value.trim() || '0';
+            const orderWeight = parseInt(document.getElementById('soc-order').value, 10) || 1;
+            const active = document.getElementById('soc-active').checked;
+
+            if (!id || !platform || !url) {
+              alert('Please enter Channel ID, Platform Name, and Target Destination URL.');
+              return;
+            }
+
+            const socObj = { id, platform, badgeColor, handle, url, followersCount, orderWeight, active };
+
+            if (isEdit) {
+              const idx = links.findIndex(l => l.id === existingLink.id);
+              if (idx !== -1) links[idx] = socObj;
+            } else {
+              links.push(socObj);
+            }
+
+            config.links = links;
+            config.items = links;
+            store.saveSocialLinksConfig(config);
+            closeModal();
+            showToast(`Channel ${id} saved successfully`, 'success');
+            render();
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-06-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-011 (Social Links)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
     /**

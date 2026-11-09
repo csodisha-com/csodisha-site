@@ -8167,6 +8167,235 @@
       return filename;
     },
 
+    // =========================================================================
+    // FOLDER 06 (BATCH 3): Advanced Navigation (06-008 to 06-011)
+    // =========================================================================
+
+    // --- MODULE 06-008: Breadcrumbs Engine ---
+    getBreadcrumbsConfig() {
+      return this._hydrateConfig("cso_breadcrumbs_config", "rules", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { enableSchemaOrg: true, delimiter: "/", homeLabel: "Home", showCurrentPage: true },
+        rules: [
+          { id: "BC-01", pageType: "Job Details", pattern: "Home > Jobs & Careers > [Commission] > [Exam Title]", format: "JSON-LD Microdata", active: true },
+          { id: "BC-02", pageType: "Study Material", pattern: "Home > Study Library > [Subject] > [Topic]", format: "JSON-LD Microdata", active: true },
+          { id: "BC-03", pageType: "Scheme Directory", pattern: "Home > Schemes > [Department] > [Scheme Name]", format: "JSON-LD Microdata", active: true },
+          { id: "BC-04", pageType: "Community District", pattern: "Home > Community > Odisha 30 Districts > [District]", format: "JSON-LD Microdata", active: true }
+        ]
+      }));
+    },
+
+    saveBreadcrumbsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        settings: {
+          enableSchemaOrg: config.settings?.enableSchemaOrg !== false,
+          delimiter: String(config.settings?.delimiter || "/").trim(),
+          homeLabel: String(config.settings?.homeLabel || "Home").trim(),
+          showCurrentPage: config.settings?.showCurrentPage !== false
+        },
+        rules: Array.isArray(config.rules || config.items) ? (config.rules || config.items).map((item, i) => ({
+          id: String(item.id || "BC-" + String(i + 1).padStart(2, "0")),
+          pageType: String(item.pageType || "").trim(),
+          pattern: String(item.pattern || "").trim(),
+          format: String(item.format || "JSON-LD Microdata").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.rules;
+      localStorage.setItem("cso_breadcrumbs_config", JSON.stringify(clean));
+      this.logAudit("BREADCRUMBS_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Breadcrumbs configuration updated (" + clean.rules.length + " rules).");
+      return true;
+    },
+
+    resetBreadcrumbsConfig() {
+      localStorage.removeItem("cso_breadcrumbs_config");
+      this.logAudit("BREADCRUMBS_CONFIG_RESET", "SYSTEM_RESET", "Breadcrumbs reset to factory defaults.");
+      return this.getBreadcrumbsConfig();
+    },
+
+    exportBreadcrumbsManifest() {
+      const config = this.getBreadcrumbsConfig();
+      const filename = "breadcrumbs_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BREADCRUMBS_MANIFEST_EXPORTED", "DATA_EXPORT", "Breadcrumbs manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-009: Internal Links Engine ---
+    getInternalLinksConfig() {
+      return this._hydrateConfig("cso_internal_links_config", "links", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { maxLinksPerArticle: 4, openInNewTab: false, caseSensitive: false },
+        links: [
+          { id: "IL-01", keyword: "OAS 2026", targetUrl: "/jobs-careers/?filter=oas", priority: 1, matchCount: 842, active: true },
+          { id: "IL-02", keyword: "Odisha GK", targetUrl: "/study-library/?topic=odisha-gk", priority: 2, matchCount: 1420, active: true },
+          { id: "IL-03", keyword: "Medhabruti", targetUrl: "/schemes-benefits/?scheme=medhabruti", priority: 3, matchCount: 310, active: true },
+          { id: "IL-04", keyword: "PYQ Papers", targetUrl: "/study-library/?filter=pyq", priority: 4, matchCount: 975, active: true }
+        ]
+      }));
+    },
+
+    saveInternalLinksConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        settings: {
+          maxLinksPerArticle: parseInt(config.settings?.maxLinksPerArticle, 10) || 4,
+          openInNewTab: !!config.settings?.openInNewTab,
+          caseSensitive: !!config.settings?.caseSensitive
+        },
+        links: Array.isArray(config.links || config.items) ? (config.links || config.items).map((item, i) => ({
+          id: String(item.id || "IL-" + String(i + 1).padStart(2, "0")),
+          keyword: String(item.keyword || "").trim(),
+          targetUrl: String(item.targetUrl || "/").trim(),
+          priority: parseInt(item.priority, 10) || (i + 1),
+          matchCount: parseInt(item.matchCount, 10) || 0,
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.links;
+      localStorage.setItem("cso_internal_links_config", JSON.stringify(clean));
+      this.logAudit("INTERNAL_LINKS_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Internal links configuration updated (" + clean.links.length + " links).");
+      return true;
+    },
+
+    resetInternalLinksConfig() {
+      localStorage.removeItem("cso_internal_links_config");
+      this.logAudit("INTERNAL_LINKS_CONFIG_RESET", "SYSTEM_RESET", "Internal links reset to factory defaults.");
+      return this.getInternalLinksConfig();
+    },
+
+    exportInternalLinksManifest() {
+      const config = this.getInternalLinksConfig();
+      const filename = "internal_links_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("INTERNAL_LINKS_MANIFEST_EXPORTED", "DATA_EXPORT", "Internal links manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-010: Menu Ordering Engine ---
+    getMenuOrderingConfig() {
+      return this._hydrateConfig("cso_menu_ordering_config", "orders", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { enforceStrictNumericWeight: true, autoRebalanceGaps: true },
+        orders: [
+          { id: "MO-01", menuName: "Jobs & Careers", location: "Header Nav", weight: 10, visibility: "Public", active: true },
+          { id: "MO-02", menuName: "Schemes & Benefits", location: "Header Nav", weight: 20, visibility: "Public", active: true },
+          { id: "MO-03", menuName: "Study Library", location: "Header Nav", weight: 30, visibility: "Public", active: true },
+          { id: "MO-04", menuName: "Community", location: "Header Nav", weight: 40, visibility: "Public", active: true },
+          { id: "MO-05", menuName: "Aspirant Tools", location: "Header Nav", weight: 50, visibility: "Public", active: true }
+        ]
+      }));
+    },
+
+    saveMenuOrderingConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        settings: {
+          enforceStrictNumericWeight: config.settings?.enforceStrictNumericWeight !== false,
+          autoRebalanceGaps: config.settings?.autoRebalanceGaps !== false
+        },
+        orders: Array.isArray(config.orders || config.items) ? (config.orders || config.items).map((item, i) => ({
+          id: String(item.id || "MO-" + String(i + 1).padStart(2, "0")),
+          menuName: String(item.menuName || "").trim(),
+          location: String(item.location || "Header Nav").trim(),
+          weight: parseInt(item.weight, 10) || ((i + 1) * 10),
+          visibility: String(item.visibility || "Public").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.orders;
+      localStorage.setItem("cso_menu_ordering_config", JSON.stringify(clean));
+      this.logAudit("MENU_ORDERING_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Menu ordering configuration updated (" + clean.orders.length + " entries).");
+      return true;
+    },
+
+    resetMenuOrderingConfig() {
+      localStorage.removeItem("cso_menu_ordering_config");
+      this.logAudit("MENU_ORDERING_CONFIG_RESET", "SYSTEM_RESET", "Menu ordering reset to factory defaults.");
+      return this.getMenuOrderingConfig();
+    },
+
+    exportMenuOrderingManifest() {
+      const config = this.getMenuOrderingConfig();
+      const filename = "menu_ordering_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MENU_ORDERING_MANIFEST_EXPORTED", "DATA_EXPORT", "Menu ordering manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-011: Social Links Engine ---
+    getSocialLinksConfig() {
+      return this._hydrateConfig("cso_social_links_config", "links", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { trackClickAnalytics: true, openInNewTab: true },
+        links: [
+          { id: "SOC-01", platform: "Telegram", handle: "@CSOdisha_Official", url: "https://t.me/csodisha", followersCount: "48,200", badgeColor: "#0088cc", orderWeight: 1, active: true },
+          { id: "SOC-02", platform: "WhatsApp Alerts", handle: "CS Odisha Aspirants Channel", url: "https://whatsapp.com/channel/csodisha", followersCount: "32,500", badgeColor: "#25d366", orderWeight: 2, active: true },
+          { id: "SOC-03", platform: "YouTube", handle: "Common Sense Odisha", url: "https://youtube.com/@csodisha", followersCount: "18,400", badgeColor: "#ff0000", orderWeight: 3, active: true },
+          { id: "SOC-04", platform: "Twitter / X", handle: "@CSOdisha", url: "https://x.com/csodisha", followersCount: "8,900", badgeColor: "#1da1f2", orderWeight: 4, active: true }
+        ]
+      }));
+    },
+
+    saveSocialLinksConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        settings: {
+          trackClickAnalytics: config.settings?.trackClickAnalytics !== false,
+          openInNewTab: config.settings?.openInNewTab !== false
+        },
+        links: Array.isArray(config.links || config.items) ? (config.links || config.items).map((item, i) => ({
+          id: String(item.id || "SOC-" + String(i + 1).padStart(2, "0")),
+          platform: String(item.platform || "").trim(),
+          handle: String(item.handle || "").trim(),
+          url: String(item.url || "#").trim(),
+          followersCount: String(item.followersCount || "0").trim(),
+          badgeColor: String(item.badgeColor || "#0284c7").trim(),
+          orderWeight: parseInt(item.orderWeight, 10) || (i + 1),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.links;
+      localStorage.setItem("cso_social_links_config", JSON.stringify(clean));
+      this.logAudit("SOCIAL_LINKS_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Social links configuration updated (" + clean.links.length + " links).");
+      return true;
+    },
+
+    resetSocialLinksConfig() {
+      localStorage.removeItem("cso_social_links_config");
+      this.logAudit("SOCIAL_LINKS_CONFIG_RESET", "SYSTEM_RESET", "Social links reset to factory defaults.");
+      return this.getSocialLinksConfig();
+    },
+
+    exportSocialLinksManifest() {
+      const config = this.getSocialLinksConfig();
+      const filename = "social_links_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SOCIAL_LINKS_MANIFEST_EXPORTED", "DATA_EXPORT", "Social links manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
@@ -8712,7 +8941,15 @@
           security: this.getSecurity(),
           audit: this.getAudit(),
           broadcast: this.getActiveBroadcast(),
-          inquiries: this.getInquiries()
+          inquiries: this.getInquiries(),
+          headerNav: this.getHeaderNavigationConfig(),
+          megaMenu: this.getMegaMenuConfig(),
+          footerNav: this.getFooterNavigationConfig(),
+          sidebarMenus: this.getSidebarMenusConfig(),
+          breadcrumbs: this.getBreadcrumbsConfig(),
+          internalLinks: this.getInternalLinksConfig(),
+          menuOrdering: this.getMenuOrderingConfig(),
+          socialLinks: this.getSocialLinksConfig()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
