@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="About Common Sense Odisha - Dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation.">
+  <title>About Us | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .about-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .about-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--mut, #64748b);
+    }
+    .about-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .about-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .about-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .about-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+      margin-bottom: 14px;
+    }
+    .about-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+      line-height: 1.25;
+    }
+    .about-hero p.lead {
+      line-height: 1.7;
+      color: var(--mut, #475569);
+      font-size: 1.05rem;
+      margin: 0;
+    }
+    .about-statements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .statement-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 24px 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .statement-card h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.15rem;
+      margin: 0 0 10px;
+      color: var(--tx, #0f172a);
+    }
+    .statement-card p {
+      margin: 0;
+      line-height: 1.65;
+      font-size: 0.95rem;
+      color: var(--mut, #475569);
+    }
+    .section-heading {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--tx, #0f172a);
+      margin: 36px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .pillar-box {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .pillar-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+    }
+    .pillar-box-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .pillar-icon-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0fa968;
+    }
+    .pillar-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--tx, #0f172a);
+    }
+    .pillar-desc {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--mut, #475569);
+      margin: 0;
+    }
+    .milestones-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    .milestone-item {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    .milestone-year-badge {
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.12);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.25);
+      flex-shrink: 0;
+    }
+    .milestone-body {
+      flex: 1;
+    }
+    .milestone-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--tx, #0f172a);
+      margin-bottom: 4px;
+    }
+    .milestone-desc {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--mut, #475569);
+      margin: 0;
+    }
+    @media (max-width: 640px) {
+      .milestone-item {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="top site-header__top" id="header-top" role="banner">
+  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+    <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
+  </a>
+  <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+  <span id="ctl" style="display:contents"></span>
+  <span class="sp"></span>
+  <div class="acct">
+    <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+    <span id="auth" style="display:contents"></span>
+  </div>
+</header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
+
+<main class="about-main">
+  <div class="about-breadcrumbs">
+    <a href="/">Home</a> / <span>About Us</span>
+  </div>
+
+  <section class="about-hero" id="about-hero-section">
+    <span class="about-badge" id="about-badge">Official Mission Portal</span>
+    <h1 id="about-headline">Democratizing Academic &amp; Career Intelligence for Odisha's Youth</h1>
+    <p class="lead" id="about-subheadline">A dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.</p>
+  </section>
+
+  <div class="about-statements-grid">
+    <div class="statement-card">
+      <h2>
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#0fa968;"></span>
+        Our Mission
+      </h2>
+      <p id="about-mission-text">To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.</p>
+    </div>
+
+    <div class="statement-card">
+      <h2>
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#0284c7;"></span>
+        Our Vision
+      </h2>
+      <p id="about-vision-text">An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools.</p>
+    </div>
+  </div>
+
+  <h2 class="section-heading">Core Ideological Pillars</h2>
+  <div class="pillars-grid" id="about-pillars-grid"></div>
+
+  <h2 class="section-heading">Platform Milestones &amp; Journey</h2>
+  <div class="milestones-timeline" id="about-milestones-list"></div>
+</main>
+
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-footer-logo" width="96" height="34">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="jobs-careers/">Jobs &amp; Careers</a>
+      <a href="schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="study-library/">Study Library</a>
+      <a href="community/">Community</a>
+      <a href="about/">About CSO</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="support/#faqs">Help &amp; FAQs</a>
+      <a href="support/#report-error">Report an Error</a>
+      <a href="support/#suggest-resource">Suggest Resource</a>
+      <a href="privacy-policy/">Privacy Policy</a>
+      <a href="terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+  </div>
+</div></footer>
+
+<script>
+(function() {
+  function escapeText(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function hydrateAboutMission() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_about_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        hero: {
+          headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+          subheadline: "A dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+          badge: "Official Mission Portal",
+          enabled: true
+        },
+        statements: {
+          mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.",
+          vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools."
+        },
+        pillars: [
+          { title: "Gazette Accuracy", description: "Zero speculation. Every syllabus breakdown is verified against official state notification releases.", active: true },
+          { title: "Universal 30-District Access", description: "Digital access architected for seamless loading even in remote rural blocks with low-bandwidth connections.", active: true },
+          { title: "100% Free Public Resource", description: "Free access to structured study templates, previous papers, and transparent guidance.", active: true },
+          { title: "Aspirant-Centric Architecture", description: "Interface built specifically for seamless navigation on mobile devices and low-spec hardware.", active: true }
+        ],
+        milestones: [
+          { year: "2023", title: "Foundation & Prototype", description: "Inception of Common Sense Odisha to address rural information asymmetry." },
+          { year: "2024", title: "Syllabus Digitization", description: "Coverage of OSSC, OPSC, and Odisha B.Ed curricula." },
+          { year: "2025", title: "Statewide Expansion", description: "Reaching aspirants across all 30 districts of Odisha." },
+          { year: "2026", title: "Sovereign Admin Suite", description: "Deployment of 19-folder Cloudflare Pages super admin control architecture." }
+        ]
+      };
+    }
+
+    // Hero Hydration
+    var heroSection = document.getElementById('about-hero-section');
+    var heroHeadline = (config.hero && config.hero.headline) || config.headline || '';
+    var heroSub = (config.hero && config.hero.subheadline) || config.subheadline || '';
+    var heroBadge = (config.hero && config.hero.badge) || 'Official Mission Portal';
+    var heroEnabled = config.hero ? (config.hero.enabled !== false) : true;
+
+    if (heroSection) {
+      heroSection.style.display = heroEnabled ? 'block' : 'none';
+    }
+
+    var badgeEl = document.getElementById('about-badge');
+    if (badgeEl && heroBadge) badgeEl.textContent = heroBadge;
+
+    var headlineEl = document.getElementById('about-headline');
+    if (headlineEl && heroHeadline) headlineEl.textContent = heroHeadline;
+
+    var subEl = document.getElementById('about-subheadline');
+    if (subEl && heroSub) subEl.textContent = heroSub;
+
+    // Statements
+    var mission = (config.statements && config.statements.mission) || config.mission || '';
+    var vision = (config.statements && config.statements.vision) || config.vision || '';
+
+    var missionEl = document.getElementById('about-mission-text');
+    if (missionEl && mission) missionEl.textContent = mission;
+
+    var visionEl = document.getElementById('about-vision-text');
+    if (visionEl && vision) visionEl.textContent = vision;
+
+    // Pillars
+    var pillarsGrid = document.getElementById('about-pillars-grid');
+    var pillarsList = Array.isArray(config.pillars) ? config.pillars.filter(function(p) { return p.active !== false; }) : [];
+    if (pillarsGrid && pillarsList.length > 0) {
+      pillarsGrid.innerHTML = pillarsList.map(function(p) {
+        return '<div class="pillar-box">' +
+               '<div class="pillar-box-header">' +
+                 '<span class="pillar-icon-dot"></span>' +
+                 '<span class="pillar-title">' + escapeText(p.title) + '</span>' +
+               '</div>' +
+               '<p class="pillar-desc">' + escapeText(p.description) + '</p>' +
+               '</div>';
+      }).join('');
+    }
+
+    // Milestones
+    var milestonesListEl = document.getElementById('about-milestones-list');
+    var milestonesList = Array.isArray(config.milestones) ? config.milestones : [];
+    if (milestonesListEl && milestonesList.length > 0) {
+      milestonesListEl.innerHTML = milestonesList.map(function(m) {
+        return '<div class="milestone-item">' +
+               '<span class="milestone-year-badge">' + escapeText(m.year) + '</span>' +
+               '<div class="milestone-body">' +
+                 '<div class="milestone-title">' + escapeText(m.title) + '</div>' +
+                 '<p class="milestone-desc">' + escapeText(m.description) + '</p>' +
+               '</div>' +
+               '</div>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateAboutMission);
+  } else {
+    hydrateAboutMission();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_about_config') {
+      hydrateAboutMission();
+    }
+  });
+})();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>

@@ -2601,7 +2601,7 @@
       return filename;
     },
 
-    // 25. About Us & Institutional Mission Engine (module-03-002)
+    // 25. About Us & Institutional Mission Engine (module-03-001)
     getAboutConfig() {
       let config = null;
       try {
@@ -2609,61 +2609,32 @@
         if (raw) config = JSON.parse(raw);
       } catch (_) {}
 
-      if (!config || typeof config !== 'object') {
+      if (!config || typeof config !== 'object' || !config.meta) {
         config = {
-          headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
-          subheadline: "A dedicated non-profit digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
-          mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence and verified state syllabus breakdowns.",
-          vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal, transparent access to recruitment notifications, verified learning materials, and mentorship tools to realize their full potential.",
+          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          hero: {
+            headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+            subheadline: "A dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+            badge: "Official Mission Portal",
+            enabled: true
+          },
+          statements: {
+            mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.",
+            vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools."
+          },
           pillars: [
-            {
-              id: "PIL-01",
-              title: "Verified Authenticity",
-              description: "All examination syllabi, government notifications, and study materials are cross-checked against official state gazettes and board notices.",
-              icon: "shield"
-            },
-            {
-              id: "PIL-02",
-              title: "Universal 30-District Access",
-              description: "Low-bandwidth optimized, fast static delivery ensuring aspirants in rural and tribal districts can study without interruption.",
-              icon: "globe"
-            },
-            {
-              id: "PIL-03",
-              title: "100% Free & Open Public Resource",
-              description: "No paywalls, subscriptions, or predatory monetization schemes on foundational public educational resources.",
-              icon: "sparkles"
-            },
-            {
-              id: "PIL-04",
-              title: "Aspirant-Centric Architecture",
-              description: "Engineered specifically for state candidates preparing for OSSC, OPSC, OSSSC, Teaching (OTET/OSSTET), and Odisha Police.",
-              icon: "academic"
-            }
+            { id: "PIL-01", title: "Gazette Accuracy", description: "Zero speculation. Every syllabus breakdown is verified against official state notification releases.", icon: "shield", active: true },
+            { id: "PIL-02", title: "Universal 30-District Access", description: "Digital access architected for seamless loading even in remote rural blocks with low-bandwidth connections.", icon: "map", active: true },
+            { id: "PIL-03", title: "100% Free Public Resource", description: "Free access to structured study templates, previous papers, and transparent guidance.", icon: "book", active: true },
+            { id: "PIL-04", title: "Aspirant-Centric Architecture", description: "Interface built specifically for seamless navigation on mobile devices and low-spec hardware.", icon: "users", active: true }
           ],
           milestones: [
-            {
-              year: "2023",
-              title: "Odisha Education Gateway Inception",
-              description: "Conceptualized as a grassroots community repository for rural Odisha students lacking access to high-cost coaching institutes."
-            },
-            {
-              year: "2024",
-              title: "State Syllabus Digitization",
-              description: "Digitized 1,200+ pages of official OPSC and OSSC exam syllabi into interactive online study guides."
-            },
-            {
-              year: "2025",
-              title: "30-District Aspirant Milestone",
-              description: "Reached over 50,000 monthly active aspirants across all 30 revenue districts of Odisha with instant notification alerts."
-            },
-            {
-              year: "2026",
-              title: "Master Enterprise Admin & Architecture",
-              description: "Deployed the 241-module sovereign admin operations suite and unified offline-first study library."
-            }
+            { id: "MLS-01", year: "2023", title: "Foundation & Prototype", description: "Inception of Common Sense Odisha to address rural information asymmetry." },
+            { id: "MLS-02", year: "2024", title: "Syllabus Digitization", description: "Coverage of OSSC, OPSC, and Odisha B.Ed curricula." },
+            { id: "MLS-03", year: "2025", title: "Statewide Expansion", description: "Reaching aspirants across all 30 districts of Odisha." },
+            { id: "MLS-04", year: "2026", title: "Sovereign Admin Suite", description: "Deployment of 19-folder Cloudflare Pages super admin control architecture." }
           ],
-          updatedAt: new Date().toISOString()
+          customSections: []
         };
 
         try {
@@ -2676,16 +2647,72 @@
 
     saveAboutConfig(config) {
       if (!config || typeof config !== 'object') return false;
-      config.updatedAt = new Date().toISOString();
+      if (!config.meta) config.meta = {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
       save('cso_about_config', config);
       this.logAudit('ABOUT_CONFIG_UPDATED', 'ABOUT_MANAGEMENT', `About Us content, pillars, and institutional milestones updated.`);
       return config;
     },
 
+    importAboutConfig(jsonString) {
+      if (!jsonString || typeof jsonString !== 'string') throw new Error("Invalid input format.");
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonString);
+      } catch (err) {
+        throw new Error("Invalid JSON syntax: " + err.message);
+      }
+
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error("Imported data must be an object.");
+      }
+
+      if (!parsed.meta) parsed.meta = {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      parsed.meta.lastEditedBy = "admin@csodisha.com (Import)";
+      save('cso_about_config', parsed);
+      this.logAudit('ABOUT_CONFIG_IMPORTED', 'ABOUT_MANAGEMENT', `About Us config imported from JSON payload.`);
+      return parsed;
+    },
+
+    resetAboutConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        hero: {
+          headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+          subheadline: "A dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+          badge: "Official Mission Portal",
+          enabled: true
+        },
+        statements: {
+          mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.",
+          vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools."
+        },
+        pillars: [
+          { id: "PIL-01", title: "Gazette Accuracy", description: "Zero speculation. Every syllabus breakdown is verified against official state notification releases.", icon: "shield", active: true },
+          { id: "PIL-02", title: "Universal 30-District Access", description: "Digital access architected for seamless loading even in remote rural blocks with low-bandwidth connections.", icon: "map", active: true },
+          { id: "PIL-03", title: "100% Free Public Resource", description: "Free access to structured study templates, previous papers, and transparent guidance.", icon: "book", active: true },
+          { id: "PIL-04", title: "Aspirant-Centric Architecture", description: "Interface built specifically for seamless navigation on mobile devices and low-spec hardware.", icon: "users", active: true }
+        ],
+        milestones: [
+          { id: "MLS-01", year: "2023", title: "Foundation & Prototype", description: "Inception of Common Sense Odisha to address rural information asymmetry." },
+          { id: "MLS-02", year: "2024", title: "Syllabus Digitization", description: "Coverage of OSSC, OPSC, and Odisha B.Ed curricula." },
+          { id: "MLS-03", year: "2025", title: "Statewide Expansion", description: "Reaching aspirants across all 30 districts of Odisha." },
+          { id: "MLS-04", year: "2026", title: "Sovereign Admin Suite", description: "Deployment of 19-folder Cloudflare Pages super admin control architecture." }
+        ],
+        customSections: []
+      };
+
+      save('cso_about_config', initial);
+      this.logAudit('ABOUT_CONFIG_RESET', 'ABOUT_MANAGEMENT', `About Us configuration reset to initial factory seed.`);
+      return initial;
+    },
+
     exportAboutManifest() {
       const config = this.getAboutConfig();
       const timestamp = Date.now();
-      const filename = `cso-about-mission-${timestamp}.json`;
+      const filename = `cso-about-config-${timestamp}.json`;
       const bundle = {
         manifestVersion: "2026.11",
         exportedAt: new Date(timestamp).toISOString(),
@@ -2703,7 +2730,7 @@
       a.remove();
       URL.revokeObjectURL(url);
 
-      this.logAudit('ABOUT_MANIFEST_EXPORTED', 'DATA_EXPORT', `About Us & Mission manifest exported (${filename}).`);
+      this.logAudit('ABOUT_MANIFEST_EXPORTED', 'DATA_EXPORT', `About Us configuration manifest exported (${filename}).`);
       return filename;
     },
 

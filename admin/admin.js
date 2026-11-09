@@ -316,9 +316,9 @@ async function loadMasterNavigation() {
       } else if (moduleId === 'module-02-011') {
         renderTrashAndRestoreWorkspace();
       } else if (moduleId === 'module-03-001') {
-        renderSiteIdentityWorkspace();
+        renderAboutUsWorkspace();
       } else if (moduleId === 'module-03-002') {
-        renderAboutMissionWorkspace();
+        renderContactDirectoryWorkspace();
       } else if (moduleId === 'module-03-003') {
         renderContactDirectoryWorkspace();
       } else if (folderId === 'folder-02') {
@@ -5231,27 +5231,40 @@ async function loadMasterNavigation() {
     }
 
     /**
-     * VIEW 3b: About Us & Mission Management (module-03-002)
+     * VIEW 3a: About Us & Mission Studio (module-03-001 / module-03-002)
      */
-    function renderAboutMissionWorkspace() {
+    function renderAboutUsWorkspace() {
       // Header Breadcrumb
       dom.breadcrumbFolder.textContent = "Website Information & Legal";
-      dom.breadcrumbModule.textContent = "About Us & Mission Management (module-03-002)";
+      dom.breadcrumbModule.textContent = "About Us (module-03-001)";
 
-      // Top Action Bar
+      // Top Action Toolbar
       dom.moduleHeaderActions.innerHTML = `
-        <div class="flex items-center gap-2">
-          <button id="btnSaveAboutMission" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnSaveAboutStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Save & Publish Mission
+            Save & Publish Changes
           </button>
-          <a href="/about/" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+          <a href="/about.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Preview About Page ↗
+            Preview Live Page ↗
           </a>
-          <button id="btnExportAboutJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+          <button id="btnToggleJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            Raw JSON Editor
+          </button>
+          <button id="btnExportAboutConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export Manifest (JSON)
+            Export Config
+          </button>
+          <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Import Config
+            <input id="inputImportAboutConfig" type="file" accept=".json,application/json" class="hidden">
+          </label>
+          <button id="btnResetAboutConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Reset to Default
           </button>
         </div>
       `;
@@ -5260,18 +5273,62 @@ async function loadMasterNavigation() {
       let about = (window.CSOSuperStore && typeof window.CSOSuperStore.getAboutConfig === 'function')
         ? window.CSOSuperStore.getAboutConfig()
         : {
-            headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
-            subheadline: "A dedicated non-profit digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
-            mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence and verified state syllabus breakdowns.",
-            vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal, transparent access to recruitment notifications, verified learning materials, and mentorship tools to realize their full potential.",
+            meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+            hero: {
+              headline: "Democratizing Academic & Career Intelligence for Odisha's Youth",
+              subheadline: "A dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation across all 30 districts.",
+              badge: "Official Mission Portal",
+              enabled: true
+            },
+            statements: {
+              mission: "To eliminate geographic and socio-economic information barriers for competitive examination aspirants in Odisha by delivering authenticated, zero-cost academic intelligence.",
+              vision: "An Odisha where every candidate from Mayurbhanj to Koraput possesses equal access to authenticated academic tools."
+            },
             pillars: [],
             milestones: [],
-            updatedAt: new Date().toISOString()
+            customSections: []
           };
 
-      // Clone arrays for local mutation
       let currentPillars = Array.isArray(about.pillars) ? JSON.parse(JSON.stringify(about.pillars)) : [];
       let currentMilestones = Array.isArray(about.milestones) ? JSON.parse(JSON.stringify(about.milestones)) : [];
+
+      function syncJsonEditor() {
+        const jsonTextarea = document.getElementById('textareaAboutRawJson');
+        if (jsonTextarea) {
+          const snapshot = gatherFormState();
+          jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+        }
+      }
+
+      function gatherFormState() {
+        const headlineInput = document.getElementById('inputAboutHeadline');
+        const subheadlineInput = document.getElementById('inputAboutSubheadline');
+        const badgeInput = document.getElementById('inputAboutBadge');
+        const heroToggle = document.getElementById('toggleAboutHeroEnabled');
+        const missionText = document.getElementById('textareaAboutMission');
+        const visionText = document.getElementById('textareaAboutVision');
+
+        return {
+          meta: {
+            version: (about.meta && about.meta.version) || "1.0",
+            lastEditedBy: "admin@csodisha.com",
+            updatedAt: (about.meta && about.meta.updatedAt) || new Date().toISOString()
+          },
+          hero: {
+            headline: headlineInput ? headlineInput.value.trim() : (about.hero?.headline || ''),
+            subheadline: subheadlineInput ? subheadlineInput.value.trim() : (about.hero?.subheadline || ''),
+            badge: badgeInput ? badgeInput.value.trim() : (about.hero?.badge || 'Official Mission Portal'),
+            enabled: heroToggle ? heroToggle.checked : (about.hero?.enabled !== false)
+          },
+          statements: {
+            mission: missionText ? missionText.value.trim() : (about.statements?.mission || ''),
+            vision: visionText ? visionText.value.trim() : (about.statements?.vision || '')
+          },
+          pillars: currentPillars,
+          milestones: currentMilestones,
+          customSections: about.customSections || []
+        };
+      }
 
       function renderPillarsList() {
         const container = document.getElementById('aboutPillarsContainer');
@@ -5282,20 +5339,99 @@ async function loadMasterNavigation() {
         }
 
         container.innerHTML = currentPillars.map((p, idx) => `
-          <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group">
-            <div class="space-y-1 flex-1">
+          <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-pillar-index="${idx}">
+            <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
               <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span class="text-xs font-bold text-white">${escapeHtml(p.title || 'Untitled Pillar')}</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${escapeHtml(p.id || `PIL-${idx+1}`)}</span>
+                <span class="w-2.5 h-2.5 rounded-full ${p.active !== false ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+                <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(p.id || `PIL-${idx+1}`)}</span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-400 border border-slate-700">Icon: ${escapeHtml(p.icon || 'shield')}</span>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(p.description || '')}</p>
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                  <input type="checkbox" class="pillar-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${p.active !== false ? 'checked' : ''}>
+                  Active
+                </label>
+                <button data-move-up="${idx}" class="btn-pillar-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
+                  ▲
+                </button>
+                <button data-move-down="${idx}" class="btn-pillar-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentPillars.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentPillars.length - 1 ? 'disabled' : ''}>
+                  ▼
+                </button>
+                <button data-remove-pillar="${idx}" class="btn-remove-pillar px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                  Delete
+                </button>
+              </div>
             </div>
-            <button data-remove-pillar="${idx}" class="btn-remove-pillar px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
-              Remove
-            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="md:col-span-1">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Pillar Title</label>
+                <input type="text" class="pillar-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(p.title || '')}">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Pillar Description</label>
+                <input type="text" class="pillar-desc-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(p.description || '')}">
+              </div>
+            </div>
           </div>
         `).join('');
+
+        // Pillar event listeners
+        container.querySelectorAll('.pillar-active-checkbox').forEach(cb => {
+          cb.addEventListener('change', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentPillars[index]) {
+              currentPillars[index].active = e.target.checked;
+              syncJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.pillar-title-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentPillars[index]) {
+              currentPillars[index].title = e.target.value;
+              syncJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.pillar-desc-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentPillars[index]) {
+              currentPillars[index].description = e.target.value;
+              syncJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-pillar-move-up').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.currentTarget.getAttribute('data-move-up'), 10);
+            if (!isNaN(idx) && idx > 0) {
+              const temp = currentPillars[idx];
+              currentPillars[idx] = currentPillars[idx - 1];
+              currentPillars[idx - 1] = temp;
+              renderPillarsList();
+              syncJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-pillar-move-down').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.currentTarget.getAttribute('data-move-down'), 10);
+            if (!isNaN(idx) && idx < currentPillars.length - 1) {
+              const temp = currentPillars[idx];
+              currentPillars[idx] = currentPillars[idx + 1];
+              currentPillars[idx + 1] = temp;
+              renderPillarsList();
+              syncJsonEditor();
+            }
+          });
+        });
 
         container.querySelectorAll('.btn-remove-pillar').forEach(btn => {
           btn.addEventListener('click', (e) => {
@@ -5303,6 +5439,8 @@ async function loadMasterNavigation() {
             if (!isNaN(index) && index >= 0 && index < currentPillars.length) {
               currentPillars.splice(index, 1);
               renderPillarsList();
+              syncJsonEditor();
+              showToast("Pillar removed from active list.", "info");
             }
           });
         });
@@ -5317,19 +5455,63 @@ async function loadMasterNavigation() {
         }
 
         container.innerHTML = currentMilestones.map((m, idx) => `
-          <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group">
-            <div class="space-y-1 flex-1">
+          <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-milestone-index="${idx}">
+            <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800/80">${escapeHtml(m.year || 'Year')}</span>
-                <span class="text-xs font-bold text-white">${escapeHtml(m.title || 'Milestone Title')}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(m.id || `MLS-${idx+1}`)}</span>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(m.description || '')}</p>
+              <button data-remove-milestone="${idx}" class="btn-remove-milestone px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                Delete
+              </button>
             </div>
-            <button data-remove-milestone="${idx}" class="btn-remove-milestone px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
-              Remove
-            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div class="md:col-span-1">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Year</label>
+                <input type="text" class="milestone-year-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(m.year || '')}">
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Achievement Title</label>
+                <input type="text" class="milestone-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(m.title || '')}">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">Description</label>
+                <input type="text" class="milestone-desc-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(m.description || '')}">
+              </div>
+            </div>
           </div>
         `).join('');
+
+        container.querySelectorAll('.milestone-year-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentMilestones[index]) {
+              currentMilestones[index].year = e.target.value;
+              syncJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.milestone-title-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentMilestones[index]) {
+              currentMilestones[index].title = e.target.value;
+              syncJsonEditor();
+            }
+          });
+        });
+
+        container.querySelectorAll('.milestone-desc-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            if (!isNaN(index) && currentMilestones[index]) {
+              currentMilestones[index].description = e.target.value;
+              syncJsonEditor();
+            }
+          });
+        });
 
         container.querySelectorAll('.btn-remove-milestone').forEach(btn => {
           btn.addEventListener('click', (e) => {
@@ -5337,6 +5519,8 @@ async function loadMasterNavigation() {
             if (!isNaN(index) && index >= 0 && index < currentMilestones.length) {
               currentMilestones.splice(index, 1);
               renderMilestonesList();
+              syncJsonEditor();
+              showToast("Milestone removed from active list.", "info");
             }
           });
         });
@@ -5349,77 +5533,123 @@ async function loadMasterNavigation() {
             <div>
               <h2 class="text-base font-bold text-white flex items-center gap-2">
                 About Us & Institutional Mission Studio
-                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-002</span>
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-001</span>
               </h2>
               <p class="text-xs text-slate-400 mt-0.5">Control public-facing institutional statements, core ideological pillars, and historical milestones.</p>
             </div>
-            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg">
-              Last Updated: <span id="aboutLastUpdated" class="text-emerald-400 font-bold">${new Date(about.updatedAt).toLocaleDateString()}</span>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+              <span>Version: <strong class="text-cyan-400">${escapeHtml(about.meta?.version || '1.0')}</strong></span>
+              <span>Updated: <span id="aboutLastUpdated" class="text-emerald-400 font-bold">${new Date(about.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
             </div>
           </div>
 
-          <!-- Card 1: Core Institutional Statements -->
+          <!-- Card 4: Raw State & Developer Console (Expandable / Drawer) -->
+          <div id="aboutRawJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                  Raw State Developer Console (JSON)
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+            </div>
+            <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for automated bulk updates and schema migrations.</p>
+            <textarea id="textareaAboutRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+            <div class="flex justify-end gap-2">
+              <button id="btnApplyRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Apply JSON Changes
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 1: Hero & Core Statements Editor -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-              <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                Public Headlines & Statements
-              </h3>
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Hero & Core Institutional Statements
+                </h3>
+              </div>
+              <label class="flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
+                <input id="toggleAboutHeroEnabled" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" ${(about.hero?.enabled !== false) ? 'checked' : ''}>
+                Enable Public Hero Section
+              </label>
             </div>
 
-            <div class="grid grid-cols-1 gap-4">
-              <div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-200 mb-1">Hero Headline <span class="text-rose-400">*</span></label>
-                <input id="inputAboutHeadline" type="text" value="${escapeHtml(about.headline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-medium">
+                <input id="inputAboutHeadline" type="text" value="${escapeHtml(about.hero?.headline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-medium">
+              </div>
+
+              <div class="sm:col-span-1">
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Portal Badge Text</label>
+                <input id="inputAboutBadge" type="text" value="${escapeHtml(about.hero?.badge || 'Official Mission Portal')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Subheadline / Narrative Summary</label>
+              <input id="inputAboutSubheadline" type="text" value="${escapeHtml(about.hero?.subheadline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Mission Statement <span class="text-rose-400">*</span></label>
+                <textarea id="textareaAboutMission" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.statements?.mission || '')}</textarea>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Subheadline / Narrative Summary</label>
-                <input id="inputAboutSubheadline" type="text" value="${escapeHtml(about.subheadline || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Mission Statement <span class="text-rose-400">*</span></label>
-                  <textarea id="textareaAboutMission" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.mission || '')}</textarea>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Vision Statement <span class="text-rose-400">*</span></label>
-                  <textarea id="textareaAboutVision" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.vision || '')}</textarea>
-                </div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Institutional Vision Statement <span class="text-rose-400">*</span></label>
+                <textarea id="textareaAboutVision" rows="4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(about.statements?.vision || '')}</textarea>
               </div>
             </div>
           </div>
 
-          <!-- Card 2: Core Institutional Pillars -->
+          <!-- Card 2: Core Ideological Pillars -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Core Ideological Pillars
+                  Ideological Pillars Manager (Extensible)
                 </h3>
               </div>
-              <span class="text-[11px] font-mono text-slate-400">Guiding Operational Principles</span>
+              <span class="text-[11px] font-mono text-slate-400">Operational Tenets & Priorities</span>
             </div>
 
             <!-- Pillars List -->
-            <div id="aboutPillarsContainer" class="space-y-2.5"></div>
+            <div id="aboutPillarsContainer" class="space-y-3"></div>
 
             <!-- Add Pillar Form -->
-            <div class="p-3.5 rounded-lg bg-slate-900/60 border border-brand-border/80 space-y-3">
-              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add New Core Pillar</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add New Ideological Pillar</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div class="sm:col-span-1">
-                  <input id="inputNewPillarTitle" type="text" placeholder="Pillar Title (e.g., Free Access)" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Pillar Title</label>
+                  <input id="inputNewPillarTitle" type="text" placeholder="e.g. Free Access" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Icon Token</label>
+                  <select id="selectNewPillarIcon" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                    <option value="shield">shield</option>
+                    <option value="map">map</option>
+                    <option value="book">book</option>
+                    <option value="users">users</option>
+                    <option value="sparkles">sparkles</option>
+                    <option value="globe">globe</option>
+                  </select>
                 </div>
                 <div class="sm:col-span-2">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Description</label>
                   <input id="inputNewPillarDesc" type="text" placeholder="Description of this operational tenet" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
               </div>
               <div class="flex justify-end">
-                <button id="btnAddPillarAction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                <button id="btnAddPillarAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   Add Pillar
                 </button>
@@ -5427,37 +5657,40 @@ async function loadMasterNavigation() {
             </div>
           </div>
 
-          <!-- Card 3: Historical Milestone Roadmap -->
+          <!-- Card 3: Milestone Roadmap Manager -->
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Historical Milestone Roadmap
+                  Milestone Roadmap Manager (Extensible)
                 </h3>
               </div>
               <span class="text-[11px] font-mono text-slate-400">Institutional Journey & Progress</span>
             </div>
 
             <!-- Milestones List -->
-            <div id="aboutMilestonesContainer" class="space-y-2.5"></div>
+            <div id="aboutMilestonesContainer" class="space-y-3"></div>
 
             <!-- Add Milestone Form -->
-            <div class="p-3.5 rounded-lg bg-slate-900/60 border border-brand-border/80 space-y-3">
-              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Milestone Achievement</h4>
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Milestone Event</h4>
               <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div class="sm:col-span-1">
-                  <input id="inputNewMilestoneYear" type="text" placeholder="Year (e.g., 2026)" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Year</label>
+                  <input id="inputNewMilestoneYear" type="text" placeholder="e.g. 2026" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
                 <div class="sm:col-span-1">
-                  <input id="inputNewMilestoneTitle" type="text" placeholder="Achievement Title" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Achievement Title</label>
+                  <input id="inputNewMilestoneTitle" type="text" placeholder="e.g. Statewide Portal Launch" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
                 <div class="sm:col-span-2">
-                  <input id="inputNewMilestoneDesc" type="text" placeholder="Detailed impact or summary" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Detailed Description</label>
+                  <input id="inputNewMilestoneDesc" type="text" placeholder="Summary of milestone impact" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
               </div>
               <div class="flex justify-end">
-                <button id="btnAddMilestoneAction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                <button id="btnAddMilestoneAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   Add Milestone
                 </button>
@@ -5469,19 +5702,61 @@ async function loadMasterNavigation() {
 
       renderPillarsList();
       renderMilestonesList();
+      syncJsonEditor();
 
-      // Form Bindings
-      const inputHeadline = document.getElementById('inputAboutHeadline');
-      const inputSubheadline = document.getElementById('inputAboutSubheadline');
-      const textareaMission = document.getElementById('textareaAboutMission');
-      const textareaVision = document.getElementById('textareaAboutVision');
+      // Drawer toggle
+      document.getElementById('btnToggleJsonDrawer')?.addEventListener('click', () => {
+        const drawer = document.getElementById('aboutRawJsonDrawer');
+        if (drawer) {
+          drawer.classList.toggle('hidden');
+          syncJsonEditor();
+        }
+      });
+
+      // Apply raw JSON changes
+      document.getElementById('btnApplyRawJsonChanges')?.addEventListener('click', () => {
+        const jsonText = document.getElementById('textareaAboutRawJson')?.value;
+        if (!jsonText) return;
+        try {
+          const parsed = JSON.parse(jsonText);
+          if (parsed && typeof parsed === 'object') {
+            about = parsed;
+            currentPillars = Array.isArray(about.pillars) ? JSON.parse(JSON.stringify(about.pillars)) : [];
+            currentMilestones = Array.isArray(about.milestones) ? JSON.parse(JSON.stringify(about.milestones)) : [];
+
+            // Update form fields
+            const h = document.getElementById('inputAboutHeadline');
+            const sub = document.getElementById('inputAboutSubheadline');
+            const bd = document.getElementById('inputAboutBadge');
+            const tog = document.getElementById('toggleAboutHeroEnabled');
+            const ms = document.getElementById('textareaAboutMission');
+            const vs = document.getElementById('textareaAboutVision');
+
+            if (h) h.value = about.hero?.headline || '';
+            if (sub) sub.value = about.hero?.subheadline || '';
+            if (bd) bd.value = about.hero?.badge || 'Official Mission Portal';
+            if (tog) tog.checked = about.hero?.enabled !== false;
+            if (ms) ms.value = about.statements?.mission || '';
+            if (vs) vs.value = about.statements?.vision || '';
+
+            renderPillarsList();
+            renderMilestonesList();
+            showToast("Raw JSON parsed and applied to workspace form.", "success");
+          }
+        } catch (err) {
+          showToast("JSON Syntax Error: " + err.message, "danger");
+        }
+      });
 
       // Add Pillar Handler
       document.getElementById('btnAddPillarAction')?.addEventListener('click', () => {
         const titleInput = document.getElementById('inputNewPillarTitle');
         const descInput = document.getElementById('inputNewPillarDesc');
+        const iconInput = document.getElementById('selectNewPillarIcon');
+
         const title = titleInput?.value.trim() || '';
         const desc = descInput?.value.trim() || '';
+        const icon = iconInput?.value || 'shield';
 
         if (!title) {
           showToast("Pillar title is required.", "warning");
@@ -5492,13 +5767,15 @@ async function loadMasterNavigation() {
           id: `PIL-${String(currentPillars.length + 1).padStart(2, '0')}`,
           title: title,
           description: desc,
-          icon: "sparkles"
+          icon: icon,
+          active: true
         });
 
         titleInput.value = '';
         descInput.value = '';
         renderPillarsList();
-        showToast("Pillar added to active draft.", "info");
+        syncJsonEditor();
+        showToast("New pillar added to workspace.", "info");
       });
 
       // Add Milestone Handler
@@ -5517,6 +5794,7 @@ async function loadMasterNavigation() {
         }
 
         currentMilestones.push({
+          id: `MLS-${String(currentMilestones.length + 1).padStart(2, '0')}`,
           year: year,
           title: title,
           description: desc
@@ -5526,46 +5804,83 @@ async function loadMasterNavigation() {
         titleInput.value = '';
         descInput.value = '';
         renderMilestonesList();
-        showToast("Milestone added to active draft.", "info");
+        syncJsonEditor();
+        showToast("New milestone added to workspace.", "info");
       });
 
-      // Save & Publish Mission Handler
-      document.getElementById('btnSaveAboutMission')?.addEventListener('click', () => {
-        const headline = inputHeadline?.value.trim() || '';
-        const mission = textareaMission?.value.trim() || '';
-        const vision = textareaVision?.value.trim() || '';
+      // Save & Publish Studio Handler
+      document.getElementById('btnSaveAboutStudio')?.addEventListener('click', () => {
+        const payload = gatherFormState();
 
-        if (!headline || !mission) {
+        if (!payload.hero.headline || !payload.statements.mission) {
           showToast("Headline and Mission statement are required.", "warning");
           return;
         }
 
-        const payload = {
-          headline: headline,
-          subheadline: inputSubheadline?.value.trim() || '',
-          mission: mission,
-          vision: vision,
-          pillars: currentPillars,
-          milestones: currentMilestones
-        };
-
         if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAboutConfig === 'function') {
           const saved = window.CSOSuperStore.saveAboutConfig(payload);
+          about = saved;
           const dateEl = document.getElementById('aboutLastUpdated');
-          if (dateEl && saved.updatedAt) {
-            dateEl.textContent = new Date(saved.updatedAt).toLocaleDateString();
+          if (dateEl && saved.meta?.updatedAt) {
+            dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
           }
-          showToast("About Us & Mission configuration saved & published!", "success");
+          syncJsonEditor();
+          showToast("About Us changes saved & published successfully!", "success");
         }
       });
 
-      // Export JSON Manifest Handler
-      document.getElementById('btnExportAboutJson')?.addEventListener('click', () => {
+      // Export JSON Handler
+      document.getElementById('btnExportAboutConfig')?.addEventListener('click', () => {
         if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAboutManifest === 'function') {
           const filename = window.CSOSuperStore.exportAboutManifest();
-          showToast(`About manifest exported: ${filename}`, "success");
+          showToast(`About configuration exported: ${filename}`, "success");
         }
       });
+
+      // Import JSON Handler
+      document.getElementById('inputImportAboutConfig')?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const content = event.target?.result;
+            if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importAboutConfig === 'function') {
+              let parsed;
+              try {
+                parsed = JSON.parse(content);
+                // Handle bundle if exported
+                if (parsed && parsed.about) parsed = parsed.about;
+              } catch (_) {}
+
+              const imported = window.CSOSuperStore.importAboutConfig(JSON.stringify(parsed));
+              showToast("About Us configuration imported successfully!", "success");
+              renderAboutUsWorkspace();
+            }
+          } catch (err) {
+            showToast("Import failed: " + err.message, "danger");
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Reset to Default Handler
+      document.getElementById('btnResetAboutConfig')?.addEventListener('click', () => {
+        if (confirm("Are you sure you want to restore the default initial About Us configuration? All unsaved customizations will be reset.")) {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.resetAboutConfig === 'function') {
+            window.CSOSuperStore.resetAboutConfig();
+            showToast("About Us configuration restored to default factory seed.", "info");
+            renderAboutUsWorkspace();
+          }
+        }
+      });
+
+      // Sync form input changes to raw JSON
+      ['inputAboutHeadline', 'inputAboutSubheadline', 'inputAboutBadge', 'textareaAboutMission', 'textareaAboutVision'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', syncJsonEditor);
+      });
+      document.getElementById('toggleAboutHeroEnabled')?.addEventListener('change', syncJsonEditor);
     }
 
     /**
