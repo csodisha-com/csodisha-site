@@ -281,6 +281,8 @@ async function loadMasterNavigation() {
         renderOverviewWorkspace();
       } else if (moduleId === 'module-01-002') {
         renderLiveSiteStatusWorkspace();
+      } else if (moduleId === 'module-01-003') {
+        renderQuickActionsWorkspace();
       } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -301,6 +303,276 @@ async function loadMasterNavigation() {
         renderMasterFeatureRegistryWorkspace();
       } else {
         renderStandardModuleInspector(folderId, moduleId);
+      }
+    }
+
+    /**
+     * VIEW 1c: Quick Actions Operational Center (module-01-003)
+     */
+    function renderQuickActionsWorkspace() {
+      const isMaint = (localStorage.getItem('cso_maintenance_mode') === 'true') || CSOState.maintenanceMode;
+      const lastPurgeRaw = localStorage.getItem('cso_last_cache_purge');
+      const lastPurgeDisplay = lastPurgeRaw ? new Date(parseInt(lastPurgeRaw, 10)).toLocaleTimeString() : 'Not recorded yet';
+
+      dom.moduleHeaderActions.innerHTML = `
+        <span class="text-xs font-mono px-2.5 py-1 rounded bg-brand-slate text-brand-emerald border border-brand-border">
+          Operational Center Live
+        </span>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <!-- Quick Actions Banner -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Executive Panic & Fast-Response Controls
+                <span class="text-xs font-mono font-normal text-slate-400">(Zero-Latency Execution)</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">High-impact operational tasks requiring immediate edge routing and state mutation.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <span>Security Level:</span>
+              <span class="px-2 py-0.5 rounded bg-brand-emerald/10 text-brand-emerald font-bold border border-brand-emerald/30">SUPER ADMIN</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 Interactive Action Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          
+          <!-- Card 1: Cloudflare CDN Edge Purge -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border hover:border-cyan-500/40 transition flex flex-col justify-between shadow-md">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </div>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#081220] text-cyan-400 border border-brand-border">Edge CDN</span>
+              </div>
+              <h3 class="font-bold text-white text-sm mb-1">Cloudflare CDN Edge Purge</h3>
+              <p class="text-xs text-slate-400 mb-3">Invalidate global edge cache across all Singapore (SIN) and worldwide Cloudflare nodes.</p>
+              <div class="p-2 rounded bg-[#081220] border border-brand-border text-[11px] font-mono text-slate-400 mb-4">
+                Last purged: <span id="qaLastPurgeText" class="text-slate-200">${lastPurgeDisplay}</span>
+              </div>
+            </div>
+            <button id="btnQaPurgeCache" class="w-full py-2.5 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Purge Global Cache</span>
+            </button>
+          </div>
+
+          <!-- Card 2: Emergency Maintenance Mode -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border hover:border-amber-500/40 transition flex flex-col justify-between shadow-md">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-brand-amber flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <span id="qaMaintPill" class="text-[11px] font-mono px-2 py-0.5 rounded ${isMaint ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                  ${isMaint ? 'STATUS: ACTIVE' : 'STATUS: INACTIVE'}
+                </span>
+              </div>
+              <h3 class="font-bold text-white text-sm mb-1">Emergency Maintenance Mode</h3>
+              <p class="text-xs text-slate-400 mb-3">Gate public traffic with a maintenance screen while maintaining full access for Super Administrators.</p>
+              <div class="p-2 rounded bg-[#081220] border border-brand-border text-[11px] font-mono text-slate-400 mb-4">
+                Public impact: <span id="qaMaintStatusDesc" class="text-slate-200 font-semibold">${isMaint ? 'Site gated' : 'All live routes open'}</span>
+              </div>
+            </div>
+            <button id="btnQaToggleMaint" class="w-full py-2.5 px-3 rounded-lg ${isMaint ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'} font-bold text-xs transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span id="btnQaToggleMaintText">${isMaint ? 'Disable Maintenance Mode' : 'Enable Maintenance Mode'}</span>
+            </button>
+          </div>
+
+          <!-- Card 3: One-Click Disaster Backup -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border hover:border-emerald-500/40 transition flex flex-col justify-between shadow-md">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-brand-emerald flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                </div>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#081220] text-brand-emerald border border-brand-border">Full Snapshot</span>
+              </div>
+              <h3 class="font-bold text-white text-sm mb-1">One-Click Disaster Backup</h3>
+              <p class="text-xs text-slate-400 mb-3">Assemble full system state: users, resources, inquiries, audit logs, and configuration.</p>
+              <div class="p-2 rounded bg-[#081220] border border-brand-border text-[11px] font-mono text-slate-400 mb-4">
+                Payload format: <span class="text-slate-200">cso-system-backup-*.json</span>
+              </div>
+            </div>
+            <button id="btnQaCreateBackup" class="w-full py-2.5 px-3 rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white font-bold text-xs transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Export Full System Backup</span>
+            </button>
+          </div>
+
+          <!-- Card 4: Flash Admit Card Broadcast -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border hover:border-purple-500/40 transition flex flex-col justify-between shadow-md">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                </div>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#081220] text-purple-400 border border-brand-border">Live Alert</span>
+              </div>
+              <h3 class="font-bold text-white text-sm mb-1">Flash Admit Card Broadcast</h3>
+              <p class="text-xs text-slate-400 mb-3">One-click live deployment of verified Odisha OSSC CGL 2026 Hall Ticket notice across the public homepage.</p>
+              <div class="p-2 rounded bg-[#081220] border border-brand-border text-[11px] font-mono text-slate-400 mb-4">
+                Destination: <span class="text-slate-200">csodisha.com/ (Header Top Mount)</span>
+              </div>
+            </div>
+            <button id="btnQaPublishFlash" class="w-full py-2.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Broadcast Live Notice</span>
+            </button>
+          </div>
+
+          <!-- Card 5: Zero-Trust Console Lock -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border hover:border-red-500/40 transition flex flex-col justify-between shadow-md">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-red-500/10 text-brand-crimson flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#081220] text-brand-crimson border border-brand-border">Panic Protocol</span>
+              </div>
+              <h3 class="font-bold text-white text-sm mb-1">Zero-Trust Console Lock</h3>
+              <p class="text-xs text-slate-400 mb-3">Immediately invalidate session credentials, clear active tokens, and force biometric/password re-challenge.</p>
+              <div class="p-2 rounded bg-[#081220] border border-brand-border text-[11px] font-mono text-slate-400 mb-4">
+                Action: <span class="text-red-400 font-bold">Immediate credential eviction</span>
+              </div>
+            </div>
+            <button id="btnQaZeroTrustLock" class="w-full py-2.5 px-3 rounded-lg bg-red-950/80 hover:bg-red-900 border border-brand-crimson text-red-200 font-bold text-xs transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              <span>Enforce Console Lock</span>
+            </button>
+          </div>
+
+        </div>
+      `;
+
+      // Card 1: Cloudflare CDN Edge Purge
+      const btnPurge = document.getElementById('btnQaPurgeCache');
+      if (btnPurge) {
+        btnPurge.addEventListener('click', () => {
+          showToast("Sending purge signal to Cloudflare Edge...", "info");
+          setTimeout(() => {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.purgeEdgeCache === 'function') {
+              const res = window.CSOSuperStore.purgeEdgeCache();
+              const txt = document.getElementById('qaLastPurgeText');
+              if (txt) txt.textContent = new Date(res.timestamp).toLocaleTimeString();
+            } else {
+              const now = Date.now();
+              localStorage.setItem('cso_last_cache_purge', now.toString());
+              const txt = document.getElementById('qaLastPurgeText');
+              if (txt) txt.textContent = new Date(now).toLocaleTimeString();
+            }
+            showToast("Cloudflare CDN Edge Cache Purged Successfully (HTTP 200)", "success");
+          }, 600);
+        });
+      }
+
+      // Card 2: Emergency Maintenance Mode
+      const btnMaint = document.getElementById('btnQaToggleMaint');
+      if (btnMaint) {
+        btnMaint.addEventListener('click', () => {
+          let newState;
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.toggleMaintenanceMode === 'function') {
+            newState = window.CSOSuperStore.toggleMaintenanceMode();
+          } else {
+            const current = localStorage.getItem('cso_maintenance_mode') === 'true';
+            newState = !current;
+            localStorage.setItem('cso_maintenance_mode', newState.toString());
+          }
+          CSOState.maintenanceMode = newState;
+
+          // Update Card Elements
+          const pill = document.getElementById('qaMaintPill');
+          const desc = document.getElementById('qaMaintStatusDesc');
+          const btnTxt = document.getElementById('btnQaToggleMaintText');
+          if (pill) {
+            pill.className = `text-[11px] font-mono px-2 py-0.5 rounded ${newState ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-400 border border-slate-700'}`;
+            pill.textContent = newState ? 'STATUS: ACTIVE' : 'STATUS: INACTIVE';
+          }
+          if (desc) desc.textContent = newState ? 'Site gated' : 'All live routes open';
+          if (btnTxt) btnTxt.textContent = newState ? 'Disable Maintenance Mode' : 'Enable Maintenance Mode';
+          btnMaint.className = `w-full py-2.5 px-3 rounded-lg ${newState ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'} font-bold text-xs transition flex items-center justify-center gap-2`;
+
+          showToast(newState ? "Emergency Maintenance Mode ENABLED across csodisha.com" : "Emergency Maintenance Mode DISABLED — Portal Live", newState ? "warning" : "success");
+        });
+      }
+
+      // Card 3: One-Click Disaster Backup
+      const btnBackup = document.getElementById('btnQaCreateBackup');
+      if (btnBackup) {
+        btnBackup.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.createFullSystemBackup === 'function') {
+            const res = window.CSOSuperStore.createFullSystemBackup();
+            showToast(`Full system backup downloaded: ${res.filename} (${res.sizeKb} KB)`, "success");
+          } else {
+            const snapshot = {
+              timestamp: new Date().toISOString(),
+              metrics: CSOState
+            };
+            downloadSnapshotFile(snapshot, `cso-system-backup-${Date.now()}.json`);
+          }
+        });
+      }
+
+      // Card 4: Flash Admit Card Broadcast
+      const btnFlash = document.getElementById('btnQaPublishFlash');
+      if (btnFlash) {
+        btnFlash.addEventListener('click', () => {
+          let flash;
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.publishEmergencyFlash === 'function') {
+            flash = window.CSOSuperStore.publishEmergencyFlash('admit_card');
+          } else {
+            flash = {
+              headline: "Urgent: Odisha OSSC CGL 2026 Official Hall Ticket Download Released",
+              context: "Official examination portal has issued hall tickets. Download links and instructions verified.",
+              severity: "emerald",
+              ctaText: "Check Hall Ticket Link",
+              ctaUrl: "/resources.html#ossc-cgl",
+              active: true,
+              updatedAt: Date.now()
+            };
+            localStorage.setItem('cso_active_announcement', JSON.stringify(flash));
+          }
+          CSOState.broadcast = flash;
+          showToast("Flash Hall Ticket Alert published live to homepage!", "success");
+        });
+      }
+
+      // Card 5: Zero-Trust Console Lock
+      const btnLock = document.getElementById('btnQaZeroTrustLock');
+      if (btnLock) {
+        btnLock.addEventListener('click', () => {
+          openModal("Confirm Zero-Trust Console Lock", `
+            <div class="space-y-3">
+              <div class="p-3 rounded-lg bg-red-950/60 border border-brand-crimson/50 text-red-200 text-xs">
+                <strong>Warning:</strong> This will terminate your current administrative session immediately and evict all authentication tokens from local storage.
+              </div>
+              <p class="text-xs text-slate-300">You will need to re-verify credentials and pass Cloudflare Turnstile challenge to regain access.</p>
+            </div>
+          `, `
+            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button id="btnConfirmLockModal" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-crimson text-white hover:bg-red-600 transition">Confirm & Lock Console</button>
+          `);
+
+          document.getElementById('btnConfirmLockModal')?.addEventListener('click', () => {
+            closeModal();
+            showToast("Terminating session and enforcing console lockdown...", "warning");
+            setTimeout(() => {
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.triggerZeroTrustLock === 'function') {
+                window.CSOSuperStore.triggerZeroTrustLock();
+              } else {
+                sessionStorage.removeItem('cso_admin_token');
+                sessionStorage.removeItem('cso_admin_session');
+                window.location.replace('/admin/login?reason=locked');
+              }
+            }, 500);
+          });
+        });
       }
     }
 

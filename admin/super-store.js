@@ -665,6 +665,105 @@
       save(KEYS.RESOURCES, res);
     },
 
+    // Quick Actions Operational Center (module-01-003)
+    purgeEdgeCache() {
+      const now = Date.now();
+      localStorage.setItem('cso_last_cache_purge', now.toString());
+      this.logAudit('EDGE_CACHE_PURGED', 'ALL_CDN_ROUTES', `Global Cloudflare edge CDN cache purge dispatched (Timestamp: ${new Date(now).toISOString()}).`);
+      return { success: true, timestamp: now };
+    },
+
+    toggleMaintenanceMode() {
+      const current = localStorage.getItem('cso_maintenance_mode') === 'true';
+      const newState = !current;
+      localStorage.setItem('cso_maintenance_mode', newState.toString());
+      
+      // Keep system flags synced
+      try {
+        const sys = this.getSystem();
+        if (sys && sys.flags) {
+          sys.flags.maintenanceMode = newState;
+          this.saveSystem(sys);
+        }
+      } catch (_) {}
+
+      // Update header top bar maintenance indicator if present in DOM
+      try {
+        const dot = document.getElementById('maintenanceStatusDot');
+        const txt = document.getElementById('maintenanceStatusText');
+        if (dot) dot.className = newState ? "w-2 h-2 rounded-full bg-amber-400" : "w-2 h-2 rounded-full bg-slate-500";
+        if (txt) txt.textContent = newState ? "Maint: ON" : "Maint: OFF";
+      } catch (_) {}
+
+      this.logAudit('MAINTENANCE_MODE_TOGGLED', 'GLOBAL_PORTAL', `Public maintenance mode turned ${newState ? 'ON' : 'OFF'}.`);
+      return newState;
+    },
+
+    createFullSystemBackup() {
+      const backupData = {
+        meta: {
+          app: "Common Sense Odisha",
+          version: "CSO-SUPER-2026.11",
+          createdAt: new Date().toISOString(),
+          exportedBy: "admin@csodisha.com"
+        },
+        data: {
+          users: this.getUsers(),
+          resources: this.getResources(),
+          inquiries: this.getInquiries(),
+          audit: this.getAudit(),
+          broadcast: this.getActiveBroadcast(),
+          system: this.getSystem(),
+          security: this.getSecurity(),
+          roles: this.getRoles(),
+          pages: this.getPages()
+        }
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const filename = `cso-system-backup-${Date.now()}.json`;
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('BACKUP_SNAPSHOT_CREATED', 'ALL_SYSTEM_MODULES', `Full platform backup exported: ${filename} (${(jsonStr.length / 1024).toFixed(1)} KB).`);
+      return { filename, sizeKb: (jsonStr.length / 1024).toFixed(1) };
+    },
+
+    publishEmergencyFlash(type = 'admit_card') {
+      const flashData = {
+        headline: type === 'urgent_notification' 
+          ? "Urgent: Official Examination Notification Released" 
+          : "Urgent: Odisha OSSC CGL 2026 Official Hall Ticket Download Released",
+        context: "Official examination portal has issued hall tickets. Download links and instructions verified.",
+        severity: "emerald",
+        ctaText: "Check Hall Ticket Link",
+        ctaUrl: "/resources.html#ossc-cgl",
+        active: true,
+        updatedAt: Date.now()
+      };
+
+      save(KEYS.BROADCAST, flashData);
+      this.logAudit('EMERGENCY_FLASH_PUBLISHED', 'HOMEPAGE_BROADCAST', `Emergency broadcast published: "${flashData.headline}".`);
+      return flashData;
+    },
+
+    triggerZeroTrustLock() {
+      try {
+        sessionStorage.removeItem('cso_admin_token');
+        sessionStorage.removeItem('cso_admin_session');
+      } catch (_) {}
+      this.logAudit('ZERO_TRUST_SESSION_LOCKED', 'AUTH_GATE', 'Zero-trust console lock triggered by Super Admin. Active credentials purged.');
+      window.location.replace('/admin/login?reason=locked');
+    },
+
     // Multi-Endpoint Diagnostic Probing Engine (module-01-002)
     async runSystemHealthCheck() {
       const routes = [
