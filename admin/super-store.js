@@ -11697,6 +11697,296 @@
       this.logAudit("SPAM_ABUSE_EXPORTED", "DATA_EXPORT", `Spam abuse manifest exported (${filename}).`);
       return filename;
     },
+    // ==========================================
+    // FOLDER 11 (WEBSITE APPEARANCE STUDIO) - BATCH 1
+    // ==========================================
+
+    // --- MODULE 11-001: Brand Identity ---
+    getBrandIdentityConfig() {
+      return _hydrateConfig("cso_brand_identity_config", "brandAssets", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { brandName: "Common Sense Odisha", legalEntity: "CS Odisha Knowledge Media", tagline: "Democratizing Public Exam Intelligence Across All 30 Districts" },
+        items: [
+          { id: "BID-01", assetKey: "OFFICIAL_NAME", title: "Portal Brand Name", value: "Common Sense Odisha (csodisha.com)", usageContext: "Header Brand Mark, Title Tag", active: true },
+          { id: "BID-02", assetKey: "BRAND_TAGLINE", title: "Primary Mission Tagline", value: "Aspirant-Centric Gazette Intelligence & Academic Empowerment", usageContext: "Hero Section, Meta Descriptions", active: true },
+          { id: "BID-03", assetKey: "VOICE_TONE", title: "Editorial Tone Standard", value: "Objective, Authoritative, Empathetic, Strictly Verified", usageContext: "Content Styleguide", active: true }
+        ]
+      }));
+    },
+
+    saveBrandIdentityConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.brandAssets || cfg.items || [];
+      cfg.items = list;
+      cfg.brandAssets = list;
+      localStorage.setItem("cso_brand_identity_config", JSON.stringify(cfg));
+      this.logAudit("BRAND_IDENTITY_UPDATED", "APPEARANCE", `Brand identity config updated (${list.length} assets).`);
+      return true;
+    },
+
+    resetBrandIdentityConfig() {
+      localStorage.removeItem("cso_brand_identity_config");
+      const fresh = this.getBrandIdentityConfig();
+      this.logAudit("BRAND_IDENTITY_RESET", "APPEARANCE", "Brand identity reset to defaults.");
+      return fresh;
+    },
+
+    exportBrandIdentityManifest() {
+      const config = this.getBrandIdentityConfig();
+      const filename = "brand_identity_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BRAND_IDENTITY_EXPORTED", "DATA_EXPORT", `Brand identity manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-002: Logo & Favicon ---
+    getLogoFaviconConfig() {
+      return _hydrateConfig("cso_logo_favicon_config", "assets", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { defaultLogoVariant: "Primary Dark Theme", enableSvgScaling: true },
+        items: [
+          { id: "LGO-01", name: "Primary Header Logo (Light Theme)", fileType: "SVG", dimensions: "240x48", assetUrl: "/assets/images/logo-cso-dark.svg", usageSlot: "Desktop Header", active: true },
+          { id: "LGO-02", name: "Primary Header Logo (Dark Theme)", fileType: "SVG", dimensions: "240x48", assetUrl: "/assets/images/logo-cso-light.svg", usageSlot: "Desktop Header", active: true },
+          { id: "LGO-03", name: "Mobile App Icon & Monogram", fileType: "PNG", dimensions: "192x192", assetUrl: "/assets/images/cso-monogram-192.png", usageSlot: "Mobile Drawer & PWA", active: true },
+          { id: "LGO-04", name: "Browser Favicon Multi-Res", fileType: "ICO", dimensions: "32x32", assetUrl: "/favicon.ico", usageSlot: "Browser Tab & Bookmarks", active: true }
+        ]
+      }));
+    },
+
+    saveLogoFaviconConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.assets || cfg.items || [];
+      cfg.items = list;
+      cfg.assets = list;
+      localStorage.setItem("cso_logo_favicon_config", JSON.stringify(cfg));
+      this.logAudit("LOGO_FAVICON_UPDATED", "APPEARANCE", `Logo & favicon config updated (${list.length} assets).`);
+      return true;
+    },
+
+    resetLogoFaviconConfig() {
+      localStorage.removeItem("cso_logo_favicon_config");
+      const fresh = this.getLogoFaviconConfig();
+      this.logAudit("LOGO_FAVICON_RESET", "APPEARANCE", "Logo & favicon reset to defaults.");
+      return fresh;
+    },
+
+    exportLogoFaviconManifest() {
+      const config = this.getLogoFaviconConfig();
+      const filename = "logo_favicon_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("LOGO_FAVICON_EXPORTED", "DATA_EXPORT", `Logo & favicon manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-003: Colors & Themes ---
+    getColorsThemesConfig() {
+      return _hydrateConfig("cso_colors_themes_config", "palette", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { activeTheme: "Aspirant Dark Slate", autoSystemPreference: true },
+        items: [
+          { id: "CLR-01", tokenName: "--cso-primary", label: "Odisha Royal Emerald", hexCode: "#059669", cssVar: "var(--cso-primary)", usage: "Primary CTAs, Accent Highlights", active: true },
+          { id: "CLR-02", tokenName: "--cso-surface-bg", label: "Dark Canvas Slate", hexCode: "#020617", cssVar: "var(--cso-surface-bg)", usage: "Main Background Canvas", active: true },
+          { id: "CLR-03", tokenName: "--cso-card-bg", label: "Elevated Card Slate", hexCode: "#0f172a", cssVar: "var(--cso-card-bg)", usage: "Module & Metric Cards", active: true },
+          { id: "CLR-04", tokenName: "--cso-accent-gold", label: "Gazette Gold", hexCode: "#f59e0b", cssVar: "var(--cso-accent-gold)", usage: "Urgent Badges, Notifications", active: true }
+        ]
+      }));
+    },
+
+    saveColorsThemesConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.palette || cfg.items || [];
+      cfg.items = list;
+      cfg.palette = list;
+      localStorage.setItem("cso_colors_themes_config", JSON.stringify(cfg));
+      this.logAudit("COLORS_THEMES_UPDATED", "APPEARANCE", `Colors & themes config updated (${list.length} tokens).`);
+      return true;
+    },
+
+    resetColorsThemesConfig() {
+      localStorage.removeItem("cso_colors_themes_config");
+      const fresh = this.getColorsThemesConfig();
+      this.logAudit("COLORS_THEMES_RESET", "APPEARANCE", "Colors & themes reset to defaults.");
+      return fresh;
+    },
+
+    exportColorsThemesManifest() {
+      const config = this.getColorsThemesConfig();
+      const filename = "colors_themes_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("COLORS_THEMES_EXPORTED", "DATA_EXPORT", `Colors & themes manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-004: Typography ---
+    getTypographyConfig() {
+      return _hydrateConfig("cso_typography_config", "fonts", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { baseFontSize: "16px", rootLineHeight: "1.6", fontSmoothing: "antialiased" },
+        items: [
+          { id: "TYP-01", fontRole: "Primary Headings (Display)", fontFamily: "Outfit, Inter, sans-serif", weightRange: "600, 700, 800", provider: "Google Fonts CDN", active: true },
+          { id: "TYP-02", fontRole: "Body Prose & Study Notes", fontFamily: "Inter, system-ui, sans-serif", weightRange: "400, 500", provider: "Google Fonts CDN", active: true },
+          { id: "TYP-03", fontRole: "Odia Regional Typography", fontFamily: "Noto Sans Oriya, Kalinga, sans-serif", weightRange: "400, 600", provider: "Google Fonts CDN", active: true },
+          { id: "TYP-04", fontRole: "Code & Exam Roll Tables", fontFamily: "JetBrains Mono, monospace", weightRange: "400, 500", provider: "System Fallback", active: true }
+        ]
+      }));
+    },
+
+    saveTypographyConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.fonts || cfg.items || [];
+      cfg.items = list;
+      cfg.fonts = list;
+      localStorage.setItem("cso_typography_config", JSON.stringify(cfg));
+      this.logAudit("TYPOGRAPHY_UPDATED", "APPEARANCE", `Typography config updated (${list.length} fonts).`);
+      return true;
+    },
+
+    resetTypographyConfig() {
+      localStorage.removeItem("cso_typography_config");
+      const fresh = this.getTypographyConfig();
+      this.logAudit("TYPOGRAPHY_RESET", "APPEARANCE", "Typography reset to defaults.");
+      return fresh;
+    },
+
+    exportTypographyManifest() {
+      const config = this.getTypographyConfig();
+      const filename = "typography_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("TYPOGRAPHY_EXPORTED", "DATA_EXPORT", `Typography manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-005: Header Design ---
+    getHeaderDesignConfig() {
+      return _hydrateConfig("cso_header_design_config", "headerComponents", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { layoutStyle: "Floating Glassmorphism", isSticky: true, blurBackdrop: true, heightPx: 64 },
+        items: [
+          { id: "HDR-01", sectionSlot: "Top Utility Alert Strip", component: "Ticker Marquee", isVisible: true, orderWeight: 1, active: true },
+          { id: "HDR-02", sectionSlot: "Main Navigation Bar", component: "Logo + Nav Links + Quick Search", isVisible: true, orderWeight: 2, active: true },
+          { id: "HDR-03", sectionSlot: "User Action Cluster", component: "Theme Switcher + Notification Bell + Aspirant Profile", isVisible: true, orderWeight: 3, active: true }
+        ]
+      }));
+    },
+
+    saveHeaderDesignConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.headerComponents || cfg.items || [];
+      cfg.items = list;
+      cfg.headerComponents = list;
+      localStorage.setItem("cso_header_design_config", JSON.stringify(cfg));
+      this.logAudit("HEADER_DESIGN_UPDATED", "APPEARANCE", `Header design updated (${list.length} components).`);
+      return true;
+    },
+
+    resetHeaderDesignConfig() {
+      localStorage.removeItem("cso_header_design_config");
+      const fresh = this.getHeaderDesignConfig();
+      this.logAudit("HEADER_DESIGN_RESET", "APPEARANCE", "Header design reset to defaults.");
+      return fresh;
+    },
+
+    exportHeaderDesignManifest() {
+      const config = this.getHeaderDesignConfig();
+      const filename = "header_design_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("HEADER_DESIGN_EXPORTED", "DATA_EXPORT", `Header design manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-006: Footer Design ---
+    getFooterDesignConfig() {
+      return _hydrateConfig("cso_footer_design_config", "footerSections", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { layoutColumns: 4, showGovernmentDisclaimer: true, showDistrictBadgeGrid: true },
+        items: [
+          { id: "FTR-01", sectionSlot: "Brand Mission & 30-District Commitment", contentType: "Rich Text + Trust Seal", columnSpan: 1, active: true },
+          { id: "FTR-02", sectionSlot: "Official Commission Directory", contentType: "Link Hierarchy (OPSC, OSSC, OSSSC)", columnSpan: 1, active: true },
+          { id: "FTR-03", sectionSlot: "Aspirant Resources Vault", contentType: "Curriculum Links + Mock Hub", columnSpan: 1, active: true },
+          { id: "FTR-04", sectionSlot: "Statutory & Privacy Compliance", contentType: "DPDP Act, Legal Disclaimer, Copyright", columnSpan: 1, active: true }
+        ]
+      }));
+    },
+
+    saveFooterDesignConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.footerSections || cfg.items || [];
+      cfg.items = list;
+      cfg.footerSections = list;
+      localStorage.setItem("cso_footer_design_config", JSON.stringify(cfg));
+      this.logAudit("FOOTER_DESIGN_UPDATED", "APPEARANCE", `Footer design updated (${list.length} sections).`);
+      return true;
+    },
+
+    resetFooterDesignConfig() {
+      localStorage.removeItem("cso_footer_design_config");
+      const fresh = this.getFooterDesignConfig();
+      this.logAudit("FOOTER_DESIGN_RESET", "APPEARANCE", "Footer design reset to defaults.");
+      return fresh;
+    },
+
+    exportFooterDesignManifest() {
+      const config = this.getFooterDesignConfig();
+      const filename = "footer_design_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FOOTER_DESIGN_EXPORTED", "DATA_EXPORT", `Footer design manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 11-007: Homepage Layout ---
+    getHomepageLayoutConfig() {
+      return _hydrateConfig("cso_homepage_layout_config", "sections", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { containerMaxWidth: "1280px", gridGap: "24px", enableDynamicHydration: true },
+        items: [
+          { id: "SEC-01", sectionName: "Hero Command Hub & Live Exam Search", layoutGrid: "12-Col Centered", isDynamic: true, priorityOrder: 1, active: true },
+          { id: "SEC-02", sectionName: "Active Gazette Alert Feed (Live Ticker)", layoutGrid: "Full Width Carousel", isDynamic: true, priorityOrder: 2, active: true },
+          { id: "SEC-03", sectionName: "Top Commission Desks (OPSC / OSSC / OSSSC)", layoutGrid: "3-Col Card Grid", isDynamic: false, priorityOrder: 3, active: true },
+          { id: "SEC-04", sectionName: "Featured Mock Tests & District Question Bank", layoutGrid: "4-Col Resource Cards", isDynamic: true, priorityOrder: 4, active: true },
+          { id: "SEC-05", sectionName: "Odisha Welfare Schemes & Scholarship Directory", layoutGrid: "2-Col Featured Split", isDynamic: false, priorityOrder: 5, active: true }
+        ]
+      }));
+    },
+
+    saveHomepageLayoutConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.sections || cfg.items || [];
+      cfg.items = list;
+      cfg.sections = list;
+      localStorage.setItem("cso_homepage_layout_config", JSON.stringify(cfg));
+      this.logAudit("HOMEPAGE_LAYOUT_UPDATED", "APPEARANCE", `Homepage layout updated (${list.length} sections).`);
+      return true;
+    },
+
+    resetHomepageLayoutConfig() {
+      localStorage.removeItem("cso_homepage_layout_config");
+      const fresh = this.getHomepageLayoutConfig();
+      this.logAudit("HOMEPAGE_LAYOUT_RESET", "APPEARANCE", "Homepage layout reset to defaults.");
+      return fresh;
+    },
+
+    exportHomepageLayoutManifest() {
+      const config = this.getHomepageLayoutConfig();
+      const filename = "homepage_layout_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("HOMEPAGE_LAYOUT_EXPORTED", "DATA_EXPORT", `Homepage layout manifest exported (${filename}).`);
+      return filename;
+    },
+
 
 
 
@@ -12325,6 +12615,14 @@
           helpCentre: this.getHelpCentreConfig(),
           supportCategories: this.getSupportCategoriesConfig(),
           spamAbuse: this.getSpamAbuseConfig(),
+          brandIdentity: this.getBrandIdentityConfig(),
+          logoFavicon: this.getLogoFaviconConfig(),
+          colorsThemes: this.getColorsThemesConfig(),
+          typography: this.getTypographyConfig(),
+          headerDesign: this.getHeaderDesignConfig(),
+          footerDesign: this.getFooterDesignConfig(),
+          homepageLayout: this.getHomepageLayoutConfig(),
+
 
 
         }

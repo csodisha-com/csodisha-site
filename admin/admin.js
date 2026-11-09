@@ -565,6 +565,14 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-10-012') { renderHelpCentreWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-10-013') { renderSupportCategoriesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-10-014') { renderSpamAbuseWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-001') { renderBrandIdentityWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-002') { renderLogoFaviconWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-003') { renderColorsThemesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-004') { renderTypographyWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-005') { renderHeaderDesignWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-006') { renderFooterDesignWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-11-007') { renderHomepageLayoutWorkspace(dom.workspaceRoot); return; }
+
 
 
 
@@ -875,6 +883,21 @@ async function loadMasterNavigation() {
         renderSupportCategoriesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-10-014') {
         renderSpamAbuseWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-001') {
+        renderBrandIdentityWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-002') {
+        renderLogoFaviconWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-003') {
+        renderColorsThemesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-004') {
+        renderTypographyWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-005') {
+        renderHeaderDesignWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-006') {
+        renderFooterDesignWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-11-007') {
+        renderHomepageLayoutWorkspace(dom.workspaceRoot);
+
 
 
       } else if (folderId === 'folder-05') {
@@ -44569,6 +44592,1871 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-10-014', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // FOLDER 11 (WEBSITE APPEARANCE STUDIO) - BATCH 1 WORKSPACES
+    // ==========================================
+
+    /**
+     * MODULE 11-001: Brand Identity
+     */
+    function renderBrandIdentityWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getBrandIdentityConfig();
+        let assets = Array.isArray(config.brandAssets || config.items) ? [...(config.brandAssets || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = assets.filter(a => a.active !== false).length;
+          const filtered = assets.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.title || '').toLowerCase().includes(term) ||
+                   (a.value || '').toLowerCase().includes(term) ||
+                   (a.assetKey || '').toLowerCase().includes(term) ||
+                   (a.usageContext || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">BRAND CORE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Brand Identity &amp; Voice</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Portal names, legal corporate entities, institutional taglines, and editorial tone guidelines</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddAsset" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Brand Value
+                  </button>
+                </div>
+              </div>
+
+              <!-- Brand Setting Card -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Brand Name</div>
+                  <div class="text-base font-bold text-white mt-1">${config.settings?.brandName || 'Common Sense Odisha'}</div>
+                  <div class="text-[10px] text-emerald-400 mt-0.5">Primary public moniker</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Legal Entity</div>
+                  <div class="text-base font-bold text-white mt-1">${config.settings?.legalEntity || 'CS Odisha Knowledge Media'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Registered publishing trust</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">District Mission</div>
+                  <div class="text-sm font-semibold text-slate-300 mt-1 line-clamp-2">${config.settings?.tagline || 'All 30 Odisha Districts Covered'}</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoBrandSearch" placeholder="Search by asset title, value, key, or context..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${assets.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Asset Key</th>
+                      <th class="px-4 py-3">Brand Property</th>
+                      <th class="px-4 py-3 max-w-sm">Assigned Value</th>
+                      <th class="px-4 py-3">Usage Context</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No brand assets match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-emerald-400 font-semibold">${item.assetKey || item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.title}</td>
+                        <td class="px-4 py-3 max-w-sm text-slate-200">${item.value}</td>
+                        <td class="px-4 py-3 text-emerald-300 text-[11px]">${item.usageContext || 'General'}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Brand Asset" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Brand Asset" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoBrandSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoBrandSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-001', 'Brand Identity Schema', {
+              id: 'string (unique ID, e.g. BID-04)',
+              assetKey: 'string (machine slug, e.g. OFFICIAL_NAME, BRAND_TAGLINE)',
+              title: 'string (human-readable title)',
+              value: 'string (configured brand string or guideline)',
+              usageContext: 'string (e.g. Header Brand Mark, Title Tag, Meta Descriptions)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportBrandIdentityManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset brand identity settings to factory defaults?')) {
+              store.resetBrandIdentityConfig();
+              config = store.getBrandIdentityConfig();
+              assets = [...(config.brandAssets || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddAsset')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Brand Asset / Property',
+              fields: [
+                { name: 'assetKey', label: 'Asset Key / Slug', type: 'text', placeholder: 'e.g. PRESS_CONTACT_EMAIL', required: true },
+                { name: 'title', label: 'Property Title', type: 'text', placeholder: 'e.g. Media Desk Contact Email', required: true },
+                { name: 'value', label: 'Value / Text', type: 'text', placeholder: 'e.g. media@csodisha.com', required: true },
+                { name: 'usageContext', label: 'Usage Context', type: 'text', placeholder: 'e.g. Press Kit, Footer Legal', defaultValue: 'General Portal' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'BID-' + String(assets.length + 1).padStart(2, '0'),
+                  assetKey: data.assetKey.trim().toUpperCase(),
+                  title: data.title.trim(),
+                  value: data.value.trim(),
+                  usageContext: data.usageContext.trim(),
+                  active: true
+                };
+                assets.unshift(newRecord);
+                config.brandAssets = assets;
+                config.items = assets;
+                store.saveBrandIdentityConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = assets.find(a => a.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.brandAssets = assets;
+                config.items = assets;
+                store.saveBrandIdentityConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = assets.find(a => a.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Brand Asset: ' + item.title,
+                fields: [
+                  { name: 'assetKey', label: 'Asset Key', type: 'text', defaultValue: item.assetKey, required: true },
+                  { name: 'title', label: 'Property Title', type: 'text', defaultValue: item.title, required: true },
+                  { name: 'value', label: 'Value / Text', type: 'text', defaultValue: item.value, required: true },
+                  { name: 'usageContext', label: 'Usage Context', type: 'text', defaultValue: item.usageContext || '' }
+                ],
+                onSave: (data) => {
+                  item.assetKey = data.assetKey.trim().toUpperCase();
+                  item.title = data.title.trim();
+                  item.value = data.value.trim();
+                  item.usageContext = data.usageContext.trim();
+                  config.brandAssets = assets;
+                  config.items = assets;
+                  store.saveBrandIdentityConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete brand property ' + id + '?')) {
+                assets = assets.filter(a => a.id !== id);
+                config.brandAssets = assets;
+                config.items = assets;
+                store.saveBrandIdentityConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-002: Logo & Favicon
+     */
+    function renderLogoFaviconWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getLogoFaviconConfig();
+        let assets = Array.isArray(config.assets || config.items) ? [...(config.assets || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = assets.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.name || '').toLowerCase().includes(term) ||
+                   (a.assetUrl || '').toLowerCase().includes(term) ||
+                   (a.usageSlot || '').toLowerCase().includes(term) ||
+                   (a.fileType || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">VISUAL ASSETS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Logo &amp; Favicon Manager</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">High-DPI vector SVG logomarks, browser favicons, apple-touch-icons, and mobile drawer monograms</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddLogo" class="px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Asset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Registered Assets</div>
+                  <div class="text-2xl font-bold text-white mt-1">${assets.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Multi-res vector &amp; bitmap logos</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-violet-400 uppercase tracking-wider">Default Variant</div>
+                  <div class="text-lg font-bold text-violet-300 mt-1 truncate">${config.settings?.defaultLogoVariant || 'Primary Dark'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Active site navbar default</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">SVG Vector Scaling</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">Enabled</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Crisp rendering on 4K retina displays</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">PWA Splash Ready</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">192px / 512px</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Android &amp; iOS home screen install</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoLogoSearch" placeholder="Search by name, asset path, slot, or file type..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${assets.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Asset ID</th>
+                      <th class="px-4 py-3">Asset Name</th>
+                      <th class="px-4 py-3">Format / Size</th>
+                      <th class="px-4 py-3">Asset Path</th>
+                      <th class="px-4 py-3">Usage Slot</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No logo assets match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-violet-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.name}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">${item.fileType}</span>
+                          <span class="text-[10px] text-slate-400 font-mono ml-1">${item.dimensions || ''}</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-300">${item.assetUrl}</td>
+                        <td class="px-4 py-3 text-violet-300 text-[11px]">${item.usageSlot}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Logo Asset" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Logo Asset" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoLogoSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoLogoSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-002', 'Logo & Favicon Schema', {
+              id: 'string (unique asset ID, e.g. LGO-05)',
+              name: 'string (asset descriptor, e.g. Primary Header Logo)',
+              fileType: 'string (SVG | PNG | ICO | WEBP)',
+              dimensions: 'string (pixel dimensions, e.g. 240x48, 192x192)',
+              assetUrl: 'string (path to image file)',
+              usageSlot: 'string (Desktop Header | Mobile Drawer & PWA | Browser Tab & Bookmarks)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportLogoFaviconManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset logo and favicon settings to factory defaults?')) {
+              store.resetLogoFaviconConfig();
+              config = store.getLogoFaviconConfig();
+              assets = [...(config.assets || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddLogo')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Register Logo / Favicon Asset',
+              fields: [
+                { name: 'name', label: 'Asset Name', type: 'text', placeholder: 'e.g. Header Logo Monochrome Dark', required: true },
+                { name: 'fileType', label: 'File Format', type: 'select', options: ['SVG', 'PNG', 'ICO', 'WEBP'], defaultValue: 'SVG' },
+                { name: 'dimensions', label: 'Dimensions (WxH)', type: 'text', placeholder: 'e.g. 240x48', defaultValue: '240x48' },
+                { name: 'assetUrl', label: 'Asset File Path', type: 'text', placeholder: 'e.g. /assets/images/logo-dark.svg', required: true },
+                { name: 'usageSlot', label: 'Usage Slot', type: 'select', options: ['Desktop Header', 'Footer Brand Block', 'Mobile Drawer & PWA', 'Browser Tab & Bookmarks'], defaultValue: 'Desktop Header' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'LGO-' + String(assets.length + 1).padStart(2, '0'),
+                  name: data.name.trim(),
+                  fileType: data.fileType,
+                  dimensions: data.dimensions.trim(),
+                  assetUrl: data.assetUrl.trim(),
+                  usageSlot: data.usageSlot,
+                  active: true
+                };
+                assets.unshift(newRecord);
+                config.assets = assets;
+                config.items = assets;
+                store.saveLogoFaviconConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = assets.find(a => a.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.assets = assets;
+                config.items = assets;
+                store.saveLogoFaviconConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = assets.find(a => a.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Logo Asset: ' + item.name,
+                fields: [
+                  { name: 'name', label: 'Asset Name', type: 'text', defaultValue: item.name, required: true },
+                  { name: 'fileType', label: 'File Format', type: 'select', options: ['SVG', 'PNG', 'ICO', 'WEBP'], defaultValue: item.fileType },
+                  { name: 'dimensions', label: 'Dimensions', type: 'text', defaultValue: item.dimensions || '' },
+                  { name: 'assetUrl', label: 'Asset Path', type: 'text', defaultValue: item.assetUrl, required: true },
+                  { name: 'usageSlot', label: 'Usage Slot', type: 'select', options: ['Desktop Header', 'Footer Brand Block', 'Mobile Drawer & PWA', 'Browser Tab & Bookmarks'], defaultValue: item.usageSlot }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.fileType = data.fileType;
+                  item.dimensions = data.dimensions.trim();
+                  item.assetUrl = data.assetUrl.trim();
+                  item.usageSlot = data.usageSlot;
+                  config.assets = assets;
+                  config.items = assets;
+                  store.saveLogoFaviconConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete asset ' + id + '?')) {
+                assets = assets.filter(a => a.id !== id);
+                config.assets = assets;
+                config.items = assets;
+                store.saveLogoFaviconConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-003: Colors & Themes
+     */
+    function renderColorsThemesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getColorsThemesConfig();
+        let palette = Array.isArray(config.palette || config.items) ? [...(config.palette || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = palette.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.tokenName || '').toLowerCase().includes(term) ||
+                   (c.label || '').toLowerCase().includes(term) ||
+                   (c.hexCode || '').toLowerCase().includes(term) ||
+                   (c.usage || '').toLowerCase().includes(term) ||
+                   (c.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">DESIGN TOKENS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Colors &amp; Theme Studio</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Odisha Emerald brand palette, dark canvas surfaces, WCAG AAA accessible contrasts, and CSS variables</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddToken" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Color Token
+                  </button>
+                </div>
+              </div>
+
+              <!-- Color Palette Swatch Strip -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                ${palette.map(c => `
+                  <div class="p-3 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg border border-slate-700 shadow-inner flex-shrink-0" style="background-color: ${c.hexCode};"></div>
+                    <div class="min-w-0">
+                      <div class="text-xs font-bold text-white truncate">${c.label}</div>
+                      <div class="text-[10px] font-mono text-emerald-400">${c.hexCode}</div>
+                      <div class="text-[9px] font-mono text-slate-500 truncate">${c.tokenName}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoColorsSearch" placeholder="Search by color label, hex code, token name, or usage..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${palette.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Swatch</th>
+                      <th class="px-4 py-3">CSS Token</th>
+                      <th class="px-4 py-3">Color Label</th>
+                      <th class="px-4 py-3">HEX Code</th>
+                      <th class="px-4 py-3">Design Scope / Usage</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No color tokens match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="w-6 h-6 rounded-md border border-slate-700 shadow-sm" style="background-color: ${item.hexCode};"></div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-emerald-400 font-semibold">${item.tokenName}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.label}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300">${item.hexCode}</td>
+                        <td class="px-4 py-3 text-slate-300 text-[11px]">${item.usage}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Color Token" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Color Token" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoColorsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoColorsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-003', 'Colors & Themes Schema', {
+              id: 'string (unique token ID, e.g. CLR-05)',
+              tokenName: 'string (CSS variable token, e.g. --cso-primary)',
+              label: 'string (human-readable color name, e.g. Odisha Royal Emerald)',
+              hexCode: 'string (hexadecimal color code, e.g. #059669)',
+              cssVar: 'string (CSS function, e.g. var(--cso-primary))',
+              usage: 'string (intended interface design context)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportColorsThemesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset colors and themes to factory defaults?')) {
+              store.resetColorsThemesConfig();
+              config = store.getColorsThemesConfig();
+              palette = [...(config.palette || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddToken')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Color Token',
+              fields: [
+                { name: 'tokenName', label: 'CSS Variable Token', type: 'text', placeholder: 'e.g. --cso-accent-cyan', required: true },
+                { name: 'label', label: 'Color Label', type: 'text', placeholder: 'e.g. Chilika Sky Cyan', required: true },
+                { name: 'hexCode', label: 'Hex Code', type: 'text', placeholder: 'e.g. #06b6d4', required: true },
+                { name: 'usage', label: 'Design Scope / Usage', type: 'text', placeholder: 'e.g. Live Class Pills, Interactive Badges', defaultValue: 'Accent Highlights' }
+              ],
+              onSave: (data) => {
+                const token = data.tokenName.startsWith('--') ? data.tokenName : '--' + data.tokenName;
+                const newRecord = {
+                  id: 'CLR-' + String(palette.length + 1).padStart(2, '0'),
+                  tokenName: token,
+                  label: data.label.trim(),
+                  hexCode: data.hexCode.trim(),
+                  cssVar: 'var(' + token + ')',
+                  usage: data.usage.trim(),
+                  active: true
+                };
+                palette.unshift(newRecord);
+                config.palette = palette;
+                config.items = palette;
+                store.saveColorsThemesConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = palette.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.palette = palette;
+                config.items = palette;
+                store.saveColorsThemesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = palette.find(c => c.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Color Token: ' + item.label,
+                fields: [
+                  { name: 'tokenName', label: 'CSS Variable Token', type: 'text', defaultValue: item.tokenName, required: true },
+                  { name: 'label', label: 'Color Label', type: 'text', defaultValue: item.label, required: true },
+                  { name: 'hexCode', label: 'Hex Code', type: 'text', defaultValue: item.hexCode, required: true },
+                  { name: 'usage', label: 'Usage Context', type: 'text', defaultValue: item.usage || '' }
+                ],
+                onSave: (data) => {
+                  item.tokenName = data.tokenName.trim();
+                  item.label = data.label.trim();
+                  item.hexCode = data.hexCode.trim();
+                  item.cssVar = 'var(' + item.tokenName + ')';
+                  item.usage = data.usage.trim();
+                  config.palette = palette;
+                  config.items = palette;
+                  store.saveColorsThemesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete color token ' + id + '?')) {
+                palette = palette.filter(c => c.id !== id);
+                config.palette = palette;
+                config.items = palette;
+                store.saveColorsThemesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-004: Typography
+     */
+    function renderTypographyWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getTypographyConfig();
+        let fonts = Array.isArray(config.fonts || config.items) ? [...(config.fonts || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = fonts.filter(f => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (f.fontRole || '').toLowerCase().includes(term) ||
+                   (f.fontFamily || '').toLowerCase().includes(term) ||
+                   (f.provider || '').toLowerCase().includes(term) ||
+                   (f.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">FONT STACK</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Typography &amp; Typefaces</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Bilingual typography, Odia script renderers (Noto Sans Oriya), and tabular numerals</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddFont" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Font Role
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Base Font Size</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.settings?.baseFontSize || '16px'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Scale factor 1.25 (Major Third)</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Root Line Height</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.rootLineHeight || '1.6'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">High readability for Odia prose</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Odia Regional Support</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">Noto Sans Oriya</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Full UTF-8 unicode ligature engine</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Font Smoothing</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1">Antialiased</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Subpixel clarity across all devices</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoTypographySearch" placeholder="Search by font role, family, provider, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${fonts.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Role ID</th>
+                      <th class="px-4 py-3">Typography Role</th>
+                      <th class="px-4 py-3 font-mono">Font Family Stack</th>
+                      <th class="px-4 py-3">Supported Weights</th>
+                      <th class="px-4 py-3">CDN Provider</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No typography rules match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-blue-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.fontRole}</td>
+                        <td class="px-4 py-3 font-mono text-slate-200">${item.fontFamily}</td>
+                        <td class="px-4 py-3 text-slate-300">${item.weightRange}</td>
+                        <td class="px-4 py-3 text-blue-300 text-[11px]">${item.provider}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-blue-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Font Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-blue-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Font Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoTypographySearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoTypographySearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-004', 'Typography Schema', {
+              id: 'string (unique font ID, e.g. TYP-05)',
+              fontRole: 'string (e.g. Primary Headings, Body Prose, Odia Regional Typography)',
+              fontFamily: 'string (CSS font-family string with fallbacks)',
+              weightRange: 'string (comma-separated weights, e.g. 400, 600, 700)',
+              provider: 'string (Google Fonts CDN | System Fallback | Custom WebFont)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportTypographyManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset typography settings to factory defaults?')) {
+              store.resetTypographyConfig();
+              config = store.getTypographyConfig();
+              fonts = [...(config.fonts || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddFont')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Typography Rule',
+              fields: [
+                { name: 'fontRole', label: 'Typography Role', type: 'text', placeholder: 'e.g. Card Badges & Tooltips', required: true },
+                { name: 'fontFamily', label: 'Font Family Stack', type: 'text', placeholder: 'e.g. Plus Jakarta Sans, sans-serif', required: true },
+                { name: 'weightRange', label: 'Weight Range', type: 'text', placeholder: 'e.g. 500, 600, 700', defaultValue: '400, 500, 600' },
+                { name: 'provider', label: 'Font Provider', type: 'select', options: ['Google Fonts CDN', 'System Fallback', 'Self-Hosted WebFont'], defaultValue: 'Google Fonts CDN' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'TYP-' + String(fonts.length + 1).padStart(2, '0'),
+                  fontRole: data.fontRole.trim(),
+                  fontFamily: data.fontFamily.trim(),
+                  weightRange: data.weightRange.trim(),
+                  provider: data.provider,
+                  active: true
+                };
+                fonts.unshift(newRecord);
+                config.fonts = fonts;
+                config.items = fonts;
+                store.saveTypographyConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = fonts.find(f => f.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.fonts = fonts;
+                config.items = fonts;
+                store.saveTypographyConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = fonts.find(f => f.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Font Rule: ' + item.fontRole,
+                fields: [
+                  { name: 'fontRole', label: 'Typography Role', type: 'text', defaultValue: item.fontRole, required: true },
+                  { name: 'fontFamily', label: 'Font Family', type: 'text', defaultValue: item.fontFamily, required: true },
+                  { name: 'weightRange', label: 'Weight Range', type: 'text', defaultValue: item.weightRange, required: true },
+                  { name: 'provider', label: 'Provider', type: 'select', options: ['Google Fonts CDN', 'System Fallback', 'Self-Hosted WebFont'], defaultValue: item.provider }
+                ],
+                onSave: (data) => {
+                  item.fontRole = data.fontRole.trim();
+                  item.fontFamily = data.fontFamily.trim();
+                  item.weightRange = data.weightRange.trim();
+                  item.provider = data.provider;
+                  config.fonts = fonts;
+                  config.items = fonts;
+                  store.saveTypographyConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete typography rule ' + id + '?')) {
+                fonts = fonts.filter(f => f.id !== id);
+                config.fonts = fonts;
+                config.items = fonts;
+                store.saveTypographyConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-005: Header Design
+     */
+    function renderHeaderDesignWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getHeaderDesignConfig();
+        let components = Array.isArray(config.headerComponents || config.items) ? [...(config.headerComponents || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const visibleCount = components.filter(c => c.isVisible).length;
+          const filtered = components.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.sectionSlot || '').toLowerCase().includes(term) ||
+                   (c.component || '').toLowerCase().includes(term) ||
+                   (c.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">NAVIGATION CHROME</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Header Design &amp; Layout Studio</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Glassmorphism navbar parameters, sticky blur backdrops, search bars, and profile hubs</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddComponent" class="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white shadow-lg shadow-purple-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Header Section
+                  </button>
+                </div>
+              </div>
+
+              <!-- Header Style Setting Matrix -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Layout Style</div>
+                  <div class="text-base font-bold text-white mt-1">${config.settings?.layoutStyle || 'Glassmorphism'}</div>
+                  <div class="text-[10px] text-purple-400 mt-0.5">Semi-transparent dark blur</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Sticky Navigation</div>
+                  <div class="text-base font-bold text-emerald-400 mt-1">${config.settings?.isSticky ? 'Enabled (Top 0)' : 'Disabled'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Fixed on vertical scroll</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Height Standard</div>
+                  <div class="text-base font-bold text-white mt-1">${config.settings?.heightPx || 64} Pixels</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Desktop bar baseline</div>
+                </div>
+                <div>
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Slots</div>
+                  <div class="text-base font-bold text-white mt-1">${visibleCount} / ${components.length}</div>
+                  <div class="text-[10px] text-emerald-400 mt-0.5">Visible header zones</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoHeaderSearch" placeholder="Search by section slot, component name, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${components.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Slot ID</th>
+                      <th class="px-4 py-3">Section Slot</th>
+                      <th class="px-4 py-3">Assigned Component</th>
+                      <th class="px-4 py-3">Order Weight</th>
+                      <th class="px-4 py-3">Visibility</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No header components match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-purple-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.sectionSlot}</td>
+                        <td class="px-4 py-3 text-purple-300 font-medium">${item.component}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300">#${item.orderWeight || 1}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.isVisible ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.isVisible ? 'Visible' : 'Hidden'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-visible" data-id="${item.id}" title="Toggle Visibility" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-purple-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Header Component" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-purple-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Header Component" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoHeaderSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoHeaderSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-005', 'Header Design Schema', {
+              id: 'string (unique slot ID, e.g. HDR-04)',
+              sectionSlot: 'string (e.g. Top Utility Alert Strip, Main Navigation Bar, User Action Cluster)',
+              component: 'string (e.g. Ticker Marquee, Logo + Nav Links, Theme Switcher)',
+              isVisible: 'boolean (visibility state)',
+              orderWeight: 'number (stacking / rendering order)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportHeaderDesignManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset header design settings to factory defaults?')) {
+              store.resetHeaderDesignConfig();
+              config = store.getHeaderDesignConfig();
+              components = [...(config.headerComponents || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddComponent')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Header Component Slot',
+              fields: [
+                { name: 'sectionSlot', label: 'Section Slot Name', type: 'text', placeholder: 'e.g. Quick Navigation Breadcrumb Bar', required: true },
+                { name: 'component', label: 'Component Type', type: 'text', placeholder: 'e.g. Breadcrumbs + District Switcher', required: true },
+                { name: 'orderWeight', label: 'Order Weight (Integer)', type: 'number', placeholder: '4', defaultValue: '4' },
+                { name: 'isVisible', label: 'Visible on Live Site', type: 'select', options: ['true', 'false'], defaultValue: 'true' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'HDR-' + String(components.length + 1).padStart(2, '0'),
+                  sectionSlot: data.sectionSlot.trim(),
+                  component: data.component.trim(),
+                  orderWeight: parseInt(data.orderWeight, 10) || 1,
+                  isVisible: data.isVisible === 'true',
+                  active: true
+                };
+                components.push(newRecord);
+                config.headerComponents = components;
+                config.items = components;
+                store.saveHeaderDesignConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-visible"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = components.find(c => c.id === id);
+              if (item) {
+                item.isVisible = !item.isVisible;
+                config.headerComponents = components;
+                config.items = components;
+                store.saveHeaderDesignConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = components.find(c => c.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Header Slot: ' + item.sectionSlot,
+                fields: [
+                  { name: 'sectionSlot', label: 'Section Slot', type: 'text', defaultValue: item.sectionSlot, required: true },
+                  { name: 'component', label: 'Component Type', type: 'text', defaultValue: item.component, required: true },
+                  { name: 'orderWeight', label: 'Order Weight', type: 'number', defaultValue: String(item.orderWeight || 1) },
+                  { name: 'isVisible', label: 'Visible', type: 'select', options: ['true', 'false'], defaultValue: item.isVisible ? 'true' : 'false' }
+                ],
+                onSave: (data) => {
+                  item.sectionSlot = data.sectionSlot.trim();
+                  item.component = data.component.trim();
+                  item.orderWeight = parseInt(data.orderWeight, 10) || 1;
+                  item.isVisible = data.isVisible === 'true';
+                  config.headerComponents = components;
+                  config.items = components;
+                  store.saveHeaderDesignConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete header component ' + id + '?')) {
+                components = components.filter(c => c.id !== id);
+                config.headerComponents = components;
+                config.items = components;
+                store.saveHeaderDesignConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-006: Footer Design
+     */
+    function renderFooterDesignWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFooterDesignConfig();
+        let sections = Array.isArray(config.footerSections || config.items) ? [...(config.footerSections || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = sections.filter(s => s.active !== false).length;
+          const filtered = sections.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.sectionSlot || '').toLowerCase().includes(term) ||
+                   (s.contentType || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">FOOTER CHROME</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Footer Design &amp; Legal Blocks</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">District directory links, statutory disclaimer cards, commission links, and copyright blocks</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddFooterSection" class="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white shadow-lg shadow-teal-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Footer Column
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Layout Grid</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.settings?.layoutColumns || 4} Columns</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Responsive mobile wrap</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Government Disclaimer</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.showGovernmentDisclaimer ? 'Active' : 'Off'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Non-government transparency notice</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-teal-400 uppercase tracking-wider">30-District Badges</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${config.settings?.showDistrictBadgeGrid ? 'Rendered' : 'Hidden'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Regional community navigation grid</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">DPDP Compliance</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">100%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Statutory links always pinned</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoFooterSearch" placeholder="Search by section slot, content type, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${sections.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Section ID</th>
+                      <th class="px-4 py-3">Section Title &amp; Purpose</th>
+                      <th class="px-4 py-3">Content Type &amp; Hierarchy</th>
+                      <th class="px-4 py-3">Column Span</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No footer sections match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-teal-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs">${item.sectionSlot}</td>
+                        <td class="px-4 py-3 text-teal-300 font-medium">${item.contentType}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300">${item.columnSpan || 1} Col</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Footer Section" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Footer Section" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoFooterSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoFooterSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-006', 'Footer Design Schema', {
+              id: 'string (unique section ID, e.g. FTR-05)',
+              sectionSlot: 'string (descriptor, e.g. Brand Mission, Commission Directory, Statutory Compliance)',
+              contentType: 'string (e.g. Rich Text + Trust Seal, Link Hierarchy, DPDP Act Legal)',
+              columnSpan: 'number (column span in footer grid, e.g. 1, 2)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportFooterDesignManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset footer design settings to factory defaults?')) {
+              store.resetFooterDesignConfig();
+              config = store.getFooterDesignConfig();
+              sections = [...(config.footerSections || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddFooterSection')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Footer Column Section',
+              fields: [
+                { name: 'sectionSlot', label: 'Section Slot Title', type: 'text', placeholder: 'e.g. District Partner Libraries', required: true },
+                { name: 'contentType', label: 'Content Type Description', type: 'text', placeholder: 'e.g. Directory Links + Map Pin Icons', required: true },
+                { name: 'columnSpan', label: 'Column Span (1-4)', type: 'select', options: ['1', '2', '3', '4'], defaultValue: '1' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'FTR-' + String(sections.length + 1).padStart(2, '0'),
+                  sectionSlot: data.sectionSlot.trim(),
+                  contentType: data.contentType.trim(),
+                  columnSpan: parseInt(data.columnSpan, 10) || 1,
+                  active: true
+                };
+                sections.push(newRecord);
+                config.footerSections = sections;
+                config.items = sections;
+                store.saveFooterDesignConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.footerSections = sections;
+                config.items = sections;
+                store.saveFooterDesignConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Footer Column: ' + item.sectionSlot,
+                fields: [
+                  { name: 'sectionSlot', label: 'Section Title', type: 'text', defaultValue: item.sectionSlot, required: true },
+                  { name: 'contentType', label: 'Content Type', type: 'text', defaultValue: item.contentType, required: true },
+                  { name: 'columnSpan', label: 'Column Span', type: 'select', options: ['1', '2', '3', '4'], defaultValue: String(item.columnSpan || 1) }
+                ],
+                onSave: (data) => {
+                  item.sectionSlot = data.sectionSlot.trim();
+                  item.contentType = data.contentType.trim();
+                  item.columnSpan = parseInt(data.columnSpan, 10) || 1;
+                  config.footerSections = sections;
+                  config.items = sections;
+                  store.saveFooterDesignConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete footer section ' + id + '?')) {
+                sections = sections.filter(s => s.id !== id);
+                config.footerSections = sections;
+                config.items = sections;
+                store.saveFooterDesignConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 11-007: Homepage Layout
+     */
+    function renderHomepageLayoutWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getHomepageLayoutConfig();
+        let sections = Array.isArray(config.sections || config.items) ? [...(config.sections || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const dynamicCount = sections.filter(s => s.isDynamic).length;
+          const activeCount = sections.filter(s => s.active !== false).length;
+          const filtered = sections.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.sectionName || '').toLowerCase().includes(term) ||
+                   (s.layoutGrid || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">SECTION COMPOSER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-11-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Homepage Section Composer</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Hero search layout, commission cards, live ticker strips, and dynamic mock exam feeds</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSection" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Compose Section
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Home Sections</div>
+                  <div class="text-2xl font-bold text-white mt-1">${sections.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeCount} active on live landing page</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Dynamic Feed Sections</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1">${dynamicCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Live DB &amp; Gazette API hydrated</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Container Max Width</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.containerMaxWidth || '1280px'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Grid Gap: ${config.settings?.gridGap || '24px'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Speed Performance</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">0.8s LCP</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Server-side cached edge rendering</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoHomepageSearch" placeholder="Search by section name, grid layout, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${sections.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Section ID</th>
+                      <th class="px-4 py-3">Section Name</th>
+                      <th class="px-4 py-3">Layout Grid Format</th>
+                      <th class="px-4 py-3">Dynamic Feed</th>
+                      <th class="px-4 py-3">Priority Order</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No homepage sections match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-indigo-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs">${item.sectionName}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300">${item.layoutGrid}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.isDynamic ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+                            'bg-slate-800 text-slate-400'
+                          }">${item.isDynamic ? '⚡ Dynamic API' : 'Static Block'}</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-white font-bold">#${item.priorityOrder || 1}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Section" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Section" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoHomepageSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoHomepageSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-11-007', 'Homepage Layout Schema', {
+              id: 'string (unique section identifier, e.g. SEC-06)',
+              sectionName: 'string (name of layout section block)',
+              layoutGrid: 'string (e.g. 12-Col Centered, 3-Col Card Grid, 4-Col Resource Cards)',
+              isDynamic: 'boolean (flag indicating live data binding)',
+              priorityOrder: 'number (vertical stacking order on page)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportHomepageLayoutManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset homepage layout settings to factory defaults?')) {
+              store.resetHomepageLayoutConfig();
+              config = store.getHomepageLayoutConfig();
+              sections = [...(config.sections || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSection')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Compose Homepage Section',
+              fields: [
+                { name: 'sectionName', label: 'Section Name', type: 'text', placeholder: 'e.g. District Ranker Testimonial Showcase', required: true },
+                { name: 'layoutGrid', label: 'Grid Layout Format', type: 'select', options: ['12-Col Centered', 'Full Width Carousel', '3-Col Card Grid', '4-Col Resource Cards', '2-Col Featured Split'], defaultValue: '3-Col Card Grid' },
+                { name: 'isDynamic', label: 'Dynamic Data Feed', type: 'select', options: ['true', 'false'], defaultValue: 'true' },
+                { name: 'priorityOrder', label: 'Priority Order Weight', type: 'number', placeholder: '6', defaultValue: '6' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'SEC-' + String(sections.length + 1).padStart(2, '0'),
+                  sectionName: data.sectionName.trim(),
+                  layoutGrid: data.layoutGrid,
+                  isDynamic: data.isDynamic === 'true',
+                  priorityOrder: parseInt(data.priorityOrder, 10) || 6,
+                  active: true
+                };
+                sections.push(newRecord);
+                config.sections = sections;
+                config.items = sections;
+                store.saveHomepageLayoutConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.sections = sections;
+                config.items = sections;
+                store.saveHomepageLayoutConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Section: ' + item.sectionName,
+                fields: [
+                  { name: 'sectionName', label: 'Section Name', type: 'text', defaultValue: item.sectionName, required: true },
+                  { name: 'layoutGrid', label: 'Layout Grid', type: 'select', options: ['12-Col Centered', 'Full Width Carousel', '3-Col Card Grid', '4-Col Resource Cards', '2-Col Featured Split'], defaultValue: item.layoutGrid },
+                  { name: 'isDynamic', label: 'Dynamic Feed', type: 'select', options: ['true', 'false'], defaultValue: item.isDynamic ? 'true' : 'false' },
+                  { name: 'priorityOrder', label: 'Priority Order', type: 'number', defaultValue: String(item.priorityOrder || 1) }
+                ],
+                onSave: (data) => {
+                  item.sectionName = data.sectionName.trim();
+                  item.layoutGrid = data.layoutGrid;
+                  item.isDynamic = data.isDynamic === 'true';
+                  item.priorityOrder = parseInt(data.priorityOrder, 10) || 1;
+                  config.sections = sections;
+                  config.items = sections;
+                  store.saveHomepageLayoutConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete section ' + id + '?')) {
+                sections = sections.filter(s => s.id !== id);
+                config.sections = sections;
+                config.items = sections;
+                store.saveHomepageLayoutConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-11-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 
