@@ -10234,6 +10234,261 @@
       return filename;
     },
 
+    // --- MODULE 09-007: Membership Access ---
+    getMembershipAccessConfig() {
+      const DEFAULT_MEMBERSHIP_ACCESS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalEntitledUsers: 4720, activePasses: 4510, expiredPasses: 210 },
+        items: [
+          { id: "ACC-01", candidateEmail: "ramesh.behera@gmail.com", tier: "Scholar Club", dailyDownloadLimit: 25, accessVaults: "PYQ + Mock Series", expiresOn: "2027-11-08", status: "Active", active: true },
+          { id: "ACC-02", candidateEmail: "subhashree.m@gmail.com", tier: "District Circle Patron", dailyDownloadLimit: 100, accessVaults: "Full Platform + Mentorship", expiresOn: "2027-03-31", status: "Active", active: true },
+          { id: "ACC-03", candidateEmail: "pooja.p@gmail.com", tier: "General Aspirant", dailyDownloadLimit: 3, accessVaults: "Public Gazettes Only", expiresOn: "Lifetime", status: "Active", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_membership_access_config', 'entitlements', () => DEFAULT_MEMBERSHIP_ACCESS);
+    },
+    saveMembershipAccessConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.entitlements = cfg.items || cfg.entitlements || [];
+      cfg.items = cfg.entitlements;
+      localStorage.setItem('cso_membership_access_config', JSON.stringify(cfg));
+      this.logAudit("MEMBERSHIP_ACCESS_SAVED", "USERS_RBAC", "Membership Access directory updated with " + cfg.items.length + " entitlements.");
+    },
+    resetMembershipAccessConfig() {
+      const DEFAULT_MEMBERSHIP_ACCESS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalEntitledUsers: 4720, activePasses: 4510, expiredPasses: 210 },
+        items: [
+          { id: "ACC-01", candidateEmail: "ramesh.behera@gmail.com", tier: "Scholar Club", dailyDownloadLimit: 25, accessVaults: "PYQ + Mock Series", expiresOn: "2027-11-08", status: "Active", active: true },
+          { id: "ACC-02", candidateEmail: "subhashree.m@gmail.com", tier: "District Circle Patron", dailyDownloadLimit: 100, accessVaults: "Full Platform + Mentorship", expiresOn: "2027-03-31", status: "Active", active: true },
+          { id: "ACC-03", candidateEmail: "pooja.p@gmail.com", tier: "General Aspirant", dailyDownloadLimit: 3, accessVaults: "Public Gazettes Only", expiresOn: "Lifetime", status: "Active", active: true }
+        ]
+      };
+      localStorage.setItem('cso_membership_access_config', JSON.stringify(DEFAULT_MEMBERSHIP_ACCESS));
+      this.logAudit("MEMBERSHIP_ACCESS_RESET", "USERS_RBAC", "Membership Access directory restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_MEMBERSHIP_ACCESS));
+    },
+    exportMembershipAccessManifest() {
+      const config = this.getMembershipAccessConfig();
+      const filename = "membership_access_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MEMBERSHIP_ACCESS_EXPORTED", "DATA_EXPORT", "Membership Access manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-008: Community Posts ---
+    getCommunityPostsConfig() {
+      const DEFAULT_COMMUNITY_POSTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PST-101", title: "OPSC OAS Prelims 2026: Recommended Odia Grammar Books", authorEmail: "ramesh.behera@gmail.com", district: "Balasore", upvotes: 142, commentsCount: 28, status: "Published", publishedAt: "2026-11-05", active: true },
+          { id: "PST-102", title: "OSSC CGL Mathematics Daily Practice Routine Breakdown", authorEmail: "subhashree.m@gmail.com", district: "Cuttack", upvotes: 98, commentsCount: 15, status: "Published", publishedAt: "2026-11-07", active: true },
+          { id: "PST-103", title: "Bhubaneswar Offline Study Group - Weekly Mock Session", authorEmail: "debabrata.n@gmail.com", district: "Khordha", upvotes: 210, commentsCount: 44, status: "Published", publishedAt: "2026-11-09", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_community_posts_config', 'posts', () => DEFAULT_COMMUNITY_POSTS);
+    },
+    saveCommunityPostsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.posts = cfg.items || cfg.posts || [];
+      cfg.items = cfg.posts;
+      localStorage.setItem('cso_community_posts_config', JSON.stringify(cfg));
+      this.logAudit("COMMUNITY_POSTS_SAVED", "COMMUNITY", "Community Posts forum updated with " + cfg.items.length + " threads.");
+    },
+    resetCommunityPostsConfig() {
+      const DEFAULT_COMMUNITY_POSTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PST-101", title: "OPSC OAS Prelims 2026: Recommended Odia Grammar Books", authorEmail: "ramesh.behera@gmail.com", district: "Balasore", upvotes: 142, commentsCount: 28, status: "Published", publishedAt: "2026-11-05", active: true },
+          { id: "PST-102", title: "OSSC CGL Mathematics Daily Practice Routine Breakdown", authorEmail: "subhashree.m@gmail.com", district: "Cuttack", upvotes: 98, commentsCount: 15, status: "Published", publishedAt: "2026-11-07", active: true },
+          { id: "PST-103", title: "Bhubaneswar Offline Study Group - Weekly Mock Session", authorEmail: "debabrata.n@gmail.com", district: "Khordha", upvotes: 210, commentsCount: 44, status: "Published", publishedAt: "2026-11-09", active: true }
+        ]
+      };
+      localStorage.setItem('cso_community_posts_config', JSON.stringify(DEFAULT_COMMUNITY_POSTS));
+      this.logAudit("COMMUNITY_POSTS_RESET", "COMMUNITY", "Community Posts forum restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_COMMUNITY_POSTS));
+    },
+    exportCommunityPostsManifest() {
+      const config = this.getCommunityPostsConfig();
+      const filename = "community_posts_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("COMMUNITY_POSTS_EXPORTED", "DATA_EXPORT", "Community Posts manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-009: Comments & Replies ---
+    getCommentsRepliesConfig() {
+      const DEFAULT_COMMENTS_REPLIES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "CMT-201", postRef: "PST-101", commenter: "Bikash Jena", content: "Is Saraswata Vyakaran sufficient for the Mains translation paper?", reported: false, likes: 14, timestamp: "2026-11-06 10:20", active: true },
+          { id: "CMT-202", postRef: "PST-102", commenter: "Manas Ranjan", content: "Can anyone share shortcut tricks for compound interest problems?", reported: false, likes: 8, timestamp: "2026-11-07 14:15", active: true },
+          { id: "CMT-203", postRef: "PST-103", commenter: "SpamBot99", content: "Buy exam keys fast at whatsapp link ...", reported: true, likes: 0, timestamp: "2026-11-09 11:00", active: false }
+        ]
+      };
+      return this._hydrateConfig('cso_comments_replies_config', 'comments', () => DEFAULT_COMMENTS_REPLIES);
+    },
+    saveCommentsRepliesConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.comments = cfg.items || cfg.comments || [];
+      cfg.items = cfg.comments;
+      localStorage.setItem('cso_comments_replies_config', JSON.stringify(cfg));
+      this.logAudit("COMMENTS_REPLIES_SAVED", "COMMUNITY", "Comments & Replies log updated with " + cfg.items.length + " replies.");
+    },
+    resetCommentsRepliesConfig() {
+      const DEFAULT_COMMENTS_REPLIES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "CMT-201", postRef: "PST-101", commenter: "Bikash Jena", content: "Is Saraswata Vyakaran sufficient for the Mains translation paper?", reported: false, likes: 14, timestamp: "2026-11-06 10:20", active: true },
+          { id: "CMT-202", postRef: "PST-102", commenter: "Manas Ranjan", content: "Can anyone share shortcut tricks for compound interest problems?", reported: false, likes: 8, timestamp: "2026-11-07 14:15", active: true },
+          { id: "CMT-203", postRef: "PST-103", commenter: "SpamBot99", content: "Buy exam keys fast at whatsapp link ...", reported: true, likes: 0, timestamp: "2026-11-09 11:00", active: false }
+        ]
+      };
+      localStorage.setItem('cso_comments_replies_config', JSON.stringify(DEFAULT_COMMENTS_REPLIES));
+      this.logAudit("COMMENTS_REPLIES_RESET", "COMMUNITY", "Comments & Replies log restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_COMMENTS_REPLIES));
+    },
+    exportCommentsRepliesManifest() {
+      const config = this.getCommentsRepliesConfig();
+      const filename = "comments_replies_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("COMMENTS_REPLIES_EXPORTED", "DATA_EXPORT", "Comments & Replies manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-010: Moderation Queue ---
+    getModerationQueueConfig() {
+      const DEFAULT_MODERATION_QUEUE = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { autoFilterSpamKeywords: true, quarantineThresholdScore: 70 },
+        items: [
+          { id: "MOD-301", itemType: "Comment", snippet: "Click here for leaked exam papers ...", author: "unknown_aspirant@tempmail.com", riskScore: "95/100", flagReason: "Prohibited Solicitation", queuedAt: "2026-11-09 16:30", status: "Pending Review", active: true },
+          { id: "MOD-302", itemType: "Community Post", snippet: "Unverified protest rally date regarding OSSC exam center", author: "student_circle@gmail.com", riskScore: "75/100", flagReason: "Unverified Official Gazette Notice", queuedAt: "2026-11-09 17:45", status: "Pending Review", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_moderation_queue_config', 'queuedItems', () => DEFAULT_MODERATION_QUEUE);
+    },
+    saveModerationQueueConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.queuedItems = cfg.items || cfg.queuedItems || [];
+      cfg.items = cfg.queuedItems;
+      localStorage.setItem('cso_moderation_queue_config', JSON.stringify(cfg));
+      this.logAudit("MODERATION_QUEUE_SAVED", "COMMUNITY", "Moderation Queue updated with " + cfg.items.length + " pending reviews.");
+    },
+    resetModerationQueueConfig() {
+      const DEFAULT_MODERATION_QUEUE = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { autoFilterSpamKeywords: true, quarantineThresholdScore: 70 },
+        items: [
+          { id: "MOD-301", itemType: "Comment", snippet: "Click here for leaked exam papers ...", author: "unknown_aspirant@tempmail.com", riskScore: "95/100", flagReason: "Prohibited Solicitation", queuedAt: "2026-11-09 16:30", status: "Pending Review", active: true },
+          { id: "MOD-302", itemType: "Community Post", snippet: "Unverified protest rally date regarding OSSC exam center", author: "student_circle@gmail.com", riskScore: "75/100", flagReason: "Unverified Official Gazette Notice", queuedAt: "2026-11-09 17:45", status: "Pending Review", active: true }
+        ]
+      };
+      localStorage.setItem('cso_moderation_queue_config', JSON.stringify(DEFAULT_MODERATION_QUEUE));
+      this.logAudit("MODERATION_QUEUE_RESET", "COMMUNITY", "Moderation Queue restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_MODERATION_QUEUE));
+    },
+    exportModerationQueueManifest() {
+      const config = this.getModerationQueueConfig();
+      const filename = "moderation_queue_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MODERATION_QUEUE_EXPORTED", "DATA_EXPORT", "Moderation Queue manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-011: User Reports ---
+    getUserReportsConfig() {
+      const DEFAULT_USER_REPORTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalReports: 34, pendingInvestigation: 4, resolvedCount: 30 },
+        items: [
+          { id: "RPT-401", targetEntity: "PST-103 Comment #2", reportedBy: "aspirant.balasore@gmail.com", grievanceType: "Commercial Solicitation / Scams", priority: "High", status: "Action Taken (Deleted)", filedDate: "2026-11-08", active: true },
+          { id: "RPT-402", targetEntity: "USR-9481 Profile", reportedBy: "debabrata.n@gmail.com", grievanceType: "Harassment / Abusive Remarks", priority: "Critical", status: "Investigating", filedDate: "2026-11-09", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_user_reports_config', 'reports', () => DEFAULT_USER_REPORTS);
+    },
+    saveUserReportsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.reports = cfg.items || cfg.reports || [];
+      cfg.items = cfg.reports;
+      localStorage.setItem('cso_user_reports_config', JSON.stringify(cfg));
+      this.logAudit("USER_REPORTS_SAVED", "COMMUNITY", "User Reports grievance desk updated with " + cfg.items.length + " tickets.");
+    },
+    resetUserReportsConfig() {
+      const DEFAULT_USER_REPORTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalReports: 34, pendingInvestigation: 4, resolvedCount: 30 },
+        items: [
+          { id: "RPT-401", targetEntity: "PST-103 Comment #2", reportedBy: "aspirant.balasore@gmail.com", grievanceType: "Commercial Solicitation / Scams", priority: "High", status: "Action Taken (Deleted)", filedDate: "2026-11-08", active: true },
+          { id: "RPT-402", targetEntity: "USR-9481 Profile", reportedBy: "debabrata.n@gmail.com", grievanceType: "Harassment / Abusive Remarks", priority: "Critical", status: "Investigating", filedDate: "2026-11-09", active: true }
+        ]
+      };
+      localStorage.setItem('cso_user_reports_config', JSON.stringify(DEFAULT_USER_REPORTS));
+      this.logAudit("USER_REPORTS_RESET", "COMMUNITY", "User Reports grievance desk restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_USER_REPORTS));
+    },
+    exportUserReportsManifest() {
+      const config = this.getUserReportsConfig();
+      const filename = "user_reports_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("USER_REPORTS_EXPORTED", "DATA_EXPORT", "User Reports manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-012: Blocked Accounts ---
+    getBlockedAccountsConfig() {
+      const DEFAULT_BLOCKED_ACCOUNTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "BLK-01", identifier: "spam.test@tempmail.com", blockType: "Email Domain + IP", reason: "Automated forum link bombing", blockedBy: "Root Admin", blockedOn: "2026-11-04", canAppeal: false, active: true },
+          { id: "BLK-02", identifier: "185.220.101.45", blockType: "IP Address (Tor Node)", reason: "Brute force authentication attempts", blockedBy: "Security Rule Engine", blockedOn: "2026-11-07", canAppeal: false, active: true },
+          { id: "BLK-03", identifier: "fake.scholarship@gmail.com", blockType: "User Account", reason: "Fraudulent scheme counseling solicitation", blockedBy: "Community Lead", blockedOn: "2026-10-18", canAppeal: true, active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_blocked_accounts_config', 'blockedList', () => DEFAULT_BLOCKED_ACCOUNTS);
+    },
+    saveBlockedAccountsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.blockedList = cfg.items || cfg.blockedList || [];
+      cfg.items = cfg.blockedList;
+      localStorage.setItem('cso_blocked_accounts_config', JSON.stringify(cfg));
+      this.logAudit("BLOCKED_ACCOUNTS_SAVED", "COMMUNITY", "Blocked Accounts blackbook updated with " + cfg.items.length + " entries.");
+    },
+    resetBlockedAccountsConfig() {
+      const DEFAULT_BLOCKED_ACCOUNTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "BLK-01", identifier: "spam.test@tempmail.com", blockType: "Email Domain + IP", reason: "Automated forum link bombing", blockedBy: "Root Admin", blockedOn: "2026-11-04", canAppeal: false, active: true },
+          { id: "BLK-02", identifier: "185.220.101.45", blockType: "IP Address (Tor Node)", reason: "Brute force authentication attempts", blockedBy: "Security Rule Engine", blockedOn: "2026-11-07", canAppeal: false, active: true },
+          { id: "BLK-03", identifier: "fake.scholarship@gmail.com", blockType: "User Account", reason: "Fraudulent scheme counseling solicitation", blockedBy: "Community Lead", blockedOn: "2026-10-18", canAppeal: true, active: true }
+        ]
+      };
+      localStorage.setItem('cso_blocked_accounts_config', JSON.stringify(DEFAULT_BLOCKED_ACCOUNTS));
+      this.logAudit("BLOCKED_ACCOUNTS_RESET", "COMMUNITY", "Blocked Accounts blackbook restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_BLOCKED_ACCOUNTS));
+    },
+    exportBlockedAccountsManifest() {
+      const config = this.getBlockedAccountsConfig();
+      const filename = "blocked_accounts_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BLOCKED_ACCOUNTS_EXPORTED", "DATA_EXPORT", "Blocked Accounts manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 
@@ -10829,7 +11084,13 @@
           rolesPermissions: this.getRolesPermissionsConfig(),
           adminAccounts: this.getAdminAccountsConfig(),
           accountStatus: this.getAccountStatusConfig(),
-          registrations: this.getRegistrationsConfig()
+          registrations: this.getRegistrationsConfig(),
+          membershipAccess: this.getMembershipAccessConfig(),
+          communityPosts: this.getCommunityPostsConfig(),
+          commentsReplies: this.getCommentsRepliesConfig(),
+          moderationQueue: this.getModerationQueueConfig(),
+          userReports: this.getUserReportsConfig(),
+          blockedAccounts: this.getBlockedAccountsConfig()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');

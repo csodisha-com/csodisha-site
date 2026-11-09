@@ -538,6 +538,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-09-004') { renderAdminAccountsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-09-005') { renderAccountStatusWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-09-006') { renderRegistrationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-007') { renderMembershipAccessWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-008') { renderCommunityPostsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-009') { renderCommentsRepliesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-010') { renderModerationQueueWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-011') { renderUserReportsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-012') { renderBlockedAccountsWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -792,6 +798,18 @@ async function loadMasterNavigation() {
         renderAccountStatusWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-09-006') {
         renderRegistrationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-007') {
+        renderMembershipAccessWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-008') {
+        renderCommunityPostsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-009') {
+        renderCommentsRepliesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-010') {
+        renderModerationQueueWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-011') {
+        renderUserReportsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-012') {
+        renderBlockedAccountsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -37159,6 +37177,1490 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // --- MODULE 09-007: Membership Access Workspace ---
+    function renderMembershipAccessWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getMembershipAccessConfig();
+        let entitlements = Array.isArray(config.entitlements || config.items) ? [...(config.entitlements || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activePasses = entitlements.filter(e => e.status === 'Active' && e.active !== false);
+          const filtered = entitlements.filter(e => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (e.candidateEmail || '').toLowerCase().includes(term) || (e.tier || '').toLowerCase().includes(term) || (e.accessVaults || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">ENTITLEMENTS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Aspirant Pass Entitlements &amp; Vault Access</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage daily PDF download allowances, access to PYQ vaults, mentorship circles, and pass validity dates</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-acc" class="px-3.5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Grant Pass
+                  </button>
+                  <button id="btn-inspect-acc" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-acc" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-acc" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Entitled Subscribers</span>
+                  <p class="text-2xl font-bold text-white mt-1">4,720 <span class="text-xs text-slate-500 font-normal">candidates</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Pass Records</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">${activePasses.length} <span class="text-xs text-slate-500 font-normal">in roster</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Primary Pass Tier</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">Scholar Club</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="acc-search-input" value="${searchTerm}" placeholder="Filter by email, pass tier, or vault scope..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${entitlements.length} pass records</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Pass ID</th>
+                        <th class="py-3 px-4">Candidate Email</th>
+                        <th class="py-3 px-4">Pass Tier</th>
+                        <th class="py-3 px-4">Daily Download Cap</th>
+                        <th class="py-3 px-4">Accessible Vaults</th>
+                        <th class="py-3 px-4">Expiry Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No membership passes match query.</td>
+                        </tr>
+                      ` : filtered.map(e => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-sky-400">${e.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${e.candidateEmail || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${e.tier || 'General Aspirant'}</span></td>
+                          <td class="py-3 px-4 text-slate-300">${e.dailyDownloadLimit} PDFs / day</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${e.accessVaults || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${e.expiresOn || 'Lifetime'}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${e.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                              ${e.status || 'Active'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${e.id}" class="btn-toggle-acc px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${e.status === 'Active' ? 'Revoke' : 'Reinstate'}
+                              </button>
+                              <button data-id="${e.id}" class="btn-del-acc px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#acc-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#acc-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-acc');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Grant Aspirant Vault Pass',
+                subtitle: 'Assign tier privileges, download quotas, and expiry date',
+                fields: [
+                  { name: 'candidateEmail', label: 'Candidate Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true },
+                  { name: 'tier', label: 'Membership Tier', type: 'select', options: [
+                    { value: 'Scholar Club', label: 'Scholar Club (25 PDFs/day)' },
+                    { value: 'District Circle Patron', label: 'District Circle Patron (100 PDFs/day)' },
+                    { value: 'General Aspirant', label: 'General Aspirant (3 PDFs/day)' }
+                  ], default: 'Scholar Club' },
+                  { name: 'dailyDownloadLimit', label: 'Daily PDF Download Limit', type: 'number', placeholder: '25', default: '25', required: true },
+                  { name: 'accessVaults', label: 'Authorized Vault Scopes', type: 'text', placeholder: 'e.g. PYQ + Full Mock Series + Interview Guides', default: 'PYQ + Mock Series', required: true },
+                  { name: 'expiresOn', label: 'Pass Expiration Date', type: 'text', placeholder: 'YYYY-MM-DD or Lifetime', default: '2027-11-08', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newAcc = {
+                    id: 'ACC-0' + (entitlements.length + 1),
+                    candidateEmail: data.candidateEmail.trim(),
+                    tier: data.tier,
+                    dailyDownloadLimit: Number(data.dailyDownloadLimit) || 10,
+                    accessVaults: data.accessVaults.trim(),
+                    expiresOn: data.expiresOn.trim(),
+                    status: 'Active',
+                    active: true
+                  };
+                  entitlements.unshift(newAcc);
+                  config.entitlements = entitlements;
+                  config.items = entitlements;
+                  store.saveMembershipAccessConfig(config);
+                  showToast(`Pass granted to ${newAcc.candidateEmail}.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle status
+          container.querySelectorAll('.btn-toggle-acc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = entitlements.find(e => e.id === id);
+              if (item) {
+                item.status = item.status === 'Active' ? 'Revoked' : 'Active';
+                item.active = item.status === 'Active';
+                config.entitlements = entitlements;
+                config.items = entitlements;
+                store.saveMembershipAccessConfig(config);
+                showToast(`Pass ${item.id} status set to ${item.status}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-acc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove pass entitlement ${id}?`)) {
+                entitlements = entitlements.filter(e => e.id !== id);
+                config.entitlements = entitlements;
+                config.items = entitlements;
+                store.saveMembershipAccessConfig(config);
+                showToast(`Pass entitlement ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-acc');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Membership Access Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-acc');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportMembershipAccessManifest();
+              showToast('Membership access manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-acc');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset membership pass entitlements to factory default?')) {
+                config = store.resetMembershipAccessConfig();
+                entitlements = Array.isArray(config.entitlements || config.items) ? [...(config.entitlements || config.items)] : [];
+                showToast('Membership entitlements restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-008: Community Posts Workspace ---
+    function renderCommunityPostsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCommunityPostsConfig();
+        let posts = Array.isArray(config.posts || config.items) ? [...(config.posts || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalUpvotes = posts.reduce((acc, p) => acc + (Number(p.upvotes) || 0), 0);
+          const totalComments = posts.reduce((acc, p) => acc + (Number(p.commentsCount) || 0), 0);
+          const filtered = posts.filter(p => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (p.title || '').toLowerCase().includes(term) || (p.authorEmail || '').toLowerCase().includes(term) || (p.district || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">FORUM THREADS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Community Discussion Posts &amp; Study Circles</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Moderate aspirant strategy posts, district offline study circle announcements, upvotes, and replies</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-pst" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Forum Post
+                  </button>
+                  <button id="btn-inspect-pst" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-pst" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-pst" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Community Discussions</span>
+                  <p class="text-2xl font-bold text-white mt-1">${posts.length} <span class="text-xs text-slate-500 font-normal">threads</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Aspirant Upvotes</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${totalUpvotes.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Thread Engagement</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">${totalComments} <span class="text-xs text-slate-500 font-normal">replies</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="pst-search-input" value="${searchTerm}" placeholder="Search post title, author email, district..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${posts.length} threads</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Post ID</th>
+                        <th class="py-3 px-4">Thread Title</th>
+                        <th class="py-3 px-4">Author</th>
+                        <th class="py-3 px-4">District</th>
+                        <th class="py-3 px-4">Upvotes</th>
+                        <th class="py-3 px-4">Replies</th>
+                        <th class="py-3 px-4">Published Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="9" class="py-8 text-center text-slate-500 font-sans">No community posts match filter.</td>
+                        </tr>
+                      ` : filtered.map(p => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-emerald-400">${p.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium max-w-sm truncate">${p.title || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${p.authorEmail || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400">${p.district || ''}</td>
+                          <td class="py-3 px-4 text-emerald-400 font-bold">▲ ${p.upvotes || 0}</td>
+                          <td class="py-3 px-4 text-slate-300">${p.commentsCount || 0}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${p.publishedAt || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${p.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${p.status || 'Published'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${p.id}" class="btn-toggle-pst px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${p.status === 'Published' ? 'Unpublish' : 'Publish'}
+                              </button>
+                              <button data-id="${p.id}" class="btn-del-pst px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#pst-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#pst-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-pst');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Start Community Discussion Thread',
+                subtitle: 'Publish candidate strategy guides, study group meetups, or syllabus tips',
+                fields: [
+                  { name: 'title', label: 'Thread Title', type: 'text', placeholder: 'e.g. OSSC CGL Current Affairs 6-Month Marathon Strategy', required: true },
+                  { name: 'authorEmail', label: 'Author Candidate Email', type: 'text', placeholder: 'e.g. mentor.bbsr@gmail.com', required: true },
+                  { name: 'district', label: 'District', type: 'select', options: [
+                    { value: 'Khordha', label: 'Khordha' },
+                    { value: 'Cuttack', label: 'Cuttack' },
+                    { value: 'Balasore', label: 'Balasore' },
+                    { value: 'Sambalpur', label: 'Sambalpur' },
+                    { value: 'Ganjam', label: 'Ganjam' },
+                    { value: 'Mayurbhanj', label: 'Mayurbhanj' }
+                  ], default: 'Khordha' },
+                  { name: 'status', label: 'Publication State', type: 'select', options: [
+                    { value: 'Published', label: 'Published' },
+                    { value: 'Under Review', label: 'Under Review' }
+                  ], default: 'Published' }
+                ],
+                onSubmit: (data) => {
+                  const newPst = {
+                    id: 'PST-' + Math.floor(104 + Math.random() * 890),
+                    title: data.title.trim(),
+                    authorEmail: data.authorEmail.trim(),
+                    district: data.district,
+                    upvotes: 0,
+                    commentsCount: 0,
+                    status: data.status,
+                    publishedAt: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  posts.unshift(newPst);
+                  config.posts = posts;
+                  config.items = posts;
+                  store.saveCommunityPostsConfig(config);
+                  showToast('Discussion thread created.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle status
+          container.querySelectorAll('.btn-toggle-pst').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = posts.find(p => p.id === id);
+              if (item) {
+                item.status = item.status === 'Published' ? 'Unpublished' : 'Published';
+                config.posts = posts;
+                config.items = posts;
+                store.saveCommunityPostsConfig(config);
+                showToast(`Thread ${item.id} set to ${item.status}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-pst').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove thread ${id}?`)) {
+                posts = posts.filter(p => p.id !== id);
+                config.posts = posts;
+                config.items = posts;
+                store.saveCommunityPostsConfig(config);
+                showToast(`Thread ${id} deleted.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-pst');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Community Posts Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-pst');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportCommunityPostsManifest();
+              showToast('Community posts manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-pst');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset community posts forum to factory default?')) {
+                config = store.resetCommunityPostsConfig();
+                posts = Array.isArray(config.posts || config.items) ? [...(config.posts || config.items)] : [];
+                showToast('Community forum restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-009: Comments & Replies Workspace ---
+    function renderCommentsRepliesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCommentsRepliesConfig();
+        let comments = Array.isArray(config.comments || config.items) ? [...(config.comments || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const reportedCount = comments.filter(c => c.reported === true).length;
+          const filtered = comments.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.content || '').toLowerCase().includes(term) || (c.commenter || '').toLowerCase().includes(term) || (c.postRef || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">REPLIES AUDIT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Comments, Discussion Replies &amp; Mentions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Audit candidate doubt clearing interactions, comment like metrics, and filter spam remarks</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-cmt" class="px-3.5 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Post Reply
+                  </button>
+                  <button id="btn-inspect-cmt" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-cmt" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-cmt" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Comments Logged</span>
+                  <p class="text-2xl font-bold text-white mt-1">${comments.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Flagged / Reported Comments</span>
+                  <p class="text-2xl font-bold text-rose-400 mt-1">${reportedCount} <span class="text-xs text-slate-500 font-normal">quarantined</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Engagement Quality</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">High (98% Clean)</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="cmt-search-input" value="${searchTerm}" placeholder="Search comment content, author, post ref..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${comments.length} comments</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Comment ID</th>
+                        <th class="py-3 px-4">Thread Ref</th>
+                        <th class="py-3 px-4">Commenter</th>
+                        <th class="py-3 px-4">Comment Text Snippet</th>
+                        <th class="py-3 px-4">Likes</th>
+                        <th class="py-3 px-4">Flagged</th>
+                        <th class="py-3 px-4">Timestamp</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No comments match search query.</td>
+                        </tr>
+                      ` : filtered.map(c => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-violet-400">${c.id || ''}</td>
+                          <td class="py-3 px-4 text-slate-400">${c.postRef || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${c.commenter || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-sm truncate">${c.content || ''}</td>
+                          <td class="py-3 px-4 text-violet-300 font-bold">♥ ${c.likes || 0}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${c.reported ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                              ${c.reported ? 'Flagged' : 'Normal'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${c.timestamp || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${c.id}" class="btn-toggle-cmt px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${c.reported ? 'Approve' : 'Flag'}
+                              </button>
+                              <button data-id="${c.id}" class="btn-del-cmt px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#cmt-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#cmt-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-cmt');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Add Discussion Reply',
+                subtitle: 'Post an official faculty response or guidance reply to candidate query',
+                fields: [
+                  { name: 'postRef', label: 'Parent Thread ID', type: 'text', placeholder: 'e.g. PST-101', default: 'PST-101', required: true },
+                  { name: 'commenter', label: 'Commenter Name / Handle', type: 'text', placeholder: 'e.g. Faculty Mentor Desk', required: true },
+                  { name: 'content', label: 'Reply Comment Content', type: 'text', placeholder: 'e.g. For translation papers, refer to previous 5 years OPSC keys.', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newCmt = {
+                    id: 'CMT-' + Math.floor(204 + Math.random() * 890),
+                    postRef: data.postRef.trim(),
+                    commenter: data.commenter.trim(),
+                    content: data.content.trim(),
+                    reported: false,
+                    likes: 0,
+                    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                    active: true
+                  };
+                  comments.unshift(newCmt);
+                  config.comments = comments;
+                  config.items = comments;
+                  store.saveCommentsRepliesConfig(config);
+                  showToast('Reply posted successfully.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle report status
+          container.querySelectorAll('.btn-toggle-cmt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = comments.find(c => c.id === id);
+              if (item) {
+                item.reported = !item.reported;
+                config.comments = comments;
+                config.items = comments;
+                store.saveCommentsRepliesConfig(config);
+                showToast(`Comment ${item.id} flag set to ${item.reported}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-cmt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Delete comment ${id}?`)) {
+                comments = comments.filter(c => c.id !== id);
+                config.comments = comments;
+                config.items = comments;
+                store.saveCommentsRepliesConfig(config);
+                showToast(`Comment ${id} deleted.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-cmt');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Comments & Replies Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-cmt');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportCommentsRepliesManifest();
+              showToast('Comments manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-cmt');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset comments to factory defaults?')) {
+                config = store.resetCommentsRepliesConfig();
+                comments = Array.isArray(config.comments || config.items) ? [...(config.comments || config.items)] : [];
+                showToast('Comments restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-010: Moderation Queue Workspace ---
+    function renderModerationQueueWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getModerationQueueConfig();
+        let queuedItems = Array.isArray(config.queuedItems || config.items) ? [...(config.queuedItems || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const pendingCount = queuedItems.filter(q => q.status === 'Pending Review').length;
+          const filtered = queuedItems.filter(q => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (q.snippet || '').toLowerCase().includes(term) || (q.author || '').toLowerCase().includes(term) || (q.flagReason || '').toLowerCase().includes(term) || (q.itemType || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">QUARANTINE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Community Moderation Queue &amp; Auto-Filter</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated NLP spam keyword quarantine, examination leak solicitation screening, and moderator review desk</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-mod" class="px-3.5 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Quarantine Entity
+                  </button>
+                  <button id="btn-inspect-mod" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-mod" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-mod" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Awaiting Moderator Review</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${pendingCount} <span class="text-xs text-slate-500 font-normal">items</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Quarantined Volume</span>
+                  <p class="text-2xl font-bold text-white mt-1">${queuedItems.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Auto-Spam Shield</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">Enabled (Score &gt;70)</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="mod-search-input" value="${searchTerm}" placeholder="Search quarantined snippet, author, flag reason..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${queuedItems.length} items</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Queue ID</th>
+                        <th class="py-3 px-4">Entity Type</th>
+                        <th class="py-3 px-4">Content Snippet</th>
+                        <th class="py-3 px-4">Author Identifier</th>
+                        <th class="py-3 px-4">Risk Score</th>
+                        <th class="py-3 px-4">Flag Reason</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No items awaiting moderation.</td>
+                        </tr>
+                      ` : filtered.map(q => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-orange-400">${q.id || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${q.itemType || 'Comment'}</span></td>
+                          <td class="py-3 px-4 font-sans text-white font-medium max-w-sm truncate">${q.snippet || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${q.author || ''}</td>
+                          <td class="py-3 px-4 text-rose-400 font-bold">${q.riskScore || '80/100'}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400 text-[11px]">${q.flagReason || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${q.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${q.status || 'Pending Review'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${q.status !== 'Approved' ? `
+                                <button data-id="${q.id}" class="btn-approve-mod px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Approve
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Passed</span>
+                              `}
+                              <button data-id="${q.id}" class="btn-reject-mod px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Reject &amp; Ban
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#mod-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#mod-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-mod');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Quarantine Content Entity',
+                subtitle: 'Manually flag a forum thread or comment for moderation review',
+                fields: [
+                  { name: 'itemType', label: 'Entity Type', type: 'select', options: [
+                    { value: 'Comment', label: 'Comment' },
+                    { value: 'Community Post', label: 'Community Post' },
+                    { value: 'Candidate Bio', label: 'Candidate Bio' }
+                  ], default: 'Comment' },
+                  { name: 'snippet', label: 'Offending Content Snippet', type: 'text', placeholder: 'e.g. Free leaked OPSC question paper link...', required: true },
+                  { name: 'author', label: 'Author Email / Identifier', type: 'text', placeholder: 'e.g. suspect.user@gmail.com', required: true },
+                  { name: 'riskScore', label: 'Calculated Risk Score', type: 'select', options: [
+                    { value: '95/100', label: '95/100 (Critical)' },
+                    { value: '80/100', label: '80/100 (High)' },
+                    { value: '60/100', label: '60/100 (Moderate)' }
+                  ], default: '95/100' },
+                  { name: 'flagReason', label: 'Violation Reason', type: 'text', placeholder: 'e.g. Prohibited Exam Leaks / Scam Solicitation', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newMod = {
+                    id: 'MOD-' + Math.floor(303 + Math.random() * 890),
+                    itemType: data.itemType,
+                    snippet: data.snippet.trim(),
+                    author: data.author.trim(),
+                    riskScore: data.riskScore,
+                    flagReason: data.flagReason.trim(),
+                    queuedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                    status: 'Pending Review',
+                    active: true
+                  };
+                  queuedItems.unshift(newMod);
+                  config.queuedItems = queuedItems;
+                  config.items = queuedItems;
+                  store.saveModerationQueueConfig(config);
+                  showToast('Entity quarantined in moderation queue.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Approve
+          container.querySelectorAll('.btn-approve-mod').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = queuedItems.find(q => q.id === id);
+              if (item) {
+                item.status = 'Approved';
+                config.queuedItems = queuedItems;
+                config.items = queuedItems;
+                store.saveModerationQueueConfig(config);
+                showToast(`Item ${item.id} approved and published.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Reject
+          container.querySelectorAll('.btn-reject-mod').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Reject and delete quarantined entity ${id}?`)) {
+                queuedItems = queuedItems.filter(q => q.id !== id);
+                config.queuedItems = queuedItems;
+                config.items = queuedItems;
+                store.saveModerationQueueConfig(config);
+                showToast(`Item ${id} rejected and purged.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-mod');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Moderation Queue Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-mod');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportModerationQueueManifest();
+              showToast('Moderation queue manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-mod');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset moderation queue to factory default?')) {
+                config = store.resetModerationQueueConfig();
+                queuedItems = Array.isArray(config.queuedItems || config.items) ? [...(config.queuedItems || config.items)] : [];
+                showToast('Moderation queue restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-011: User Reports Workspace ---
+    function renderUserReportsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getUserReportsConfig();
+        let reports = Array.isArray(config.reports || config.items) ? [...(config.reports || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const resolvedCount = reports.filter(r => (r.status || '').includes('Action Taken') || (r.status || '').includes('Resolved')).length;
+          const filtered = reports.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.targetEntity || '').toLowerCase().includes(term) || (r.reportedBy || '').toLowerCase().includes(term) || (r.grievanceType || '').toLowerCase().includes(term) || (r.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">GRIEVANCE DESK</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Candidate Reports &amp; Community Grievances</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">User-submitted flags for abusive forum replies, impersonation, commercial spam, and copyright infringements</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-rpt" class="px-3.5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    File Grievance
+                  </button>
+                  <button id="btn-inspect-rpt" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-rpt" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-rpt" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Filed Grievances</span>
+                  <p class="text-2xl font-bold text-white mt-1">${reports.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Resolved &amp; Action Taken</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${resolvedCount} <span class="text-xs text-slate-500 font-normal">cases</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">SLA Resolution Rate</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">&lt; 2 Hours</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="rpt-search-input" value="${searchTerm}" placeholder="Search entity, reporter, grievance type..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${reports.length} reports</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Report ID</th>
+                        <th class="py-3 px-4">Reported Target Entity</th>
+                        <th class="py-3 px-4">Complainant</th>
+                        <th class="py-3 px-4">Grievance Category</th>
+                        <th class="py-3 px-4">Priority</th>
+                        <th class="py-3 px-4">Filed Date</th>
+                        <th class="py-3 px-4">Resolution Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No user reports found.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-rose-400">${r.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${r.targetEntity || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${r.reportedBy || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${r.grievanceType || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.priority === 'Critical' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${r.priority || 'Normal'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${r.filedDate || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${(r.status || '').includes('Action Taken') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${r.status || 'Investigating'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${!(r.status || '').includes('Action Taken') ? `
+                                <button data-id="${r.id}" class="btn-resolve-rpt px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Resolve
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Closed</span>
+                              `}
+                              <button data-id="${r.id}" class="btn-del-rpt px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Dismiss
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#rpt-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#rpt-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-rpt');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'File User Grievance / Abuse Report',
+                subtitle: 'Submit an investigation ticket against a thread, comment, or user profile',
+                fields: [
+                  { name: 'targetEntity', label: 'Target Entity Reference', type: 'text', placeholder: 'e.g. PST-101 Comment #5', required: true },
+                  { name: 'reportedBy', label: 'Complainant Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true },
+                  { name: 'grievanceType', label: 'Grievance Nature', type: 'select', options: [
+                    { value: 'Commercial Solicitation / Scams', label: 'Commercial Solicitation / Scams' },
+                    { value: 'Harassment / Abusive Remarks', label: 'Harassment / Abusive Remarks' },
+                    { value: 'Copyright / Pirated Material', label: 'Copyright / Pirated Material' },
+                    { value: 'Impersonation / False Authority', label: 'Impersonation / False Authority' }
+                  ], default: 'Commercial Solicitation / Scams' },
+                  { name: 'priority', label: 'Urgency Priority', type: 'select', options: [
+                    { value: 'Critical', label: 'Critical' },
+                    { value: 'High', label: 'High' },
+                    { value: 'Normal', label: 'Normal' }
+                  ], default: 'High' }
+                ],
+                onSubmit: (data) => {
+                  const newRpt = {
+                    id: 'RPT-' + Math.floor(403 + Math.random() * 890),
+                    targetEntity: data.targetEntity.trim(),
+                    reportedBy: data.reportedBy.trim(),
+                    grievanceType: data.grievanceType,
+                    priority: data.priority,
+                    status: 'Investigating',
+                    filedDate: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  reports.unshift(newRpt);
+                  config.reports = reports;
+                  config.items = reports;
+                  store.saveUserReportsConfig(config);
+                  showToast('Grievance ticket submitted.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Resolve report
+          container.querySelectorAll('.btn-resolve-rpt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = reports.find(r => r.id === id);
+              if (item) {
+                item.status = 'Action Taken (Deleted)';
+                config.reports = reports;
+                config.items = reports;
+                store.saveUserReportsConfig(config);
+                showToast(`Report ${item.id} resolved and action confirmed.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-rpt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Dismiss grievance report ${id}?`)) {
+                reports = reports.filter(r => r.id !== id);
+                config.reports = reports;
+                config.items = reports;
+                store.saveUserReportsConfig(config);
+                showToast(`Report ${id} dismissed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-rpt');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('User Reports Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-rpt');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportUserReportsManifest();
+              showToast('User reports manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-rpt');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset user reports to factory defaults?')) {
+                config = store.resetUserReportsConfig();
+                reports = Array.isArray(config.reports || config.items) ? [...(config.reports || config.items)] : [];
+                showToast('Reports grievance log restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-012: Blocked Accounts Workspace ---
+    function renderBlockedAccountsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getBlockedAccountsConfig();
+        let blockedList = Array.isArray(config.blockedList || config.items) ? [...(config.blockedList || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const appealableCount = blockedList.filter(b => b.canAppeal === true).length;
+          const filtered = blockedList.filter(b => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (b.identifier || '').toLowerCase().includes(term) || (b.reason || '').toLowerCase().includes(term) || (b.blockType || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">BLACKBOOK</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-012</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Platform Blackbook &amp; Blocked Accounts</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Enforce hard domain bans, candidate account locks, Tor exit IP drops, and review unban appeals</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-blk" class="px-3.5 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Blacklist Entry
+                  </button>
+                  <button id="btn-inspect-blk" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-blk" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-blk" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Blacklisted Targets</span>
+                  <p class="text-2xl font-bold text-red-400 mt-1">${blockedList.length} <span class="text-xs text-slate-500 font-normal">entities</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Appealable Blockades</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${appealableCount} <span class="text-xs text-slate-500 font-normal">cases</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Edge Enforcement</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">Cloudflare Active</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="blk-search-input" value="${searchTerm}" placeholder="Search blocked email, IP address, or reason..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${blockedList.length} blacklisted targets</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Blacklist ID</th>
+                        <th class="py-3 px-4">Target Identifier</th>
+                        <th class="py-3 px-4">Block Type</th>
+                        <th class="py-3 px-4">Violation Reason</th>
+                        <th class="py-3 px-4">Enforcing Authority</th>
+                        <th class="py-3 px-4">Blocked Date</th>
+                        <th class="py-3 px-4">Appeal Permitted</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No blacklist records found.</td>
+                        </tr>
+                      ` : filtered.map(b => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-red-400">${b.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${b.identifier || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${b.blockType || 'User Account'}</span></td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${b.reason || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400">${b.blockedBy || 'Root Admin'}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${b.blockedOn || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${b.canAppeal ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${b.canAppeal ? 'Allowed' : 'Permanent'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <button data-id="${b.id}" class="btn-del-blk px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition cursor-pointer">
+                              Unblock
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#blk-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#blk-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-blk');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Add Platform Blacklist Entry',
+                subtitle: 'Impose permanent or appealable ban on suspect emails, IPs, or domains',
+                fields: [
+                  { name: 'identifier', label: 'Blocked Identifier (Email, IP, Domain)', type: 'text', placeholder: 'e.g. spammer@tempmail.com', required: true },
+                  { name: 'blockType', label: 'Block Scope Type', type: 'select', options: [
+                    { value: 'User Account', label: 'User Account' },
+                    { value: 'Email Domain + IP', label: 'Email Domain + IP' },
+                    { value: 'IP Address (Tor Node)', label: 'IP Address (Tor Node)' }
+                  ], default: 'User Account' },
+                  { name: 'reason', label: 'Grounds for Ban', type: 'text', placeholder: 'e.g. Automated forum link bombing and scam schemes', required: true },
+                  { name: 'canAppeal', label: 'Allow Formal Appeal', type: 'select', options: [
+                    { value: 'true', label: 'Yes - Appealable' },
+                    { value: 'false', label: 'No - Permanent Edge Ban' }
+                  ], default: 'false' }
+                ],
+                onSubmit: (data) => {
+                  const newBlk = {
+                    id: 'BLK-0' + (blockedList.length + 1),
+                    identifier: data.identifier.trim(),
+                    blockType: data.blockType,
+                    reason: data.reason.trim(),
+                    blockedBy: 'Root Admin',
+                    blockedOn: new Date().toISOString().slice(0, 10),
+                    canAppeal: data.canAppeal === 'true',
+                    active: true
+                  };
+                  blockedList.unshift(newBlk);
+                  config.blockedList = blockedList;
+                  config.items = blockedList;
+                  store.saveBlockedAccountsConfig(config);
+                  showToast(`Target ${newBlk.identifier} added to blacklist.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Unblock
+          container.querySelectorAll('.btn-del-blk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = blockedList.find(b => b.id === id);
+              if (confirm(`Lift ban for ${item ? item.identifier : id}?`)) {
+                blockedList = blockedList.filter(b => b.id !== id);
+                config.blockedList = blockedList;
+                config.items = blockedList;
+                store.saveBlockedAccountsConfig(config);
+                showToast(`Target unblocked and removed from blacklist.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-blk');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Blocked Accounts Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-blk');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportBlockedAccountsManifest();
+              showToast('Blocked accounts manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-blk');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset blacklist to factory defaults?')) {
+                config = store.resetBlockedAccountsConfig();
+                blockedList = Array.isArray(config.blockedList || config.items) ? [...(config.blockedList || config.items)] : [];
+                showToast('Blacklist restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 
