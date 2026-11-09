@@ -415,6 +415,14 @@ async function loadMasterNavigation() {
         renderClassGradeWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-05-007') {
         renderExaminationManagementWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-008') {
+        renderRecruitmentJobsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-009') {
+        renderAdmitCardsResultsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-010') {
+        renderSyllabusExamPatternsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-011') {
+        renderPyqWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -19758,6 +19766,1183 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Recruitment & Jobs (module-05-008)
+     */
+    function renderRecruitmentJobsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getRecruitmentJobsConfig();
+        const postings = config.postings || [];
+        const filterDefaults = config.filterDefaults || {};
+
+        const totalVacancies = postings.reduce((acc, p) => acc + (p.vacancies || 0), 0);
+        const activePostings = postings.filter(p => p.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </span>
+                    State Recruitment & Jobs Registry
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    module-05-008
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Track official job advertisements, cadre vacancies, pay scales, application deadlines, and direct commission portals.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-job-posting" class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Job Advertisement
+                </button>
+                <button id="btn-toggle-json-jobs" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-jobs" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-jobs" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-jobs" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Notices</span>
+                <div class="mt-1 text-2xl font-bold text-white">${postings.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Advertised Vacancies</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${totalVacancies.toLocaleString()} Posts</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Published on Public Portal</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${activePostings}</div>
+              </div>
+            </div>
+
+            <!-- Filter Preferences Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Default Public Portal Filter Directives</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Commission Filter</label>
+                  <input type="text" id="job-filter-comm" value="${escapeHtml(filterDefaults.commission || 'All')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Cadre</label>
+                  <input type="text" id="job-filter-cadre" value="${escapeHtml(filterDefaults.cadre || 'All')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Notice Status</label>
+                  <input type="text" id="job-filter-status" value="${escapeHtml(filterDefaults.status || 'Active')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Postings Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Recruitment Postings Register</h2>
+                <span class="text-xs text-slate-400">${postings.length} notices</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Notice ID</th>
+                      <th class="px-4 py-3">Advertisement Title</th>
+                      <th class="px-4 py-3">Commission</th>
+                      <th class="px-4 py-3">Vacancies</th>
+                      <th class="px-4 py-3">Pay Scale</th>
+                      <th class="px-4 py-3">Last Date</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="job-postings-body" class="divide-y divide-slate-800/60">
+                    ${postings.map((item, idx) => {
+                      const statusBadge = item.status === 'Open' ? 'bg-emerald-950 text-emerald-400 border-emerald-800/50' : item.status === 'Closing Soon' ? 'bg-rose-950 text-rose-400 border-rose-800/50' : 'bg-slate-800 text-slate-300 border-slate-700';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'JOB-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                            ${escapeHtml(item.title)}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-800 text-cyan-300 border border-cyan-800/40">
+                              ${escapeHtml(item.commission || 'OPSC')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-emerald-400">
+                            ${item.vacancies ? item.vacancies.toLocaleString() : 'N/A'}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-400 max-w-xs truncate" title="${escapeHtml(item.payScale)}">
+                            ${escapeHtml(item.payScale || 'Level 9')}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-amber-300/90 whitespace-nowrap">
+                            ${escapeHtml(item.lastDate || 'TBD')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${statusBadge}">
+                              ${escapeHtml(item.status || 'Open')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="job-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="job-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="job-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${postings.length === 0 ? `
+                      <tr>
+                        <td colspan="9" class="px-4 py-8 text-center text-slate-500">
+                          No recruitment postings found. Click "Add Job Advertisement" to list one.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="job-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Recruitment & Jobs Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_recruitment_jobs_config</span>
+              </div>
+              <textarea id="job-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-emerald-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-jobs" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Listeners
+        const jobList = [...postings];
+
+        const saveChanges = () => {
+          config.filterDefaults = {
+            commission: root.querySelector('#job-filter-comm').value.trim() || 'All',
+            cadre: root.querySelector('#job-filter-cadre').value.trim() || 'All',
+            status: root.querySelector('#job-filter-status').value.trim() || 'Active'
+          };
+          config.postings = jobList;
+          window.CSOSuperStore.saveRecruitmentJobsConfig(config);
+          alert('Recruitment & jobs configuration saved successfully!');
+          renderRecruitmentJobsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-jobs').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-jobs').addEventListener('click', () => {
+          window.CSOSuperStore.exportRecruitmentJobsManifest();
+        });
+
+        root.querySelector('#btn-reset-jobs').addEventListener('click', () => {
+          if (confirm('Restore recruitment notices to default records?')) {
+            window.CSOSuperStore.resetRecruitmentJobsConfig();
+            alert('Recruitment notices reset to defaults.');
+            renderRecruitmentJobsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#job-json-drawer');
+        root.querySelector('#btn-toggle-json-jobs').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-jobs').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#job-json-raw').value;
+            window.CSOSuperStore.importRecruitmentJobsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderRecruitmentJobsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.job-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (jobList[idx]) jobList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.job-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove posting "' + jobList[idx].title + '"?')) {
+              jobList.splice(idx, 1);
+              config.postings = jobList;
+              window.CSOSuperStore.saveRecruitmentJobsConfig(config);
+              renderRecruitmentJobsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.job-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = jobList[idx];
+            const newTitle = prompt('Advertisement Title:', item.title);
+            if (newTitle === null) return;
+            const newComm = prompt('Commission (OPSC / OSSC / OSSSC / Police):', item.commission || 'OPSC');
+            const newVac = prompt('Vacancies:', String(item.vacancies || 0));
+            const newPay = prompt('Pay Scale:', item.payScale || 'Level 9');
+            const newDate = prompt('Last Date (YYYY-MM-DD):', item.lastDate || '2026-12-01');
+            const newStatus = prompt('Status (Open / Closing Soon / Upcoming / Closed):', item.status || 'Open');
+
+            item.title = newTitle.trim() || item.title;
+            if (newComm !== null) item.commission = newComm.trim();
+            if (newVac !== null) item.vacancies = parseInt(newVac, 10) || 0;
+            if (newPay !== null) item.payScale = newPay.trim();
+            if (newDate !== null) item.lastDate = newDate.trim();
+            if (newStatus !== null) item.status = newStatus.trim();
+
+            config.postings = jobList;
+            window.CSOSuperStore.saveRecruitmentJobsConfig(config);
+            renderRecruitmentJobsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-job-posting').addEventListener('click', () => {
+          const title = prompt('Enter Advertisement Title:');
+          if (!title || !title.trim()) return;
+          const comm = prompt('Commission (OPSC / OSSC / OSSSC / Police):', 'OPSC') || 'OPSC';
+          const vacStr = prompt('Number of Vacancies:', '150');
+          const lastDate = prompt('Last Date (YYYY-MM-DD):', '2026-12-15') || '2026-12-15';
+
+          const newId = 'JOB-' + String(jobList.length + 1).padStart(2, '0');
+          jobList.push({
+            id: newId,
+            title: title.trim(),
+            commission: comm.trim(),
+            vacancies: parseInt(vacStr, 10) || 150,
+            payScale: 'Level 9 (Rs. 35,400 - 1,12,400)',
+            lastDate: lastDate.trim(),
+            applyUrl: 'https://' + comm.toLowerCase().replace(/[^a-z]/g, '') + '.gov.in',
+            status: 'Open',
+            active: true
+          });
+          config.postings = jobList;
+          window.CSOSuperStore.saveRecruitmentJobsConfig(config);
+          renderRecruitmentJobsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-008 (Recruitment & Jobs)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Admit Cards & Results (module-05-009)
+     */
+    function renderAdmitCardsResultsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getAdmitCardsResultsConfig();
+        const releases = config.releases || [];
+        const settings = config.dispatchSettings || {};
+
+        const admitCardCount = releases.filter(r => r.type === 'Admit Card' && r.active).length;
+        const resultCount = releases.filter(r => r.type === 'Result' && r.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    Admit Cards & Examination Results Hub
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                    module-05-009
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage official hall ticket dispatch links, cut-off marks reconciliation, and ratified candidate merit scorecards.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-release-item" class="px-3.5 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Publish Hall Ticket / Result
+                </button>
+                <button id="btn-toggle-json-rel" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-rel" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-rel" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-rel" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Dispatches</span>
+                <div class="mt-1 text-2xl font-bold text-white">${releases.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Hall Tickets</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${admitCardCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Ratified Merit Results</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${resultCount}</div>
+              </div>
+            </div>
+
+            <!-- Dispatch Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Alert Dispatch & Notification Headers</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Telegram / SMS Alert Header Prefix</label>
+                  <input type="text" id="rel-prefix" value="${escapeHtml(settings.alertPrefix || '[OFFICIAL DISCLOSURE]')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="rel-auto-check" class="sr-only peer" ${settings.autoCheckRelease ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Automate Portal Uptime & Hall Ticket Check</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Releases Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Admit Card & Result Releases</h2>
+                <span class="text-xs text-slate-400">${releases.length} releases</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Release ID</th>
+                      <th class="px-4 py-3">Type</th>
+                      <th class="px-4 py-3">Examination / Release Title</th>
+                      <th class="px-4 py-3">Commission</th>
+                      <th class="px-4 py-3">Release Date</th>
+                      <th class="px-4 py-3">Cut-off / Benchmark</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rel-items-body" class="divide-y divide-slate-800/60">
+                    ${releases.map((item, idx) => {
+                      const typeBadge = item.type === 'Admit Card' ? 'bg-cyan-950 text-cyan-300 border-cyan-800/50' : 'bg-emerald-950 text-emerald-300 border-emerald-800/50';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'REL-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${typeBadge}">
+                              ${escapeHtml(item.type || 'Release')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                            ${escapeHtml(item.title)}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            ${escapeHtml(item.commission || 'OPSC')}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
+                            ${escapeHtml(item.releaseDate || 'N/A')}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-400 max-w-xs truncate" title="${escapeHtml(item.cutoffScore)}">
+                            ${escapeHtml(item.cutoffScore || 'N/A')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                              ${escapeHtml(item.status || 'Active')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="rel-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="rel-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="rel-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="rel-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Admit Cards & Results Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_admit_results_config</span>
+              </div>
+              <textarea id="rel-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-cyan-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-rel" class="px-3 py-1.5 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const relList = [...releases];
+
+        const saveChanges = () => {
+          config.dispatchSettings = {
+            alertPrefix: root.querySelector('#rel-prefix').value.trim() || '[OFFICIAL DISCLOSURE]',
+            autoCheckRelease: root.querySelector('#rel-auto-check').checked,
+            fallbackPortal: 'https://csodisha.com'
+          };
+          config.releases = relList;
+          window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
+          alert('Admit cards & results configuration saved successfully!');
+          renderAdmitCardsResultsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-rel').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-rel').addEventListener('click', () => {
+          window.CSOSuperStore.exportAdmitCardsResultsManifest();
+        });
+
+        root.querySelector('#btn-reset-rel').addEventListener('click', () => {
+          if (confirm('Restore admit cards & results to defaults?')) {
+            window.CSOSuperStore.resetAdmitCardsResultsConfig();
+            alert('Admit cards & results reset to defaults.');
+            renderAdmitCardsResultsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#rel-json-drawer');
+        root.querySelector('#btn-toggle-json-rel').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-rel').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#rel-json-raw').value;
+            window.CSOSuperStore.importAdmitCardsResultsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderAdmitCardsResultsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.rel-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (relList[idx]) relList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.rel-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove release "' + relList[idx].title + '"?')) {
+              relList.splice(idx, 1);
+              config.releases = relList;
+              window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
+              renderAdmitCardsResultsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.rel-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = relList[idx];
+            const newTitle = prompt('Release Title:', item.title);
+            if (newTitle === null) return;
+            const newCutoff = prompt('Cutoff Score / Benchmark:', item.cutoffScore || 'N/A');
+            const newStatus = prompt('Status:', item.status || 'Active');
+
+            item.title = newTitle.trim() || item.title;
+            if (newCutoff !== null) item.cutoffScore = newCutoff.trim();
+            if (newStatus !== null) item.status = newStatus.trim();
+
+            config.releases = relList;
+            window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
+            renderAdmitCardsResultsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-release-item').addEventListener('click', () => {
+          const title = prompt('Enter Hall Ticket / Result Title:');
+          if (!title || !title.trim()) return;
+          const type = prompt('Type (Admit Card / Result):', 'Admit Card') || 'Admit Card';
+          const comm = prompt('Commission (OPSC / OSSC / OSSSC / BSE Odisha):', 'OSSC') || 'OSSC';
+
+          const newId = 'REL-' + String(relList.length + 1).padStart(2, '0');
+          relList.push({
+            id: newId,
+            type: type.trim(),
+            title: title.trim(),
+            commission: comm.trim(),
+            releaseDate: new Date().toISOString().split('T')[0],
+            downloadUrl: 'https://' + comm.toLowerCase().replace(/[^a-z]/g, '') + '.gov.in',
+            cutoffScore: 'Pending Official Gazette Confirmation',
+            status: 'Active Download',
+            active: true
+          });
+          config.releases = relList;
+          window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
+          renderAdmitCardsResultsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-009 (Admit Cards & Results)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Syllabus & Exam Patterns (module-05-010)
+     */
+    function renderSyllabusExamPatternsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getSyllabusExamPatternsConfig();
+        const schemes = config.schemes || [];
+        const settings = config.patternSettings || {};
+
+        const verifiedCount = schemes.filter(s => s.verified && s.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </span>
+                    Syllabus & Examination Pattern Blueprints
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    module-05-010
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage stage-wise marking schemes, negative marking ratios, qualifying cut-offs, and gazette notification reconciliations.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-pattern-item" class="px-3.5 py-2 text-xs font-medium text-white bg-amber-600 hover:bg-amber-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Exam Scheme
+                </button>
+                <button id="btn-toggle-json-syl" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-syl" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-syl" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-syl" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Exam Blueprints</span>
+                <div class="mt-1 text-2xl font-bold text-white">${schemes.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Gazette-Verified Syllabi</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${verifiedCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Default Penalty Ratio</span>
+                <div class="mt-1 text-2xl font-bold text-amber-400">${escapeHtml(settings.defaultNegativeMarking || '0.25 (1/4th)')}</div>
+              </div>
+            </div>
+
+            <!-- Pattern Policies Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Syllabus Gazette Governance Policies</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Standard Negative Marking Ratio</label>
+                  <input type="text" id="syl-neg-mark" value="${escapeHtml(settings.defaultNegativeMarking || '0.25 (1/4th)')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="syl-gazette-only" class="sr-only peer" ${settings.gazetteReferencedOnly ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Mandate Official Gazette Reference</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="syl-comparative" class="sr-only peer" ${settings.allowComparativeView ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enable Side-by-Side Comparative View</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Schemes Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Examination Patterns & Marking Structures</h2>
+                <span class="text-xs text-slate-400">${schemes.length} schemes</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Scheme ID</th>
+                      <th class="px-4 py-3">Examination Name</th>
+                      <th class="px-4 py-3">Stages & Evaluation</th>
+                      <th class="px-4 py-3">Total Marks</th>
+                      <th class="px-4 py-3">Negative Marking</th>
+                      <th class="px-4 py-3">Gazette Ref</th>
+                      <th class="px-4 py-3 text-center">Verified</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="syl-items-body" class="divide-y divide-slate-800/60">
+                    ${schemes.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(item.id || 'SYL-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.examName)}">
+                          ${escapeHtml(item.examName)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300 max-w-xs truncate" title="${escapeHtml(item.stages)}">
+                          ${escapeHtml(item.stages || 'Prelims & Mains')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-emerald-400">
+                          ${item.totalMarks || 0}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-rose-300/90 max-w-xs truncate" title="${escapeHtml(item.negativeMarking)}">
+                          ${escapeHtml(item.negativeMarking || '0.25')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400 max-w-xs truncate" title="${escapeHtml(item.gazetteNotificationNo)}">
+                          ${escapeHtml(item.gazetteNotificationNo || 'N/A')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="syl-toggle-verified cursor-pointer rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0" data-idx="${idx}" ${item.verified ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="syl-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-amber-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="syl-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="syl-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="syl-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Syllabus & Exam Patterns Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_syllabus_patterns_config</span>
+              </div>
+              <textarea id="syl-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-amber-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-syl" class="px-3 py-1.5 text-xs font-medium text-white bg-amber-600 hover:bg-amber-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const sylList = [...schemes];
+
+        const saveChanges = () => {
+          config.patternSettings = {
+            defaultNegativeMarking: root.querySelector('#syl-neg-mark').value.trim() || '0.25 (1/4th)',
+            gazetteReferencedOnly: root.querySelector('#syl-gazette-only').checked,
+            allowComparativeView: root.querySelector('#syl-comparative').checked
+          };
+          config.schemes = sylList;
+          window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
+          alert('Syllabus & exam patterns configuration saved successfully!');
+          renderSyllabusExamPatternsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-syl').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-syl').addEventListener('click', () => {
+          window.CSOSuperStore.exportSyllabusExamPatternsManifest();
+        });
+
+        root.querySelector('#btn-reset-syl').addEventListener('click', () => {
+          if (confirm('Restore syllabus patterns to default gazette records?')) {
+            window.CSOSuperStore.resetSyllabusExamPatternsConfig();
+            alert('Syllabus patterns reset to defaults.');
+            renderSyllabusExamPatternsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#syl-json-drawer');
+        root.querySelector('#btn-toggle-json-syl').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-syl').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#syl-json-raw').value;
+            window.CSOSuperStore.importSyllabusExamPatternsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderSyllabusExamPatternsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.syl-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (sylList[idx]) sylList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.syl-toggle-verified').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (sylList[idx]) sylList[idx].verified = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.syl-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove exam scheme "' + sylList[idx].examName + '"?')) {
+              sylList.splice(idx, 1);
+              config.schemes = sylList;
+              window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
+              renderSyllabusExamPatternsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.syl-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = sylList[idx];
+            const newName = prompt('Exam Name:', item.examName);
+            if (newName === null) return;
+            const newStages = prompt('Stages Breakdown:', item.stages || '');
+            const newMarks = prompt('Total Marks:', String(item.totalMarks || 0));
+            const newNeg = prompt('Negative Marking Rule:', item.negativeMarking || '0.25');
+
+            item.examName = newName.trim() || item.examName;
+            if (newStages !== null) item.stages = newStages.trim();
+            if (newMarks !== null) item.totalMarks = parseInt(newMarks, 10) || 0;
+            if (newNeg !== null) item.negativeMarking = newNeg.trim();
+
+            config.schemes = sylList;
+            window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
+            renderSyllabusExamPatternsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-pattern-item').addEventListener('click', () => {
+          const name = prompt('Enter Exam Name:');
+          if (!name || !name.trim()) return;
+          const stages = prompt('Exam Stages:', 'Prelims & Mains Written') || 'Written Exam';
+          const marks = prompt('Total Marks:', '300') || '300';
+          const gazette = prompt('Gazette Ref No:', 'Gov-Od-2026/Syllabus') || 'N/A';
+
+          const newId = 'SYL-' + String(sylList.length + 1).padStart(2, '0');
+          sylList.push({
+            id: newId,
+            examName: name.trim(),
+            stages: stages.trim(),
+            totalMarks: parseInt(marks, 10) || 300,
+            negativeMarking: '0.25 marks per wrong answer',
+            gazetteNotificationNo: gazette.trim(),
+            verified: true,
+            active: true
+          });
+          config.schemes = sylList;
+          window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
+          renderSyllabusExamPatternsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-010 (Syllabus & Exam Patterns)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Previous Year Questions (module-05-011)
+     */
+    function renderPyqWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getPyqConfig();
+        const papers = config.papers || [];
+        const settings = config.repositorySettings || {};
+
+        const activeCount = papers.filter(p => p.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </span>
+                    Previous Year Questions (PYQ) Vault
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    module-05-011
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage authentic past question papers, official answer keys, OCR-indexed question banks, and solution manuals.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-pyq-item" class="px-3.5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Upload Past Paper
+                </button>
+                <button id="btn-toggle-json-pyq" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-pyq" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-pyq" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-pyq" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Archived Exam Papers</span>
+                <div class="mt-1 text-2xl font-bold text-white">${papers.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active for Download</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">OCR Indexing</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${settings.ocrIndexed ? 'Full Text Enabled' : 'Disabled'}</div>
+              </div>
+            </div>
+
+            <!-- Repository Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Repository Indexing & Search Configuration</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="flex items-center pt-2">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="pyq-keys" class="sr-only peer" ${settings.includeAnswerKeys ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Bundle Official Answer Keys</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-2">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="pyq-searchable" class="sr-only peer" ${settings.searchableQuestions ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enable Question-Level Search</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-2">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="pyq-ocr" class="sr-only peer" ${settings.ocrIndexed ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">OCR Text Indexing for PDFs</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Papers Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Archived Examination Question Papers</h2>
+                <span class="text-xs text-slate-400">${papers.length} question papers</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">PYQ ID</th>
+                      <th class="px-4 py-3">Exam Scope</th>
+                      <th class="px-4 py-3">Exam Year</th>
+                      <th class="px-4 py-3">Paper Title</th>
+                      <th class="px-4 py-3">Answer Key Status</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pyq-items-body" class="divide-y divide-slate-800/60">
+                    ${papers.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(item.id || 'PYQ-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-indigo-300 border border-indigo-800/40">
+                            ${escapeHtml(item.exam || 'OPSC OAS')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-amber-300">
+                          ${item.year || 2024}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.paperTitle)}">
+                          ${escapeHtml(item.paperTitle)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(item.answerKeyStatus || 'Official Ratified')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="pyq-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="pyq-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="pyq-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="pyq-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Previous Year Questions Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_pyq_config</span>
+              </div>
+              <textarea id="pyq-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-indigo-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-pyq" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const pyqList = [...papers];
+
+        const saveChanges = () => {
+          config.repositorySettings = {
+            includeAnswerKeys: root.querySelector('#pyq-keys').checked,
+            searchableQuestions: root.querySelector('#pyq-searchable').checked,
+            ocrIndexed: root.querySelector('#pyq-ocr').checked
+          };
+          config.papers = pyqList;
+          window.CSOSuperStore.savePyqConfig(config);
+          alert('PYQ repository configuration saved successfully!');
+          renderPyqWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-pyq').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-pyq').addEventListener('click', () => {
+          window.CSOSuperStore.exportPyqManifest();
+        });
+
+        root.querySelector('#btn-reset-pyq').addEventListener('click', () => {
+          if (confirm('Restore PYQ repository to defaults?')) {
+            window.CSOSuperStore.resetPyqConfig();
+            alert('PYQ repository reset to defaults.');
+            renderPyqWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#pyq-json-drawer');
+        root.querySelector('#btn-toggle-json-pyq').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-pyq').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#pyq-json-raw').value;
+            window.CSOSuperStore.importPyqConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderPyqWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.pyq-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (pyqList[idx]) pyqList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.pyq-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove PYQ paper "' + pyqList[idx].paperTitle + '"?')) {
+              pyqList.splice(idx, 1);
+              config.papers = pyqList;
+              window.CSOSuperStore.savePyqConfig(config);
+              renderPyqWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.pyq-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = pyqList[idx];
+            const newTitle = prompt('Paper Title:', item.paperTitle);
+            if (newTitle === null) return;
+            const newExam = prompt('Exam Scope:', item.exam || 'OPSC OAS');
+            const newYear = prompt('Exam Year:', String(item.year || 2024));
+            const newKey = prompt('Answer Key Status:', item.answerKeyStatus || 'Official Ratified');
+
+            item.paperTitle = newTitle.trim() || item.paperTitle;
+            if (newExam !== null) item.exam = newExam.trim();
+            if (newYear !== null) item.year = parseInt(newYear, 10) || item.year;
+            if (newKey !== null) item.answerKeyStatus = newKey.trim();
+
+            config.papers = pyqList;
+            window.CSOSuperStore.savePyqConfig(config);
+            renderPyqWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-pyq-item').addEventListener('click', () => {
+          const title = prompt('Enter Paper Title:');
+          if (!title || !title.trim()) return;
+          const exam = prompt('Exam Scope (e.g. OPSC OAS, OSSC CGL, OSSSC):', 'OPSC OAS') || 'OPSC OAS';
+          const year = prompt('Year:', '2025') || '2025';
+
+          const newId = 'PYQ-' + String(pyqList.length + 1).padStart(2, '0');
+          pyqList.push({
+            id: newId,
+            exam: exam.trim(),
+            year: parseInt(year, 10) || 2025,
+            paperTitle: title.trim(),
+            answerKeyStatus: 'Official Ratified',
+            downloadUrl: '/assets/pdf/' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf',
+            active: true
+          });
+          config.papers = pyqList;
+          window.CSOSuperStore.savePyqConfig(config);
+          renderPyqWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-011 (Previous Year Questions)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 
