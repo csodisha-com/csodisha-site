@@ -544,6 +544,13 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-09-010') { renderModerationQueueWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-09-011') { renderUserReportsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-09-012') { renderBlockedAccountsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-013') { renderUserActivityWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-014') { renderDataAccessRequestsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-015') { renderDiscussionForumWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-016') { renderAskQuestionWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-017') { renderShareKnowledgeWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-018') { renderSuggestTopicWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-019') { renderReportErrorWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -810,6 +817,20 @@ async function loadMasterNavigation() {
         renderUserReportsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-09-012') {
         renderBlockedAccountsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-013') {
+        renderUserActivityWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-014') {
+        renderDataAccessRequestsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-015') {
+        renderDiscussionForumWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-016') {
+        renderAskQuestionWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-017') {
+        renderShareKnowledgeWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-018') {
+        renderSuggestTopicWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-019') {
+        renderReportErrorWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -38660,6 +38681,1720 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // --- MODULE 09-013: User Activity Workspace ---
+    function renderUserActivityWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getUserActivityConfig();
+        let activities = Array.isArray(config.activities || config.items) ? [...(config.activities || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = activities.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.userEmail || '').toLowerCase().includes(term) || (a.eventType || '').toLowerCase().includes(term) || (a.details || '').toLowerCase().includes(term) || (a.ipAddress || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">TELEMETRY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-013</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Candidate Live Activity &amp; Session Telemetry</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time audit log of mock test submissions, resource downloads, OTP login successes, and user IP origins</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-act" class="px-3.5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Simulate Event
+                  </button>
+                  <button id="btn-inspect-act" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-act" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-act" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Logged Events (Stream)</span>
+                  <p class="text-2xl font-bold text-white mt-1">${activities.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">24h Event Volume</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">18,420 <span class="text-xs text-slate-500 font-normal">actions</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Candidate Sessions</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">420 <span class="text-xs text-slate-500 font-normal">live online</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="act-search-input" value="${searchTerm}" placeholder="Filter activity by candidate email, action type, IP..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${activities.length} activity records</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Event ID</th>
+                        <th class="py-3 px-4">Candidate Email</th>
+                        <th class="py-3 px-4">Event Type</th>
+                        <th class="py-3 px-4">Event Payload / Details</th>
+                        <th class="py-3 px-4">IP Address</th>
+                        <th class="py-3 px-4">Timestamp</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-8 text-center text-slate-500 font-sans">No activity events match filter.</td>
+                        </tr>
+                      ` : filtered.map(a => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-sky-400">${a.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${a.userEmail || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${a.eventType || ''}</span></td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-sm truncate">${a.details || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${a.ipAddress || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${a.timestamp || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <button data-id="${a.id}" class="btn-del-act px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                              Purge
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#act-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#act-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-act');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Simulate User Activity Telemetry',
+                subtitle: 'Ingest an activity event to test telemetry stream parsing',
+                fields: [
+                  { name: 'userEmail', label: 'Candidate Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true },
+                  { name: 'eventType', label: 'Action Type', type: 'select', options: [
+                    { value: 'MOCK_SUBMISSION', label: 'MOCK_SUBMISSION' },
+                    { value: 'RESOURCE_DOWNLOAD', label: 'RESOURCE_DOWNLOAD' },
+                    { value: 'LOGIN_SUCCESS', label: 'LOGIN_SUCCESS' },
+                    { value: 'COMMUNITY_UPVOTE', label: 'COMMUNITY_UPVOTE' }
+                  ], default: 'MOCK_SUBMISSION' },
+                  { name: 'details', label: 'Action Details', type: 'text', placeholder: 'e.g. Submitted OSSC CGL Mock Test #2', required: true },
+                  { name: 'ipAddress', label: 'Client IP Address', type: 'text', placeholder: '103.24.84.12', default: '103.24.84.12', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newAct = {
+                    id: 'ACT-' + Math.floor(10 + Math.random() * 90),
+                    userEmail: data.userEmail.trim(),
+                    eventType: data.eventType,
+                    details: data.details.trim(),
+                    ipAddress: data.ipAddress.trim() || '127.0.0.1',
+                    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                    active: true
+                  };
+                  activities.unshift(newAct);
+                  config.activities = activities;
+                  config.items = activities;
+                  store.saveUserActivityConfig(config);
+                  showToast('Activity telemetry event recorded.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Delete
+          container.querySelectorAll('.btn-del-act').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Purge activity entry ${id}?`)) {
+                activities = activities.filter(a => a.id !== id);
+                config.activities = activities;
+                config.items = activities;
+                store.saveUserActivityConfig(config);
+                showToast(`Activity entry ${id} purged.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-act');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('User Activity Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-act');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportUserActivityManifest();
+              showToast('User activity manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-act');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset user activity stream to factory default?')) {
+                config = store.resetUserActivityConfig();
+                activities = Array.isArray(config.activities || config.items) ? [...(config.activities || config.items)] : [];
+                showToast('Activity stream restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-014: Data Access Requests Workspace ---
+    function renderDataAccessRequestsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getDataAccessRequestsConfig();
+        let requests = Array.isArray(config.requests || config.items) ? [...(config.requests || config.items)] : [];
+        let searchTerm = '';
+        const settings = config.settings || { complianceStandard: "DPDP Act 2023", slaDays: 15 };
+
+        function render() {
+          const completedCount = requests.filter(r => r.status === 'Completed').length;
+          const filtered = requests.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.requestNumber || '').toLowerCase().includes(term) || (r.requesterEmail || '').toLowerCase().includes(term) || (r.requestType || '').toLowerCase().includes(term) || (r.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">PRIVACY COMPLIANCE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-014</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Data Access Requests &amp; DPDP Erasure Desk</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Process India Digital Personal Data Protection (DPDP) Act 2023 requests: data portability, erasure, and consent revocation</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-dar" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log DPDP Request
+                  </button>
+                  <button id="btn-inspect-dar" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-dar" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-dar" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total DPDP Requests</span>
+                  <p class="text-2xl font-bold text-white mt-1">${requests.length} <span class="text-xs text-slate-500 font-normal">cases</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Compliant Completions</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${completedCount} <span class="text-xs text-slate-500 font-normal">fulfilled</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Statutory Standard</span>
+                  <p class="text-2xl font-bold text-indigo-400 mt-1">${settings.complianceStandard || 'DPDP Act 2023'}</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="dar-search-input" value="${searchTerm}" placeholder="Search request number, email, or request type..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${requests.length} requests</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Case #</th>
+                        <th class="py-3 px-4">Requester Email</th>
+                        <th class="py-3 px-4">Request Type</th>
+                        <th class="py-3 px-4">Filed Date</th>
+                        <th class="py-3 px-4">SLA Target Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-8 text-center text-slate-500 font-sans">No data access requests found.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-indigo-400">${r.requestNumber || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${r.requesterEmail || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${r.requestType || ''}</span></td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${r.filedAt || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${r.completionDate || 'Pending'}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${r.status || 'Under Review'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${r.status !== 'Completed' ? `
+                                <button data-id="${r.id}" class="btn-fulfill-dar px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Fulfill
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Fulfilled</span>
+                              `}
+                              <button data-id="${r.id}" class="btn-del-dar px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Dismiss
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#dar-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#dar-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-dar');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Log DPDP Data Access / Erasure Request',
+                subtitle: 'Register candidate request for data export, consent revocation, or erasure',
+                fields: [
+                  { name: 'requesterEmail', label: 'Requester Candidate Email', type: 'text', placeholder: 'e.g. candidate@gmail.com', required: true },
+                  { name: 'requestType', label: 'Request Scope', type: 'select', options: [
+                    { value: 'Data Portability Export', label: 'Data Portability Export' },
+                    { value: 'Erasure / Account Deletion', label: 'Erasure / Account Deletion' },
+                    { value: 'Consent Revocation', label: 'Consent Revocation' }
+                  ], default: 'Data Portability Export' },
+                  { name: 'status', label: 'Initial Workflow State', type: 'select', options: [
+                    { value: 'Under Review', label: 'Under Review' },
+                    { value: 'Processing', label: 'Processing' },
+                    { value: 'Completed', label: 'Completed' }
+                  ], default: 'Under Review' }
+                ],
+                onSubmit: (data) => {
+                  const newDar = {
+                    id: 'DAR-0' + (requests.length + 1),
+                    requestNumber: 'DAR-2026-' + (104 + requests.length),
+                    requesterEmail: data.requesterEmail.trim(),
+                    requestType: data.requestType,
+                    status: data.status,
+                    completionDate: data.status === 'Completed' ? new Date().toISOString().slice(0, 10) : 'Pending SLA',
+                    filedAt: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  requests.unshift(newDar);
+                  config.requests = requests;
+                  config.items = requests;
+                  store.saveDataAccessRequestsConfig(config);
+                  showToast(`DPDP case ${newDar.requestNumber} logged.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Fulfill
+          container.querySelectorAll('.btn-fulfill-dar').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = requests.find(r => r.id === id);
+              if (item) {
+                item.status = 'Completed';
+                item.completionDate = new Date().toISOString().slice(0, 10);
+                config.requests = requests;
+                config.items = requests;
+                store.saveDataAccessRequestsConfig(config);
+                showToast(`Request ${item.requestNumber} fulfilled.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-dar').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Dismiss request ${id}?`)) {
+                requests = requests.filter(r => r.id !== id);
+                config.requests = requests;
+                config.items = requests;
+                store.saveDataAccessRequestsConfig(config);
+                showToast(`Request ${id} dismissed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-dar');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Data Access Requests Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-dar');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportDataAccessRequestsManifest();
+              showToast('Data access requests manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-dar');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset data access requests to factory default?')) {
+                config = store.resetDataAccessRequestsConfig();
+                requests = Array.isArray(config.requests || config.items) ? [...(config.requests || config.items)] : [];
+                showToast('Requests log restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-015: Discussion Forum Workspace ---
+    function renderDiscussionForumWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getDiscussionForumConfig();
+        let boards = Array.isArray(config.boards || config.items) ? [...(config.boards || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalThreads = boards.reduce((acc, b) => acc + (Number(b.totalThreads) || 0), 0);
+          const totalPosts = boards.reduce((acc, b) => acc + (Number(b.postCount) || 0), 0);
+          const filtered = boards.filter(b => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (b.boardName || '').toLowerCase().includes(term) || (b.slug || '').toLowerCase().includes(term) || (b.assignedModerator || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">BOARDS &amp; LOUNGES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-015</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Discussion Forum Boards &amp; District Lounges</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage public discussion boards, examinee lounges, URL slugs, and assigned moderator leads</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-frm" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Forum Board
+                  </button>
+                  <button id="btn-inspect-frm" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-frm" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-frm" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Forum Boards</span>
+                  <p class="text-2xl font-bold text-white mt-1">${boards.length} <span class="text-xs text-slate-500 font-normal">boards</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Discussion Threads</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${totalThreads.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Cumulative Post Volume</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">${totalPosts.toLocaleString('en-IN')}</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="frm-search-input" value="${searchTerm}" placeholder="Search board name, slug, or assigned moderator..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${boards.length} boards</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Board ID</th>
+                        <th class="py-3 px-4">Board Name</th>
+                        <th class="py-3 px-4">URL Slug</th>
+                        <th class="py-3 px-4">Assigned Moderator</th>
+                        <th class="py-3 px-4">Active Threads</th>
+                        <th class="py-3 px-4">Total Posts</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No discussion boards found.</td>
+                        </tr>
+                      ` : filtered.map(b => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-emerald-400">${b.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-semibold">${b.boardName || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">/forum/${b.slug || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${b.assignedModerator || ''}</td>
+                          <td class="py-3 px-4 text-emerald-400 font-bold">${Number(b.totalThreads || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-slate-300">${Number(b.postCount || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${b.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${b.active !== false ? 'Active' : 'Archived'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${b.id}" class="btn-toggle-frm px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${b.active !== false ? 'Archive' : 'Activate'}
+                              </button>
+                              <button data-id="${b.id}" class="btn-del-frm px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#frm-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#frm-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-frm');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Add Discussion Forum Board',
+                subtitle: 'Create a new topic lounge with dedicated moderator assignment',
+                fields: [
+                  { name: 'boardName', label: 'Board / Category Name', type: 'text', placeholder: 'e.g. Police SI & Constable Physical Prep', required: true },
+                  { name: 'slug', label: 'URL Slug', type: 'text', placeholder: 'e.g. police-si-prep', required: true },
+                  { name: 'assignedModerator', label: 'Assigned Moderator Email', type: 'text', placeholder: 'e.g. mod@csodisha.com', default: 'mod.community@csodisha.com', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newFrm = {
+                    id: 'FRM-0' + (boards.length + 1),
+                    boardName: data.boardName.trim(),
+                    slug: data.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+                    assignedModerator: data.assignedModerator.trim(),
+                    totalThreads: 0,
+                    postCount: 0,
+                    active: true
+                  };
+                  boards.push(newFrm);
+                  config.boards = boards;
+                  config.items = boards;
+                  store.saveDiscussionForumConfig(config);
+                  showToast(`Forum board ${newFrm.boardName} created.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle status
+          container.querySelectorAll('.btn-toggle-frm').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = boards.find(b => b.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.boards = boards;
+                config.items = boards;
+                store.saveDiscussionForumConfig(config);
+                showToast(`Board ${item.boardName} status updated.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-frm').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove board ${id}?`)) {
+                boards = boards.filter(b => b.id !== id);
+                config.boards = boards;
+                config.items = boards;
+                store.saveDiscussionForumConfig(config);
+                showToast(`Board ${id} deleted.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-frm');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Discussion Forum Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-frm');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportDiscussionForumManifest();
+              showToast('Discussion forum manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-frm');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset discussion boards to factory default?')) {
+                config = store.resetDiscussionForumConfig();
+                boards = Array.isArray(config.boards || config.items) ? [...(config.boards || config.items)] : [];
+                showToast('Discussion boards restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-015', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-015</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-016: Ask a Question Workspace ---
+    function renderAskQuestionWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAskQuestionConfig();
+        let questions = Array.isArray(config.questions || config.items) ? [...(config.questions || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const verifiedCount = questions.filter(q => (q.verifiedStatus || '').includes('Verified')).length;
+          const filtered = questions.filter(q => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (q.questionTitle || '').toLowerCase().includes(term) || (q.category || '').toLowerCase().includes(term) || (q.askedBy || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">CANDIDATE Q&amp;A</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-016</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Ask a Question &amp; Doubt Clearing Inquiries</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Community Q&amp;A board covering eligibility rules, syllabus ambiguities, technical application issues, and verified answers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-qna" class="px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Post Inquiry
+                  </button>
+                  <button id="btn-inspect-qna" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-qna" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-qna" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Inquiries Logged</span>
+                  <p class="text-2xl font-bold text-white mt-1">${questions.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Faculty Verified Answers</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${verifiedCount} <span class="text-xs text-slate-500 font-normal">cleared</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Answer Rate</span>
+                  <p class="text-2xl font-bold text-teal-400 mt-1">100% Resolved</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="qna-search-input" value="${searchTerm}" placeholder="Search question title, category, or author..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${questions.length} questions</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Q&amp;A ID</th>
+                        <th class="py-3 px-4">Question Title</th>
+                        <th class="py-3 px-4">Topic Category</th>
+                        <th class="py-3 px-4">Asked By</th>
+                        <th class="py-3 px-4">Answers</th>
+                        <th class="py-3 px-4">Verification Status</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No questions found matching filter.</td>
+                        </tr>
+                      ` : filtered.map(q => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-teal-400">${q.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium max-w-md truncate">${q.questionTitle || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${q.category || ''}</span></td>
+                          <td class="py-3 px-4 text-slate-300">${q.askedBy || ''}</td>
+                          <td class="py-3 px-4 text-emerald-400 font-bold">${q.answerCount || 0}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${(q.verifiedStatus || '').includes('Verified') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${q.verifiedStatus || 'Open'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${q.date || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${!(q.verifiedStatus || '').includes('Faculty') ? `
+                                <button data-id="${q.id}" class="btn-verify-qna px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Verify
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Verified</span>
+                              `}
+                              <button data-id="${q.id}" class="btn-del-qna px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#qna-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#qna-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-qna');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Submit Candidate Question / Doubt',
+                subtitle: 'Log a query on eligibility rules, syllabus or technical examination patterns',
+                fields: [
+                  { name: 'questionTitle', label: 'Question Headline', type: 'text', placeholder: 'e.g. Is graduation final year candidate eligible for OSSC CGL 2026?', required: true },
+                  { name: 'category', label: 'Inquiry Category', type: 'select', options: [
+                    { value: 'Eligibility Rules', label: 'Eligibility Rules' },
+                    { value: 'Exam Pattern', label: 'Exam Pattern' },
+                    { value: 'Technical Form Help', label: 'Technical Form Help' },
+                    { value: 'Syllabus & Books', label: 'Syllabus & Books' }
+                  ], default: 'Eligibility Rules' },
+                  { name: 'askedBy', label: 'Candidate Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newQna = {
+                    id: 'QNA-0' + (questions.length + 1),
+                    questionTitle: data.questionTitle.trim(),
+                    category: data.category,
+                    askedBy: data.askedBy.trim(),
+                    answerCount: 0,
+                    verifiedStatus: 'Open for Peer Input',
+                    date: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  questions.unshift(newQna);
+                  config.questions = questions;
+                  config.items = questions;
+                  store.saveAskQuestionConfig(config);
+                  showToast('Question submitted to doubt board.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Verify Answer
+          container.querySelectorAll('.btn-verify-qna').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = questions.find(q => q.id === id);
+              if (item) {
+                item.verifiedStatus = 'Faculty Verified';
+                config.questions = questions;
+                config.items = questions;
+                store.saveAskQuestionConfig(config);
+                showToast(`Question ${item.id} verified by faculty.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-qna').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove inquiry ${id}?`)) {
+                questions = questions.filter(q => q.id !== id);
+                config.questions = questions;
+                config.items = questions;
+                store.saveAskQuestionConfig(config);
+                showToast(`Inquiry ${id} deleted.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-qna');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Ask a Question Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-qna');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportAskQuestionManifest();
+              showToast('Q&A manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-qna');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Q&A board to factory default?')) {
+                config = store.resetAskQuestionConfig();
+                questions = Array.isArray(config.questions || config.items) ? [...(config.questions || config.items)] : [];
+                showToast('Q&A board restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-016', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-017: Share Knowledge Workspace ---
+    function renderShareKnowledgeWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getShareKnowledgeConfig();
+        let submissions = Array.isArray(config.submissions || config.items) ? [...(config.submissions || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const approvedCount = submissions.filter(s => (s.status || '').includes('Approved')).length;
+          const filtered = submissions.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.noteTitle || '').toLowerCase().includes(term) || (s.contributor || '').toLowerCase().includes(term) || (s.subject || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">CROWDSOURCED VAULT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-017</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Share Knowledge &amp; Aspirant Study Submissions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Peer-to-peer knowledge sharing desk: review handwritten study notes, cheat sheets, peer ratings, and approval workflows</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-knw" class="px-3.5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Submit Note
+                  </button>
+                  <button id="btn-inspect-knw" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-knw" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-knw" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Contributed Notes</span>
+                  <p class="text-2xl font-bold text-white mt-1">${submissions.length} <span class="text-xs text-slate-500 font-normal">materials</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Approved &amp; Live in Vault</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${approvedCount} <span class="text-xs text-slate-500 font-normal">published</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Top Rated Contribution</span>
+                  <p class="text-2xl font-bold text-purple-400 mt-1">4.9 / 5 Stars</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="knw-search-input" value="${searchTerm}" placeholder="Search note title, contributor, subject..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${submissions.length} study submissions</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Note ID</th>
+                        <th class="py-3 px-4">Contribution Title</th>
+                        <th class="py-3 px-4">Subject</th>
+                        <th class="py-3 px-4">Contributor</th>
+                        <th class="py-3 px-4">Format</th>
+                        <th class="py-3 px-4">Peer Score</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No knowledge submissions found.</td>
+                        </tr>
+                      ` : filtered.map(s => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-purple-400">${s.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium max-w-sm truncate">${s.noteTitle || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${s.subject || ''}</span></td>
+                          <td class="py-3 px-4 text-slate-300">${s.contributor || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400">${s.fileType || 'PDF'}</td>
+                          <td class="py-3 px-4 text-amber-400 font-bold">${s.peerScore || '4.5/5'}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${(s.status || '').includes('Approved') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${s.status || 'In Peer Review'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${!(s.status || '').includes('Approved') ? `
+                                <button data-id="${s.id}" class="btn-approve-knw px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Approve
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Live</span>
+                              `}
+                              <button data-id="${s.id}" class="btn-del-knw px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#knw-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#knw-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-knw');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Submit Candidate Knowledge Note',
+                subtitle: 'Contribute a study note, formula chart, or subject summary to community vault',
+                fields: [
+                  { name: 'noteTitle', label: 'Study Note Title', type: 'text', placeholder: 'e.g. Major Folk Dances of Western Odisha', required: true },
+                  { name: 'subject', label: 'Academic Subject', type: 'select', options: [
+                    { value: 'Odisha History', label: 'Odisha History' },
+                    { value: 'State Geography', label: 'State Geography' },
+                    { value: 'Quantitative Aptitude', label: 'Quantitative Aptitude' },
+                    { value: 'General Science', label: 'General Science' }
+                  ], default: 'Odisha History' },
+                  { name: 'contributor', label: 'Contributor Name', type: 'text', placeholder: 'e.g. Subhashree Mohanty', required: true },
+                  { name: 'fileType', label: 'Resource Format', type: 'select', options: [
+                    { value: 'PDF Note', label: 'PDF Note' },
+                    { value: 'Infographic', label: 'Infographic' },
+                    { value: 'Markdown Summary', label: 'Markdown Summary' }
+                  ], default: 'PDF Note' }
+                ],
+                onSubmit: (data) => {
+                  const newKnw = {
+                    id: 'KNW-0' + (submissions.length + 1),
+                    noteTitle: data.noteTitle.trim(),
+                    subject: data.subject,
+                    contributor: data.contributor.trim(),
+                    fileType: data.fileType,
+                    peerScore: '5.0/5',
+                    status: 'Approved & Published',
+                    submittedOn: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  submissions.unshift(newKnw);
+                  config.submissions = submissions;
+                  config.items = submissions;
+                  store.saveShareKnowledgeConfig(config);
+                  showToast(`Study note "${newKnw.noteTitle}" added to vault.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Approve
+          container.querySelectorAll('.btn-approve-knw').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = submissions.find(s => s.id === id);
+              if (item) {
+                item.status = 'Approved & Published';
+                item.peerScore = '4.8/5';
+                config.submissions = submissions;
+                config.items = submissions;
+                store.saveShareKnowledgeConfig(config);
+                showToast(`Note ${item.id} approved for vault publishing.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-knw').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove note ${id}?`)) {
+                submissions = submissions.filter(s => s.id !== id);
+                config.submissions = submissions;
+                config.items = submissions;
+                store.saveShareKnowledgeConfig(config);
+                showToast(`Note ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-knw');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Share Knowledge Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-knw');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportShareKnowledgeManifest();
+              showToast('Share knowledge manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-knw');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset knowledge repository to factory default?')) {
+                config = store.resetShareKnowledgeConfig();
+                submissions = Array.isArray(config.submissions || config.items) ? [...(config.submissions || config.items)] : [];
+                showToast('Knowledge repository restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-017', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-017</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-018: Suggest a Topic Workspace ---
+    function renderSuggestTopicWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSuggestTopicConfig();
+        let topics = Array.isArray(config.topics || config.items) ? [...(config.topics || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalVotes = topics.reduce((acc, t) => acc + (Number(t.votesCount) || 0), 0);
+          const filtered = topics.filter(t => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (t.topicTitle || '').toLowerCase().includes(term) || (t.category || '').toLowerCase().includes(term) || (t.requestedBy || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">EDITORIAL DEMAND</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-018</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Suggest a Topic &amp; Aspirant Demand Board</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Crowdsourced content ideation board where aspirants vote on upcoming exam guides, syllabi analyses, and tutorials</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-sug" class="px-3.5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Suggest Topic
+                  </button>
+                  <button id="btn-inspect-sug" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-sug" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-sug" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Suggested Topics</span>
+                  <p class="text-2xl font-bold text-white mt-1">${topics.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Aspirant Upvotes</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${totalVotes.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Editorial Pipeline</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">2 Guides in Production</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="sug-search-input" value="${searchTerm}" placeholder="Search suggested topic, category, or requester..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${topics.length} topic proposals</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Topic ID</th>
+                        <th class="py-3 px-4">Proposed Topic Title</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Aspirant Votes</th>
+                        <th class="py-3 px-4">Requested By</th>
+                        <th class="py-3 px-4">Editorial Status</th>
+                        <th class="py-3 px-4">Proposed Date</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No topic suggestions found.</td>
+                        </tr>
+                      ` : filtered.map(t => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-amber-400">${t.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium max-w-md truncate">${t.topicTitle || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${t.category || ''}</span></td>
+                          <td class="py-3 px-4 text-amber-400 font-bold">▲ ${t.votesCount || 0}</td>
+                          <td class="py-3 px-4 text-slate-300">${t.requestedBy || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${t.editorialStatus === 'In Production' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                              ${t.editorialStatus || 'Evaluating Demand'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${t.date || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${t.id}" class="btn-vote-sug px-2.5 py-1 text-[11px] font-medium rounded-lg bg-amber-950/40 hover:bg-amber-900/60 text-amber-400 transition">
+                                +10 Votes
+                              </button>
+                              <button data-id="${t.id}" class="btn-del-sug px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#sug-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#sug-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-sug');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Suggest Future Content Topic',
+                subtitle: 'Submit an article or tutorial suggestion to editorial pipeline',
+                fields: [
+                  { name: 'topicTitle', label: 'Proposed Topic Title', type: 'text', placeholder: 'e.g. Detailed Breakdown of Odisha Panchayati Raj Act', required: true },
+                  { name: 'category', label: 'Content Category', type: 'select', options: [
+                    { value: 'Recruitment Syllabus', label: 'Recruitment Syllabus' },
+                    { value: 'College & Scholarships', label: 'College & Scholarships' },
+                    { value: 'Odisha Culture', label: 'Odisha Culture' },
+                    { value: 'Interview Masterclass', label: 'Interview Masterclass' }
+                  ], default: 'Recruitment Syllabus' },
+                  { name: 'requestedBy', label: 'Candidate Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newSug = {
+                    id: 'SUG-0' + (topics.length + 1),
+                    topicTitle: data.topicTitle.trim(),
+                    category: data.category,
+                    votesCount: 1,
+                    requestedBy: data.requestedBy.trim(),
+                    editorialStatus: 'Evaluating Demand',
+                    date: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  topics.unshift(newSug);
+                  config.topics = topics;
+                  config.items = topics;
+                  store.saveSuggestTopicConfig(config);
+                  showToast('Topic suggestion added.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Upvote
+          container.querySelectorAll('.btn-vote-sug').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = topics.find(t => t.id === id);
+              if (item) {
+                item.votesCount = (item.votesCount || 0) + 10;
+                config.topics = topics;
+                config.items = topics;
+                store.saveSuggestTopicConfig(config);
+                showToast(`Added 10 votes to "${item.topicTitle}".`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-sug').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove topic suggestion ${id}?`)) {
+                topics = topics.filter(t => t.id !== id);
+                config.topics = topics;
+                config.items = topics;
+                store.saveSuggestTopicConfig(config);
+                showToast(`Topic suggestion ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-sug');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Suggest a Topic Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-sug');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportSuggestTopicManifest();
+              showToast('Suggest topic manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-sug');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset topic proposals to factory default?')) {
+                config = store.resetSuggestTopicConfig();
+                topics = Array.isArray(config.topics || config.items) ? [...(config.topics || config.items)] : [];
+                showToast('Topic proposals restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-018', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-018</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-019: Report an Error Workspace ---
+    function renderReportErrorWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getReportErrorConfig();
+        let errors = Array.isArray(config.errors || config.items) ? [...(config.errors || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const rectifiedCount = errors.filter(e => (e.status || '').includes('Rectified')).length;
+          const filtered = errors.filter(e => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (e.pageLocation || '').toLowerCase().includes(term) || (e.reportedIssue || '').toLowerCase().includes(term) || (e.reporter || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">ERRATA DESK</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-019</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Report an Error &amp; Content Errata Desk</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Crowdsourced errata submissions for answer key typos, dead gazette links, and application deadline corrections</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-err" class="px-3.5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log Errata
+                  </button>
+                  <button id="btn-inspect-err" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-err" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-err" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Reported Errata</span>
+                  <p class="text-2xl font-bold text-white mt-1">${errors.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Rectified &amp; Corrected</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${rectifiedCount} <span class="text-xs text-slate-500 font-normal">fixes live</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Contributor Reward Bounty</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">Pass Credits Awarded</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="err-search-input" value="${searchTerm}" placeholder="Search page location, reported issue, or reporter..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${errors.length} errata logs</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Errata ID</th>
+                        <th class="py-3 px-4">Page Location</th>
+                        <th class="py-3 px-4">Reported Issue Details</th>
+                        <th class="py-3 px-4">Reporter</th>
+                        <th class="py-3 px-4">Severity Tier</th>
+                        <th class="py-3 px-4">Resolution Status</th>
+                        <th class="py-3 px-4">Action Date</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No error reports found.</td>
+                        </tr>
+                      ` : filtered.map(e => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-rose-400">${e.id || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 text-[11px]">${e.pageLocation || ''}</td>
+                          <td class="py-3 px-4 font-sans text-white font-medium max-w-sm truncate">${e.reportedIssue || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${e.reporter || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${(e.severity || '').includes('High') ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                              ${e.severity || 'Medium'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${(e.status || '').includes('Rectified') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${e.status || 'Investigating'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${e.resolutionDate || 'Pending'}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${!(e.status || '').includes('Rectified') ? `
+                                <button data-id="${e.id}" class="btn-rectify-err px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Rectify
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Fixed</span>
+                              `}
+                              <button data-id="${e.id}" class="btn-del-err px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Dismiss
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#err-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#err-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-err');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Log Content Errata Report',
+                subtitle: 'Submit an error flag regarding a study key, notification typo, or broken link',
+                fields: [
+                  { name: 'pageLocation', label: 'Affected URL / Page Path', type: 'text', placeholder: 'e.g. /study-library/odisha-history-q15', required: true },
+                  { name: 'reportedIssue', label: 'Issue Description', type: 'text', placeholder: 'e.g. Option B is officially credited in revised OPSC key.', required: true },
+                  { name: 'reporter', label: 'Reporter Email', type: 'text', placeholder: 'e.g. aspirant@gmail.com', required: true },
+                  { name: 'severity', label: 'Severity Classification', type: 'select', options: [
+                    { value: 'High (Exam Key Error)', label: 'High (Exam Key Error)' },
+                    { value: 'Medium (Typo)', label: 'Medium (Typo)' },
+                    { value: 'Low (Broken Link)', label: 'Low (Broken Link)' }
+                  ], default: 'High (Exam Key Error)' }
+                ],
+                onSubmit: (data) => {
+                  const newErr = {
+                    id: 'ERR-0' + (errors.length + 1),
+                    pageLocation: data.pageLocation.trim(),
+                    reportedIssue: data.reportedIssue.trim(),
+                    reporter: data.reporter.trim(),
+                    severity: data.severity,
+                    status: 'Investigating',
+                    resolutionDate: 'Pending',
+                    active: true
+                  };
+                  errors.unshift(newErr);
+                  config.errors = errors;
+                  config.items = errors;
+                  store.saveReportErrorConfig(config);
+                  showToast('Errata ticket filed.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Rectify
+          container.querySelectorAll('.btn-rectify-err').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = errors.find(err => err.id === id);
+              if (item) {
+                item.status = 'Rectified & Credited';
+                item.resolutionDate = new Date().toISOString().slice(0, 10);
+                config.errors = errors;
+                config.items = errors;
+                store.saveReportErrorConfig(config);
+                showToast(`Errata ${item.id} rectified and marked credited.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-err').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Dismiss errata report ${id}?`)) {
+                errors = errors.filter(err => err.id !== id);
+                config.errors = errors;
+                config.items = errors;
+                store.saveReportErrorConfig(config);
+                showToast(`Errata entry ${id} dismissed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-err');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Report an Error Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-err');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportReportErrorManifest();
+              showToast('Report error manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-err');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset errata log to factory default?')) {
+                config = store.resetReportErrorConfig();
+                errors = Array.isArray(config.errors || config.items) ? [...(config.errors || config.items)] : [];
+                showToast('Errata log restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-019', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-019</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 

@@ -10488,6 +10488,309 @@
       return filename;
     },
 
+    // --- MODULE 09-013: User Activity ---
+    getUserActivityConfig() {
+      const DEFAULT_USER_ACTIVITY = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalEvents24h: 18420, activeSessions: 420, mockAttempts24h: 1290 },
+        items: [
+          { id: "ACT-01", userEmail: "ramesh.behera@gmail.com", eventType: "MOCK_SUBMISSION", details: "Completed OAS Prelims GS Mock #4 (Score: 134/200)", ipAddress: "103.24.84.12", timestamp: "2026-11-09 18:22:10", active: true },
+          { id: "ACT-02", userEmail: "subhashree.m@gmail.com", eventType: "RESOURCE_DOWNLOAD", details: "Downloaded Odia Grammar 2026 Capsule PDF", ipAddress: "117.211.90.45", timestamp: "2026-11-09 19:05:40", active: true },
+          { id: "ACT-03", userEmail: "candidate.cuttack@gmail.com", eventType: "LOGIN_SUCCESS", details: "Web session authenticated via OTP", ipAddress: "49.36.128.90", timestamp: "2026-11-09 19:40:15", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_user_activity_config', 'activities', () => DEFAULT_USER_ACTIVITY);
+    },
+    saveUserActivityConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.activities = cfg.items || cfg.activities || [];
+      cfg.items = cfg.activities;
+      localStorage.setItem('cso_user_activity_config', JSON.stringify(cfg));
+      this.logAudit("USER_ACTIVITY_SAVED", "COMMUNITY", "User Activity stream updated with " + cfg.items.length + " telemetry records.");
+    },
+    resetUserActivityConfig() {
+      const DEFAULT_USER_ACTIVITY = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalEvents24h: 18420, activeSessions: 420, mockAttempts24h: 1290 },
+        items: [
+          { id: "ACT-01", userEmail: "ramesh.behera@gmail.com", eventType: "MOCK_SUBMISSION", details: "Completed OAS Prelims GS Mock #4 (Score: 134/200)", ipAddress: "103.24.84.12", timestamp: "2026-11-09 18:22:10", active: true },
+          { id: "ACT-02", userEmail: "subhashree.m@gmail.com", eventType: "RESOURCE_DOWNLOAD", details: "Downloaded Odia Grammar 2026 Capsule PDF", ipAddress: "117.211.90.45", timestamp: "2026-11-09 19:05:40", active: true },
+          { id: "ACT-03", userEmail: "candidate.cuttack@gmail.com", eventType: "LOGIN_SUCCESS", details: "Web session authenticated via OTP", ipAddress: "49.36.128.90", timestamp: "2026-11-09 19:40:15", active: true }
+        ]
+      };
+      localStorage.setItem('cso_user_activity_config', JSON.stringify(DEFAULT_USER_ACTIVITY));
+      this.logAudit("USER_ACTIVITY_RESET", "COMMUNITY", "User Activity stream restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_USER_ACTIVITY));
+    },
+    exportUserActivityManifest() {
+      const config = this.getUserActivityConfig();
+      const filename = "user_activity_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("USER_ACTIVITY_EXPORTED", "DATA_EXPORT", "User Activity manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-014: Data Access Requests ---
+    getDataAccessRequestsConfig() {
+      const DEFAULT_DATA_ACCESS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { complianceStandard: "DPDP Act 2023", slaDays: 15, autoDataExport: true },
+        items: [
+          { id: "DAR-01", requestNumber: "DAR-2026-101", requesterEmail: "aspirant.balasore@gmail.com", requestType: "Data Portability Export", status: "Completed", completionDate: "2026-11-02", filedAt: "2026-10-28", active: true },
+          { id: "DAR-02", requestNumber: "DAR-2026-102", requesterEmail: "old.candidate@gmail.com", requestType: "Erasure / Account Deletion", status: "Under Review", completionDate: "Pending SLA", filedAt: "2026-11-06", active: true },
+          { id: "DAR-03", requestNumber: "DAR-2026-103", requesterEmail: "privacy.user@gmail.com", requestType: "Consent Revocation", status: "Processing", completionDate: "Pending SLA", filedAt: "2026-11-08", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_data_access_requests_config', 'requests', () => DEFAULT_DATA_ACCESS);
+    },
+    saveDataAccessRequestsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.requests = cfg.items || cfg.requests || [];
+      cfg.items = cfg.requests;
+      localStorage.setItem('cso_data_access_requests_config', JSON.stringify(cfg));
+      this.logAudit("DATA_ACCESS_REQUESTS_SAVED", "COMMUNITY", "Data Access Requests updated with " + cfg.items.length + " compliance cases.");
+    },
+    resetDataAccessRequestsConfig() {
+      const DEFAULT_DATA_ACCESS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { complianceStandard: "DPDP Act 2023", slaDays: 15, autoDataExport: true },
+        items: [
+          { id: "DAR-01", requestNumber: "DAR-2026-101", requesterEmail: "aspirant.balasore@gmail.com", requestType: "Data Portability Export", status: "Completed", completionDate: "2026-11-02", filedAt: "2026-10-28", active: true },
+          { id: "DAR-02", requestNumber: "DAR-2026-102", requesterEmail: "old.candidate@gmail.com", requestType: "Erasure / Account Deletion", status: "Under Review", completionDate: "Pending SLA", filedAt: "2026-11-06", active: true },
+          { id: "DAR-03", requestNumber: "DAR-2026-103", requesterEmail: "privacy.user@gmail.com", requestType: "Consent Revocation", status: "Processing", completionDate: "Pending SLA", filedAt: "2026-11-08", active: true }
+        ]
+      };
+      localStorage.setItem('cso_data_access_requests_config', JSON.stringify(DEFAULT_DATA_ACCESS));
+      this.logAudit("DATA_ACCESS_REQUESTS_RESET", "COMMUNITY", "Data Access Requests restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_DATA_ACCESS));
+    },
+    exportDataAccessRequestsManifest() {
+      const config = this.getDataAccessRequestsConfig();
+      const filename = "data_access_requests_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("DATA_ACCESS_REQUESTS_EXPORTED", "DATA_EXPORT", "Data Access Requests manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-015: Discussion Forum ---
+    getDiscussionForumConfig() {
+      const DEFAULT_DISCUSSION_FORUM = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "FRM-01", boardName: "OPSC Civil Services (OAS/OFS) Lounge", slug: "opsc-oas-lounge", assignedModerator: "debabrata.n@gmail.com", totalThreads: 480, postCount: 3910, active: true },
+          { id: "FRM-02", boardName: "OSSC Combined Graduate Level Hub", slug: "ossc-cgl-hub", assignedModerator: "mod.community@csodisha.com", totalThreads: 320, postCount: 2450, active: true },
+          { id: "FRM-03", boardName: "Odisha District Circles & Local Study Groups", slug: "district-circles", assignedModerator: "subhashree.m@gmail.com", totalThreads: 190, postCount: 1420, active: true },
+          { id: "FRM-04", boardName: "Odia Language, Essay & Translation Desk", slug: "odia-literature-desk", assignedModerator: "editor.jobs@csodisha.com", totalThreads: 110, postCount: 890, active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_discussion_forum_config', 'boards', () => DEFAULT_DISCUSSION_FORUM);
+    },
+    saveDiscussionForumConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.boards = cfg.items || cfg.boards || [];
+      cfg.items = cfg.boards;
+      localStorage.setItem('cso_discussion_forum_config', JSON.stringify(cfg));
+      this.logAudit("DISCUSSION_FORUM_SAVED", "COMMUNITY", "Discussion Forum boards updated with " + cfg.items.length + " categories.");
+    },
+    resetDiscussionForumConfig() {
+      const DEFAULT_DISCUSSION_FORUM = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "FRM-01", boardName: "OPSC Civil Services (OAS/OFS) Lounge", slug: "opsc-oas-lounge", assignedModerator: "debabrata.n@gmail.com", totalThreads: 480, postCount: 3910, active: true },
+          { id: "FRM-02", boardName: "OSSC Combined Graduate Level Hub", slug: "ossc-cgl-hub", assignedModerator: "mod.community@csodisha.com", totalThreads: 320, postCount: 2450, active: true },
+          { id: "FRM-03", boardName: "Odisha District Circles & Local Study Groups", slug: "district-circles", assignedModerator: "subhashree.m@gmail.com", totalThreads: 190, postCount: 1420, active: true },
+          { id: "FRM-04", boardName: "Odia Language, Essay & Translation Desk", slug: "odia-literature-desk", assignedModerator: "editor.jobs@csodisha.com", totalThreads: 110, postCount: 890, active: true }
+        ]
+      };
+      localStorage.setItem('cso_discussion_forum_config', JSON.stringify(DEFAULT_DISCUSSION_FORUM));
+      this.logAudit("DISCUSSION_FORUM_RESET", "COMMUNITY", "Discussion Forum boards restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_DISCUSSION_FORUM));
+    },
+    exportDiscussionForumManifest() {
+      const config = this.getDiscussionForumConfig();
+      const filename = "discussion_forum_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("DISCUSSION_FORUM_EXPORTED", "DATA_EXPORT", "Discussion Forum manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-016: Ask a Question ---
+    getAskQuestionConfig() {
+      const DEFAULT_ASK_QUESTION = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "QNA-01", questionTitle: "What is the age relaxation criteria for SEBC candidates in OPSC OAS 2026?", category: "Eligibility Rules", askedBy: "ramesh.behera@gmail.com", answerCount: 4, verifiedStatus: "Verified Answer Available", date: "2026-11-04", active: true },
+          { id: "QNA-02", questionTitle: "Which gazette notification finalized the OSSSC Amin negative marking scheme?", category: "Exam Pattern", askedBy: "candidate.cuttack@gmail.com", answerCount: 2, verifiedStatus: "Open for Peer Input", date: "2026-11-07", active: true },
+          { id: "QNA-03", questionTitle: "How to correct applicant signature mismatch on OSSC recruitment portal?", category: "Technical Form Help", askedBy: "lipika.sahoo@gmail.com", answerCount: 1, verifiedStatus: "Faculty Verified", date: "2026-11-09", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_ask_question_config', 'questions', () => DEFAULT_ASK_QUESTION);
+    },
+    saveAskQuestionConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.questions = cfg.items || cfg.questions || [];
+      cfg.items = cfg.questions;
+      localStorage.setItem('cso_ask_question_config', JSON.stringify(cfg));
+      this.logAudit("ASK_QUESTION_SAVED", "COMMUNITY", "Ask a Question board updated with " + cfg.items.length + " inquiries.");
+    },
+    resetAskQuestionConfig() {
+      const DEFAULT_ASK_QUESTION = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "QNA-01", questionTitle: "What is the age relaxation criteria for SEBC candidates in OPSC OAS 2026?", category: "Eligibility Rules", askedBy: "ramesh.behera@gmail.com", answerCount: 4, verifiedStatus: "Verified Answer Available", date: "2026-11-04", active: true },
+          { id: "QNA-02", questionTitle: "Which gazette notification finalized the OSSSC Amin negative marking scheme?", category: "Exam Pattern", askedBy: "candidate.cuttack@gmail.com", answerCount: 2, verifiedStatus: "Open for Peer Input", date: "2026-11-07", active: true },
+          { id: "QNA-03", questionTitle: "How to correct applicant signature mismatch on OSSC recruitment portal?", category: "Technical Form Help", askedBy: "lipika.sahoo@gmail.com", answerCount: 1, verifiedStatus: "Faculty Verified", date: "2026-11-09", active: true }
+        ]
+      };
+      localStorage.setItem('cso_ask_question_config', JSON.stringify(DEFAULT_ASK_QUESTION));
+      this.logAudit("ASK_QUESTION_RESET", "COMMUNITY", "Ask a Question board restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_ASK_QUESTION));
+    },
+    exportAskQuestionManifest() {
+      const config = this.getAskQuestionConfig();
+      const filename = "ask_question_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ASK_QUESTION_EXPORTED", "DATA_EXPORT", "Ask a Question manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-017: Share Knowledge ---
+    getShareKnowledgeConfig() {
+      const DEFAULT_SHARE_KNOWLEDGE = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "KNW-01", noteTitle: "Handwritten Chronology: British Resistance in Odisha (1803-1857)", contributor: "Subhashree Mohanty", subject: "Odisha History", fileType: "PDF Note", peerScore: "4.9/5", status: "Approved & Published", submittedOn: "2026-10-25", active: true },
+          { id: "KNW-02", noteTitle: "Formula Cheat Sheet: Mensuration 2D & 3D for OSSSC Exams", contributor: "Chinmay Jena", subject: "Quantitative Aptitude", fileType: "Infographic", peerScore: "4.7/5", status: "Approved & Published", submittedOn: "2026-11-01", active: true },
+          { id: "KNW-03", noteTitle: "Summary Table: Odisha State Wetlands & Ramsar Sites 2026", contributor: "Debabrata Nayak", subject: "State Geography", fileType: "Markdown Summary", peerScore: "Under Review", status: "In Peer Review", submittedOn: "2026-11-08", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_share_knowledge_config', 'submissions', () => DEFAULT_SHARE_KNOWLEDGE);
+    },
+    saveShareKnowledgeConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.submissions = cfg.items || cfg.submissions || [];
+      cfg.items = cfg.submissions;
+      localStorage.setItem('cso_share_knowledge_config', JSON.stringify(cfg));
+      this.logAudit("SHARE_KNOWLEDGE_SAVED", "COMMUNITY", "Share Knowledge repository updated with " + cfg.items.length + " notes.");
+    },
+    resetShareKnowledgeConfig() {
+      const DEFAULT_SHARE_KNOWLEDGE = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "KNW-01", noteTitle: "Handwritten Chronology: British Resistance in Odisha (1803-1857)", contributor: "Subhashree Mohanty", subject: "Odisha History", fileType: "PDF Note", peerScore: "4.9/5", status: "Approved & Published", submittedOn: "2026-10-25", active: true },
+          { id: "KNW-02", noteTitle: "Formula Cheat Sheet: Mensuration 2D & 3D for OSSSC Exams", contributor: "Chinmay Jena", subject: "Quantitative Aptitude", fileType: "Infographic", peerScore: "4.7/5", status: "Approved & Published", submittedOn: "2026-11-01", active: true },
+          { id: "KNW-03", noteTitle: "Summary Table: Odisha State Wetlands & Ramsar Sites 2026", contributor: "Debabrata Nayak", subject: "State Geography", fileType: "Markdown Summary", peerScore: "Under Review", status: "In Peer Review", submittedOn: "2026-11-08", active: true }
+        ]
+      };
+      localStorage.setItem('cso_share_knowledge_config', JSON.stringify(DEFAULT_SHARE_KNOWLEDGE));
+      this.logAudit("SHARE_KNOWLEDGE_RESET", "COMMUNITY", "Share Knowledge repository restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_SHARE_KNOWLEDGE));
+    },
+    exportShareKnowledgeManifest() {
+      const config = this.getShareKnowledgeConfig();
+      const filename = "share_knowledge_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SHARE_KNOWLEDGE_EXPORTED", "DATA_EXPORT", "Share Knowledge manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-018: Suggest a Topic ---
+    getSuggestTopicConfig() {
+      const DEFAULT_SUGGEST_TOPIC = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "SUG-01", topicTitle: "Step-by-step Guide on SAMS Odisha Spot Admission Counseling", category: "College & Scholarships", votesCount: 342, requestedBy: "aspirant.balasore@gmail.com", editorialStatus: "Scheduled for Draft", date: "2026-11-02", active: true },
+          { id: "SUG-02", topicTitle: "Complete Analysis of Odisha Land Reforms Act for Revenue Inspector Exam", category: "Recruitment Syllabus", votesCount: 520, requestedBy: "candidate.cuttack@gmail.com", editorialStatus: "In Production", date: "2026-11-05", active: true },
+          { id: "SUG-03", topicTitle: "List of Tribal Dialects & Santhali Ol Chiki Script Basics for OAS", category: "Odisha Culture", votesCount: 180, requestedBy: "student.bbsr@gmail.com", editorialStatus: "Evaluating Demand", date: "2026-11-08", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_suggest_topic_config', 'topics', () => DEFAULT_SUGGEST_TOPIC);
+    },
+    saveSuggestTopicConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.topics = cfg.items || cfg.topics || [];
+      cfg.items = cfg.topics;
+      localStorage.setItem('cso_suggest_topic_config', JSON.stringify(cfg));
+      this.logAudit("SUGGEST_TOPIC_SAVED", "COMMUNITY", "Suggest a Topic ideas registry updated with " + cfg.items.length + " topics.");
+    },
+    resetSuggestTopicConfig() {
+      const DEFAULT_SUGGEST_TOPIC = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "SUG-01", topicTitle: "Step-by-step Guide on SAMS Odisha Spot Admission Counseling", category: "College & Scholarships", votesCount: 342, requestedBy: "aspirant.balasore@gmail.com", editorialStatus: "Scheduled for Draft", date: "2026-11-02", active: true },
+          { id: "SUG-02", topicTitle: "Complete Analysis of Odisha Land Reforms Act for Revenue Inspector Exam", category: "Recruitment Syllabus", votesCount: 520, requestedBy: "candidate.cuttack@gmail.com", editorialStatus: "In Production", date: "2026-11-05", active: true },
+          { id: "SUG-03", topicTitle: "List of Tribal Dialects & Santhali Ol Chiki Script Basics for OAS", category: "Odisha Culture", votesCount: 180, requestedBy: "student.bbsr@gmail.com", editorialStatus: "Evaluating Demand", date: "2026-11-08", active: true }
+        ]
+      };
+      localStorage.setItem('cso_suggest_topic_config', JSON.stringify(DEFAULT_SUGGEST_TOPIC));
+      this.logAudit("SUGGEST_TOPIC_RESET", "COMMUNITY", "Suggest a Topic ideas registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_SUGGEST_TOPIC));
+    },
+    exportSuggestTopicManifest() {
+      const config = this.getSuggestTopicConfig();
+      const filename = "suggest_topic_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SUGGEST_TOPIC_EXPORTED", "DATA_EXPORT", "Suggest a Topic manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-019: Report an Error ---
+    getReportErrorConfig() {
+      const DEFAULT_REPORT_ERROR = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalReports: 28, rectifiedCount: 25, pendingCount: 3 },
+        items: [
+          { id: "ERR-01", pageLocation: "/study-library/odisha-history-pyq-q42", reportedIssue: "Question 42 Answer Key should be Option C (Paika Rebellion 1817), not 1827", reporter: "ramesh.behera@gmail.com", severity: "High (Exam Key Error)", status: "Rectified & Credited", resolutionDate: "2026-11-04", active: true },
+          { id: "ERR-02", pageLocation: "/jobs-careers/opsc-oas-2026-prelims", reportedIssue: "Typo in Application Fee: General is ₹500, but table showed ₹0", reporter: "subhashree.m@gmail.com", severity: "Medium (Typo)", status: "Rectified & Credited", resolutionDate: "2026-11-07", active: true },
+          { id: "ERR-03", pageLocation: "/schemes-benefits/kalia-scholarship", reportedIssue: "Dead portal link for official eligibility guideline PDF", reporter: "student.bbsr@gmail.com", severity: "Low (Broken Link)", status: "Investigating", resolutionDate: "Pending", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_report_error_config', 'errors', () => DEFAULT_REPORT_ERROR);
+    },
+    saveReportErrorConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.errors = cfg.items || cfg.errors || [];
+      cfg.items = cfg.errors;
+      localStorage.setItem('cso_report_error_config', JSON.stringify(cfg));
+      this.logAudit("REPORT_ERROR_SAVED", "COMMUNITY", "Report an Error desk updated with " + cfg.items.length + " errata tickets.");
+    },
+    resetReportErrorConfig() {
+      const DEFAULT_REPORT_ERROR = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalReports: 28, rectifiedCount: 25, pendingCount: 3 },
+        items: [
+          { id: "ERR-01", pageLocation: "/study-library/odisha-history-pyq-q42", reportedIssue: "Question 42 Answer Key should be Option C (Paika Rebellion 1817), not 1827", reporter: "ramesh.behera@gmail.com", severity: "High (Exam Key Error)", status: "Rectified & Credited", resolutionDate: "2026-11-04", active: true },
+          { id: "ERR-02", pageLocation: "/jobs-careers/opsc-oas-2026-prelims", reportedIssue: "Typo in Application Fee: General is ₹500, but table showed ₹0", reporter: "subhashree.m@gmail.com", severity: "Medium (Typo)", status: "Rectified & Credited", resolutionDate: "2026-11-07", active: true },
+          { id: "ERR-03", pageLocation: "/schemes-benefits/kalia-scholarship", reportedIssue: "Dead portal link for official eligibility guideline PDF", reporter: "student.bbsr@gmail.com", severity: "Low (Broken Link)", status: "Investigating", resolutionDate: "Pending", active: true }
+        ]
+      };
+      localStorage.setItem('cso_report_error_config', JSON.stringify(DEFAULT_REPORT_ERROR));
+      this.logAudit("REPORT_ERROR_RESET", "COMMUNITY", "Report an Error desk restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_REPORT_ERROR));
+    },
+    exportReportErrorManifest() {
+      const config = this.getReportErrorConfig();
+      const filename = "report_error_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("REPORT_ERROR_EXPORTED", "DATA_EXPORT", "Report an Error manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 
@@ -11090,7 +11393,14 @@
           commentsReplies: this.getCommentsRepliesConfig(),
           moderationQueue: this.getModerationQueueConfig(),
           userReports: this.getUserReportsConfig(),
-          blockedAccounts: this.getBlockedAccountsConfig()
+          blockedAccounts: this.getBlockedAccountsConfig(),
+          userActivity: this.getUserActivityConfig(),
+          dataAccessRequests: this.getDataAccessRequestsConfig(),
+          discussionForum: this.getDiscussionForumConfig(),
+          askQuestion: this.getAskQuestionConfig(),
+          shareKnowledge: this.getShareKnowledgeConfig(),
+          suggestTopic: this.getSuggestTopicConfig(),
+          reportError: this.getReportErrorConfig()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');

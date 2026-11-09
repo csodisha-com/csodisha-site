@@ -693,37 +693,37 @@
         {
           "id": "module-09-013",
           "title": "User Activity",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-09-014",
           "title": "Data Access Requests",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-09-015",
           "title": "Discussion Forum",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-09-016",
           "title": "Ask a Question",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-09-017",
           "title": "Share Knowledge",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-09-018",
           "title": "Suggest a Topic",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-09-019",
           "title": "Report an Error",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },
