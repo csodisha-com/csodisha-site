@@ -316,6 +316,11 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-05-021') { renderStudentDashboardWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-05-022') { renderEducationalToolsWorkspace(dom.workspaceRoot); return; }
 
+      // --- PRIORITY DISPATCH FOR FOLDER 06 (CATEGORIES & NAVIGATION - BATCH 1) ---
+      if (moduleId === 'module-06-001') { renderMasterCategoriesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-002') { renderSubcategoriesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-003') { renderTagsTaxonomiesWorkspace(dom.workspaceRoot); return; }
+
       // Route to specialized views
       if (moduleId === 'module-01-001') {
         renderOverviewWorkspace();
@@ -469,6 +474,12 @@ async function loadMasterNavigation() {
         renderStudentDashboardWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-05-022') {
         renderEducationalToolsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-001') {
+        renderMasterCategoriesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-002') {
+        renderSubcategoriesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-003') {
+        renderTagsTaxonomiesWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -24675,6 +24686,993 @@ async function loadMasterNavigation() {
 
 
 
+
+
+
+    // =========================================================================
+    // FOLDER 06 (BATCH 1): Categories & Navigation Renderers (06-001 to 06-003)
+    // =========================================================================
+
+    /**
+     * MODULE 06-001: Master Categories Workspace
+     */
+    function renderMasterCategoriesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getMasterCategoriesConfig();
+        const list = config.items || config.categories || [];
+        let categories = [...list];
+        let searchQuery = '';
+
+        function render() {
+          const filtered = categories.filter(item => {
+            return !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.code && item.code.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.slug && item.slug.toLowerCase().includes(searchQuery.toLowerCase()));
+          });
+
+          const totalPosts = categories.reduce((acc, c) => acc + (Number(c.postCount) || 0), 0);
+          const activeCount = categories.filter(c => c.active).length;
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">Folder 06 · Batch 1</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Master Categories Directory</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define top-level information architecture, taxonomy channels, order weights, and portal routing slugs.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-category" class="px-3.5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Master Category
+                  </button>
+                  <button id="btn-inspect-cat" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-cat" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-cat" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Statistics KPI Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Categories</div>
+                  <div class="text-2xl font-bold text-white mt-1">${categories.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active in Navigation</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${activeCount} of ${categories.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Indexed Content Entities</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalPosts.toLocaleString()}</div>
+                </div>
+              </div>
+
+              <!-- Search Filter Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/80">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="cat-search" value="${escapeHtml(searchQuery)}" placeholder="Search categories by name, code, or slug..." class="w-full bg-slate-950/80 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                  <svg class="w-4 h-4 text-slate-500 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <div class="text-xs text-slate-400 font-mono">
+                  Showing ${filtered.length} of ${categories.length} master categories
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="cat-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-sky-400 font-semibold">cso_master_categories_config (Raw JSON)</span>
+                  <button id="btn-close-raw-cat" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-cat-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-sky-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-cat" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Table Container -->
+              <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-md">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider font-semibold text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4">Code</th>
+                        <th class="py-3 px-4">Category Name</th>
+                        <th class="py-3 px-4">Route Slug</th>
+                        <th class="py-3 px-4 text-center">Order Weight</th>
+                        <th class="py-3 px-4 text-center">Color Accent</th>
+                        <th class="py-3 px-4 text-center">Indexed Posts</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-sans">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500">
+                            No master categories found matching query.
+                          </td>
+                        </tr>
+                      ` : filtered.map(item => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3 px-4 font-mono font-semibold text-sky-400">
+                            ${escapeHtml(item.code || item.id)}
+                          </td>
+                          <td class="py-3 px-4 font-semibold text-white">
+                            <div class="flex items-center gap-2">
+                              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${escapeHtml(item.color || '#38bdf8')}"></span>
+                              <span>${escapeHtml(item.name)}</span>
+                            </div>
+                          </td>
+                          <td class="py-3 px-4 font-mono text-slate-400">
+                            /${escapeHtml(item.slug)}
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-slate-300">
+                            ${item.orderWeight || 1}
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-[11px]">
+                            <span class="px-2 py-0.5 rounded border border-slate-700 bg-slate-800" style="color: ${escapeHtml(item.color || '#38bdf8')}">
+                              ${escapeHtml(item.color || '#38bdf8')}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-emerald-400 font-semibold">
+                            ${Number(item.postCount || 0).toLocaleString()}
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <button class="btn-toggle-cat-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${item.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              ${item.active ? 'Active' : 'Disabled'}
+                            </button>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button class="btn-edit-cat px-2.5 py-1 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Edit</button>
+                              <button class="btn-delete-cat px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind Event Handlers
+          const searchInput = root.querySelector('#cat-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-category');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Category Name (e.g. Current Affairs & News):');
+              if (!name || !name.trim()) return;
+
+              const code = prompt('Category Code (e.g. NEWS):', 'CAT') || 'CAT';
+              const slug = prompt('URL Route Slug:', name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'channel';
+              const color = prompt('Color Accent (HEX):', '#38bdf8') || '#38bdf8';
+              const orderWeight = parseInt(prompt('Order Weight (1-99):', String(categories.length + 1)), 10) || (categories.length + 1);
+
+              const newCat = {
+                id: 'CAT-' + String(categories.length + 1).padStart(2, '0'),
+                code: code.trim().toUpperCase(),
+                name: name.trim(),
+                slug: slug.trim().toLowerCase(),
+                icon: 'folder',
+                color: color.trim(),
+                orderWeight: orderWeight,
+                postCount: 0,
+                active: true
+              };
+
+              categories.push(newCat);
+              config.categories = categories;
+              store.saveMasterCategoriesConfig(config);
+              showToast(`Master category ${newCat.name} created.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-cat-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = categories.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.categories = categories;
+                store.saveMasterCategoriesConfig(config);
+                showToast(`Category ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-cat').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = categories.find(c => c.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Category Name:', item.name);
+              if (name === null) return;
+              const slug = prompt('Edit URL Slug:', item.slug) || item.slug;
+              const color = prompt('Edit Color Accent:', item.color) || item.color;
+              const orderWeight = parseInt(prompt('Edit Order Weight:', String(item.orderWeight)), 10) || item.orderWeight;
+
+              item.name = name.trim();
+              item.slug = slug.trim().toLowerCase();
+              item.color = color.trim();
+              item.orderWeight = orderWeight;
+
+              config.categories = categories;
+              store.saveMasterCategoriesConfig(config);
+              showToast('Master category updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-cat').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete master category ${id}? Any assigned subcategories will require reassignment.`)) {
+                categories = categories.filter(c => c.id !== id);
+                config.categories = categories;
+                store.saveMasterCategoriesConfig(config);
+                showToast('Category removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-cat');
+          const drawer = root.querySelector('#cat-raw-drawer');
+          const textarea = root.querySelector('#raw-cat-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-cat');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-cat');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveMasterCategoriesConfig(parsed);
+                config = store.getMasterCategoriesConfig();
+                categories = [...(config.items || config.categories || [])];
+                showToast('Master Categories configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-cat');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportMasterCategoriesManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-cat');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Master Categories to factory configuration? Any custom categories will be lost.')) {
+                config = store.resetMasterCategoriesConfig();
+                categories = [...(config.items || config.categories || [])];
+                showToast('Master Categories reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-001', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-001 (Master Categories)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 06-002: Subcategories Workspace
+     */
+    function renderSubcategoriesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getSubcategoriesConfig();
+        const list = config.items || config.subcategories || [];
+        let subcategories = [...list];
+        let filterParent = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = subcategories.filter(item => {
+            const matchesParent = filterParent === 'All' || item.parentCategoryId === filterParent;
+            const matchesSearch = !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.parentCategoryName && item.parentCategoryName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.slug && item.slug.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesParent && matchesSearch;
+          });
+
+          const totalPosts = subcategories.reduce((acc, s) => acc + (Number(s.postCount) || 0), 0);
+          const parentOptions = Array.from(new Set(subcategories.map(s => JSON.stringify({ id: s.parentCategoryId, name: s.parentCategoryName }))))
+            .map(s => JSON.parse(s));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Folder 06 · Batch 1</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Subcategories Architecture</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage secondary classification tiers, link parent domains, and track hierarchical routing.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-subcategory" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Subcategory
+                  </button>
+                  <button id="btn-inspect-sub" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-sub" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-sub" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filter & Search Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/80">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-400 font-medium">Filter Parent:</span>
+                  <select id="sub-filter-parent" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <option value="All">All Parent Categories</option>
+                    ${parentOptions.map(p => `
+                      <option value="${escapeHtml(p.id)}" ${filterParent === p.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>
+                    `).join('')}
+                  </select>
+                </div>
+                <div class="relative flex-1 max-w-xs">
+                  <input type="text" id="sub-search" value="${escapeHtml(searchQuery)}" placeholder="Search subcategories..." class="w-full bg-slate-950/80 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                  <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="sub-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-indigo-400 font-semibold">cso_subcategories_config (Raw JSON)</span>
+                  <button id="btn-close-raw-sub" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-sub-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-sub" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Table Container -->
+              <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-md">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider font-semibold text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4">Sub ID</th>
+                        <th class="py-3 px-4">Subcategory Name</th>
+                        <th class="py-3 px-4">Parent Channel</th>
+                        <th class="py-3 px-4">Slug</th>
+                        <th class="py-3 px-4 text-center">Order Weight</th>
+                        <th class="py-3 px-4 text-center">Post Count</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-sans">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500">
+                            No subcategories match the selected filter.
+                          </td>
+                        </tr>
+                      ` : filtered.map(item => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3 px-4 font-mono font-semibold text-indigo-400">
+                            ${escapeHtml(item.id)}
+                          </td>
+                          <td class="py-3 px-4 font-semibold text-white">
+                            ${escapeHtml(item.name)}
+                          </td>
+                          <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-sky-300 border border-slate-700">
+                              ${escapeHtml(item.parentCategoryName || item.parentCategoryId)}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-mono text-slate-400">
+                            /${escapeHtml(item.slug)}
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-slate-300">
+                            ${item.orderWeight || 1}
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-emerald-400 font-semibold">
+                            ${Number(item.postCount || 0).toLocaleString()}
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <button class="btn-toggle-sub-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${item.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              ${item.active ? 'Active' : 'Disabled'}
+                            </button>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button class="btn-edit-sub px-2.5 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Edit</button>
+                              <button class="btn-delete-sub px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Handlers
+          const selFilter = root.querySelector('#sub-filter-parent');
+          if (selFilter) {
+            selFilter.addEventListener('change', (e) => {
+              filterParent = e.target.value;
+              render();
+            });
+          }
+
+          const searchInput = root.querySelector('#sub-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-subcategory');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Subcategory Name:');
+              if (!name || !name.trim()) return;
+
+              const parentName = prompt('Parent Category Name (e.g. Jobs & Careers):', 'Jobs & Careers') || 'Jobs & Careers';
+              const parentId = prompt('Parent Category ID (e.g. CAT-01):', 'CAT-01') || 'CAT-01';
+              const slug = prompt('URL Slug:', name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'sub';
+
+              const newSub = {
+                id: 'SUB-' + String(subcategories.length + 1).padStart(2, '0'),
+                parentCategoryId: parentId.trim(),
+                parentCategoryName: parentName.trim(),
+                name: name.trim(),
+                slug: slug.trim().toLowerCase(),
+                orderWeight: subcategories.length + 1,
+                postCount: 0,
+                active: true
+              };
+
+              subcategories.push(newSub);
+              config.subcategories = subcategories;
+              store.saveSubcategoriesConfig(config);
+              showToast(`Subcategory ${newSub.name} created.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-sub-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = subcategories.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.subcategories = subcategories;
+                store.saveSubcategoriesConfig(config);
+                showToast(`Subcategory ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-sub').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = subcategories.find(s => s.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Subcategory Name:', item.name);
+              if (name === null) return;
+              const parentName = prompt('Edit Parent Category:', item.parentCategoryName) || item.parentCategoryName;
+              const slug = prompt('Edit Slug:', item.slug) || item.slug;
+
+              item.name = name.trim();
+              item.parentCategoryName = parentName.trim();
+              item.slug = slug.trim().toLowerCase();
+
+              config.subcategories = subcategories;
+              store.saveSubcategoriesConfig(config);
+              showToast('Subcategory updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-sub').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete subcategory ${id}?`)) {
+                subcategories = subcategories.filter(s => s.id !== id);
+                config.subcategories = subcategories;
+                store.saveSubcategoriesConfig(config);
+                showToast('Subcategory removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-sub');
+          const drawer = root.querySelector('#sub-raw-drawer');
+          const textarea = root.querySelector('#raw-sub-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-sub');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-sub');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveSubcategoriesConfig(parsed);
+                config = store.getSubcategoriesConfig();
+                subcategories = [...(config.items || config.subcategories || [])];
+                showToast('Subcategories configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-sub');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportSubcategoriesManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-sub');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Subcategories to factory configuration?')) {
+                config = store.resetSubcategoriesConfig();
+                subcategories = [...(config.items || config.subcategories || [])];
+                showToast('Subcategories reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-002', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-002 (Subcategories)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 06-003: Tags & Taxonomies Workspace
+     */
+    function renderTagsTaxonomiesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getTagsTaxonomiesConfig();
+        const list = config.items || config.tags || [];
+        let tags = [...list];
+        let filterGroup = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = tags.filter(item => {
+            const matchesGroup = filterGroup === 'All' || item.group === filterGroup;
+            const matchesSearch = !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.group && item.group.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.slug && item.slug.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesGroup && matchesSearch;
+          });
+
+          const totalUsage = tags.reduce((acc, t) => acc + (Number(t.usageCount) || 0), 0);
+          const groups = Array.from(new Set(tags.map(t => t.group).filter(Boolean)));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">Folder 06 · Batch 1</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Tags &amp; Taxonomies Hub</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Maintain cross-cutting tags, search keyword anchors, and automated tag cloud metrics across Odisha portal resources.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-tag" class="px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Tag Anchor
+                  </button>
+                  <button id="btn-inspect-tag" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-tag" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-tag" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filter & Search Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/80">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-400 font-medium">Filter Group:</span>
+                  <select id="tag-filter-group" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-teal-500">
+                    <option value="All">All Groups</option>
+                    ${groups.map(g => `
+                      <option value="${escapeHtml(g)}" ${filterGroup === g ? 'selected' : ''}>${escapeHtml(g)}</option>
+                    `).join('')}
+                  </select>
+                </div>
+                <div class="relative flex-1 max-w-xs">
+                  <input type="text" id="tag-search" value="${escapeHtml(searchQuery)}" placeholder="Search tags by name, slug, or group..." class="w-full bg-slate-950/80 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="tag-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-teal-400 font-semibold">cso_tags_taxonomies_config (Raw JSON)</span>
+                  <button id="btn-close-raw-tag" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-tag-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-teal-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-tag" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Table Container -->
+              <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-md">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider font-semibold text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4">Tag ID</th>
+                        <th class="py-3 px-4">Tag Name</th>
+                        <th class="py-3 px-4">Classification Group</th>
+                        <th class="py-3 px-4">Slug</th>
+                        <th class="py-3 px-4 text-center">Color Badge</th>
+                        <th class="py-3 px-4 text-center">Usage Count</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-sans">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500">
+                            No tags found matching query.
+                          </td>
+                        </tr>
+                      ` : filtered.map(item => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3 px-4 font-mono font-semibold text-teal-400">
+                            ${escapeHtml(item.id)}
+                          </td>
+                          <td class="py-3 px-4 font-semibold text-white">
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs" style="background-color: ${escapeHtml(item.color || '#14b8a6')}20; color: ${escapeHtml(item.color || '#14b8a6')}; border: 1px solid ${escapeHtml(item.color || '#14b8a6')}40">
+                              #${escapeHtml(item.name)}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-medium text-slate-300">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-300 border border-slate-700">
+                              ${escapeHtml(item.group || 'General')}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-mono text-slate-400">
+                            ${escapeHtml(item.slug)}
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-[11px]">
+                            <span class="px-2 py-0.5 rounded border border-slate-700 bg-slate-800" style="color: ${escapeHtml(item.color || '#14b8a6')}">
+                              ${escapeHtml(item.color || '#14b8a6')}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-emerald-400 font-semibold">
+                            ${Number(item.usageCount || 0).toLocaleString()}
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <button class="btn-toggle-tag-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${item.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              ${item.active ? 'Active' : 'Disabled'}
+                            </button>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button class="btn-edit-tag px-2.5 py-1 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Edit</button>
+                              <button class="btn-delete-tag px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Handlers
+          const selGroup = root.querySelector('#tag-filter-group');
+          if (selGroup) {
+            selGroup.addEventListener('change', (e) => {
+              filterGroup = e.target.value;
+              render();
+            });
+          }
+
+          const searchInput = root.querySelector('#tag-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-tag');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Tag Name (e.g. Cutoff Analysis):');
+              if (!name || !name.trim()) return;
+
+              const group = prompt('Taxonomy Group (e.g. Examinations, Alerts, Subjects):', 'General') || 'General';
+              const slug = prompt('Tag Slug:', name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'tag';
+              const color = prompt('Color Accent (HEX):', '#38bdf8') || '#38bdf8';
+
+              const newTag = {
+                id: 'TAG-' + String(tags.length + 1).padStart(2, '0'),
+                name: name.trim(),
+                slug: slug.trim().toLowerCase(),
+                group: group.trim(),
+                usageCount: 0,
+                color: color.trim(),
+                active: true
+              };
+
+              tags.push(newTag);
+              config.tags = tags;
+              store.saveTagsTaxonomiesConfig(config);
+              showToast(`Tag #${newTag.name} created.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-tag-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tags.find(t => t.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.tags = tags;
+                store.saveTagsTaxonomiesConfig(config);
+                showToast(`Tag ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-tag').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tags.find(t => t.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Tag Name:', item.name);
+              if (name === null) return;
+              const group = prompt('Edit Group:', item.group) || item.group;
+              const slug = prompt('Edit Slug:', item.slug) || item.slug;
+              const color = prompt('Edit Color:', item.color) || item.color;
+
+              item.name = name.trim();
+              item.group = group.trim();
+              item.slug = slug.trim().toLowerCase();
+              item.color = color.trim();
+
+              config.tags = tags;
+              store.saveTagsTaxonomiesConfig(config);
+              showToast('Tag details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-tag').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete tag ${id}?`)) {
+                tags = tags.filter(t => t.id !== id);
+                config.tags = tags;
+                store.saveTagsTaxonomiesConfig(config);
+                showToast('Tag removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-tag');
+          const drawer = root.querySelector('#tag-raw-drawer');
+          const textarea = root.querySelector('#raw-tag-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-tag');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-tag');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveTagsTaxonomiesConfig(parsed);
+                config = store.getTagsTaxonomiesConfig();
+                tags = [...(config.items || config.tags || [])];
+                showToast('Tags & taxonomies configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-tag');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportTagsTaxonomiesManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-tag');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Tags & Taxonomies to factory configuration?')) {
+                config = store.resetTagsTaxonomiesConfig();
+                tags = [...(config.items || config.tags || [])];
+                showToast('Tags & taxonomies reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-003', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-003 (Tags & Taxonomies)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
 
 
     /**

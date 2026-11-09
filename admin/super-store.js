@@ -7655,6 +7655,190 @@
       return filename;
     },
 
+    // =========================================================================
+    // FOLDER 06 (BATCH 1): Categories & Navigation Engines (06-001 to 06-003)
+    // =========================================================================
+
+    // --- MODULE 06-001: Master Categories Engine ---
+    getMasterCategoriesConfig() {
+      return this._hydrateConfig("cso_master_categories_config", "categories", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        categorySettings: { defaultSortOrder: "orderWeight", enableCategoryBadges: true },
+        categories: [
+          { id: "CAT-01", code: "JOBS", name: "Jobs & Careers", slug: "jobs-careers", icon: "briefcase", color: "#38bdf8", orderWeight: 1, postCount: 417, active: true },
+          { id: "CAT-02", code: "SCHEMES", name: "Schemes & Benefits", slug: "schemes-benefits", icon: "award", color: "#34d399", orderWeight: 2, postCount: 1264, active: true },
+          { id: "CAT-03", code: "LIBRARY", name: "Study Library", slug: "study-library", icon: "book-open", color: "#818cf8", orderWeight: 3, postCount: 1723, active: true },
+          { id: "CAT-04", code: "COMMUNITY", name: "Community & Districts", slug: "community", icon: "users", color: "#f59e0b", orderWeight: 4, postCount: 530, active: true },
+          { id: "CAT-05", code: "EDITORIAL", name: "Editorials & Opinions", slug: "editorials", icon: "feather", color: "#ec4899", orderWeight: 5, postCount: 180, active: true }
+        ]
+      }));
+    },
+
+    saveMasterCategoriesConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        categorySettings: {
+          defaultSortOrder: String(config.categorySettings?.defaultSortOrder || "orderWeight"),
+          enableCategoryBadges: config.categorySettings?.enableCategoryBadges !== false
+        },
+        categories: Array.isArray(config.categories || config.items) ? (config.categories || config.items).map((c, i) => ({
+          id: String(c.id || "CAT-" + String(i + 1).padStart(2, "0")),
+          code: String(c.code || "CAT").trim().toUpperCase(),
+          name: String(c.name || "").trim(),
+          slug: String(c.slug || "").trim().toLowerCase(),
+          icon: String(c.icon || "folder").trim(),
+          color: String(c.color || "#38bdf8").trim(),
+          orderWeight: parseInt(c.orderWeight, 10) || (i + 1),
+          postCount: parseInt(c.postCount, 10) || 0,
+          active: c.active !== false
+        })) : []
+      };
+      clean.items = clean.categories;
+      localStorage.setItem("cso_master_categories_config", JSON.stringify(clean));
+      this.logAudit("MASTER_CATEGORIES_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Master categories configuration updated (" + clean.categories.length + " categories).");
+      return true;
+    },
+
+    resetMasterCategoriesConfig() {
+      localStorage.removeItem("cso_master_categories_config");
+      this.logAudit("MASTER_CATEGORIES_CONFIG_RESET", "SYSTEM_RESET", "Master categories reset to factory defaults.");
+      return this.getMasterCategoriesConfig();
+    },
+
+    exportMasterCategoriesManifest() {
+      const config = this.getMasterCategoriesConfig();
+      const filename = "master_categories_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MASTER_CATEGORIES_MANIFEST_EXPORTED", "DATA_EXPORT", "Master categories manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-002: Subcategories Engine ---
+    getSubcategoriesConfig() {
+      return this._hydrateConfig("cso_subcategories_config", "subcategories", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        subcategorySettings: { allowCrossCategoryNesting: false, showPostCounts: true },
+        subcategories: [
+          { id: "SUB-01", parentCategoryId: "CAT-01", parentCategoryName: "Jobs & Careers", name: "OPSC Civil Services", slug: "opsc-civil-services", orderWeight: 1, postCount: 142, active: true },
+          { id: "SUB-02", parentCategoryId: "CAT-01", parentCategoryName: "Jobs & Careers", name: "OSSC Staff Selection", slug: "ossc-staff-selection", orderWeight: 2, postCount: 198, active: true },
+          { id: "SUB-03", parentCategoryId: "CAT-01", parentCategoryName: "Jobs & Careers", name: "OSSSC Combined Cadre", slug: "osssc-combined-cadre", orderWeight: 3, postCount: 77, active: true },
+          { id: "SUB-04", parentCategoryId: "CAT-02", parentCategoryName: "Schemes & Benefits", name: "Education & Scholarships", slug: "education-scholarships", orderWeight: 1, postCount: 520, active: true },
+          { id: "SUB-05", parentCategoryId: "CAT-02", parentCategoryName: "Schemes & Benefits", name: "Agriculture & Farmers Welfare", slug: "agriculture-farmers", orderWeight: 2, postCount: 410, active: true },
+          { id: "SUB-06", parentCategoryId: "CAT-03", parentCategoryName: "Study Library", name: "Previous Year Questions (PYQ)", slug: "pyq-archive", orderWeight: 1, postCount: 890, active: true },
+          { id: "SUB-07", parentCategoryId: "CAT-03", parentCategoryName: "Study Library", name: "Syllabus Blueprints", slug: "syllabus-blueprints", orderWeight: 2, postCount: 430, active: true }
+        ]
+      }));
+    },
+
+    saveSubcategoriesConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        subcategorySettings: {
+          allowCrossCategoryNesting: Boolean(config.subcategorySettings?.allowCrossCategoryNesting),
+          showPostCounts: config.subcategorySettings?.showPostCounts !== false
+        },
+        subcategories: Array.isArray(config.subcategories || config.items) ? (config.subcategories || config.items).map((s, i) => ({
+          id: String(s.id || "SUB-" + String(i + 1).padStart(2, "0")),
+          parentCategoryId: String(s.parentCategoryId || "CAT-01").trim(),
+          parentCategoryName: String(s.parentCategoryName || "General").trim(),
+          name: String(s.name || "").trim(),
+          slug: String(s.slug || "").trim().toLowerCase(),
+          orderWeight: parseInt(s.orderWeight, 10) || (i + 1),
+          postCount: parseInt(s.postCount, 10) || 0,
+          active: s.active !== false
+        })) : []
+      };
+      clean.items = clean.subcategories;
+      localStorage.setItem("cso_subcategories_config", JSON.stringify(clean));
+      this.logAudit("SUBCATEGORIES_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Subcategories configuration updated (" + clean.subcategories.length + " subcategories).");
+      return true;
+    },
+
+    resetSubcategoriesConfig() {
+      localStorage.removeItem("cso_subcategories_config");
+      this.logAudit("SUBCATEGORIES_CONFIG_RESET", "SYSTEM_RESET", "Subcategories reset to factory defaults.");
+      return this.getSubcategoriesConfig();
+    },
+
+    exportSubcategoriesManifest() {
+      const config = this.getSubcategoriesConfig();
+      const filename = "subcategories_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SUBCATEGORIES_MANIFEST_EXPORTED", "DATA_EXPORT", "Subcategories manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-003: Tags & Taxonomies Engine ---
+    getTagsTaxonomiesConfig() {
+      return this._hydrateConfig("cso_tags_taxonomies_config", "tags", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        tagSettings: { autoSlugify: true, maxTagsPerPost: 10, enableTagCloudWidget: true },
+        tags: [
+          { id: "TAG-01", name: "OPSC OAS 2026", slug: "opsc-oas-2026", group: "Examinations", usageCount: 248, color: "#38bdf8", active: true },
+          { id: "TAG-02", name: "OSSC CGL", slug: "ossc-cgl", group: "Examinations", usageCount: 312, color: "#34d399", active: true },
+          { id: "TAG-03", name: "Admit Card Download", slug: "admit-card-download", group: "Alerts", usageCount: 185, color: "#f59e0b", active: true },
+          { id: "TAG-04", name: "Negative Marking", slug: "negative-marking", group: "Rules", usageCount: 94, color: "#ef4444", active: true },
+          { id: "TAG-05", name: "e-Medhabruti", slug: "e-medhabruti", group: "Scholarships", usageCount: 142, color: "#a855f7", active: true },
+          { id: "TAG-06", name: "Odia Vyakaran", slug: "odia-vyakaran", group: "Subjects", usageCount: 420, color: "#ec4899", active: true },
+          { id: "TAG-07", name: "District Gazettes", slug: "district-gazettes", group: "Reference", usageCount: 68, color: "#06b6d4", active: true }
+        ]
+      }));
+    },
+
+    saveTagsTaxonomiesConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        tagSettings: {
+          autoSlugify: config.tagSettings?.autoSlugify !== false,
+          maxTagsPerPost: parseInt(config.tagSettings?.maxTagsPerPost, 10) || 10,
+          enableTagCloudWidget: config.tagSettings?.enableTagCloudWidget !== false
+        },
+        tags: Array.isArray(config.tags || config.items) ? (config.tags || config.items).map((t, i) => ({
+          id: String(t.id || "TAG-" + String(i + 1).padStart(2, "0")),
+          name: String(t.name || "").trim(),
+          slug: String(t.slug || "").trim().toLowerCase(),
+          group: String(t.group || "General").trim(),
+          usageCount: parseInt(t.usageCount, 10) || 0,
+          color: String(t.color || "#38bdf8").trim(),
+          active: t.active !== false
+        })) : []
+      };
+      clean.items = clean.tags;
+      localStorage.setItem("cso_tags_taxonomies_config", JSON.stringify(clean));
+      this.logAudit("TAGS_TAXONOMIES_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Tags & taxonomies configuration updated (" + clean.tags.length + " tags).");
+      return true;
+    },
+
+    resetTagsTaxonomiesConfig() {
+      localStorage.removeItem("cso_tags_taxonomies_config");
+      this.logAudit("TAGS_TAXONOMIES_CONFIG_RESET", "SYSTEM_RESET", "Tags & taxonomies reset to factory defaults.");
+      return this.getTagsTaxonomiesConfig();
+    },
+
+    exportTagsTaxonomiesManifest() {
+      const config = this.getTagsTaxonomiesConfig();
+      const filename = "tags_taxonomies_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("TAGS_TAXONOMIES_MANIFEST_EXPORTED", "DATA_EXPORT", "Tags & taxonomies manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 
@@ -8021,6 +8205,9 @@
       careerExplorer: this.getCareerExplorerConfig(),
       studentDashboard: this.getStudentDashboardConfig(),
       educationalTools: this.getEducationalToolsConfig(),
+      masterCategories: this.getMasterCategoriesConfig(),
+      subcategories: this.getSubcategoriesConfig(),
+      tagsTaxonomies: this.getTagsTaxonomiesConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
