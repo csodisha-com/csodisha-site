@@ -295,7 +295,9 @@ async function loadMasterNavigation() {
         renderMasterFeatureRegistryWorkspace();
       } else if (moduleId === 'module-02-001') {
         renderAllPagesWorkspace();
-      } else if (folderId === 'folder-02' || moduleId === 'module-02-002') {
+      } else if (moduleId === 'module-02-002') {
+        renderCreateNewPageWorkspace();
+      } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
@@ -1521,6 +1523,372 @@ async function loadMasterNavigation() {
           showToast(`Diagnostic probe completed: ${successCount}/${pages.length} endpoints active`, "success");
         });
       }
+    }
+
+    /**
+     * VIEW 2b: Create New Page Provisioning Wizard (module-02-002)
+     */
+    function renderCreateNewPageWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Create New Page (module-02-002)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnBackToAllPages" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          &larr; Back to All Pages
+        </button>
+      `;
+
+      // Starter Boilerplates by Template
+      const TEMPLATES = {
+        'Standard Content': `<section class="py-8 space-y-4">
+  <div class="inline-block px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/20">
+    Official Announcement
+  </div>
+  <h1 class="text-3xl font-extrabold text-white tracking-tight">Public Notice & Guidelines</h1>
+  <p class="text-base text-slate-300 leading-relaxed">
+    Welcome to this official informational update from Common Sense Odisha. Please verify all eligibility criteria and official dates below.
+  </p>
+  <div class="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+    <h3 class="font-bold text-white text-sm">Key Instructions:</h3>
+    <ul class="list-disc list-inside text-xs text-slate-400 space-y-1">
+      <li>All documents must be attested in accordance with State Department norms.</li>
+      <li>Keep application reference numbers secure for future correspondence.</li>
+    </ul>
+  </div>
+</section>`,
+
+        'Educational Matrix': `<section class="py-8 space-y-6">
+  <div class="border-b border-slate-800 pb-4">
+    <h1 class="text-3xl font-extrabold text-white">Study Resources & Examination Matrix</h1>
+    <p class="text-sm text-slate-400 mt-1">Curated syllabi, sample papers, and guidance materials.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+      <h3 class="font-bold text-white text-base">Module Syllabus Overview</h3>
+      <p class="text-xs text-slate-400">Complete topic-by-topic distribution for upcoming exams.</p>
+      <a href="#" class="inline-block text-xs font-mono text-emerald-400 hover:underline">Download Guide (PDF) &rarr;</a>
+    </div>
+    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+      <h3 class="font-bold text-white text-base">Previous Year Question Bank</h3>
+      <p class="text-xs text-slate-400">Verified answer keys and sectional solutions.</p>
+      <a href="#" class="inline-block text-xs font-mono text-cyan-400 hover:underline">Open Repository &rarr;</a>
+    </div>
+  </div>
+</section>`,
+
+        'Portal Landing': `<section class="py-12 space-y-6 text-center max-w-3xl mx-auto">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    Empowering 30 Districts of Odisha
+  </div>
+  <h1 class="text-4xl font-extrabold text-white tracking-tight sm:text-5xl">
+    Transparent Governance for Odisha's Students
+  </h1>
+  <p class="text-lg text-slate-300">
+    Unifying state scholarship updates, competitive exam alerts, and career development tools into a single trusted portal.
+  </p>
+  <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+    <a href="/resources.html" class="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow transition">
+      Explore Library
+    </a>
+    <a href="/contact.html" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition">
+      Help Desk
+    </a>
+  </div>
+</section>`,
+
+        'Form Desk': `<section class="py-8 max-w-2xl mx-auto space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-white">Student Inquiry & Feedback Submission</h1>
+    <p class="text-xs text-slate-400 mt-1">Submit your academic query or verification request directly to our team.</p>
+  </div>
+  <form class="space-y-4 p-6 rounded-xl bg-slate-900/60 border border-slate-800">
+    <div>
+      <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+      <input type="text" placeholder="Enter full name" class="w-full bg-[#081220] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+      <input type="email" placeholder="student@example.com" class="w-full bg-[#081220] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-slate-300 mb-1">Inquiry Details</label>
+      <textarea rows="4" placeholder="Detail your question..." class="w-full bg-[#081220] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></textarea>
+    </div>
+    <button type="button" class="w-full py-2.5 rounded-lg bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 transition">
+      Submit Inquiry
+    </button>
+  </form>
+</section>`,
+
+        'Legal Core': `<section class="py-8 max-w-3xl mx-auto space-y-6">
+  <div class="border-b border-slate-800 pb-4">
+    <h1 class="text-2xl font-bold text-white">Legal Disclosures & Operational Terms</h1>
+    <p class="text-xs font-mono text-slate-400 mt-1">Effective Date: November 2026 &bull; Common Sense Odisha</p>
+  </div>
+  <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+    <p>Common Sense Odisha is an independent civic portal providing verified notifications and educational materials. All information is collated from official government gazettes.</p>
+    <h3 class="text-sm font-bold text-white pt-2">Intellectual Property & Attribution</h3>
+    <p>All official notices remain the intellectual copyright of the respective State and Central issuing authorities.</p>
+  </div>
+</section>`
+      };
+
+      // Provisioning Form DOM
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Provisioning Header Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              Page Provisioning Wizard & Route Generator
+              <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-002</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Author new static routes, automatically sanitize clean URLs, and export production-ready HTML with Cloudflare CDN boilerplate.</p>
+          </div>
+
+          <!-- Provisioning Layout (2 Columns) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Page Metadata & Directives -->
+            <div class="lg:col-span-5 space-y-4">
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+                <h3 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider pb-2 border-b border-brand-border">
+                  1. Page Metadata & URL Configuration
+                </h3>
+
+                <!-- Page Title -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">
+                    Page Title <span class="text-rose-400">*</span>
+                  </label>
+                  <input id="inputPageTitle" type="text" placeholder="e.g. OPSC CGL 2026 Admit Card" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <span class="text-[10px] text-slate-500 mt-1 block">Live title displayed in browser tab and search engines.</span>
+                </div>
+
+                <!-- Slug / Route Path -->
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs font-semibold text-slate-200">
+                      Route Path & File Name <span class="text-rose-400">*</span>
+                    </label>
+                    <span id="slugCollisionIndicator" class="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      Available
+                    </span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="px-2.5 py-2 rounded-l-lg bg-slate-900 border border-r-0 border-brand-border text-slate-500 text-xs font-mono">/</span>
+                    <input id="inputPageSlug" type="text" placeholder="opsc-cgl-2026-admit-card.html" class="w-full bg-[#081220] border border-brand-border rounded-r-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                  <span class="text-[10px] text-slate-500 mt-1 block font-mono">Sanitized filename for static deployment.</span>
+                </div>
+
+                <!-- Template Selector -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Page Template</label>
+                  <select id="selectPageTemplate" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                    <option value="Standard Content">Standard Content</option>
+                    <option value="Educational Matrix">Educational Matrix</option>
+                    <option value="Portal Landing">Portal Landing</option>
+                    <option value="Form Desk">Form Desk</option>
+                    <option value="Legal Core">Legal Core</option>
+                  </select>
+                  <span class="text-[10px] text-slate-500 mt-1 block">Selecting a template loads starter layout code into the editor.</span>
+                </div>
+
+                <!-- Meta Description -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">SEO Meta Description</label>
+                  <textarea id="inputPageMeta" rows="3" placeholder="Brief summary of page contents for search snippets..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+                  <span class="text-[10px] text-slate-500 mt-1 block">Recommended: 120-160 characters.</span>
+                </div>
+
+                <!-- Robots Directives -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Search Engine Directives</label>
+                  <select id="selectPageRobots" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald font-mono">
+                    <option value="index, follow">index, follow (Public Search Indexing)</option>
+                    <option value="noindex, nofollow">noindex, nofollow (Private / Internal Notice)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: HTML Editor & Publishing Actions -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4 flex flex-col h-full">
+                <div class="flex items-center justify-between pb-2 border-b border-brand-border">
+                  <h3 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+                    2. HTML Body & Visual Layout
+                  </h3>
+                  <div class="text-[10px] font-mono text-slate-400 flex items-center gap-2">
+                    <span id="charCountLabel">0 chars</span>
+                    &bull;
+                    <span id="byteSizeLabel">0.0 KB</span>
+                  </div>
+                </div>
+
+                <!-- Code Textarea -->
+                <div class="relative flex-grow">
+                  <textarea id="textareaPageContent" rows="18" class="w-full h-full min-h-[360px] bg-[#050a14] border border-brand-border rounded-lg p-3.5 text-slate-200 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" placeholder="Enter HTML content or select a template above..."></textarea>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="pt-2 border-t border-brand-border flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div class="text-[11px] text-slate-400 font-mono">
+                    Output: <span class="text-emerald-400 font-bold">csodisha.com/</span><span id="routePreviewLabel" class="text-white font-bold">opsc-cgl-2026-admit-card.html</span>
+                  </div>
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button id="btnSaveDraft" class="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border transition">
+                      Save as Draft
+                    </button>
+                    <button id="btnPublishAndDownload" class="flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center justify-center gap-1.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                      Publish Page & Download HTML
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // DOM Bindings
+      const inputTitle = document.getElementById('inputPageTitle');
+      const inputSlug = document.getElementById('inputPageSlug');
+      const selectTemplate = document.getElementById('selectPageTemplate');
+      const inputMeta = document.getElementById('inputPageMeta');
+      const selectRobots = document.getElementById('selectPageRobots');
+      const textareaContent = document.getElementById('textareaPageContent');
+      const charCountLabel = document.getElementById('charCountLabel');
+      const byteSizeLabel = document.getElementById('byteSizeLabel');
+      const routePreviewLabel = document.getElementById('routePreviewLabel');
+      const collisionIndicator = document.getElementById('slugCollisionIndicator');
+
+      // Set initial starter template
+      textareaContent.value = TEMPLATES['Standard Content'];
+
+      function updateContentStats() {
+        const text = textareaContent.value || '';
+        if (charCountLabel) charCountLabel.textContent = `${text.length} chars`;
+        if (byteSizeLabel) {
+          const kb = ((text.length * 2) / 1024).toFixed(1);
+          byteSizeLabel.textContent = `${kb} KB`;
+        }
+      }
+      updateContentStats();
+
+      function validateSlug() {
+        const slug = inputSlug.value.trim();
+        if (routePreviewLabel) routePreviewLabel.textContent = slug || 'page.html';
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.checkSlugCollision === 'function') {
+          const isCollision = window.CSOSuperStore.checkSlugCollision(slug);
+          if (collisionIndicator) {
+            if (isCollision) {
+              collisionIndicator.className = "text-[10px] font-mono text-rose-400 flex items-center gap-1 font-bold";
+              collisionIndicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Already Exists!`;
+            } else {
+              collisionIndicator.className = "text-[10px] font-mono text-emerald-400 flex items-center gap-1";
+              collisionIndicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Available`;
+            }
+          }
+          return !isCollision;
+        }
+        return true;
+      }
+
+      // Live Slug Generation
+      let userManuallyEditedSlug = false;
+      inputTitle.addEventListener('input', () => {
+        if (!userManuallyEditedSlug) {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.generateSanitizedSlug === 'function') {
+            inputSlug.value = window.CSOSuperStore.generateSanitizedSlug(inputTitle.value);
+          } else {
+            inputSlug.value = inputTitle.value.toLowerCase().trim().replace(/[^a-z0-9]/g, '-') + '.html';
+          }
+          validateSlug();
+        }
+      });
+
+      inputSlug.addEventListener('input', () => {
+        userManuallyEditedSlug = true;
+        validateSlug();
+      });
+
+      // Template Change
+      selectTemplate.addEventListener('change', (e) => {
+        const t = e.target.value;
+        if (TEMPLATES[t]) {
+          textareaContent.value = TEMPLATES[t];
+          updateContentStats();
+        }
+      });
+
+      textareaContent.addEventListener('input', updateContentStats);
+
+      // Back Button
+      document.getElementById('btnBackToAllPages')?.addEventListener('click', () => {
+        selectModule('folder-02', 'module-02-001');
+      });
+
+      // Save Actions Helper
+      function handleSave(isDraft) {
+        const title = inputTitle.value.trim();
+        let slug = inputSlug.value.trim();
+
+        if (!title) {
+          showToast("Please provide a page title.", "warning");
+          inputTitle.focus();
+          return;
+        }
+
+        if (!slug) {
+          slug = window.CSOSuperStore?.generateSanitizedSlug(title) || 'page.html';
+        }
+
+        if (!slug.endsWith('.html')) {
+          slug += '.html';
+        }
+
+        const pagePayload = {
+          title: title,
+          slug: slug,
+          template: selectTemplate.value,
+          metaDescription: inputMeta.value.trim(),
+          robots: selectRobots.value,
+          content: textareaContent.value
+        };
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveNewPage === 'function') {
+          const createdPage = window.CSOSuperStore.saveNewPage(pagePayload, isDraft);
+
+          if (!isDraft && typeof window.CSOSuperStore.downloadPageHtml === 'function') {
+            window.CSOSuperStore.downloadPageHtml(createdPage);
+            showToast(`Page published! Downloaded ${createdPage.file}`, "success");
+            // Navigate back to All Pages
+            setTimeout(() => {
+              selectModule('folder-02', 'module-02-001');
+            }, 800);
+          } else {
+            showToast(`Page saved as draft (${createdPage.file})`, "info");
+            selectModule('folder-02', 'module-02-001');
+          }
+        }
+      }
+
+      // Save as Draft
+      document.getElementById('btnSaveDraft')?.addEventListener('click', () => {
+        handleSave(true);
+      });
+
+      // Publish & Download
+      document.getElementById('btnPublishAndDownload')?.addEventListener('click', () => {
+        handleSave(false);
+      });
     }
 
     /**

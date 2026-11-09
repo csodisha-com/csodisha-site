@@ -1088,6 +1088,116 @@
       return filename;
     },
 
+    // Page Builder & Provisioning Engine (module-02-002)
+    generateSanitizedSlug(title) {
+      if (!title || typeof title !== 'string') return 'page.html';
+      let slug = title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+      if (slug.endsWith('.html')) return slug;
+      return (slug || 'untitled') + '.html';
+    },
+
+    checkSlugCollision(slug) {
+      if (!slug) return false;
+      const cleanSlug = slug.startsWith('/') ? slug.slice(1) : slug;
+      const targetPath = '/' + cleanSlug;
+      const pages = this.getAllPages('ALL', '');
+      return pages.some(p => {
+        const pPath = (p.path || '').toLowerCase();
+        const pFile = (p.file || '').toLowerCase();
+        return pPath === targetPath.toLowerCase() || pFile === cleanSlug.toLowerCase();
+      });
+    },
+
+    saveNewPage(pageData, isDraft = false) {
+      const pageId = 'PAGE-' + Date.now().toString().slice(-4);
+      const cleanSlug = pageData.slug.startsWith('/') ? pageData.slug.slice(1) : pageData.slug;
+      const content = pageData.content || '';
+      const sizeKb = ((content.length * 2) / 1024).toFixed(1);
+
+      const newPage = {
+        id: pageId,
+        path: '/' + cleanSlug,
+        file: cleanSlug,
+        title: pageData.title || 'Untitled Page',
+        template: pageData.template || 'Standard Content',
+        status: isDraft ? 'Draft' : 'Live',
+        sizeKb: sizeKb,
+        lastModified: new Date().toISOString().slice(0, 10),
+        metaDescription: pageData.metaDescription || '',
+        robots: pageData.robots || 'index, follow',
+        htmlContent: content
+      };
+
+      const pages = this.getAllPages('ALL', '');
+      pages.unshift(newPage);
+      this.saveAllPages(pages);
+
+      const auditType = isDraft ? 'PAGE_DRAFT_SAVED' : 'PAGE_CREATED';
+      this.logAudit(auditType, 'PAGE_BUILDER', `New page "${newPage.title}" (${newPage.path}) provisioned as ${newPage.status}.`);
+
+      return newPage;
+    },
+
+    downloadPageHtml(page) {
+      if (!page) return;
+      let html = page.htmlContent || '';
+
+      // Wrap with full HTML5 boilerplate if not already full document
+      if (!html.toLowerCase().includes('<!doctype html>')) {
+        html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${page.title} - Common Sense Odisha</title>
+  <meta name="description" content="${page.metaDescription || 'Common Sense Odisha public educational resources and notices.'}">
+  <meta name="robots" content="${page.robots || 'index, follow'}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#040810] text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+  <header class="border-b border-slate-800 bg-[#060c18]/90 backdrop-blur sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-bold text-lg text-white">
+      <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+      CS Odisha
+    </a>
+    <nav class="flex items-center gap-4 text-xs font-semibold text-slate-300">
+      <a href="/" class="hover:text-emerald-400">Home</a>
+      <a href="/resources.html" class="hover:text-emerald-400">Resources</a>
+      <a href="/contact.html" class="hover:text-emerald-400">Contact</a>
+    </nav>
+  </header>
+
+  <main class="flex-grow max-w-5xl mx-auto w-full px-6 py-10">
+    ${html}
+  </main>
+
+  <footer class="border-t border-slate-800 bg-[#060c18] py-8 text-center text-xs text-slate-500 font-mono">
+    &copy; 2026 Common Sense Odisha (csodisha.com). Empowering students and youth across Odisha.
+  </footer>
+</body>
+</html>`;
+      }
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const filename = page.file || `${page.id.toLowerCase()}.html`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
