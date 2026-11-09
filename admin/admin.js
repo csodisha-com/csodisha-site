@@ -315,6 +315,8 @@ async function loadMasterNavigation() {
         renderScheduledPagesWorkspace();
       } else if (moduleId === 'module-02-011') {
         renderTrashAndRestoreWorkspace();
+      } else if (moduleId === 'module-03-001') {
+        renderSiteIdentityWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -4881,6 +4883,346 @@ async function loadMasterNavigation() {
             renderTrashTable();
           }
         });
+      });
+    }
+
+    /**
+     * VIEW 3a: Site Identity & Brand Setup Studio (module-03-001)
+     */
+    function renderSiteIdentityWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      dom.breadcrumbModule.textContent = "Site Identity & Brand Setup (module-03-001)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnSaveBrandSetup" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Save Brand Setup
+          </button>
+          <button id="btnExportBrandJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Manifest (JSON)
+          </button>
+        </div>
+      `;
+
+      // Ingest Brand Config
+      const brand = (window.CSOSuperStore && typeof window.CSOSuperStore.getBrandConfig === 'function')
+        ? window.CSOSuperStore.getBrandConfig()
+        : {
+            siteName: "Common Sense Odisha",
+            shortCode: "CSO",
+            domain: "csodisha.com",
+            supportEmail: "contact@csodisha.com",
+            tagline: "Empowering Aspirants Across All 30 Districts of Odisha",
+            description: "Dedicated examination intelligence, authentic syllabus patterns, and academic empowerment for youth across Odisha.",
+            logoPath: "/assets/img/logo.svg",
+            faviconPath: "/favicon.ico",
+            primaryColor: "#0fa968",
+            navyColor: "#081220",
+            slateColor: "#0f172a",
+            jurisdiction: "All 30 Districts of Odisha",
+            updatedAt: new Date().toISOString()
+          };
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Brand Core & Platform Identity Master
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-03-001</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Maintain platform nomenclature, canonical URL domain anchors, color tokens, and public metadata.</p>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg">
+              Last Updated: <span id="brandLastUpdated" class="text-emerald-400 font-bold">${new Date(brand.updatedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <!-- 2-Column Responsive Studio Layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Left Column: Brand Configuration Form (7 cols) -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Platform Metadata & Nomenclature
+                  </h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-200 mb-1">Platform Name <span class="text-rose-400">*</span></label>
+                    <input id="inputBrandSiteName" type="text" value="${brand.siteName || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-200 mb-1">Short Code Badge</label>
+                    <input id="inputBrandShortCode" type="text" value="${brand.shortCode || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-200 mb-1">Canonical Domain <span class="text-rose-400">*</span></label>
+                    <input id="inputBrandDomain" type="text" value="${brand.domain || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-200 mb-1">Primary Support Email</label>
+                    <input id="inputBrandEmail" type="email" value="${brand.supportEmail || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Official Tagline</label>
+                  <input id="inputBrandTagline" type="text" value="${brand.tagline || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Mission & Purpose Description</label>
+                  <textarea id="textareaBrandDescription" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${brand.description || ''}</textarea>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Geographic Jurisdiction Tag</label>
+                  <input id="inputBrandJurisdiction" type="text" value="${brand.jurisdiction || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <!-- Brand Color Tokens -->
+                <div class="pt-3 border-t border-brand-border space-y-3">
+                  <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+                    Design System Color Tokens
+                  </h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="p-3 rounded-lg bg-[#081220] border border-brand-border space-y-1.5">
+                      <label class="block text-[11px] font-mono text-slate-400">Primary Emerald</label>
+                      <div class="flex items-center gap-2">
+                        <input id="inputBrandPrimaryColorPicker" type="color" value="${brand.primaryColor || '#0fa968'}" class="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                        <input id="inputBrandPrimaryColor" type="text" value="${brand.primaryColor || '#0fa968'}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+                      </div>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-[#081220] border border-brand-border space-y-1.5">
+                      <label class="block text-[11px] font-mono text-slate-400">Midnight Navy</label>
+                      <div class="flex items-center gap-2">
+                        <input id="inputBrandNavyColorPicker" type="color" value="${brand.navyColor || '#081220'}" class="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                        <input id="inputBrandNavyColor" type="text" value="${brand.navyColor || '#081220'}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+                      </div>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-[#081220] border border-brand-border space-y-1.5">
+                      <label class="block text-[11px] font-mono text-slate-400">Slate Surface</label>
+                      <div class="flex items-center gap-2">
+                        <input id="inputBrandSlateColorPicker" type="color" value="${brand.slateColor || '#0f172a'}" class="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                        <input id="inputBrandSlateColor" type="text" value="${brand.slateColor || '#0f172a'}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Live Synchronized Preview (5 cols) -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Live Brand Card Preview -->
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                    <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                      Live Identity Preview
+                    </h3>
+                  </div>
+                  <span class="text-[10px] font-mono text-emerald-400">Real-Time Sync</span>
+                </div>
+
+                <!-- Mock Portal Header -->
+                <div class="p-4 rounded-xl border border-slate-800 bg-[#040810] space-y-3 shadow-inner">
+                  <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+                    <div class="flex items-center gap-2.5">
+                      <div id="previewLogoDot" class="w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] text-white" style="background-color: ${brand.primaryColor || '#0fa968'};">
+                        O
+                      </div>
+                      <span id="previewSiteName" class="font-bold text-white text-sm">${brand.siteName || 'Common Sense Odisha'}</span>
+                      <span id="previewShortCode" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">${brand.shortCode || 'CSO'}</span>
+                    </div>
+                    <span id="previewDomain" class="text-[11px] font-mono text-cyan-400">${brand.domain || 'csodisha.com'}</span>
+                  </div>
+
+                  <p id="previewTagline" class="text-xs text-slate-300 font-sans italic leading-relaxed">
+                    "${brand.tagline || 'Empowering Aspirants Across All 30 Districts of Odisha'}"
+                  </p>
+
+                  <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                    <span>Helpdesk: <span id="previewEmail" class="text-slate-200">${brand.supportEmail || 'contact@csodisha.com'}</span></span>
+                    <span id="previewJurisdiction" class="text-slate-300">${brand.jurisdiction || 'All 30 Districts'}</span>
+                  </div>
+                </div>
+
+                <!-- Palette Swatches -->
+                <div class="space-y-2 pt-2">
+                  <span class="text-xs font-mono font-bold text-slate-400 block">Active Swatch Tokens:</span>
+                  <div class="grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
+                    <div class="p-2 rounded-lg border border-slate-700" id="swatchPrimaryBox" style="background-color: ${brand.primaryColor || '#0fa968'};">
+                      <span class="font-bold text-white shadow-sm" id="swatchPrimaryHex">${brand.primaryColor || '#0fa968'}</span>
+                    </div>
+                    <div class="p-2 rounded-lg border border-slate-700" id="swatchNavyBox" style="background-color: ${brand.navyColor || '#081220'};">
+                      <span class="font-bold text-slate-200" id="swatchNavyHex">${brand.navyColor || '#081220'}</span>
+                    </div>
+                    <div class="p-2 rounded-lg border border-slate-700" id="swatchSlateBox" style="background-color: ${brand.slateColor || '#0f172a'};">
+                      <span class="font-bold text-slate-200" id="swatchSlateHex">${brand.slateColor || '#0f172a'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Canonical Verification Pill -->
+                <div class="p-3 rounded-lg bg-[#081220] border border-brand-border flex items-center justify-between text-xs font-mono">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Asset Integrity:
+                  </span>
+                  <span class="text-emerald-400 font-bold">25 Routes Aligned</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Form Bindings & Real-Time Sync
+      const inputName = document.getElementById('inputBrandSiteName');
+      const inputShort = document.getElementById('inputBrandShortCode');
+      const inputDomain = document.getElementById('inputBrandDomain');
+      const inputEmail = document.getElementById('inputBrandEmail');
+      const inputTagline = document.getElementById('inputBrandTagline');
+      const inputDesc = document.getElementById('textareaBrandDescription');
+      const inputJurisdiction = document.getElementById('inputBrandJurisdiction');
+
+      const colorPrimary = document.getElementById('inputBrandPrimaryColor');
+      const pickerPrimary = document.getElementById('inputBrandPrimaryColorPicker');
+      const colorNavy = document.getElementById('inputBrandNavyColor');
+      const pickerNavy = document.getElementById('inputBrandNavyColorPicker');
+      const colorSlate = document.getElementById('inputBrandSlateColor');
+      const pickerSlate = document.getElementById('inputBrandSlateColorPicker');
+
+      // Live Preview Elements
+      const prevName = document.getElementById('previewSiteName');
+      const prevShort = document.getElementById('previewShortCode');
+      const prevDomain = document.getElementById('previewDomain');
+      const prevTagline = document.getElementById('previewTagline');
+      const prevEmail = document.getElementById('previewEmail');
+      const prevJurisdiction = document.getElementById('previewJurisdiction');
+      const prevLogoDot = document.getElementById('previewLogoDot');
+
+      const swatchPrimaryBox = document.getElementById('swatchPrimaryBox');
+      const swatchPrimaryHex = document.getElementById('swatchPrimaryHex');
+      const swatchNavyBox = document.getElementById('swatchNavyBox');
+      const swatchNavyHex = document.getElementById('swatchNavyHex');
+      const swatchSlateBox = document.getElementById('swatchSlateBox');
+      const swatchSlateHex = document.getElementById('swatchSlateHex');
+
+      function syncPreview() {
+        if (prevName) prevName.textContent = inputName.value || 'Common Sense Odisha';
+        if (prevShort) prevShort.textContent = inputShort.value || 'CSO';
+        if (prevDomain) prevDomain.textContent = inputDomain.value || 'csodisha.com';
+        if (prevTagline) prevTagline.textContent = `"${inputTagline.value || 'Empowering Aspirants Across All 30 Districts of Odisha'}"`;
+        if (prevEmail) prevEmail.textContent = inputEmail.value || 'contact@csodisha.com';
+        if (prevJurisdiction) prevJurisdiction.textContent = inputJurisdiction.value || 'All 30 Districts';
+
+        // Sync Primary Color
+        const pColor = colorPrimary.value || '#0fa968';
+        if (prevLogoDot) prevLogoDot.style.backgroundColor = pColor;
+        if (swatchPrimaryBox) swatchPrimaryBox.style.backgroundColor = pColor;
+        if (swatchPrimaryHex) swatchPrimaryHex.textContent = pColor;
+
+        // Sync Navy
+        const nColor = colorNavy.value || '#081220';
+        if (swatchNavyBox) swatchNavyBox.style.backgroundColor = nColor;
+        if (swatchNavyHex) swatchNavyHex.textContent = nColor;
+
+        // Sync Slate
+        const sColor = colorSlate.value || '#0f172a';
+        if (swatchSlateBox) swatchSlateBox.style.backgroundColor = sColor;
+        if (swatchSlateHex) swatchSlateHex.textContent = sColor;
+      }
+
+      [inputName, inputShort, inputDomain, inputEmail, inputTagline, inputDesc, inputJurisdiction].forEach(input => {
+        input?.addEventListener('input', syncPreview);
+      });
+
+      // Color pickers bidirectional syncing
+      pickerPrimary?.addEventListener('input', () => {
+        colorPrimary.value = pickerPrimary.value;
+        syncPreview();
+      });
+      colorPrimary?.addEventListener('input', () => {
+        pickerPrimary.value = colorPrimary.value;
+        syncPreview();
+      });
+
+      pickerNavy?.addEventListener('input', () => {
+        colorNavy.value = pickerNavy.value;
+        syncPreview();
+      });
+      colorNavy?.addEventListener('input', () => {
+        pickerNavy.value = colorNavy.value;
+        syncPreview();
+      });
+
+      pickerSlate?.addEventListener('input', () => {
+        colorSlate.value = pickerSlate.value;
+        syncPreview();
+      });
+      colorSlate?.addEventListener('input', () => {
+        pickerSlate.value = colorSlate.value;
+        syncPreview();
+      });
+
+      // Save Brand Setup
+      document.getElementById('btnSaveBrandSetup')?.addEventListener('click', () => {
+        const name = inputName.value.trim();
+        const domain = inputDomain.value.trim();
+
+        if (!name || !domain) {
+          showToast("Platform Name and Canonical Domain are required.", "warning");
+          return;
+        }
+
+        const payload = {
+          siteName: name,
+          shortCode: inputShort.value.trim() || 'CSO',
+          domain: domain,
+          supportEmail: inputEmail.value.trim() || 'contact@csodisha.com',
+          tagline: inputTagline.value.trim() || '',
+          description: inputDesc.value.trim() || '',
+          jurisdiction: inputJurisdiction.value.trim() || 'All 30 Districts of Odisha',
+          primaryColor: colorPrimary.value || '#0fa968',
+          navyColor: colorNavy.value || '#081220',
+          slateColor: colorSlate.value || '#0f172a',
+          logoPath: "/assets/img/logo.svg",
+          faviconPath: "/favicon.ico"
+        };
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveBrandConfig === 'function') {
+          const saved = window.CSOSuperStore.saveBrandConfig(payload);
+          const dateEl = document.getElementById('brandLastUpdated');
+          if (dateEl && saved.updatedAt) {
+            dateEl.textContent = new Date(saved.updatedAt).toLocaleDateString();
+          }
+          showToast("Brand setup & color tokens saved successfully!", "success");
+        }
+      });
+
+      // Export Manifest
+      document.getElementById('btnExportBrandJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportBrandManifest === 'function') {
+          const filename = window.CSOSuperStore.exportBrandManifest();
+          showToast(`Brand manifest exported: ${filename}`, "success");
+        }
       });
     }
 

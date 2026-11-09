@@ -2535,6 +2535,72 @@
       return filename;
     },
 
+    // 24. Brand Identity & Global Theme Setup Engine (module-03-001)
+    getBrandConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_brand_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object') {
+        config = {
+          siteName: "Common Sense Odisha",
+          shortCode: "CSO",
+          domain: "csodisha.com",
+          supportEmail: "contact@csodisha.com",
+          tagline: "Empowering Aspirants Across All 30 Districts of Odisha",
+          description: "Dedicated examination intelligence, authentic syllabus patterns, and academic empowerment for youth across Odisha.",
+          logoPath: "/assets/img/logo.svg",
+          faviconPath: "/favicon.ico",
+          primaryColor: "#0fa968",
+          navyColor: "#081220",
+          slateColor: "#0f172a",
+          jurisdiction: "All 30 Districts of Odisha",
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          localStorage.setItem('cso_brand_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+
+      return config;
+    },
+
+    saveBrandConfig(config) {
+      if (!config || typeof config !== 'object') return false;
+      config.updatedAt = new Date().toISOString();
+      save('cso_brand_config', config);
+      this.logAudit('BRAND_IDENTITY_UPDATED', 'BRAND_SETUP', `Brand constants, color tokens, and canonical settings updated.`);
+      return config;
+    },
+
+    exportBrandManifest() {
+      const config = this.getBrandConfig();
+      const timestamp = Date.now();
+      const filename = `cso-brand-identity-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        brand: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('BRAND_MANIFEST_EXPORTED', 'DATA_EXPORT', `Brand identity manifest exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
