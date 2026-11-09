@@ -4411,6 +4411,507 @@
       return filename;
     },
 
+    
+    // 41. All Content Management Engine (module-04-001)
+    getAllContentConfig() {
+      const raw = localStorage.getItem("cso_all_content_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_all_content_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        filterDefaults: { type: "All", status: "All", search: "" },
+        items: [
+          { id: "CNT-001", title: "OPSC OAS 2026 Prelims Syllabus Breakdown & Cutoff Trends", type: "Article", category: "Civil Services", author: "Editorial Desk", status: "Published", date: "2026-11-05", reads: 1420 },
+          { id: "CNT-002", title: "OSSC CGL Tier-II Technical Services Corrigendum Released", type: "News", category: "Staff Selection", author: "Commission Watch", status: "Published", date: "2026-11-08", reads: 3200 },
+          { id: "CNT-003", title: "Daily Odisha Affairs: State Cabinet Rural Clearances", type: "Current Affairs", category: "Odisha State", author: "Academic Cell", status: "Published", date: "2026-11-09", reads: 890 },
+          { id: "CNT-004", title: "OSSSC Revenue Inspector & Amin District Vacancy Forecast", type: "Article", category: "Subordinate Services", author: "Editorial Desk", status: "Draft", date: "2026-11-09", reads: 0 }
+        ]
+      };
+      localStorage.setItem("cso_all_content_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveAllContentConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid all content configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_all_content_config", JSON.stringify(config));
+      this.logAudit("ALL_CONTENT_CONFIG_UPDATED", "CONTENT_PUBLISHING", "All content catalog updated.");
+      return config;
+    },
+
+    importAllContentConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveAllContentConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import all content config: " + err.message);
+      }
+    },
+
+    resetAllContentConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        filterDefaults: { type: "All", status: "All", search: "" },
+        items: [
+          { id: "CNT-001", title: "OPSC OAS 2026 Prelims Syllabus Breakdown & Cutoff Trends", type: "Article", category: "Civil Services", author: "Editorial Desk", status: "Published", date: "2026-11-05", reads: 1420 },
+          { id: "CNT-002", title: "OSSC CGL Tier-II Technical Services Corrigendum Released", type: "News", category: "Staff Selection", author: "Commission Watch", status: "Published", date: "2026-11-08", reads: 3200 },
+          { id: "CNT-003", title: "Daily Odisha Affairs: State Cabinet Rural Clearances", type: "Current Affairs", category: "Odisha State", author: "Academic Cell", status: "Published", date: "2026-11-09", reads: 890 },
+          { id: "CNT-004", title: "OSSSC Revenue Inspector & Amin District Vacancy Forecast", type: "Article", category: "Subordinate Services", author: "Editorial Desk", status: "Draft", date: "2026-11-09", reads: 0 }
+        ]
+      };
+      localStorage.setItem("cso_all_content_config", JSON.stringify(initial));
+      this.logAudit("ALL_CONTENT_CONFIG_RESET", "CONTENT_PUBLISHING", "All content catalog restored to factory defaults.");
+      return initial;
+    },
+
+    exportAllContentManifest() {
+      const config = this.getAllContentConfig();
+      const timestamp = Date.now();
+      const filename = "cso-all-content-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        allContent: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("ALL_CONTENT_MANIFEST_EXPORTED", "DATA_EXPORT", "All content manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 42. Articles & Blogs Engine (module-04-002)
+    getArticlesConfig() {
+      const raw = localStorage.getItem("cso_articles_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_articles_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: { defaultAuthor: "Editorial Desk", allowCandidateComments: true, notifyOnSubmission: true },
+        articles: [
+          {
+            id: "ART-101",
+            slug: "opsc-oas-prelims-strategy",
+            title: "OPSC OAS 2026 Prelims: High-Yield Topic Matrix & Cutoff Trends",
+            category: "Civil Services",
+            author: "Dr. B. K. Mohapatra",
+            status: "Published",
+            publishedAt: "2026-11-04",
+            readTime: "7 Min",
+            featured: true,
+            summary: "Exhaustive statistical breakdown of previous 5 years OPSC OAS prelims scoring cutoffs and thematic question distribution."
+          },
+          {
+            id: "ART-102",
+            slug: "osssc-ri-amin-computer-skill",
+            title: "Mastering the OSSSC Practical Skill Test for RI, ARI & Amin",
+            category: "Subordinate Services",
+            author: "Academic Cell",
+            status: "Published",
+            publishedAt: "2026-11-07",
+            readTime: "5 Min",
+            featured: false,
+            summary: "Step-by-step guidance on MS Office, Odia typing, and database query practicals prescribed by OSSSC."
+          },
+          {
+            id: "ART-103",
+            slug: "tribal-history-and-culture-paper",
+            title: "Odisha Tribal Heritage, Languages & Forest Rights in State Exams",
+            category: "State Heritage",
+            author: "Cultural Heritage Team",
+            status: "Draft",
+            publishedAt: "2026-11-09",
+            readTime: "8 Min",
+            featured: false,
+            summary: "Comprehensive revision guide covering 62 Scheduled Tribes of Odisha and PVTG developmental schemes."
+          }
+        ]
+      };
+      localStorage.setItem("cso_articles_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveArticlesConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid articles configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_articles_config", JSON.stringify(config));
+      this.logAudit("ARTICLES_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Articles and blogs catalog updated.");
+      return config;
+    },
+
+    importArticlesConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveArticlesConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import articles: " + err.message);
+      }
+    },
+
+    resetArticlesConfig() {
+      const initial = {
+        meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: { defaultAuthor: "Editorial Desk", allowCandidateComments: true, notifyOnSubmission: true },
+        articles: [
+          {
+            id: "ART-101",
+            slug: "opsc-oas-prelims-strategy",
+            title: "OPSC OAS 2026 Prelims: High-Yield Topic Matrix & Cutoff Trends",
+            category: "Civil Services",
+            author: "Dr. B. K. Mohapatra",
+            status: "Published",
+            publishedAt: "2026-11-04",
+            readTime: "7 Min",
+            featured: true,
+            summary: "Exhaustive statistical breakdown of previous 5 years OPSC OAS prelims scoring cutoffs and thematic question distribution."
+          },
+          {
+            id: "ART-102",
+            slug: "osssc-ri-amin-computer-skill",
+            title: "Mastering the OSSSC Practical Skill Test for RI, ARI & Amin",
+            category: "Subordinate Services",
+            author: "Academic Cell",
+            status: "Published",
+            publishedAt: "2026-11-07",
+            readTime: "5 Min",
+            featured: false,
+            summary: "Step-by-step guidance on MS Office, Odia typing, and database query practicals prescribed by OSSSC."
+          },
+          {
+            id: "ART-103",
+            slug: "tribal-history-and-culture-paper",
+            title: "Odisha Tribal Heritage, Languages & Forest Rights in State Exams",
+            category: "State Heritage",
+            author: "Cultural Heritage Team",
+            status: "Draft",
+            publishedAt: "2026-11-09",
+            readTime: "8 Min",
+            featured: false,
+            summary: "Comprehensive revision guide covering 62 Scheduled Tribes of Odisha and PVTG developmental schemes."
+          }
+        ]
+      };
+      localStorage.setItem("cso_articles_config", JSON.stringify(initial));
+      this.logAudit("ARTICLES_CONFIG_RESET", "CONTENT_PUBLISHING", "Articles and blogs restored to defaults.");
+      return initial;
+    },
+
+    exportArticlesManifest() {
+      const config = this.getArticlesConfig();
+      const timestamp = Date.now();
+      const filename = "cso-articles-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        articles: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("ARTICLES_MANIFEST_EXPORTED", "DATA_EXPORT", "Articles manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 43. News & Updates Engine (module-04-003)
+    getNewsConfig() {
+      const raw = localStorage.getItem("cso_news_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_news_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        feedSettings: { liveTickerEnabled: true, tickerSpeedSeconds: 25, autoArchiveDays: 60 },
+        dispatches: [
+          {
+            id: "NEWS-501",
+            title: "OSSC CGL Tier-II Revised Examination Dates Announced via Gazette Notice 3892",
+            source: "OSSC Official Portal",
+            severity: "Urgent",
+            publishedAt: "2026-11-08 17:30",
+            verifiedBy: "Gazette Desk",
+            activeTicker: true,
+            externalRef: "https://ossc.gov.in"
+          },
+          {
+            id: "NEWS-502",
+            title: "Odisha Teacher Eligibility Test (OTET) Scoring Keys Released for Candidate Challenge",
+            source: "BSE Odisha Board",
+            severity: "Important",
+            publishedAt: "2026-11-07 11:15",
+            verifiedBy: "Academic Desk",
+            activeTicker: true,
+            externalRef: "http://bseodisha.ac.in"
+          },
+          {
+            id: "NEWS-503",
+            title: "Bhubaneswar Examination Center Infrastructure Upgraded for Computer-Based Testing",
+            source: "Department of Higher Education",
+            severity: "Standard",
+            publishedAt: "2026-11-06 09:00",
+            verifiedBy: "Civic Watch",
+            activeTicker: false,
+            externalRef: ""
+          }
+        ]
+      };
+      localStorage.setItem("cso_news_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveNewsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid news configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_news_config", JSON.stringify(config));
+      this.logAudit("NEWS_CONFIG_UPDATED", "CONTENT_PUBLISHING", "News & updates feed updated.");
+      return config;
+    },
+
+    importNewsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveNewsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import news: " + err.message);
+      }
+    },
+
+    resetNewsConfig() {
+      const initial = {
+        meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        feedSettings: { liveTickerEnabled: true, tickerSpeedSeconds: 25, autoArchiveDays: 60 },
+        dispatches: [
+          {
+            id: "NEWS-501",
+            title: "OSSC CGL Tier-II Revised Examination Dates Announced via Gazette Notice 3892",
+            source: "OSSC Official Portal",
+            severity: "Urgent",
+            publishedAt: "2026-11-08 17:30",
+            verifiedBy: "Gazette Desk",
+            activeTicker: true,
+            externalRef: "https://ossc.gov.in"
+          },
+          {
+            id: "NEWS-502",
+            title: "Odisha Teacher Eligibility Test (OTET) Scoring Keys Released for Candidate Challenge",
+            source: "BSE Odisha Board",
+            severity: "Important",
+            publishedAt: "2026-11-07 11:15",
+            verifiedBy: "Academic Desk",
+            activeTicker: true,
+            externalRef: "http://bseodisha.ac.in"
+          },
+          {
+            id: "NEWS-503",
+            title: "Bhubaneswar Examination Center Infrastructure Upgraded for Computer-Based Testing",
+            source: "Department of Higher Education",
+            severity: "Standard",
+            publishedAt: "2026-11-06 09:00",
+            verifiedBy: "Civic Watch",
+            activeTicker: false,
+            externalRef: ""
+          }
+        ]
+      };
+      localStorage.setItem("cso_news_config", JSON.stringify(initial));
+      this.logAudit("NEWS_CONFIG_RESET", "CONTENT_PUBLISHING", "News & updates feed restored to defaults.");
+      return initial;
+    },
+
+    exportNewsManifest() {
+      const config = this.getNewsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-news-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        news: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("NEWS_MANIFEST_EXPORTED", "DATA_EXPORT", "News manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 44. Current Affairs Engine (module-04-004)
+    getCurrentAffairsConfig() {
+      const raw = localStorage.getItem("cso_current_affairs_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_current_affairs_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        digestMeta: { edition: "November 2026 Weekly Capsule", focus: "State Governance & Exam Relevance" },
+        capsules: [
+          {
+            id: "CA-901",
+            title: "State Cabinet Approves 14 New Rural Industrial Corridors",
+            date: "2026-11-08",
+            domain: "Odisha Governance",
+            keyFacts: "Focus on Keonjhar, Jharsuguda, and Rayagada industrial clusters; projected employment of 45,000 youth.",
+            examRelevance: "High for OPSC OAS Mains Paper-III (Odisha Economy & Industrialization).",
+            status: "Approved",
+            pinned: true
+          },
+          {
+            id: "CA-902",
+            title: "Bhitarkanika National Park Census Confirms Surge in Saltwater Crocodiles",
+            date: "2026-11-06",
+            domain: "Environment & Ecology",
+            keyFacts: "Recorded population reached 1,820; mangrove regeneration program cited as prime conservation driver.",
+            examRelevance: "Crucial for OPSC OAS Prelims GS-I (Environment, Biodiversity and Climate Change).",
+            status: "Approved",
+            pinned: false
+          },
+          {
+            id: "CA-903",
+            title: "Odisha Renewable Energy Policy 2026 Targets 10GW Solar by 2030",
+            date: "2026-11-04",
+            domain: "Energy & Infrastructure",
+            keyFacts: "Targeting floating solar plants over Hirakud and Rengali reservoirs with public-private participation.",
+            examRelevance: "Directly mapped to OSSC CGL & OPSC Mains Science & Tech syllabus.",
+            status: "Approved",
+            pinned: false
+          }
+        ]
+      };
+      localStorage.setItem("cso_current_affairs_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveCurrentAffairsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid current affairs configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_current_affairs_config", JSON.stringify(config));
+      this.logAudit("CURRENT_AFFAIRS_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Current affairs capsule updated.");
+      return config;
+    },
+
+    importCurrentAffairsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveCurrentAffairsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import current affairs: " + err.message);
+      }
+    },
+
+    resetCurrentAffairsConfig() {
+      const initial = {
+        meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        digestMeta: { edition: "November 2026 Weekly Capsule", focus: "State Governance & Exam Relevance" },
+        capsules: [
+          {
+            id: "CA-901",
+            title: "State Cabinet Approves 14 New Rural Industrial Corridors",
+            date: "2026-11-08",
+            domain: "Odisha Governance",
+            keyFacts: "Focus on Keonjhar, Jharsuguda, and Rayagada industrial clusters; projected employment of 45,000 youth.",
+            examRelevance: "High for OPSC OAS Mains Paper-III (Odisha Economy & Industrialization).",
+            status: "Approved",
+            pinned: true
+          },
+          {
+            id: "CA-902",
+            title: "Bhitarkanika National Park Census Confirms Surge in Saltwater Crocodiles",
+            date: "2026-11-06",
+            domain: "Environment & Ecology",
+            keyFacts: "Recorded population reached 1,820; mangrove regeneration program cited as prime conservation driver.",
+            examRelevance: "Crucial for OPSC OAS Prelims GS-I (Environment, Biodiversity and Climate Change).",
+            status: "Approved",
+            pinned: false
+          },
+          {
+            id: "CA-903",
+            title: "Odisha Renewable Energy Policy 2026 Targets 10GW Solar by 2030",
+            date: "2026-11-04",
+            domain: "Energy & Infrastructure",
+            keyFacts: "Targeting floating solar plants over Hirakud and Rengali reservoirs with public-private participation.",
+            examRelevance: "Directly mapped to OSSC CGL & OPSC Mains Science & Tech syllabus.",
+            status: "Approved",
+            pinned: false
+          }
+        ]
+      };
+      localStorage.setItem("cso_current_affairs_config", JSON.stringify(initial));
+      this.logAudit("CURRENT_AFFAIRS_CONFIG_RESET", "CONTENT_PUBLISHING", "Current affairs capsule restored to defaults.");
+      return initial;
+    },
+
+    exportCurrentAffairsManifest() {
+      const config = this.getCurrentAffairsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-current-affairs-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        currentAffairs: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CURRENT_AFFAIRS_MANIFEST_EXPORTED", "DATA_EXPORT", "Current affairs manifest exported (" + filename + ").");
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
@@ -4731,6 +5232,10 @@
           faqs: this.getFaqsConfig(),
           customPages: this.getCustomPagesConfig(),
           legalRevisions: this.getLegalRevisionsConfig(),
+          allContent: this.getAllContentConfig(),
+          articles: this.getArticlesConfig(),
+          news: this.getNewsConfig(),
+          currentAffairs: this.getCurrentAffairsConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

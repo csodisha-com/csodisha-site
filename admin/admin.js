@@ -363,6 +363,14 @@ async function loadMasterNavigation() {
         renderCustomPagesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-016') {
         renderLegalRevisionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-001') {
+        renderAllContentWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-002') {
+        renderArticlesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-003') {
+        renderNewsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-004') {
+        renderCurrentAffairsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -12527,6 +12535,1462 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW 4a: All Content Management Studio (module-04-001)
+     */
+    function renderAllContentWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "All Content (module-04-001)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getAllContentConfig() : {
+          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          filterDefaults: { type: "All", status: "All", search: "" },
+          items: [
+            { id: "CNT-001", title: "OPSC OAS 2026 Prelims Syllabus Breakdown & Cutoff Trends", type: "Article", category: "Civil Services", author: "Editorial Desk", status: "Published", date: "2026-11-05", reads: 1420 },
+            { id: "CNT-002", title: "OSSC CGL Tier-II Technical Services Corrigendum Released", type: "News", category: "Staff Selection", author: "Commission Watch", status: "Published", date: "2026-11-08", reads: 3200 },
+            { id: "CNT-003", title: "Daily Odisha Affairs: State Cabinet Rural Clearances", type: "Current Affairs", category: "Odisha State", author: "Academic Cell", status: "Published", date: "2026-11-09", reads: 890 },
+            { id: "CNT-004", title: "OSSSC Revenue Inspector & Amin District Vacancy Forecast", type: "Article", category: "Subordinate Services", author: "Editorial Desk", status: "Draft", date: "2026-11-09", reads: 0 }
+          ]
+        };
+
+        const items = Array.isArray(config.items) ? config.items : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">All Content Master Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-blue-950/80 text-blue-400 border border-blue-800/60">module-04-001</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Unified editorial index across articles, gazette updates, current affairs, and examination notices.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleAllContentJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportAllContentConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportAllContentConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetAllContentConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveAllContentConfig" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card: Content Catalog & Filter Controls -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Unified Content Directory (${items.length} Entries)</h3>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <input type="text" id="allContentSearchInput" placeholder="Search title or ID..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                  <select id="allContentTypeFilter" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-300">
+                    <option value="All">All Types</option>
+                    <option value="Article">Article</option>
+                    <option value="News">News</option>
+                    <option value="Current Affairs">Current Affairs</option>
+                  </select>
+                  <select id="allContentStatusFilter" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-300">
+                    <option value="All">All Statuses</option>
+                    <option value="Published">Published</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Archived">Archived</option>
+                  </select>
+                  <button type="button" id="btnAddContentItem" class="px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 text-xs rounded border border-blue-500/30 flex items-center gap-1 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>New Entry</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Entries Container -->
+              <div id="allContentItemsContainer" class="space-y-3">
+                ${items.map((it, idx) => `
+                  <div class="content-item-row bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3" data-type="${escapeHtml(it.type || '')}" data-status="${escapeHtml(it.status || '')}">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-blue-950/80 text-blue-400 border border-blue-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="cnt-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-blue-400" value="${escapeHtml(it.id || '')}" placeholder="ID">
+                        <select class="cnt-type-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300">
+                          <option value="Article" ${it.type === 'Article' ? 'selected' : ''}>Article</option>
+                          <option value="News" ${it.type === 'News' ? 'selected' : ''}>News</option>
+                          <option value="Current Affairs" ${it.type === 'Current Affairs' ? 'selected' : ''}>Current Affairs</option>
+                        </select>
+                        <input type="text" class="cnt-cat-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${escapeHtml(it.category || '')}" placeholder="Category">
+                        <input type="text" class="cnt-author-input w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-400" value="${escapeHtml(it.author || '')}" placeholder="Author">
+                        <select class="cnt-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs ${it.status === 'Published' ? 'text-emerald-400' : 'text-amber-400'}">
+                          <option value="Published" ${it.status === 'Published' ? 'selected' : ''}>Published</option>
+                          <option value="Draft" ${it.status === 'Draft' ? 'selected' : ''}>Draft</option>
+                          <option value="Archived" ${it.status === 'Archived' ? 'selected' : ''}>Archived</option>
+                        </select>
+                        <input type="date" class="cnt-date-input w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${escapeHtml(it.date || '')}">
+                      </div>
+                      <button type="button" class="btn-remove-cnt text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Content">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="cnt-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(it.title || '')}" placeholder="Headline / Content Title">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="allContentJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_all_content_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatAllContentRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyAllContentRawJsonChanges" class="px-3 py-0.5 bg-blue-600 hover:bg-blue-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaAllContentRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-blue-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-blue-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncAllContentJsonEditor = () => {
+          const currentConfig = harvestAllContentForm();
+          const jsonTextarea = document.getElementById('textareaAllContentRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestAllContentForm = () => {
+          const rows = document.querySelectorAll('.content-item-row');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.cnt-id-input')?.value.trim() || '',
+              type: r.querySelector('.cnt-type-select')?.value || 'Article',
+              category: r.querySelector('.cnt-cat-input')?.value.trim() || '',
+              author: r.querySelector('.cnt-author-input')?.value.trim() || 'Editorial Desk',
+              status: r.querySelector('.cnt-status-select')?.value || 'Published',
+              date: r.querySelector('.cnt-date-input')?.value || new Date().toISOString().split('T')[0],
+              reads: 0,
+              title: r.querySelector('.cnt-title-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.0",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            filterDefaults: {
+              type: document.getElementById('allContentTypeFilter')?.value || "All",
+              status: document.getElementById('allContentStatusFilter')?.value || "All",
+              search: document.getElementById('allContentSearchInput')?.value || ""
+            },
+            items: list
+          };
+        };
+
+        // Filter handler
+        const applyFilters = () => {
+          const search = (document.getElementById('allContentSearchInput')?.value || '').toLowerCase();
+          const type = document.getElementById('allContentTypeFilter')?.value || 'All';
+          const status = document.getElementById('allContentStatusFilter')?.value || 'All';
+
+          document.querySelectorAll('.content-item-row').forEach(row => {
+            const rowType = row.getAttribute('data-type') || '';
+            const rowStatus = row.getAttribute('data-status') || '';
+            const title = (row.querySelector('.cnt-title-input')?.value || '').toLowerCase();
+            const id = (row.querySelector('.cnt-id-input')?.value || '').toLowerCase();
+
+            const matchType = (type === 'All' || rowType === type);
+            const matchStatus = (status === 'All' || rowStatus === status);
+            const matchSearch = (!search || title.includes(search) || id.includes(search));
+
+            if (matchType && matchStatus && matchSearch) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        };
+
+        document.getElementById('allContentSearchInput')?.addEventListener('input', applyFilters);
+        document.getElementById('allContentTypeFilter')?.addEventListener('change', applyFilters);
+        document.getElementById('allContentStatusFilter')?.addEventListener('change', applyFilters);
+
+        // Attach listeners
+        document.getElementById('btnToggleAllContentJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('allContentJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncAllContentJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatAllContentRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaAllContentRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyAllContentRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaAllContentRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAllContentConfig === 'function') {
+                window.CSOSuperStore.saveAllContentConfig(parsed);
+                showToast("JSON applied and content saved!", "success");
+                renderAllContentWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddContentItem')?.addEventListener('click', () => {
+          const container = document.getElementById('allContentItemsContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.content-item-row').length + 1;
+          const newId = 'CNT-00' + nextIdx;
+          const today = new Date().toISOString().split('T')[0];
+          const div = document.createElement('div');
+          div.className = "content-item-row bg-slate-950/60 border border-slate-800/80 rounded-lg p-3.5 space-y-3";
+          div.setAttribute('data-type', 'Article');
+          div.setAttribute('data-status', 'Published');
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-blue-950/80 text-blue-400 border border-blue-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="cnt-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-blue-400" value="${newId}" placeholder="ID">
+                <select class="cnt-type-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300">
+                  <option value="Article" selected>Article</option>
+                  <option value="News">News</option>
+                  <option value="Current Affairs">Current Affairs</option>
+                </select>
+                <input type="text" class="cnt-cat-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="General" placeholder="Category">
+                <input type="text" class="cnt-author-input w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-400" value="Editorial Desk" placeholder="Author">
+                <select class="cnt-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400">
+                  <option value="Published" selected>Published</option>
+                  <option value="Draft">Draft</option>
+                  <option value="Archived">Archived</option>
+                </select>
+                <input type="date" class="cnt-date-input w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${today}">
+              </div>
+              <button type="button" class="btn-remove-cnt text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Content">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="cnt-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Headline / Content Title">
+            </div>
+          `;
+          container.appendChild(div);
+          attachCntRowListeners(div);
+          syncAllContentJsonEditor();
+        });
+
+        const attachCntRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-cnt')?.addEventListener('click', () => {
+            parent.remove();
+            syncAllContentJsonEditor();
+          });
+          parent.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', () => {
+              parent.setAttribute('data-type', parent.querySelector('.cnt-type-select')?.value || '');
+              parent.setAttribute('data-status', parent.querySelector('.cnt-status-select')?.value || '');
+              syncAllContentJsonEditor();
+            });
+          });
+        };
+
+        document.querySelectorAll('.content-item-row').forEach(attachCntRowListeners);
+
+        document.getElementById('btnSaveAllContentConfig')?.addEventListener('click', () => {
+          const newConfig = harvestAllContentForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAllContentConfig === 'function') {
+            window.CSOSuperStore.saveAllContentConfig(newConfig);
+            showToast("All content directory saved successfully!", "success");
+            syncAllContentJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportAllContentConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAllContentManifest === 'function') {
+            window.CSOSuperStore.exportAllContentManifest();
+            showToast("All content manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportAllContentConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.allContent) parsed = parsed.allContent;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importAllContentConfig === 'function') {
+                window.CSOSuperStore.importAllContentConfig(JSON.stringify(parsed));
+                showToast("All content imported successfully!", "success");
+                renderAllContentWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetAllContentConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default content directory? Unsaved entries will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetAllContentConfig === 'function') {
+              window.CSOSuperStore.resetAllContentConfig();
+              showToast("All content restored to defaults.", "info");
+              renderAllContentWorkspace(root);
+            }
+          }
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-001 (All Content)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 4b: Articles & Blogs Studio (module-04-002)
+     */
+    function renderArticlesWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Articles & Blogs (module-04-002)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getArticlesConfig() : {
+          meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          settings: { defaultAuthor: "Editorial Desk", allowCandidateComments: true, notifyOnSubmission: true },
+          articles: [
+            {
+              id: "ART-101",
+              slug: "opsc-oas-prelims-strategy",
+              title: "OPSC OAS 2026 Prelims: High-Yield Topic Matrix & Cutoff Trends",
+              category: "Civil Services",
+              author: "Dr. B. K. Mohapatra",
+              status: "Published",
+              publishedAt: "2026-11-04",
+              readTime: "7 Min",
+              featured: true,
+              summary: "Exhaustive statistical breakdown of previous 5 years OPSC OAS prelims scoring cutoffs."
+            }
+          ]
+        };
+
+        const settings = config.settings || {};
+        const articles = Array.isArray(config.articles) ? config.articles : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Articles &amp; Editorial Blogs Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-04-002</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Curate in-depth academic guidance articles, syllabus strategies, and pedagogical dispatches.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleArticlesJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportArticlesConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportArticlesConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetArticlesConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveArticlesConfig" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Blog & Editorial Settings -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Editorial Settings</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.2')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Default Author Byline</label>
+                  <input type="text" id="articleInputDefaultAuthor" value="${escapeHtml(settings.defaultAuthor || 'Editorial Desk')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
+                    <input type="checkbox" id="articleToggleComments" class="rounded bg-slate-950 border-slate-700 text-emerald-500" ${settings.allowCandidateComments !== false ? 'checked' : ''}>
+                    <span>Allow Candidate Discussion / Comments</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
+                    <input type="checkbox" id="articleToggleNotify" class="rounded bg-slate-950 border-slate-700 text-emerald-500" ${settings.notifyOnSubmission !== false ? 'checked' : ''}>
+                    <span>Notify Editorial Desk on Submissions</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Articles Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Authored Articles</h3>
+                </div>
+                <button type="button" id="btnAddArticleItem" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-xs rounded border border-emerald-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Create Article</span>
+                </button>
+              </div>
+
+              <div id="articlesListContainer" class="space-y-4">
+                ${articles.map((art, idx) => `
+                  <div class="article-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="art-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${escapeHtml(art.id || '')}" placeholder="ID">
+                        <input type="text" class="art-slug-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="${escapeHtml(art.slug || '')}" placeholder="slug-name">
+                        <input type="text" class="art-cat-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(art.category || '')}" placeholder="Category">
+                        <input type="text" class="art-author-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${escapeHtml(art.author || '')}" placeholder="Author">
+                        <input type="text" class="art-readtime-input w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-400" value="${escapeHtml(art.readTime || '5 Min')}" placeholder="Read Time">
+                        <select class="art-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs ${art.status === 'Published' ? 'text-emerald-400' : 'text-amber-400'}">
+                          <option value="Published" ${art.status === 'Published' ? 'selected' : ''}>Published</option>
+                          <option value="Draft" ${art.status === 'Draft' ? 'selected' : ''}>Draft</option>
+                        </select>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-amber-300 ml-2">
+                          <input type="checkbox" class="art-featured-toggle rounded bg-slate-900 border-slate-700 text-amber-500" ${art.featured ? 'checked' : ''}>
+                          <span>Featured</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-art text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Article">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="art-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(art.title || '')}" placeholder="Article Headline">
+                    </div>
+                    <div>
+                      <textarea class="art-summary-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Executive Summary & Key Takeaways">${escapeHtml(art.summary || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="articlesJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_articles_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatArticlesRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyArticlesRawJsonChanges" class="px-3 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaArticlesRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-emerald-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-emerald-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncArticlesJsonEditor = () => {
+          const currentConfig = harvestArticlesForm();
+          const jsonTextarea = document.getElementById('textareaArticlesRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestArticlesForm = () => {
+          const rows = document.querySelectorAll('.article-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.art-id-input')?.value.trim() || '',
+              slug: r.querySelector('.art-slug-input')?.value.trim() || '',
+              title: r.querySelector('.art-title-input')?.value.trim() || '',
+              category: r.querySelector('.art-cat-input')?.value.trim() || 'General',
+              author: r.querySelector('.art-author-input')?.value.trim() || 'Editorial Desk',
+              status: r.querySelector('.art-status-select')?.value || 'Published',
+              publishedAt: new Date().toISOString().split('T')[0],
+              readTime: r.querySelector('.art-readtime-input')?.value.trim() || '5 Min',
+              featured: r.querySelector('.art-featured-toggle')?.checked ?? false,
+              summary: r.querySelector('.art-summary-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.2",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            settings: {
+              defaultAuthor: document.getElementById('articleInputDefaultAuthor')?.value.trim() || 'Editorial Desk',
+              allowCandidateComments: document.getElementById('articleToggleComments')?.checked ?? true,
+              notifyOnSubmission: document.getElementById('articleToggleNotify')?.checked ?? true
+            },
+            articles: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleArticlesJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('articlesJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncArticlesJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatArticlesRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaArticlesRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyArticlesRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaArticlesRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveArticlesConfig === 'function') {
+                window.CSOSuperStore.saveArticlesConfig(parsed);
+                showToast("JSON applied and articles saved!", "success");
+                renderArticlesWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddArticleItem')?.addEventListener('click', () => {
+          const container = document.getElementById('articlesListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.article-row-item').length + 1;
+          const newId = 'ART-10' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "article-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="art-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${newId}" placeholder="ID">
+                <input type="text" class="art-slug-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="article-${nextIdx}" placeholder="slug-name">
+                <input type="text" class="art-cat-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Civil Services" placeholder="Category">
+                <input type="text" class="art-author-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="Editorial Desk" placeholder="Author">
+                <input type="text" class="art-readtime-input w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-400" value="6 Min" placeholder="Read Time">
+                <select class="art-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400">
+                  <option value="Published" selected>Published</option>
+                  <option value="Draft">Draft</option>
+                </select>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-amber-300 ml-2">
+                  <input type="checkbox" class="art-featured-toggle rounded bg-slate-900 border-slate-700 text-amber-500">
+                  <span>Featured</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-art text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Article">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="art-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Article Headline">
+            </div>
+            <div>
+              <textarea class="art-summary-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Executive Summary & Key Takeaways"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachArtRowListeners(div);
+          syncArticlesJsonEditor();
+        });
+
+        const attachArtRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-art')?.addEventListener('click', () => {
+            parent.remove();
+            syncArticlesJsonEditor();
+          });
+          parent.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', syncArticlesJsonEditor);
+            input.addEventListener('change', syncArticlesJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.article-row-item').forEach(attachArtRowListeners);
+
+        document.getElementById('btnSaveArticlesConfig')?.addEventListener('click', () => {
+          const newConfig = harvestArticlesForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveArticlesConfig === 'function') {
+            window.CSOSuperStore.saveArticlesConfig(newConfig);
+            showToast("Articles saved successfully!", "success");
+            syncArticlesJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportArticlesConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportArticlesManifest === 'function') {
+            window.CSOSuperStore.exportArticlesManifest();
+            showToast("Articles manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportArticlesConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.articles) parsed = parsed.articles;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importArticlesConfig === 'function') {
+                window.CSOSuperStore.importArticlesConfig(JSON.stringify(parsed));
+                showToast("Articles imported successfully!", "success");
+                renderArticlesWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetArticlesConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default articles? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetArticlesConfig === 'function') {
+              window.CSOSuperStore.resetArticlesConfig();
+              showToast("Articles restored to defaults.", "info");
+              renderArticlesWorkspace(root);
+            }
+          }
+        });
+
+        ['articleInputDefaultAuthor', 'articleToggleComments', 'articleToggleNotify'].forEach(id => {
+          const el = document.getElementById(id);
+          el?.addEventListener('input', syncArticlesJsonEditor);
+          el?.addEventListener('change', syncArticlesJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-002 (Articles & Blogs)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 4c: News & Updates Feed Studio (module-04-003)
+     */
+    function renderNewsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "News & Updates (module-04-003)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getNewsConfig() : {
+          meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          feedSettings: { liveTickerEnabled: true, tickerSpeedSeconds: 25, autoArchiveDays: 60 },
+          dispatches: [
+            {
+              id: "NEWS-501",
+              title: "OSSC CGL Tier-II Revised Examination Dates Announced via Gazette Notice 3892",
+              source: "OSSC Official Portal",
+              severity: "Urgent",
+              publishedAt: "2026-11-08 17:30",
+              verifiedBy: "Gazette Desk",
+              activeTicker: true,
+              externalRef: "https://ossc.gov.in"
+            }
+          ]
+        };
+
+        const feed = config.feedSettings || {};
+        const dispatches = Array.isArray(config.dispatches) ? config.dispatches : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">News &amp; Gazette Dispatches Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800/60">module-04-003</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Broadcast official commission announcements, urgent date alerts, and live ticker bulletins.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleNewsJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportNewsConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportNewsConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetNewsConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveNewsConfig" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Live Ticker Feed Settings -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Live Broadcast &amp; Ticker Settings</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.1')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center pt-2">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
+                    <input type="checkbox" id="newsToggleTicker" class="rounded bg-slate-950 border-slate-700 text-amber-500" ${feed.liveTickerEnabled !== false ? 'checked' : ''}>
+                    <span>Enable Global Header Ticker</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Ticker Scroll Speed (Sec)</label>
+                  <input type="number" id="newsInputTickerSpeed" value="${feed.tickerSpeedSeconds || 25}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Auto-Archive After (Days)</label>
+                  <input type="number" id="newsInputArchiveDays" value="${feed.autoArchiveDays || 60}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Dispatches Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">News Dispatches &amp; Alerts</h3>
+                </div>
+                <button type="button" id="btnAddNewsItem" class="px-2.5 py-1 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 text-xs rounded border border-amber-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Post Dispatch</span>
+                </button>
+              </div>
+
+              <div id="newsListContainer" class="space-y-4">
+                ${dispatches.map((dp, idx) => `
+                  <div class="news-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-amber-950/80 text-amber-400 border border-amber-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="news-id-input w-28 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-400" value="${escapeHtml(dp.id || '')}" placeholder="ID">
+                        <select class="news-severity-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs ${dp.severity === 'Urgent' ? 'text-rose-400' : 'text-amber-400'}">
+                          <option value="Urgent" ${dp.severity === 'Urgent' ? 'selected' : ''}>Urgent</option>
+                          <option value="Important" ${dp.severity === 'Important' ? 'selected' : ''}>Important</option>
+                          <option value="Standard" ${dp.severity === 'Standard' ? 'selected' : ''}>Standard</option>
+                        </select>
+                        <input type="text" class="news-source-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="${escapeHtml(dp.source || '')}" placeholder="Source Portal">
+                        <input type="text" class="news-verified-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="${escapeHtml(dp.verifiedBy || '')}" placeholder="Verified By">
+                        <input type="text" class="news-date-input w-40 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${escapeHtml(dp.publishedAt || '')}" placeholder="YYYY-MM-DD HH:MM">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-amber-300 ml-2">
+                          <input type="checkbox" class="news-ticker-toggle rounded bg-slate-900 border-slate-700 text-amber-500" ${dp.activeTicker ? 'checked' : ''}>
+                          <span>Ticker</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-news text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Dispatch">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="news-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(dp.title || '')}" placeholder="Headline Title">
+                    </div>
+                    <div>
+                      <input type="text" class="news-ref-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-400 font-mono" value="${escapeHtml(dp.externalRef || '')}" placeholder="https://external-gazette-link.gov.in">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="newsJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_news_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatNewsRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyNewsRawJsonChanges" class="px-3 py-0.5 bg-amber-600 hover:bg-amber-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaNewsRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-amber-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncNewsJsonEditor = () => {
+          const currentConfig = harvestNewsForm();
+          const jsonTextarea = document.getElementById('textareaNewsRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestNewsForm = () => {
+          const rows = document.querySelectorAll('.news-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.news-id-input')?.value.trim() || '',
+              severity: r.querySelector('.news-severity-select')?.value || 'Standard',
+              source: r.querySelector('.news-source-input')?.value.trim() || '',
+              verifiedBy: r.querySelector('.news-verified-input')?.value.trim() || 'Gazette Desk',
+              publishedAt: r.querySelector('.news-date-input')?.value.trim() || '',
+              activeTicker: r.querySelector('.news-ticker-toggle')?.checked ?? false,
+              title: r.querySelector('.news-title-input')?.value.trim() || '',
+              externalRef: r.querySelector('.news-ref-input')?.value.trim() || ''
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.1",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            feedSettings: {
+              liveTickerEnabled: document.getElementById('newsToggleTicker')?.checked ?? true,
+              tickerSpeedSeconds: parseInt(document.getElementById('newsInputTickerSpeed')?.value || '25', 10),
+              autoArchiveDays: parseInt(document.getElementById('newsInputArchiveDays')?.value || '60', 10)
+            },
+            dispatches: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleNewsJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('newsJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncNewsJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatNewsRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaNewsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyNewsRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaNewsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveNewsConfig === 'function') {
+                window.CSOSuperStore.saveNewsConfig(parsed);
+                showToast("JSON applied and news dispatches saved!", "success");
+                renderNewsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddNewsItem')?.addEventListener('click', () => {
+          const container = document.getElementById('newsListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.news-row-item').length + 1;
+          const newId = 'NEWS-50' + nextIdx;
+          const today = new Date().toISOString().replace('T', ' ').substring(0, 16);
+          const div = document.createElement('div');
+          div.className = "news-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-amber-950/80 text-amber-400 border border-amber-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="news-id-input w-28 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-400" value="${newId}" placeholder="ID">
+                <select class="news-severity-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-rose-400">
+                  <option value="Urgent">Urgent</option>
+                  <option value="Important" selected>Important</option>
+                  <option value="Standard">Standard</option>
+                </select>
+                <input type="text" class="news-source-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="Commission Portal" placeholder="Source Portal">
+                <input type="text" class="news-verified-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="Gazette Desk" placeholder="Verified By">
+                <input type="text" class="news-date-input w-40 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${today}">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-amber-300 ml-2">
+                  <input type="checkbox" class="news-ticker-toggle rounded bg-slate-900 border-slate-700 text-amber-500" checked>
+                  <span>Ticker</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-news text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Dispatch">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="news-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Headline Title">
+            </div>
+            <div>
+              <input type="text" class="news-ref-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-400 font-mono" value="" placeholder="https://external-gazette-link.gov.in">
+            </div>
+          `;
+          container.appendChild(div);
+          attachNewsRowListeners(div);
+          syncNewsJsonEditor();
+        });
+
+        const attachNewsRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-news')?.addEventListener('click', () => {
+            parent.remove();
+            syncNewsJsonEditor();
+          });
+          parent.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', syncNewsJsonEditor);
+            input.addEventListener('change', syncNewsJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.news-row-item').forEach(attachNewsRowListeners);
+
+        document.getElementById('btnSaveNewsConfig')?.addEventListener('click', () => {
+          const newConfig = harvestNewsForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveNewsConfig === 'function') {
+            window.CSOSuperStore.saveNewsConfig(newConfig);
+            showToast("News dispatches saved successfully!", "success");
+            syncNewsJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportNewsConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportNewsManifest === 'function') {
+            window.CSOSuperStore.exportNewsManifest();
+            showToast("News manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportNewsConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.news) parsed = parsed.news;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importNewsConfig === 'function') {
+                window.CSOSuperStore.importNewsConfig(JSON.stringify(parsed));
+                showToast("News imported successfully!", "success");
+                renderNewsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetNewsConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default news dispatches? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetNewsConfig === 'function') {
+              window.CSOSuperStore.resetNewsConfig();
+              showToast("News dispatches restored to defaults.", "info");
+              renderNewsWorkspace(root);
+            }
+          }
+        });
+
+        ['newsToggleTicker', 'newsInputTickerSpeed', 'newsInputArchiveDays'].forEach(id => {
+          const el = document.getElementById(id);
+          el?.addEventListener('input', syncNewsJsonEditor);
+          el?.addEventListener('change', syncNewsJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-003 (News & Updates)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 4d: Current Affairs Capsule Studio (module-04-004)
+     */
+    function renderCurrentAffairsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Current Affairs (module-04-004)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getCurrentAffairsConfig() : {
+          meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          digestMeta: { edition: "November 2026 Weekly Capsule", focus: "State Governance & Exam Relevance" },
+          capsules: [
+            {
+              id: "CA-901",
+              title: "State Cabinet Approves 14 New Rural Industrial Corridors",
+              date: "2026-11-08",
+              domain: "Odisha Governance",
+              keyFacts: "Focus on Keonjhar, Jharsuguda, and Rayagada industrial clusters; projected employment of 45,000 youth.",
+              examRelevance: "High for OPSC OAS Mains Paper-III (Odisha Economy & Industrialization).",
+              status: "Approved",
+              pinned: true
+            }
+          ]
+        };
+
+        const digest = config.digestMeta || {};
+        const capsules = Array.isArray(config.capsules) ? config.capsules : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Current Affairs Capsule Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-800/60">module-04-004</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Curate exam-oriented daily and weekly Odisha state &amp; national current affairs capsules.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleCurrentAffairsJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportCurrentAffairsConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportCurrentAffairsConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetCurrentAffairsConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveCurrentAffairsConfig" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Digest Edition & Pedagogical Focus -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Digest Metadata</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '2.1')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Edition Title</label>
+                  <input type="text" id="caInputEdition" value="${escapeHtml(digest.edition || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Curricular Focus</label>
+                  <input type="text" id="caInputFocus" value="${escapeHtml(digest.focus || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Current Affairs Capsules Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Curated Capsules</h3>
+                </div>
+                <button type="button" id="btnAddCapsuleItem" class="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-xs rounded border border-indigo-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Capsule</span>
+                </button>
+              </div>
+
+              <div id="capsulesListContainer" class="space-y-4">
+                ${capsules.map((ca, idx) => `
+                  <div class="capsule-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-indigo-950/80 text-indigo-400 border border-indigo-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="ca-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-indigo-400" value="${escapeHtml(ca.id || '')}" placeholder="ID">
+                        <input type="text" class="ca-domain-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(ca.domain || '')}" placeholder="Domain">
+                        <input type="date" class="ca-date-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${escapeHtml(ca.date || '')}">
+                        <select class="ca-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400">
+                          <option value="Approved" ${ca.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                          <option value="Draft" ${ca.status === 'Draft' ? 'selected' : ''}>Draft</option>
+                        </select>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-indigo-300 ml-2">
+                          <input type="checkbox" class="ca-pinned-toggle rounded bg-slate-900 border-slate-700 text-indigo-500" ${ca.pinned ? 'checked' : ''}>
+                          <span>Pinned</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-ca text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Capsule">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="ca-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(ca.title || '')}" placeholder="Capsule Title">
+                    </div>
+                    <div>
+                      <textarea class="ca-facts-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Key Facts & Statistical Data">${escapeHtml(ca.keyFacts || '')}</textarea>
+                    </div>
+                    <div>
+                      <input type="text" class="ca-relevance-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-sky-400" value="${escapeHtml(ca.examRelevance || '')}" placeholder="Exam Mapping & Relevance">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="currentAffairsJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_current_affairs_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatCurrentAffairsRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyCurrentAffairsRawJsonChanges" class="px-3 py-0.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaCurrentAffairsRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncCurrentAffairsJsonEditor = () => {
+          const currentConfig = harvestCurrentAffairsForm();
+          const jsonTextarea = document.getElementById('textareaCurrentAffairsRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestCurrentAffairsForm = () => {
+          const rows = document.querySelectorAll('.capsule-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.ca-id-input')?.value.trim() || '',
+              title: r.querySelector('.ca-title-input')?.value.trim() || '',
+              date: r.querySelector('.ca-date-input')?.value || '',
+              domain: r.querySelector('.ca-domain-input')?.value.trim() || '',
+              keyFacts: r.querySelector('.ca-facts-input')?.value.trim() || '',
+              examRelevance: r.querySelector('.ca-relevance-input')?.value.trim() || '',
+              status: r.querySelector('.ca-status-select')?.value || 'Approved',
+              pinned: r.querySelector('.ca-pinned-toggle')?.checked ?? false
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "2.1",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            digestMeta: {
+              edition: document.getElementById('caInputEdition')?.value.trim() || '',
+              focus: document.getElementById('caInputFocus')?.value.trim() || ''
+            },
+            capsules: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleCurrentAffairsJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('currentAffairsJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncCurrentAffairsJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatCurrentAffairsRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCurrentAffairsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyCurrentAffairsRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCurrentAffairsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCurrentAffairsConfig === 'function') {
+                window.CSOSuperStore.saveCurrentAffairsConfig(parsed);
+                showToast("JSON applied and current affairs saved!", "success");
+                renderCurrentAffairsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddCapsuleItem')?.addEventListener('click', () => {
+          const container = document.getElementById('capsulesListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.capsule-row-item').length + 1;
+          const newId = 'CA-90' + nextIdx;
+          const today = new Date().toISOString().split('T')[0];
+          const div = document.createElement('div');
+          div.className = "capsule-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-indigo-950/80 text-indigo-400 border border-indigo-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="ca-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-indigo-400" value="${newId}" placeholder="ID">
+                <input type="text" class="ca-domain-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Odisha State" placeholder="Domain">
+                <input type="date" class="ca-date-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${today}">
+                <select class="ca-status-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400">
+                  <option value="Approved" selected>Approved</option>
+                  <option value="Draft">Draft</option>
+                </select>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-indigo-300 ml-2">
+                  <input type="checkbox" class="ca-pinned-toggle rounded bg-slate-900 border-slate-700 text-indigo-500">
+                  <span>Pinned</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-ca text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Capsule">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="ca-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Capsule Title">
+            </div>
+            <div>
+              <textarea class="ca-facts-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Key Facts & Statistical Data"></textarea>
+            </div>
+            <div>
+              <input type="text" class="ca-relevance-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-sky-400" value="" placeholder="Exam Mapping & Relevance">
+            </div>
+          `;
+          container.appendChild(div);
+          attachCaRowListeners(div);
+          syncCurrentAffairsJsonEditor();
+        });
+
+        const attachCaRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-ca')?.addEventListener('click', () => {
+            parent.remove();
+            syncCurrentAffairsJsonEditor();
+          });
+          parent.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', syncCurrentAffairsJsonEditor);
+            input.addEventListener('change', syncCurrentAffairsJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.capsule-row-item').forEach(attachCaRowListeners);
+
+        document.getElementById('btnSaveCurrentAffairsConfig')?.addEventListener('click', () => {
+          const newConfig = harvestCurrentAffairsForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCurrentAffairsConfig === 'function') {
+            window.CSOSuperStore.saveCurrentAffairsConfig(newConfig);
+            showToast("Current affairs capsules saved successfully!", "success");
+            syncCurrentAffairsJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportCurrentAffairsConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportCurrentAffairsManifest === 'function') {
+            window.CSOSuperStore.exportCurrentAffairsManifest();
+            showToast("Current affairs manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportCurrentAffairsConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.currentAffairs) parsed = parsed.currentAffairs;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importCurrentAffairsConfig === 'function') {
+                window.CSOSuperStore.importCurrentAffairsConfig(JSON.stringify(parsed));
+                showToast("Current affairs imported successfully!", "success");
+                renderCurrentAffairsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetCurrentAffairsConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default current affairs? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetCurrentAffairsConfig === 'function') {
+              window.CSOSuperStore.resetCurrentAffairsConfig();
+              showToast("Current affairs restored to defaults.", "info");
+              renderCurrentAffairsWorkspace(root);
+            }
+          }
+        });
+
+        ['caInputEdition', 'caInputFocus'].forEach(id => {
+          const el = document.getElementById(id);
+          el?.addEventListener('input', syncCurrentAffairsJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-004 (Current Affairs)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 
