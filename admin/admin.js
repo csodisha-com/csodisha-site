@@ -311,6 +311,8 @@ async function loadMasterNavigation() {
         renderPageRevisionsWorkspace();
       } else if (moduleId === 'module-02-009') {
         renderDraftsAndPreviewsWorkspace();
+      } else if (moduleId === 'module-02-010') {
+        renderScheduledPagesWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -4103,6 +4105,433 @@ async function loadMasterNavigation() {
             showToast(`Draft "${created.title}" created in staging!`, "success");
             updateKpis();
             renderDraftsTable();
+          }
+        });
+      });
+    }
+
+    /**
+     * VIEW 2j: Timed Publishing Engine & Scheduled Releases (module-02-010)
+     */
+    function renderScheduledPagesWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Scheduled Pages (module-02-010)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnNewScheduleTop" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Schedule New Release
+          </button>
+          <button id="btnCheckPendingReleases" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Check Pending Releases
+          </button>
+          <button id="btnExportSchedulesJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Schedule (JSON)
+          </button>
+        </div>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Automated Content Releases & Gazette Queue
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-010</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Automate midnight release schedules for examination hall tickets, merit gazettes, and state scholarship application cutoffs.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Cron Dispatcher Active
+                </span>
+              </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Pending Releases</span>
+                <div id="kpiScheduledCount" class="text-xl font-bold font-mono text-cyan-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Awaiting publication time</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Executed Releases</span>
+                <div id="kpiExecutedCount" class="text-xl font-bold font-mono text-emerald-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Successfully published</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Cancelled</span>
+                <div id="kpiCancelledCount" class="text-xl font-bold font-mono text-slate-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Revoked from pipeline</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Filter Tabs -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div id="scheduleStatusTabsContainer" class="flex flex-wrap items-center gap-1.5">
+              <button data-status="ALL" class="schedule-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white">All Releases</button>
+              <button data-status="Scheduled" class="schedule-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Scheduled</button>
+              <button data-status="Executed" class="schedule-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Executed</button>
+              <button data-status="Cancelled" class="schedule-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Cancelled</button>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400" id="scheduleCountBadge">
+              -- scheduled items
+            </div>
+          </div>
+
+          <!-- Scheduled Releases Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Release Pipeline Register
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono">Live Ingestion from cso_scheduled_pages</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Release ID</th>
+                    <th class="py-2.5 px-4 font-semibold">Target Title & Route</th>
+                    <th class="py-2.5 px-4 font-semibold">Author</th>
+                    <th class="py-2.5 px-4 font-semibold">Scheduled Date & Time</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Status</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="schedulesTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      let activeStatusFilter = 'ALL';
+
+      function updateKpis() {
+        const allItems = (window.CSOSuperStore && typeof window.CSOSuperStore.getScheduledPages === 'function')
+          ? window.CSOSuperStore.getScheduledPages('ALL')
+          : [];
+
+        const pendingCount = allItems.filter(s => s.status === 'Scheduled').length;
+        const executedCount = allItems.filter(s => s.status === 'Executed').length;
+        const cancelledCount = allItems.filter(s => s.status === 'Cancelled').length;
+
+        const elPending = document.getElementById('kpiScheduledCount');
+        const elExecuted = document.getElementById('kpiExecutedCount');
+        const elCancelled = document.getElementById('kpiCancelledCount');
+
+        if (elPending) elPending.textContent = pendingCount;
+        if (elExecuted) elExecuted.textContent = executedCount;
+        if (elCancelled) elCancelled.textContent = cancelledCount;
+      }
+
+      function renderSchedulesTable() {
+        const tbody = document.getElementById('schedulesTableBody');
+        const badge = document.getElementById('scheduleCountBadge');
+        if (!tbody) return;
+
+        const items = (window.CSOSuperStore && typeof window.CSOSuperStore.getScheduledPages === 'function')
+          ? window.CSOSuperStore.getScheduledPages(activeStatusFilter)
+          : [];
+
+        if (badge) badge.textContent = `${items.length} release entries registered`;
+
+        if (items.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-10 text-center text-slate-500 font-mono text-xs">
+                No scheduled releases found matching the current status filter.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = items.map(item => {
+          let statusBadge = '';
+          const isPending = item.status === 'Scheduled';
+          const isExecuted = item.status === 'Executed';
+
+          if (isPending) {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">SCHEDULED</span>`;
+          } else if (isExecuted) {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">EXECUTED</span>`;
+          } else {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">CANCELLED</span>`;
+          }
+
+          const publishDateStr = new Date(item.publishAt).toLocaleString();
+          const isDue = Date.now() >= item.publishAt && isPending;
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">${item.id}</td>
+              <td class="py-2.5 px-4">
+                <div class="font-bold text-white">${item.title}</div>
+                <div class="text-[10px] font-mono text-slate-400 mt-0.5">${item.path}</div>
+              </td>
+              <td class="py-2.5 px-4 font-mono text-slate-300 text-[11px] whitespace-nowrap">${item.author}</td>
+              <td class="py-2.5 px-4 font-mono text-xs whitespace-nowrap">
+                <span class="${isDue ? 'text-amber-400 font-bold' : 'text-slate-300'}">${publishDateStr}</span>
+                ${isDue ? `<div class="text-[9px] text-amber-400 font-bold uppercase mt-0.5">&bull; Release Due Now</div>` : ''}
+              </td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">${statusBadge}</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button data-id="${item.id}" class="btn-preview-sch px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-mono font-semibold border border-brand-border transition">
+                    Preview &nearr;
+                  </button>
+                  ${isPending ? `
+                    <button data-id="${item.id}" class="btn-publish-sch-now px-2 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-mono font-bold transition shadow" title="Publish Immediately">
+                      Publish Now
+                    </button>
+                    <button data-id="${item.id}" class="btn-cancel-sch px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono border border-slate-700 transition" title="Cancel Scheduled Release">
+                      Cancel
+                    </button>
+                  ` : ''}
+                  <button data-id="${item.id}" class="btn-delete-sch px-2 py-1 rounded bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 text-xs font-mono border border-rose-800/50 transition" title="Delete Entry">
+                    &times;
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Preview
+        tbody.querySelectorAll('.btn-preview-sch').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const schId = e.currentTarget.getAttribute('data-id');
+            const item = window.CSOSuperStore?.getScheduledPages('ALL').find(s => s.id === schId);
+            if (!item) return;
+
+            openModal(`Scheduled Preview: ${item.title}`, `
+              <div class="space-y-4 font-sans text-xs">
+                <div class="flex items-center justify-between p-3 bg-[#081220] border border-brand-border rounded-lg font-mono text-[11px]">
+                  <div>Target Route: <strong class="text-cyan-400">${item.path}</strong></div>
+                  <div>Scheduled For: <strong class="text-amber-400">${new Date(item.publishAt).toLocaleString()}</strong></div>
+                </div>
+                <div class="p-5 bg-[#040810] border border-brand-border rounded-lg max-h-[460px] overflow-y-auto">
+                  ${item.markup || '<p class="text-slate-500">No content attached.</p>'}
+                </div>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+            `);
+          });
+        });
+
+        // Wire Publish Now
+        tbody.querySelectorAll('.btn-publish-sch-now').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const schId = e.currentTarget.getAttribute('data-id');
+            const item = window.CSOSuperStore?.getScheduledPages('ALL').find(s => s.id === schId);
+            if (!item) return;
+
+            openModal(`Publish Scheduled Page Immediately`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div class="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-lg text-emerald-200">
+                  <strong>Override Timer:</strong> This will instantly promote scheduled release <strong class="text-white font-mono">${item.id}</strong> to the live route <strong class="text-white font-mono">${item.path}</strong>.
+                </div>
+                <p class="text-slate-300">Are you sure you want to bypass the remaining timer countdown?</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmPublishSchNow" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Publish Live Now</button>
+            `);
+
+            document.getElementById('btnConfirmPublishSchNow')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.executeScheduledRelease === 'function') {
+                try {
+                  const res = window.CSOSuperStore.executeScheduledRelease(item.id);
+                  showToast(`Published scheduled release ${item.id} to ${res.page.path}!`, "success");
+                  updateKpis();
+                  renderSchedulesTable();
+                } catch (err) {
+                  showToast(err.message, "error");
+                }
+              }
+            });
+          });
+        });
+
+        // Wire Cancel
+        tbody.querySelectorAll('.btn-cancel-sch').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const schId = e.currentTarget.getAttribute('data-id');
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.cancelScheduledRelease === 'function') {
+              window.CSOSuperStore.cancelScheduledRelease(schId);
+              showToast(`Scheduled release ${schId} cancelled`, "info");
+              updateKpis();
+              renderSchedulesTable();
+            }
+          });
+        });
+
+        // Wire Delete
+        tbody.querySelectorAll('.btn-delete-sch').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const schId = e.currentTarget.getAttribute('data-id');
+            openModal(`Delete Scheduled Entry ${schId}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <p class="text-slate-300">Are you sure you want to remove this scheduled release from the pipeline?</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmDeleteSchModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Delete Entry</button>
+            `);
+
+            document.getElementById('btnConfirmDeleteSchModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.deleteScheduledPage === 'function') {
+                window.CSOSuperStore.deleteScheduledPage(schId);
+                showToast(`Scheduled release ${schId} deleted`, "warning");
+                updateKpis();
+                renderSchedulesTable();
+              }
+            });
+          });
+        });
+      }
+
+      // Initial Renders
+      updateKpis();
+      renderSchedulesTable();
+
+      // Tab Switching
+      document.querySelectorAll('.schedule-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          activeStatusFilter = e.currentTarget.getAttribute('data-status') || 'ALL';
+          document.querySelectorAll('.schedule-tab-btn').forEach(b => {
+            b.className = "schedule-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+          });
+          e.currentTarget.className = "schedule-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white";
+          renderSchedulesTable();
+        });
+      });
+
+      // Check Pending Releases
+      document.getElementById('btnCheckPendingReleases')?.addEventListener('click', () => {
+        const items = window.CSOSuperStore?.getScheduledPages('Scheduled') || [];
+        const now = Date.now();
+        const dueItems = items.filter(s => now >= s.publishAt);
+
+        if (dueItems.length === 0) {
+          showToast("No pending scheduled releases are due at this time.", "info");
+          return;
+        }
+
+        let executedCount = 0;
+        dueItems.forEach(item => {
+          try {
+            window.CSOSuperStore?.executeScheduledRelease(item.id);
+            executedCount++;
+          } catch (_) {}
+        });
+
+        showToast(`Cron execution triggered: Published ${executedCount} due releases!`, "success");
+        updateKpis();
+        renderSchedulesTable();
+      });
+
+      // Export Schedules
+      document.getElementById('btnExportSchedulesJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportScheduledPages === 'function') {
+          const filename = window.CSOSuperStore.exportScheduledPages();
+          showToast(`Scheduled releases exported: ${filename}`, "success");
+        }
+      });
+
+      // Schedule New Release Modal
+      document.getElementById('btnNewScheduleTop')?.addEventListener('click', () => {
+        // Pre-fill datetime-local for tomorrow 09:00 AM IST
+        const tomorrow = new Date(Date.now() + 86400000);
+        const yyyy = tomorrow.getFullYear();
+        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const dd = String(tomorrow.getDate()).padStart(2, '0');
+        const defaultDateTime = `${yyyy}-${mm}-${dd}T09:00`;
+
+        openModal("Schedule New Page Release", `
+          <div class="space-y-4 font-sans text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Target Page Title <span class="text-rose-400">*</span></label>
+              <input id="inputNewSchTitle" type="text" placeholder="e.g. OSSC Statistical Assistant 2026 Answer Key" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Target Route Path <span class="text-rose-400">*</span></label>
+              <input id="inputNewSchPath" type="text" placeholder="/notices/ossc-statistical-assistant-key-2026.html" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Author Email</label>
+                <input id="inputNewSchAuthor" type="text" value="admin@csodisha.com" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Scheduled Release Date & Time</label>
+                <input id="inputNewSchDateTime" type="datetime-local" value="${defaultDateTime}" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+              </div>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Scheduled Page HTML Markup</label>
+              <textarea id="textareaNewSchMarkup" rows="6" class="w-full bg-[#050a14] border border-brand-border rounded p-3 text-slate-200 text-xs font-mono leading-relaxed" placeholder="<div class=&quot;py-8&quot;><h1>...</h1></div>"></textarea>
+            </div>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnSubmitNewSchModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Schedule Release</button>
+        `);
+
+        // Auto-path slug
+        const titleInput = document.getElementById('inputNewSchTitle');
+        const pathInput = document.getElementById('inputNewSchPath');
+        if (titleInput && pathInput) {
+          titleInput.addEventListener('input', () => {
+            const slug = titleInput.value.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            pathInput.value = '/notices/' + (slug || 'notice') + '.html';
+          });
+        }
+
+        document.getElementById('btnSubmitNewSchModal')?.addEventListener('click', () => {
+          const title = titleInput?.value.trim();
+          const path = pathInput?.value.trim();
+          const author = document.getElementById('inputNewSchAuthor')?.value.trim();
+          const dtStr = document.getElementById('inputNewSchDateTime')?.value;
+          const markup = document.getElementById('textareaNewSchMarkup')?.value;
+
+          if (!title) {
+            showToast("Please provide a target title.", "warning");
+            return;
+          }
+
+          const publishAt = dtStr ? new Date(dtStr).getTime() : (Date.now() + 86400000);
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveScheduledPage === 'function') {
+            const created = window.CSOSuperStore.saveScheduledPage({
+              title,
+              path: path || '/notices/release.html',
+              author: author || 'admin@csodisha.com',
+              publishAt: publishAt,
+              markup: markup || `<div class="py-12 max-w-4xl mx-auto px-6"><h1 class="text-3xl font-bold text-white">${title}</h1></div>`
+            });
+            closeModal();
+            showToast(`Release "${created.title}" scheduled for ${new Date(publishAt).toLocaleString()}!`, "success");
+            updateKpis();
+            renderSchedulesTable();
           }
         });
       });

@@ -2172,6 +2172,194 @@
       return filename;
     },
 
+    // 22. Scheduled Page Releases Engine (module-02-010)
+    getScheduledPages(statusFilter = 'ALL') {
+      let schedules = null;
+      try {
+        const raw = localStorage.getItem('cso_scheduled_pages');
+        if (raw) schedules = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!schedules || !Array.isArray(schedules) || schedules.length === 0) {
+        schedules = [
+          {
+            id: 'SCH-001',
+            title: 'OPSC OCS Prelims 2026 Merit List & Cutoff',
+            path: '/notices/opsc-ocs-prelims-result-2026.html',
+            author: 'admin@csodisha.com',
+            publishAt: Date.now() + 259200000,
+            status: 'Scheduled',
+            markup: '<div class="max-w-4xl mx-auto py-12 px-6"><span class="bg-cyan-500/10 text-cyan-400 text-xs px-2.5 py-1 rounded-full border border-cyan-500/20 font-semibold">Official Gazette Notice</span><h1 class="text-3xl font-bold text-white mt-4">OPSC OCS Preliminary Results 2026</h1><p class="text-slate-400 mt-2">Official roll numbers of shortlisted candidates for Mains examination.</p></div>'
+          },
+          {
+            id: 'SCH-002',
+            title: 'OTET 2026 Paper I & II Hall Ticket Gate',
+            path: '/hall-tickets/otet-2026-admit-card.html',
+            author: 'academic@csodisha.com',
+            publishAt: Date.now() + 604800000,
+            status: 'Scheduled',
+            markup: '<div class="max-w-4xl mx-auto py-12 px-6"><span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full border border-emerald-500/20 font-semibold">Direct Download Portal</span><h1 class="text-3xl font-bold text-white mt-4">OTET 2026 Admit Card Access</h1><p class="text-slate-400 mt-2">Download link and exam day instructions for candidates.</p></div>'
+          },
+          {
+            id: 'SCH-003',
+            title: 'Medhabruti Scholarship Merit List 2026',
+            path: '/scholarships/medhabruti-merit-list-2026.html',
+            author: 'admin@csodisha.com',
+            publishAt: Date.now() - 86400000,
+            status: 'Executed',
+            markup: '<div class="max-w-4xl mx-auto py-12 px-6"><h1 class="text-3xl font-bold text-white">Medhabruti 2026 Selected Candidates</h1></div>'
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_scheduled_pages', JSON.stringify(schedules));
+        } catch (_) {}
+      }
+
+      const sFilter = (statusFilter || 'ALL').toUpperCase();
+      let filtered = schedules;
+      if (sFilter !== 'ALL') {
+        filtered = schedules.filter(s => (s.status || '').toUpperCase() === sFilter);
+      }
+
+      return filtered.sort((a, b) => (a.publishAt || 0) - (b.publishAt || 0));
+    },
+
+    saveScheduledPages(schedules) {
+      save('cso_scheduled_pages', schedules);
+    },
+
+    saveScheduledPage(scheduleData) {
+      const schedules = this.getScheduledPages('ALL');
+      let item = null;
+
+      if (scheduleData.id) {
+        item = schedules.find(s => s.id === scheduleData.id);
+        if (item) {
+          item.title = scheduleData.title || item.title;
+          item.path = scheduleData.path || item.path;
+          item.author = scheduleData.author || item.author;
+          item.publishAt = scheduleData.publishAt || item.publishAt;
+          item.status = scheduleData.status || item.status;
+          item.markup = scheduleData.markup !== undefined ? scheduleData.markup : item.markup;
+        }
+      }
+
+      if (!item) {
+        const uniqueId = 'SCH-' + Date.now().toString().slice(-4);
+        item = {
+          id: uniqueId,
+          title: scheduleData.title || 'Untitled Scheduled Page',
+          path: scheduleData.path || `/scheduled-${uniqueId.toLowerCase()}.html`,
+          author: scheduleData.author || 'admin@csodisha.com',
+          publishAt: scheduleData.publishAt || (Date.now() + 86400000),
+          status: 'Scheduled',
+          markup: scheduleData.markup || '<div class="p-6 text-white">Scheduled Content</div>'
+        };
+        schedules.unshift(item);
+      }
+
+      this.saveScheduledPages(schedules);
+      this.logAudit('PAGE_SCHEDULED', 'SCHEDULING_ENGINE', `Page release scheduled: "${item.title}" for ${new Date(item.publishAt).toISOString()}.`);
+      return item;
+    },
+
+    executeScheduledRelease(scheduleId) {
+      const schedules = this.getScheduledPages('ALL');
+      const item = schedules.find(s => s.id === scheduleId);
+      if (!item) {
+        throw new Error(`Scheduled item ${scheduleId} not found`);
+      }
+
+      const pages = this.getAllPages('ALL', '');
+      const cleanPath = item.path.startsWith('/') ? item.path : '/' + item.path;
+      const cleanFile = cleanPath.replace(/^\//, '');
+      const markup = item.markup || '';
+      const sizeKb = ((markup.length * 2) / 1024).toFixed(1);
+
+      let targetPage = pages.find(p => p.path === cleanPath || p.file === cleanFile);
+      if (targetPage) {
+        targetPage.title = item.title;
+        targetPage.htmlContent = markup;
+        targetPage.sizeKb = sizeKb;
+        targetPage.status = 'Live';
+        targetPage.lastModified = new Date().toISOString().slice(0, 10);
+      } else {
+        targetPage = {
+          id: 'PAGE-' + Date.now().toString().slice(-4),
+          path: cleanPath,
+          file: cleanFile,
+          title: item.title,
+          template: 'Standard Content',
+          status: 'Live',
+          sizeKb: sizeKb,
+          lastModified: new Date().toISOString().slice(0, 10),
+          htmlContent: markup
+        };
+        pages.unshift(targetPage);
+      }
+
+      this.saveAllPages(pages);
+
+      // Mark executed
+      item.status = 'Executed';
+      item.executedAt = Date.now();
+      this.saveScheduledPages(schedules);
+
+      this.logAudit('SCHEDULED_PAGE_PUBLISHED', 'SCHEDULING_ENGINE', `Scheduled release ${item.id} published live to ${cleanPath}.`);
+      return { success: true, item, page: targetPage };
+    },
+
+    cancelScheduledRelease(scheduleId) {
+      const schedules = this.getScheduledPages('ALL');
+      const item = schedules.find(s => s.id === scheduleId);
+      if (item) {
+        item.status = 'Cancelled';
+        this.saveScheduledPages(schedules);
+        this.logAudit('SCHEDULED_PAGE_CANCELLED', 'SCHEDULING_ENGINE', `Scheduled release ${item.id} cancelled.`);
+        return item;
+      }
+      return null;
+    },
+
+    deleteScheduledPage(scheduleId) {
+      let schedules = this.getScheduledPages('ALL');
+      const prevLen = schedules.length;
+      schedules = schedules.filter(s => s.id !== scheduleId);
+      if (schedules.length !== prevLen) {
+        this.saveScheduledPages(schedules);
+        this.logAudit('SCHEDULED_PAGE_DELETED', 'SCHEDULING_ENGINE', `Scheduled release ${scheduleId} removed from queue.`);
+        return true;
+      }
+      return false;
+    },
+
+    exportScheduledPages() {
+      const schedules = this.getScheduledPages('ALL');
+      const timestamp = Date.now();
+      const filename = `cso-scheduled-releases-${timestamp}.json`;
+      const bundle = {
+        scheduleManifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalReleases: schedules.length,
+        schedules: schedules
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('SCHEDULED_RELEASES_EXPORTED', 'DATA_EXPORT', `Scheduled page releases archive exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
