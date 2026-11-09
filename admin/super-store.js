@@ -2707,6 +2707,105 @@
       return filename;
     },
 
+    // 26. Contact Information & Directory Engine (module-03-003)
+    getContactDirectory() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_contact_directory');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object') {
+        config = {
+          primaryEmail: "contact@csodisha.com",
+          helplineNumber: "+91 674 239 0000",
+          operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
+          postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
+          channels: [
+            { id: "CHN-01", name: "Candidate Admission & Syllabus Helpdesk", email: "academic@csodisha.com", category: "Academic", hours: "10:00 - 17:00 IST", status: "Active" },
+            { id: "CHN-02", name: "Grievance & Statutory Redressal", email: "grievance@csodisha.com", category: "Legal", hours: "10:00 - 16:00 IST", status: "Active" },
+            { id: "CHN-03", name: "Technical Portal & CDN Operations", email: "admin@csodisha.com", category: "Technical", hours: "24/7 Monitoring", status: "Active" },
+            { id: "CHN-04", name: "District Community Outreach Desk", email: "outreach@csodisha.com", category: "Outreach", hours: "10:00 - 17:00 IST", status: "Active" }
+          ],
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          localStorage.setItem('cso_contact_directory', JSON.stringify(config));
+        } catch (_) {}
+      }
+
+      return config;
+    },
+
+    saveContactDirectory(config) {
+      if (!config || typeof config !== 'object') return false;
+      config.updatedAt = new Date().toISOString();
+      save('cso_contact_directory', config);
+      this.logAudit('CONTACT_DIRECTORY_UPDATED', 'CONTACT_MANAGEMENT', `Contact directory, primary endpoints, and department channels updated.`);
+      return config;
+    },
+
+    addContactChannel(channelData) {
+      if (!channelData || typeof channelData !== 'object') return false;
+      const directory = this.getContactDirectory();
+      if (!Array.isArray(directory.channels)) directory.channels = [];
+
+      const newChannel = {
+        id: "CHN-" + Date.now().toString().slice(-4),
+        name: channelData.name || "General Desk",
+        email: channelData.email || "contact@csodisha.com",
+        category: channelData.category || "Academic",
+        hours: channelData.hours || "10:00 - 17:00 IST",
+        status: channelData.status || "Active"
+      };
+
+      directory.channels.push(newChannel);
+      this.saveContactDirectory(directory);
+      this.logAudit('CONTACT_CHANNEL_ADDED', 'CONTACT_MANAGEMENT', `Added department channel: ${newChannel.name} (${newChannel.id})`);
+      return newChannel;
+    },
+
+    deleteContactChannel(id) {
+      if (!id) return false;
+      const directory = this.getContactDirectory();
+      if (!Array.isArray(directory.channels)) return false;
+
+      const idx = directory.channels.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        const removed = directory.channels.splice(idx, 1)[0];
+        this.saveContactDirectory(directory);
+        this.logAudit('CONTACT_CHANNEL_DELETED', 'CONTACT_MANAGEMENT', `Deleted contact channel: ${removed.name} (${id})`);
+        return true;
+      }
+      return false;
+    },
+
+    exportContactDirectory() {
+      const config = this.getContactDirectory();
+      const timestamp = Date.now();
+      const filename = `cso-contact-directory-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        directory: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('CONTACT_DIRECTORY_EXPORTED', 'DATA_EXPORT', `Contact directory manifest exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;

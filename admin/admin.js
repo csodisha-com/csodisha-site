@@ -319,6 +319,8 @@ async function loadMasterNavigation() {
         renderSiteIdentityWorkspace();
       } else if (moduleId === 'module-03-002') {
         renderAboutMissionWorkspace();
+      } else if (moduleId === 'module-03-003') {
+        renderContactDirectoryWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -5562,6 +5564,290 @@ async function loadMasterNavigation() {
         if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAboutManifest === 'function') {
           const filename = window.CSOSuperStore.exportAboutManifest();
           showToast(`About manifest exported: ${filename}`, "success");
+        }
+      });
+    }
+
+    /**
+     * VIEW 3c: Contact Information & Directory (module-03-003)
+     */
+    function renderContactDirectoryWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Information & Legal";
+      dom.breadcrumbModule.textContent = "Contact Information & Directory (module-03-003)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnSaveContactDirectory" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Save Directory Changes
+          </button>
+          <a href="/contact.html" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Preview Contact Desk ↗
+          </a>
+          <button id="btnExportContactJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Directory (JSON)
+          </button>
+        </div>
+      `;
+
+      // Ingest Contact Directory
+      let dir = (window.CSOSuperStore && typeof window.CSOSuperStore.getContactDirectory === 'function')
+        ? window.CSOSuperStore.getContactDirectory()
+        : {
+            primaryEmail: "contact@csodisha.com",
+            helplineNumber: "+91 674 239 0000",
+            operatingHours: "09:30 AM - 05:30 PM IST (Mon - Sat)",
+            postalAddress: "CS Odisha Academic Intelligence Node, Bhubaneswar / Balasore Liaison Desk, Odisha - 751001",
+            channels: [],
+            updatedAt: new Date().toISOString()
+          };
+
+      function renderChannelsTable() {
+        const tbody = document.getElementById('contactChannelsTableBody');
+        if (!tbody) return;
+
+        const currentChannels = Array.isArray(dir.channels) ? dir.channels : [];
+        if (currentChannels.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-xs text-slate-400 font-mono">No specialized channels configured. Add one below.</td></tr>`;
+          return;
+        }
+
+        const categoryBadges = {
+          'Academic': 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60',
+          'Legal': 'bg-rose-950/80 text-rose-400 border-rose-800/60',
+          'Technical': 'bg-cyan-950/80 text-cyan-400 border-cyan-800/60',
+          'Outreach': 'bg-amber-950/80 text-amber-400 border-amber-800/60'
+        };
+
+        tbody.innerHTML = currentChannels.map((c) => {
+          const badgeClass = categoryBadges[c.category] || 'bg-slate-800 text-slate-300 border-slate-700';
+          return `
+            <tr class="border-b border-brand-border/60 hover:bg-slate-800/40 transition">
+              <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${escapeHtml(c.id || '')}</td>
+              <td class="px-4 py-3 font-semibold text-xs text-white">${escapeHtml(c.name || '')}</td>
+              <td class="px-4 py-3 font-mono text-xs text-emerald-400">${escapeHtml(c.email || '')}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${badgeClass}">${escapeHtml(c.category || 'General')}</span>
+              </td>
+              <td class="px-4 py-3 text-xs text-slate-300 font-mono">${escapeHtml(c.hours || 'N/A')}</td>
+              <td class="px-4 py-3 text-right">
+                <button data-delete-channel="${escapeHtml(c.id)}" class="btn-delete-channel px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        tbody.querySelectorAll('.btn-delete-channel').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-delete-channel');
+            if (id && window.CSOSuperStore && typeof window.CSOSuperStore.deleteContactChannel === 'function') {
+              window.CSOSuperStore.deleteContactChannel(id);
+              dir = window.CSOSuperStore.getContactDirectory();
+              renderChannelsTable();
+              showToast(`Department channel ${id} removed.`, "info");
+            }
+          });
+        });
+      }
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Contact Information & Department Directory
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-003</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Maintain state candidate helpdesks, emergency escalation channels, and physical liaison addresses.</p>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg">
+              Last Updated: <span id="contactLastUpdated" class="text-emerald-400 font-bold">${new Date(dir.updatedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <!-- Card 1: Primary Institutional Communication Endpoints -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                Primary Institutional Communication Endpoints
+              </h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Primary General Email <span class="text-rose-400">*</span></label>
+                <input id="inputContactEmail" type="email" value="${escapeHtml(dir.primaryEmail || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Helpline Number <span class="text-rose-400">*</span></label>
+                <input id="inputContactPhone" type="text" value="${escapeHtml(dir.helplineNumber || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Operational Hours</label>
+              <input id="inputContactHours" type="text" value="${escapeHtml(dir.operatingHours || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-1">Physical / Postal Address <span class="text-rose-400">*</span></label>
+              <textarea id="textareaContactAddress" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(dir.postalAddress || '')}</textarea>
+            </div>
+          </div>
+
+          <!-- Card 2: Specialized Department Channels Directory -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Specialized Department Channels Directory
+                </h3>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">Targeted Resolution Desks</span>
+            </div>
+
+            <!-- Table of Channels -->
+            <div class="overflow-x-auto rounded-lg border border-brand-border">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-900 text-slate-300 font-mono text-[11px] border-b border-brand-border">
+                  <tr>
+                    <th class="px-4 py-2.5">ID</th>
+                    <th class="px-4 py-2.5">Department Name</th>
+                    <th class="px-4 py-2.5">Email Endpoint</th>
+                    <th class="px-4 py-2.5">Category</th>
+                    <th class="px-4 py-2.5">Hours</th>
+                    <th class="px-4 py-2.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="contactChannelsTableBody"></tbody>
+              </table>
+            </div>
+
+            <!-- Inline Form to Add Department Channel -->
+            <div class="p-4 rounded-lg bg-slate-900/60 border border-brand-border/80 space-y-3">
+              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Specialized Channel</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="sm:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Channel Name</label>
+                  <input id="inputNewChannelName" type="text" placeholder="e.g. Scholarship Desk" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Email Endpoint</label>
+                  <input id="inputNewChannelEmail" type="email" placeholder="e.g. scholar@csodisha.com" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="sm:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Category</label>
+                  <select id="selectNewChannelCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                    <option value="Academic">Academic</option>
+                    <option value="Legal">Legal</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Outreach">Outreach</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Active Hours</label>
+                  <input id="inputNewChannelHours" type="text" placeholder="e.g. 10:00 - 17:00 IST" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button id="btnAddChannelAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  + Add Channel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      renderChannelsTable();
+
+      // Form Bindings
+      const inputEmail = document.getElementById('inputContactEmail');
+      const inputPhone = document.getElementById('inputContactPhone');
+      const inputHours = document.getElementById('inputContactHours');
+      const textareaAddress = document.getElementById('textareaContactAddress');
+
+      // Add Channel Handler
+      document.getElementById('btnAddChannelAction')?.addEventListener('click', () => {
+        const nameInput = document.getElementById('inputNewChannelName');
+        const emailInput = document.getElementById('inputNewChannelEmail');
+        const categoryInput = document.getElementById('selectNewChannelCategory');
+        const hoursInput = document.getElementById('inputNewChannelHours');
+
+        const name = nameInput?.value.trim() || '';
+        const email = emailInput?.value.trim() || '';
+        const category = categoryInput?.value || 'Academic';
+        const hours = hoursInput?.value.trim() || '10:00 - 17:00 IST';
+
+        if (!name || !email) {
+          showToast("Channel name and email are required.", "warning");
+          return;
+        }
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.addContactChannel === 'function') {
+          window.CSOSuperStore.addContactChannel({
+            name: name,
+            email: email,
+            category: category,
+            hours: hours,
+            status: "Active"
+          });
+          dir = window.CSOSuperStore.getContactDirectory();
+          renderChannelsTable();
+
+          nameInput.value = '';
+          emailInput.value = '';
+          hoursInput.value = '';
+          showToast(`Specialized channel "${name}" added successfully.`, "success");
+        }
+      });
+
+      // Save Directory Changes
+      document.getElementById('btnSaveContactDirectory')?.addEventListener('click', () => {
+        const email = inputEmail?.value.trim() || '';
+        const phone = inputPhone?.value.trim() || '';
+        const address = textareaAddress?.value.trim() || '';
+
+        if (!email || !phone || !address) {
+          showToast("General email, helpline phone, and postal address are required.", "warning");
+          return;
+        }
+
+        const payload = {
+          primaryEmail: email,
+          helplineNumber: phone,
+          operatingHours: inputHours?.value.trim() || "09:30 AM - 05:30 PM IST (Mon - Sat)",
+          postalAddress: address,
+          channels: dir.channels || []
+        };
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveContactDirectory === 'function') {
+          const saved = window.CSOSuperStore.saveContactDirectory(payload);
+          dir = saved;
+          const dateEl = document.getElementById('contactLastUpdated');
+          if (dateEl && saved.updatedAt) {
+            dateEl.textContent = new Date(saved.updatedAt).toLocaleDateString();
+          }
+          showToast("Contact Information & Directory saved successfully!", "success");
+        }
+      });
+
+      // Export Directory Handler
+      document.getElementById('btnExportContactJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportContactDirectory === 'function') {
+          const filename = window.CSOSuperStore.exportContactDirectory();
+          showToast(`Contact directory exported: ${filename}`, "success");
         }
       });
     }
