@@ -305,6 +305,8 @@ async function loadMasterNavigation() {
         renderLandingPagesWorkspace();
       } else if (moduleId === 'module-02-006') {
         renderPageTemplatesWorkspace();
+      } else if (moduleId === 'module-02-007') {
+        renderReusableSectionsWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -3109,6 +3111,340 @@ async function loadMasterNavigation() {
               renderPageTemplatesWorkspace();
             }
           });
+        });
+      });
+    }
+
+    /**
+     * VIEW 2g: Modular Reusable Sections Component Library (module-02-007)
+     */
+    function renderReusableSectionsWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Reusable Sections (module-02-007)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnCreateSectionTop" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Create Section
+          </button>
+          <button id="btnExportSections" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Sections (JSON)
+          </button>
+        </div>
+      `;
+
+      // Workspace DOM Template
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Reusable Section Modules & Global Components
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-007</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Author, maintain, and embed global headers, footers, warning banners, and accordions across any static HTML view.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Component Hub Live
+              </span>
+            </div>
+          </div>
+
+          <!-- Filter Tabs & Search Bar -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <!-- Type Filter Tabs -->
+              <div id="sectionTypeTabsContainer" class="flex flex-wrap items-center gap-1.5">
+                <button data-type="ALL" class="sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white">All Types</button>
+                <button data-type="Header" class="sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Header</button>
+                <button data-type="Footer" class="sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Footer</button>
+                <button data-type="Banner" class="sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Banner</button>
+                <button data-type="Block" class="sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Block</button>
+                <button data-type="Sidebar" class="sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Sidebar</button>
+              </div>
+
+              <!-- Search Input -->
+              <div class="relative min-w-[240px]">
+                <input id="sectionSearchInput" type="text" placeholder="Search title or embed tag..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-8 pr-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Inventory Grid -->
+          <div id="sectionsGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      `;
+
+      let activeTypeFilter = 'ALL';
+      let activeSearch = '';
+
+      function renderGrid() {
+        const grid = document.getElementById('sectionsGridContainer');
+        if (!grid) return;
+
+        const sections = (window.CSOSuperStore && typeof window.CSOSuperStore.getReusableSections === 'function')
+          ? window.CSOSuperStore.getReusableSections(activeTypeFilter, activeSearch)
+          : [];
+
+        if (sections.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-12 text-center text-slate-500 font-mono text-xs">
+              No reusable sections found matching the current query.
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = sections.map(sec => {
+          const typeBadgeColor = sec.type === 'Header' ? 'text-cyan-400 border-cyan-800/60 bg-cyan-950/40'
+            : sec.type === 'Footer' ? 'text-indigo-400 border-indigo-800/60 bg-indigo-950/40'
+            : sec.type === 'Banner' ? 'text-amber-400 border-amber-800/60 bg-amber-950/40'
+            : sec.type === 'Block' ? 'text-emerald-400 border-emerald-800/60 bg-emerald-950/40'
+            : 'text-purple-400 border-purple-800/60 bg-purple-950/40';
+
+          return `
+            <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md hover:border-slate-600 transition flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-mono text-xs font-bold text-cyan-400">${sec.id}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${typeBadgeColor}">
+                    ${sec.type}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 class="text-sm font-bold text-white">${sec.title}</h3>
+                </div>
+
+                <!-- Embed Tag & Copy Trigger -->
+                <div class="p-2.5 rounded-lg bg-[#081220] border border-brand-border flex items-center justify-between gap-2">
+                  <code class="text-[11px] font-mono text-emerald-400 truncate select-all">${sec.tag}</code>
+                  <button data-tag="${sec.tag}" class="btn-copy-embed-tag px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-mono font-bold border border-slate-700 whitespace-nowrap transition flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                    Copy Tag
+                  </button>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="pt-3 border-t border-brand-border flex items-center justify-between gap-1.5">
+                <div class="flex items-center gap-1.5">
+                  <button data-id="${sec.id}" class="btn-preview-sec px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold border border-brand-border transition">
+                    Preview
+                  </button>
+                  <button data-id="${sec.id}" class="btn-edit-sec px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-mono font-semibold border border-brand-border transition">
+                    Edit Code
+                  </button>
+                </div>
+                <button data-id="${sec.id}" class="btn-delete-sec px-2 py-1.5 rounded bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 text-xs font-mono border border-rose-800/50 transition" title="Delete Section">
+                  Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Wire Copy Tag
+        grid.querySelectorAll('.btn-copy-embed-tag').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const tag = e.currentTarget.getAttribute('data-tag');
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(tag).then(() => {
+                showToast(`Copied embed tag: ${tag}`, "success");
+              });
+            } else {
+              showToast(`Tag: ${tag}`, "info");
+            }
+          });
+        });
+
+        // Wire Preview
+        grid.querySelectorAll('.btn-preview-sec').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const secId = e.currentTarget.getAttribute('data-id');
+            const sections = window.CSOSuperStore?.getReusableSections('ALL', '') || [];
+            const sec = sections.find(s => s.id === secId);
+            if (!sec) return;
+
+            openModal(`Preview: ${sec.title}`, `
+              <div class="space-y-4 font-sans text-xs">
+                <div class="p-4 bg-[#040810] border border-brand-border rounded-lg max-h-[460px] overflow-y-auto">
+                  ${sec.markup}
+                </div>
+                <div class="text-[11px] font-mono text-slate-500">
+                  Embed Tag: <strong class="text-emerald-400">${sec.tag}</strong>
+                </div>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+            `);
+          });
+        });
+
+        // Wire Edit Code
+        grid.querySelectorAll('.btn-edit-sec').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const secId = e.currentTarget.getAttribute('data-id');
+            const sections = window.CSOSuperStore?.getReusableSections('ALL', '') || [];
+            const sec = sections.find(s => s.id === secId);
+            if (!sec) return;
+
+            openModal(`Edit Section: ${sec.title}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Section Title</label>
+                  <input id="inputEditSecTitle" type="text" value="${sec.title}" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-1.5 text-white text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">HTML Component Markup</label>
+                  <textarea id="textareaEditSecMarkup" rows="12" class="w-full bg-[#050a14] border border-brand-border rounded p-3 text-slate-200 text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-brand-emerald">${sec.markup}</textarea>
+                </div>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmSaveSecModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Save Changes</button>
+            `);
+
+            document.getElementById('btnConfirmSaveSecModal')?.addEventListener('click', () => {
+              const newTitle = document.getElementById('inputEditSecTitle')?.value.trim();
+              const newMarkup = document.getElementById('textareaEditSecMarkup')?.value;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveReusableSection === 'function') {
+                window.CSOSuperStore.saveReusableSection({
+                  id: sec.id,
+                  title: newTitle || sec.title,
+                  type: sec.type,
+                  markup: newMarkup
+                });
+                closeModal();
+                showToast(`Section "${sec.title}" updated successfully!`, "success");
+                renderGrid();
+              }
+            });
+          });
+        });
+
+        // Wire Delete
+        grid.querySelectorAll('.btn-delete-sec').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const secId = e.currentTarget.getAttribute('data-id');
+            openModal(`Delete Section ${secId}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <p class="text-slate-300">Are you sure you want to delete this reusable section component? Any pages referencing its embed tag will need manual adjustment.</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmDeleteSecModal" class="px-3 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Confirm Delete</button>
+            `);
+
+            document.getElementById('btnConfirmDeleteSecModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.deleteReusableSection === 'function') {
+                window.CSOSuperStore.deleteReusableSection(secId);
+                showToast(`Section ${secId} deleted`, "warning");
+                renderGrid();
+              }
+            });
+          });
+        });
+      }
+
+      renderGrid();
+
+      // Tab Switching
+      document.querySelectorAll('.sec-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          activeTypeFilter = e.currentTarget.getAttribute('data-type') || 'ALL';
+          document.querySelectorAll('.sec-tab-btn').forEach(b => {
+            b.className = "sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+          });
+          e.currentTarget.className = "sec-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white";
+          renderGrid();
+        });
+      });
+
+      // Search Listener
+      const searchInput = document.getElementById('sectionSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          activeSearch = e.target.value;
+          renderGrid();
+        });
+      }
+
+      // Export Sections
+      document.getElementById('btnExportSections')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportReusableSections === 'function') {
+          const filename = window.CSOSuperStore.exportReusableSections();
+          showToast(`Reusable sections exported: ${filename}`, "success");
+        }
+      });
+
+      // Create Section Modal
+      document.getElementById('btnCreateSectionTop')?.addEventListener('click', () => {
+        openModal("Create New Reusable Section", `
+          <div class="space-y-4 font-sans text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Section Title <span class="text-rose-400">*</span></label>
+              <input id="inputNewSecTitle" type="text" placeholder="e.g. State Examination Alert Strip" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Section Type</label>
+                <select id="selectNewSecType" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+                  <option value="Header">Header</option>
+                  <option value="Footer">Footer</option>
+                  <option value="Banner">Banner</option>
+                  <option value="Block" selected>Block</option>
+                  <option value="Sidebar">Sidebar</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Embed Tag Slug</label>
+                <input id="inputNewSecTagLabel" type="text" placeholder="ALERT-STRIP" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono uppercase">
+              </div>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">HTML Component Code</label>
+              <textarea id="textareaNewSecMarkup" rows="8" placeholder="<div class=&quot;p-4 bg-slate-900&quot;>...</div>" class="w-full bg-[#050a14] border border-brand-border rounded p-3 text-slate-200 text-xs font-mono leading-relaxed"></textarea>
+            </div>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnSubmitNewSecModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Create Component</button>
+        `);
+
+        document.getElementById('btnSubmitNewSecModal')?.addEventListener('click', () => {
+          const title = document.getElementById('inputNewSecTitle')?.value.trim();
+          const type = document.getElementById('selectNewSecType')?.value;
+          const tagLabel = document.getElementById('inputNewSecTagLabel')?.value.trim();
+          const markup = document.getElementById('textareaNewSecMarkup')?.value;
+
+          if (!title) {
+            showToast("Please provide a section title.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveReusableSection === 'function') {
+            const created = window.CSOSuperStore.saveReusableSection({
+              title,
+              type,
+              tagLabel,
+              markup: markup || '<!-- Empty Section -->'
+            });
+            closeModal();
+            showToast(`Section "${created.title}" created successfully!`, "success");
+            renderGrid();
+          }
         });
       });
     }

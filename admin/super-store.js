@@ -1686,6 +1686,155 @@
       return filename;
     },
 
+    // 19. Reusable Sections Component Engine (module-02-007)
+    getReusableSections(filterType = 'ALL', search = '') {
+      let sections = null;
+      try {
+        const raw = localStorage.getItem('cso_reusable_sections');
+        if (raw) sections = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!sections || !Array.isArray(sections) || sections.length === 0) {
+        sections = [
+          {
+            id: 'SEC-01',
+            title: 'Global Primary Navigation Bar',
+            type: 'Header',
+            tag: '<!-- CSO:NAV-GLOBAL -->',
+            markup: `<nav class="w-full bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between"><div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="font-bold text-white tracking-wide">CS ODISHA</span></div><div class="flex items-center gap-6 text-sm text-slate-300"><a href="/" class="hover:text-emerald-400">Home</a><a href="/resources.html" class="hover:text-emerald-400">Resources</a><a href="/contact.html" class="hover:text-emerald-400">Helpdesk</a></div></nav>`,
+            lastModified: Date.now() - 86400000
+          },
+          {
+            id: 'SEC-02',
+            title: 'Official Footer & Compliance',
+            type: 'Footer',
+            tag: '<!-- CSO:FOOTER-GLOBAL -->',
+            markup: `<footer class="w-full bg-slate-950 border-t border-slate-800 py-10 px-6 text-center text-slate-400 text-xs"><p class="mb-2">Common Sense Odisha — Dedicated Education & State Examination Intelligence.</p><p class="text-slate-500">&copy; 2026 CS Odisha. All rights reserved across 30 districts.</p></footer>`,
+            lastModified: Date.now() - 172800000
+          },
+          {
+            id: 'SEC-03',
+            title: 'Urgent Notice Flash Banner',
+            type: 'Banner',
+            tag: '<!-- CSO:BANNER-ALERT -->',
+            markup: `<div class="bg-emerald-950 border-b border-emerald-500/30 text-emerald-200 px-4 py-2 text-xs flex items-center justify-between font-medium"><span>⚡ OPSC & OSSC 2026 Examination Schedule released. Check resources tab.</span><a href="/resources.html" class="underline text-emerald-400 hover:text-white">View Details &rarr;</a></div>`,
+            lastModified: Date.now() - 43200000
+          },
+          {
+            id: 'SEC-04',
+            title: 'Candidate FAQ Accordion',
+            type: 'Block',
+            tag: '<!-- CSO:FAQ-ACCORDION -->',
+            markup: `<div class="w-full max-w-3xl mx-auto space-y-3"><details class="bg-slate-900 border border-slate-800 rounded-lg p-4"><summary class="font-semibold text-white cursor-pointer">How do I verify syllabus revisions?</summary><p class="mt-2 text-sm text-slate-400">All materials uploaded to CSO are reconciled directly against state gazette notifications.</p></details></div>`,
+            lastModified: Date.now() - 259200000
+          },
+          {
+            id: 'SEC-05',
+            title: 'Helpline & Social Desk',
+            type: 'Sidebar',
+            tag: '<!-- CSO:HELPLINE-BAR -->',
+            markup: `<div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs space-y-2"><div class="text-white font-bold">Helpline & Queries</div><p class="text-slate-400">Email: help@csodisha.com</p><p class="text-slate-400">Hours: 09:00 - 18:00 IST</p></div>`,
+            lastModified: Date.now() - 345600000
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_reusable_sections', JSON.stringify(sections));
+        } catch (_) {}
+      }
+
+      const fType = (filterType || 'ALL').toUpperCase();
+      const sq = (search || '').toLowerCase().trim();
+
+      return sections.filter(sec => {
+        if (fType !== 'ALL' && (sec.type || '').toUpperCase() !== fType) {
+          return false;
+        }
+        if (sq) {
+          const matchTitle = (sec.title || '').toLowerCase().includes(sq);
+          const matchTag = (sec.tag || '').toLowerCase().includes(sq);
+          const matchType = (sec.type || '').toLowerCase().includes(sq);
+          if (!matchTitle && !matchTag && !matchType) return false;
+        }
+        return true;
+      });
+    },
+
+    saveReusableSections(sections) {
+      save('cso_reusable_sections', sections);
+    },
+
+    saveReusableSection(sectionData) {
+      const sections = this.getReusableSections('ALL', '');
+      let sec = null;
+
+      if (sectionData.id) {
+        sec = sections.find(s => s.id === sectionData.id);
+        if (sec) {
+          sec.title = sectionData.title || sec.title;
+          sec.type = sectionData.type || sec.type;
+          sec.markup = sectionData.markup || sec.markup;
+          sec.lastModified = Date.now();
+        }
+      }
+
+      if (!sec) {
+        const newId = 'SEC-' + Date.now().toString().slice(-4);
+        const tag = `<!-- CSO:${(sectionData.tagLabel || newId).toUpperCase()} -->`;
+        sec = {
+          id: newId,
+          title: sectionData.title || 'Untitled Section',
+          type: sectionData.type || 'Block',
+          tag: tag,
+          markup: sectionData.markup || '<!-- Empty Section Markup -->',
+          lastModified: Date.now()
+        };
+        sections.unshift(sec);
+      }
+
+      this.saveReusableSections(sections);
+      this.logAudit('SECTION_SAVED', 'COMPONENT_STUDIO', `Reusable section ${sec.id} ("${sec.title}") saved.`);
+      return sec;
+    },
+
+    deleteReusableSection(id) {
+      let sections = this.getReusableSections('ALL', '');
+      const prevLen = sections.length;
+      sections = sections.filter(s => s.id !== id);
+      if (sections.length !== prevLen) {
+        this.saveReusableSections(sections);
+        this.logAudit('SECTION_DELETED', 'COMPONENT_STUDIO', `Reusable section ${id} removed.`);
+        return true;
+      }
+      return false;
+    },
+
+    exportReusableSections() {
+      const sections = this.getReusableSections('ALL', '');
+      const timestamp = Date.now();
+      const filename = `cso-reusable-sections-${timestamp}.json`;
+      const bundle = {
+        componentVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalSections: sections.length,
+        sections: sections
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('REUSABLE_SECTIONS_EXPORTED', 'DATA_EXPORT', `Reusable sections bundle exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
