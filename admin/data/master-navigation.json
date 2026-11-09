@@ -461,12 +461,12 @@
         {
           "id": "module-07-002",
           "title": "Bulk Uploads",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-003",
           "title": "Folders & Collections",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-004",
@@ -481,32 +481,32 @@
         {
           "id": "module-07-006",
           "title": "Video & Audio",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-007",
           "title": "Cloud Links",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-008",
           "title": "Google Drive Links",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-009",
           "title": "Storage Providers",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-010",
           "title": "File Versions",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-011",
           "title": "File Permissions",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-012",
@@ -516,17 +516,17 @@
         {
           "id": "module-07-013",
           "title": "Duplicate Detection",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-014",
           "title": "Broken File Links",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-07-015",
           "title": "Media Optimization",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

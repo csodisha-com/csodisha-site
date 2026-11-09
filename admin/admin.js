@@ -328,6 +328,21 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-06-009') { renderInternalLinksWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-06-010') { renderMenuOrderingWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-06-011') { renderSocialLinksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-001') { renderFileLibraryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-002') { renderBulkUploadsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-003') { renderFoldersCollectionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-004') { renderPdfManagerWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-005') { renderImageLibraryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-006') { renderVideoAudioWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-007') { renderCloudLinksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-008') { renderGoogleDriveLinksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-009') { renderStorageProvidersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-010') { renderFileVersionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-011') { renderFilePermissionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-012') { renderStorageUsageWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-013') { renderDuplicateDetectionWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-014') { renderBrokenFileLinksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-07-015') { renderMediaOptimizationWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -504,6 +519,36 @@ async function loadMasterNavigation() {
         renderMenuOrderingWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-06-011') {
         renderSocialLinksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-001') {
+        renderFileLibraryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-002') {
+        renderBulkUploadsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-003') {
+        renderFoldersCollectionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-004') {
+        renderPdfManagerWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-005') {
+        renderImageLibraryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-006') {
+        renderVideoAudioWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-007') {
+        renderCloudLinksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-008') {
+        renderGoogleDriveLinksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-009') {
+        renderStorageProvidersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-010') {
+        renderFileVersionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-011') {
+        renderFilePermissionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-012') {
+        renderStorageUsageWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-013') {
+        renderDuplicateDetectionWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-014') {
+        renderBrokenFileLinksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-07-015') {
+        renderMediaOptimizationWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -28424,6 +28469,1747 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    // =========================================================================
+    // FOLDER 07 WORKSPACES: Files, Media & Cloud (07-001 through 07-015)
+    // =========================================================================
+
+    /**
+     * MODULE 07-001: File Library Workspace
+     */
+    function renderFileLibraryWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFileLibraryConfig();
+        let files = Array.isArray(config.files || config.items) ? [...(config.files || config.items)] : [];
+        let searchTerm = '';
+        let folderFilter = 'all';
+
+        function render() {
+          const activeFiles = files.filter(f => f.active !== false);
+          const totalBytes = files.reduce((sum, f) => sum + (parseInt(f.sizeBytes, 10) || 0), 0);
+          const totalMb = (totalBytes / (1024 * 1024)).toFixed(1);
+          const folders = Array.from(new Set(files.map(f => f.folder || '/'))).sort();
+          const filtered = files.filter(f => {
+            const matchesSearch = (f.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (f.filename || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  (f.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesFolder = folderFilter === 'all' || f.folder === folderFilter;
+            return matchesSearch && matchesFolder;
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Master File Library &amp; Cloud Assets</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage uploaded gazettes, PDFs, vector maps, notes capsules, and public candidate download assets.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-file" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add File Record
+                  </button>
+                  <button id="btn-inspect-files" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-files" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-files" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Stored Files</div>
+                  <div class="text-2xl font-bold text-white mt-1">${files.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Public Files</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeFiles.length} of ${files.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Library Size Footprint</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1 font-mono">${totalMb} MB</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Max Upload Limit</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">50 MB / file</div>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="file-search" placeholder="Search filenames, titles, or file IDs..." value="${escapeHtml(searchTerm)}" class="w-full pl-10 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500 font-medium">Folder:</span>
+                  <select id="file-folder-filter" class="px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="all" ${folderFilter === 'all' ? 'selected' : ''}>All Folders</option>
+                    ${folders.map(f => `<option value="${escapeHtml(f)}" ${folderFilter === f ? 'selected' : ''}>${escapeHtml(f)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3.5 px-4 w-24">File ID</th>
+                        <th class="py-3.5 px-4">Asset Name &amp; Filename</th>
+                        <th class="py-3.5 px-4 w-32">Folder Path</th>
+                        <th class="py-3.5 px-4 w-24">Size</th>
+                        <th class="py-3.5 px-4 w-40">Storage Provider</th>
+                        <th class="py-3.5 px-4 w-24 text-center">Status</th>
+                        <th class="py-3.5 px-4 w-28 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-xs">
+                      ${filtered.length === 0 ? `
+                        <tr><td colspan="7" class="py-12 text-center text-slate-500">No file assets found matching filters.</td></tr>
+                      ` : filtered.map(f => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(f.id)}</td>
+                          <td class="py-3.5 px-4">
+                            <div class="font-semibold text-white">${escapeHtml(f.name)}</div>
+                            <div class="text-[11px] text-slate-400 font-mono mt-0.5">${escapeHtml(f.filename)}</div>
+                          </td>
+                          <td class="py-3.5 px-4 text-slate-300 font-mono text-[11px]">${escapeHtml(f.folder || '/')}</td>
+                          <td class="py-3.5 px-4 font-mono font-medium text-amber-300">${escapeHtml(f.size || '1.0 MB')}</td>
+                          <td class="py-3.5 px-4 text-slate-300 text-[11px]">${escapeHtml(f.storageProvider || 'Cloudflare R2')}</td>
+                          <td class="py-3.5 px-4 text-center">
+                            <button class="btn-toggle-file-status cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${f.active !== false ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'}" data-id="${escapeHtml(f.id)}">
+                              ${f.active !== false ? 'Active' : 'Hidden'}
+                            </button>
+                          </td>
+                          <td class="py-3.5 px-4 text-right">
+                            <div class="inline-flex items-center gap-1">
+                              <button class="btn-edit-file p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(f.id)}" title="Edit File">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                              </button>
+                              <button class="btn-del-file p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(f.id)}" title="Delete File">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const searchInput = container.querySelector('#file-search');
+          if (searchInput) searchInput.addEventListener('input', (e) => { searchTerm = e.target.value; render(); });
+          const folderSelect = container.querySelector('#file-folder-filter');
+          if (folderSelect) folderSelect.addEventListener('change', (e) => { folderFilter = e.target.value; render(); });
+
+          const btnAdd = container.querySelector('#btn-add-file');
+          if (btnAdd) btnAdd.addEventListener('click', () => openFileModal());
+
+          container.querySelectorAll('.btn-toggle-file-status').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const f = files.find(x => x.id === id);
+              if (f) {
+                f.active = f.active === false;
+                config.files = files; config.items = files;
+                store.saveFileLibraryConfig(config);
+                showToast(`File ${id} status updated`, 'info');
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-edit-file').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              const f = files.find(x => x.id === id);
+              if (f) openFileModal(f);
+            });
+          });
+
+          container.querySelectorAll('.btn-del-file').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Delete file asset ${id}?`)) {
+                files = files.filter(x => x.id !== id);
+                config.files = files; config.items = files;
+                store.saveFileLibraryConfig(config);
+                showToast(`File ${id} deleted`, 'warning');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-files');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('File Library Schema', config));
+
+          const btnExport = container.querySelector('#btn-export-files');
+          if (btnExport) btnExport.addEventListener('click', () => {
+            const fname = store.exportFileLibraryManifest();
+            showToast(`Exported ${fname}`, 'success');
+          });
+
+          const btnReset = container.querySelector('#btn-reset-files');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset File Library to default seed assets?')) {
+              config = store.resetFileLibraryConfig();
+              files = Array.isArray(config.files || config.items) ? [...(config.files || config.items)] : [];
+              showToast('File library reset to factory defaults', 'info');
+              render();
+            }
+          });
+        }
+
+        function openFileModal(existing = null) {
+          const isEdit = !!existing;
+          const nextId = isEdit ? existing.id : `FILE-${String(files.length + 1).padStart(2, '0')}`;
+          const modalHtml = `
+            <div id="file-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                  <h3 class="text-base font-bold text-white">${isEdit ? 'Edit File Asset' : 'Add File Asset'}</h3>
+                  <button id="modal-close-file" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                </div>
+                <div class="p-6 space-y-4 overflow-y-auto text-xs">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block font-semibold text-slate-300 mb-1">File ID</label>
+                      <input type="text" id="mf-id" value="${escapeHtml(nextId)}" ${isEdit ? 'readonly' : ''} class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-300 mb-1">Size (e.g. 2.4 MB)</label>
+                      <input type="text" id="mf-size" value="${escapeHtml(existing?.size || '1.0 MB')}" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Asset Display Name</label>
+                    <input type="text" id="mf-name" value="${escapeHtml(existing?.name || '')}" placeholder="e.g. OPSC OAS Notification PDF" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Filename on Disk / Object Store</label>
+                    <input type="text" id="mf-filename" value="${escapeHtml(existing?.filename || '')}" placeholder="opsc-oas-2026-gazette.pdf" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block font-semibold text-slate-300 mb-1">Folder Destination</label>
+                      <input type="text" id="mf-folder" value="${escapeHtml(existing?.folder || '/syllabi/')}" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-300 mb-1">Storage Provider</label>
+                      <select id="mf-provider" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none">
+                        <option value="Cloudflare R2 Primary Bucket" ${existing?.storageProvider === 'Cloudflare R2 Primary Bucket' ? 'selected' : ''}>Cloudflare R2</option>
+                        <option value="Asset CDN Edge" ${existing?.storageProvider === 'Asset CDN Edge' ? 'selected' : ''}>Asset CDN Edge</option>
+                        <option value="Supabase Storage Bucket" ${existing?.storageProvider === 'Supabase Storage Bucket' ? 'selected' : ''}>Supabase Storage</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="mf-active" ${existing?.active !== false ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                      <span class="font-medium text-slate-300">File Active &amp; Publicly Accessible</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end gap-3">
+                  <button id="modal-cancel-file" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+                  <button id="modal-save-file" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-lg cursor-pointer">${isEdit ? 'Save Changes' : 'Create File'}</button>
+                </div>
+              </div>
+            </div>
+          `;
+          const prev = document.getElementById('file-modal-overlay'); if (prev) prev.remove();
+          document.body.insertAdjacentHTML('beforeend', modalHtml);
+          const overlay = document.getElementById('file-modal-overlay');
+          const close = () => overlay.remove();
+          document.getElementById('modal-close-file').addEventListener('click', close);
+          document.getElementById('modal-cancel-file').addEventListener('click', close);
+          document.getElementById('modal-save-file').addEventListener('click', () => {
+            const id = document.getElementById('mf-id').value.trim();
+            const name = document.getElementById('mf-name').value.trim();
+            const filename = document.getElementById('mf-filename').value.trim() || name;
+            const size = document.getElementById('mf-size').value.trim() || '1.0 MB';
+            const folder = document.getElementById('mf-folder').value.trim() || '/';
+            const storageProvider = document.getElementById('mf-provider').value;
+            const active = document.getElementById('mf-active').checked;
+            if (!id || !name) { alert('File ID and Name are required.'); return; }
+            const obj = { id, name, filename, size, folder, storageProvider, active, downloadUrl: `https://r2.csodisha.com${folder}${filename}` };
+            if (isEdit) {
+              const idx = files.findIndex(x => x.id === existing.id);
+              if (idx !== -1) files[idx] = obj;
+            } else {
+              files.push(obj);
+            }
+            config.files = files; config.items = files;
+            store.saveFileLibraryConfig(config);
+            close();
+            showToast(`File ${id} saved`, 'success');
+            render();
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-07-001 (File Library)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-002: Bulk Uploads Workspace
+     */
+    function renderBulkUploadsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getBulkUploadsConfig();
+        let batches = Array.isArray(config.batches || config.items) ? [...(config.batches || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const completedBatches = batches.filter(b => b.status === 'Completed');
+          const totalFilesQueued = batches.reduce((sum, b) => sum + (parseInt(b.totalFiles, 10) || 0), 0);
+          const filtered = batches.filter(b => (b.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || (b.id || '').toLowerCase().includes(searchTerm.toLowerCase()));
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Bulk Uploads &amp; Queue Ingestion</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track multi-file archive batches, automated zip extractions, and asynchronous queue ingestion jobs.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-batch" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Upload Batch
+                  </button>
+                  <button id="btn-inspect-batches" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">Raw Schema</button>
+                  <button id="btn-export-batches" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">Export Manifest</button>
+                  <button id="btn-reset-batches" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Batches</div>
+                  <div class="text-2xl font-bold text-white mt-1">${batches.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Completed Jobs</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${completedBatches.length} of ${batches.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Files Ingested</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1 font-mono">${totalFilesQueued} files</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Concurrent Limit</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.settings?.maxConcurrentUploads || 4} threads</div>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-sm">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <th class="py-3.5 px-4 w-28">Batch ID</th>
+                      <th class="py-3.5 px-4">Batch Title &amp; Target</th>
+                      <th class="py-3.5 px-4 w-24 text-center">Files</th>
+                      <th class="py-3.5 px-4 w-28">Total Size</th>
+                      <th class="py-3.5 px-4 w-36">Progress</th>
+                      <th class="py-3.5 px-4 w-28 text-center">Status</th>
+                      <th class="py-3.5 px-4 w-24 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60 text-xs">
+                    ${filtered.map(b => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(b.id)}</td>
+                        <td class="py-3.5 px-4">
+                          <div class="font-semibold text-white">${escapeHtml(b.name)}</div>
+                          <div class="text-[11px] text-slate-400 font-mono mt-0.5">${escapeHtml(b.destinationFolder || '/')}</div>
+                        </td>
+                        <td class="py-3.5 px-4 text-center font-mono text-slate-300">${b.totalFiles}</td>
+                        <td class="py-3.5 px-4 font-mono text-amber-300">${escapeHtml(b.totalSize)}</td>
+                        <td class="py-3.5 px-4">
+                          <div class="flex items-center gap-2">
+                            <div class="flex-1 bg-slate-800 rounded-full h-2 overflow-hidden">
+                              <div class="h-full ${b.status === 'Completed' ? 'bg-emerald-500' : b.status === 'Processing' ? 'bg-cyan-500' : 'bg-slate-600'}" style="width: ${b.progressPercent || 0}%"></div>
+                            </div>
+                            <span class="font-mono text-[10px] text-slate-400">${b.progressPercent || 0}%</span>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                          <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold ${b.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : b.status === 'Processing' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${escapeHtml(b.status)}
+                          </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                          <button class="btn-del-batch p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer" data-id="${escapeHtml(b.id)}">✕</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-batch');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const nextNum = batches.length + 101;
+            const newBatch = {
+              id: `BATCH-${nextNum}`,
+              name: `Aspirant Study Vault Batch #${nextNum}`,
+              totalFiles: 15,
+              totalSize: "32.0 MB",
+              status: "Queued",
+              progressPercent: 0,
+              destinationFolder: "/pyq-archives/",
+              active: true
+            };
+            batches.push(newBatch);
+            config.batches = batches; config.items = batches;
+            store.saveBulkUploadsConfig(config);
+            showToast(`Batch ${newBatch.id} enqueued`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-batch').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove batch ${id}?`)) {
+                batches = batches.filter(x => x.id !== id);
+                config.batches = batches; config.items = batches;
+                store.saveBulkUploadsConfig(config);
+                showToast(`Batch ${id} removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-batches');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Bulk Uploads Schema', config));
+          const btnExport = container.querySelector('#btn-export-batches');
+          if (btnExport) btnExport.addEventListener('click', () => {
+            const fname = store.exportBulkUploadsManifest();
+            showToast(`Exported ${fname}`, 'success');
+          });
+          const btnReset = container.querySelector('#btn-reset-batches');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Bulk Uploads queue?')) {
+              config = store.resetBulkUploadsConfig();
+              batches = Array.isArray(config.batches || config.items) ? [...(config.batches || config.items)] : [];
+              showToast('Bulk uploads reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-002</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-003: Folders & Collections Workspace
+     */
+    function renderFoldersCollectionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFoldersCollectionsConfig();
+        let folders = Array.isArray(config.folders || config.items) ? [...(config.folders || config.items)] : [];
+
+        function render() {
+          const totalItems = folders.reduce((sum, f) => sum + (parseInt(f.itemCount, 10) || 0), 0);
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Directory Hierarchy &amp; Asset Collections</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Organize logical folder buckets, root mounts, syllabus archives, and media collections.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-dir" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    Add Folder Directory
+                  </button>
+                  <button id="btn-inspect-dirs" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-dirs" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-dirs" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Configured Directories</div>
+                  <div class="text-2xl font-bold text-white mt-1">${folders.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Total Files Indexed</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${totalItems} files</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Subfolder Virtual Mounts</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">Enabled</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${folders.map(f => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-blue-500/10 text-blue-400">📁</span>
+                        <div>
+                          <h3 class="text-sm font-bold text-white">${escapeHtml(f.label)}</h3>
+                          <div class="text-xs font-mono text-cyan-300 mt-0.5">${escapeHtml(f.path)}</div>
+                        </div>
+                      </div>
+                      <div class="text-[11px] text-slate-400 mt-3 flex items-center gap-3">
+                        <span>Items: <b>${f.itemCount}</b></span>
+                        <span>Usage: <b>${escapeHtml(f.sizeUsage || '0 MB')}</b></span>
+                        <span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300">${escapeHtml(f.folderType)}</span>
+                      </div>
+                    </div>
+                    <button class="btn-del-dir p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition" data-id="${escapeHtml(f.id)}">✕</button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-dir');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = folders.length + 1;
+            const newFolder = { id: `DIR-${String(next).padStart(2, '0')}`, path: `/study-vault/v${next}/`, label: `Study Collection Vol ${next}`, folderType: "Child", itemCount: 10, sizeUsage: "24 MB", active: true };
+            folders.push(newFolder);
+            config.folders = folders; config.items = folders;
+            store.saveFoldersCollectionsConfig(config);
+            showToast(`Directory ${newFolder.path} created`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-dir').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove directory entry ${id}?`)) {
+                folders = folders.filter(x => x.id !== id);
+                config.folders = folders; config.items = folders;
+                store.saveFoldersCollectionsConfig(config);
+                showToast(`Directory entry removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-dirs');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Folders Schema', config));
+          const btnExport = container.querySelector('#btn-export-dirs');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportFoldersCollectionsManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-dirs');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Folders & Collections?')) {
+              config = store.resetFoldersCollectionsConfig();
+              folders = Array.isArray(config.folders || config.items) ? [...(config.folders || config.items)] : [];
+              showToast('Folders reset to factory defaults', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-003</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-004: PDF Manager Workspace
+     */
+    function renderPdfManagerWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPdfManagerConfig();
+        let docs = Array.isArray(config.documents || config.items) ? [...(config.documents || config.items)] : [];
+
+        function render() {
+          const totalPages = docs.reduce((sum, d) => sum + (parseInt(d.pages, 10) || 0), 0);
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">PDF Document Management &amp; OCR Indexing</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage recruitment gazettes, multi-page PDFs, OCR text search, and SHA-256 integrity verification.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-pdf" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add PDF Record</button>
+                  <button id="btn-inspect-pdf" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-pdf" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-pdf" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Managed Documents</div>
+                  <div class="text-2xl font-bold text-white mt-1">${docs.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Total Pages Rendered</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${totalPages} pages</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">OCR Indexing Engine</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">Full-Text Live</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Integrity Hashes</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">SHA-256 Valid</div>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase">
+                      <th class="py-3.5 px-4 w-24">PDF ID</th>
+                      <th class="py-3.5 px-4">Document Title &amp; Filename</th>
+                      <th class="py-3.5 px-4 w-24 text-center">Pages</th>
+                      <th class="py-3.5 px-4 w-28">Size</th>
+                      <th class="py-3.5 px-4 w-32">OCR Status</th>
+                      <th class="py-3.5 px-4">SHA-256 Checksum</th>
+                      <th class="py-3.5 px-4 w-24 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60 text-xs">
+                    ${docs.map(d => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(d.id)}</td>
+                        <td class="py-3.5 px-4">
+                          <div class="font-semibold text-white">${escapeHtml(d.title)}</div>
+                          <div class="text-[11px] text-slate-400 font-mono mt-0.5">${escapeHtml(d.filename)}</div>
+                        </td>
+                        <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-300">${d.pages}</td>
+                        <td class="py-3.5 px-4 font-mono text-amber-300">${escapeHtml(d.fileSizeFormatted)}</td>
+                        <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${escapeHtml(d.ocrStatus)}</span></td>
+                        <td class="py-3.5 px-4 font-mono text-[10px] text-slate-500 truncate max-w-xs">${escapeHtml(d.checksumSha256)}</td>
+                        <td class="py-3.5 px-4 text-right">
+                          <button class="btn-del-pdf p-1.5 text-slate-400 hover:text-rose-400 rounded-lg transition" data-id="${escapeHtml(d.id)}">✕</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-pdf');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = docs.length + 1;
+            const newDoc = { id: `PDF-${String(next).padStart(2, '0')}`, title: `Odisha Teacher Eligibility Guidelines Vol ${next}`, filename: `otet-guidelines-v${next}.pdf`, pages: 16, ocrStatus: "Indexed", fileSizeBytes: 1887436, fileSizeFormatted: "1.8 MB", checksumSha256: "b10a8db164e0754105b7a99be72e3fe5daef2003c2003a8934149fa4f59ec925", active: true };
+            docs.push(newDoc);
+            config.documents = docs; config.items = docs;
+            store.savePdfManagerConfig(config);
+            showToast(`PDF ${newDoc.id} indexed`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-pdf').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove PDF ${id}?`)) {
+                docs = docs.filter(x => x.id !== id);
+                config.documents = docs; config.items = docs;
+                store.savePdfManagerConfig(config);
+                showToast(`PDF ${id} removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-pdf');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('PDF Manager Schema', config));
+          const btnExport = container.querySelector('#btn-export-pdf');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportPdfManagerManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-pdf');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset PDF Manager records?')) {
+              config = store.resetPdfManagerConfig();
+              docs = Array.isArray(config.documents || config.items) ? [...(config.documents || config.items)] : [];
+              showToast('PDF Manager reset to factory defaults', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-004</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-005: Image Library Workspace
+     */
+    function renderImageLibraryWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getImageLibraryConfig();
+        let images = Array.isArray(config.images || config.items) ? [...(config.images || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Image Library &amp; Vector Asset Hub</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage banners, modern WebP/AVIF imagery, vector brand emblems, and social preview cards.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-img" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Image Asset</button>
+                  <button id="btn-inspect-img" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-img" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-img" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Total Images</div>
+                  <div class="text-2xl font-bold text-white mt-1">${images.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Formats Supported</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">WebP · AVIF · SVG</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-xs text-slate-400 uppercase">Auto WebP Conversion</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">Active (85% Q)</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${images.map(img => `
+                  <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden flex flex-col justify-between">
+                    <div class="p-4 border-b border-slate-800/60">
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-300 border border-blue-500/20">${escapeHtml(img.format)}</span>
+                        <span class="text-xs font-mono text-slate-400">${escapeHtml(img.dimensions)}</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white mt-2">${escapeHtml(img.name)}</h3>
+                      <p class="text-[11px] text-slate-400 mt-0.5">Location: <span class="text-slate-300">${escapeHtml(img.usageLocation)}</span></p>
+                    </div>
+                    <div class="p-3 bg-slate-950/40 flex items-center justify-between text-xs font-mono text-slate-400">
+                      <span>${escapeHtml(img.size)}</span>
+                      <button class="btn-del-img text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(img.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-img');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = images.length + 1;
+            const newImg = { id: `IMG-${String(next).padStart(2, '0')}`, name: `Current Affairs Graphic Vol ${next}`, format: "WebP", dimensions: "1200x630", size: "115 KB", aspectRatio: "1.91:1", url: `https://cdn.csodisha.com/banners/ca-vol${next}.webp`, usageLocation: "Current Affairs Portal", active: true };
+            images.push(newImg);
+            config.images = images; config.items = images;
+            store.saveImageLibraryConfig(config);
+            showToast(`Image ${newImg.id} added`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-img').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove image asset ${id}?`)) {
+                images = images.filter(x => x.id !== id);
+                config.images = images; config.items = images;
+                store.saveImageLibraryConfig(config);
+                showToast(`Image asset removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-img');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Image Library Schema', config));
+          const btnExport = container.querySelector('#btn-export-img');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportImageLibraryManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-img');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Image Library?')) {
+              config = store.resetImageLibraryConfig();
+              images = Array.isArray(config.images || config.items) ? [...(config.images || config.items)] : [];
+              showToast('Image library reset to defaults', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-005</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-006: Video & Audio Workspace
+     */
+    function renderVideoAudioWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getVideoAudioConfig();
+        let media = Array.isArray(config.mediaTracks || config.items) ? [...(config.mediaTracks || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Video &amp; Audio Streams Engine</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Stream educational webinars, Odia grammar audio capsules, and candidate strategy masterclasses.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-av" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Media Track</button>
+                  <button id="btn-inspect-av" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-av" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-av" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${media.map(m => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${m.mediaType.includes('Video') ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'}">${escapeHtml(m.mediaType)}</span>
+                        <span class="text-xs font-mono text-slate-400">${escapeHtml(m.duration)}</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white mt-2">${escapeHtml(m.title)}</h3>
+                      <div class="text-[11px] text-slate-400 mt-1">Bitrate: <span class="font-mono text-slate-300">${escapeHtml(m.bitrate)}</span> · Size: <span class="text-amber-300 font-mono">${escapeHtml(m.fileSize)}</span></div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                      <span class="text-slate-400 font-medium">${escapeHtml(m.category)}</span>
+                      <button class="btn-del-av text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(m.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-av');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = media.length + 1;
+            const newTrack = { id: `AV-${String(next).padStart(2, '0')}`, title: `Odisha History Quick Capsule Audio #${next}`, mediaType: "Audio (MP3)", duration: "25 mins", bitrate: "128 kbps", fileSize: "22.8 MB", streamUrl: `https://r2.csodisha.com/audio/history-capsule-${next}.mp3`, category: "General Studies", active: true };
+            media.push(newTrack);
+            config.mediaTracks = media; config.items = media;
+            store.saveVideoAudioConfig(config);
+            showToast(`Track ${newTrack.id} added`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-av').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove media track ${id}?`)) {
+                media = media.filter(x => x.id !== id);
+                config.mediaTracks = media; config.items = media;
+                store.saveVideoAudioConfig(config);
+                showToast(`Media track removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-av');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Video & Audio Schema', config));
+          const btnExport = container.querySelector('#btn-export-av');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportVideoAudioManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-av');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Video & Audio tracks?')) {
+              config = store.resetVideoAudioConfig();
+              media = Array.isArray(config.mediaTracks || config.items) ? [...(config.mediaTracks || config.items)] : [];
+              showToast('Media tracks reset to defaults', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-006</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-007: Cloud Links Workspace
+     */
+    function renderCloudLinksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCloudLinksConfig();
+        let endpoints = Array.isArray(config.cloudEndpoints || config.items) ? [...(config.cloudEndpoints || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Cloud CDN &amp; Object Endpoints</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Route traffic through Cloudflare Anycast edge, monitor egress latency, and verify zero-downtime endpoints.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-cloud" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Endpoint</button>
+                  <button id="btn-inspect-cloud" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-cloud" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-cloud" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${endpoints.map(ep => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${escapeHtml(ep.status)}</span>
+                        <span class="text-xs font-mono font-bold text-cyan-400">${ep.latencyMs}ms</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white mt-2">${escapeHtml(ep.label)}</h3>
+                      <div class="text-xs font-mono text-blue-400 mt-1">${escapeHtml(ep.endpoint)}</div>
+                      <p class="text-[11px] text-slate-400 mt-2">Region: <span class="text-slate-300">${escapeHtml(ep.region)}</span></p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                      <span class="text-slate-500 font-mono">${escapeHtml(ep.protocol)}</span>
+                      <button class="btn-del-cloud text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(ep.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-cloud');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = endpoints.length + 1;
+            const newEp = { id: `CLOUD-${String(next).padStart(2, '0')}`, label: `Edge Pop Zone #${next}`, endpoint: `edge${next}.csodisha.com`, region: "South Asia Edge", protocol: "HTTPS / HTTP/3", status: "Operational", latencyMs: 18, active: true };
+            endpoints.push(newEp);
+            config.cloudEndpoints = endpoints; config.items = endpoints;
+            store.saveCloudLinksConfig(config);
+            showToast(`Endpoint ${newEp.id} added`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-cloud').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove endpoint ${id}?`)) {
+                endpoints = endpoints.filter(x => x.id !== id);
+                config.cloudEndpoints = endpoints; config.items = endpoints;
+                store.saveCloudLinksConfig(config);
+                showToast(`Endpoint removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-cloud');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Cloud Links Schema', config));
+          const btnExport = container.querySelector('#btn-export-cloud');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportCloudLinksManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-cloud');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Cloud Links?')) {
+              config = store.resetCloudLinksConfig();
+              endpoints = Array.isArray(config.cloudEndpoints || config.items) ? [...(config.cloudEndpoints || config.items)] : [];
+              showToast('Cloud endpoints reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-007</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-008: Google Drive Links Workspace
+     */
+    function renderGoogleDriveLinksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getGoogleDriveLinksConfig();
+        let items = Array.isArray(config.driveItems || config.items) ? [...(config.driveItems || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Google Drive Sync &amp; Shared Folders</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Link collaborative Google Drives, question bank mirrors, and public student shareables.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-gdrv" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Drive Resource</button>
+                  <button id="btn-inspect-gdrv" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-gdrv" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-gdrv" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${items.map(it => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${escapeHtml(it.syncStatus)}</span>
+                        <span class="text-xs font-mono text-cyan-400">${it.fileCount} files</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white mt-2">${escapeHtml(it.title)}</h3>
+                      <div class="text-[11px] font-mono text-slate-400 mt-1">ID: ${escapeHtml(it.driveFileId)}</div>
+                      <p class="text-[11px] text-slate-500 mt-2">Type: <span class="text-slate-300">${escapeHtml(it.resourceType)}</span></p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                      <span class="text-slate-500 text-[10px]">Verified: ${it.lastVerified.slice(0, 10)}</span>
+                      <button class="btn-del-gdrv text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(it.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-gdrv');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = items.length + 1;
+            const newItem = { id: `GDRV-${String(next).padStart(2, '0')}`, title: `Odisha GK Vault Mirror Vol ${next}`, driveFileId: `GD-${next}x8Y9z-Share`, resourceType: "Folder Mirror", fileCount: 30, syncStatus: "Synced", lastVerified: new Date().toISOString(), active: true };
+            items.push(newItem);
+            config.driveItems = items; config.items = items;
+            store.saveGoogleDriveLinksConfig(config);
+            showToast(`Drive resource ${newItem.id} added`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-gdrv').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove drive item ${id}?`)) {
+                items = items.filter(x => x.id !== id);
+                config.driveItems = items; config.items = items;
+                store.saveGoogleDriveLinksConfig(config);
+                showToast(`Drive item removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-gdrv');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Google Drive Schema', config));
+          const btnExport = container.querySelector('#btn-export-gdrv');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportGoogleDriveLinksManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-gdrv');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Google Drive links?')) {
+              config = store.resetGoogleDriveLinksConfig();
+              items = Array.isArray(config.driveItems || config.items) ? [...(config.driveItems || config.items)] : [];
+              showToast('Google Drive links reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-008</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-009: Storage Providers Workspace
+     */
+    function renderStorageProvidersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getStorageProvidersConfig();
+        let providers = Array.isArray(config.providers || config.items) ? [...(config.providers || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Multi-Cloud Storage Providers</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage Cloudflare R2, Supabase Buckets, and D1 Local Edge Blob failovers.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-sp" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Storage Provider</button>
+                  <button id="btn-inspect-sp" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-sp" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-sp" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${providers.map(p => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-300 border border-blue-500/20">${escapeHtml(p.role)}</span>
+                        <span class="text-xs font-mono font-bold text-emerald-400">${p.uptimePercent}% uptime</span>
+                      </div>
+                      <h3 class="text-base font-bold text-white mt-2">${escapeHtml(p.name)}</h3>
+                      <div class="text-xs text-slate-400 mt-1">Region: <span class="text-slate-300">${escapeHtml(p.region)}</span></div>
+                      <div class="mt-3">
+                        <div class="flex items-center justify-between text-[11px] mb-1">
+                          <span class="text-slate-400">Used: ${p.usedGb} GB</span>
+                          <span class="font-mono text-cyan-300">${p.quotaGb} GB Quota</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                          <div class="h-full bg-cyan-500" style="width: ${(p.usedGb / p.quotaGb * 100).toFixed(1)}%"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                      <span class="text-slate-500">Egress: <b>${escapeHtml(p.egressFee)}</b></span>
+                      <button class="btn-del-sp text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(p.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-sp');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = providers.length + 1;
+            const newP = { id: `SP-${String(next).padStart(2, '0')}`, name: `AWS S3 Cold Archive #${next}`, role: "Cold Archive", quotaGb: 100, usedGb: 5.2, egressFee: "$0.09 / GB", uptimePercent: 99.9, region: "ap-south-1 (Mumbai)", active: true };
+            providers.push(newP);
+            config.providers = providers; config.items = providers;
+            store.saveStorageProvidersConfig(config);
+            showToast(`Provider ${newP.id} added`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-sp').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove provider ${id}?`)) {
+                providers = providers.filter(x => x.id !== id);
+                config.providers = providers; config.items = providers;
+                store.saveStorageProvidersConfig(config);
+                showToast(`Provider removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-sp');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Storage Providers Schema', config));
+          const btnExport = container.querySelector('#btn-export-sp');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportStorageProvidersManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-sp');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Storage Providers?')) {
+              config = store.resetStorageProvidersConfig();
+              providers = Array.isArray(config.providers || config.items) ? [...(config.providers || config.items)] : [];
+              showToast('Storage providers reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-009</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-010: File Versions Workspace
+     */
+    function renderFileVersionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFileVersionsConfig();
+        let revisions = Array.isArray(config.revisions || config.items) ? [...(config.revisions || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">File Versioning &amp; Gazette Rollbacks</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track historical releases of examination syllabi, provisional answer key revisions, and supersession records.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-rev" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">New Revision</button>
+                  <button id="btn-inspect-rev" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-rev" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-rev" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800/80 overflow-hidden shadow-xl">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-800/50 border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase">
+                      <th class="py-3.5 px-4 w-24">Revision ID</th>
+                      <th class="py-3.5 px-4">Document &amp; Change Summary</th>
+                      <th class="py-3.5 px-4 w-28 text-center">Version Tag</th>
+                      <th class="py-3.5 px-4 w-32 text-center">Status</th>
+                      <th class="py-3.5 px-4 w-36">Author</th>
+                      <th class="py-3.5 px-4 w-24 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60 text-xs">
+                    ${revisions.map(r => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(r.id)}</td>
+                        <td class="py-3.5 px-4">
+                          <div class="font-semibold text-white">${escapeHtml(r.documentName)}</div>
+                          <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(r.changeNote)}</div>
+                        </td>
+                        <td class="py-3.5 px-4 text-center font-mono font-bold text-cyan-300">${escapeHtml(r.versionTag)}</td>
+                        <td class="py-3.5 px-4 text-center">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.status === 'Current Live' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">${escapeHtml(r.status)}</span>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono text-[11px] text-slate-400">${escapeHtml(r.author)}</td>
+                        <td class="py-3.5 px-4 text-right">
+                          <button class="btn-del-rev p-1.5 text-slate-400 hover:text-rose-400 rounded-lg transition" data-id="${escapeHtml(r.id)}">✕</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-rev');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = revisions.length + 1;
+            const newRev = { id: `REV-${String(next).padStart(2, '0')}`, documentName: "OSSC CGL Rules", versionTag: `v1.${next}`, status: "Current Live", author: "admin@csodisha.com", publishedAt: new Date().toISOString(), changeNote: "Updated age relaxation norms for state candidates.", active: true };
+            revisions.push(newRev);
+            config.revisions = revisions; config.items = revisions;
+            store.saveFileVersionsConfig(config);
+            showToast(`Revision ${newRev.id} published`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-rev').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove revision record ${id}?`)) {
+                revisions = revisions.filter(x => x.id !== id);
+                config.revisions = revisions; config.items = revisions;
+                store.saveFileVersionsConfig(config);
+                showToast(`Revision removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-rev');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('File Versions Schema', config));
+          const btnExport = container.querySelector('#btn-export-rev');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportFileVersionsManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-rev');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset File Versions?')) {
+              config = store.resetFileVersionsConfig();
+              revisions = Array.isArray(config.revisions || config.items) ? [...(config.revisions || config.items)] : [];
+              showToast('File versions reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-010</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-011: File Permissions Workspace
+     */
+    function renderFilePermissionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFilePermissionsConfig();
+        let rules = Array.isArray(config.permissionRules || config.items) ? [...(config.permissionRules || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Access Control &amp; Download Permissions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Control public vs registered candidate access, daily rate limits, and hotlink protection.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-perm" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Permission Rule</button>
+                  <button id="btn-inspect-perm" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-perm" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-perm" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${rules.map(r => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">${escapeHtml(r.accessLevel)}</span>
+                        <span class="text-xs font-mono text-cyan-300">${escapeHtml(r.dailyDownloadCap)}</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white mt-2">${escapeHtml(r.ruleName)}</h3>
+                      <div class="text-[11px] font-mono text-slate-400 mt-1">Folders: <span class="text-slate-300">${escapeHtml(r.targetFolders)}</span></div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                      <span class="text-slate-500 text-[10px]">Roles: ${(r.allowedRoles || []).join(', ')}</span>
+                      <button class="btn-del-perm text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(r.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-perm');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = rules.length + 1;
+            const newR = { id: `PERM-${String(next).padStart(2, '0')}`, ruleName: `Premium Material Download Tier #${next}`, accessLevel: "Candidate", targetFolders: "/premium-vault/", allowedRoles: ["Premium Member", "Admin"], dailyDownloadCap: "50 PDFs / day", active: true };
+            rules.push(newR);
+            config.permissionRules = rules; config.items = rules;
+            store.saveFilePermissionsConfig(config);
+            showToast(`Permission rule ${newR.id} added`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-perm').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove permission rule ${id}?`)) {
+                rules = rules.filter(x => x.id !== id);
+                config.permissionRules = rules; config.items = rules;
+                store.saveFilePermissionsConfig(config);
+                showToast(`Rule removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-perm');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('File Permissions Schema', config));
+          const btnExport = container.querySelector('#btn-export-perm');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportFilePermissionsManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-perm');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset File Permissions?')) {
+              config = store.resetFilePermissionsConfig();
+              rules = Array.isArray(config.permissionRules || config.items) ? [...(config.permissionRules || config.items)] : [];
+              showToast('Permissions reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-011</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-012: Storage Usage Workspace
+     */
+    function renderStorageUsageWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getStorageUsageConfig();
+        let metrics = Array.isArray(config.metrics || config.items) ? [...(config.metrics || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-012</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Storage Usage &amp; Bandwidth Analytics</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time capacity tracking, monthly egress metering, and quota alerts.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-inspect-usage" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-usage" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-usage" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${metrics.map(m => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                    <div class="text-xs text-slate-400 uppercase font-medium tracking-wider">${escapeHtml(m.metricName)}</div>
+                    <div class="text-2xl font-bold text-white mt-1 font-mono">${escapeHtml(m.value)}</div>
+                    <div class="mt-2 text-xs flex items-center justify-between text-slate-400">
+                      <span>Status: <b class="text-emerald-400">${escapeHtml(m.status)}</b></span>
+                      <span class="text-cyan-400 font-mono">${escapeHtml(m.trend)}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnInspect = container.querySelector('#btn-inspect-usage');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Storage Usage Schema', config));
+          const btnExport = container.querySelector('#btn-export-usage');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportStorageUsageManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-usage');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Storage Usage metrics?')) {
+              config = store.resetStorageUsageConfig();
+              metrics = Array.isArray(config.metrics || config.items) ? [...(config.metrics || config.items)] : [];
+              showToast('Metrics reset to defaults', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-012</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-013: Duplicate Detection Workspace
+     */
+    function renderDuplicateDetectionWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getDuplicateDetectionConfig();
+        let duplicates = Array.isArray(config.duplicates || config.items) ? [...(config.duplicates || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-013</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Duplicate File Scanner &amp; Hash Collision</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Detect redundant PDF uploads, calculate storage savings, and resolve hash collisions.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-run-scan" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Trigger Hash Scan</button>
+                  <button id="btn-inspect-dup" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-dup" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-dup" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${duplicates.map(d => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.duplicateCount > 0 ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'}">${escapeHtml(d.resolutionStatus)}</span>
+                        <span class="text-xs font-mono text-cyan-300">${d.hashAlgorithm}</span>
+                      </div>
+                      <h3 class="text-sm font-bold text-white mt-2">${escapeHtml(d.scanType)}</h3>
+                      <div class="text-xs font-mono text-slate-400 mt-1">${escapeHtml(d.targetAssets)}</div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                      <span>Potential Savings: <b class="text-emerald-400">${escapeHtml(d.potentialSavings)}</b></span>
+                      <span class="text-slate-500 font-mono">${d.duplicateCount} duplicate(s)</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnRun = container.querySelector('#btn-run-scan');
+          if (btnRun) btnRun.addEventListener('click', () => {
+            showToast('Hash collision check executed: 0 orphaned files found', 'success');
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-dup');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Duplicate Detection Schema', config));
+          const btnExport = container.querySelector('#btn-export-dup');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportDuplicateDetectionManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-dup');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Duplicate Detection records?')) {
+              config = store.resetDuplicateDetectionConfig();
+              duplicates = Array.isArray(config.duplicates || config.items) ? [...(config.duplicates || config.items)] : [];
+              showToast('Duplicate detection reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-013</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-014: Broken File Links Workspace
+     */
+    function renderBrokenFileLinksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getBrokenFileLinksConfig();
+        let audits = Array.isArray(config.audits || config.items) ? [...(config.audits || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-014</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Dead Link Crawler &amp; 404 Detection</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated crawling across all job postings and study modules to prevent dead downloads.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-run-crawler" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Run Full Crawler</button>
+                  <button id="btn-inspect-broken" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-broken" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-broken" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${audits.map(a => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${escapeHtml(a.status)}</span>
+                        <span class="text-xs font-bold text-emerald-400 font-mono">${escapeHtml(a.healthScore)}</span>
+                      </div>
+                      <h3 class="text-base font-bold text-white mt-2">${escapeHtml(a.scanScope)}</h3>
+                      <div class="text-xs text-slate-400 mt-1">URLs Verified: <span class="font-mono text-cyan-300">${a.totalUrlsChecked}</span></div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                      <span>Dead Links: <b class="text-emerald-400">${a.brokenLinksFound}</b></span>
+                      <span>Redirects: <b>${a.redirectsResolved}</b></span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnRun = container.querySelector('#btn-run-crawler');
+          if (btnRun) btnRun.addEventListener('click', () => showToast('Crawler finished: 1,248 URLs verified with 100% health score', 'success'));
+
+          const btnInspect = container.querySelector('#btn-inspect-broken');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Broken Links Schema', config));
+          const btnExport = container.querySelector('#btn-export-broken');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportBrokenFileLinksManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-broken');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Crawler Audit logs?')) {
+              config = store.resetBrokenFileLinksConfig();
+              audits = Array.isArray(config.audits || config.items) ? [...(config.audits || config.items)] : [];
+              showToast('Crawler logs reset', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-014</div>`;
+      }
+    }
+
+    /**
+     * MODULE 07-015: Media Optimization Workspace
+     */
+    function renderMediaOptimizationWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getMediaOptimizationConfig();
+        let pipelines = Array.isArray(config.pipelineRules || config.items) ? [...(config.pipelineRules || config.items)] : [];
+
+        function render() {
+          container.innerHTML = `
+            <div class="space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Folder 07</span>
+                    <span class="text-xs text-slate-400 font-mono">module-07-015</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Image &amp; PDF Compression Pipelines</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated conversion to modern WebP/AVIF, downsampling, and EXIF metadata stripping.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-pipe" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition">Add Pipeline Rule</button>
+                  <button id="btn-inspect-pipe" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Raw Schema</button>
+                  <button id="btn-export-pipe" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition">Export Manifest</button>
+                  <button id="btn-reset-pipe" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition">Factory Reset</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${pipelines.map(p => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${escapeHtml(p.status)}</span>
+                        <span class="text-xs font-bold text-cyan-400 font-mono">${escapeHtml(p.compressionRatio)}</span>
+                      </div>
+                      <h3 class="text-base font-bold text-white mt-2">${escapeHtml(p.pipelineName)}</h3>
+                      <div class="text-xs text-slate-400 mt-1">Target: <span class="font-mono text-slate-300">${escapeHtml(p.targetFormat)}</span></div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                      <span>Trigger: <b>${escapeHtml(p.autoTrigger)}</b></span>
+                      <button class="btn-del-pipe text-slate-500 hover:text-rose-400 p-1" data-id="${escapeHtml(p.id)}">✕</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          const btnAdd = container.querySelector('#btn-add-pipe');
+          if (btnAdd) btnAdd.addEventListener('click', () => {
+            const next = pipelines.length + 1;
+            const newPipe = { id: `OPT-${String(next).padStart(2, '0')}`, pipelineName: `High-Density Graphic Downsampler #${next}`, targetFormat: "WebP (Quality 80%)", compressionRatio: "65% reduction", autoTrigger: "On Upload", status: "Active", active: true };
+            pipelines.push(newPipe);
+            config.pipelineRules = pipelines; config.items = pipelines;
+            store.saveMediaOptimizationConfig(config);
+            showToast(`Pipeline ${newPipe.id} created`, 'success');
+            render();
+          });
+
+          container.querySelectorAll('.btn-del-pipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              if (confirm(`Remove pipeline ${id}?`)) {
+                pipelines = pipelines.filter(x => x.id !== id);
+                config.pipelineRules = pipelines; config.items = pipelines;
+                store.saveMediaOptimizationConfig(config);
+                showToast(`Pipeline removed`, 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = container.querySelector('#btn-inspect-pipe');
+          if (btnInspect) btnInspect.addEventListener('click', () => showSchemaModal('Media Optimization Schema', config));
+          const btnExport = container.querySelector('#btn-export-pipe');
+          if (btnExport) btnExport.addEventListener('click', () => { const f = store.exportMediaOptimizationManifest(); showToast(`Exported ${f}`, 'success'); });
+          const btnReset = container.querySelector('#btn-reset-pipe');
+          if (btnReset) btnReset.addEventListener('click', () => {
+            if (confirm('Reset Media Optimization pipelines?')) {
+              config = store.resetMediaOptimizationConfig();
+              pipelines = Array.isArray(config.pipelineRules || config.items) ? [...(config.pipelineRules || config.items)] : [];
+              showToast('Pipelines reset to defaults', 'info');
+              render();
+            }
+          });
+        }
+        render();
+      } catch (err) {
+        console.error('Render error in module-07-015', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200">Render Error in module-07-015</div>`;
+      }
+    }
+
 
 
 

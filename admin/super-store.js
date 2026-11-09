@@ -8396,6 +8396,812 @@
       return filename;
     },
 
+    // =========================================================================
+    // FOLDER 07: Files, Media & Cloud (07-001 to 07-015)
+    // =========================================================================
+
+    // --- MODULE 07-001: File Library Engine ---
+    getFileLibraryConfig() {
+      return this._hydrateConfig("cso_file_library_config", "files", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { defaultView: "grid", maxUploadSizeBytes: 52428800, allowedExtensions: ["pdf", "svg", "png", "jpg", "webp", "zip", "mp3", "mp4"] },
+        files: [
+          { id: "FILE-01", name: "OPSC 2026 OAS Notification PDF", filename: "opsc-oas-2026-gazette-advt.pdf", mimeType: "application/pdf", size: "2.4 MB", sizeBytes: 2516582, folder: "/syllabi/", storageProvider: "Cloudflare R2 Primary Bucket", downloadUrl: "https://r2.csodisha.com/syllabi/opsc-oas-2026-gazette-advt.pdf", uploadedAt: "2026-11-01T10:15:00Z", active: true },
+          { id: "FILE-02", name: "OTET Scoring Key 2026", filename: "otet-official-provisional-answer-key-2026.pdf", mimeType: "application/pdf", size: "840 KB", sizeBytes: 860160, folder: "/notifications/2026/", storageProvider: "Cloudflare R2 Primary Bucket", downloadUrl: "https://r2.csodisha.com/notifications/otet-answer-key-2026.pdf", uploadedAt: "2026-11-03T14:30:00Z", active: true },
+          { id: "FILE-03", name: "Odisha District Map SVG", filename: "odisha-30-districts-vector-contour.svg", mimeType: "image/svg+xml", size: "450 KB", sizeBytes: 460800, folder: "/banners/editorial/", storageProvider: "Asset CDN Edge", downloadUrl: "https://cdn.csodisha.com/maps/odisha-30-districts.svg", uploadedAt: "2026-10-25T08:00:00Z", active: true },
+          { id: "FILE-04", name: "Constitution Summary Notes", filename: "polity-constitution-high-court-capsule.pdf", mimeType: "application/pdf", size: "3.2 MB", sizeBytes: 3355443, folder: "/pyq-archives/", storageProvider: "Cloudflare R2 Primary Bucket", downloadUrl: "https://r2.csodisha.com/pyq/polity-constitution-notes.pdf", uploadedAt: "2026-11-05T12:00:00Z", active: true }
+        ]
+      }));
+    },
+
+    saveFileLibraryConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          defaultView: config.settings?.defaultView || "grid",
+          maxUploadSizeBytes: parseInt(config.settings?.maxUploadSizeBytes, 10) || 52428800,
+          allowedExtensions: Array.isArray(config.settings?.allowedExtensions) ? config.settings.allowedExtensions : ["pdf", "svg", "png", "jpg", "webp", "zip", "mp3", "mp4"]
+        },
+        files: Array.isArray(config.files || config.items) ? (config.files || config.items).map((item, i) => ({
+          id: String(item.id || "FILE-" + String(i + 1).padStart(2, "0")),
+          name: String(item.name || "").trim(),
+          filename: String(item.filename || item.name || "").trim(),
+          mimeType: String(item.mimeType || "application/octet-stream").trim(),
+          size: String(item.size || "1.0 MB").trim(),
+          sizeBytes: parseInt(item.sizeBytes, 10) || 1048576,
+          folder: String(item.folder || "/syllabi/").trim(),
+          storageProvider: String(item.storageProvider || "Cloudflare R2 Primary Bucket").trim(),
+          downloadUrl: String(item.downloadUrl || "#").trim(),
+          uploadedAt: item.uploadedAt || new Date().toISOString(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.files;
+      localStorage.setItem("cso_file_library_config", JSON.stringify(clean));
+      this.logAudit("FILE_LIBRARY_CONFIG_UPDATED", "FILES_MEDIA", "File library updated (" + clean.files.length + " files).");
+      return true;
+    },
+
+    resetFileLibraryConfig() {
+      localStorage.removeItem("cso_file_library_config");
+      this.logAudit("FILE_LIBRARY_CONFIG_RESET", "SYSTEM_RESET", "File library reset to factory defaults.");
+      return this.getFileLibraryConfig();
+    },
+
+    exportFileLibraryManifest() {
+      const config = this.getFileLibraryConfig();
+      const filename = "file_library_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FILE_LIBRARY_MANIFEST_EXPORTED", "DATA_EXPORT", "File library manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-002: Bulk Uploads Engine ---
+    getBulkUploadsConfig() {
+      return this._hydrateConfig("cso_bulk_uploads_config", "batches", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { maxConcurrentUploads: 4, autoExtractZip: true, notifyOnComplete: true },
+        batches: [
+          { id: "BATCH-104", name: "OPSC Gazette Archive", totalFiles: 18, totalSize: "42.8 MB", status: "Completed", progressPercent: 100, destinationFolder: "/syllabi/", createdAt: "2026-11-04T09:12:00Z", completedAt: "2026-11-04T09:15:30Z", active: true },
+          { id: "BATCH-105", name: "District Schemes", totalFiles: 12, totalSize: "28.4 MB", status: "Processing", progressPercent: 65, destinationFolder: "/notifications/2026/", createdAt: "2026-11-09T17:40:00Z", completedAt: null, active: true },
+          { id: "BATCH-106", name: "Model Papers", totalFiles: 25, totalSize: "68.2 MB", status: "Queued", progressPercent: 0, destinationFolder: "/pyq-archives/", createdAt: "2026-11-09T18:10:00Z", completedAt: null, active: true }
+        ]
+      }));
+    },
+
+    saveBulkUploadsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          maxConcurrentUploads: parseInt(config.settings?.maxConcurrentUploads, 10) || 4,
+          autoExtractZip: config.settings?.autoExtractZip !== false,
+          notifyOnComplete: config.settings?.notifyOnComplete !== false
+        },
+        batches: Array.isArray(config.batches || config.items) ? (config.batches || config.items).map((item, i) => ({
+          id: String(item.id || "BATCH-" + String(i + 101)),
+          name: String(item.name || "").trim(),
+          totalFiles: parseInt(item.totalFiles, 10) || 0,
+          totalSize: String(item.totalSize || "0 MB").trim(),
+          status: String(item.status || "Queued").trim(),
+          progressPercent: parseInt(item.progressPercent, 10) || 0,
+          destinationFolder: String(item.destinationFolder || "/syllabi/").trim(),
+          createdAt: item.createdAt || new Date().toISOString(),
+          completedAt: item.completedAt || null,
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.batches;
+      localStorage.setItem("cso_bulk_uploads_config", JSON.stringify(clean));
+      this.logAudit("BULK_UPLOADS_CONFIG_UPDATED", "FILES_MEDIA", "Bulk uploads updated (" + clean.batches.length + " batches).");
+      return true;
+    },
+
+    resetBulkUploadsConfig() {
+      localStorage.removeItem("cso_bulk_uploads_config");
+      this.logAudit("BULK_UPLOADS_CONFIG_RESET", "SYSTEM_RESET", "Bulk uploads reset to factory defaults.");
+      return this.getBulkUploadsConfig();
+    },
+
+    exportBulkUploadsManifest() {
+      const config = this.getBulkUploadsConfig();
+      const filename = "bulk_uploads_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BULK_UPLOADS_MANIFEST_EXPORTED", "DATA_EXPORT", "Bulk uploads manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-003: Folders & Collections Engine ---
+    getFoldersCollectionsConfig() {
+      return this._hydrateConfig("cso_folders_collections_config", "folders", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { rootDirectory: "/", enableSubfolders: true, defaultSort: "name_asc" },
+        folders: [
+          { id: "DIR-01", path: "/syllabi/", label: "Syllabi & Gazettes", folderType: "Root", itemCount: 42, sizeUsage: "124 MB", icon: "folder", active: true },
+          { id: "DIR-02", path: "/pyq-archives/", label: "PYQ Archives", folderType: "Root", itemCount: 88, sizeUsage: "386 MB", icon: "archive", active: true },
+          { id: "DIR-03", path: "/notifications/2026/", label: "2026 Recruitment Notices", folderType: "Child", itemCount: 34, sizeUsage: "78 MB", icon: "bell", active: true },
+          { id: "DIR-04", path: "/banners/editorial/", label: "Editorial & Web Media", folderType: "Media", itemCount: 64, sizeUsage: "215 MB", icon: "image", active: true }
+        ]
+      }));
+    },
+
+    saveFoldersCollectionsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          rootDirectory: String(config.settings?.rootDirectory || "/").trim(),
+          enableSubfolders: config.settings?.enableSubfolders !== false,
+          defaultSort: String(config.settings?.defaultSort || "name_asc").trim()
+        },
+        folders: Array.isArray(config.folders || config.items) ? (config.folders || config.items).map((item, i) => ({
+          id: String(item.id || "DIR-" + String(i + 1).padStart(2, "0")),
+          path: String(item.path || "/").trim(),
+          label: String(item.label || "").trim(),
+          folderType: String(item.folderType || "Root").trim(),
+          itemCount: parseInt(item.itemCount, 10) || 0,
+          sizeUsage: String(item.sizeUsage || "0 MB").trim(),
+          icon: String(item.icon || "folder").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.folders;
+      localStorage.setItem("cso_folders_collections_config", JSON.stringify(clean));
+      this.logAudit("FOLDERS_COLLECTIONS_CONFIG_UPDATED", "FILES_MEDIA", "Folders updated (" + clean.folders.length + " folders).");
+      return true;
+    },
+
+    resetFoldersCollectionsConfig() {
+      localStorage.removeItem("cso_folders_collections_config");
+      this.logAudit("FOLDERS_COLLECTIONS_CONFIG_RESET", "SYSTEM_RESET", "Folders reset to factory defaults.");
+      return this.getFoldersCollectionsConfig();
+    },
+
+    exportFoldersCollectionsManifest() {
+      const config = this.getFoldersCollectionsConfig();
+      const filename = "folders_collections_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FOLDERS_COLLECTIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "Folders collections manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-004: PDF Manager Engine ---
+    getPdfManagerConfig() {
+      return this._hydrateConfig("cso_pdf_manager_config", "documents", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { enableFullTextSearch: true, autoGenerateThumbnails: true, watermarking: false },
+        documents: [
+          { id: "PDF-01", title: "OAS 2026 Detailed Gazette", filename: "oas-2026-gazette-complete.pdf", pages: 32, ocrStatus: "Indexed", fileSizeBytes: 3355443, fileSizeFormatted: "3.2 MB", checksumSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", active: true },
+          { id: "PDF-02", title: "OSSC CGL Exam Scheme", filename: "ossc-cgl-scheme-syllabus.pdf", pages: 12, ocrStatus: "Indexed", fileSizeBytes: 1468006, fileSizeFormatted: "1.4 MB", checksumSha256: "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", active: true },
+          { id: "PDF-03", title: "OSSSC RI Pattern", filename: "osssc-ri-amin-scheme.pdf", pages: 8, ocrStatus: "Indexed", fileSizeBytes: 943718, fileSizeFormatted: "920 KB", checksumSha256: "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d", active: true }
+        ]
+      }));
+    },
+
+    savePdfManagerConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          enableFullTextSearch: config.settings?.enableFullTextSearch !== false,
+          autoGenerateThumbnails: config.settings?.autoGenerateThumbnails !== false,
+          watermarking: !!config.settings?.watermarking
+        },
+        documents: Array.isArray(config.documents || config.items) ? (config.documents || config.items).map((item, i) => ({
+          id: String(item.id || "PDF-" + String(i + 1).padStart(2, "0")),
+          title: String(item.title || "").trim(),
+          filename: String(item.filename || item.title || "").trim(),
+          pages: parseInt(item.pages, 10) || 1,
+          ocrStatus: String(item.ocrStatus || "Indexed").trim(),
+          fileSizeBytes: parseInt(item.fileSizeBytes, 10) || 1048576,
+          fileSizeFormatted: String(item.fileSizeFormatted || "1.0 MB").trim(),
+          checksumSha256: String(item.checksumSha256 || "").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.documents;
+      localStorage.setItem("cso_pdf_manager_config", JSON.stringify(clean));
+      this.logAudit("PDF_MANAGER_CONFIG_UPDATED", "FILES_MEDIA", "PDF manager updated (" + clean.documents.length + " PDFs).");
+      return true;
+    },
+
+    resetPdfManagerConfig() {
+      localStorage.removeItem("cso_pdf_manager_config");
+      this.logAudit("PDF_MANAGER_CONFIG_RESET", "SYSTEM_RESET", "PDF manager reset to factory defaults.");
+      return this.getPdfManagerConfig();
+    },
+
+    exportPdfManagerManifest() {
+      const config = this.getPdfManagerConfig();
+      const filename = "pdf_manager_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PDF_MANAGER_MANIFEST_EXPORTED", "DATA_EXPORT", "PDF manager manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-005: Image Library Engine ---
+    getImageLibraryConfig() {
+      return this._hydrateConfig("cso_image_library_config", "images", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { autoWebpConversion: true, maxResolution: "3840x2160", preserveExif: false },
+        images: [
+          { id: "IMG-01", name: "Hero Banner OAS 2026", format: "WebP", dimensions: "1200x630", size: "148 KB", aspectRatio: "1.91:1", url: "https://cdn.csodisha.com/banners/hero-oas-2026.webp", usageLocation: "Homepage Hero", active: true },
+          { id: "IMG-02", name: "SAMS Portal Infographic", format: "AVIF", dimensions: "800x800", size: "92 KB", aspectRatio: "1:1", url: "https://cdn.csodisha.com/infographics/sams-portal-steps.avif", usageLocation: "Schemes Section", active: true },
+          { id: "IMG-03", name: "CSO Emblem Seal", format: "SVG", dimensions: "Vector", size: "34 KB", aspectRatio: "1:1", url: "https://cdn.csodisha.com/brand/cso-emblem-vector.svg", usageLocation: "Header / Brand Assets", active: true }
+        ]
+      }));
+    },
+
+    saveImageLibraryConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          autoWebpConversion: config.settings?.autoWebpConversion !== false,
+          maxResolution: String(config.settings?.maxResolution || "3840x2160").trim(),
+          preserveExif: !!config.settings?.preserveExif
+        },
+        images: Array.isArray(config.images || config.items) ? (config.images || config.items).map((item, i) => ({
+          id: String(item.id || "IMG-" + String(i + 1).padStart(2, "0")),
+          name: String(item.name || "").trim(),
+          format: String(item.format || "WebP").trim(),
+          dimensions: String(item.dimensions || "1200x630").trim(),
+          size: String(item.size || "100 KB").trim(),
+          aspectRatio: String(item.aspectRatio || "16:9").trim(),
+          url: String(item.url || "#").trim(),
+          usageLocation: String(item.usageLocation || "General").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.images;
+      localStorage.setItem("cso_image_library_config", JSON.stringify(clean));
+      this.logAudit("IMAGE_LIBRARY_CONFIG_UPDATED", "FILES_MEDIA", "Image library updated (" + clean.images.length + " images).");
+      return true;
+    },
+
+    resetImageLibraryConfig() {
+      localStorage.removeItem("cso_image_library_config");
+      this.logAudit("IMAGE_LIBRARY_CONFIG_RESET", "SYSTEM_RESET", "Image library reset to factory defaults.");
+      return this.getImageLibraryConfig();
+    },
+
+    exportImageLibraryManifest() {
+      const config = this.getImageLibraryConfig();
+      const filename = "image_library_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("IMAGE_LIBRARY_MANIFEST_EXPORTED", "DATA_EXPORT", "Image library manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-006: Video & Audio Engine ---
+    getVideoAudioConfig() {
+      return this._hydrateConfig("cso_video_audio_config", "mediaTracks", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { enableHlsStreaming: true, defaultAudioBitrate: "128k", maxVideoLengthMinutes: 180 },
+        mediaTracks: [
+          { id: "AV-01", title: "Odia Grammar Audio Masterclass", mediaType: "Audio (MP3)", duration: "42 mins", bitrate: "192 kbps", fileSize: "58 MB", streamUrl: "https://r2.csodisha.com/audio/odia-vyakaran-masterclass.mp3", category: "Language Study", active: true },
+          { id: "AV-02", title: "OAS Prelims GS Strategy Webinar", mediaType: "Video (MP4)", duration: "64 mins", bitrate: "1080p 2.5 Mbps", fileSize: "1.2 GB", streamUrl: "https://r2.csodisha.com/video/oas-gs-strategy-2026.mp4", category: "Exam Strategy", active: true },
+          { id: "AV-03", title: "Daily Odisha Current Affairs Podcast #12", mediaType: "Audio (MP3)", duration: "18 mins", bitrate: "128 kbps", fileSize: "16.4 MB", streamUrl: "https://r2.csodisha.com/audio/ca-podcast-ep12.mp3", category: "Current Affairs", active: true }
+        ]
+      }));
+    },
+
+    saveVideoAudioConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          enableHlsStreaming: config.settings?.enableHlsStreaming !== false,
+          defaultAudioBitrate: String(config.settings?.defaultAudioBitrate || "128k").trim(),
+          maxVideoLengthMinutes: parseInt(config.settings?.maxVideoLengthMinutes, 10) || 180
+        },
+        mediaTracks: Array.isArray(config.mediaTracks || config.items) ? (config.mediaTracks || config.items).map((item, i) => ({
+          id: String(item.id || "AV-" + String(i + 1).padStart(2, "0")),
+          title: String(item.title || "").trim(),
+          mediaType: String(item.mediaType || "Audio (MP3)").trim(),
+          duration: String(item.duration || "0 mins").trim(),
+          bitrate: String(item.bitrate || "128 kbps").trim(),
+          fileSize: String(item.fileSize || "10 MB").trim(),
+          streamUrl: String(item.streamUrl || "#").trim(),
+          category: String(item.category || "General").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.mediaTracks;
+      localStorage.setItem("cso_video_audio_config", JSON.stringify(clean));
+      this.logAudit("VIDEO_AUDIO_CONFIG_UPDATED", "FILES_MEDIA", "Video & audio config updated (" + clean.mediaTracks.length + " tracks).");
+      return true;
+    },
+
+    resetVideoAudioConfig() {
+      localStorage.removeItem("cso_video_audio_config");
+      this.logAudit("VIDEO_AUDIO_CONFIG_RESET", "SYSTEM_RESET", "Video & audio config reset to factory defaults.");
+      return this.getVideoAudioConfig();
+    },
+
+    exportVideoAudioManifest() {
+      const config = this.getVideoAudioConfig();
+      const filename = "video_audio_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("VIDEO_AUDIO_MANIFEST_EXPORTED", "DATA_EXPORT", "Video & audio manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-007: Cloud Links Engine ---
+    getCloudLinksConfig() {
+      return this._hydrateConfig("cso_cloud_links_config", "cloudEndpoints", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { defaultCdnDomain: "cdn.csodisha.com", enableSslVerification: true, cacheTtlSeconds: 86400 },
+        cloudEndpoints: [
+          { id: "CLOUD-01", label: "Cloudflare R2 Primary Bucket", endpoint: "r2.csodisha.com", region: "APAC (Mumbai / Singapore)", protocol: "HTTPS", status: "Operational", latencyMs: 24, active: true },
+          { id: "CLOUD-02", label: "Asset CDN Edge", endpoint: "cdn.csodisha.com", region: "Global Anycast (285+ cities)", protocol: "HTTPS / HTTP/3", status: "Operational", latencyMs: 8, active: true },
+          { id: "CLOUD-03", label: "Static Vault Cache", endpoint: "assets.csodisha.com", region: "Cloudflare Cache Tier", protocol: "HTTPS", status: "Operational", latencyMs: 14, active: true }
+        ]
+      }));
+    },
+
+    saveCloudLinksConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          defaultCdnDomain: String(config.settings?.defaultCdnDomain || "cdn.csodisha.com").trim(),
+          enableSslVerification: config.settings?.enableSslVerification !== false,
+          cacheTtlSeconds: parseInt(config.settings?.cacheTtlSeconds, 10) || 86400
+        },
+        cloudEndpoints: Array.isArray(config.cloudEndpoints || config.items) ? (config.cloudEndpoints || config.items).map((item, i) => ({
+          id: String(item.id || "CLOUD-" + String(i + 1).padStart(2, "0")),
+          label: String(item.label || "").trim(),
+          endpoint: String(item.endpoint || "").trim(),
+          region: String(item.region || "Global").trim(),
+          protocol: String(item.protocol || "HTTPS").trim(),
+          status: String(item.status || "Operational").trim(),
+          latencyMs: parseInt(item.latencyMs, 10) || 20,
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.cloudEndpoints;
+      localStorage.setItem("cso_cloud_links_config", JSON.stringify(clean));
+      this.logAudit("CLOUD_LINKS_CONFIG_UPDATED", "FILES_MEDIA", "Cloud links config updated (" + clean.cloudEndpoints.length + " endpoints).");
+      return true;
+    },
+
+    resetCloudLinksConfig() {
+      localStorage.removeItem("cso_cloud_links_config");
+      this.logAudit("CLOUD_LINKS_CONFIG_RESET", "SYSTEM_RESET", "Cloud links reset to factory defaults.");
+      return this.getCloudLinksConfig();
+    },
+
+    exportCloudLinksManifest() {
+      const config = this.getCloudLinksConfig();
+      const filename = "cloud_links_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("CLOUD_LINKS_MANIFEST_EXPORTED", "DATA_EXPORT", "Cloud links manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-008: Google Drive Links Engine ---
+    getGoogleDriveLinksConfig() {
+      return this._hydrateConfig("cso_gdrive_links_config", "driveItems", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { syncIntervalHours: 6, proxyLargeDownloads: true, domainRestricted: false },
+        driveItems: [
+          { id: "GDRV-01", title: "2018-2025 Odisha Question Paper Mirror", driveFileId: "1A2b3C-DriveID", resourceType: "Folder Mirror", fileCount: 88, syncStatus: "Synced", lastVerified: "2026-11-09T12:00:00Z", active: true },
+          { id: "GDRV-02", title: "State Gazette Reference Archive", driveFileId: "4D5e6F-DriveID", resourceType: "Shared Drive", fileCount: 142, syncStatus: "Synced", lastVerified: "2026-11-09T08:30:00Z", active: true },
+          { id: "GDRV-03", title: "High School Teacher Notes Folder", driveFileId: "7G8h9I-DriveID", resourceType: "Collaborative Doc", fileCount: 45, syncStatus: "Synced", lastVerified: "2026-11-08T19:00:00Z", active: true }
+        ]
+      }));
+    },
+
+    saveGoogleDriveLinksConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          syncIntervalHours: parseInt(config.settings?.syncIntervalHours, 10) || 6,
+          proxyLargeDownloads: config.settings?.proxyLargeDownloads !== false,
+          domainRestricted: !!config.settings?.domainRestricted
+        },
+        driveItems: Array.isArray(config.driveItems || config.items) ? (config.driveItems || config.items).map((item, i) => ({
+          id: String(item.id || "GDRV-" + String(i + 1).padStart(2, "0")),
+          title: String(item.title || "").trim(),
+          driveFileId: String(item.driveFileId || "").trim(),
+          resourceType: String(item.resourceType || "Folder Mirror").trim(),
+          fileCount: parseInt(item.fileCount, 10) || 0,
+          syncStatus: String(item.syncStatus || "Synced").trim(),
+          lastVerified: item.lastVerified || new Date().toISOString(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.driveItems;
+      localStorage.setItem("cso_gdrive_links_config", JSON.stringify(clean));
+      this.logAudit("GDRIVE_LINKS_CONFIG_UPDATED", "FILES_MEDIA", "Google Drive links updated (" + clean.driveItems.length + " items).");
+      return true;
+    },
+
+    resetGoogleDriveLinksConfig() {
+      localStorage.removeItem("cso_gdrive_links_config");
+      this.logAudit("GDRIVE_LINKS_CONFIG_RESET", "SYSTEM_RESET", "Google Drive links reset to factory defaults.");
+      return this.getGoogleDriveLinksConfig();
+    },
+
+    exportGoogleDriveLinksManifest() {
+      const config = this.getGoogleDriveLinksConfig();
+      const filename = "gdrive_links_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("GDRIVE_LINKS_MANIFEST_EXPORTED", "DATA_EXPORT", "Google Drive manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-009: Storage Providers Engine ---
+    getStorageProvidersConfig() {
+      return this._hydrateConfig("cso_storage_providers_config", "providers", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { primaryProviderId: "SP-01", autoFailover: true, healthCheckIntervalMinutes: 5 },
+        providers: [
+          { id: "SP-01", name: "Cloudflare R2 Object Storage", role: "Default Active", quotaGb: 50, usedGb: 8.42, egressFee: "$0 / Free", uptimePercent: 99.99, region: "APAC Multi-Region", active: true },
+          { id: "SP-02", name: "Supabase Storage Bucket", role: "Secondary Backup", quotaGb: 20, usedGb: 3.18, egressFee: "Included (Bandwidth Pool)", uptimePercent: 99.95, region: "ap-southeast-1 (Singapore)", active: true },
+          { id: "SP-03", name: "Local Cloudflare D1 BLOB Mirror", role: "Internal Failover", quotaGb: 10, usedGb: 0.65, egressFee: "Internal Free", uptimePercent: 100.0, region: "Local Workers Edge", active: true }
+        ]
+      }));
+    },
+
+    saveStorageProvidersConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          primaryProviderId: String(config.settings?.primaryProviderId || "SP-01").trim(),
+          autoFailover: config.settings?.autoFailover !== false,
+          healthCheckIntervalMinutes: parseInt(config.settings?.healthCheckIntervalMinutes, 10) || 5
+        },
+        providers: Array.isArray(config.providers || config.items) ? (config.providers || config.items).map((item, i) => ({
+          id: String(item.id || "SP-" + String(i + 1).padStart(2, "0")),
+          name: String(item.name || "").trim(),
+          role: String(item.role || "Secondary Backup").trim(),
+          quotaGb: parseFloat(item.quotaGb) || 50,
+          usedGb: parseFloat(item.usedGb) || 0,
+          egressFee: String(item.egressFee || "$0").trim(),
+          uptimePercent: parseFloat(item.uptimePercent) || 99.9,
+          region: String(item.region || "Global").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.providers;
+      localStorage.setItem("cso_storage_providers_config", JSON.stringify(clean));
+      this.logAudit("STORAGE_PROVIDERS_CONFIG_UPDATED", "FILES_MEDIA", "Storage providers config updated (" + clean.providers.length + " providers).");
+      return true;
+    },
+
+    resetStorageProvidersConfig() {
+      localStorage.removeItem("cso_storage_providers_config");
+      this.logAudit("STORAGE_PROVIDERS_CONFIG_RESET", "SYSTEM_RESET", "Storage providers reset to factory defaults.");
+      return this.getStorageProvidersConfig();
+    },
+
+    exportStorageProvidersManifest() {
+      const config = this.getStorageProvidersConfig();
+      const filename = "storage_providers_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("STORAGE_PROVIDERS_MANIFEST_EXPORTED", "DATA_EXPORT", "Storage providers manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-010: File Versions Engine ---
+    getFileVersionsConfig() {
+      return this._hydrateConfig("cso_file_versions_config", "revisions", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { maxVersionsToKeep: 5, autoPruneOldDrafts: true },
+        revisions: [
+          { id: "REV-01", documentName: "OAS 2026 Syllabus", versionTag: "v2.1", status: "Current Live", author: "admin@csodisha.com", publishedAt: "2026-11-06T15:20:00Z", changeNote: "Updated Mains Optional Syllabus for Anthropology & Odia Lit.", active: true },
+          { id: "REV-02", documentName: "OAS 2026 Syllabus", versionTag: "v2.0", status: "Superseded", author: "editor@csodisha.com", publishedAt: "2026-10-18T11:00:00Z", changeNote: "Initial preliminary release per Draft Commission Notice.", active: false },
+          { id: "REV-03", documentName: "OTET Rulebook", versionTag: "v1.4", status: "Current Live", author: "admin@csodisha.com", publishedAt: "2026-11-02T09:45:00Z", changeNote: "Revised reservation percentages per latest State Gazette.", active: true }
+        ]
+      }));
+    },
+
+    saveFileVersionsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          maxVersionsToKeep: parseInt(config.settings?.maxVersionsToKeep, 10) || 5,
+          autoPruneOldDrafts: config.settings?.autoPruneOldDrafts !== false
+        },
+        revisions: Array.isArray(config.revisions || config.items) ? (config.revisions || config.items).map((item, i) => ({
+          id: String(item.id || "REV-" + String(i + 1).padStart(2, "0")),
+          documentName: String(item.documentName || "").trim(),
+          versionTag: String(item.versionTag || "v1.0").trim(),
+          status: String(item.status || "Current Live").trim(),
+          author: String(item.author || "admin@csodisha.com").trim(),
+          publishedAt: item.publishedAt || new Date().toISOString(),
+          changeNote: String(item.changeNote || "").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.revisions;
+      localStorage.setItem("cso_file_versions_config", JSON.stringify(clean));
+      this.logAudit("FILE_VERSIONS_CONFIG_UPDATED", "FILES_MEDIA", "File versions config updated (" + clean.revisions.length + " revisions).");
+      return true;
+    },
+
+    resetFileVersionsConfig() {
+      localStorage.removeItem("cso_file_versions_config");
+      this.logAudit("FILE_VERSIONS_CONFIG_RESET", "SYSTEM_RESET", "File versions reset to factory defaults.");
+      return this.getFileVersionsConfig();
+    },
+
+    exportFileVersionsManifest() {
+      const config = this.getFileVersionsConfig();
+      const filename = "file_versions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FILE_VERSIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "File versions manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-011: File Permissions Engine ---
+    getFilePermissionsConfig() {
+      return this._hydrateConfig("cso_file_permissions_config", "permissionRules", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { defaultAccess: "Public Free", enforceHotlinkProtection: true },
+        permissionRules: [
+          { id: "PERM-01", ruleName: "Public Candidate Free Download Rule", accessLevel: "Public Free", targetFolders: "/syllabi/, /notifications/", allowedRoles: ["Anonymous", "Candidate", "Admin"], dailyDownloadCap: "Unlimited", active: true },
+          { id: "PERM-02", ruleName: "Registered Aspirant Mock Rule", accessLevel: "Registered Required", targetFolders: "/pyq-archives/mains/", allowedRoles: ["Candidate", "Premium Member", "Admin"], dailyDownloadCap: "20 PDFs / day", active: true },
+          { id: "PERM-03", ruleName: "Super Admin System Asset Rule", accessLevel: "Super Admin Only", targetFolders: "/system/backups/, /brand/source/", allowedRoles: ["Super Admin"], dailyDownloadCap: "Unlimited", active: true }
+        ]
+      }));
+    },
+
+    saveFilePermissionsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          defaultAccess: String(config.settings?.defaultAccess || "Public Free").trim(),
+          enforceHotlinkProtection: config.settings?.enforceHotlinkProtection !== false
+        },
+        permissionRules: Array.isArray(config.permissionRules || config.items) ? (config.permissionRules || config.items).map((item, i) => ({
+          id: String(item.id || "PERM-" + String(i + 1).padStart(2, "0")),
+          ruleName: String(item.ruleName || "").trim(),
+          accessLevel: String(item.accessLevel || "Public Free").trim(),
+          targetFolders: String(item.targetFolders || "/").trim(),
+          allowedRoles: Array.isArray(item.allowedRoles) ? item.allowedRoles : ["Admin"],
+          dailyDownloadCap: String(item.dailyDownloadCap || "Unlimited").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.permissionRules;
+      localStorage.setItem("cso_file_permissions_config", JSON.stringify(clean));
+      this.logAudit("FILE_PERMISSIONS_CONFIG_UPDATED", "FILES_MEDIA", "File permissions updated (" + clean.permissionRules.length + " rules).");
+      return true;
+    },
+
+    resetFilePermissionsConfig() {
+      localStorage.removeItem("cso_file_permissions_config");
+      this.logAudit("FILE_PERMISSIONS_CONFIG_RESET", "SYSTEM_RESET", "File permissions reset to factory defaults.");
+      return this.getFilePermissionsConfig();
+    },
+
+    exportFilePermissionsManifest() {
+      const config = this.getFilePermissionsConfig();
+      const filename = "file_permissions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FILE_PERMISSIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "File permissions manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-012: Storage Usage Engine ---
+    getStorageUsageConfig() {
+      return this._hydrateConfig("cso_storage_usage_config", "metrics", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { storageQuotaGb: 50, bandwidthCapMonthlyGb: 1000, alertThresholdPercent: 80 },
+        metrics: [
+          { id: "METRIC-01", metricName: "Total Storage Allocated", value: "50 GB", numericalVal: 50, unit: "GB", category: "Capacity", trend: "Static", status: "Optimal", active: true },
+          { id: "METRIC-02", metricName: "Used Storage", value: "8.42 GB", numericalVal: 8.42, unit: "GB", category: "Usage", trend: "+340 MB this week", status: "Optimal (16.8%)", active: true },
+          { id: "METRIC-03", metricName: "Egress Bandwidth This Month", value: "184.2 GB", numericalVal: 184.2, unit: "GB", category: "Traffic", trend: "+12% vs last month", status: "Normal", active: true },
+          { id: "METRIC-04", metricName: "Total Asset Count", value: "1,248 files", numericalVal: 1248, unit: "Files", category: "Inventory", trend: "+45 new uploads", status: "Healthy", active: true }
+        ]
+      }));
+    },
+
+    saveStorageUsageConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          storageQuotaGb: parseFloat(config.settings?.storageQuotaGb) || 50,
+          bandwidthCapMonthlyGb: parseFloat(config.settings?.bandwidthCapMonthlyGb) || 1000,
+          alertThresholdPercent: parseInt(config.settings?.alertThresholdPercent, 10) || 80
+        },
+        metrics: Array.isArray(config.metrics || config.items) ? (config.metrics || config.items).map((item, i) => ({
+          id: String(item.id || "METRIC-" + String(i + 1).padStart(2, "0")),
+          metricName: String(item.metricName || "").trim(),
+          value: String(item.value || "0").trim(),
+          numericalVal: parseFloat(item.numericalVal) || 0,
+          unit: String(item.unit || "").trim(),
+          category: String(item.category || "Usage").trim(),
+          trend: String(item.trend || "Stable").trim(),
+          status: String(item.status || "Normal").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.metrics;
+      localStorage.setItem("cso_storage_usage_config", JSON.stringify(clean));
+      this.logAudit("STORAGE_USAGE_CONFIG_UPDATED", "FILES_MEDIA", "Storage usage config updated.");
+      return true;
+    },
+
+    resetStorageUsageConfig() {
+      localStorage.removeItem("cso_storage_usage_config");
+      this.logAudit("STORAGE_USAGE_CONFIG_RESET", "SYSTEM_RESET", "Storage usage config reset to factory defaults.");
+      return this.getStorageUsageConfig();
+    },
+
+    exportStorageUsageManifest() {
+      const config = this.getStorageUsageConfig();
+      const filename = "storage_usage_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("STORAGE_USAGE_MANIFEST_EXPORTED", "DATA_EXPORT", "Storage usage manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-013: Duplicate Detection Engine ---
+    getDuplicateDetectionConfig() {
+      return this._hydrateConfig("cso_duplicate_detection_config", "duplicates", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { hashAlgorithm: "SHA-256", autoDeleteIdenticalOrphans: false, checkOnUpload: true },
+        duplicates: [
+          { id: "DUP-01", scanType: "Hash Collision Check", targetAssets: "admit_card_ri_provisional.pdf & admit_card_ri_copy.pdf", hashAlgorithm: "MD5", duplicateCount: 2, potentialSavings: "1.6 MB", resolutionStatus: "Flagged for Review", active: true },
+          { id: "DUP-02", scanType: "Duplicate PDF Scanner", targetAssets: "All candidate gazette PDFs in /syllabi/", hashAlgorithm: "SHA-256", duplicateCount: 0, potentialSavings: "0 KB", resolutionStatus: "Verified Clean (0 duplicates)", active: true }
+        ]
+      }));
+    },
+
+    saveDuplicateDetectionConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          hashAlgorithm: String(config.settings?.hashAlgorithm || "SHA-256").trim(),
+          autoDeleteIdenticalOrphans: !!config.settings?.autoDeleteIdenticalOrphans,
+          checkOnUpload: config.settings?.checkOnUpload !== false
+        },
+        duplicates: Array.isArray(config.duplicates || config.items) ? (config.duplicates || config.items).map((item, i) => ({
+          id: String(item.id || "DUP-" + String(i + 1).padStart(2, "0")),
+          scanType: String(item.scanType || "").trim(),
+          targetAssets: String(item.targetAssets || "").trim(),
+          hashAlgorithm: String(item.hashAlgorithm || "SHA-256").trim(),
+          duplicateCount: parseInt(item.duplicateCount, 10) || 0,
+          potentialSavings: String(item.potentialSavings || "0 KB").trim(),
+          resolutionStatus: String(item.resolutionStatus || "Clean").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.duplicates;
+      localStorage.setItem("cso_duplicate_detection_config", JSON.stringify(clean));
+      this.logAudit("DUPLICATE_DETECTION_CONFIG_UPDATED", "FILES_MEDIA", "Duplicate detection updated (" + clean.duplicates.length + " scans).");
+      return true;
+    },
+
+    resetDuplicateDetectionConfig() {
+      localStorage.removeItem("cso_duplicate_detection_config");
+      this.logAudit("DUPLICATE_DETECTION_CONFIG_RESET", "SYSTEM_RESET", "Duplicate detection reset to factory defaults.");
+      return this.getDuplicateDetectionConfig();
+    },
+
+    exportDuplicateDetectionManifest() {
+      const config = this.getDuplicateDetectionConfig();
+      const filename = "duplicate_detection_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("DUPLICATE_DETECTION_MANIFEST_EXPORTED", "DATA_EXPORT", "Duplicate detection manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-014: Broken File Links Engine ---
+    getBrokenFileLinksConfig() {
+      return this._hydrateConfig("cso_broken_file_links_config", "audits", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { scheduleFrequency: "Weekly", followRedirects: true, alertOnFailure: true },
+        audits: [
+          { id: "AUDIT-01", scanScope: "Weekly Crawler Audit", totalUrlsChecked: 1248, brokenLinksFound: 0, redirectsResolved: 3, lastRunAt: "2026-11-08T03:00:00Z", healthScore: "100%", status: "Passed", active: true }
+        ]
+      }));
+    },
+
+    saveBrokenFileLinksConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          scheduleFrequency: String(config.settings?.scheduleFrequency || "Weekly").trim(),
+          followRedirects: config.settings?.followRedirects !== false,
+          alertOnFailure: config.settings?.alertOnFailure !== false
+        },
+        audits: Array.isArray(config.audits || config.items) ? (config.audits || config.items).map((item, i) => ({
+          id: String(item.id || "AUDIT-" + String(i + 1).padStart(2, "0")),
+          scanScope: String(item.scanScope || "Full Audit").trim(),
+          totalUrlsChecked: parseInt(item.totalUrlsChecked, 10) || 0,
+          brokenLinksFound: parseInt(item.brokenLinksFound, 10) || 0,
+          redirectsResolved: parseInt(item.redirectsResolved, 10) || 0,
+          lastRunAt: item.lastRunAt || new Date().toISOString(),
+          healthScore: String(item.healthScore || "100%").trim(),
+          status: String(item.status || "Passed").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.audits;
+      localStorage.setItem("cso_broken_file_links_config", JSON.stringify(clean));
+      this.logAudit("BROKEN_FILE_LINKS_CONFIG_UPDATED", "FILES_MEDIA", "Broken file links config updated.");
+      return true;
+    },
+
+    resetBrokenFileLinksConfig() {
+      localStorage.removeItem("cso_broken_file_links_config");
+      this.logAudit("BROKEN_FILE_LINKS_CONFIG_RESET", "SYSTEM_RESET", "Broken file links reset to factory defaults.");
+      return this.getBrokenFileLinksConfig();
+    },
+
+    exportBrokenFileLinksManifest() {
+      const config = this.getBrokenFileLinksConfig();
+      const filename = "broken_file_links_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("BROKEN_FILE_LINKS_MANIFEST_EXPORTED", "DATA_EXPORT", "Broken file links manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 07-015: Media Optimization Engine ---
+    getMediaOptimizationConfig() {
+      return this._hydrateConfig("cso_media_optimization_config", "pipelineRules", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { enableAutoOptimization: true, stripMetadata: true, webpQuality: 85 },
+        pipelineRules: [
+          { id: "OPT-01", pipelineName: "Auto-convert JPEG/PNG to WebP", targetFormat: "WebP (Quality 85%)", compressionRatio: "58% reduction", autoTrigger: "On Upload", status: "Active", active: true },
+          { id: "OPT-02", pipelineName: "PDF Compression Pipeline", targetFormat: "Downsample images to 150 DPI", compressionRatio: "42% reduction", autoTrigger: "Manual / Scheduled", status: "Active", active: true },
+          { id: "OPT-03", pipelineName: "Responsive Avatar Thumbnails", targetFormat: "64x64, 128x128 AVIF/WebP", compressionRatio: "74% reduction", autoTrigger: "On User Upload", status: "Active", active: true }
+        ]
+      }));
+    },
+
+    saveMediaOptimizationConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          enableAutoOptimization: config.settings?.enableAutoOptimization !== false,
+          stripMetadata: config.settings?.stripMetadata !== false,
+          webpQuality: parseInt(config.settings?.webpQuality, 10) || 85
+        },
+        pipelineRules: Array.isArray(config.pipelineRules || config.items) ? (config.pipelineRules || config.items).map((item, i) => ({
+          id: String(item.id || "OPT-" + String(i + 1).padStart(2, "0")),
+          pipelineName: String(item.pipelineName || "").trim(),
+          targetFormat: String(item.targetFormat || "").trim(),
+          compressionRatio: String(item.compressionRatio || "0%").trim(),
+          autoTrigger: String(item.autoTrigger || "On Upload").trim(),
+          status: String(item.status || "Active").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.pipelineRules;
+      localStorage.setItem("cso_media_optimization_config", JSON.stringify(clean));
+      this.logAudit("MEDIA_OPTIMIZATION_CONFIG_UPDATED", "FILES_MEDIA", "Media optimization config updated (" + clean.pipelineRules.length + " rules).");
+      return true;
+    },
+
+    resetMediaOptimizationConfig() {
+      localStorage.removeItem("cso_media_optimization_config");
+      this.logAudit("MEDIA_OPTIMIZATION_CONFIG_RESET", "SYSTEM_RESET", "Media optimization reset to factory defaults.");
+      return this.getMediaOptimizationConfig();
+    },
+
+    exportMediaOptimizationManifest() {
+      const config = this.getMediaOptimizationConfig();
+      const filename = "media_optimization_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MEDIA_OPTIMIZATION_MANIFEST_EXPORTED", "DATA_EXPORT", "Media optimization manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
@@ -8949,7 +9755,22 @@
           breadcrumbs: this.getBreadcrumbsConfig(),
           internalLinks: this.getInternalLinksConfig(),
           menuOrdering: this.getMenuOrderingConfig(),
-          socialLinks: this.getSocialLinksConfig()
+          socialLinks: this.getSocialLinksConfig(),
+          fileLibrary: this.getFileLibraryConfig(),
+          bulkUploads: this.getBulkUploadsConfig(),
+          foldersCollections: this.getFoldersCollectionsConfig(),
+          pdfManager: this.getPdfManagerConfig(),
+          imageLibrary: this.getImageLibraryConfig(),
+          videoAudio: this.getVideoAudioConfig(),
+          cloudLinks: this.getCloudLinksConfig(),
+          gdriveLinks: this.getGoogleDriveLinksConfig(),
+          storageProviders: this.getStorageProvidersConfig(),
+          fileVersions: this.getFileVersionsConfig(),
+          filePermissions: this.getFilePermissionsConfig(),
+          storageUsage: this.getStorageUsageConfig(),
+          duplicateDetection: this.getDuplicateDetectionConfig(),
+          brokenFileLinks: this.getBrokenFileLinksConfig(),
+          mediaOptimization: this.getMediaOptimizationConfig()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
