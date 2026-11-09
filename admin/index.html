@@ -152,13 +152,13 @@
               <div class="metric-meta">5 Verified &bull; 1 Suspended</div>
             </div>
 
-            <div class="metric-card warning">
+            <div class="metric-card warning" id="metric-card-inquiries" style="cursor: pointer;" title="Click to view inquiries">
               <div class="metric-header">
                 <span class="metric-label">Inquiries &amp; Forms</span>
                 <span class="metric-icon" aria-hidden="true">📬</span>
               </div>
-              <div class="metric-val" id="metric-inquiries-val">8</div>
-              <div class="metric-meta">2 New / Unread (Requires Action)</div>
+              <div class="metric-val" id="metric-inquiries-val">0</div>
+              <div class="metric-meta" id="metric-inquiries-meta">Synced from Public Desk</div>
             </div>
 
             <div class="metric-card info">
@@ -265,6 +265,46 @@
                   </tr>
                 </thead>
                 <tbody id="users-table-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ===================================================================
+               Inquiries & Citizen Help Desk (cso_super_inquiries)
+               Accessible directly via #tab-inquiries or under #tab-users
+               =================================================================== -->
+          <div class="admin-card" id="tab-inquiries" style="margin-top: 24px;">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Public Inquiries &amp; Citizen Help Desk</h2>
+                <p class="card-desc">Incoming citizen submissions formatted from <code>contact.html</code> and synced in real-time with <code>cso_super_inquiries</code>.</p>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="search" id="inquiry-search-input" class="admin-input" placeholder="Search by name, email, district, subject..." style="max-width: 280px;">
+                <button type="button" class="btn-secondary btn-sm" id="btn-export-inquiries-csv">
+                  <span>📥 Export Inquiries</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Inquiry ID</th>
+                    <th>Date / Time</th>
+                    <th>Citizen Name</th>
+                    <th>Contact Details</th>
+                    <th>District</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inquiries-table-body">
                   <!-- Injected via JavaScript -->
                 </tbody>
               </table>
@@ -639,9 +679,9 @@
             <div class="form-group">
               <label class="form-label" for="broadcast-severity-select">Severity Level &amp; Visual Accent</label>
               <select id="broadcast-severity-select" class="admin-select">
-                <option value="info">Odisha Emerald (Informational Notice)</option>
-                <option value="warning">Saffron Gold (Important Deadline / Warning)</option>
-                <option value="emergency">Crimson Red (Urgent / Emergency Alert)</option>
+                <option value="info">Info: #0fa968 (Odisha Emerald)</option>
+                <option value="notice">Notice: #d97706 (Amber)</option>
+                <option value="urgent">Urgent: #dc2626 (Crimson)</option>
               </select>
             </div>
 

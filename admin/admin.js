@@ -75,6 +75,7 @@
   const tabTitles = {
     'tab-overview': 'Dashboard Overview & System Telemetry',
     'tab-users': 'User Management & Verification Desk',
+    'tab-inquiries': 'Public Inquiries & Citizen Help Desk',
     'tab-roles': 'Role & Permission Management (RBAC)',
     'tab-cms': 'Content Management & Dynamic Page Builder',
     'tab-system': 'System Settings & Node Integrations',
@@ -86,6 +87,15 @@
   };
 
   function switchTab(targetId) {
+    if (targetId === 'tab-inquiries') {
+      switchTab('tab-users');
+      const inqEl = document.getElementById('tab-inquiries');
+      if (inqEl) {
+        setTimeout(() => inqEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+      }
+      return;
+    }
+
     navItems.forEach(item => {
       const match = item.getAttribute('data-tab') === targetId;
       item.classList.toggle('active', match);
@@ -102,6 +112,8 @@
 
     closeSidebar();
   }
+
+  window.switchTab = switchTab;
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -142,6 +154,16 @@
     // Metric counts
     const usersValEl = document.getElementById('metric-users-val');
     if (usersValEl) usersValEl.textContent = users.length;
+
+    // Inquiries Metric
+    const inquiries = store.getInquiries();
+    const inqValEl = document.getElementById('metric-inquiries-val');
+    if (inqValEl) inqValEl.textContent = inquiries.length;
+    const inqMetaEl = document.getElementById('metric-inquiries-meta');
+    if (inqMetaEl) {
+      const unreadCount = inquiries.filter(i => (i.status || '').toLowerCase() === 'unread').length;
+      inqMetaEl.textContent = `${unreadCount} Unread / ${inquiries.length} Total Inquiries`;
+    }
 
     // Activity Stream
     const activityTbody = document.getElementById('overview-activity-table');
@@ -262,6 +284,136 @@
       a.href = url;
       a.download = `cso-users-${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
+    });
+  }
+
+  // Quick navigation from Overview card
+  const cardInquiries = document.getElementById('metric-card-inquiries');
+  if (cardInquiries) {
+    cardInquiries.addEventListener('click', () => {
+      switchTab('tab-inquiries');
+    });
+  }
+
+  /* ==========================================================================
+     Inquiries & Citizen Help Desk (cso_super_inquiries)
+     ========================================================================== */
+  function renderInquiries(filterQuery = '') {
+    const store = window.CSOSuperStore;
+    if (!store) return;
+    const inquiries = store.getInquiries();
+    const tbody = document.getElementById('inquiries-table-body');
+    if (!tbody) return;
+
+    const filtered = inquiries.filter(inq => {
+      const q = (filterQuery || '').toLowerCase();
+      if (!q) return true;
+      return (
+        (inq.id || '').toLowerCase().includes(q) ||
+        (inq.name || '').toLowerCase().includes(q) ||
+        (inq.email || '').toLowerCase().includes(q) ||
+        (inq.phone || '').includes(q) ||
+        (inq.district || '').toLowerCase().includes(q) ||
+        (inq.subject || '').toLowerCase().includes(q) ||
+        (inq.message || '').toLowerCase().includes(q)
+      );
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align: center; color: var(--admin-text-muted); padding: 24px;">
+            No incoming citizen inquiries found matching "${escapeHtml(filterQuery)}".
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(inq => {
+      const status = (inq.status || 'unread').toLowerCase();
+      const statusClass = status === 'resolved' ? 'verified' : status === 'read' ? 'info' : 'pending';
+      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      const timeStr = inq.timestamp ? formatTime(inq.timestamp) : 'N/A';
+
+      return `
+        <tr>
+          <td style="font-family: monospace; font-size: 0.8rem; font-weight: 700;">${escapeHtml(inq.id || 'N/A')}</td>
+          <td style="font-size: 0.8rem; color: var(--admin-text-muted); white-space: nowrap;">${timeStr}</td>
+          <td><strong>${escapeHtml(inq.name || 'Anonymous')}</strong></td>
+          <td style="font-size: 0.82rem;">
+            <div>${escapeHtml(inq.email || '')}</div>
+            <div style="color: var(--admin-text-muted);">${escapeHtml(inq.phone || '')}</div>
+          </td>
+          <td><span class="status-pill info">${escapeHtml(inq.district || 'Odisha')}</span></td>
+          <td style="font-weight: 600;">${escapeHtml(inq.subject || '(No subject)')}</td>
+          <td style="max-width: 280px; font-size: 0.82rem; line-height: 1.4;" title="${escapeHtml(inq.message || '')}">
+            ${escapeHtml((inq.message || '').length > 90 ? (inq.message.slice(0, 90) + '…') : inq.message)}
+          </td>
+          <td><span class="status-pill ${statusClass}">${escapeHtml(statusLabel)}</span></td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              ${status !== 'resolved' ? `
+                <button type="button" class="btn-primary btn-sm" onclick="window.csoResolveInquiry('${inq.id}')" title="Mark as Resolved">
+                  Resolve
+                </button>
+              ` : `
+                <button type="button" class="btn-secondary btn-sm" onclick="window.csoReopenInquiry('${inq.id}')" title="Mark as Unread">
+                  Reopen
+                </button>
+              `}
+              <button type="button" class="btn-danger btn-sm" onclick="window.csoDeleteInquiry('${inq.id}')" title="Delete Inquiry">
+                🗑
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  window.csoResolveInquiry = (id) => {
+    window.CSOSuperStore.updateInquiryStatus(id, 'resolved');
+    renderInquiries();
+    renderOverview();
+  };
+
+  window.csoReopenInquiry = (id) => {
+    window.CSOSuperStore.updateInquiryStatus(id, 'unread');
+    renderInquiries();
+    renderOverview();
+  };
+
+  window.csoDeleteInquiry = (id) => {
+    if (confirm('Delete inquiry ' + id + '? This action cannot be undone.')) {
+      window.CSOSuperStore.deleteInquiry(id);
+      renderInquiries();
+      renderOverview();
+    }
+  };
+
+  const inquirySearchInput = document.getElementById('inquiry-search-input');
+  if (inquirySearchInput) {
+    inquirySearchInput.addEventListener('input', (e) => {
+      renderInquiries(e.target.value.trim());
+    });
+  }
+
+  const btnExportInquiries = document.getElementById('btn-export-inquiries-csv');
+  if (btnExportInquiries) {
+    btnExportInquiries.addEventListener('click', () => {
+      const inqs = window.CSOSuperStore.getInquiries();
+      let csv = 'ID,Timestamp,Name,Email,Phone,District,Subject,Message,Status\n';
+      inqs.forEach(i => {
+        csv += `"${i.id}","${i.timestamp}","${(i.name||'').replace(/"/g, '""')}","${i.email||''}","${i.phone||''}","${i.district||''}","${(i.subject||'').replace(/"/g, '""')}","${(i.message||'').replace(/"/g, '""')}","${i.status||''}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cso-inquiries-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
     });
   }
 
@@ -735,6 +887,9 @@
         headline,
         link,
         severity,
+        isActive: true,
+        active: true,
+        text: headline,
         publishedAt: new Date().toISOString()
       });
 
@@ -760,6 +915,7 @@
   function initAll() {
     renderOverview();
     renderUsers();
+    renderInquiries();
     renderRoles();
     renderCMS();
     renderSystem();
@@ -768,6 +924,14 @@
     renderDatabase();
     renderNotifications();
   }
+
+  // Cross-tab synchronization for incoming citizen inquiries
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cso_super_inquiries') {
+      renderInquiries();
+      renderOverview();
+    }
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);

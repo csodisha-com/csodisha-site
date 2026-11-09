@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Contact the Common Sense Odisha admin desk. Submit inquiries, feedback, and questions.">
+  <title>Contact Admin Desk | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .contact-main {
+      max-width: 900px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .contact-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .contact-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+    }
+    .contact-hero p {
+      line-height: 1.7;
+      color: var(--mut, #475569);
+      max-width: 760px;
+      margin: 0;
+    }
+    .contact-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      color: var(--mut, #64748b);
+    }
+    .contact-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .contact-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .contact-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .form-group-full {
+      grid-column: 1 / -1;
+    }
+    .cso-input-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tx, #1e293b);
+      margin-bottom: 6px;
+    }
+    .cso-form-input, .cso-form-select, .cso-form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--bd, #cbd5e1);
+      border-radius: 8px;
+      background: var(--bg, #f8fafc);
+      color: var(--tx, #0f172a);
+      font-size: 0.95rem;
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cso-form-input:focus, .cso-form-select:focus, .cso-form-textarea:focus {
+      outline: none;
+      border-color: #0fa968;
+      box-shadow: 0 0 0 3px rgba(15, 169, 104, 0.15);
+      background: #ffffff;
+    }
+    .cso-btn-submit {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0fa968;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(15, 169, 104, 0.25);
+    }
+    .cso-btn-submit:hover {
+      background: #0d9259;
+      box-shadow: 0 6px 16px rgba(15, 169, 104, 0.35);
+    }
+    .cso-btn-submit:active {
+      transform: translateY(1px);
+    }
+    .contact-confirmation-toast {
+      background: #ecfdf5;
+      border: 1.5px solid #0fa968;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      color: #064e3b;
+      box-shadow: 0 4px 14px rgba(15, 169, 104, 0.12);
+      animation: fadeIn 0.3s ease;
+    }
+    .toast-icon {
+      background: #0fa968;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+    .toast-title {
+      margin: 0 0 4px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #064e3b;
+    }
+    .toast-desc {
+      margin: 0;
+      line-height: 1.5;
+      font-size: 0.92rem;
+      color: #047857;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .contact-hero, .contact-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="top site-header__top" id="header-top" role="banner">
+  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+    <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
+  </a>
+  <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+  <span id="ctl" style="display:contents"></span>
+  <span class="sp"></span>
+  <div class="acct">
+    <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+    <span id="auth" style="display:contents"></span>
+  </div>
+</header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
+
+<main class="contact-main">
+  <div class="contact-breadcrumbs">
+    <a href="/">Home</a> / <span>Contact Desk</span>
+  </div>
+
+  <section class="contact-hero">
+    <h1>Contact Admin Desk</h1>
+    <p>Submit questions, syllabus notifications, scholarship renewal issues, or general feedback directly to the Common Sense Odisha administrative desk. All incoming messages are logged into the live administrator pipeline.</p>
+  </section>
+
+  <!-- Clean confirmation toast rendered on submission -->
+  <div id="contact-toast" class="contact-confirmation-toast" role="status" aria-live="polite" style="display: none;">
+    <div class="toast-icon">✓</div>
+    <div class="toast-content">
+      <h3 class="toast-title">Inquiry Logged Successfully</h3>
+      <p class="toast-desc">
+        Thank you, <strong id="toast-name"></strong>. Your inquiry has been registered under Tracking ID <strong id="toast-id"></strong> and forwarded immediately to the Super Admin Desk.
+      </p>
+    </div>
+  </div>
+
+  <section class="contact-card">
+    <form id="contact-form" novalidate>
+      <div class="form-grid">
+        <div>
+          <label for="contact-name" class="cso-input-label">Full Name *</label>
+          <input type="text" id="contact-name" name="name" class="cso-form-input" placeholder="e.g. Subrat Mohanty" required>
+        </div>
+
+        <div>
+          <label for="contact-email" class="cso-input-label">Email Address *</label>
+          <input type="email" id="contact-email" name="email" class="cso-form-input" placeholder="e.g. citizen@example.com" required>
+        </div>
+
+        <div>
+          <label for="contact-phone" class="cso-input-label">Phone / Mobile Number *</label>
+          <input type="tel" id="contact-phone" name="phone" class="cso-form-input" placeholder="e.g. +91 94370 12345" required>
+        </div>
+
+        <div>
+          <label for="contact-district" class="cso-input-label">District in Odisha *</label>
+          <select id="contact-district" name="district" class="cso-form-select" required>
+            <option value="" disabled selected>Select your district...</option>
+            <option value="Angul">Angul</option>
+            <option value="Balangir">Balangir</option>
+            <option value="Balasore">Balasore</option>
+            <option value="Bargarh">Bargarh</option>
+            <option value="Bhadrak">Bhadrak</option>
+            <option value="Boudh">Boudh</option>
+            <option value="Cuttack">Cuttack</option>
+            <option value="Deogarh">Deogarh</option>
+            <option value="Dhenkanal">Dhenkanal</option>
+            <option value="Gajapati">Gajapati</option>
+            <option value="Ganjam">Ganjam</option>
+            <option value="Jagatsinghpur">Jagatsinghpur</option>
+            <option value="Jajpur">Jajpur</option>
+            <option value="Jharsuguda">Jharsuguda</option>
+            <option value="Kalahandi">Kalahandi</option>
+            <option value="Kandhamal">Kandhamal</option>
+            <option value="Kendrapara">Kendrapara</option>
+            <option value="Keonjhar">Keonjhar</option>
+            <option value="Khordha">Khordha</option>
+            <option value="Koraput">Koraput</option>
+            <option value="Malkangiri">Malkangiri</option>
+            <option value="Mayurbhanj">Mayurbhanj</option>
+            <option value="Nabarangpur">Nabarangpur</option>
+            <option value="Nayagarh">Nayagarh</option>
+            <option value="Nuapada">Nuapada</option>
+            <option value="Puri">Puri</option>
+            <option value="Rayagada">Rayagada</option>
+            <option value="Sambalpur">Sambalpur</option>
+            <option value="Subarnapur">Subarnapur</option>
+            <option value="Sundargarh">Sundargarh</option>
+          </select>
+        </div>
+
+        <div class="form-group-full">
+          <label for="contact-subject" class="cso-input-label">Subject / Matter *</label>
+          <input type="text" id="contact-subject" name="subject" class="cso-form-input" placeholder="e.g. OPSC Preliminary Examination Notification Clarification" required>
+        </div>
+
+        <div class="form-group-full">
+          <label for="contact-message" class="cso-input-label">Inquiry Message Details *</label>
+          <textarea id="contact-message" name="message" class="cso-form-textarea" rows="5" placeholder="Please provide complete details regarding your inquiry, resource suggestion, or clarification..." required></textarea>
+        </div>
+
+        <div class="form-group-full">
+          <button type="submit" class="cso-btn-submit" id="btn-submit-contact">
+            <span>Send Inquiry to Admin Desk</span>
+            <span aria-hidden="true">&rarr;</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>
+</main>
+
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-footer-logo" width="96" height="34">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="jobs-careers/">Jobs &amp; Careers</a>
+      <a href="schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="study-library/">Study Library</a>
+      <a href="community/">Community</a>
+      <a href="about/">About CSO</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="support/#faqs">Help &amp; FAQs</a>
+      <a href="support/#report-error">Report an Error</a>
+      <a href="support/#suggest-resource">Suggest Resource</a>
+      <a href="privacy-policy/">Privacy Policy</a>
+      <a href="terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+  </div>
+</div></footer>
+
+<script>
+  (function() {
+    'use strict';
+
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nameInput = document.getElementById('contact-name');
+      const emailInput = document.getElementById('contact-email');
+      const phoneInput = document.getElementById('contact-phone');
+      const districtInput = document.getElementById('contact-district');
+      const subjectInput = document.getElementById('contact-subject');
+      const messageInput = document.getElementById('contact-message');
+
+      const name = (nameInput.value || '').trim();
+      const email = (emailInput.value || '').trim();
+      const phone = (phoneInput.value || '').trim();
+      const district = (districtInput.value || '').trim();
+      const subject = (subjectInput.value || '').trim();
+      const message = (messageInput.value || '').trim();
+
+      if (!name || !email || !phone || !district || !subject || !message) {
+        alert('Please complete all required fields before submitting.');
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const randomId = Math.floor(1000 + Math.random() * 9000);
+      const id = 'INQ-' + new Date().getFullYear() + '-' + randomId;
+
+      // Formatted inquiry payload required by specification:
+      // (id, name, email, phone, district, subject, message, timestamp)
+      const inquiry = {
+        id: id,
+        name: name,
+        email: email,
+        phone: phone,
+        district: district,
+        subject: subject,
+        message: message,
+        timestamp: timestamp
+      };
+
+      try {
+        let existing = [];
+        const raw = localStorage.getItem('cso_super_inquiries');
+        if (raw) {
+          try {
+            existing = JSON.parse(raw);
+            if (!Array.isArray(existing)) existing = [];
+          } catch (_) {
+            existing = [];
+          }
+        }
+        // Prepend directly into cso_super_inquiries in localStorage
+        existing.unshift(inquiry);
+        localStorage.setItem('cso_super_inquiries', JSON.stringify(existing));
+
+        // Dispatch storage event so open admin windows update immediately
+        try {
+          window.dispatchEvent(new Event('storage'));
+        } catch (_) {}
+      } catch (err) {
+        console.warn('Failed to persist inquiry to localStorage:', err);
+      }
+
+      // Show clean confirmation toast/message without a full page reload
+      const toast = document.getElementById('contact-toast');
+      const toastName = document.getElementById('toast-name');
+      const toastId = document.getElementById('toast-id');
+
+      if (toastName) toastName.textContent = name;
+      if (toastId) toastId.textContent = id;
+      if (toast) {
+        toast.style.display = 'flex';
+        toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      form.reset();
+    });
+  })();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>

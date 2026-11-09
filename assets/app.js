@@ -2456,36 +2456,47 @@ function initPublicBroadcastBanner() {
     if (!raw) return;
 
     const data = JSON.parse(raw);
-    if (!data || !data.active || !data.text) return;
+    const isActive = data && (data.isActive === true || data.active === true);
+    const alertText = data && (data.headline || data.text);
+    if (!data || !isActive || !alertText) return;
 
     // Check if dismissed in this session
-    const dismissedKey = 'cso_dismissed_' + (data.timestamp || data.text);
-    if (sessionStorage.getItem(dismissedKey)) return;
+    const dismissedKey = 'cso_dismissed_announcement_' + (data.id || data.publishedAt || data.timestamp || alertText);
+    if (sessionStorage.getItem(dismissedKey) || sessionStorage.getItem('cso_dismissed_' + (data.timestamp || alertText))) return;
+
+    const sev = (data.severity || data.type || 'info').toLowerCase();
+    let sevColor = '#0fa968';
+    let sevTag = 'INFO';
+    if (sev === 'notice' || sev === 'warning') {
+      sevColor = '#d97706';
+      sevTag = 'NOTICE';
+    } else if (sev === 'urgent' || sev === 'emergency') {
+      sevColor = '#dc2626';
+      sevTag = 'URGENT';
+    }
 
     if (tagEl) {
-      tagEl.textContent = (data.tag || 'NOTICE').toUpperCase();
-      if (data.type === 'emergency') {
-        tagEl.style.background = '#e63946';
-      } else if (data.type === 'update') {
-        tagEl.style.background = '#0fa968';
-      } else {
-        tagEl.style.background = '#ff5722';
-      }
+      tagEl.textContent = (data.tag || sevTag).toUpperCase();
+      tagEl.style.background = sevColor;
+      tagEl.style.color = '#ffffff';
     }
 
     if (textEl) {
-      textEl.textContent = data.text;
+      textEl.textContent = alertText;
     }
 
     if (linkEl) {
-      if (data.link && typeof data.link === 'string' && data.link.trim() !== '' && data.link !== '#') {
-        linkEl.href = data.link.trim();
+      const targetLink = data.link || data.ctaLink || data.url;
+      if (targetLink && typeof targetLink === 'string' && targetLink.trim() !== '' && targetLink !== '#') {
+        linkEl.href = targetLink.trim();
+        linkEl.textContent = data.ctaText || 'View details →';
         linkEl.style.display = 'inline';
       } else {
         linkEl.style.display = 'none';
       }
     }
 
+    banner.style.borderBottom = '3px solid ' + sevColor;
     banner.style.display = 'flex';
 
     if (closeBtn) {

@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#081220] text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS Odisha — Master Super Admin Console (241 Modules)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#081220',
+              slate: '#0f172a',
+              card: '#131f36',
+              border: '#1e2e4a',
+              emerald: '#0fa968',
+              emeraldHover: '#0d9259',
+              amber: '#f59e0b',
+              crimson: '#ef4444',
+              cyan: '#06b6d4',
+              indigo: '#6366f1'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #081220; }
+    ::-webkit-scrollbar-thumb { background: #1e2e4a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0fa968; }
+    .badge-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden font-sans antialiased bg-[#081220] selection:bg-brand-emerald selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- TOP TELEMETRY & COMMAND BAR                                               -->
+  <!-- ========================================================================= -->
+  <header class="h-16 flex-shrink-0 bg-brand-slate border-b border-brand-border px-4 lg:px-6 flex items-center justify-between z-30 shadow-lg">
+    <!-- Brand & Mobile Toggle -->
+    <div class="flex items-center gap-3">
+      <button id="btnToggleSidebar" class="lg:hidden p-2 text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-emerald rounded-lg" aria-label="Toggle Navigation Drawer">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-emerald to-emerald-800 flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-brand-emerald/20 border border-emerald-400/30">
+          CSO
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-100 tracking-tight text-sm lg:text-base leading-none">Common Sense Odisha</span>
+            <span class="px-1.5 py-0.5 text-[10px] uppercase font-mono font-bold tracking-wider bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded">v1.0 Pro</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Master Command Suite (241 Modules)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Edge & Session Telemetry -->
+    <div class="hidden xl:flex items-center gap-6 text-xs font-mono">
+      <!-- Edge Health -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081220] border border-brand-border">
+        <span class="relative flex h-2 w-2">
+          <span class="badge-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-emerald"></span>
+        </span>
+        <span class="text-slate-300">CF Edge: <strong class="text-brand-emerald font-semibold">SIN (Singapore)</strong></span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-400">RTT: <strong class="text-slate-200">14ms</strong></span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-400">D1: <strong class="text-cyan-400">Synced</strong></span>
+      </div>
+
+      <!-- Live Session Duration Counter -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081220] border border-brand-border">
+        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-slate-400">Session:</span>
+        <span id="sessionTimer" class="text-brand-emerald font-semibold">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- Right Panic Actions & Admin Profile -->
+    <div class="flex items-center gap-2.5">
+      <!-- Quick Action: Purge Cache -->
+      <button id="btnPurgeCache" title="Purge Cloudflare Edge CDN Cache" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Purge CDN</span>
+      </button>
+
+      <!-- Quick Action: Maintenance Switch -->
+      <button id="btnMaintenanceToggle" title="Toggle Maintenance Mode" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+        <span class="w-2 h-2 rounded-full bg-slate-500" id="maintenanceStatusDot"></span>
+        <span id="maintenanceStatusText">Maint: OFF</span>
+      </button>
+
+      <!-- Super Admin Identity Pill -->
+      <div class="flex items-center gap-2 pl-2 border-l border-brand-border">
+        <div class="w-8 h-8 rounded-full bg-brand-emerald/20 border border-brand-emerald/50 flex items-center justify-center text-brand-emerald font-bold text-xs">
+          SA
+        </div>
+        <div class="hidden sm:block text-left text-xs">
+          <p class="font-bold text-slate-200 leading-tight">admin@csodisha.com</p>
+          <span class="text-[10px] text-brand-emerald uppercase font-mono font-semibold">Super Admin</span>
+        </div>
+      </div>
+
+      <button id="btnSignOut" title="Sign Out Securely" class="p-2 text-slate-400 hover:text-brand-crimson hover:bg-brand-crimson/10 rounded-lg transition" aria-label="Sign Out">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE LAYOUT (SIDEBAR + CONTENT)                                  -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- Mobile Overlay Backdrop -->
+    <div id="mobileDrawerBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+    <!-- SIDEBAR: 19 FOLDERS & 241 MODULES ACCORDION -->
+    <aside id="sidebarConsole" class="w-72 lg:w-80 flex-shrink-0 bg-[#0b1628] border-r border-brand-border flex flex-col z-50 fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+      
+      <!-- Module Quick Search -->
+      <div class="p-3 border-b border-brand-border bg-brand-slate">
+        <div class="relative">
+          <input type="text" id="moduleSearchInput" placeholder="Filter 241 modules..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-emerald focus:ring-1 focus:ring-brand-emerald transition" autocomplete="off" />
+          <svg class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span id="searchCountBadge" class="hidden absolute right-2 top-2 px-1.5 py-0.5 text-[9px] font-mono bg-brand-emerald text-white font-bold rounded">0</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tree Container -->
+      <nav id="accordionNav" class="flex-1 overflow-y-auto px-2 py-3 space-y-1.5 text-xs" aria-label="19 Folders Master Tree">
+        <!-- Folders & Modules will be rendered here via JavaScript from master-navigation.json data -->
+      </nav>
+
+      <!-- Sidebar Footer Stats -->
+      <div class="p-3 bg-brand-slate border-t border-brand-border text-[11px] font-mono text-slate-400 flex items-center justify-between">
+        <div>
+          <span>Coverage: </span>
+          <strong class="text-brand-emerald">241 / 241</strong>
+        </div>
+        <span class="text-slate-500">100% Mapped</span>
+      </div>
+    </aside>
+
+    <!-- CONTENT CANVAS -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#081220] overflow-y-auto">
+      
+      <!-- Dynamic Breadcrumb & Module Heading Bar -->
+      <div class="bg-brand-slate/60 border-b border-brand-border px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
+        <div>
+          <nav class="flex items-center gap-1.5 text-xs text-slate-400 mb-1" aria-label="Breadcrumbs">
+            <span class="text-slate-500">Console</span>
+            <span class="text-slate-600">/</span>
+            <span id="breadcrumbFolder" class="font-medium text-slate-300">Dashboard & Command Centre</span>
+            <span class="text-slate-600">/</span>
+            <span id="breadcrumbModule" class="font-semibold text-brand-emerald">Overview</span>
+          </nav>
+          <h1 id="activeModuleHeading" class="text-lg lg:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            Overview
+            <span id="activeModuleIdPill" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">module-01-001</span>
+          </h1>
+        </div>
+
+        <!-- Dynamic Action Buttons Header -->
+        <div id="moduleHeaderActions" class="flex items-center gap-2">
+          <!-- Populated by view controllers -->
+        </div>
+      </div>
+
+      <!-- Live Dynamic Workspace Canvas Container -->
+      <div id="workspaceRoot" class="p-4 lg:p-6 flex-1 space-y-6">
+        <!-- Dynamic content injected here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS & TOAST NOTIFICATION CONTAINER                                      -->
+  <!-- ========================================================================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- Generic Global Action Modal -->
+  <div id="globalModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-slate border border-brand-border rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-5 py-4 border-b border-brand-border flex items-center justify-between">
+        <h3 id="modalTitle" class="font-bold text-white text-base">Modal Window</h3>
+        <button id="btnModalClose" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <div id="modalBody" class="p-5 overflow-y-auto space-y-4 text-xs text-slate-300 flex-1"></div>
+      <div id="modalFooter" class="px-5 py-3 border-t border-brand-border bg-[#081220] flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT MASTER NAVIGATION ENGINE & 241 MODULE DATA CONTROLLER          -->
+  <!-- ========================================================================= -->
+  <script>
+    /**
+     * Master Framework Schema Definition
+     * All 19 folders and 241 operational modules
+     */
+    const masterNavigationSchema = {
+      project: "CS Odisha",
+      framework: "Master Super Admin Framework v1.0",
+      status: "development",
+      folders: [
+        {
+          id: "folder-01",
+          title: "Dashboard & Command Centre",
+          modules: [
+            { id: "module-01-001", title: "Overview", status: "active" },
+            { id: "module-01-002", title: "Live Site Status", status: "active" },
+            { id: "module-01-003", title: "Quick Actions", status: "active" },
+            { id: "module-01-004", title: "Recent Activity", status: "active" },
+            { id: "module-01-005", title: "Administrative Notifications", status: "active" },
+            { id: "module-01-006", title: "Pending Approvals", status: "planned" },
+            { id: "module-01-007", title: "Website Analytics", status: "active" },
+            { id: "module-01-008", title: "Master Feature Registry", status: "active" }
+          ]
+        },
+        {
+          id: "folder-02",
+          title: "Website Pages & Builder",
+          modules: [
+            { id: "module-02-001", title: "All Pages", status: "active" },
+            { id: "module-02-002", title: "Create New Page", status: "active" },
+            { id: "module-02-003", title: "Visual Page Builder", status: "active" },
+            { id: "module-02-004", title: "Homepage Builder", status: "planned" },
+            { id: "module-02-005", title: "Landing Pages", status: "planned" },
+            { id: "module-02-006", title: "Page Templates", status: "planned" },
+            { id: "module-02-007", title: "Reusable Sections", status: "planned" },
+            { id: "module-02-008", title: "Page Revisions", status: "planned" },
+            { id: "module-02-009", title: "Drafts & Previews", status: "planned" },
+            { id: "module-02-010", title: "Scheduled Pages", status: "planned" },
+            { id: "module-02-011", title: "Trash & Restore", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-03",
+          title: "Website Information & Legal",
+          modules: [
+            { id: "module-03-001", title: "About Us", status: "active" },
+            { id: "module-03-002", title: "Contact Us", status: "active" },
+            { id: "module-03-003", title: "Privacy Policy", status: "active" },
+            { id: "module-03-004", title: "Disclaimer", status: "active" },
+            { id: "module-03-005", title: "Terms & Conditions", status: "active" },
+            { id: "module-03-006", title: "Cookie Policy", status: "planned" },
+            { id: "module-03-007", title: "Copyright & DMCA", status: "planned" },
+            { id: "module-03-008", title: "Editorial Policy", status: "planned" },
+            { id: "module-03-009", title: "Corrections Policy", status: "planned" },
+            { id: "module-03-010", title: "Accessibility Statement", status: "planned" },
+            { id: "module-03-011", title: "Refund & Cancellation Policy", status: "planned" },
+            { id: "module-03-012", title: "Shipping / Digital Delivery Policy", status: "planned" },
+            { id: "module-03-013", title: "Community Guidelines", status: "planned" },
+            { id: "module-03-014", title: "FAQs", status: "planned" },
+            { id: "module-03-015", title: "Custom Information Pages", status: "planned" },
+            { id: "module-03-016", title: "Legal Page Revision History", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-04",
+          title: "Content & Publishing",
+          modules: [
+            { id: "module-04-001", title: "All Content", status: "active" },
+            { id: "module-04-002", title: "Articles & Blogs", status: "active" },
+            { id: "module-04-003", title: "News & Updates", status: "active" },
+            { id: "module-04-004", title: "Current Affairs", status: "planned" },
+            { id: "module-04-005", title: "Announcements & Notices", status: "active" },
+            { id: "module-04-006", title: "Featured Content", status: "planned" },
+            { id: "module-04-007", title: "Content Categories", status: "planned" },
+            { id: "module-04-008", title: "Tags", status: "planned" },
+            { id: "module-04-009", title: "Editorial Calendar", status: "planned" },
+            { id: "module-04-010", title: "Publishing Workflow", status: "planned" },
+            { id: "module-04-011", title: "Scheduled Content", status: "planned" },
+            { id: "module-04-012", title: "Content Archive", status: "planned" },
+            { id: "module-04-013", title: "Content Revisions", status: "planned" },
+            { id: "module-04-014", title: "Bulk Content Operations", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-05",
+          title: "Educational Resources",
+          modules: [
+            { id: "module-05-001", title: "Digital Library", status: "active" },
+            { id: "module-05-002", title: "Study Materials", status: "active" },
+            { id: "module-05-003", title: "Notes & PDFs", status: "active" },
+            { id: "module-05-004", title: "Books & References", status: "planned" },
+            { id: "module-05-005", title: "Subjects & Topics", status: "planned" },
+            { id: "module-05-006", title: "Class / Grade Management", status: "planned" },
+            { id: "module-05-007", title: "Examination Management", status: "active" },
+            { id: "module-05-008", title: "Recruitment & Jobs", status: "active" },
+            { id: "module-05-009", title: "Admit Cards & Results", status: "active" },
+            { id: "module-05-010", title: "Syllabus & Exam Patterns", status: "active" },
+            { id: "module-05-011", title: "Previous Year Questions", status: "active" },
+            { id: "module-05-012", title: "Question Bank", status: "planned" },
+            { id: "module-05-013", title: "MCQ & Quiz Builder", status: "planned" },
+            { id: "module-05-014", title: "Mock Tests", status: "planned" },
+            { id: "module-05-015", title: "Answer Keys & Explanations", status: "planned" },
+            { id: "module-05-016", title: "Resource Collections", status: "planned" },
+            { id: "module-05-017", title: "Downloads & Access Rules", status: "planned" },
+            { id: "module-05-018", title: "Government Schemes", status: "active" },
+            { id: "module-05-019", title: "Scholarships", status: "active" },
+            { id: "module-05-020", title: "Career Explorer", status: "planned" },
+            { id: "module-05-021", title: "Student Dashboard", status: "planned" },
+            { id: "module-05-022", title: "Educational Tools", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-06",
+          title: "Categories & Navigation",
+          modules: [
+            { id: "module-06-001", title: "Master Categories", status: "active" },
+            { id: "module-06-002", title: "Subcategories", status: "planned" },
+            { id: "module-06-003", title: "Tags & Taxonomies", status: "planned" },
+            { id: "module-06-004", title: "Header Navigation", status: "active" },
+            { id: "module-06-005", title: "Mega Menu", status: "planned" },
+            { id: "module-06-006", title: "Footer Navigation", status: "active" },
+            { id: "module-06-007", title: "Sidebar Menus", status: "planned" },
+            { id: "module-06-008", title: "Breadcrumbs", status: "planned" },
+            { id: "module-06-009", title: "Internal Links", status: "planned" },
+            { id: "module-06-010", title: "Menu Ordering", status: "planned" },
+            { id: "module-06-011", title: "Social Links", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-07",
+          title: "Files, Media & Cloud",
+          modules: [
+            { id: "module-07-001", title: "File Library", status: "active" },
+            { id: "module-07-002", title: "Bulk Uploads", status: "planned" },
+            { id: "module-07-003", title: "Folders & Collections", status: "planned" },
+            { id: "module-07-004", title: "PDF Manager", status: "active" },
+            { id: "module-07-005", title: "Image Library", status: "active" },
+            { id: "module-07-006", title: "Video & Audio", status: "planned" },
+            { id: "module-07-007", title: "Cloud Links", status: "planned" },
+            { id: "module-07-008", title: "Google Drive Links", status: "planned" },
+            { id: "module-07-009", title: "Storage Providers", status: "planned" },
+            { id: "module-07-010", title: "File Versions", status: "planned" },
+            { id: "module-07-011", title: "File Permissions", status: "planned" },
+            { id: "module-07-012", title: "Storage Usage", status: "active" },
+            { id: "module-07-013", title: "Duplicate Detection", status: "planned" },
+            { id: "module-07-014", title: "Broken File Links", status: "planned" },
+            { id: "module-07-015", title: "Media Optimization", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-08",
+          title: "Payments & Finance",
+          modules: [
+            { id: "module-08-001", title: "Payment Overview", status: "active" },
+            { id: "module-08-002", title: "Payment Gateway Settings", status: "active" },
+            { id: "module-08-003", title: "Transactions", status: "active" },
+            { id: "module-08-004", title: "Orders", status: "planned" },
+            { id: "module-08-005", title: "Paid Resources", status: "planned" },
+            { id: "module-08-006", title: "Products & Pricing", status: "planned" },
+            { id: "module-08-007", title: "Subscriptions", status: "planned" },
+            { id: "module-08-008", title: "Memberships", status: "planned" },
+            { id: "module-08-009", title: "Donations", status: "planned" },
+            { id: "module-08-010", title: "Coupons & Offers", status: "planned" },
+            { id: "module-08-011", title: "Refunds & Disputes", status: "planned" },
+            { id: "module-08-012", title: "Invoices & Receipts", status: "active" },
+            { id: "module-08-013", title: "Tax Configuration", status: "planned" },
+            { id: "module-08-014", title: "Payouts & Settlements", status: "planned" },
+            { id: "module-08-015", title: "Reconciliation", status: "planned" },
+            { id: "module-08-016", title: "Finance Reports", status: "planned" },
+            { id: "module-08-017", title: "Payment Webhooks", status: "planned" },
+            { id: "module-08-018", title: "Fraud & Risk Events", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-09",
+          title: "Users, Roles & Community",
+          modules: [
+            { id: "module-09-001", title: "All Users", status: "active" },
+            { id: "module-09-002", title: "User Profiles", status: "active" },
+            { id: "module-09-003", title: "Roles & Permissions", status: "active" },
+            { id: "module-09-004", title: "Admin Accounts", status: "active" },
+            { id: "module-09-005", title: "Account Status", status: "active" },
+            { id: "module-09-006", title: "Registrations", status: "active" },
+            { id: "module-09-007", title: "Membership Access", status: "planned" },
+            { id: "module-09-008", title: "Community Posts", status: "planned" },
+            { id: "module-09-009", title: "Comments & Replies", status: "planned" },
+            { id: "module-09-010", title: "Moderation Queue", status: "planned" },
+            { id: "module-09-011", title: "User Reports", status: "planned" },
+            { id: "module-09-012", title: "Blocked Accounts", status: "active" },
+            { id: "module-09-013", title: "User Activity", status: "planned" },
+            { id: "module-09-014", title: "Data Access Requests", status: "planned" },
+            { id: "module-09-015", title: "Discussion Forum", status: "planned" },
+            { id: "module-09-016", title: "Ask a Question", status: "planned" },
+            { id: "module-09-017", title: "Share Knowledge", status: "planned" },
+            { id: "module-09-018", title: "Suggest a Topic", status: "planned" },
+            { id: "module-09-019", title: "Report an Error", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-10",
+          title: "Communication & Support",
+          modules: [
+            { id: "module-10-001", title: "Contact Form Submissions", status: "active" },
+            { id: "module-10-002", title: "Support Tickets", status: "active" },
+            { id: "module-10-003", title: "Feedback", status: "planned" },
+            { id: "module-10-004", title: "Surveys & Polls", status: "planned" },
+            { id: "module-10-005", title: "Email Templates", status: "active" },
+            { id: "module-10-006", title: "Email Campaigns", status: "planned" },
+            { id: "module-10-007", title: "Newsletter Subscribers", status: "active" },
+            { id: "module-10-008", title: "Notifications", status: "active" },
+            { id: "module-10-009", title: "Push Notifications", status: "planned" },
+            { id: "module-10-010", title: "In-App Messages", status: "planned" },
+            { id: "module-10-011", title: "Announcement Banners", status: "active" },
+            { id: "module-10-012", title: "Help Centre", status: "planned" },
+            { id: "module-10-013", title: "Support Categories", status: "planned" },
+            { id: "module-10-014", title: "Spam & Abuse Reports", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-11",
+          title: "Website Appearance Studio",
+          modules: [
+            { id: "module-11-001", title: "Brand Identity", status: "active" },
+            { id: "module-11-002", title: "Logo & Favicon", status: "active" },
+            { id: "module-11-003", title: "Colors & Themes", status: "active" },
+            { id: "module-11-004", title: "Typography", status: "active" },
+            { id: "module-11-005", title: "Header Design", status: "planned" },
+            { id: "module-11-006", title: "Footer Design", status: "planned" },
+            { id: "module-11-007", title: "Homepage Layout", status: "planned" },
+            { id: "module-11-008", title: "Banners & Sliders", status: "planned" },
+            { id: "module-11-009", title: "Buttons & Cards", status: "planned" },
+            { id: "module-11-010", title: "Reusable Components", status: "planned" },
+            { id: "module-11-011", title: "Desktop & Mobile Preview", status: "active" },
+            { id: "module-11-012", title: "Accessibility Styling", status: "planned" },
+            { id: "module-11-013", title: "Custom 404 Page", status: "planned" },
+            { id: "module-11-014", title: "Design Version History", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-12",
+          title: "Marketing & Advertising",
+          modules: [
+            { id: "module-12-001", title: "Advertising Placements", status: "planned" },
+            { id: "module-12-002", title: "Sponsors", status: "planned" },
+            { id: "module-12-003", title: "Promotional Banners", status: "planned" },
+            { id: "module-12-004", title: "Campaigns", status: "planned" },
+            { id: "module-12-005", title: "Referral Tracking", status: "planned" },
+            { id: "module-12-006", title: "Campaign Analytics", status: "planned" },
+            { id: "module-12-007", title: "UTM Management", status: "planned" },
+            { id: "module-12-008", title: "Social Sharing", status: "planned" },
+            { id: "module-12-009", title: "Promotional Landing Pages", status: "planned" },
+            { id: "module-12-010", title: "Advertising Reports", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-13",
+          title: "SEO, Search & Discovery",
+          modules: [
+            { id: "module-13-001", title: "SEO Overview", status: "active" },
+            { id: "module-13-002", title: "Page Metadata", status: "active" },
+            { id: "module-13-003", title: "Canonical URLs", status: "planned" },
+            { id: "module-13-004", title: "Open Graph Previews", status: "active" },
+            { id: "module-13-005", title: "Structured Data", status: "planned" },
+            { id: "module-13-006", title: "XML Sitemap", status: "active" },
+            { id: "module-13-007", title: "Robots Settings", status: "planned" },
+            { id: "module-13-008", title: "Search Console Integration", status: "planned" },
+            { id: "module-13-009", title: "Internal Search Manager", status: "planned" },
+            { id: "module-13-010", title: "Search Index", status: "planned" },
+            { id: "module-13-011", title: "Search Filters", status: "planned" },
+            { id: "module-13-012", title: "Popular Searches", status: "planned" },
+            { id: "module-13-013", title: "Zero-Result Searches", status: "planned" },
+            { id: "module-13-014", title: "URL Redirects", status: "active" },
+            { id: "module-13-015", title: "Broken Links", status: "active" },
+            { id: "module-13-016", title: "404 Reports", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-14",
+          title: "Events & Scheduling",
+          modules: [
+            { id: "module-14-001", title: "Event Calendar", status: "planned" },
+            { id: "module-14-002", title: "Exam Calendar", status: "active" },
+            { id: "module-14-003", title: "Recruitment Deadlines", status: "active" },
+            { id: "module-14-004", title: "Webinars & Sessions", status: "planned" },
+            { id: "module-14-005", title: "Event Registration", status: "planned" },
+            { id: "module-14-006", title: "Scheduled Publications", status: "planned" },
+            { id: "module-14-007", title: "Expiry Rules", status: "planned" },
+            { id: "module-14-008", title: "Reminder Configuration", status: "planned" },
+            { id: "module-14-009", title: "Scheduled Maintenance", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-15",
+          title: "Integrations & APIs",
+          modules: [
+            { id: "module-15-001", title: "Integration Directory", status: "active" },
+            { id: "module-15-002", title: "Supabase Connection Status", status: "planned" },
+            { id: "module-15-003", title: "Cloudflare Integration", status: "active" },
+            { id: "module-15-004", title: "Payment Integrations", status: "active" },
+            { id: "module-15-005", title: "Email Provider", status: "active" },
+            { id: "module-15-006", title: "Cloud Storage Integrations", status: "planned" },
+            { id: "module-15-007", title: "Analytics Integrations", status: "planned" },
+            { id: "module-15-008", title: "API Configuration", status: "planned" },
+            { id: "module-15-009", title: "Webhook Management", status: "planned" },
+            { id: "module-15-010", title: "Integration Logs", status: "planned" },
+            { id: "module-15-011", title: "Integration Health", status: "active" }
+          ]
+        },
+        {
+          id: "folder-16",
+          title: "Security & Privacy",
+          modules: [
+            { id: "module-16-001", title: "Authentication", status: "active" },
+            { id: "module-16-002", title: "Two-Factor Authentication", status: "active" },
+            { id: "module-16-003", title: "Admin Sessions", status: "active" },
+            { id: "module-16-004", title: "Roles & Access Policies", status: "active" },
+            { id: "module-16-005", title: "Login History", status: "active" },
+            { id: "module-16-006", title: "Security Alerts", status: "active" },
+            { id: "module-16-007", title: "Rate Limits", status: "active" },
+            { id: "module-16-008", title: "Upload Security", status: "planned" },
+            { id: "module-16-009", title: "Privacy & Consent", status: "planned" },
+            { id: "module-16-010", title: "Data Retention", status: "planned" },
+            { id: "module-16-011", title: "Account Deletion Requests", status: "planned" },
+            { id: "module-16-012", title: "Security Audit Logs", status: "active" },
+            { id: "module-16-013", title: "Incident Response", status: "active" }
+          ]
+        },
+        {
+          id: "folder-17",
+          title: "Operations, Backups & Recovery",
+          modules: [
+            { id: "module-17-001", title: "System Health", status: "active" },
+            { id: "module-17-002", title: "Website Availability", status: "active" },
+            { id: "module-17-003", title: "API Diagnostics", status: "planned" },
+            { id: "module-17-004", title: "Database Health", status: "active" },
+            { id: "module-17-005", title: "Storage Monitoring", status: "active" },
+            { id: "module-17-006", title: "Backup Centre", status: "active" },
+            { id: "module-17-007", title: "Restore Centre", status: "active" },
+            { id: "module-17-008", title: "Revision Rollback", status: "planned" },
+            { id: "module-17-009", title: "Error Logs", status: "planned" },
+            { id: "module-17-010", title: "Scheduled Jobs", status: "planned" },
+            { id: "module-17-011", title: "Automation Rules", status: "planned" },
+            { id: "module-17-012", title: "Maintenance Mode", status: "active" },
+            { id: "module-17-013", title: "Cache Management", status: "active" },
+            { id: "module-17-014", title: "Deployment Status", status: "active" },
+            { id: "module-17-015", title: "Release History", status: "planned" },
+            { id: "module-17-016", title: "Disaster Recovery", status: "active" }
+          ]
+        },
+        {
+          id: "folder-18",
+          title: "Settings & Configuration",
+          modules: [
+            { id: "module-18-001", title: "General Website Settings", status: "active" },
+            { id: "module-18-002", title: "Website Identity", status: "active" },
+            { id: "module-18-003", title: "Contact Information", status: "active" },
+            { id: "module-18-004", title: "Localization", status: "planned" },
+            { id: "module-18-005", title: "Languages", status: "planned" },
+            { id: "module-18-006", title: "Time Zone", status: "active" },
+            { id: "module-18-007", title: "Date & Number Formats", status: "planned" },
+            { id: "module-18-008", title: "Homepage Settings", status: "active" },
+            { id: "module-18-009", title: "Feature Toggles", status: "active" },
+            { id: "module-18-010", title: "Email Settings", status: "active" },
+            { id: "module-18-011", title: "Upload Limits", status: "planned" },
+            { id: "module-18-012", title: "Content Defaults", status: "planned" },
+            { id: "module-18-013", title: "Registration Settings", status: "active" },
+            { id: "module-18-014", title: "Comment Settings", status: "planned" },
+            { id: "module-18-015", title: "Payment Settings", status: "planned" },
+            { id: "module-18-016", title: "Environment Status", status: "active" },
+            { id: "module-18-017", title: "Administrative Preferences", status: "planned" }
+          ]
+        },
+        {
+          id: "folder-19",
+          title: "Master Feature Registry",
+          modules: [
+            { id: "module-19-001", title: "All Discovered Features", status: "active" },
+            { id: "module-19-002", title: "Page & Route Inventory", status: "active" },
+            { id: "module-19-003", title: "Public UI Components", status: "active" },
+            { id: "module-19-004", title: "Database Entities", status: "active" },
+            { id: "module-19-005", title: "API Endpoints", status: "active" },
+            { id: "module-19-006", title: "Admin Coverage Matrix", status: "active" },
+            { id: "module-19-007", title: "Missing Admin Controls", status: "active" },
+            { id: "module-19-008", title: "Feature Dependencies", status: "planned" },
+            { id: "module-19-009", title: "Implementation Status", status: "active" },
+            { id: "module-19-010", title: "Regression Test Coverage", status: "planned" },
+            { id: "module-19-011", title: "Feature Documentation", status: "planned" }
+          ]
+        }
+      ]
+    };
+
+    /**
+     * Local Reactive State Store
+     */
+    const CSOState = {
+      activeFolderId: "folder-01",
+      activeModuleId: "module-01-001",
+      expandedFolders: new Set(["folder-01"]),
+      maintenanceMode: false,
+      searchQuery: "",
+      startTime: Date.now(),
+      
+      // Seed Data for Interactive Demonstrations
+      users: [
+        { id: "USR-9021", name: "Ananya Patnaik", email: "ananya.p@gmail.com", role: "Candidate", status: "Verified", district: "Khordha", joined: "2026-11-04" },
+        { id: "USR-9022", name: "Debashis Mohanty", email: "debashis.m@yahoo.com", role: "Moderator", status: "Verified", district: "Cuttack", joined: "2026-11-02" },
+        { id: "USR-9023", name: "Sunita Behera", email: "sunitab@gmail.com", role: "Candidate", status: "Pending", district: "Mayurbhanj", joined: "2026-11-08" },
+        { id: "USR-9024", name: "Ranjan Dash", email: "dash.ranjan@odisha.gov.in", role: "Academic Editor", status: "Verified", district: "Balasore", joined: "2026-10-18" },
+        { id: "USR-9025", name: "Pooja Nayak", email: "pooja.n@gmail.com", role: "Candidate", status: "Suspended", district: "Ganjam", joined: "2026-09-29" }
+      ],
+      resources: [
+        { id: "RES-101", title: "OSSC CGL 2026 Detailed Syllabus & Scheme", category: "State Exams", format: "PDF (1.2 MB)", downloads: 8450, status: "Live" },
+        { id: "RES-102", title: "Odisha B.Ed Entrance Pedagogy Notes & PYQ", category: "Teaching", format: "PDF (3.8 MB)", downloads: 14200, status: "Live" },
+        { id: "RES-103", title: "Medhabruti Scholarship Application Checklist", category: "Scholarships", format: "Guide / Web", downloads: 5310, status: "Live" },
+        { id: "RES-104", title: "CHSE Odisha +2 Science Mathematics Solutions", category: "Higher Secondary", format: "PDF (5.4 MB)", downloads: 9120, status: "Live" },
+        { id: "RES-105", title: "OTET 2026 Paper I & II Exam Pattern", category: "Teacher Eligibility", format: "PDF (850 KB)", downloads: 3100, status: "Needs Review" }
+      ],
+      inquiries: [
+        { id: "INQ-441", sender: "Priyanka Rout", email: "priyanka.rout@gmail.com", phone: "+91 94371 00219", district: "Sambalpur", subject: "B.Ed College Choice Filling Error", time: "12m ago", status: "Unread" },
+        { id: "INQ-440", sender: "Manoj Kumar Samal", email: "samal.manoj@gmail.com", phone: "+91 70081 29482", district: "Kendrapara", subject: "Medhabruti Portal OTP not coming", time: "48m ago", status: "In Progress" },
+        { id: "INQ-439", sender: "Alok Tripathy", email: "tripathy.alok@gmail.com", phone: "+91 98610 55812", district: "Puri", subject: "Correction in OSSC Admit Card Name", time: "3h ago", status: "Resolved" }
+      ],
+      broadcast: {
+        headline: "OSSC CGL 2026 Preliminary Admit Card Download Link Live",
+        context: "Candidates can now access direct hall ticket download links. Verification guidelines updated.",
+        severity: "emerald",
+        ctaText: "Download Admit Card",
+        ctaUrl: "/resources.html#ossc-cgl",
+        active: true
+      }
+    };
+
+    /**
+     * DOM References
+     */
+    const dom = {
+      accordionNav: document.getElementById('accordionNav'),
+      moduleSearchInput: document.getElementById('moduleSearchInput'),
+      searchCountBadge: document.getElementById('searchCountBadge'),
+      workspaceRoot: document.getElementById('workspaceRoot'),
+      breadcrumbFolder: document.getElementById('breadcrumbFolder'),
+      breadcrumbModule: document.getElementById('breadcrumbModule'),
+      activeModuleHeading: document.getElementById('activeModuleHeading'),
+      activeModuleIdPill: document.getElementById('activeModuleIdPill'),
+      moduleHeaderActions: document.getElementById('moduleHeaderActions'),
+      sessionTimer: document.getElementById('sessionTimer'),
+      btnPurgeCache: document.getElementById('btnPurgeCache'),
+      btnMaintenanceToggle: document.getElementById('btnMaintenanceToggle'),
+      maintenanceStatusDot: document.getElementById('maintenanceStatusDot'),
+      maintenanceStatusText: document.getElementById('maintenanceStatusText'),
+      btnToggleSidebar: document.getElementById('btnToggleSidebar'),
+      sidebarConsole: document.getElementById('sidebarConsole'),
+      mobileDrawerBackdrop: document.getElementById('mobileDrawerBackdrop'),
+      toastContainer: document.getElementById('toastContainer'),
+      globalModal: document.getElementById('globalModal'),
+      modalTitle: document.getElementById('modalTitle'),
+      modalBody: document.getElementById('modalBody'),
+      modalFooter: document.getElementById('modalFooter'),
+      btnModalClose: document.getElementById('btnModalClose')
+    };
+
+    /**
+     * Session Duration Timer Ticker
+     */
+    function initSessionTimer() {
+      setInterval(() => {
+        const diff = Math.floor((Date.now() - CSOState.startTime) / 1000);
+        const hrs = String(Math.floor(diff / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        const secs = String(diff % 60).padStart(2, '0');
+        dom.sessionTimer.textContent = `${hrs}:${mins}:${secs}`;
+      }, 1000);
+    }
+
+    /**
+     * Toast System
+     */
+    function showToast(message, type = 'info') {
+      const colors = {
+        info: 'bg-brand-slate border-brand-emerald text-brand-emerald',
+        success: 'bg-emerald-950/90 border-emerald-500 text-emerald-300',
+        warning: 'bg-amber-950/90 border-amber-500 text-amber-300',
+        crimson: 'bg-red-950/90 border-red-500 text-red-300'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `p-3 rounded-lg border shadow-xl text-xs font-medium flex items-center justify-between gap-3 pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full ${type === 'success' || type === 'info' ? 'bg-brand-emerald' : type === 'warning' ? 'bg-amber-400' : 'bg-red-500'}"></span>
+          <span>${message}</span>
+        </div>
+      `;
+      dom.toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    /**
+     * Render the 19 Folders and Modules Accordion
+     */
+    function renderNavigationTree() {
+      const query = CSOState.searchQuery.toLowerCase().trim();
+      let matchCount = 0;
+      dom.accordionNav.innerHTML = '';
+
+      masterNavigationSchema.folders.forEach(folder => {
+        const folderMatches = folder.title.toLowerCase().includes(query);
+        const filteredModules = folder.modules.filter(m => 
+          folderMatches || 
+          m.title.toLowerCase().includes(query) || 
+          m.id.toLowerCase().includes(query)
+        );
+
+        if (query && filteredModules.length === 0) return;
+
+        matchCount += filteredModules.length;
+        const isExpanded = query ? true : CSOState.expandedFolders.has(folder.id);
+        const isCurrentFolder = (CSOState.activeFolderId === folder.id);
+
+        const folderEl = document.createElement('div');
+        folderEl.className = 'rounded-lg overflow-hidden bg-brand-slate/40 border border-brand-border/60 transition';
+
+        folderEl.innerHTML = `
+          <button class="w-full px-3 py-2.5 flex items-center justify-between text-left font-medium transition ${isCurrentFolder ? 'text-brand-emerald bg-brand-card/70' : 'text-slate-300 hover:text-white hover:bg-brand-card/40'}" data-folder-id="${folder.id}">
+            <div class="flex items-center gap-2 truncate pr-2">
+              <span class="w-2 h-2 rounded-full ${isCurrentFolder ? 'bg-brand-emerald' : 'bg-slate-600'}"></span>
+              <span class="truncate font-semibold tracking-tight">${folder.title}</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">${folder.modules.length}</span>
+              <svg class="w-3.5 h-3.5 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-90 text-brand-emerald' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </button>
+          
+          <div class="folder-modules-list space-y-0.5 px-1 py-1 border-t border-brand-border/40 ${isExpanded ? 'block' : 'hidden'} bg-[#081220]/70">
+            ${filteredModules.map(module => {
+              const isActiveModule = (CSOState.activeModuleId === module.id);
+              const isPlanned = module.status === 'planned';
+              return `
+                <button class="w-full text-left px-2.5 py-1.5 rounded-md flex items-center justify-between transition ${isActiveModule ? 'bg-brand-emerald text-white font-semibold shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-brand-slate'}" data-module-id="${module.id}" data-folder-id="${folder.id}">
+                  <span class="truncate pr-2">${module.title}</span>
+                  <span class="text-[9px] font-mono uppercase px-1 rounded ${isActiveModule ? 'bg-black/30 text-white' : isPlanned ? 'bg-slate-800 text-slate-400' : 'bg-brand-emerald/20 text-brand-emerald'}">${isPlanned ? 'PLAN' : 'ACT'}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+        // Toggle Folder Click Event
+        folderEl.querySelector('button[data-folder-id]').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (CSOState.expandedFolders.has(folder.id)) {
+            CSOState.expandedFolders.delete(folder.id);
+          } else {
+            CSOState.expandedFolders.add(folder.id);
+          }
+          renderNavigationTree();
+        });
+
+        // Module Click Events
+        folderEl.querySelectorAll('button[data-module-id]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const modId = btn.getAttribute('data-module-id');
+            const fldId = btn.getAttribute('data-folder-id');
+            selectModule(fldId, modId);
+            
+            // Close mobile drawer on selection
+            if (window.innerWidth < 1024) {
+              closeMobileDrawer();
+            }
+          });
+        });
+
+        dom.accordionNav.appendChild(folderEl);
+      });
+
+      // Update search counter badge
+      if (query) {
+        dom.searchCountBadge.classList.remove('hidden');
+        dom.searchCountBadge.textContent = matchCount;
+      } else {
+        dom.searchCountBadge.classList.add('hidden');
+      }
+    }
+
+    /**
+     * Route & Select Active Module
+     */
+    function selectModule(folderId, moduleId) {
+      CSOState.activeFolderId = folderId;
+      CSOState.activeModuleId = moduleId;
+      CSOState.expandedFolders.add(folderId);
+
+      const folder = masterNavigationSchema.folders.find(f => f.id === folderId);
+      const module = folder?.modules.find(m => m.id === moduleId);
+
+      if (folder && module) {
+        dom.breadcrumbFolder.textContent = folder.title;
+        dom.breadcrumbModule.textContent = module.title;
+        dom.activeModuleHeading.innerHTML = `
+          ${module.title}
+          <span id="activeModuleIdPill" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${module.id}</span>
+        `;
+      }
+
+      renderNavigationTree();
+      renderWorkspaceView(folderId, moduleId);
+    }
+
+    /**
+     * Dispatcher to Render Specific or Standard Workspace Views
+     */
+    function renderWorkspaceView(folderId, moduleId) {
+      dom.workspaceRoot.innerHTML = '';
+      dom.moduleHeaderActions.innerHTML = '';
+
+      // Route to specialized views
+      if (moduleId === 'module-01-001') {
+        renderOverviewWorkspace();
+      } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
+        renderCMSStudioWorkspace();
+      } else if (folderId === 'folder-05') {
+        renderEducationalResourcesWorkspace();
+      } else if (folderId === 'folder-08') {
+        renderFinanceWorkspace();
+      } else if (folderId === 'folder-09') {
+        renderUsersRBACWorkspace();
+      } else if (folderId === 'folder-10') {
+        renderCommunicationsWorkspace();
+      } else if (folderId === 'folder-11') {
+        renderAppearanceStudioWorkspace();
+      } else if (folderId === 'folder-16') {
+        renderSecurityWorkspace();
+      } else if (folderId === 'folder-17') {
+        renderOperationsRecoveryWorkspace();
+      } else if (folderId === 'folder-19') {
+        renderMasterFeatureRegistryWorkspace();
+      } else {
+        renderStandardModuleInspector(folderId, moduleId);
+      }
+    }
+
+    /**
+     * VIEW 1: Overview Command Centre (module-01-001)
+     */
+    function renderOverviewWorkspace() {
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnExportOverview" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export Telemetry
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <!-- KPI Metric Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Total Registered Users -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Candidate Accounts</span>
+              <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-2xl font-extrabold text-white">12,480</span>
+              <span class="text-xs font-semibold text-brand-emerald">+184 today</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">Verified across 30 Odisha districts</p>
+          </div>
+
+          <!-- Educational Resources -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Verified Resources</span>
+              <span class="p-1.5 rounded-lg bg-emerald-500/10 text-brand-emerald">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-2xl font-extrabold text-white">3,790</span>
+              <span class="text-xs font-semibold text-brand-emerald">100% Online</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">Syllabus, PYQs & Scheme documents</p>
+          </div>
+
+          <!-- Pending Student Queries -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Inquiry Desk</span>
+              <span class="p-1.5 rounded-lg bg-amber-500/10 text-brand-amber">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-2xl font-extrabold text-white">18</span>
+              <span class="text-xs font-semibold text-amber-400">Needs Resolution</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">Avg response SLA: 2.4 hours</p>
+          </div>
+
+          <!-- Database & Edge Utilization -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Cloudflare D1 Storage</span>
+              <span class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-2xl font-extrabold text-white">14.2 MB</span>
+              <span class="text-xs font-semibold text-slate-400 font-mono">/ 500 MB</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">5 core tables &bull; 0 replication lags</p>
+          </div>
+        </div>
+
+        <!-- Live Emergency Homepage Broadcast Controller -->
+        <div class="p-5 rounded-xl bg-brand-card border border-brand-border shadow-lg">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-brand-border">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full ${CSOState.broadcast.active ? 'bg-brand-emerald animate-ping' : 'bg-slate-600'}"></span>
+              <h3 class="font-bold text-white text-sm">Homepage Live Broadcast Banner</h3>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded ${CSOState.broadcast.active ? 'bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40' : 'bg-slate-800 text-slate-400'}">${CSOState.broadcast.active ? 'STATUS: LIVE' : 'STATUS: INACTIVE'}</span>
+            </div>
+            <button id="btnToggleBroadcast" class="px-3 py-1.5 text-xs font-bold rounded-lg ${CSOState.broadcast.active ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-brand-emerald hover:bg-brand-emeraldHover text-white'} transition">
+              ${CSOState.broadcast.active ? 'Take Down Live Banner' : 'Publish Banner'}
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="md:col-span-2 space-y-3">
+              <div>
+                <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Headline</label>
+                <input id="inputBroadcastHeadline" type="text" value="${CSOState.broadcast.headline}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:ring-1 focus:ring-brand-emerald" />
+              </div>
+              <div>
+                <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Context & Instructions</label>
+                <input id="inputBroadcastContext" type="text" value="${CSOState.broadcast.context}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs focus:ring-1 focus:ring-brand-emerald" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">CTA Button Text</label>
+                  <input id="inputBroadcastCta" type="text" value="${CSOState.broadcast.ctaText}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs" />
+                </div>
+                <div>
+                  <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Target Link URL</label>
+                  <input id="inputBroadcastUrl" type="text" value="${CSOState.broadcast.ctaUrl}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs font-mono" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Banner Live Preview -->
+            <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-mono text-slate-500 uppercase font-bold block mb-2">Simulated Homepage View</span>
+                <div class="p-3 rounded-lg border border-brand-emerald/40 bg-brand-emerald/10 text-emerald-200 text-xs space-y-1.5">
+                  <div class="font-bold flex items-center gap-1.5">
+                    <span>📢</span>
+                    <span id="previewHeadline">${CSOState.broadcast.headline}</span>
+                  </div>
+                  <p id="previewContext" class="text-[11px] text-slate-300">${CSOState.broadcast.context}</p>
+                  <a href="#" class="inline-block px-2.5 py-1 text-[10px] font-bold bg-brand-emerald text-white rounded">${CSOState.broadcast.ctaText} &rarr;</a>
+                </div>
+              </div>
+              <button id="btnSaveBroadcast" class="w-full mt-3 py-2 text-xs font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Save Banner Content</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed & Rapid Dispatch Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Recent Chronological Activity -->
+          <div class="lg:col-span-2 p-5 rounded-xl bg-brand-slate border border-brand-border">
+            <h3 class="font-bold text-white text-sm mb-4 flex items-center justify-between">
+              <span>Audit & Incident Event Stream</span>
+              <span class="text-[11px] font-mono text-brand-emerald">Live UTC / IST</span>
+            </h3>
+            <div class="space-y-3 font-mono text-xs">
+              <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-[10px] text-brand-emerald px-1.5 py-0.5 rounded bg-brand-emerald/10 mt-0.5 font-bold">AUTH</span>
+                <div class="flex-1">
+                  <p class="text-slate-200 font-sans">Super admin authentication completed from 103.21.124.9 (Bhubaneswar)</p>
+                  <span class="text-[10px] text-slate-500">2 mins ago &bull; SHA-256 Verified Session</span>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-[10px] text-cyan-400 px-1.5 py-0.5 rounded bg-cyan-500/10 mt-0.5 font-bold">EDGE</span>
+                <div class="flex-1">
+                  <p class="text-slate-200 font-sans">Cloudflare Pages deployment 7326716 published to csodisha.com</p>
+                  <span class="text-[10px] text-slate-500">14 mins ago &bull; 0 broken links &bull; HTTP/2 200 OK</span>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-2.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-[10px] text-amber-400 px-1.5 py-0.5 rounded bg-amber-500/10 mt-0.5 font-bold">INQ</span>
+                <div class="flex-1">
+                  <p class="text-slate-200 font-sans">New student inquiry received: B.Ed Choice Filling Guidance</p>
+                  <span class="text-[10px] text-slate-500">48 mins ago &bull; Priyanka Rout (Sambalpur)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Launch Shortcuts -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-white text-sm mb-3">Administrative Hotkeys</h3>
+              <p class="text-xs text-slate-400 mb-4">Direct shortcuts to high-frequency maintenance modules.</p>
+              <div class="space-y-2 text-xs">
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-02', 'module-02-002')">
+                  <span>+ Create New Page</span>
+                  <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
+                </button>
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-05', 'module-05-010')">
+                  <span>Publish Syllabus & PYQ</span>
+                  <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
+                </button>
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-10', 'module-10-001')">
+                  <span>Triage Contact Inquiries (18)</span>
+                  <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
+                </button>
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-17', 'module-17-016')">
+                  <span>Disaster Recovery & Snapshots</span>
+                  <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="p-3 rounded-lg bg-[#081220] border border-brand-border mt-4 text-[11px] text-slate-400">
+              <span class="font-bold text-brand-emerald">Google SMTP Relay:</span> smtp.gmail.com:587 verified for <code class="text-slate-200">admin@csodisha.com</code>.
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Wire Broadcast Interactivity
+      const btnToggle = document.getElementById('btnToggleBroadcast');
+      const btnSave = document.getElementById('btnSaveBroadcast');
+      const inHead = document.getElementById('inputBroadcastHeadline');
+      const inCtx = document.getElementById('inputBroadcastContext');
+      const inCta = document.getElementById('inputBroadcastCta');
+      const inUrl = document.getElementById('inputBroadcastUrl');
+      const prevHead = document.getElementById('previewHeadline');
+      const prevCtx = document.getElementById('previewContext');
+
+      inHead.addEventListener('input', () => prevHead.textContent = inHead.value);
+      inCtx.addEventListener('input', () => prevCtx.textContent = inCtx.value);
+
+      btnToggle.addEventListener('click', () => {
+        CSOState.broadcast.active = !CSOState.broadcast.active;
+        showToast(CSOState.broadcast.active ? "Homepage broadcast banner is now LIVE" : "Homepage broadcast banner taken down", CSOState.broadcast.active ? "success" : "warning");
+        renderOverviewWorkspace();
+      });
+
+      btnSave.addEventListener('click', () => {
+        CSOState.broadcast.headline = inHead.value;
+        CSOState.broadcast.context = inCtx.value;
+        CSOState.broadcast.ctaText = inCta.value;
+        CSOState.broadcast.ctaUrl = inUrl.value;
+        showToast("Broadcast content saved successfully", "success");
+      });
+
+      document.getElementById('btnExportOverview').addEventListener('click', () => {
+        downloadSnapshotFile({
+          timestamp: new Date().toISOString(),
+          metrics: { users: 12480, resources: 3790, inquiries: 18, storage_mb: 14.2 },
+          broadcast: CSOState.broadcast
+        }, "cso-telemetry-snapshot.json");
+      });
+    }
+
+    /**
+     * VIEW 2: Website Pages & Visual CMS Studio (Folder 02)
+     */
+    function renderCMSStudioWorkspace() {
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnLaunchPageBuilder" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
+          <span>+ Create New Page</span>
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white text-sm">Site Page Directory (Static & Dynamic Routes)</h3>
+              <p class="text-xs text-slate-400">Total 24 verified pages with zero broken internal links.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" placeholder="Filter routes..." class="bg-[#081220] border border-brand-border rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500" />
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-[#081220] uppercase font-mono text-[10px] text-slate-400 border-b border-brand-border">
+                <tr>
+                  <th class="py-2.5 px-3">Route Path</th>
+                  <th class="py-2.5 px-3">Page Name</th>
+                  <th class="py-2.5 px-3">Template</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3">Last Modified</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-brand-border/60">
+                <tr class="hover:bg-brand-card/40 transition">
+                  <td class="py-2.5 px-3 font-mono text-cyan-400 font-semibold">/</td>
+                  <td class="py-2.5 px-3 font-medium text-white">Homepage & Portal Gate</td>
+                  <td class="py-2.5 px-3">Interactive Landing</td>
+                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-brand-emerald border border-brand-emerald/30">Live (200 OK)</span></td>
+                  <td class="py-2.5 px-3 font-mono text-slate-400">2026-11-08</td>
+                  <td class="py-2.5 px-3 text-right">
+                    <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] mr-1">Edit</button>
+                    <a href="https://csodisha.com/" target="_blank" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]">Preview</a>
+                  </td>
+                </tr>
+                <tr class="hover:bg-brand-card/40 transition">
+                  <td class="py-2.5 px-3 font-mono text-cyan-400 font-semibold">/resources.html</td>
+                  <td class="py-2.5 px-3 font-medium text-white">Educational Resources Directory</td>
+                  <td class="py-2.5 px-3">Directory Matrix</td>
+                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-brand-emerald border border-brand-emerald/30">Live (200 OK)</span></td>
+                  <td class="py-2.5 px-3 font-mono text-slate-400">2026-11-08</td>
+                  <td class="py-2.5 px-3 text-right">
+                    <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] mr-1">Edit</button>
+                    <a href="https://csodisha.com/resources.html" target="_blank" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]">Preview</a>
+                  </td>
+                </tr>
+                <tr class="hover:bg-brand-card/40 transition">
+                  <td class="py-2.5 px-3 font-mono text-cyan-400 font-semibold">/about.html</td>
+                  <td class="py-2.5 px-3 font-medium text-white">About CS Odisha Mission</td>
+                  <td class="py-2.5 px-3">Standard Content</td>
+                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-brand-emerald border border-brand-emerald/30">Live (200 OK)</span></td>
+                  <td class="py-2.5 px-3 font-mono text-slate-400">2026-11-08</td>
+                  <td class="py-2.5 px-3 text-right">
+                    <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] mr-1">Edit</button>
+                    <a href="https://csodisha.com/about.html" target="_blank" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]">Preview</a>
+                  </td>
+                </tr>
+                <tr class="hover:bg-brand-card/40 transition">
+                  <td class="py-2.5 px-3 font-mono text-cyan-400 font-semibold">/contact.html</td>
+                  <td class="py-2.5 px-3 font-medium text-white">Student Contact & Inquiries</td>
+                  <td class="py-2.5 px-3">Form Desk</td>
+                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-brand-emerald border border-brand-emerald/30">Live (200 OK)</span></td>
+                  <td class="py-2.5 px-3 font-mono text-slate-400">2026-11-08</td>
+                  <td class="py-2.5 px-3 text-right">
+                    <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] mr-1">Edit</button>
+                    <a href="https://csodisha.com/contact.html" target="_blank" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]">Preview</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnLaunchPageBuilder').addEventListener('click', openPageBuilderModal);
+    }
+
+    /**
+     * Modal: Visual Page Builder & Slug Generator
+     */
+    function openPageBuilderModal() {
+      openModal("Visual Page Studio & Route Publisher", `
+        <div class="space-y-4">
+          <div>
+            <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Page Title</label>
+            <input id="builderTitle" type="text" placeholder="e.g. Odisha Scholarship Portal 2026 Complete Guide" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs" />
+          </div>
+          <div>
+            <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Target Slug Route</label>
+            <div class="flex items-center">
+              <span class="px-3 py-2 bg-slate-800 border border-r-0 border-brand-border rounded-l-lg text-slate-400 text-xs font-mono">csodisha.com/</span>
+              <input id="builderSlug" type="text" placeholder="odisha-scholarships-2026" class="w-full bg-[#081220] border border-brand-border rounded-r-lg px-3 py-2 text-brand-emerald text-xs font-mono" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Layout Template</label>
+              <select class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs">
+                <option>Standard Article & Guide</option>
+                <option>Educational Resource Matrix</option>
+                <option>Notice & Recruitment Announcement</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">SEO Meta Indexing</label>
+              <select class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs">
+                <option>index, follow (Public Search)</option>
+                <option>noindex, nofollow (Private Draft)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Page HTML / Markdown Body</label>
+            <textarea rows="6" placeholder="<section class='max-w-4xl mx-auto'>&#10;  <h1>Odisha Scholarship Portal Guide</h1>&#10;</section>" class="w-full bg-[#081220] border border-brand-border rounded-lg p-3 text-slate-200 text-xs font-mono"></textarea>
+          </div>
+        </div>
+      `, `
+        <button id="btnModalSaveDraft" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Save Draft</button>
+        <button id="btnModalPublish" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Publish to Cloudflare Pages</button>
+      `);
+
+      document.getElementById('builderTitle').addEventListener('input', (e) => {
+        const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        document.getElementById('builderSlug').value = slug;
+      });
+
+      document.getElementById('btnModalPublish').addEventListener('click', () => {
+        closeModal();
+        showToast("New page generated and staged for Cloudflare deployment!", "success");
+      });
+      document.getElementById('btnModalSaveDraft').addEventListener('click', () => {
+        closeModal();
+        showToast("Page draft saved to local state store", "info");
+      });
+    }
+
+    /**
+     * VIEW 3: Educational Resources & Syllabus Matrix (Folder 05)
+     */
+    function renderEducationalResourcesWorkspace() {
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnAddResource" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
+          <span>+ Add Resource</span>
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white text-sm">Educational Resources & Syllabus Matrix</h3>
+              <p class="text-xs text-slate-400">Curriculum documents, recruitment question papers, and government schemes.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <select class="bg-[#081220] border border-brand-border rounded-lg px-3 py-1.5 text-xs text-slate-300">
+                <option>All Categories</option>
+                <option>State Exams</option>
+                <option>Higher Secondary</option>
+                <option>Teaching / B.Ed</option>
+                <option>Scholarships</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-[#081220] uppercase font-mono text-[10px] text-slate-400 border-b border-brand-border">
+                <tr>
+                  <th class="py-2.5 px-3">Resource ID</th>
+                  <th class="py-2.5 px-3">Resource Title</th>
+                  <th class="py-2.5 px-3">Category</th>
+                  <th class="py-2.5 px-3">Format & Size</th>
+                  <th class="py-2.5 px-3">Downloads</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-brand-border/60">
+                ${CSOState.resources.map(res => `
+                  <tr class="hover:bg-brand-card/40 transition">
+                    <td class="py-2.5 px-3 font-mono text-cyan-400 font-bold">${res.id}</td>
+                    <td class="py-2.5 px-3 font-medium text-white">${res.title}</td>
+                    <td class="py-2.5 px-3 text-slate-300">${res.category}</td>
+                    <td class="py-2.5 px-3 font-mono text-slate-400">${res.format}</td>
+                    <td class="py-2.5 px-3 font-mono text-brand-emerald font-semibold">${res.downloads.toLocaleString()}</td>
+                    <td class="py-2.5 px-3">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono ${res.status === 'Live' ? 'bg-emerald-500/10 text-brand-emerald border border-brand-emerald/30' : 'bg-amber-500/10 text-amber-300 border border-amber-500/30'}">${res.status}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] mr-1">Edit</button>
+                      <button class="px-2 py-1 rounded bg-slate-800 hover:bg-brand-crimson/20 text-brand-crimson font-semibold text-[11px]">Remove</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnAddResource').addEventListener('click', () => {
+        openModal("Add Verified Educational Resource", `
+          <div class="space-y-3">
+            <div>
+              <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Resource Title</label>
+              <input type="text" placeholder="e.g. OSSC CGL 2026 Mathematics Practice Set" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs" />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Category</label>
+                <select class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs">
+                  <option>State Competitive Exams</option>
+                  <option>Teacher Education (OTET/B.Ed)</option>
+                  <option>Scholarships & Schemes</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Target Document URL</label>
+                <input type="url" placeholder="https://csodisha.com/assets/..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-cyan-400 text-xs font-mono" />
+              </div>
+            </div>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button onclick="closeModal(); showToast('Resource successfully registered and indexed!', 'success');" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Publish Resource</button>
+        `);
+      });
+    }
+
+    /**
+     * VIEW 4: Payments & Finance (Folder 08)
+     */
+    function renderFinanceWorkspace() {
+      dom.workspaceRoot.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border">
+            <span class="text-xs text-slate-400 uppercase font-mono">Gross Collections (Nov 2026)</span>
+            <p class="text-2xl font-extrabold text-white mt-1">₹48,250.00</p>
+            <span class="text-xs text-brand-emerald font-semibold">+12% vs October</span>
+          </div>
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border">
+            <span class="text-xs text-slate-400 uppercase font-mono">Active Gateway Status</span>
+            <p class="text-base font-bold text-brand-emerald mt-1 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-brand-emerald"></span> Razorpay Webhook Connected
+            </p>
+            <span class="text-xs text-slate-400 font-mono">Instant UPI / NetBanking</span>
+          </div>
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border">
+            <span class="text-xs text-slate-400 uppercase font-mono">Disputes & Refunds</span>
+            <p class="text-2xl font-extrabold text-white mt-1">0 Pending</p>
+            <span class="text-xs text-slate-400">100% clean audit compliance</span>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border">
+          <h3 class="font-bold text-white text-sm mb-4">Recent Transaction Ledger</h3>
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-[#081220] uppercase font-mono text-[10px] text-slate-400 border-b border-brand-border">
+              <tr>
+                <th class="py-2.5 px-3">Order ID</th>
+                <th class="py-2.5 px-3">Candidate</th>
+                <th class="py-2.5 px-3">Item / Course</th>
+                <th class="py-2.5 px-3">Amount</th>
+                <th class="py-2.5 px-3">Method</th>
+                <th class="py-2.5 px-3">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-brand-border/60 font-mono">
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-400">ORD-99120</td>
+                <td class="py-2.5 px-3 font-sans text-white">Soumya Dash</td>
+                <td class="py-2.5 px-3 font-sans">OTET 2026 Test Series Pass</td>
+                <td class="py-2.5 px-3 font-bold text-white">₹299.00</td>
+                <td class="py-2.5 px-3">UPI (PhonePe)</td>
+                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-brand-emerald">SUCCESS</span></td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-400">ORD-99119</td>
+                <td class="py-2.5 px-3 font-sans text-white">Rakesh Jena</td>
+                <td class="py-2.5 px-3 font-sans">B.Ed Pedagogy Complete E-Book</td>
+                <td class="py-2.5 px-3 font-bold text-white">₹149.00</td>
+                <td class="py-2.5 px-3">GPay</td>
+                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-brand-emerald">SUCCESS</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    /**
+     * VIEW 5: Users, Roles & Community (Folder 09)
+     */
+    function renderUsersRBACWorkspace() {
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnExportUsers" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition border border-slate-700 flex items-center gap-1.5">
+          <span>Export CSV</span>
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white text-sm">Candidate & Administrative Accounts</h3>
+              <p class="text-xs text-slate-400">RBAC permissions, student verification, and credential lifecycle.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" placeholder="Search by name, email or district..." class="bg-[#081220] border border-brand-border rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 w-64" />
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-[#081220] uppercase font-mono text-[10px] text-slate-400 border-b border-brand-border">
+                <tr>
+                  <th class="py-2.5 px-3">User ID</th>
+                  <th class="py-2.5 px-3">Full Name</th>
+                  <th class="py-2.5 px-3">Email Address</th>
+                  <th class="py-2.5 px-3">Assigned Role</th>
+                  <th class="py-2.5 px-3">District</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-brand-border/60">
+                ${CSOState.users.map(u => `
+                  <tr class="hover:bg-brand-card/40 transition">
+                    <td class="py-2.5 px-3 font-mono text-cyan-400">${u.id}</td>
+                    <td class="py-2.5 px-3 font-medium text-white">${u.name}</td>
+                    <td class="py-2.5 px-3 text-slate-400 font-mono">${u.email}</td>
+                    <td class="py-2.5 px-3">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono ${u.role.includes('Admin') ? 'bg-emerald-500/10 text-brand-emerald font-bold' : 'bg-slate-800 text-slate-300'}">${u.role}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-slate-300">${u.district}</td>
+                    <td class="py-2.5 px-3">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono ${u.status === 'Verified' ? 'bg-emerald-500/10 text-brand-emerald' : u.status === 'Pending' ? 'bg-amber-500/10 text-amber-300' : 'bg-red-500/10 text-brand-crimson'}">${u.status}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono">
+                      <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] mr-1" onclick="toggleUserStatus('${u.id}')">${u.status === 'Suspended' ? 'Reinstate' : 'Suspend'}</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnExportUsers').addEventListener('click', () => {
+        downloadSnapshotFile(CSOState.users, "csodisha-users.json");
+      });
+    }
+
+    window.toggleUserStatus = function(userId) {
+      const u = CSOState.users.find(x => x.id === userId);
+      if (u) {
+        u.status = u.status === 'Suspended' ? 'Verified' : 'Suspended';
+        showToast(`User ${u.name} status updated to ${u.status}`, u.status === 'Verified' ? 'success' : 'warning');
+        renderUsersRBACWorkspace();
+      }
+    };
+
+    /**
+     * VIEW 6: Communication & Inquiries Desk (Folder 10)
+     */
+    function renderCommunicationsWorkspace() {
+      dom.workspaceRoot.innerHTML = `
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white text-sm">Student Inquiries & Contact Submissions</h3>
+              <p class="text-xs text-slate-400">Incoming inquiries from csodisha.com/contact.html.</p>
+            </div>
+            <span class="text-xs font-mono text-brand-emerald bg-brand-emerald/10 px-2 py-1 rounded border border-brand-emerald/30">Google SMTP Relay: Active</span>
+          </div>
+
+          <div class="space-y-3">
+            ${CSOState.inquiries.map(inq => `
+              <div class="p-4 rounded-xl bg-[#081220] border border-brand-border hover:border-brand-emerald/40 transition">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-bold text-cyan-400">${inq.id}</span>
+                    <strong class="text-white text-xs">${inq.sender}</strong>
+                    <span class="text-[11px] text-slate-400 font-mono">(${inq.district})</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-slate-500">${inq.time}</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono ${inq.status === 'Unread' ? 'bg-red-500/10 text-brand-crimson font-bold' : inq.status === 'In Progress' ? 'bg-amber-500/10 text-amber-300' : 'bg-emerald-500/10 text-brand-emerald'}">${inq.status}</span>
+                  </div>
+                </div>
+
+                <p class="text-xs font-semibold text-slate-200 mb-1">${inq.subject}</p>
+                <div class="flex flex-wrap items-center justify-between gap-3 mt-3 pt-2 border-t border-brand-border/40 text-[11px] font-mono text-slate-400">
+                  <div>
+                    <span>Email: </span><span class="text-slate-300 mr-3">${inq.email}</span>
+                    <span>Phone: </span><span class="text-slate-300">${inq.phone}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-sans" onclick="resolveInquiry('${inq.id}')">Mark Resolved</button>
+                    <button class="px-2.5 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-sans font-bold" onclick="launchReplyModal('${inq.id}')">Send SMTP Reply &rarr;</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    window.resolveInquiry = function(id) {
+      const item = CSOState.inquiries.find(x => x.id === id);
+      if (item) {
+        item.status = 'Resolved';
+        showToast(`Inquiry ${id} marked as resolved!`, "success");
+        renderCommunicationsWorkspace();
+      }
+    };
+
+    window.launchReplyModal = function(id) {
+      const item = CSOState.inquiries.find(x => x.id === id);
+      openModal(`Dispatch Reply to ${item.sender}`, `
+        <div class="space-y-3">
+          <div class="p-3 rounded bg-[#081220] border border-brand-border text-xs">
+            <p class="text-slate-400">Subject: <strong class="text-slate-200">Re: ${item.subject}</strong></p>
+            <p class="text-slate-400 font-mono text-[11px]">To: ${item.email} | From: admin@csodisha.com</p>
+          </div>
+          <div>
+            <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Canned Reply Template</label>
+            <select id="replyTemplate" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-slate-300 text-xs">
+              <option>General Support Assistance</option>
+              <option>Exam Admit Card / Syllabus Clarification</option>
+              <option>Scholarship Eligibility Verification</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-400 uppercase tracking-wider text-[10px] font-bold mb-1">Message Body</label>
+            <textarea rows="5" class="w-full bg-[#081220] border border-brand-border rounded-lg p-3 text-slate-200 text-xs font-sans">Dear ${item.sender},&#10;&#10;Thank you for reaching out to CS Odisha. Regarding your query about "${item.subject}", our administrative team has reviewed the case...</textarea>
+          </div>
+        </div>
+      `, `
+        <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+        <button onclick="closeModal(); showToast('Email reply dispatched via smtp.gmail.com:587', 'success');" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Dispatch Email</button>
+      `);
+    };
+
+    /**
+     * VIEW 7: Appearance Studio (Folder 11)
+     */
+    function renderAppearanceStudioWorkspace() {
+      dom.workspaceRoot.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border space-y-4">
+            <h3 class="font-bold text-white text-sm">Theme Colors & Brand Tokens</h3>
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-400 uppercase font-bold text-[10px] mb-1">Midnight Navy (Primary Background)</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" value="#081220" class="w-10 h-8 rounded border border-brand-border cursor-pointer bg-transparent" />
+                  <input type="text" value="#081220" class="w-36 bg-[#081220] border border-brand-border rounded px-2 py-1 text-xs font-mono text-slate-200" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-slate-400 uppercase font-bold text-[10px] mb-1">Odisha Emerald (Primary Brand Accent)</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" value="#0fa968" class="w-10 h-8 rounded border border-brand-border cursor-pointer bg-transparent" />
+                  <input type="text" value="#0fa968" class="w-36 bg-[#081220] border border-brand-border rounded px-2 py-1 text-xs font-mono text-brand-emerald" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-slate-400 uppercase font-bold text-[10px] mb-1">Slate Card Container</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" value="#0f172a" class="w-10 h-8 rounded border border-brand-border cursor-pointer bg-transparent" />
+                  <input type="text" value="#0f172a" class="w-36 bg-[#081220] border border-brand-border rounded px-2 py-1 text-xs font-mono text-slate-200" />
+                </div>
+              </div>
+            </div>
+            <button onclick="showToast('Theme tokens synchronized across public site assets!', 'success')" class="px-3 py-1.5 text-xs font-bold bg-brand-emerald text-white rounded hover:bg-brand-emeraldHover transition">Publish CSS Variables</button>
+          </div>
+
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border space-y-4">
+            <h3 class="font-bold text-white text-sm">Typography & Brand Assets</h3>
+            <div class="space-y-3 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase mb-1">Primary Font Family</span>
+                <p class="font-mono text-slate-200 bg-[#081220] p-2 rounded border border-brand-border">'Inter', -apple-system, sans-serif</p>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase mb-1">Monospace / Code Font</span>
+                <p class="font-mono text-slate-200 bg-[#081220] p-2 rounded border border-brand-border">'JetBrains Mono', monospace</p>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] font-bold uppercase mb-1">Vector Logo Asset</span>
+                <p class="text-cyan-400 font-mono text-[11px] bg-[#081220] p-2 rounded border border-brand-border">/assets/img/logo-cso-official.svg</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * VIEW 8: Security & Privacy (Folder 16)
+     */
+    function renderSecurityWorkspace() {
+      dom.workspaceRoot.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border lg:col-span-2">
+            <h3 class="font-bold text-white text-sm mb-3">Active Administrative Sessions</h3>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-3 rounded-lg bg-[#081220] border border-brand-emerald/40 flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-brand-emerald animate-pulse"></span>
+                    <strong class="text-white font-sans">Current Admin Browser Session (This Device)</strong>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-1">IP: 103.21.124.9 &bull; Linux / Chrome / Brave &bull; Token: cso_adm_verified_session</p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-brand-emerald/20 text-brand-emerald font-bold">ACTIVE</span>
+              </div>
+            </div>
+
+            <h3 class="font-bold text-white text-sm mt-6 mb-3">Edge Firewall & IP Restrictions</h3>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-3 rounded-lg bg-[#081220] border border-brand-border text-xs">
+                <div>
+                  <span class="font-bold text-white">Cloudflare Turnstile Managed Challenge</span>
+                  <p class="text-[11px] text-slate-400">Protects /admin/login and /contact.html against bot attacks</p>
+                </div>
+                <span class="text-brand-emerald font-mono font-bold">ENABLED</span>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-lg bg-[#081220] border border-brand-border text-xs">
+                <div>
+                  <span class="font-bold text-white">Rate-Limiting Policy</span>
+                  <p class="text-[11px] text-slate-400">Max 5 failed logins per 10 minutes from same IP</p>
+                </div>
+                <span class="text-brand-emerald font-mono font-bold">ACTIVE</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-brand-crimson text-sm mb-2">Zero-Trust Panic Revocation</h3>
+              <p class="text-xs text-slate-400 mb-4">Instantly terminate all other active admin sessions and force global credential challenge.</p>
+              <button onclick="showToast('All remote admin sessions terminated immediately!', 'crimson')" class="w-full py-2.5 px-3 rounded-lg bg-red-950/80 hover:bg-red-900 border border-brand-crimson text-red-200 text-xs font-bold transition">
+                Revoke All Remote Sessions
+              </button>
+            </div>
+            <div class="p-3 rounded-lg bg-[#081220] border border-brand-border text-[11px] text-slate-400">
+              <span class="font-bold text-slate-200">Incident Response SLA:</span> Direct SMS alerts routed to verified admin on security threshold trigger.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * VIEW 9: Operations, Backups & D1 Console (Folder 17)
+     */
+    function renderOperationsRecoveryWorkspace() {
+      dom.workspaceRoot.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border space-y-4">
+            <h3 class="font-bold text-white text-sm">Full Platform Snapshot & Backup</h3>
+            <p class="text-xs text-slate-400">Generates a complete, timestamped archive containing all 241 module configurations, users, and educational resources.</p>
+            <button id="btnCreateSnapshot" class="px-4 py-2 text-xs font-bold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+              <span>Download Full Platform Snapshot (JSON)</span>
+            </button>
+          </div>
+
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border space-y-4">
+            <h3 class="font-bold text-white text-sm">Snapshot Restore Center</h3>
+            <p class="text-xs text-slate-400">Restore local state from a verified CSO backup archive.</p>
+            <div class="border-2 border-dashed border-brand-border rounded-lg p-6 text-center text-xs text-slate-400 hover:border-brand-emerald cursor-pointer transition">
+              <p>Drag and drop <strong>.json</strong> snapshot file here or click to browse</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border mt-6">
+          <h3 class="font-bold text-white text-sm mb-3">Cloudflare D1 SQL Sandboxed Explorer</h3>
+          <div class="space-y-3">
+            <textarea rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg p-3 text-cyan-400 font-mono text-xs">SELECT id, title, category, downloads FROM educational_resources ORDER BY downloads DESC LIMIT 5;</textarea>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-slate-400 font-mono">Read-Only Safe Mode Enabled</span>
+              <button onclick="showToast('Query executed in 6.4ms across D1 replicas', 'success')" class="px-3 py-1.5 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white transition">Run SQL Query</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnCreateSnapshot').addEventListener('click', () => {
+        downloadSnapshotFile({
+          project: "CS Odisha Master Console",
+          timestamp: new Date().toISOString(),
+          state: CSOState
+        }, `csodisha-full-snapshot-${new Date().toISOString().slice(0,10)}.json`);
+      });
+    }
+
+    /**
+     * VIEW 10: Master Feature Registry (Folder 19)
+     */
+    function renderMasterFeatureRegistryWorkspace() {
+      const allModules = [];
+      masterNavigationSchema.folders.forEach(f => {
+        f.modules.forEach(m => {
+          allModules.push({ ...m, folderTitle: f.title, folderId: f.id });
+        });
+      });
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white text-sm">Master 241-Module Operational Matrix</h3>
+              <p class="text-xs text-slate-400">100% of discovered website features indexed and mapped.</p>
+            </div>
+            <button id="btnExportMatrix" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700">Export Registry (JSON)</button>
+          </div>
+
+          <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-[#081220] uppercase font-mono text-[10px] text-slate-400 border-b border-brand-border sticky top-0 z-10">
+                <tr>
+                  <th class="py-2.5 px-3">Module ID</th>
+                  <th class="py-2.5 px-3">Module Title</th>
+                  <th class="py-2.5 px-3">Folder Domain</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-brand-border/60">
+                ${allModules.map(m => `
+                  <tr class="hover:bg-brand-card/40 transition">
+                    <td class="py-2.5 px-3 font-mono text-cyan-400 font-bold">${m.id}</td>
+                    <td class="py-2.5 px-3 font-medium text-white">${m.title}</td>
+                    <td class="py-2.5 px-3 text-slate-400">${m.folderTitle}</td>
+                    <td class="py-2.5 px-3">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono ${m.status === 'active' ? 'bg-emerald-500/10 text-brand-emerald font-bold' : 'bg-slate-800 text-slate-400'}">${m.status}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]" onclick="selectModule('${m.folderId}', '${m.id}')">Open View &rarr;</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnExportMatrix').addEventListener('click', () => {
+        downloadSnapshotFile(allModules, "csodisha-241-modules-registry.json");
+      });
+    }
+
+    /**
+     * Standard Dynamic Fallback CRUD Inspector
+     * Renders cleanly for any module in the 241 schema without dedicated views
+     */
+    function renderStandardModuleInspector(folderId, moduleId) {
+      const folder = masterNavigationSchema.folders.find(f => f.id === folderId);
+      const module = folder?.modules.find(m => m.id === moduleId);
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-brand-border">
+            <div>
+              <span class="text-xs font-mono text-brand-emerald uppercase font-semibold">${folder?.title}</span>
+              <h2 class="text-base font-bold text-white mt-0.5">${module?.title}</h2>
+              <p class="text-xs text-slate-400 mt-1">Operational records and state schema for ${module?.id}.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700" onclick="showToast('Exporting module records...', 'info')">Export CSV</button>
+              <button class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover" onclick="showToast('New entry schema initialized', 'success')">+ New Entry</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Mock Record Inspector Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300 font-mono">
+              <thead class="bg-[#081220] uppercase text-[10px] text-slate-400 border-b border-brand-border">
+                <tr>
+                  <th class="py-2.5 px-3">Record Key</th>
+                  <th class="py-2.5 px-3">Field Title</th>
+                  <th class="py-2.5 px-3">Data Value</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-brand-border/60">
+                <tr class="hover:bg-brand-card/40 transition">
+                  <td class="py-2.5 px-3 text-cyan-400">${module?.id}-REC01</td>
+                  <td class="py-2.5 px-3 font-sans text-white">Default Entity Node</td>
+                  <td class="py-2.5 px-3 text-slate-400">config_val_active</td>
+                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-brand-emerald">Synced</span></td>
+                  <td class="py-2.5 px-3 text-right font-sans">
+                    <button class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px]" onclick="showToast('Record updated successfully', 'success')">Configure</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-brand-card/40 transition">
+                  <td class="py-2.5 px-3 text-cyan-400">${module?.id}-REC02</td>
+                  <td class="py-2.5 px-3 font-sans text-white">Schema Validator</td>
+                  <td class="py-2.5 px-3 text-slate-400">cso_d1_schema_v1</td>
+                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-brand-emerald">Verified</span></td>
+                  <td class="py-2.5 px-3 text-right font-sans">
+                    <button class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px]" onclick="showToast('Record updated successfully', 'success')">Configure</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * File Download Helper for Snapshots and Exports
+     */
+    function downloadSnapshotFile(obj, filename) {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(obj, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", filename);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast(`Snapshot downloaded: ${filename}`, "success");
+    }
+
+    /**
+     * Generic Modal Helpers
+     */
+    function openModal(title, bodyHtml, footerHtml = '') {
+      dom.modalTitle.textContent = title;
+      dom.modalBody.innerHTML = bodyHtml;
+      dom.modalFooter.innerHTML = footerHtml;
+      dom.globalModal.classList.remove('hidden');
+    }
+    function closeModal() {
+      dom.globalModal.classList.add('hidden');
+    }
+
+    /**
+     * Mobile Navigation Drawer Controls
+     */
+    function openMobileDrawer() {
+      dom.sidebarConsole.classList.remove('-translate-x-full');
+      dom.mobileDrawerBackdrop.classList.remove('hidden');
+    }
+    function closeMobileDrawer() {
+      dom.sidebarConsole.classList.add('-translate-x-full');
+      dom.mobileDrawerBackdrop.classList.add('hidden');
+    }
+
+    /**
+     * Initializer & Event Listeners
+     */
+    window.addEventListener('DOMContentLoaded', () => {
+      initSessionTimer();
+      renderNavigationTree();
+      selectModule('folder-01', 'module-01-001');
+
+      // Search input handler
+      dom.moduleSearchInput.addEventListener('input', (e) => {
+        CSOState.searchQuery = e.target.value;
+        renderNavigationTree();
+      });
+
+      // Purge Cache Panic Action
+      dom.btnPurgeCache.addEventListener('click', () => {
+        showToast("Purge request sent to Cloudflare Edge CDN (SIN). Invalidation in progress...", "info");
+        setTimeout(() => {
+          showToast("Cloudflare Edge CDN Cache Purged successfully! (HTTP 200 OK)", "success");
+        }, 1200);
+      });
+
+      // Maintenance Switch Panic Action
+      dom.btnMaintenanceToggle.addEventListener('click', () => {
+        CSOState.maintenanceMode = !CSOState.maintenanceMode;
+        if (CSOState.maintenanceMode) {
+          dom.maintenanceStatusDot.className = "w-2 h-2 rounded-full bg-amber-400";
+          dom.maintenanceStatusText.textContent = "Maint: ON";
+          showToast("Maintenance Mode ENABLED across csodisha.com public routes", "warning");
+        } else {
+          dom.maintenanceStatusDot.className = "w-2 h-2 rounded-full bg-slate-500";
+          dom.maintenanceStatusText.textContent = "Maint: OFF";
+          showToast("Maintenance Mode DISABLED — Live portal operational", "success");
+        }
+      });
+
+      // Mobile drawer toggle
+      dom.btnToggleSidebar.addEventListener('click', openMobileDrawer);
+      dom.mobileDrawerBackdrop.addEventListener('click', closeMobileDrawer);
+      dom.btnModalClose.addEventListener('click', closeModal);
+
+      // Sign out action
+      document.getElementById('btnSignOut').addEventListener('click', () => {
+        showToast("Ending session...", "info");
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 600);
+      });
+    });
+  </script>
+</body>
+</html>

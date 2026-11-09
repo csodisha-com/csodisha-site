@@ -29,7 +29,8 @@
     D1: 'cso_super_d1',
     NOTIFICATIONS: 'cso_super_notifications',
     BROADCAST: 'cso_active_announcement',
-    SUBMISSIONS: 'cso_admin_submissions_local'
+    SUBMISSIONS: 'cso_admin_submissions_local',
+    INQUIRIES: 'cso_super_inquiries'
   };
 
   // Seed Data Generators
@@ -412,6 +413,53 @@
     }
   ];
 
+  const SEED_INQUIRIES = [
+    {
+      id: 'INQ-2026-1082',
+      name: 'Subrat Kumar Mohanty',
+      email: 'subrat.mohanty@gmail.com',
+      phone: '+91 94371 88290',
+      district: 'Cuttack',
+      subject: 'OPSC Civil Services Preliminary Syllabus clarification',
+      message: "Respected team, could you please verify if the recent CSAT pattern update has been published in the jobs & careers portal? The syllabus link for General Studies Paper II seems to refer to last year's notification. Thank you for maintaining this excellent platform for Odisha students.",
+      timestamp: '2026-11-08T14:45:20Z',
+      status: 'unread'
+    },
+    {
+      id: 'INQ-2026-1081',
+      name: 'Priyadarshini Rout',
+      email: 'priya.rout99@yahoo.co.in',
+      phone: '+91 70081 23456',
+      district: 'Sambalpur',
+      subject: 'Medhabruti Scholarship renewal application deadline',
+      message: "Hello CSO Team, I am an engineering student studying at VSSUT Burla. I wanted to confirm the last date for submitting the income declaration certificate on the State Scholarship Portal for Medhabruti renewal. Your portal's scheme tracker has been very helpful.",
+      timestamp: '2026-11-08T12:15:05Z',
+      status: 'unread'
+    },
+    {
+      id: 'INQ-2026-1079',
+      name: 'Dr. Bijaylaxmi Das',
+      email: 'bijaylaxmi.das@utkaluniversity.ac.in',
+      phone: '+91 98610 99412',
+      district: 'Khordha',
+      subject: 'Odisha Higher Education Faculty Research Grant details',
+      message: "Dear CSO Editorial Team, We recently published a state-funded research index under OSHEC. Would it be possible to include the OSHEC Post-Doctoral Fellowship details in your Study Library under Odisha Higher Education opportunities? Happy to provide official notification PDFs.",
+      timestamp: '2026-11-07T18:32:40Z',
+      status: 'read'
+    },
+    {
+      id: 'INQ-2026-1076',
+      name: 'Chandan Behera',
+      email: 'chandan.behera.od@outlook.com',
+      phone: '+91 99380 55123',
+      district: 'Balasore',
+      subject: 'OSSSC Combined Recruitment Examination Admit Card link',
+      message: "Greetings, The download link for OSSSC Junior Assistant admit card leads to server maintenance on the official OSSSC site. Does CSO maintain an alternative mirror link or cache? Looking forward to your guidance.",
+      timestamp: '2026-11-07T09:10:15Z',
+      status: 'resolved'
+    }
+  ];
+
   // Store Initialization Helper
   function getOrSet(key, defaultValue) {
     try {
@@ -589,12 +637,46 @@
       }
     },
     publishBroadcast(broadcast) {
+      if (broadcast && broadcast.isActive === undefined) {
+        broadcast.isActive = true;
+      }
       save(KEYS.BROADCAST, broadcast);
       this.logAudit('BANNER_PUBLISHED', 'HOMEPAGE_BROADCAST', `Emergency banner published: "${broadcast.headline}" [Severity: ${broadcast.severity}]`);
     },
     takedownBroadcast() {
       localStorage.removeItem(KEYS.BROADCAST);
       this.logAudit('BANNER_TAKEDOWN', 'HOMEPAGE_BROADCAST', 'Active homepage announcement removed.');
+    },
+
+    // 11. Citizen Inquiries & Help Desk (cso_super_inquiries)
+    getInquiries() {
+      return getOrSet(KEYS.INQUIRIES, SEED_INQUIRIES);
+    },
+    saveInquiries(inquiries) {
+      save(KEYS.INQUIRIES, inquiries);
+    },
+    addInquiry(inquiry) {
+      const list = this.getInquiries();
+      list.unshift(inquiry);
+      this.saveInquiries(list);
+      this.logAudit('INQUIRY_RECEIVED', 'CONTACT_DESK', `Citizen inquiry ${inquiry.id} received from ${inquiry.name} (${inquiry.district || 'Odisha'}).`);
+      return inquiry;
+    },
+    updateInquiryStatus(id, status) {
+      const list = this.getInquiries();
+      const item = list.find(x => x.id === id);
+      if (item) {
+        item.status = status;
+        this.saveInquiries(list);
+        this.logAudit('INQUIRY_STATUS_CHANGE', 'CONTACT_DESK', `Inquiry ${id} marked as ${status}.`);
+      }
+      return item;
+    },
+    deleteInquiry(id) {
+      let list = this.getInquiries();
+      list = list.filter(x => x.id !== id);
+      this.saveInquiries(list);
+      this.logAudit('INQUIRY_DELETED', 'CONTACT_DESK', `Inquiry ${id} deleted.`);
     },
 
     // 9. Disaster Recovery
@@ -610,7 +692,8 @@
           system: this.getSystem(),
           security: this.getSecurity(),
           audit: this.getAudit(),
-          broadcast: this.getActiveBroadcast()
+          broadcast: this.getActiveBroadcast(),
+          inquiries: this.getInquiries()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -620,7 +703,7 @@
       if (!snapshot || !snapshot.state) {
         throw new Error('Invalid snapshot schema: Missing state payload');
       }
-      const { users, roles, pages, system, security, audit, broadcast } = snapshot.state;
+      const { users, roles, pages, system, security, audit, broadcast, inquiries } = snapshot.state;
       if (users) this.saveUsers(users);
       if (roles) this.saveRoles(roles);
       if (pages) this.savePages(pages);
@@ -628,6 +711,7 @@
       if (security) this.saveSecurity(security);
       if (audit) save(KEYS.AUDIT, audit);
       if (broadcast) save(KEYS.BROADCAST, broadcast);
+      if (inquiries) this.saveInquiries(inquiries);
 
       this.logAudit('DISASTER_RECOVERY_RESTORE', 'ALL_MODULES', `Restored from snapshot created at ${snapshot.createdAt}`);
       return true;
