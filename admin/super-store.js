@@ -10789,6 +10789,636 @@
       this.logAudit("REPORT_ERROR_EXPORTED", "DATA_EXPORT", "Report an Error manifest exported (" + filename + ").");
       return filename;
     },
+    // ==========================================
+    // FOLDER 10 (COMMUNICATION & SUPPORT) - BATCH 1
+    // ==========================================
+
+    // --- MODULE 10-001: Contact Form Submissions ---
+    getContactSubmissionsConfig() {
+      return _hydrateConfig("cso_contact_submissions_config", "submissions", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        submissions: [
+          {
+            id: "CSO-INQ-9012",
+            name: "Siddhartha Mohanty",
+            email: "siddhartha.mohanty@example.com",
+            phone: "+91 94370 12890",
+            subject: "OAS 2026 Mains Syllabus Clarification",
+            category: "Admissions & Exams",
+            message: "Requesting official clarification regarding optional sociology paper revision timeline for OPSC OAS 2026.",
+            status: "Resolved",
+            priority: "Normal",
+            assignedTo: "Debabrata Dash",
+            submittedAt: "2026-11-08T09:15:00Z",
+            repliedAt: "2026-11-08T14:30:00Z"
+          },
+          {
+            id: "CSO-INQ-9013",
+            name: "Padmini Panda",
+            email: "padmini.p@example.com",
+            phone: "+91 98611 44520",
+            subject: "OTET Answer Key Challenge Fee Inquiry",
+            category: "General Inquiry",
+            message: "Unable to find fee portal link for raising question objection on Paper II science section.",
+            status: "In Progress",
+            priority: "High",
+            assignedTo: "Subhadra Swain",
+            submittedAt: "2026-11-09T08:20:00Z",
+            repliedAt: null
+          },
+          {
+            id: "CSO-INQ-9014",
+            name: "Alok Kumar Sahoo",
+            email: "alok.sahoo@example.com",
+            phone: "+91 70081 22934",
+            subject: "District Study Center Contact Details - Balasore",
+            category: "Study Centers",
+            message: "Kindly share address and timings of CSO community partner library in FM College road, Balasore.",
+            status: "New",
+            priority: "Normal",
+            assignedTo: "Unassigned",
+            submittedAt: "2026-11-09T11:45:00Z",
+            repliedAt: null
+          },
+          {
+            id: "CSO-INQ-9015",
+            name: "Mihir Ranjan Jena",
+            email: "mrjena.exam@example.com",
+            phone: "+91 82490 66312",
+            subject: "Partnership Proposal for Mock Interview Panel",
+            category: "Partnership",
+            message: "Retired OAS cadre officers willing to conduct mock interview panels for registered aspirants in Bhubaneswar.",
+            status: "Under Review",
+            priority: "High",
+            assignedTo: "Debabrata Dash",
+            submittedAt: "2026-11-09T14:10:00Z",
+            repliedAt: null
+          }
+        ]
+      }));
+    },
+
+    saveContactSubmissionsConfig(config) {
+      if (!config) return false;
+      const list = config.submissions || config.items || [];
+      config.items = list;
+      config.submissions = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_contact_submissions_config", JSON.stringify(config));
+      this.logAudit("CONTACT_SUBMISSIONS_UPDATED", "COMMUNICATIONS", `Contact submissions updated (${list.length} records).`);
+      return true;
+    },
+
+    resetContactSubmissionsConfig() {
+      localStorage.removeItem("cso_contact_submissions_config");
+      const fresh = this.getContactSubmissionsConfig();
+      this.logAudit("CONTACT_SUBMISSIONS_RESET", "COMMUNICATIONS", "Contact submissions reset to factory defaults.");
+      return fresh;
+    },
+
+    exportContactSubmissionsManifest() {
+      const config = this.getContactSubmissionsConfig();
+      const filename = "contact_submissions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("CONTACT_SUBMISSIONS_EXPORTED", "DATA_EXPORT", `Contact submissions exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-002: Support Tickets ---
+    getSupportTicketsConfig() {
+      return _hydrateConfig("cso_support_tickets_config", "tickets", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        tickets: [
+          {
+            id: "TCK-8801",
+            ticketNumber: "#CSO-8801",
+            user: "Lipika Mohapatra",
+            email: "lipika.m@example.com",
+            category: "Billing & Subscriptions",
+            subject: "Subscription payment debited twice via UPI",
+            status: "Open",
+            priority: "High",
+            assignedAgent: "Bikash Pradhan",
+            slaHoursRemaining: 6,
+            department: "Finance Helpdesk",
+            createdAt: "2026-11-09T10:00:00Z",
+            lastUpdate: "2026-11-09T12:30:00Z"
+          },
+          {
+            id: "TCK-8802",
+            ticketNumber: "#CSO-8802",
+            user: "Rakesh Barik",
+            email: "rakesh.barik@example.com",
+            category: "Technical Issue",
+            subject: "Odisha GK mock test test-engine freeze on Question 42",
+            status: "Investigating",
+            priority: "Critical",
+            assignedAgent: "Soumya Nayak",
+            slaHoursRemaining: 2,
+            department: "IT Systems",
+            createdAt: "2026-11-09T08:30:00Z",
+            lastUpdate: "2026-11-09T11:45:00Z"
+          },
+          {
+            id: "TCK-8803",
+            ticketNumber: "#CSO-8803",
+            user: "Pooja Panigrahi",
+            email: "pooja.p@example.com",
+            category: "Content Error",
+            subject: "Page 14 download link 404 in Forest Ranger Syllabus",
+            status: "Resolved",
+            priority: "Normal",
+            assignedAgent: "Debabrata Dash",
+            slaHoursRemaining: 0,
+            department: "Content Team",
+            createdAt: "2026-11-08T15:00:00Z",
+            lastUpdate: "2026-11-09T09:00:00Z"
+          },
+          {
+            id: "TCK-8804",
+            ticketNumber: "#CSO-8804",
+            user: "Debashis Rout",
+            email: "debashis.r@example.com",
+            category: "Account Access",
+            subject: "Password reset OTP not arriving on Jio network",
+            status: "Escalated",
+            priority: "High",
+            assignedAgent: "Ananya Tripathy",
+            slaHoursRemaining: 4,
+            department: "User Auth Ops",
+            createdAt: "2026-11-09T11:15:00Z",
+            lastUpdate: "2026-11-09T13:00:00Z"
+          }
+        ]
+      }));
+    },
+
+    saveSupportTicketsConfig(config) {
+      if (!config) return false;
+      const list = config.tickets || config.items || [];
+      config.items = list;
+      config.tickets = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_support_tickets_config", JSON.stringify(config));
+      this.logAudit("SUPPORT_TICKETS_UPDATED", "COMMUNICATIONS", `Support tickets updated (${list.length} records).`);
+      return true;
+    },
+
+    resetSupportTicketsConfig() {
+      localStorage.removeItem("cso_support_tickets_config");
+      const fresh = this.getSupportTicketsConfig();
+      this.logAudit("SUPPORT_TICKETS_RESET", "COMMUNICATIONS", "Support tickets reset to factory defaults.");
+      return fresh;
+    },
+
+    exportSupportTicketsManifest() {
+      const config = this.getSupportTicketsConfig();
+      const filename = "support_tickets_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SUPPORT_TICKETS_EXPORTED", "DATA_EXPORT", `Support tickets exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-003: Feedback ---
+    getFeedbackConfig() {
+      return _hydrateConfig("cso_feedback_config", "feedbackEntries", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        feedbackEntries: [
+          {
+            id: "FBK-4101",
+            author: "Chinmay Behera",
+            rating: 5,
+            module: "Mock Test Engine",
+            topic: "Instant Rank Prediction & Detailed Analysis",
+            comment: "The real-time percentile prediction after completing the OPSC mock test was remarkably accurate compared to last year cutoffs.",
+            sentiment: "Positive",
+            status: "Featured",
+            submittedAt: "2026-11-07T16:20:00Z",
+            featuredOnHome: true
+          },
+          {
+            id: "FBK-4102",
+            author: "Jayashree Senapati",
+            rating: 4,
+            module: "Odia Vernacular Notes",
+            topic: "Grammar & Translation Study Notes",
+            comment: "Notes are very thorough and lucid. Would appreciate adding an audio pronunciation glossary for Sanskrit tatsama words.",
+            sentiment: "Positive",
+            status: "Reviewed",
+            submittedAt: "2026-11-08T11:00:00Z",
+            featuredOnHome: false
+          },
+          {
+            id: "FBK-4103",
+            author: "Dhiren Nayak",
+            rating: 2,
+            module: "Mobile Responsive Layout",
+            topic: "Table overflow on small phone screens",
+            comment: "District cutoff comparison tables scroll horizontally awkwardly on 5.5 inch screens. Please make sticky header row.",
+            sentiment: "Negative",
+            status: "Action Required",
+            submittedAt: "2026-11-08T18:45:00Z",
+            featuredOnHome: false
+          },
+          {
+            id: "FBK-4104",
+            author: "Barnali Hota",
+            rating: 5,
+            module: "Current Affairs Monthly PDF",
+            topic: "November 2026 Edition Coverage",
+            comment: "Best compilation of Odisha state budget initiatives and Kendrapara port project updates. Saved my revision time completely.",
+            sentiment: "Positive",
+            status: "Approved",
+            submittedAt: "2026-11-09T07:15:00Z",
+            featuredOnHome: true
+          }
+        ]
+      }));
+    },
+
+    saveFeedbackConfig(config) {
+      if (!config) return false;
+      const list = config.feedbackEntries || config.items || [];
+      config.items = list;
+      config.feedbackEntries = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_feedback_config", JSON.stringify(config));
+      this.logAudit("FEEDBACK_CONFIG_UPDATED", "COMMUNICATIONS", `Feedback entries updated (${list.length} records).`);
+      return true;
+    },
+
+    resetFeedbackConfig() {
+      localStorage.removeItem("cso_feedback_config");
+      const fresh = this.getFeedbackConfig();
+      this.logAudit("FEEDBACK_CONFIG_RESET", "COMMUNICATIONS", "Feedback entries reset to factory defaults.");
+      return fresh;
+    },
+
+    exportFeedbackManifest() {
+      const config = this.getFeedbackConfig();
+      const filename = "feedback_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FEEDBACK_MANIFEST_EXPORTED", "DATA_EXPORT", `Feedback manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-004: Surveys & Polls ---
+    getSurveysPollsConfig() {
+      return _hydrateConfig("cso_surveys_polls_config", "surveys", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        surveys: [
+          {
+            id: "SURV-101",
+            title: "OPSC 2026 Mains Optional Subject Preference Survey",
+            type: "Survey",
+            category: "Civil Services",
+            targetAudience: "Registered Aspirants",
+            responsesCount: 1420,
+            status: "Active",
+            startDate: "2026-11-01",
+            endDate: "2026-11-20",
+            description: "Gathering aspirant preferences for live mentorship cohorts across Sociology, Public Admin, and Odia Literature."
+          },
+          {
+            id: "POLL-202",
+            title: "Should OTET Qualifying Marks Be Normalized Across Shifts?",
+            type: "Poll",
+            category: "Teaching Exams",
+            targetAudience: "All Candidates",
+            responsesCount: 3840,
+            status: "Active",
+            startDate: "2026-11-05",
+            endDate: "2026-11-15",
+            description: "Quick opinion poll regarding BSE Odisha shift-wise percentile normalization formula."
+          },
+          {
+            id: "SURV-103",
+            title: "District Study Centers Infrastructure & Book Availability Audit",
+            type: "Survey",
+            category: "Infrastructure",
+            targetAudience: "District Members",
+            responsesCount: 620,
+            status: "Draft",
+            startDate: "2026-11-25",
+            endDate: "2026-12-10",
+            description: "Evaluating physical library capacity, high-speed WiFi, and air conditioning across 30 district hubs."
+          },
+          {
+            id: "POLL-204",
+            title: "Preferred Weekend Live Class Timings (Winter 2026)",
+            type: "Poll",
+            category: "Live Classes",
+            targetAudience: "Paid Pro Members",
+            responsesCount: 2190,
+            status: "Closed",
+            startDate: "2026-10-15",
+            endDate: "2026-10-31",
+            description: "Survey concluded with 68% voting for 7:00 AM - 9:30 AM morning session."
+          }
+        ]
+      }));
+    },
+
+    saveSurveysPollsConfig(config) {
+      if (!config) return false;
+      const list = config.surveys || config.items || [];
+      config.items = list;
+      config.surveys = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_surveys_polls_config", JSON.stringify(config));
+      this.logAudit("SURVEYS_POLLS_UPDATED", "COMMUNICATIONS", `Surveys and polls updated (${list.length} records).`);
+      return true;
+    },
+
+    resetSurveysPollsConfig() {
+      localStorage.removeItem("cso_surveys_polls_config");
+      const fresh = this.getSurveysPollsConfig();
+      this.logAudit("SURVEYS_POLLS_RESET", "COMMUNICATIONS", "Surveys and polls reset to factory defaults.");
+      return fresh;
+    },
+
+    exportSurveysPollsManifest() {
+      const config = this.getSurveysPollsConfig();
+      const filename = "surveys_polls_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SURVEYS_POLLS_EXPORTED", "DATA_EXPORT", `Surveys and polls exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-005: Email Templates ---
+    getEmailTemplatesConfig() {
+      return _hydrateConfig("cso_email_templates_config", "templates", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        templates: [
+          {
+            id: "TPL-EML-01",
+            name: "Welcome Onboarding - New Aspirant",
+            code: "WELCOME_ASPIRANT_2026",
+            category: "Onboarding",
+            subject: "Welcome to CS Odisha: Your Journey to Public Service Begins Here",
+            variables: ["{{userName}}", "{{examCategory}}", "{{dashboardUrl}}", "{{telegramGroupLink}}"],
+            status: "Active",
+            lastEditedBy: "Editor-in-Chief",
+            updatedAt: "2026-11-05T10:00:00Z"
+          },
+          {
+            id: "TPL-EML-02",
+            name: "Payment Receipt & Invoice Confirmation",
+            code: "BILLING_RECEIPT_GST",
+            category: "Billing",
+            subject: "Receipt for Order #{{orderId}} - CS Odisha Educational Foundation",
+            variables: ["{{userName}}", "{{orderId}}", "{{amount}}", "{{downloadInvoiceUrl}}", "{{gstNumber}}"],
+            status: "Active",
+            lastEditedBy: "Finance Ops",
+            updatedAt: "2026-11-06T14:30:00Z"
+          },
+          {
+            id: "TPL-EML-03",
+            name: "Urgent Exam Alert & Notification Flash",
+            code: "EXAM_ALERT_FLASH",
+            category: "Alerts",
+            subject: "CRITICAL ALERT: {{examName}} Admit Card / Gazette Notification Released",
+            variables: ["{{examName}}", "{{downloadAdmitCardUrl}}", "{{reportingDateTime}}", "{{instructions}}"],
+            status: "Active",
+            lastEditedBy: "Ops Dispatch",
+            updatedAt: "2026-11-07T11:15:00Z"
+          },
+          {
+            id: "TPL-EML-04",
+            name: "Password Reset & Security Verification",
+            code: "AUTH_RESET_TOKEN",
+            category: "Security",
+            subject: "Reset your CS Odisha account password (Valid for 15 minutes)",
+            variables: ["{{userName}}", "{{resetToken}}", "{{expiryMinutes}}", "{{ipAddress}}"],
+            status: "Active",
+            lastEditedBy: "Security Lead",
+            updatedAt: "2026-11-04T08:00:00Z"
+          },
+          {
+            id: "TPL-EML-05",
+            name: "Weekly Current Affairs Digest (Bilingual)",
+            code: "WEEKLY_DIGEST_ODIA_ENG",
+            category: "Newsletters",
+            subject: "Odisha Weekly Current Affairs Digest #{{issueNumber}} (Nov 2026)",
+            variables: ["{{issueNumber}}", "{{leadStory}}", "{{quizUrl}}", "{{unsubscribeUrl}}"],
+            status: "Draft",
+            lastEditedBy: "Editorial Desk",
+            updatedAt: "2026-11-09T09:45:00Z"
+          }
+        ]
+      }));
+    },
+
+    saveEmailTemplatesConfig(config) {
+      if (!config) return false;
+      const list = config.templates || config.items || [];
+      config.items = list;
+      config.templates = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_email_templates_config", JSON.stringify(config));
+      this.logAudit("EMAIL_TEMPLATES_UPDATED", "COMMUNICATIONS", `Email templates updated (${list.length} records).`);
+      return true;
+    },
+
+    resetEmailTemplatesConfig() {
+      localStorage.removeItem("cso_email_templates_config");
+      const fresh = this.getEmailTemplatesConfig();
+      this.logAudit("EMAIL_TEMPLATES_RESET", "COMMUNICATIONS", "Email templates reset to factory defaults.");
+      return fresh;
+    },
+
+    exportEmailTemplatesManifest() {
+      const config = this.getEmailTemplatesConfig();
+      const filename = "email_templates_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("EMAIL_TEMPLATES_EXPORTED", "DATA_EXPORT", `Email templates exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-006: Email Campaigns ---
+    getEmailCampaignsConfig() {
+      return _hydrateConfig("cso_email_campaigns_config", "campaigns", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        campaigns: [
+          {
+            id: "CMP-901",
+            title: "OPSC 2026 Prelims Fast-Track Revision Launch",
+            templateId: "TPL-EML-01",
+            audience: "All OPSC Registered Users (18,450)",
+            sentCount: 18450,
+            deliveredRate: "99.4%",
+            openRate: "42.8%",
+            clickRate: "16.2%",
+            status: "Completed",
+            scheduledFor: "2026-11-02T08:00:00Z",
+            completedAt: "2026-11-02T09:12:00Z"
+          },
+          {
+            id: "CMP-902",
+            title: "Diwali Special 30% Scholarship on Annual Mock Series",
+            templateId: "TPL-EML-02",
+            audience: "Free Tier Aspirants (24,100)",
+            sentCount: 24100,
+            deliveredRate: "98.9%",
+            openRate: "38.5%",
+            clickRate: "19.7%",
+            status: "Completed",
+            scheduledFor: "2026-11-01T10:00:00Z",
+            completedAt: "2026-11-01T11:45:00Z"
+          },
+          {
+            id: "CMP-903",
+            title: "OTET 2026 Live Doubt Clearing Workshop Announcement",
+            templateId: "TPL-EML-03",
+            audience: "Teaching Exam Aspirants (9,800)",
+            sentCount: 9800,
+            deliveredRate: "99.1%",
+            openRate: "47.2%",
+            clickRate: "24.1%",
+            status: "Sent",
+            scheduledFor: "2026-11-08T06:30:00Z",
+            completedAt: "2026-11-08T07:10:00Z"
+          },
+          {
+            id: "CMP-904",
+            title: "November Monthly Gazette Round-Up & Quiz Challenge",
+            templateId: "TPL-EML-05",
+            audience: "All Active Subscribers (32,500)",
+            sentCount: 0,
+            deliveredRate: "0.0%",
+            openRate: "0.0%",
+            clickRate: "0.0%",
+            status: "Scheduled",
+            scheduledFor: "2026-11-12T07:00:00Z",
+            completedAt: null
+          }
+        ]
+      }));
+    },
+
+    saveEmailCampaignsConfig(config) {
+      if (!config) return false;
+      const list = config.campaigns || config.items || [];
+      config.items = list;
+      config.campaigns = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_email_campaigns_config", JSON.stringify(config));
+      this.logAudit("EMAIL_CAMPAIGNS_UPDATED", "COMMUNICATIONS", `Email campaigns updated (${list.length} records).`);
+      return true;
+    },
+
+    resetEmailCampaignsConfig() {
+      localStorage.removeItem("cso_email_campaigns_config");
+      const fresh = this.getEmailCampaignsConfig();
+      this.logAudit("EMAIL_CAMPAIGNS_RESET", "COMMUNICATIONS", "Email campaigns reset to factory defaults.");
+      return fresh;
+    },
+
+    exportEmailCampaignsManifest() {
+      const config = this.getEmailCampaignsConfig();
+      const filename = "email_campaigns_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("EMAIL_CAMPAIGNS_EXPORTED", "DATA_EXPORT", `Email campaigns exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-007: Newsletter Subscribers ---
+    getNewsletterSubscribersConfig() {
+      return _hydrateConfig("cso_newsletter_subscribers_config", "subscribers", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        subscribers: [
+          {
+            id: "SUB-5501",
+            email: "animesh.tripathy@gmail.com",
+            fullName: "Animesh Tripathy",
+            district: "Cuttack",
+            preferences: ["Daily Quiz", "Civil Services", "Odia Gazette"],
+            status: "Subscribed",
+            source: "Footer Form",
+            verified: true,
+            subscribedAt: "2026-10-10T14:12:00Z"
+          },
+          {
+            id: "SUB-5502",
+            email: "smita.ranjan@yahoo.co.in",
+            fullName: "Smita Ranjan",
+            district: "Khordha",
+            preferences: ["Teaching Exams", "Weekly Digest"],
+            status: "Subscribed",
+            source: "Modal Pop-up",
+            verified: true,
+            subscribedAt: "2026-10-18T09:30:00Z"
+          },
+          {
+            id: "SUB-5503",
+            email: "bikram.rout@outlook.com",
+            fullName: "Bikram Rout",
+            district: "Sambalpur",
+            preferences: ["Engineering & Technical", "Exam Notifications"],
+            status: "Unsubscribed",
+            source: "Checkout Checkbox",
+            verified: true,
+            subscribedAt: "2026-09-05T18:20:00Z"
+          },
+          {
+            id: "SUB-5504",
+            email: "purnima.majhi@gmail.com",
+            fullName: "Purnima Majhi",
+            district: "Mayurbhanj",
+            preferences: ["Daily Quiz", "Police SI & Constable", "Free Study Materials"],
+            status: "Subscribed",
+            source: "Registration Flow",
+            verified: true,
+            subscribedAt: "2026-11-03T11:40:00Z"
+          },
+          {
+            id: "SUB-5505",
+            email: "tanmay.baral@rediffmail.com",
+            fullName: "Tanmay Baral",
+            district: "Puri",
+            preferences: ["All Updates"],
+            status: "Pending Verification",
+            source: "Landing Page",
+            verified: false,
+            subscribedAt: "2026-11-09T08:15:00Z"
+          }
+        ]
+      }));
+    },
+
+    saveNewsletterSubscribersConfig(config) {
+      if (!config) return false;
+      const list = config.subscribers || config.items || [];
+      config.items = list;
+      config.subscribers = list;
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem("cso_newsletter_subscribers_config", JSON.stringify(config));
+      this.logAudit("NEWSLETTER_SUBSCRIBERS_UPDATED", "COMMUNICATIONS", `Newsletter subscribers updated (${list.length} records).`);
+      return true;
+    },
+
+    resetNewsletterSubscribersConfig() {
+      localStorage.removeItem("cso_newsletter_subscribers_config");
+      const fresh = this.getNewsletterSubscribersConfig();
+      this.logAudit("NEWSLETTER_SUBSCRIBERS_RESET", "COMMUNICATIONS", "Newsletter subscribers reset to factory defaults.");
+      return fresh;
+    },
+
+    exportNewsletterSubscribersManifest() {
+      const config = this.getNewsletterSubscribersConfig();
+      const filename = "newsletter_subscribers_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("NEWSLETTER_SUBSCRIBERS_EXPORTED", "DATA_EXPORT", `Newsletter subscribers exported (${filename}).`);
+      return filename;
+    },
+
 
 
 
@@ -11400,7 +12030,15 @@
           askQuestion: this.getAskQuestionConfig(),
           shareKnowledge: this.getShareKnowledgeConfig(),
           suggestTopic: this.getSuggestTopicConfig(),
-          reportError: this.getReportErrorConfig()
+          reportError: this.getReportErrorConfig(),
+          contactSubmissions: this.getContactSubmissionsConfig(),
+          supportTickets: this.getSupportTicketsConfig(),
+          feedback: this.getFeedbackConfig(),
+          surveysPolls: this.getSurveysPollsConfig(),
+          emailTemplates: this.getEmailTemplatesConfig(),
+          emailCampaigns: this.getEmailCampaignsConfig(),
+          newsletterSubscribers: this.getNewsletterSubscribersConfig(),
+
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');

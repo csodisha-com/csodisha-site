@@ -551,6 +551,14 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-09-017') { renderShareKnowledgeWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-09-018') { renderSuggestTopicWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-09-019') { renderReportErrorWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-001') { renderContactSubmissionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-002') { renderSupportTicketsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-003') { renderFeedbackWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-004') { renderSurveysPollsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-005') { renderEmailTemplatesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-006') { renderEmailCampaignsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-007') { renderNewsletterSubscribersWorkspace(dom.workspaceRoot); return; }
+
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -831,6 +839,21 @@ async function loadMasterNavigation() {
         renderSuggestTopicWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-09-019') {
         renderReportErrorWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-001') {
+        renderContactSubmissionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-002') {
+        renderSupportTicketsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-003') {
+        renderFeedbackWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-004') {
+        renderSurveysPollsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-005') {
+        renderEmailTemplatesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-006') {
+        renderEmailCampaignsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-007') {
+        renderNewsletterSubscribersWorkspace(dom.workspaceRoot);
+
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -40404,6 +40427,2142 @@ async function loadMasterNavigation() {
     /**
      * VIEW 1e: Administrative Notifications (module-01-005)
      */
+    
+    // ==========================================
+    // FOLDER 10 (COMMUNICATION & SUPPORT) - BATCH 1 WORKSPACES
+    // ==========================================
+
+    /**
+     * MODULE 10-001: Contact Form Submissions
+     */
+    function renderContactSubmissionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getContactSubmissionsConfig();
+        let submissions = Array.isArray(config.submissions || config.items) ? [...(config.submissions || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const resolvedCount = submissions.filter(s => (s.status || '').toLowerCase() === 'resolved').length;
+          const highCount = submissions.filter(s => (s.priority || '').toLowerCase() === 'high').length;
+          const filtered = submissions.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.name || '').toLowerCase().includes(term) ||
+                   (s.email || '').toLowerCase().includes(term) ||
+                   (s.subject || '').toLowerCase().includes(term) ||
+                   (s.category || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">SUPPORT DESK</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Contact Form Submissions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Public portal inquiries, aspirant queries, and communications triage desk</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSubmission" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log Inquiry
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Inquiries</div>
+                  <div class="text-2xl font-bold text-white mt-1">${submissions.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">All submissions received</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Resolved Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${submissions.length > 0 ? Math.round((resolvedCount / submissions.length) * 100) : 0}%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${resolvedCount} of ${submissions.length} resolved</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">High Priority</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${highCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Requiring immediate attention</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">SLA Target</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">&lt; 4 Hours</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Response adherence 98.4%</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSubmissionsSearch" placeholder="Search by name, email, subject, category, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${submissions.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Inquiry ID</th>
+                      <th class="px-4 py-3">Applicant &amp; Contact</th>
+                      <th class="px-4 py-3">Subject &amp; Category</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Priority</th>
+                      <th class="px-4 py-3">Assigned To</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No contact submissions match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-blue-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3">
+                          <div class="text-white font-medium">${item.name}</div>
+                          <div class="text-[10px] text-slate-400">${item.email || ''} ${item.phone ? '• ' + item.phone : ''}</div>
+                        </td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium truncate">${item.subject}</div>
+                          <div class="text-[10px] text-blue-300">${item.category}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.status || '').toLowerCase() === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            (item.status || '').toLowerCase() === 'in progress' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          }">${item.status || 'New'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.priority || '').toLowerCase() === 'high' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            'bg-slate-700 text-slate-300'
+                          }">${item.priority || 'Normal'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.assignedTo || 'Unassigned'}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle" data-id="${item.id}" title="Toggle Resolved" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Submission" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-blue-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Submission" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSubmissionsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSubmissionsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-001', 'Contact Form Submissions Schema', {
+              id: 'string (unique CSO inquiry identifier, e.g. CSO-INQ-9016)',
+              name: 'string (full name of inquirer)',
+              email: 'string (verified email address)',
+              phone: 'string (contact phone number)',
+              subject: 'string (inquiry title or question headline)',
+              category: 'string (e.g. Admissions & Exams, General Inquiry, Study Centers, Partnership)',
+              message: 'string (full inquiry text body)',
+              status: 'string (New | In Progress | Under Review | Resolved)',
+              priority: 'string (Normal | High | Critical)',
+              assignedTo: 'string (staff officer or responder name)',
+              submittedAt: 'string (ISO timestamp)',
+              repliedAt: 'string (ISO timestamp or null)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportContactSubmissionsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset contact submissions to factory defaults? Any new inquiries will be lost.')) {
+              store.resetContactSubmissionsConfig();
+              config = store.getContactSubmissionsConfig();
+              submissions = [...(config.submissions || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSubmission')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Log New Contact Inquiry',
+              fields: [
+                { name: 'name', label: 'Inquirer Name', type: 'text', placeholder: 'e.g. Subrat Mohapatra', required: true },
+                { name: 'email', label: 'Email Address', type: 'text', placeholder: 'e.g. subrat.m@example.com', required: true },
+                { name: 'phone', label: 'Phone Number', type: 'text', placeholder: 'e.g. +91 94371 99882' },
+                { name: 'subject', label: 'Inquiry Subject', type: 'text', placeholder: 'e.g. OPSC 2026 Age Relaxation Criteria', required: true },
+                { name: 'category', label: 'Inquiry Category', type: 'select', options: ['Admissions & Exams', 'General Inquiry', 'Study Centers', 'Partnership', 'Technical Support'], defaultValue: 'Admissions & Exams' },
+                { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High', 'Critical'], defaultValue: 'Normal' },
+                { name: 'assignedTo', label: 'Assign To Officer', type: 'text', placeholder: 'e.g. Debabrata Dash' },
+                { name: 'message', label: 'Message Details', type: 'textarea', placeholder: 'Enter complete inquiry narrative...' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'CSO-INQ-' + Math.floor(1000 + Math.random() * 9000),
+                  name: data.name.trim(),
+                  email: data.email.trim(),
+                  phone: (data.phone || '').trim(),
+                  subject: data.subject.trim(),
+                  category: data.category || 'General Inquiry',
+                  message: (data.message || '').trim(),
+                  status: 'New',
+                  priority: data.priority || 'Normal',
+                  assignedTo: (data.assignedTo || 'Unassigned').trim(),
+                  submittedAt: new Date().toISOString(),
+                  repliedAt: null
+                };
+                submissions.unshift(newRecord);
+                config.submissions = submissions;
+                config.items = submissions;
+                store.saveContactSubmissionsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = submissions.find(s => s.id === id);
+              if (item) {
+                item.status = item.status === 'Resolved' ? 'In Progress' : 'Resolved';
+                if (item.status === 'Resolved') item.repliedAt = new Date().toISOString();
+                config.submissions = submissions;
+                config.items = submissions;
+                store.saveContactSubmissionsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = submissions.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Inquiry: ' + item.id,
+                fields: [
+                  { name: 'name', label: 'Inquirer Name', type: 'text', defaultValue: item.name, required: true },
+                  { name: 'email', label: 'Email Address', type: 'text', defaultValue: item.email, required: true },
+                  { name: 'phone', label: 'Phone Number', type: 'text', defaultValue: item.phone || '' },
+                  { name: 'subject', label: 'Inquiry Subject', type: 'text', defaultValue: item.subject, required: true },
+                  { name: 'category', label: 'Inquiry Category', type: 'select', options: ['Admissions & Exams', 'General Inquiry', 'Study Centers', 'Partnership', 'Technical Support'], defaultValue: item.category },
+                  { name: 'status', label: 'Status', type: 'select', options: ['New', 'In Progress', 'Under Review', 'Resolved'], defaultValue: item.status },
+                  { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High', 'Critical'], defaultValue: item.priority },
+                  { name: 'assignedTo', label: 'Assign To Officer', type: 'text', defaultValue: item.assignedTo || '' },
+                  { name: 'message', label: 'Message Details', type: 'textarea', defaultValue: item.message || '' }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.email = data.email.trim();
+                  item.phone = (data.phone || '').trim();
+                  item.subject = data.subject.trim();
+                  item.category = data.category;
+                  item.status = data.status;
+                  item.priority = data.priority;
+                  item.assignedTo = (data.assignedTo || 'Unassigned').trim();
+                  item.message = (data.message || '').trim();
+                  config.submissions = submissions;
+                  config.items = submissions;
+                  store.saveContactSubmissionsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete inquiry record ' + id + '?')) {
+                submissions = submissions.filter(s => s.id !== id);
+                config.submissions = submissions;
+                config.items = submissions;
+                store.saveContactSubmissionsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-002: Support Tickets
+     */
+    function renderSupportTicketsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSupportTicketsConfig();
+        let tickets = Array.isArray(config.tickets || config.items) ? [...(config.tickets || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const resolvedCount = tickets.filter(t => (t.status || '').toLowerCase() === 'resolved').length;
+          const openCount = tickets.filter(t => (t.status || '').toLowerCase() === 'open' || (t.status || '').toLowerCase() === 'investigating').length;
+          const filtered = tickets.filter(t => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (t.ticketNumber || '').toLowerCase().includes(term) ||
+                   (t.user || '').toLowerCase().includes(term) ||
+                   (t.subject || '').toLowerCase().includes(term) ||
+                   (t.category || '').toLowerCase().includes(term) ||
+                   (t.assignedAgent || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">TICKET OPS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Support Tickets &amp; Helpdesk</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">SLA tracking, issue escalation, and candidate support ticket management</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddTicket" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Ticket
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Tickets</div>
+                  <div class="text-2xl font-bold text-white mt-1">${tickets.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Across all departments</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Active &amp; Open</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${openCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Under investigation or triage</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Resolved</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${resolvedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Within standard turnaround</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Avg SLA Remaining</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1">4.2 Hrs</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Target SLA 100% compliant</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoTicketsSearch" placeholder="Search by ticket #, candidate, subject, category, or agent..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${tickets.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Ticket #</th>
+                      <th class="px-4 py-3">Aspirant</th>
+                      <th class="px-4 py-3">Subject &amp; Category</th>
+                      <th class="px-4 py-3">Department</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Priority / SLA</th>
+                      <th class="px-4 py-3">Assigned Agent</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No support tickets match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-indigo-400 font-semibold">${item.ticketNumber || item.id}</td>
+                        <td class="px-4 py-3">
+                          <div class="text-white font-medium">${item.user}</div>
+                          <div class="text-[10px] text-slate-400">${item.email || ''}</div>
+                        </td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium truncate">${item.subject}</div>
+                          <div class="text-[10px] text-indigo-300">${item.category}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.department || 'General'}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.status || '').toLowerCase() === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            (item.status || '').toLowerCase() === 'escalated' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            (item.status || '').toLowerCase() === 'investigating' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          }">${item.status || 'Open'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                              (item.priority || '').toLowerCase() === 'critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                              (item.priority || '').toLowerCase() === 'high' ? 'bg-rose-500/10 text-rose-400' :
+                              'bg-slate-700 text-slate-300'
+                            }">${item.priority || 'Normal'}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${item.slaHoursRemaining != null ? item.slaHoursRemaining + 'h' : ''}</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.assignedAgent || 'Unassigned'}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle" data-id="${item.id}" title="Toggle Resolved" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Ticket" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Ticket" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoTicketsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoTicketsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-002', 'Support Tickets Schema', {
+              id: 'string (unique internal ticket ID, e.g. TCK-8805)',
+              ticketNumber: 'string (public reference ticket code, e.g. #CSO-8805)',
+              user: 'string (full name of candidate/user)',
+              email: 'string (contact email)',
+              category: 'string (Billing & Subscriptions | Technical Issue | Content Error | Account Access)',
+              subject: 'string (concise ticket topic)',
+              status: 'string (Open | Investigating | Escalated | Resolved)',
+              priority: 'string (Normal | High | Critical)',
+              assignedAgent: 'string (support agent name)',
+              slaHoursRemaining: 'number (SLA buffer hours before breach)',
+              department: 'string (Finance Helpdesk | IT Systems | Content Team | User Auth Ops)',
+              createdAt: 'string (ISO timestamp)',
+              lastUpdate: 'string (ISO timestamp)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSupportTicketsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset support tickets to factory defaults?')) {
+              store.resetSupportTicketsConfig();
+              config = store.getSupportTicketsConfig();
+              tickets = [...(config.tickets || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddTicket')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Support Ticket',
+              fields: [
+                { name: 'user', label: 'Aspirant / User Name', type: 'text', placeholder: 'e.g. Priyabrata Sethi', required: true },
+                { name: 'email', label: 'User Email', type: 'text', placeholder: 'e.g. priya.sethi@example.com', required: true },
+                { name: 'subject', label: 'Ticket Subject', type: 'text', placeholder: 'e.g. Mock test timer glitch on mobile browser', required: true },
+                { name: 'category', label: 'Category', type: 'select', options: ['Billing & Subscriptions', 'Technical Issue', 'Content Error', 'Account Access'], defaultValue: 'Technical Issue' },
+                { name: 'department', label: 'Department', type: 'select', options: ['IT Systems', 'Finance Helpdesk', 'Content Team', 'User Auth Ops'], defaultValue: 'IT Systems' },
+                { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High', 'Critical'], defaultValue: 'High' },
+                { name: 'assignedAgent', label: 'Assign To Agent', type: 'text', placeholder: 'e.g. Soumya Nayak' },
+                { name: 'slaHoursRemaining', label: 'SLA Buffer (Hours)', type: 'number', placeholder: '8', defaultValue: '8' }
+              ],
+              onSave: (data) => {
+                const randNum = Math.floor(1000 + Math.random() * 9000);
+                const newRecord = {
+                  id: 'TCK-' + randNum,
+                  ticketNumber: '#CSO-' + randNum,
+                  user: data.user.trim(),
+                  email: data.email.trim(),
+                  subject: data.subject.trim(),
+                  category: data.category || 'Technical Issue',
+                  department: data.department || 'IT Systems',
+                  status: 'Open',
+                  priority: data.priority || 'Normal',
+                  assignedAgent: (data.assignedAgent || 'Unassigned').trim(),
+                  slaHoursRemaining: parseInt(data.slaHoursRemaining, 10) || 8,
+                  createdAt: new Date().toISOString(),
+                  lastUpdate: new Date().toISOString()
+                };
+                tickets.unshift(newRecord);
+                config.tickets = tickets;
+                config.items = tickets;
+                store.saveSupportTicketsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tickets.find(t => t.id === id);
+              if (item) {
+                item.status = item.status === 'Resolved' ? 'Open' : 'Resolved';
+                item.lastUpdate = new Date().toISOString();
+                config.tickets = tickets;
+                config.items = tickets;
+                store.saveSupportTicketsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tickets.find(t => t.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Ticket: ' + (item.ticketNumber || item.id),
+                fields: [
+                  { name: 'user', label: 'Aspirant Name', type: 'text', defaultValue: item.user, required: true },
+                  { name: 'email', label: 'Email', type: 'text', defaultValue: item.email, required: true },
+                  { name: 'subject', label: 'Subject', type: 'text', defaultValue: item.subject, required: true },
+                  { name: 'category', label: 'Category', type: 'select', options: ['Billing & Subscriptions', 'Technical Issue', 'Content Error', 'Account Access'], defaultValue: item.category },
+                  { name: 'department', label: 'Department', type: 'select', options: ['IT Systems', 'Finance Helpdesk', 'Content Team', 'User Auth Ops'], defaultValue: item.department },
+                  { name: 'status', label: 'Status', type: 'select', options: ['Open', 'Investigating', 'Escalated', 'Resolved'], defaultValue: item.status },
+                  { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'High', 'Critical'], defaultValue: item.priority },
+                  { name: 'assignedAgent', label: 'Assigned Agent', type: 'text', defaultValue: item.assignedAgent || '' },
+                  { name: 'slaHoursRemaining', label: 'SLA Buffer (Hours)', type: 'number', defaultValue: String(item.slaHoursRemaining || 0) }
+                ],
+                onSave: (data) => {
+                  item.user = data.user.trim();
+                  item.email = data.email.trim();
+                  item.subject = data.subject.trim();
+                  item.category = data.category;
+                  item.department = data.department;
+                  item.status = data.status;
+                  item.priority = data.priority;
+                  item.assignedAgent = (data.assignedAgent || 'Unassigned').trim();
+                  item.slaHoursRemaining = parseInt(data.slaHoursRemaining, 10) || 0;
+                  item.lastUpdate = new Date().toISOString();
+                  config.tickets = tickets;
+                  config.items = tickets;
+                  store.saveSupportTicketsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete ticket ' + id + '?')) {
+                tickets = tickets.filter(t => t.id !== id);
+                config.tickets = tickets;
+                config.items = tickets;
+                store.saveSupportTicketsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-003: Feedback
+     */
+    function renderFeedbackWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFeedbackConfig();
+        let entries = Array.isArray(config.feedbackEntries || config.items) ? [...(config.feedbackEntries || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const featuredCount = entries.filter(e => e.featuredOnHome || e.status === 'Featured').length;
+          const avgRating = entries.length > 0 ? (entries.reduce((acc, e) => acc + (Number(e.rating) || 0), 0) / entries.length).toFixed(1) : '5.0';
+          const filtered = entries.filter(e => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (e.author || '').toLowerCase().includes(term) ||
+                   (e.topic || '').toLowerCase().includes(term) ||
+                   (e.module || '').toLowerCase().includes(term) ||
+                   (e.comment || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">FEEDBACK &amp; RATINGS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">User Feedback &amp; Testimonials</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Sentiment analysis, candidate ratings, course reviews, and home page testimonials</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddFeedback" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log Feedback
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Reviews</div>
+                  <div class="text-2xl font-bold text-white mt-1">${entries.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Across all portal areas</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Average Rating</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">★ ${avgRating} / 5.0</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Based on student evaluations</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Featured On Homepage</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${featuredCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Hero testimonial badges</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Positive Sentiment</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${entries.length > 0 ? Math.round((entries.filter(e => e.sentiment === 'Positive').length / entries.length) * 100) : 100}%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Satisfaction index</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoFeedbackSearch" placeholder="Search by student, topic, module, or comment..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${entries.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">ID / Date</th>
+                      <th class="px-4 py-3">Aspirant</th>
+                      <th class="px-4 py-3">Rating</th>
+                      <th class="px-4 py-3">Module &amp; Topic</th>
+                      <th class="px-4 py-3 max-w-sm">Feedback Comment</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No feedback entries match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <span class="font-mono text-emerald-400 font-semibold">${item.id}</span>
+                          <div class="text-[10px] text-slate-500">${(item.submittedAt || '').slice(0, 10)}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white">${item.author}</td>
+                        <td class="px-4 py-3">
+                          <div class="text-amber-400 font-bold flex items-center gap-1">
+                            ${'★'.repeat(item.rating || 5)}${'☆'.repeat(Math.max(0, 5 - (item.rating || 5)))}
+                            <span class="text-[10px] text-slate-400 font-normal">(${item.rating}/5)</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="text-white font-medium">${item.module || 'General'}</div>
+                          <div class="text-[10px] text-emerald-300">${item.topic}</div>
+                        </td>
+                        <td class="px-4 py-3 max-w-sm text-slate-300">
+                          <p class="line-clamp-2 text-xs">${item.comment}</p>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.featuredOnHome || item.status === 'Featured' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            item.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-300'
+                          }">${item.featuredOnHome ? 'Featured ★' : (item.status || 'Reviewed')}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-featured" data-id="${item.id}" title="Toggle Featured on Homepage" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Feedback" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Feedback" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoFeedbackSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoFeedbackSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-003', 'Feedback & Testimonials Schema', {
+              id: 'string (unique feedback identifier, e.g. FBK-4105)',
+              author: 'string (aspirant full name)',
+              rating: 'number (1 to 5 integer)',
+              module: 'string (e.g. Mock Test Engine, Odia Vernacular Notes, Current Affairs Monthly PDF)',
+              topic: 'string (short headline or feedback topic)',
+              comment: 'string (detailed candidate testimonial or suggestion)',
+              sentiment: 'string (Positive | Neutral | Negative)',
+              status: 'string (Featured | Approved | Reviewed | Action Required)',
+              featuredOnHome: 'boolean (flag to surface on landing page carousel)',
+              submittedAt: 'string (ISO timestamp)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportFeedbackManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset feedback entries to factory defaults?')) {
+              store.resetFeedbackConfig();
+              config = store.getFeedbackConfig();
+              entries = [...(config.feedbackEntries || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddFeedback')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Log Aspirant Feedback',
+              fields: [
+                { name: 'author', label: 'Aspirant Name', type: 'text', placeholder: 'e.g. Barun Kar', required: true },
+                { name: 'rating', label: 'Star Rating (1-5)', type: 'select', options: ['5', '4', '3', '2', '1'], defaultValue: '5' },
+                { name: 'module', label: 'Feature / Module', type: 'text', placeholder: 'e.g. Current Affairs Monthly PDF', required: true },
+                { name: 'topic', label: 'Headline / Topic', type: 'text', placeholder: 'e.g. High Yield Odisha History MCQs', required: true },
+                { name: 'comment', label: 'Testimonial Details', type: 'textarea', placeholder: 'Enter aspirant feedback and suggestions...', required: true },
+                { name: 'sentiment', label: 'Sentiment', type: 'select', options: ['Positive', 'Neutral', 'Negative'], defaultValue: 'Positive' },
+                { name: 'featuredOnHome', label: 'Feature on Homepage Carousel?', type: 'select', options: ['true', 'false'], defaultValue: 'false' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'FBK-' + Math.floor(4000 + Math.random() * 1000),
+                  author: data.author.trim(),
+                  rating: parseInt(data.rating, 10) || 5,
+                  module: data.module.trim(),
+                  topic: data.topic.trim(),
+                  comment: data.comment.trim(),
+                  sentiment: data.sentiment || 'Positive',
+                  status: data.featuredOnHome === 'true' ? 'Featured' : 'Approved',
+                  featuredOnHome: data.featuredOnHome === 'true',
+                  submittedAt: new Date().toISOString()
+                };
+                entries.unshift(newRecord);
+                config.feedbackEntries = entries;
+                config.items = entries;
+                store.saveFeedbackConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-featured"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = entries.find(e => e.id === id);
+              if (item) {
+                item.featuredOnHome = !item.featuredOnHome;
+                item.status = item.featuredOnHome ? 'Featured' : 'Approved';
+                config.feedbackEntries = entries;
+                config.items = entries;
+                store.saveFeedbackConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = entries.find(e => e.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Feedback: ' + item.id,
+                fields: [
+                  { name: 'author', label: 'Aspirant Name', type: 'text', defaultValue: item.author, required: true },
+                  { name: 'rating', label: 'Star Rating (1-5)', type: 'select', options: ['5', '4', '3', '2', '1'], defaultValue: String(item.rating || 5) },
+                  { name: 'module', label: 'Module', type: 'text', defaultValue: item.module, required: true },
+                  { name: 'topic', label: 'Topic', type: 'text', defaultValue: item.topic, required: true },
+                  { name: 'comment', label: 'Testimonial Details', type: 'textarea', defaultValue: item.comment, required: true },
+                  { name: 'sentiment', label: 'Sentiment', type: 'select', options: ['Positive', 'Neutral', 'Negative'], defaultValue: item.sentiment },
+                  { name: 'featuredOnHome', label: 'Feature on Homepage?', type: 'select', options: ['true', 'false'], defaultValue: item.featuredOnHome ? 'true' : 'false' }
+                ],
+                onSave: (data) => {
+                  item.author = data.author.trim();
+                  item.rating = parseInt(data.rating, 10) || 5;
+                  item.module = data.module.trim();
+                  item.topic = data.topic.trim();
+                  item.comment = data.comment.trim();
+                  item.sentiment = data.sentiment;
+                  item.featuredOnHome = data.featuredOnHome === 'true';
+                  item.status = item.featuredOnHome ? 'Featured' : 'Approved';
+                  config.feedbackEntries = entries;
+                  config.items = entries;
+                  store.saveFeedbackConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete feedback ' + id + '?')) {
+                entries = entries.filter(e => e.id !== id);
+                config.feedbackEntries = entries;
+                config.items = entries;
+                store.saveFeedbackConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-004: Surveys & Polls
+     */
+    function renderSurveysPollsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSurveysPollsConfig();
+        let surveys = Array.isArray(config.surveys || config.items) ? [...(config.surveys || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = surveys.filter(s => (s.status || '').toLowerCase() === 'active').length;
+          const totalResponses = surveys.reduce((acc, s) => acc + (Number(s.responsesCount) || 0), 0);
+          const filtered = surveys.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.title || '').toLowerCase().includes(term) ||
+                   (s.category || '').toLowerCase().includes(term) ||
+                   (s.targetAudience || '').toLowerCase().includes(term) ||
+                   (s.type || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">POLLING ENGINE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Surveys &amp; Community Polls</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Aspirant opinion polls, exam feedback surveys, and cohort requirement analyses</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSurvey" class="px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Survey / Poll
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Campaigns</div>
+                  <div class="text-2xl font-bold text-white mt-1">${surveys.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Surveys &amp; opinion polls</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Active Campaigns</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Accepting submissions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-violet-400 uppercase tracking-wider">Total Responses</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${totalResponses.toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Cumulative student votes</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Engagement Rate</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">34.6%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Aspirant community turnout</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSurveysSearch" placeholder="Search by title, category, audience, type, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${surveys.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Campaign ID</th>
+                      <th class="px-4 py-3">Type</th>
+                      <th class="px-4 py-3">Title &amp; Category</th>
+                      <th class="px-4 py-3">Target Audience</th>
+                      <th class="px-4 py-3">Responses</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Date Window</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No surveys or polls match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-violet-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.type === 'Poll' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' :
+                            'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+                          }">${item.type}</span>
+                        </td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium truncate">${item.title}</div>
+                          <div class="text-[10px] text-slate-400">${item.category}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.targetAudience}</td>
+                        <td class="px-4 py-3 font-mono font-bold text-white">${(item.responsesCount || 0).toLocaleString()}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.status || '').toLowerCase() === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            (item.status || '').toLowerCase() === 'closed' ? 'bg-slate-700 text-slate-300' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }">${item.status || 'Active'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-[10px] text-slate-400">
+                          ${item.startDate} &rarr; ${item.endDate}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-status" data-id="${item.id}" title="Toggle Active / Closed" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Campaign" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Campaign" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSurveysSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSurveysSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-004', 'Surveys & Polls Schema', {
+              id: 'string (unique campaign code, e.g. SURV-101, POLL-202)',
+              title: 'string (headline title of survey or poll)',
+              type: 'string (Survey | Poll)',
+              category: 'string (e.g. Civil Services, Teaching Exams, Infrastructure, Live Classes)',
+              targetAudience: 'string (e.g. Registered Aspirants, All Candidates, District Members)',
+              responsesCount: 'number (total response count)',
+              status: 'string (Active | Draft | Closed)',
+              startDate: 'string (YYYY-MM-DD)',
+              endDate: 'string (YYYY-MM-DD)',
+              description: 'string (detailed narrative context or question prompt)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSurveysPollsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset surveys and polls to factory defaults?')) {
+              store.resetSurveysPollsConfig();
+              config = store.getSurveysPollsConfig();
+              surveys = [...(config.surveys || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSurvey')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Survey or Poll',
+              fields: [
+                { name: 'title', label: 'Campaign Title', type: 'text', placeholder: 'e.g. OPSC 2026 Mains Essay Practice Cohort Survey', required: true },
+                { name: 'type', label: 'Format Type', type: 'select', options: ['Survey', 'Poll'], defaultValue: 'Poll' },
+                { name: 'category', label: 'Category', type: 'text', placeholder: 'e.g. Civil Services', required: true },
+                { name: 'targetAudience', label: 'Target Audience', type: 'text', placeholder: 'e.g. Registered Aspirants', defaultValue: 'Registered Aspirants' },
+                { name: 'startDate', label: 'Start Date (YYYY-MM-DD)', type: 'text', defaultValue: new Date().toISOString().slice(0, 10) },
+                { name: 'endDate', label: 'End Date (YYYY-MM-DD)', type: 'text', defaultValue: new Date(Date.now() + 14*86400000).toISOString().slice(0, 10) },
+                { name: 'description', label: 'Description & Scope', type: 'textarea', placeholder: 'Detailed rationale and questions overview...' }
+              ],
+              onSave: (data) => {
+                const prefix = data.type === 'Poll' ? 'POLL-' : 'SURV-';
+                const newRecord = {
+                  id: prefix + Math.floor(100 + Math.random() * 900),
+                  title: data.title.trim(),
+                  type: data.type,
+                  category: data.category.trim(),
+                  targetAudience: (data.targetAudience || 'All Aspirants').trim(),
+                  responsesCount: 0,
+                  status: 'Active',
+                  startDate: data.startDate.trim(),
+                  endDate: data.endDate.trim(),
+                  description: (data.description || '').trim()
+                };
+                surveys.unshift(newRecord);
+                config.surveys = surveys;
+                config.items = surveys;
+                store.saveSurveysPollsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = surveys.find(s => s.id === id);
+              if (item) {
+                item.status = item.status === 'Active' ? 'Closed' : 'Active';
+                config.surveys = surveys;
+                config.items = surveys;
+                store.saveSurveysPollsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = surveys.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Campaign: ' + item.id,
+                fields: [
+                  { name: 'title', label: 'Title', type: 'text', defaultValue: item.title, required: true },
+                  { name: 'type', label: 'Format Type', type: 'select', options: ['Survey', 'Poll'], defaultValue: item.type },
+                  { name: 'category', label: 'Category', type: 'text', defaultValue: item.category, required: true },
+                  { name: 'targetAudience', label: 'Target Audience', type: 'text', defaultValue: item.targetAudience },
+                  { name: 'status', label: 'Status', type: 'select', options: ['Active', 'Draft', 'Closed'], defaultValue: item.status },
+                  { name: 'startDate', label: 'Start Date', type: 'text', defaultValue: item.startDate },
+                  { name: 'endDate', label: 'End Date', type: 'text', defaultValue: item.endDate },
+                  { name: 'responsesCount', label: 'Responses Count', type: 'number', defaultValue: String(item.responsesCount || 0) },
+                  { name: 'description', label: 'Description', type: 'textarea', defaultValue: item.description || '' }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  item.type = data.type;
+                  item.category = data.category.trim();
+                  item.targetAudience = data.targetAudience.trim();
+                  item.status = data.status;
+                  item.startDate = data.startDate.trim();
+                  item.endDate = data.endDate.trim();
+                  item.responsesCount = parseInt(data.responsesCount, 10) || 0;
+                  item.description = (data.description || '').trim();
+                  config.surveys = surveys;
+                  config.items = surveys;
+                  store.saveSurveysPollsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete campaign ' + id + '?')) {
+                surveys = surveys.filter(s => s.id !== id);
+                config.surveys = surveys;
+                config.items = surveys;
+                store.saveSurveysPollsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-005: Email Templates
+     */
+    function renderEmailTemplatesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getEmailTemplatesConfig();
+        let templates = Array.isArray(config.templates || config.items) ? [...(config.templates || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = templates.filter(t => (t.status || '').toLowerCase() === 'active').length;
+          const filtered = templates.filter(t => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (t.name || '').toLowerCase().includes(term) ||
+                   (t.code || '').toLowerCase().includes(term) ||
+                   (t.subject || '').toLowerCase().includes(term) ||
+                   (t.category || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-pink-500/10 text-pink-400 border border-pink-500/20">TEMPLATE REPOSITORY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Email Templates</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Transactional emails, notification layouts, and dynamic variable tokens</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddTemplate" class="px-3.5 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-xs font-semibold text-white shadow-lg shadow-pink-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Template
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Templates</div>
+                  <div class="text-2xl font-bold text-white mt-1">${templates.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Ready for automated dispatch</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Active &amp; Live</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Currently invoked by SMTP/SES</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-pink-400 uppercase tracking-wider">Template Engine</div>
+                  <div class="text-2xl font-bold text-pink-400 mt-1">Mustache / Handlebars</div>
+                  <div class="text-[10px] text-slate-400 mt-1">XSS-safe token replacement</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Deliverability Score</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">99.8%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">DKIM &amp; SPF validated</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoTemplatesSearch" placeholder="Search by template name, code, subject, or category..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${templates.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Template Code</th>
+                      <th class="px-4 py-3">Name &amp; Category</th>
+                      <th class="px-4 py-3">Email Subject Line</th>
+                      <th class="px-4 py-3">Variables</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Last Edited By</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No email templates match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-pink-400 font-semibold">${item.code || item.id}</td>
+                        <td class="px-4 py-3">
+                          <div class="text-white font-medium">${item.name}</div>
+                          <div class="text-[10px] text-pink-300">${item.category}</div>
+                        </td>
+                        <td class="px-4 py-3 max-w-xs text-slate-300 truncate" title="${item.subject}">${item.subject}</td>
+                        <td class="px-4 py-3">
+                          <div class="flex flex-wrap gap-1 max-w-xs">
+                            ${(item.variables || []).map(v => `<span class="px-1.5 py-0.2 rounded text-[9px] bg-slate-800 text-slate-300 font-mono border border-slate-700">${v}</span>`).join('')}
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.status || '').toLowerCase() === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }">${item.status || 'Active'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.lastEditedBy || 'System'}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-status" data-id="${item.id}" title="Toggle Active / Draft" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Template" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-pink-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Template" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoTemplatesSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoTemplatesSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-005', 'Email Templates Schema', {
+              id: 'string (unique identifier, e.g. TPL-EML-06)',
+              name: 'string (human-readable template title)',
+              code: 'string (machine slug, e.g. WELCOME_ASPIRANT_2026)',
+              category: 'string (Onboarding | Billing | Alerts | Security | Newsletters)',
+              subject: 'string (email subject line with mustache tokens)',
+              variables: 'array<string> (available tokens, e.g. ["{{userName}}", "{{examCategory}}"])',
+              status: 'string (Active | Draft)',
+              lastEditedBy: 'string (editor name or admin role)',
+              updatedAt: 'string (ISO timestamp)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportEmailTemplatesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset email templates to factory defaults?')) {
+              store.resetEmailTemplatesConfig();
+              config = store.getEmailTemplatesConfig();
+              templates = [...(config.templates || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddTemplate')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Email Template',
+              fields: [
+                { name: 'name', label: 'Template Name', type: 'text', placeholder: 'e.g. OPSC Interview Call Letter Notice', required: true },
+                { name: 'code', label: 'Template Code / Slug', type: 'text', placeholder: 'e.g. OPSC_INTERVIEW_CALL_LETTER', required: true },
+                { name: 'category', label: 'Category', type: 'select', options: ['Onboarding', 'Billing', 'Alerts', 'Security', 'Newsletters'], defaultValue: 'Alerts' },
+                { name: 'subject', label: 'Subject Line', type: 'text', placeholder: 'e.g. Notice: Your interview slot for {{examName}} is confirmed', required: true },
+                { name: 'variables', label: 'Variables (comma-separated)', type: 'text', placeholder: '{{userName}}, {{examName}}, {{slotTime}}', defaultValue: '{{userName}}, {{examName}}' },
+                { name: 'lastEditedBy', label: 'Editor Tag', type: 'text', defaultValue: 'Admin Dispatch' }
+              ],
+              onSave: (data) => {
+                const vars = data.variables.split(',').map(v => v.trim()).filter(Boolean);
+                const newRecord = {
+                  id: 'TPL-EML-' + Math.floor(10 + Math.random() * 90),
+                  name: data.name.trim(),
+                  code: data.code.trim().toUpperCase(),
+                  category: data.category,
+                  subject: data.subject.trim(),
+                  variables: vars,
+                  status: 'Active',
+                  lastEditedBy: (data.lastEditedBy || 'Admin').trim(),
+                  updatedAt: new Date().toISOString()
+                };
+                templates.unshift(newRecord);
+                config.templates = templates;
+                config.items = templates;
+                store.saveEmailTemplatesConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = templates.find(t => t.id === id);
+              if (item) {
+                item.status = item.status === 'Active' ? 'Draft' : 'Active';
+                item.updatedAt = new Date().toISOString();
+                config.templates = templates;
+                config.items = templates;
+                store.saveEmailTemplatesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = templates.find(t => t.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Template: ' + (item.code || item.id),
+                fields: [
+                  { name: 'name', label: 'Template Name', type: 'text', defaultValue: item.name, required: true },
+                  { name: 'code', label: 'Template Code', type: 'text', defaultValue: item.code, required: true },
+                  { name: 'category', label: 'Category', type: 'select', options: ['Onboarding', 'Billing', 'Alerts', 'Security', 'Newsletters'], defaultValue: item.category },
+                  { name: 'subject', label: 'Subject Line', type: 'text', defaultValue: item.subject, required: true },
+                  { name: 'variables', label: 'Variables (comma-separated)', type: 'text', defaultValue: (item.variables || []).join(', ') },
+                  { name: 'status', label: 'Status', type: 'select', options: ['Active', 'Draft'], defaultValue: item.status },
+                  { name: 'lastEditedBy', label: 'Editor Tag', type: 'text', defaultValue: item.lastEditedBy || '' }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.code = data.code.trim().toUpperCase();
+                  item.category = data.category;
+                  item.subject = data.subject.trim();
+                  item.variables = data.variables.split(',').map(v => v.trim()).filter(Boolean);
+                  item.status = data.status;
+                  item.lastEditedBy = (data.lastEditedBy || 'Admin').trim();
+                  item.updatedAt = new Date().toISOString();
+                  config.templates = templates;
+                  config.items = templates;
+                  store.saveEmailTemplatesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete email template ' + id + '?')) {
+                templates = templates.filter(t => t.id !== id);
+                config.templates = templates;
+                config.items = templates;
+                store.saveEmailTemplatesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-006: Email Campaigns
+     */
+    function renderEmailCampaignsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getEmailCampaignsConfig();
+        let campaigns = Array.isArray(config.campaigns || config.items) ? [...(config.campaigns || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalSent = campaigns.reduce((acc, c) => acc + (Number(c.sentCount) || 0), 0);
+          const completedCount = campaigns.filter(c => (c.status || '').toLowerCase() === 'completed' || (c.status || '').toLowerCase() === 'sent').length;
+          const filtered = campaigns.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.title || '').toLowerCase().includes(term) ||
+                   (c.audience || '').toLowerCase().includes(term) ||
+                   (c.status || '').toLowerCase().includes(term) ||
+                   (c.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">CAMPAIGN DISPATCH</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Email Campaigns &amp; Broadcasts</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Bulk newsletter dispatches, deliverability telemetry, and candidate engagement metrics</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddCampaign" class="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white shadow-lg shadow-purple-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Schedule Campaign
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Campaigns</div>
+                  <div class="text-2xl font-bold text-white mt-1">${campaigns.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${completedCount} dispatched successfully</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Emails Delivered</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalSent.toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Average delivery 99.2%</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Avg Open Rate</div>
+                  <div class="text-2xl font-bold text-purple-400 mt-1">42.8%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Industry standard 21.5%</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Avg Click-Through</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">18.4%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Direct mock test / syllabus clicks</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoCampaignsSearch" placeholder="Search by campaign title, target audience, status, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${campaigns.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Campaign ID</th>
+                      <th class="px-4 py-3">Title &amp; Target Audience</th>
+                      <th class="px-4 py-3">Template</th>
+                      <th class="px-4 py-3">Sent Count</th>
+                      <th class="px-4 py-3">Rates (Del / Open / Click)</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Schedule</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No campaigns match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-purple-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium truncate">${item.title}</div>
+                          <div class="text-[10px] text-purple-300">${item.audience}</div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-slate-300 text-[11px]">${item.templateId || 'Default'}</td>
+                        <td class="px-4 py-3 font-mono font-bold text-white">${(item.sentCount || 0).toLocaleString()}</td>
+                        <td class="px-4 py-3">
+                          <div class="text-[10px] space-x-1 font-mono">
+                            <span class="text-emerald-400">${item.deliveredRate || '0%'}</span>
+                            <span class="text-slate-500">•</span>
+                            <span class="text-blue-400">${item.openRate || '0%'}</span>
+                            <span class="text-slate-500">•</span>
+                            <span class="text-purple-400">${item.clickRate || '0%'}</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.status || '').toLowerCase() === 'completed' || (item.status || '').toLowerCase() === 'sent' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            (item.status || '').toLowerCase() === 'scheduled' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-700 text-slate-300'
+                          }">${item.status || 'Draft'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-[10px] text-slate-400">
+                          ${(item.scheduledFor || '').replace('T', ' ').slice(0, 16)}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-status" data-id="${item.id}" title="Toggle Send / Completed" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Campaign" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-purple-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Campaign" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoCampaignsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoCampaignsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-006', 'Email Campaigns Schema', {
+              id: 'string (unique campaign ID, e.g. CMP-905)',
+              title: 'string (campaign subject / headline)',
+              templateId: 'string (reference to email template code)',
+              audience: 'string (audience cohort description and estimated size)',
+              sentCount: 'number (number of messages sent)',
+              deliveredRate: 'string (percentage delivered, e.g. 99.4%)',
+              openRate: 'string (percentage opened, e.g. 42.8%)',
+              clickRate: 'string (percentage clicked, e.g. 16.2%)',
+              status: 'string (Scheduled | Sent | Completed | Draft)',
+              scheduledFor: 'string (ISO timestamp)',
+              completedAt: 'string (ISO timestamp or null)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportEmailCampaignsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset email campaigns to factory defaults?')) {
+              store.resetEmailCampaignsConfig();
+              config = store.getEmailCampaignsConfig();
+              campaigns = [...(config.campaigns || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddCampaign')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Schedule Email Campaign',
+              fields: [
+                { name: 'title', label: 'Campaign Title', type: 'text', placeholder: 'e.g. OPSC 2026 Prelims Mock Test 3 Launch', required: true },
+                { name: 'templateId', label: 'Template Code / ID', type: 'text', placeholder: 'e.g. EXAM_ALERT_FLASH', defaultValue: 'EXAM_ALERT_FLASH' },
+                { name: 'audience', label: 'Target Audience Cohort', type: 'text', placeholder: 'e.g. All OPSC Aspirants (18,450)', required: true },
+                { name: 'scheduledFor', label: 'Schedule Date & Time', type: 'text', defaultValue: new Date().toISOString().slice(0, 16) + 'Z' },
+                { name: 'status', label: 'Initial Status', type: 'select', options: ['Scheduled', 'Draft', 'Sent'], defaultValue: 'Scheduled' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'CMP-' + Math.floor(900 + Math.random() * 100),
+                  title: data.title.trim(),
+                  templateId: data.templateId.trim(),
+                  audience: data.audience.trim(),
+                  sentCount: 0,
+                  deliveredRate: '0.0%',
+                  openRate: '0.0%',
+                  clickRate: '0.0%',
+                  status: data.status,
+                  scheduledFor: data.scheduledFor.trim(),
+                  completedAt: null
+                };
+                campaigns.unshift(newRecord);
+                config.campaigns = campaigns;
+                config.items = campaigns;
+                store.saveEmailCampaignsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = campaigns.find(c => c.id === id);
+              if (item) {
+                if (item.status === 'Completed' || item.status === 'Sent') {
+                  item.status = 'Draft';
+                } else {
+                  item.status = 'Completed';
+                  item.completedAt = new Date().toISOString();
+                  if (item.sentCount === 0) item.sentCount = 12500;
+                  item.deliveredRate = '99.2%';
+                  item.openRate = '41.5%';
+                  item.clickRate = '18.1%';
+                }
+                config.campaigns = campaigns;
+                config.items = campaigns;
+                store.saveEmailCampaignsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = campaigns.find(c => c.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Campaign: ' + item.id,
+                fields: [
+                  { name: 'title', label: 'Title', type: 'text', defaultValue: item.title, required: true },
+                  { name: 'templateId', label: 'Template Code', type: 'text', defaultValue: item.templateId },
+                  { name: 'audience', label: 'Audience Cohort', type: 'text', defaultValue: item.audience, required: true },
+                  { name: 'status', label: 'Status', type: 'select', options: ['Scheduled', 'Sent', 'Completed', 'Draft'], defaultValue: item.status },
+                  { name: 'sentCount', label: 'Sent Count', type: 'number', defaultValue: String(item.sentCount || 0) },
+                  { name: 'openRate', label: 'Open Rate', type: 'text', defaultValue: item.openRate || '0%' },
+                  { name: 'clickRate', label: 'Click Rate', type: 'text', defaultValue: item.clickRate || '0%' },
+                  { name: 'scheduledFor', label: 'Scheduled Time', type: 'text', defaultValue: item.scheduledFor || '' }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  item.templateId = data.templateId.trim();
+                  item.audience = data.audience.trim();
+                  item.status = data.status;
+                  item.sentCount = parseInt(data.sentCount, 10) || 0;
+                  item.openRate = data.openRate.trim();
+                  item.clickRate = data.clickRate.trim();
+                  item.scheduledFor = data.scheduledFor.trim();
+                  config.campaigns = campaigns;
+                  config.items = campaigns;
+                  store.saveEmailCampaignsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete campaign ' + id + '?')) {
+                campaigns = campaigns.filter(c => c.id !== id);
+                config.campaigns = campaigns;
+                config.items = campaigns;
+                store.saveEmailCampaignsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-007: Newsletter Subscribers
+     */
+    function renderNewsletterSubscribersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getNewsletterSubscribersConfig();
+        let subscribers = Array.isArray(config.subscribers || config.items) ? [...(config.subscribers || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = subscribers.filter(s => (s.status || '').toLowerCase() === 'subscribed').length;
+          const verifiedCount = subscribers.filter(s => s.verified).length;
+          const filtered = subscribers.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.email || '').toLowerCase().includes(term) ||
+                   (s.fullName || '').toLowerCase().includes(term) ||
+                   (s.district || '').toLowerCase().includes(term) ||
+                   (s.source || '').toLowerCase().includes(term) ||
+                   (s.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">AUDIENCE ROSTER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Newsletter Subscribers</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Audience lists, district demographics, double opt-in verification, and topic preferences</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSubscriber" class="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white shadow-lg shadow-teal-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Subscriber
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total In List</div>
+                  <div class="text-2xl font-bold text-white mt-1">${subscribers.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Direct community roster</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Active Subscribed</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${subscribers.length > 0 ? Math.round((activeCount / subscribers.length) * 100) : 0}% retention rate</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-teal-400 uppercase tracking-wider">Double Opt-in Verified</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${verifiedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Confirmed inbox ownership</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">District Reach</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">30 Districts</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Full state coverage</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSubscribersSearch" placeholder="Search by email, name, district, source, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${subscribers.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Subscriber ID</th>
+                      <th class="px-4 py-3">Subscriber &amp; Email</th>
+                      <th class="px-4 py-3">District</th>
+                      <th class="px-4 py-3">Topic Preferences</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Source &amp; Opt-In</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No subscribers match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-teal-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3">
+                          <div class="text-white font-medium">${item.fullName || 'Anonymous Aspirant'}</div>
+                          <div class="text-[10px] text-slate-400">${item.email}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.district || 'All Odisha'}</td>
+                        <td class="px-4 py-3">
+                          <div class="flex flex-wrap gap-1 max-w-xs">
+                            ${(item.preferences || []).map(p => `<span class="px-1.5 py-0.2 rounded text-[9px] bg-slate-800 text-teal-300 border border-slate-700">${p}</span>`).join('')}
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.status || '').toLowerCase() === 'subscribed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            (item.status || '').toLowerCase() === 'unsubscribed' ? 'bg-slate-700 text-slate-300' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }">${item.status || 'Subscribed'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="text-slate-300">${item.source || 'Website'}</div>
+                          <div class="text-[10px] ${item.verified ? 'text-emerald-400' : 'text-amber-400'}">${item.verified ? '✓ Verified' : '⚠ Pending'}</div>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-status" data-id="${item.id}" title="Toggle Subscribed / Unsubscribed" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Subscriber" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Subscriber" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSubscribersSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSubscribersSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-007', 'Newsletter Subscribers Schema', {
+              id: 'string (unique subscriber ID, e.g. SUB-5506)',
+              email: 'string (subscriber email)',
+              fullName: 'string (subscriber full name)',
+              district: 'string (Odisha district name)',
+              preferences: 'array<string> (e.g. Daily Quiz, Civil Services, Odia Gazette)',
+              status: 'string (Subscribed | Unsubscribed | Pending Verification)',
+              source: 'string (Footer Form | Modal Pop-up | Checkout Checkbox | Registration Flow)',
+              verified: 'boolean (double opt-in confirmation flag)',
+              subscribedAt: 'string (ISO timestamp)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportNewsletterSubscribersManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset subscribers to factory defaults?')) {
+              store.resetNewsletterSubscribersConfig();
+              config = store.getNewsletterSubscribersConfig();
+              subscribers = [...(config.subscribers || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSubscriber')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Newsletter Subscriber',
+              fields: [
+                { name: 'email', label: 'Subscriber Email', type: 'text', placeholder: 'e.g. lipsa.das@example.com', required: true },
+                { name: 'fullName', label: 'Full Name', type: 'text', placeholder: 'e.g. Lipsa Das', required: true },
+                { name: 'district', label: 'District (Odisha)', type: 'select', options: ['Khordha', 'Cuttack', 'Ganjam', 'Sambalpur', 'Balasore', 'Puri', 'Mayurbhanj', 'Sundargarh', 'Angul', 'Kalahandi', 'Other District'], defaultValue: 'Khordha' },
+                { name: 'preferences', label: 'Preferences (comma-separated)', type: 'text', placeholder: 'Daily Quiz, Civil Services', defaultValue: 'Daily Quiz, Civil Services' },
+                { name: 'source', label: 'Source Channel', type: 'select', options: ['Direct Entry', 'Footer Form', 'Modal Pop-up', 'Checkout Checkbox', 'Registration Flow'], defaultValue: 'Direct Entry' },
+                { name: 'verified', label: 'Verified Status', type: 'select', options: ['true', 'false'], defaultValue: 'true' }
+              ],
+              onSave: (data) => {
+                const prefs = data.preferences.split(',').map(p => p.trim()).filter(Boolean);
+                const newRecord = {
+                  id: 'SUB-' + Math.floor(5000 + Math.random() * 1000),
+                  email: data.email.trim(),
+                  fullName: data.fullName.trim(),
+                  district: data.district,
+                  preferences: prefs,
+                  status: 'Subscribed',
+                  source: data.source,
+                  verified: data.verified === 'true',
+                  subscribedAt: new Date().toISOString()
+                };
+                subscribers.unshift(newRecord);
+                config.subscribers = subscribers;
+                config.items = subscribers;
+                store.saveNewsletterSubscribersConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = subscribers.find(s => s.id === id);
+              if (item) {
+                item.status = item.status === 'Subscribed' ? 'Unsubscribed' : 'Subscribed';
+                config.subscribers = subscribers;
+                config.items = subscribers;
+                store.saveNewsletterSubscribersConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = subscribers.find(s => s.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Subscriber: ' + item.email,
+                fields: [
+                  { name: 'email', label: 'Email', type: 'text', defaultValue: item.email, required: true },
+                  { name: 'fullName', label: 'Full Name', type: 'text', defaultValue: item.fullName || '', required: true },
+                  { name: 'district', label: 'District', type: 'text', defaultValue: item.district || '' },
+                  { name: 'preferences', label: 'Preferences (comma-separated)', type: 'text', defaultValue: (item.preferences || []).join(', ') },
+                  { name: 'status', label: 'Status', type: 'select', options: ['Subscribed', 'Unsubscribed', 'Pending Verification'], defaultValue: item.status },
+                  { name: 'source', label: 'Source', type: 'text', defaultValue: item.source || '' },
+                  { name: 'verified', label: 'Verified', type: 'select', options: ['true', 'false'], defaultValue: item.verified ? 'true' : 'false' }
+                ],
+                onSave: (data) => {
+                  item.email = data.email.trim();
+                  item.fullName = data.fullName.trim();
+                  item.district = data.district.trim();
+                  item.preferences = data.preferences.split(',').map(p => p.trim()).filter(Boolean);
+                  item.status = data.status;
+                  item.source = data.source.trim();
+                  item.verified = data.verified === 'true';
+                  config.subscribers = subscribers;
+                  config.items = subscribers;
+                  store.saveNewsletterSubscribersConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete subscriber ' + id + '?')) {
+                subscribers = subscribers.filter(s => s.id !== id);
+                config.subscribers = subscribers;
+                config.items = subscribers;
+                store.saveNewsletterSubscribersConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
     function renderAdministrativeNotificationsWorkspace() {
       let activeFilter = 'ALL';
 
