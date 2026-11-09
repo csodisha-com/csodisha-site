@@ -532,6 +532,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-08-016') { renderFinanceReportsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-08-017') { renderPaymentWebhooksWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-08-018') { renderFraudRiskWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-001') { renderAllUsersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-002') { renderUserProfilesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-003') { renderRolesPermissionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-004') { renderAdminAccountsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-005') { renderAccountStatusWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-09-006') { renderRegistrationsWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -774,6 +780,18 @@ async function loadMasterNavigation() {
         renderPaymentWebhooksWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-08-018') {
         renderFraudRiskWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-001') {
+        renderAllUsersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-002') {
+        renderUserProfilesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-003') {
+        renderRolesPermissionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-004') {
+        renderAdminAccountsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-005') {
+        renderAccountStatusWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-09-006') {
+        renderRegistrationsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -35620,6 +35638,1528 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-018</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // --- MODULE 09-001: All Users Workspace ---
+    function renderAllUsersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAllUsersConfig();
+        let users = Array.isArray(config.users || config.items) ? [...(config.users || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeUsers = users.filter(u => u.status === 'Active' && u.active !== false);
+          const filtered = users.filter(u => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (u.name || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term) || (u.role || '').toLowerCase().includes(term) || (u.district || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">MEMBERSHIP MASTER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Candidate Directory &amp; User Accounts</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Comprehensive database of registered aspirants, contributors, faculty members, and district study circles</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-usr" class="px-3.5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New User
+                  </button>
+                  <button id="btn-inspect-usr" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-usr" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-usr" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Registered Community</span>
+                  <p class="text-2xl font-bold text-white mt-1">48,920 <span class="text-xs text-slate-500 font-normal">aspirants</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Registered Records</span>
+                  <p class="text-2xl font-bold text-sky-400 mt-1">${activeUsers.length} <span class="text-xs text-slate-500 font-normal">in directory</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Verification Rate</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">94.5% <span class="text-xs text-slate-500 font-normal">OTP verified</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="usr-search-input" value="${searchTerm}" placeholder="Search candidate by name, email, district, role..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${users.length} accounts</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">User ID</th>
+                        <th class="py-3 px-4">Full Name</th>
+                        <th class="py-3 px-4">Email Address</th>
+                        <th class="py-3 px-4">Assigned Role</th>
+                        <th class="py-3 px-4">District</th>
+                        <th class="py-3 px-4">Joined Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No user accounts found.</td>
+                        </tr>
+                      ` : filtered.map(u => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-sky-400">${u.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${u.name || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${u.email || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${u.role || 'Aspirant'}</span></td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${u.district || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${u.joinedDate || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${u.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                              ${u.status || 'Active'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${u.id}" class="btn-toggle-usr px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${u.status === 'Active' ? 'Suspend' : 'Activate'}
+                              </button>
+                              <button data-id="${u.id}" class="btn-del-usr px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#usr-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#usr-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-usr');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Register New Aspirant / Community User',
+                subtitle: 'Add a user account with role entitlement and district jurisdiction',
+                fields: [
+                  { name: 'name', label: 'Candidate Full Name', type: 'text', placeholder: 'e.g. Ramesh Chandra Behera', required: true },
+                  { name: 'email', label: 'Email Address', type: 'text', placeholder: 'e.g. candidate@gmail.com', required: true },
+                  { name: 'role', label: 'Assigned Role', type: 'select', options: [
+                    { value: 'Aspirant', label: 'Aspirant' },
+                    { value: 'Contributor', label: 'Contributor' },
+                    { value: 'Faculty / Reviewer', label: 'Faculty / Reviewer' },
+                    { value: 'Community Moderator', label: 'Community Moderator' }
+                  ], default: 'Aspirant' },
+                  { name: 'district', label: 'Home District (Odisha)', type: 'select', options: [
+                    { value: 'Balasore', label: 'Balasore' },
+                    { value: 'Cuttack', label: 'Cuttack' },
+                    { value: 'Khordha (Bhubaneswar)', label: 'Khordha (Bhubaneswar)' },
+                    { value: 'Mayurbhanj', label: 'Mayurbhanj' },
+                    { value: 'Ganjam', label: 'Ganjam' },
+                    { value: 'Sambalpur', label: 'Sambalpur' },
+                    { value: 'Puri', label: 'Puri' },
+                    { value: 'Sundargarh', label: 'Sundargarh' }
+                  ], default: 'Khordha (Bhubaneswar)' },
+                  { name: 'status', label: 'Account State', type: 'select', options: [
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Suspended', label: 'Suspended' }
+                  ], default: 'Active' }
+                ],
+                onSubmit: (data) => {
+                  const newUsr = {
+                    id: 'USR-' + Math.floor(1005 + Math.random() * 8990),
+                    name: data.name.trim(),
+                    email: data.email.trim(),
+                    role: data.role,
+                    district: data.district,
+                    joinedDate: new Date().toISOString().slice(0, 10),
+                    status: data.status,
+                    active: data.status === 'Active'
+                  };
+                  users.unshift(newUsr);
+                  config.users = users;
+                  config.items = users;
+                  store.saveAllUsersConfig(config);
+                  showToast(`User ${newUsr.name} added to directory.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle status
+          container.querySelectorAll('.btn-toggle-usr').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = users.find(u => u.id === id);
+              if (item) {
+                item.status = item.status === 'Active' ? 'Suspended' : 'Active';
+                item.active = item.status === 'Active';
+                config.users = users;
+                config.items = users;
+                store.saveAllUsersConfig(config);
+                showToast(`User ${item.name} set to ${item.status}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-usr').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Delete candidate account ${id}?`)) {
+                users = users.filter(u => u.id !== id);
+                config.users = users;
+                config.items = users;
+                store.saveAllUsersConfig(config);
+                showToast(`Account ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-usr');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('All Users Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-usr');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportAllUsersManifest();
+              showToast('Users directory manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-usr');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset user accounts directory to factory defaults?')) {
+                config = store.resetAllUsersConfig();
+                users = Array.isArray(config.users || config.items) ? [...(config.users || config.items)] : [];
+                showToast('Users directory restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-002: User Profiles Workspace ---
+    function renderUserProfilesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getUserProfilesConfig();
+        let profiles = Array.isArray(config.profiles || config.items) ? [...(config.profiles || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = profiles.filter(p => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (p.fullName || '').toLowerCase().includes(term) || (p.userId || '').toLowerCase().includes(term) || (p.education || '').toLowerCase().includes(term) || (p.district || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">ASPIRANT DOSSIERS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Aspirant Profile Dossiers &amp; Target Exams</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Academic background, targeted recruitment examinations (OAS, OSSC, OSSSC), verified phone numbers, and profile completion rates</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-prf" class="px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Profile
+                  </button>
+                  <button id="btn-inspect-prf" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-prf" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-prf" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Dossiers On File</span>
+                  <p class="text-2xl font-bold text-white mt-1">${profiles.length} <span class="text-xs text-slate-500 font-normal">profiles</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">100% Complete Dossiers</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${profiles.filter(p => p.profileCompletion === '100%').length} <span class="text-xs text-slate-500 font-normal">verified</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Primary Target Exam</span>
+                  <p class="text-2xl font-bold text-teal-400 mt-1">OPSC OAS</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="prf-search-input" value="${searchTerm}" placeholder="Filter by candidate name, target exams, education..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${profiles.length} dossiers</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Profile ID</th>
+                        <th class="py-3 px-4">User ID</th>
+                        <th class="py-3 px-4">Full Name</th>
+                        <th class="py-3 px-4">Target Exams</th>
+                        <th class="py-3 px-4">Academic Background</th>
+                        <th class="py-3 px-4">District</th>
+                        <th class="py-3 px-4">Phone</th>
+                        <th class="py-3 px-4">Completion</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="9" class="py-8 text-center text-slate-500 font-sans">No aspirant dossiers match search query.</td>
+                        </tr>
+                      ` : filtered.map(p => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-teal-400">${p.id || ''}</td>
+                          <td class="py-3 px-4 text-slate-400">${p.userId || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${p.fullName || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <div class="flex flex-wrap gap-1">
+                              ${(p.targetExams || []).map(ex => `<span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-teal-300 border border-teal-500/30">${ex}</span>`).join('')}
+                            </div>
+                          </td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${p.education || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${p.district || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${p.phone || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${p.profileCompletion === '100%' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${p.profileCompletion || '80%'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <button data-id="${p.id}" class="btn-del-prf px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#prf-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#prf-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-prf');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Create Aspirant Profile Dossier',
+                subtitle: 'Add academic records, contact info, and recruitment targets',
+                fields: [
+                  { name: 'userId', label: 'User Reference ID', type: 'text', placeholder: 'e.g. USR-1005', required: true },
+                  { name: 'fullName', label: 'Full Name', type: 'text', placeholder: 'e.g. Priyaranjan Mohapatra', required: true },
+                  { name: 'targetExams', label: 'Target Exams (comma-separated)', type: 'text', placeholder: 'OPSC OAS, OSSC CGL', default: 'OPSC OAS', required: true },
+                  { name: 'education', label: 'Education / Degree', type: 'text', placeholder: 'e.g. B.Tech Mechanical (VSSUT Burla)', required: true },
+                  { name: 'district', label: 'District', type: 'text', placeholder: 'e.g. Sambalpur', required: true },
+                  { name: 'phone', label: 'Contact Phone Number', type: 'text', placeholder: '+91 9XXXX XXXXX', required: true },
+                  { name: 'profileCompletion', label: 'Profile Completion %', type: 'select', options: [
+                    { value: '100%', label: '100% (Complete)' },
+                    { value: '90%', label: '90%' },
+                    { value: '75%', label: '75%' }
+                  ], default: '100%' }
+                ],
+                onSubmit: (data) => {
+                  const newPrf = {
+                    id: 'PRF-0' + (profiles.length + 1),
+                    userId: data.userId.trim().toUpperCase(),
+                    fullName: data.fullName.trim(),
+                    targetExams: data.targetExams.split(',').map(s => s.trim()).filter(Boolean),
+                    education: data.education.trim(),
+                    district: data.district.trim(),
+                    phone: data.phone.trim(),
+                    profileCompletion: data.profileCompletion,
+                    active: true
+                  };
+                  profiles.push(newPrf);
+                  config.profiles = profiles;
+                  config.items = profiles;
+                  store.saveUserProfilesConfig(config);
+                  showToast('Profile dossier added.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Delete
+          container.querySelectorAll('.btn-del-prf').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove profile dossier ${id}?`)) {
+                profiles = profiles.filter(p => p.id !== id);
+                config.profiles = profiles;
+                config.items = profiles;
+                store.saveUserProfilesConfig(config);
+                showToast(`Profile ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-prf');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('User Profiles Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-prf');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportUserProfilesManifest();
+              showToast('User profiles manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-prf');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset profile dossiers to factory default?')) {
+                config = store.resetUserProfilesConfig();
+                profiles = Array.isArray(config.profiles || config.items) ? [...(config.profiles || config.items)] : [];
+                showToast('User profiles restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-003: Roles & Permissions Workspace ---
+    function renderRolesPermissionsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getRolesPermissionsConfig();
+        let roles = Array.isArray(config.roles || config.items) ? [...(config.roles || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalRoles = roles.length;
+          const filtered = roles.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.roleTitle || '').toLowerCase().includes(term) || (r.roleCode || '').toLowerCase().includes(term) || (r.accessLevel || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">RBAC PRIVILEGES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Role-Based Access Control (RBAC) &amp; Permissions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define role hierarchy, module access grants, administrative powers, and aspirant privilege tiers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-role" class="px-3.5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Role
+                  </button>
+                  <button id="btn-inspect-role" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-role" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-role" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Defined Roles</span>
+                  <p class="text-2xl font-bold text-white mt-1">${totalRoles}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Administrative Roles</span>
+                  <p class="text-2xl font-bold text-purple-400 mt-1">${roles.filter(r => r.accessLevel.includes('Full') || r.accessLevel.includes('Publishing')).length} <span class="text-xs text-slate-500 font-normal">roles</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Root Governance</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">Super Administrator</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="role-search-input" value="${searchTerm}" placeholder="Filter by role title, code, or access scope..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${roles.length} roles</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Role Code</th>
+                        <th class="py-3 px-4">Role Title</th>
+                        <th class="py-3 px-4">Access Level &amp; Permissions</th>
+                        <th class="py-3 px-4">Enrolled Users</th>
+                        <th class="py-3 px-4">System Role</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-8 text-center text-slate-500 font-sans">No roles found matching query.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-purple-400">${r.roleCode || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-semibold">${r.roleTitle || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${r.accessLevel || ''}</td>
+                          <td class="py-3 px-4 text-slate-200">${Number(r.userCount || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.isSystem ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${r.isSystem ? 'Built-in' : 'Custom'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${r.active !== false ? 'Active' : 'Disabled'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${!r.isSystem ? `
+                                <button data-id="${r.id}" class="btn-del-role px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                  Delete
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Locked</span>
+                              `}
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#role-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#role-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-role');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Define New RBAC Role',
+                subtitle: 'Specify role code, title, and assigned module privileges',
+                fields: [
+                  { name: 'roleCode', label: 'Role Code (Uppercase)', type: 'text', placeholder: 'e.g. MENTOR_VOLUNTEER', required: true },
+                  { name: 'roleTitle', label: 'Role Title', type: 'text', placeholder: 'e.g. Volunteer Mentor', required: true },
+                  { name: 'accessLevel', label: 'Scope of Access & Permissions', type: 'text', placeholder: 'e.g. Study Circle Doubts, Mock Scoring', required: true },
+                  { name: 'userCount', label: 'Initial Member Count', type: 'number', placeholder: '0', default: '0', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newRole = {
+                    id: 'ROLE-0' + (roles.length + 1),
+                    roleCode: data.roleCode.trim().toUpperCase(),
+                    roleTitle: data.roleTitle.trim(),
+                    accessLevel: data.accessLevel.trim(),
+                    userCount: Number(data.userCount) || 0,
+                    isSystem: false,
+                    active: true
+                  };
+                  roles.push(newRole);
+                  config.roles = roles;
+                  config.items = roles;
+                  store.saveRolesPermissionsConfig(config);
+                  showToast(`Role ${newRole.roleTitle} defined.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Delete
+          container.querySelectorAll('.btn-del-role').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = roles.find(r => r.id === id);
+              if (item && item.isSystem) {
+                showToast('System roles cannot be deleted.', 'error');
+                return;
+              }
+              if (confirm(`Remove custom role ${id}?`)) {
+                roles = roles.filter(r => r.id !== id);
+                config.roles = roles;
+                config.items = roles;
+                store.saveRolesPermissionsConfig(config);
+                showToast(`Role ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-role');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Roles & Permissions Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-role');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportRolesPermissionsManifest();
+              showToast('Roles catalog manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-role');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset roles and permissions to factory defaults?')) {
+                config = store.resetRolesPermissionsConfig();
+                roles = Array.isArray(config.roles || config.items) ? [...(config.roles || config.items)] : [];
+                showToast('Roles catalog restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-004: Admin Accounts Workspace ---
+    function renderAdminAccountsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAdminAccountsConfig();
+        let admins = Array.isArray(config.admins || config.items) ? [...(config.admins || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const twoFactorCount = admins.filter(a => a.twoFactorEnabled === true).length;
+          const filtered = admins.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.username || '').toLowerCase().includes(term) || (a.displayName || '').toLowerCase().includes(term) || (a.role || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">OPERATOR ACCESS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Administrative Accounts &amp; Console Access</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage root administrator accounts, enforce two-factor authentication (2FA), and IP CIDR allowlists</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-adm" class="px-3.5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Admin Account
+                  </button>
+                  <button id="btn-inspect-adm" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-adm" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-adm" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Active Operators</span>
+                  <p class="text-2xl font-bold text-white mt-1">${admins.length} <span class="text-xs text-slate-500 font-normal">admins</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">2FA Enforced</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${twoFactorCount} <span class="text-xs text-slate-500 font-normal">(${Math.round((twoFactorCount / (admins.length || 1)) * 100)}%)</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Primary Admin Handle</span>
+                  <p class="text-xl font-bold text-rose-400 mt-1">admin@csodisha.com</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="adm-search-input" value="${searchTerm}" placeholder="Search admin username, display name, role..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${admins.length} administrators</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Admin ID</th>
+                        <th class="py-3 px-4">Login Username</th>
+                        <th class="py-3 px-4">Display Name</th>
+                        <th class="py-3 px-4">Role Code</th>
+                        <th class="py-3 px-4">2FA Enforced</th>
+                        <th class="py-3 px-4">IP Allowlist</th>
+                        <th class="py-3 px-4">Last Console Login</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No admin accounts found.</td>
+                        </tr>
+                      ` : filtered.map(a => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-rose-400">${a.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${a.username || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${a.displayName || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${a.role || 'SUPER_ADMIN'}</span></td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.twoFactorEnabled ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                              ${a.twoFactorEnabled ? '2FA Active' : 'Disabled'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${a.ipAllowlist || 'Any'}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${a.lastLogin || 'Never'}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${a.id}" class="btn-toggle-2fa px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${a.twoFactorEnabled ? 'Disable 2FA' : 'Enforce 2FA'}
+                              </button>
+                              ${a.username !== 'admin@csodisha.com' ? `
+                                <button data-id="${a.id}" class="btn-del-adm px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                  Revoke
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Root</span>
+                              `}
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#adm-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#adm-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-adm');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Provision Administrative Console Account',
+                subtitle: 'Issue operator credentials with role access and 2FA policy',
+                fields: [
+                  { name: 'username', label: 'Admin Email / Login', type: 'text', placeholder: 'e.g. ops@csodisha.com', required: true },
+                  { name: 'displayName', label: 'Console Display Name', type: 'text', placeholder: 'e.g. Operations Command Desk', required: true },
+                  { name: 'role', label: 'Console Role', type: 'select', options: [
+                    { value: 'SUPER_ADMIN', label: 'Super Administrator' },
+                    { value: 'CONTENT_EDITOR', label: 'Content Editor' },
+                    { value: 'COMMUNITY_MODERATOR', label: 'Community Moderator' }
+                  ], default: 'CONTENT_EDITOR' },
+                  { name: 'twoFactorEnabled', label: 'Enforce Two-Factor Authentication (2FA)', type: 'select', options: [
+                    { value: 'true', label: 'Yes - Enforce 2FA' },
+                    { value: 'false', label: 'No - Password Only' }
+                  ], default: 'true' },
+                  { name: 'ipAllowlist', label: 'Allowed IP CIDR (or Any)', type: 'text', placeholder: 'Any', default: 'Any', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newAdm = {
+                    id: 'ADM-0' + (admins.length + 1),
+                    username: data.username.trim(),
+                    displayName: data.displayName.trim(),
+                    role: data.role,
+                    twoFactorEnabled: data.twoFactorEnabled === 'true',
+                    lastLogin: 'Pending First Sign-in',
+                    ipAllowlist: data.ipAllowlist.trim() || 'Any',
+                    active: true
+                  };
+                  admins.push(newAdm);
+                  config.admins = admins;
+                  config.items = admins;
+                  store.saveAdminAccountsConfig(config);
+                  showToast(`Admin account ${newAdm.username} created.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle 2FA
+          container.querySelectorAll('.btn-toggle-2fa').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = admins.find(a => a.id === id);
+              if (item) {
+                item.twoFactorEnabled = !item.twoFactorEnabled;
+                config.admins = admins;
+                config.items = admins;
+                store.saveAdminAccountsConfig(config);
+                showToast(`2FA for ${item.username} set to ${item.twoFactorEnabled}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Revoke admin
+          container.querySelectorAll('.btn-del-adm').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Revoke administrative access for ${id}?`)) {
+                admins = admins.filter(a => a.id !== id);
+                config.admins = admins;
+                config.items = admins;
+                store.saveAdminAccountsConfig(config);
+                showToast(`Admin account ${id} revoked.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-adm');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Admin Accounts Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-adm');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportAdminAccountsManifest();
+              showToast('Admin accounts manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-adm');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset administrative accounts to factory defaults?')) {
+                config = store.resetAdminAccountsConfig();
+                admins = Array.isArray(config.admins || config.items) ? [...(config.admins || config.items)] : [];
+                showToast('Admin accounts restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-005: Account Status Workspace ---
+    function renderAccountStatusWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAccountStatusConfig();
+        let statuses = Array.isArray(config.statuses || config.items) ? [...(config.statuses || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = statuses.filter(s => s.currentState === 'Active').length;
+          const suspendedCount = statuses.filter(s => s.currentState === 'Suspended').length;
+          const shadowBannedCount = statuses.filter(s => s.currentState === 'Shadow Banned').length;
+          const filtered = statuses.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.email || '').toLowerCase().includes(term) || (s.userRef || '').toLowerCase().includes(term) || (s.currentState || '').toLowerCase().includes(term) || (s.moderatorNotes || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">MODERATION AUDIT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Account Standing, Suspensions &amp; Shadow Bans</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Audit community standing, review moderator disciplinary logs, shadow ban abusive bots, and lift suspensions</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-ast" class="px-3.5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log Moderation Event
+                  </button>
+                  <button id="btn-inspect-ast" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-ast" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-ast" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Suspended Accounts</span>
+                  <p class="text-2xl font-bold text-rose-400 mt-1">${suspendedCount} <span class="text-xs text-slate-500 font-normal">cases</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Shadow Banned (Bot Shield)</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${shadowBannedCount} <span class="text-xs text-slate-500 font-normal">quarantined</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Audited Good Standing</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${activeCount} <span class="text-xs text-slate-500 font-normal">clean</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="ast-search-input" value="${searchTerm}" placeholder="Search candidate email, user ID, standing, or notes..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${statuses.length} status logs</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Status ID</th>
+                        <th class="py-3 px-4">User Ref</th>
+                        <th class="py-3 px-4">Email</th>
+                        <th class="py-3 px-4">Current Standing</th>
+                        <th class="py-3 px-4">Risk Tier</th>
+                        <th class="py-3 px-4">Moderator Disciplinary Notes</th>
+                        <th class="py-3 px-4">Last Modified</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No status logs matching search filter.</td>
+                        </tr>
+                      ` : filtered.map(s => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-amber-400">${s.id || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">${s.userRef || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${s.email || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.currentState === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : (s.currentState === 'Suspended' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20')}">
+                              ${s.currentState || 'Active'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.riskTier === 'Critical' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : (s.riskTier === 'High' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700')}">
+                              ${s.riskTier || 'Low'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${s.moderatorNotes || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${s.lastStateChange || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${s.currentState !== 'Active' ? `
+                                <button data-id="${s.id}" class="btn-lift-ast px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Restore
+                                </button>
+                              ` : `
+                                <button data-id="${s.id}" class="btn-suspend-ast px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                  Suspend
+                                </button>
+                              `}
+                              <button data-id="${s.id}" class="btn-del-ast px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Clear
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#ast-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#ast-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-ast');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Log Account Standing Disciplinary Event',
+                subtitle: 'Record suspension, shadow ban, or note for moderation review',
+                fields: [
+                  { name: 'userRef', label: 'User Reference ID', type: 'text', placeholder: 'e.g. USR-9481', required: true },
+                  { name: 'email', label: 'Candidate Email', type: 'text', placeholder: 'e.g. candidate@gmail.com', required: true },
+                  { name: 'currentState', label: 'Action to Impose', type: 'select', options: [
+                    { value: 'Suspended', label: 'Suspended (Full Ban)' },
+                    { value: 'Shadow Banned', label: 'Shadow Banned (Ghost Comments)' },
+                    { value: 'Active', label: 'Active (Good Standing)' }
+                  ], default: 'Suspended' },
+                  { name: 'riskTier', label: 'Assessed Risk Tier', type: 'select', options: [
+                    { value: 'Critical', label: 'Critical' },
+                    { value: 'High', label: 'High' },
+                    { value: 'Medium', label: 'Medium' },
+                    { value: 'Low', label: 'Low' }
+                  ], default: 'High' },
+                  { name: 'moderatorNotes', label: 'Violation / Moderator Justification', type: 'text', placeholder: 'e.g. Repeated scam link posting in Cuttack forum', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newAst = {
+                    id: 'AST-0' + (statuses.length + 1),
+                    userRef: data.userRef.trim().toUpperCase(),
+                    email: data.email.trim(),
+                    currentState: data.currentState,
+                    riskTier: data.riskTier,
+                    lastStateChange: new Date().toISOString().slice(0, 10),
+                    moderatorNotes: data.moderatorNotes.trim(),
+                    active: data.currentState === 'Active'
+                  };
+                  statuses.unshift(newAst);
+                  config.statuses = statuses;
+                  config.items = statuses;
+                  store.saveAccountStatusConfig(config);
+                  showToast(`Disciplinary action for ${newAst.email} logged.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Restore
+          container.querySelectorAll('.btn-lift-ast').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = statuses.find(s => s.id === id);
+              if (item) {
+                item.currentState = 'Active';
+                item.riskTier = 'Low';
+                item.moderatorNotes = 'Standing restored by admin';
+                item.lastStateChange = new Date().toISOString().slice(0, 10);
+                config.statuses = statuses;
+                config.items = statuses;
+                store.saveAccountStatusConfig(config);
+                showToast(`Account ${item.userRef} restored to Active.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Suspend
+          container.querySelectorAll('.btn-suspend-ast').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = statuses.find(s => s.id === id);
+              if (item) {
+                item.currentState = 'Suspended';
+                item.riskTier = 'High';
+                item.lastStateChange = new Date().toISOString().slice(0, 10);
+                config.statuses = statuses;
+                config.items = statuses;
+                store.saveAccountStatusConfig(config);
+                showToast(`Account ${item.userRef} suspended.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-ast').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove status entry ${id}?`)) {
+                statuses = statuses.filter(s => s.id !== id);
+                config.statuses = statuses;
+                config.items = statuses;
+                store.saveAccountStatusConfig(config);
+                showToast(`Status record ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-ast');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Account Status Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-ast');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportAccountStatusManifest();
+              showToast('Account status manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-ast');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset account status records to factory defaults?')) {
+                config = store.resetAccountStatusConfig();
+                statuses = Array.isArray(config.statuses || config.items) ? [...(config.statuses || config.items)] : [];
+                showToast('Account status records restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 09-006: Registrations Workspace ---
+    function renderRegistrationsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getRegistrationsConfig();
+        let registrations = Array.isArray(config.registrations || config.items) ? [...(config.registrations || config.items)] : [];
+        let searchTerm = '';
+        const settings = config.settings || { allowPublicRegistration: true, requireEmailVerification: true, enableCaptcha: true };
+
+        function render() {
+          const verifiedCount = registrations.filter(r => r.verificationStatus === 'Verified').length;
+          const pendingCount = registrations.filter(r => r.verificationStatus !== 'Verified').length;
+          const filtered = registrations.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.candidateEmail || '').toLowerCase().includes(term) || (r.district || '').toLowerCase().includes(term) || (r.sourceChannel || '').toLowerCase().includes(term) || (r.verificationStatus || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">CANDIDATE ONBOARDING</span>
+                    <span class="text-xs text-slate-400 font-mono">module-09-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Registration Ingress &amp; OTP Verification</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time candidate onboarding feed, lead acquisition channel tracking, and mobile OTP delivery validation</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-reg" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Simulate Signup
+                  </button>
+                  <button id="btn-inspect-reg" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-reg" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-reg" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Verified Signups (Live Stream)</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${verifiedCount} <span class="text-xs text-slate-500 font-normal">candidates</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Pending OTP Verification</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${pendingCount} <span class="text-xs text-slate-500 font-normal">awaiting code</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Ingress Gate State</span>
+                  <p class="text-2xl font-bold text-indigo-400 mt-1">${settings.allowPublicRegistration ? 'Open Publicly' : 'Invite Only'}</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="reg-search-input" value="${searchTerm}" placeholder="Filter by email, district, lead source, status..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${registrations.length} registrations</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Reg ID</th>
+                        <th class="py-3 px-4">Candidate Email</th>
+                        <th class="py-3 px-4">District</th>
+                        <th class="py-3 px-4">Acquisition Channel</th>
+                        <th class="py-3 px-4">Verification Status</th>
+                        <th class="py-3 px-4">Timestamp</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-8 text-center text-slate-500 font-sans">No candidate registrations found.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-indigo-400">${r.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${r.candidateEmail || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${r.district || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${r.sourceChannel || 'Direct'}</span></td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.verificationStatus === 'Verified' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${r.verificationStatus || 'Pending'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${r.registeredAt || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${r.verificationStatus !== 'Verified' ? `
+                                <button data-id="${r.id}" class="btn-verify-reg px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Mark Verified
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Verified</span>
+                              `}
+                              <button data-id="${r.id}" class="btn-del-reg px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#reg-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#reg-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-reg');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Simulate Candidate Registration',
+                subtitle: 'Ingest a test candidate signup event into onboarding pipeline',
+                fields: [
+                  { name: 'candidateEmail', label: 'Candidate Email', type: 'text', placeholder: 'e.g. aspirant.puri@gmail.com', required: true },
+                  { name: 'district', label: 'District', type: 'select', options: [
+                    { value: 'Bhadrak', label: 'Bhadrak' },
+                    { value: 'Puri', label: 'Puri' },
+                    { value: 'Sambalpur', label: 'Sambalpur' },
+                    { value: 'Cuttack', label: 'Cuttack' },
+                    { value: 'Khordha', label: 'Khordha' },
+                    { value: 'Ganjam', label: 'Ganjam' }
+                  ], default: 'Puri' },
+                  { name: 'sourceChannel', label: 'Acquisition Source', type: 'select', options: [
+                    { value: 'Direct Web', label: 'Direct Web' },
+                    { value: 'Telegram Channel Link', label: 'Telegram Channel Link' },
+                    { value: 'Mock Test Landing Page', label: 'Mock Test Landing Page' },
+                    { value: 'WhatsApp Broadcast', label: 'WhatsApp Broadcast' }
+                  ], default: 'Direct Web' },
+                  { name: 'verificationStatus', label: 'Verification State', type: 'select', options: [
+                    { value: 'Verified', label: 'Verified' },
+                    { value: 'Pending OTP', label: 'Pending OTP' }
+                  ], default: 'Verified' }
+                ],
+                onSubmit: (data) => {
+                  const newReg = {
+                    id: 'REG-' + Math.floor(904 + Math.random() * 80),
+                    candidateEmail: data.candidateEmail.trim(),
+                    district: data.district,
+                    sourceChannel: data.sourceChannel,
+                    verificationStatus: data.verificationStatus,
+                    registeredAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                    active: true
+                  };
+                  registrations.unshift(newReg);
+                  config.registrations = registrations;
+                  config.items = registrations;
+                  store.saveRegistrationsConfig(config);
+                  showToast('Candidate registration processed.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Mark verified
+          container.querySelectorAll('.btn-verify-reg').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = registrations.find(r => r.id === id);
+              if (item) {
+                item.verificationStatus = 'Verified';
+                config.registrations = registrations;
+                config.items = registrations;
+                store.saveRegistrationsConfig(config);
+                showToast(`Candidate ${item.candidateEmail} verified.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-reg').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove registration entry ${id}?`)) {
+                registrations = registrations.filter(r => r.id !== id);
+                config.registrations = registrations;
+                config.items = registrations;
+                store.saveRegistrationsConfig(config);
+                showToast(`Registration ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-reg');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Registrations Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-reg');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportRegistrationsManifest();
+              showToast('Registrations manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-reg');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset registrations feed to factory defaults?')) {
+                config = store.resetRegistrationsConfig();
+                registrations = Array.isArray(config.registrations || config.items) ? [...(config.registrations || config.items)] : [];
+                showToast('Registrations feed restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-09-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-09-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 

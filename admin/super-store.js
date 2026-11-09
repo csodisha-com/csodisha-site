@@ -9972,6 +9972,269 @@
       return filename;
     },
 
+    // --- MODULE 09-001: All Users ---
+    getAllUsersConfig() {
+      const DEFAULT_ALL_USERS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalUsers: 48920, verifiedUsers: 46210, pendingVerification: 2710 },
+        items: [
+          { id: "USR-1001", name: "Ramesh Chandra Behera", email: "ramesh.behera@gmail.com", role: "Aspirant", district: "Balasore", joinedDate: "2026-02-14", status: "Active", active: true },
+          { id: "USR-1002", name: "Subhashree Mohanty", email: "subhashree.m@gmail.com", role: "Contributor", district: "Cuttack", joinedDate: "2026-03-10", status: "Active", active: true },
+          { id: "USR-1003", name: "Debabrata Nayak", email: "debabrata.n@gmail.com", role: "Faculty / Reviewer", district: "Khordha (Bhubaneswar)", joinedDate: "2026-01-20", status: "Active", active: true },
+          { id: "USR-1004", name: "Pooja Priyadarshini", email: "pooja.p@gmail.com", role: "Aspirant", district: "Mayurbhanj", joinedDate: "2026-05-18", status: "Active", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_all_users_config', 'users', () => DEFAULT_ALL_USERS);
+    },
+    saveAllUsersConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.users = cfg.items || cfg.users || [];
+      cfg.items = cfg.users;
+      localStorage.setItem('cso_all_users_config', JSON.stringify(cfg));
+      this.logAudit("ALL_USERS_SAVED", "USERS_RBAC", "All Users directory updated with " + cfg.items.length + " accounts.");
+    },
+    resetAllUsersConfig() {
+      const DEFAULT_ALL_USERS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalUsers: 48920, verifiedUsers: 46210, pendingVerification: 2710 },
+        items: [
+          { id: "USR-1001", name: "Ramesh Chandra Behera", email: "ramesh.behera@gmail.com", role: "Aspirant", district: "Balasore", joinedDate: "2026-02-14", status: "Active", active: true },
+          { id: "USR-1002", name: "Subhashree Mohanty", email: "subhashree.m@gmail.com", role: "Contributor", district: "Cuttack", joinedDate: "2026-03-10", status: "Active", active: true },
+          { id: "USR-1003", name: "Debabrata Nayak", email: "debabrata.n@gmail.com", role: "Faculty / Reviewer", district: "Khordha (Bhubaneswar)", joinedDate: "2026-01-20", status: "Active", active: true },
+          { id: "USR-1004", name: "Pooja Priyadarshini", email: "pooja.p@gmail.com", role: "Aspirant", district: "Mayurbhanj", joinedDate: "2026-05-18", status: "Active", active: true }
+        ]
+      };
+      localStorage.setItem('cso_all_users_config', JSON.stringify(DEFAULT_ALL_USERS));
+      this.logAudit("ALL_USERS_RESET", "USERS_RBAC", "All Users directory restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_ALL_USERS));
+    },
+    exportAllUsersManifest() {
+      const config = this.getAllUsersConfig();
+      const filename = "all_users_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ALL_USERS_EXPORTED", "DATA_EXPORT", "All Users directory manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-002: User Profiles ---
+    getUserProfilesConfig() {
+      const DEFAULT_USER_PROFILES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PRF-01", userId: "USR-1001", fullName: "Ramesh Chandra Behera", targetExams: ["OPSC OAS", "OSSC CGL"], education: "B.A. Political Science (F.M. University)", district: "Balasore", phone: "+91 94370 XXXXX", profileCompletion: "90%", active: true },
+          { id: "PRF-02", userId: "USR-1002", fullName: "Subhashree Mohanty", targetExams: ["OSSSC RI / Amin", "OTET"], education: "B.Ed. & M.A. Odia (Ravenshaw University)", district: "Cuttack", phone: "+91 98610 XXXXX", profileCompletion: "100%", active: true },
+          { id: "PRF-03", userId: "USR-1003", fullName: "Debabrata Nayak", targetExams: ["Odisha Judicial Service", "OAS Group A"], education: "LL.B. (Utkal University)", district: "Khordha", phone: "+91 70080 XXXXX", profileCompletion: "95%", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_user_profiles_config', 'profiles', () => DEFAULT_USER_PROFILES);
+    },
+    saveUserProfilesConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.profiles = cfg.items || cfg.profiles || [];
+      cfg.items = cfg.profiles;
+      localStorage.setItem('cso_user_profiles_config', JSON.stringify(cfg));
+      this.logAudit("USER_PROFILES_SAVED", "USERS_RBAC", "User Profiles directory updated with " + cfg.items.length + " records.");
+    },
+    resetUserProfilesConfig() {
+      const DEFAULT_USER_PROFILES = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "PRF-01", userId: "USR-1001", fullName: "Ramesh Chandra Behera", targetExams: ["OPSC OAS", "OSSC CGL"], education: "B.A. Political Science (F.M. University)", district: "Balasore", phone: "+91 94370 XXXXX", profileCompletion: "90%", active: true },
+          { id: "PRF-02", userId: "USR-1002", fullName: "Subhashree Mohanty", targetExams: ["OSSSC RI / Amin", "OTET"], education: "B.Ed. & M.A. Odia (Ravenshaw University)", district: "Cuttack", phone: "+91 98610 XXXXX", profileCompletion: "100%", active: true },
+          { id: "PRF-03", userId: "USR-1003", fullName: "Debabrata Nayak", targetExams: ["Odisha Judicial Service", "OAS Group A"], education: "LL.B. (Utkal University)", district: "Khordha", phone: "+91 70080 XXXXX", profileCompletion: "95%", active: true }
+        ]
+      };
+      localStorage.setItem('cso_user_profiles_config', JSON.stringify(DEFAULT_USER_PROFILES));
+      this.logAudit("USER_PROFILES_RESET", "USERS_RBAC", "User Profiles directory restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_USER_PROFILES));
+    },
+    exportUserProfilesManifest() {
+      const config = this.getUserProfilesConfig();
+      const filename = "user_profiles_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("USER_PROFILES_EXPORTED", "DATA_EXPORT", "User Profiles manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-003: Roles & Permissions ---
+    getRolesPermissionsConfig() {
+      const DEFAULT_ROLES_PERMISSIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "ROLE-01", roleCode: "SUPER_ADMIN", roleTitle: "Super Administrator", accessLevel: "Full Root (All 241 Modules)", userCount: 2, isSystem: true, active: true },
+          { id: "ROLE-02", roleCode: "CONTENT_EDITOR", roleTitle: "Editorial & Gazette Editor", accessLevel: "Publishing, Library, Syllabi (Folders 04-06)", userCount: 6, isSystem: false, active: true },
+          { id: "ROLE-03", roleCode: "COMMUNITY_MODERATOR", roleTitle: "District Forum Moderator", accessLevel: "Community, Comments, Reports (Folder 09)", userCount: 12, isSystem: false, active: true },
+          { id: "ROLE-04", roleCode: "ASPIRANT_MEMBER", roleTitle: "Registered Aspirant", accessLevel: "Public Portal, Mocks, Forums, Resource Vault", userCount: 48900, isSystem: true, active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_roles_permissions_config', 'roles', () => DEFAULT_ROLES_PERMISSIONS);
+    },
+    saveRolesPermissionsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.roles = cfg.items || cfg.roles || [];
+      cfg.items = cfg.roles;
+      localStorage.setItem('cso_roles_permissions_config', JSON.stringify(cfg));
+      this.logAudit("ROLES_PERMISSIONS_SAVED", "USERS_RBAC", "Roles & Permissions catalog updated with " + cfg.items.length + " roles.");
+    },
+    resetRolesPermissionsConfig() {
+      const DEFAULT_ROLES_PERMISSIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "ROLE-01", roleCode: "SUPER_ADMIN", roleTitle: "Super Administrator", accessLevel: "Full Root (All 241 Modules)", userCount: 2, isSystem: true, active: true },
+          { id: "ROLE-02", roleCode: "CONTENT_EDITOR", roleTitle: "Editorial & Gazette Editor", accessLevel: "Publishing, Library, Syllabi (Folders 04-06)", userCount: 6, isSystem: false, active: true },
+          { id: "ROLE-03", roleCode: "COMMUNITY_MODERATOR", roleTitle: "District Forum Moderator", accessLevel: "Community, Comments, Reports (Folder 09)", userCount: 12, isSystem: false, active: true },
+          { id: "ROLE-04", roleCode: "ASPIRANT_MEMBER", roleTitle: "Registered Aspirant", accessLevel: "Public Portal, Mocks, Forums, Resource Vault", userCount: 48900, isSystem: true, active: true }
+        ]
+      };
+      localStorage.setItem('cso_roles_permissions_config', JSON.stringify(DEFAULT_ROLES_PERMISSIONS));
+      this.logAudit("ROLES_PERMISSIONS_RESET", "USERS_RBAC", "Roles & Permissions catalog restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_ROLES_PERMISSIONS));
+    },
+    exportRolesPermissionsManifest() {
+      const config = this.getRolesPermissionsConfig();
+      const filename = "roles_permissions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ROLES_PERMISSIONS_EXPORTED", "DATA_EXPORT", "Roles & Permissions manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-004: Admin Accounts ---
+    getAdminAccountsConfig() {
+      const DEFAULT_ADMIN_ACCOUNTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "ADM-01", username: "admin@csodisha.com", displayName: "Root Command Suite", role: "SUPER_ADMIN", twoFactorEnabled: true, lastLogin: "2026-11-09 20:15", ipAllowlist: "Static / VPN", active: true },
+          { id: "ADM-02", username: "editor.jobs@csodisha.com", displayName: "Recruitment Lead Desk", role: "CONTENT_EDITOR", twoFactorEnabled: true, lastLogin: "2026-11-09 17:40", ipAllowlist: "Any", active: true },
+          { id: "ADM-03", username: "mod.community@csodisha.com", displayName: "Lead Community Moderator", role: "COMMUNITY_MODERATOR", twoFactorEnabled: false, lastLogin: "2026-11-08 19:10", ipAllowlist: "Any", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_admin_accounts_config', 'admins', () => DEFAULT_ADMIN_ACCOUNTS);
+    },
+    saveAdminAccountsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.admins = cfg.items || cfg.admins || [];
+      cfg.items = cfg.admins;
+      localStorage.setItem('cso_admin_accounts_config', JSON.stringify(cfg));
+      this.logAudit("ADMIN_ACCOUNTS_SAVED", "USERS_RBAC", "Admin Accounts registry updated with " + cfg.items.length + " administrative operators.");
+    },
+    resetAdminAccountsConfig() {
+      const DEFAULT_ADMIN_ACCOUNTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "ADM-01", username: "admin@csodisha.com", displayName: "Root Command Suite", role: "SUPER_ADMIN", twoFactorEnabled: true, lastLogin: "2026-11-09 20:15", ipAllowlist: "Static / VPN", active: true },
+          { id: "ADM-02", username: "editor.jobs@csodisha.com", displayName: "Recruitment Lead Desk", role: "CONTENT_EDITOR", twoFactorEnabled: true, lastLogin: "2026-11-09 17:40", ipAllowlist: "Any", active: true },
+          { id: "ADM-03", username: "mod.community@csodisha.com", displayName: "Lead Community Moderator", role: "COMMUNITY_MODERATOR", twoFactorEnabled: false, lastLogin: "2026-11-08 19:10", ipAllowlist: "Any", active: true }
+        ]
+      };
+      localStorage.setItem('cso_admin_accounts_config', JSON.stringify(DEFAULT_ADMIN_ACCOUNTS));
+      this.logAudit("ADMIN_ACCOUNTS_RESET", "USERS_RBAC", "Admin Accounts registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_ADMIN_ACCOUNTS));
+    },
+    exportAdminAccountsManifest() {
+      const config = this.getAdminAccountsConfig();
+      const filename = "admin_accounts_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ADMIN_ACCOUNTS_EXPORTED", "DATA_EXPORT", "Admin Accounts manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-005: Account Status ---
+    getAccountStatusConfig() {
+      const DEFAULT_ACCOUNT_STATUS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalActive: 47820, suspendedCount: 14, shadowBanned: 3, pendingKycVerification: 1083 },
+        items: [
+          { id: "AST-01", userRef: "USR-1001", email: "ramesh.behera@gmail.com", currentState: "Active", riskTier: "Low", lastStateChange: "2026-02-14", moderatorNotes: "Clean history", active: true },
+          { id: "AST-02", userRef: "USR-9481", email: "spam.test@tempmail.com", currentState: "Suspended", riskTier: "Critical", lastStateChange: "2026-11-04", moderatorNotes: "Commercial ad link spam in Balasore forum", active: false },
+          { id: "AST-03", userRef: "USR-8821", email: "disputed.user@gmail.com", currentState: "Shadow Banned", riskTier: "High", lastStateChange: "2026-10-28", moderatorNotes: "Abusive comment reports under review", active: false }
+        ]
+      };
+      return this._hydrateConfig('cso_account_status_config', 'statuses', () => DEFAULT_ACCOUNT_STATUS);
+    },
+    saveAccountStatusConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.statuses = cfg.items || cfg.statuses || [];
+      cfg.items = cfg.statuses;
+      localStorage.setItem('cso_account_status_config', JSON.stringify(cfg));
+      this.logAudit("ACCOUNT_STATUS_SAVED", "USERS_RBAC", "Account Status registry updated with " + cfg.items.length + " moderation states.");
+    },
+    resetAccountStatusConfig() {
+      const DEFAULT_ACCOUNT_STATUS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalActive: 47820, suspendedCount: 14, shadowBanned: 3, pendingKycVerification: 1083 },
+        items: [
+          { id: "AST-01", userRef: "USR-1001", email: "ramesh.behera@gmail.com", currentState: "Active", riskTier: "Low", lastStateChange: "2026-02-14", moderatorNotes: "Clean history", active: true },
+          { id: "AST-02", userRef: "USR-9481", email: "spam.test@tempmail.com", currentState: "Suspended", riskTier: "Critical", lastStateChange: "2026-11-04", moderatorNotes: "Commercial ad link spam in Balasore forum", active: false },
+          { id: "AST-03", userRef: "USR-8821", email: "disputed.user@gmail.com", currentState: "Shadow Banned", riskTier: "High", lastStateChange: "2026-10-28", moderatorNotes: "Abusive comment reports under review", active: false }
+        ]
+      };
+      localStorage.setItem('cso_account_status_config', JSON.stringify(DEFAULT_ACCOUNT_STATUS));
+      this.logAudit("ACCOUNT_STATUS_RESET", "USERS_RBAC", "Account Status registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_ACCOUNT_STATUS));
+    },
+    exportAccountStatusManifest() {
+      const config = this.getAccountStatusConfig();
+      const filename = "account_status_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ACCOUNT_STATUS_EXPORTED", "DATA_EXPORT", "Account Status manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 09-006: Registrations ---
+    getRegistrationsConfig() {
+      const DEFAULT_REGISTRATIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { allowPublicRegistration: true, requireEmailVerification: true, enableCaptcha: true },
+        items: [
+          { id: "REG-901", candidateEmail: "chinmay.jena@gmail.com", district: "Bhadrak", sourceChannel: "Direct Web", verificationStatus: "Verified", registeredAt: "2026-11-09 18:30", active: true },
+          { id: "REG-902", candidateEmail: "lipika.sahoo@gmail.com", district: "Puri", sourceChannel: "Telegram Channel Link", verificationStatus: "Verified", registeredAt: "2026-11-09 19:12", active: true },
+          { id: "REG-903", candidateEmail: "tanmay.das@gmail.com", district: "Sambalpur", sourceChannel: "Mock Test Landing Page", verificationStatus: "Pending OTP", registeredAt: "2026-11-09 20:05", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_registrations_config', 'registrations', () => DEFAULT_REGISTRATIONS);
+    },
+    saveRegistrationsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.registrations = cfg.items || cfg.registrations || [];
+      cfg.items = cfg.registrations;
+      localStorage.setItem('cso_registrations_config', JSON.stringify(cfg));
+      this.logAudit("REGISTRATIONS_SAVED", "USERS_RBAC", "Registrations stream updated with " + cfg.items.length + " signups.");
+    },
+    resetRegistrationsConfig() {
+      const DEFAULT_REGISTRATIONS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        settings: { allowPublicRegistration: true, requireEmailVerification: true, enableCaptcha: true },
+        items: [
+          { id: "REG-901", candidateEmail: "chinmay.jena@gmail.com", district: "Bhadrak", sourceChannel: "Direct Web", verificationStatus: "Verified", registeredAt: "2026-11-09 18:30", active: true },
+          { id: "REG-902", candidateEmail: "lipika.sahoo@gmail.com", district: "Puri", sourceChannel: "Telegram Channel Link", verificationStatus: "Verified", registeredAt: "2026-11-09 19:12", active: true },
+          { id: "REG-903", candidateEmail: "tanmay.das@gmail.com", district: "Sambalpur", sourceChannel: "Mock Test Landing Page", verificationStatus: "Pending OTP", registeredAt: "2026-11-09 20:05", active: true }
+        ]
+      };
+      localStorage.setItem('cso_registrations_config', JSON.stringify(DEFAULT_REGISTRATIONS));
+      this.logAudit("REGISTRATIONS_RESET", "USERS_RBAC", "Registrations stream restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_REGISTRATIONS));
+    },
+    exportRegistrationsManifest() {
+      const config = this.getRegistrationsConfig();
+      const filename = "registrations_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("REGISTRATIONS_EXPORTED", "DATA_EXPORT", "Registrations manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 
@@ -10560,7 +10823,13 @@
           reconciliation: this.getReconciliationConfig(),
           financeReports: this.getFinanceReportsConfig(),
           paymentWebhooks: this.getPaymentWebhooksConfig(),
-          fraudRisk: this.getFraudRiskConfig()
+          fraudRisk: this.getFraudRiskConfig(),
+          allUsers: this.getAllUsersConfig(),
+          userProfiles: this.getUserProfilesConfig(),
+          rolesPermissions: this.getRolesPermissionsConfig(),
+          adminAccounts: this.getAdminAccountsConfig(),
+          accountStatus: this.getAccountStatusConfig(),
+          registrations: this.getRegistrationsConfig()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
