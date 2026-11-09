@@ -297,6 +297,8 @@ async function loadMasterNavigation() {
         renderAllPagesWorkspace();
       } else if (moduleId === 'module-02-002') {
         renderCreateNewPageWorkspace();
+      } else if (moduleId === 'module-02-003') {
+        renderVisualPageBuilderWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -1888,6 +1890,358 @@ async function loadMasterNavigation() {
       // Publish & Download
       document.getElementById('btnPublishAndDownload')?.addEventListener('click', () => {
         handleSave(false);
+      });
+    }
+
+    /**
+     * VIEW 2c: Interactive Visual Page Builder (module-02-003)
+     */
+    function renderVisualPageBuilderWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Visual Page Builder (module-02-003)";
+
+      // Ingest Pages List
+      const pages = (window.CSOSuperStore && typeof window.CSOSuperStore.getAllPages === 'function')
+        ? window.CSOSuperStore.getAllPages('ALL', '')
+        : [];
+
+      // Current active page ID (default to first page or blank)
+      let activePageId = pages.length > 0 ? pages[0].id : 'NEW_PAGE';
+      let activeViewport = 'desktop'; // 'desktop' (100%), 'tablet' (768px), 'mobile' (375px)
+
+      // Top Action Bar with Page Selector, Viewport Toggles, and Save/Download
+      const pageOptionsHtml = pages.map(p => {
+        return `<option value="${p.id}" ${p.id === activePageId ? 'selected' : ''}>${p.title} (${p.file})</option>`;
+      }).join('');
+
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Page Selector -->
+          <div class="flex items-center">
+            <span class="text-[11px] font-mono text-slate-400 mr-1.5 hidden sm:inline">Editing:</span>
+            <select id="selectBuilderPage" class="bg-[#081220] border border-brand-border rounded-lg px-2.5 py-1.5 text-xs text-white font-sans focus:outline-none focus:ring-1 focus:ring-brand-emerald max-w-[220px] truncate">
+              ${pageOptionsHtml}
+              <option value="NEW_PAGE">+ Blank Document Canvas</option>
+            </select>
+          </div>
+
+          <!-- Viewport Switchers -->
+          <div class="flex items-center bg-[#081220] border border-brand-border rounded-lg p-0.5">
+            <button id="btnViewportDesktop" title="Desktop View (100%)" class="px-2 py-1 rounded text-xs font-mono font-semibold transition bg-slate-800 text-white">
+              Desktop
+            </button>
+            <button id="btnViewportTablet" title="Tablet View (768px)" class="px-2 py-1 rounded text-xs font-mono font-semibold transition text-slate-400 hover:text-white">
+              768px
+            </button>
+            <button id="btnViewportMobile" title="Mobile View (375px)" class="px-2 py-1 rounded text-xs font-mono font-semibold transition text-slate-400 hover:text-white">
+              375px
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <button id="btnSaveBuilderPage" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            Save Page
+          </button>
+          <button id="btnDownloadBuilderHtml" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download HTML
+          </button>
+        </div>
+      `;
+
+      // 3-Column Studio Layout
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-4 font-sans">
+          <!-- Workspace Overview -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                Visual Component Studio & Responsive Canvas
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-003</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Insert pre-styled design system blocks, preview live viewport breakpoints, and synchronize clean HTML.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="builderSyncStatus" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Canvas Live
+              </span>
+            </div>
+          </div>
+
+          <!-- 3-Column Split Area -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            <!-- Left Column: Block Library (3 cols) -->
+            <div class="lg:col-span-3 space-y-3">
+              <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-brand-border">
+                  <h3 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+                    Block Library
+                  </h3>
+                  <button id="btnClearBuilderCanvas" class="text-[11px] text-rose-400 hover:text-rose-300 font-mono transition">
+                    Clear Canvas
+                  </button>
+                </div>
+
+                <p class="text-[11px] text-slate-400">Click to append Odisha theme components directly into the canvas:</p>
+
+                <!-- Component Palette Cards -->
+                <div class="space-y-2">
+                  <button data-block="hero" class="btn-insert-block w-full text-left p-3 rounded-lg bg-[#081220] hover:bg-slate-800/70 border border-brand-border hover:border-brand-emerald/50 transition group space-y-1">
+                    <div class="flex items-center justify-between text-xs font-bold text-white group-hover:text-emerald-400">
+                      <span>Hero Section</span>
+                      <span class="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400">+ Insert</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">State hero banner with badge, H1 title, subtitle, and CTA button.</p>
+                  </button>
+
+                  <button data-block="cards" class="btn-insert-block w-full text-left p-3 rounded-lg bg-[#081220] hover:bg-slate-800/70 border border-brand-border hover:border-brand-emerald/50 transition group space-y-1">
+                    <div class="flex items-center justify-between text-xs font-bold text-white group-hover:text-emerald-400">
+                      <span>Feature Cards (3-Col)</span>
+                      <span class="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400">+ Insert</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">OSSC, OPSC, and Teaching exam quick-link matrix.</p>
+                  </button>
+
+                  <button data-block="notice" class="btn-insert-block w-full text-left p-3 rounded-lg bg-[#081220] hover:bg-slate-800/70 border border-brand-border hover:border-brand-emerald/50 transition group space-y-1">
+                    <div class="flex items-center justify-between text-xs font-bold text-white group-hover:text-emerald-400">
+                      <span>Notice Banner</span>
+                      <span class="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400">+ Insert</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">Emerald high-priority alert box with PDF download trigger.</p>
+                  </button>
+
+                  <button data-block="syllabusTable" class="btn-insert-block w-full text-left p-3 rounded-lg bg-[#081220] hover:bg-slate-800/70 border border-brand-border hover:border-brand-emerald/50 transition group space-y-1">
+                    <div class="flex items-center justify-between text-xs font-bold text-white group-hover:text-emerald-400">
+                      <span>Syllabus Table</span>
+                      <span class="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400">+ Insert</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">3-column marks weightage table for exam schemes.</p>
+                  </button>
+
+                  <button data-block="faq" class="btn-insert-block w-full text-left p-3 rounded-lg bg-[#081220] hover:bg-slate-800/70 border border-brand-border hover:border-brand-emerald/50 transition group space-y-1">
+                    <div class="flex items-center justify-between text-xs font-bold text-white group-hover:text-emerald-400">
+                      <span>Collapsible FAQ</span>
+                      <span class="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400">+ Insert</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">2-question accordion with candidate eligibility criteria.</p>
+                  </button>
+
+                  <button data-block="cta" class="btn-insert-block w-full text-left p-3 rounded-lg bg-[#081220] hover:bg-slate-800/70 border border-brand-border hover:border-brand-emerald/50 transition group space-y-1">
+                    <div class="flex items-center justify-between text-xs font-bold text-white group-hover:text-emerald-400">
+                      <span>CTA Footer Banner</span>
+                      <span class="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400">+ Insert</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">Dark navy student outreach callout container.</p>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center Column: Live Responsive Canvas (5 cols) -->
+            <div class="lg:col-span-5 space-y-3">
+              <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-2 flex flex-col">
+                <div class="flex items-center justify-between pb-2 border-b border-brand-border text-xs font-mono">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    Live Preview Canvas
+                  </span>
+                  <span id="activeViewportLabel" class="text-cyan-400 font-bold">100% Full Width</span>
+                </div>
+
+                <!-- Canvas Outer Frame -->
+                <div class="w-full bg-[#030712] border border-brand-border rounded-xl p-3 flex justify-center overflow-x-auto min-h-[480px]">
+                  <div id="builderCanvasWrapper" class="w-full transition-all duration-300 bg-[#040810] rounded-lg border border-slate-800/80 p-4 overflow-y-auto max-h-[640px]">
+                    <div id="livePreviewContainer" class="space-y-4">
+                      <!-- Live rendered markup here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Bidirectional HTML Source Editor (4 cols) -->
+            <div class="lg:col-span-4 space-y-3">
+              <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-2 flex flex-col h-full">
+                <div class="flex items-center justify-between pb-2 border-b border-brand-border">
+                  <h3 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+                    HTML Source Sync
+                  </h3>
+                  <div class="text-[10px] font-mono text-slate-400">
+                    <span id="builderCharCount">0 chars</span> &bull; <span id="builderByteSize">0.0 KB</span>
+                  </div>
+                </div>
+
+                <div class="relative flex-grow">
+                  <textarea id="builderHtmlSource" rows="22" class="w-full h-full min-h-[480px] bg-[#050a14] border border-brand-border rounded-lg p-3 text-slate-200 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" placeholder="Type or paste HTML code here to sync live with preview..."></textarea>
+                </div>
+                <p class="text-[10px] text-slate-500 font-mono">Real-time bidirectional synchronization with canvas preview.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Elements
+      const selectPage = document.getElementById('selectBuilderPage');
+      const canvasWrapper = document.getElementById('builderCanvasWrapper');
+      const liveContainer = document.getElementById('livePreviewContainer');
+      const sourceEditor = document.getElementById('builderHtmlSource');
+      const viewportLabel = document.getElementById('activeViewportLabel');
+      const charCountEl = document.getElementById('builderCharCount');
+      const byteSizeEl = document.getElementById('builderByteSize');
+      const btnDesk = document.getElementById('btnViewportDesktop');
+      const btnTab = document.getElementById('btnViewportTablet');
+      const btnMob = document.getElementById('btnViewportMobile');
+
+      // Load initial page content
+      function getActivePageContent() {
+        if (activePageId === 'NEW_PAGE') {
+          return `<!-- Blank Page -->\n${window.CSOSuperStore?.getBlockMarkup('hero') || ''}`;
+        }
+        const found = pages.find(p => p.id === activePageId);
+        if (found && found.htmlContent) {
+          return found.htmlContent;
+        }
+        // If no custom htmlContent, return default hero
+        return `<!-- Page: ${found?.title || 'Odisha Portal'} -->\n${window.CSOSuperStore?.getBlockMarkup('hero') || ''}`;
+      }
+
+      function updateMetrics(html) {
+        if (charCountEl) charCountEl.textContent = `${html.length} chars`;
+        if (byteSizeEl) {
+          const kb = ((html.length * 2) / 1024).toFixed(1);
+          byteSizeEl.textContent = `${kb} KB`;
+        }
+      }
+
+      function syncToCanvas(html) {
+        if (liveContainer) {
+          liveContainer.innerHTML = html;
+        }
+        updateMetrics(html);
+      }
+
+      // Initialize source & canvas
+      const initialHtml = getActivePageContent();
+      if (sourceEditor) sourceEditor.value = initialHtml;
+      syncToCanvas(initialHtml);
+
+      // Page Switcher
+      if (selectPage) {
+        selectPage.addEventListener('change', (e) => {
+          activePageId = e.target.value;
+          const html = getActivePageContent();
+          if (sourceEditor) sourceEditor.value = html;
+          syncToCanvas(html);
+        });
+      }
+
+      // Viewport Switchers
+      function setViewport(mode) {
+        activeViewport = mode;
+        btnDesk.className = "px-2 py-1 rounded text-xs font-mono font-semibold transition text-slate-400 hover:text-white";
+        btnTab.className = "px-2 py-1 rounded text-xs font-mono font-semibold transition text-slate-400 hover:text-white";
+        btnMob.className = "px-2 py-1 rounded text-xs font-mono font-semibold transition text-slate-400 hover:text-white";
+
+        if (mode === 'desktop') {
+          btnDesk.className = "px-2 py-1 rounded text-xs font-mono font-semibold transition bg-slate-800 text-white";
+          canvasWrapper.style.maxWidth = '100%';
+          if (viewportLabel) viewportLabel.textContent = '100% Full Width';
+        } else if (mode === 'tablet') {
+          btnTab.className = "px-2 py-1 rounded text-xs font-mono font-semibold transition bg-slate-800 text-white";
+          canvasWrapper.style.maxWidth = '768px';
+          if (viewportLabel) viewportLabel.textContent = '768px Tablet Frame';
+        } else if (mode === 'mobile') {
+          btnMob.className = "px-2 py-1 rounded text-xs font-mono font-semibold transition bg-slate-800 text-white";
+          canvasWrapper.style.maxWidth = '375px';
+          if (viewportLabel) viewportLabel.textContent = '375px Mobile Frame';
+        }
+      }
+
+      btnDesk?.addEventListener('click', () => setViewport('desktop'));
+      btnTab?.addEventListener('click', () => setViewport('tablet'));
+      btnMob?.addEventListener('click', () => setViewport('mobile'));
+
+      // Bidirectional typing in source editor
+      let debounceTimer = null;
+      sourceEditor?.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          syncToCanvas(sourceEditor.value);
+        }, 150);
+      });
+
+      // Insert Block Handlers
+      document.querySelectorAll('.btn-insert-block').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const blockType = e.currentTarget.getAttribute('data-block');
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.getBlockMarkup === 'function') {
+            const blockHtml = window.CSOSuperStore.getBlockMarkup(blockType);
+            const current = sourceEditor.value;
+            const updated = current.trim() ? `${current}\n\n${blockHtml}` : blockHtml;
+            sourceEditor.value = updated;
+            syncToCanvas(updated);
+            showToast(`Inserted ${blockType} block into canvas`, "info");
+          }
+        });
+      });
+
+      // Clear Canvas
+      document.getElementById('btnClearBuilderCanvas')?.addEventListener('click', () => {
+        openModal("Clear Canvas", `
+          <div class="space-y-3 font-sans text-xs">
+            <p class="text-slate-300">Are you sure you want to clear the entire page canvas? This will remove all blocks from the active buffer.</p>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnConfirmClearCanvas" class="px-3 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Clear All</button>
+        `);
+
+        document.getElementById('btnConfirmClearCanvas')?.addEventListener('click', () => {
+          closeModal();
+          sourceEditor.value = '';
+          syncToCanvas('');
+          showToast("Canvas buffer cleared", "warning");
+        });
+      });
+
+      // Save Page
+      document.getElementById('btnSaveBuilderPage')?.addEventListener('click', () => {
+        const content = sourceEditor.value;
+        if (activePageId === 'NEW_PAGE') {
+          // Redirect to Create New Page with preset content
+          selectModule('folder-02', 'module-02-002');
+          return;
+        }
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.updatePageContent === 'function') {
+          const updatedPage = window.CSOSuperStore.updatePageContent(activePageId, content);
+          if (updatedPage) {
+            showToast(`Page "${updatedPage.title}" updated successfully (${updatedPage.sizeKb} KB)`, "success");
+          } else {
+            showToast("Failed to locate target page record.", "error");
+          }
+        }
+      });
+
+      // Download HTML
+      document.getElementById('btnDownloadBuilderHtml')?.addEventListener('click', () => {
+        const content = sourceEditor.value;
+        const page = pages.find(p => p.id === activePageId) || {
+          id: 'PAGE-NEW',
+          file: 'custom-builder-page.html',
+          title: 'Custom Page',
+          htmlContent: content
+        };
+        page.htmlContent = content;
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.downloadPageHtml === 'function') {
+          window.CSOSuperStore.downloadPageHtml(page);
+          showToast(`Downloaded standalone file: ${page.file}`, "success");
+        }
       });
     }
 

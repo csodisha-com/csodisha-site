@@ -1198,6 +1198,178 @@
       URL.revokeObjectURL(url);
     },
 
+    // Visual Page Builder Preset Components & Mutation Engine (module-02-003)
+    getBlockMarkup(blockType) {
+      const blocks = {
+        hero: `<!-- Block: Odisha Hero Section -->
+<section class="py-12 px-6 rounded-2xl bg-gradient-to-br from-[#071328] via-[#091830] to-[#040914] border border-cyan-900/40 text-center space-y-4 my-4 shadow-xl">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold">
+    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    Verified Public Notice &bull; State of Odisha
+  </div>
+  <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+    Empowering Aspirants Across All 30 Districts
+  </h1>
+  <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+    Access direct application links, authorized syllabus breakdowns, and document verification schedules without misleading ads or paywalls.
+  </p>
+  <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+    <a href="/resources.html" class="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg transition">
+      Explore State Syllabi &rarr;
+    </a>
+    <a href="/contact.html" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition">
+      Contact Help Desk
+    </a>
+  </div>
+</section>`,
+
+        cards: `<!-- Block: 3-Card Recruitment Grid -->
+<section class="py-6 my-4 space-y-4">
+  <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+    <h2 class="text-lg font-bold text-white">Featured Career & Examination Portals</h2>
+    <span class="text-xs text-slate-500 font-mono">3 Streams Active</span>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="p-4 rounded-xl bg-[#081220] border border-slate-800 hover:border-slate-700 transition space-y-2.5">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold font-mono text-xs">
+        OSSC
+      </div>
+      <h3 class="font-bold text-white text-sm">OSSC CGL & Specialist Posts</h3>
+      <p class="text-xs text-slate-400">Combined Graduate Level preliminary syllabus, pattern changes, and official notifications.</p>
+      <a href="/resources.html" class="inline-block text-xs font-mono text-emerald-400 hover:underline pt-1">&rarr; View OSSC Hub</a>
+    </div>
+
+    <div class="p-4 rounded-xl bg-[#081220] border border-slate-800 hover:border-slate-700 transition space-y-2.5">
+      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold font-mono text-xs">
+        OPSC
+      </div>
+      <h3 class="font-bold text-white text-sm">Odisha Civil Services (OAS/OPS)</h3>
+      <p class="text-xs text-slate-400">Prelims, Mains optional papers, state service syllabus, and previous question papers.</p>
+      <a href="/resources.html" class="inline-block text-xs font-mono text-cyan-400 hover:underline pt-1">&rarr; View OPSC Hub</a>
+    </div>
+
+    <div class="p-4 rounded-xl bg-[#081220] border border-slate-800 hover:border-slate-700 transition space-y-2.5">
+      <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold font-mono text-xs">
+        B.Ed
+      </div>
+      <h3 class="font-bold text-white text-sm">State Teaching & OTET/OSSTET</h3>
+      <p class="text-xs text-slate-400">Teacher Eligibility Test criteria, pedagogy preparation guides, and district vacancies.</p>
+      <a href="/resources.html" class="inline-block text-xs font-mono text-indigo-400 hover:underline pt-1">&rarr; View Teaching Hub</a>
+    </div>
+  </div>
+</section>`,
+
+        notice: `<!-- Block: High-Priority Notice Banner -->
+<div class="p-4 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/40 my-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+  <div class="flex items-start gap-3">
+    <div class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 mt-0.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div>
+      <h4 class="text-sm font-bold text-white">Urgent Notice: Document Verification Schedule Released</h4>
+      <p class="text-xs text-slate-300 mt-0.5">All shortlisted candidates must report to the designated district nodal centers with original credentials.</p>
+    </div>
+  </div>
+  <a href="/resources.html" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs whitespace-nowrap self-start sm:self-auto transition">
+    Download Schedule (PDF)
+  </a>
+</div>`,
+
+        syllabusTable: `<!-- Block: Exam Pattern & Syllabus Table -->
+<div class="my-6 rounded-xl bg-[#081220] border border-slate-800 overflow-hidden shadow">
+  <div class="p-3 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between">
+    <h3 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">Examination Pattern & Marks Weightage</h3>
+    <span class="text-[10px] text-emerald-400 font-mono">Updated 2026 Format</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
+      <thead>
+        <tr class="bg-slate-950/60 text-slate-400 font-mono border-b border-slate-800">
+          <th class="py-2.5 px-4">Subject / Section</th>
+          <th class="py-2.5 px-4 text-center">Questions</th>
+          <th class="py-2.5 px-4 text-center">Total Marks</th>
+          <th class="py-2.5 px-4 text-right">Duration</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800/60 text-slate-300 font-sans">
+        <tr class="hover:bg-slate-800/30">
+          <td class="py-2.5 px-4 font-semibold text-white">General Studies & Odisha Heritage</td>
+          <td class="py-2.5 px-4 text-center font-mono">50</td>
+          <td class="py-2.5 px-4 text-center font-mono text-emerald-400 font-bold">50</td>
+          <td class="py-2.5 px-4 text-right font-mono">60 Mins</td>
+        </tr>
+        <tr class="hover:bg-slate-800/30">
+          <td class="py-2.5 px-4 font-semibold text-white">Quantitative Aptitude & Reasoning</td>
+          <td class="py-2.5 px-4 text-center font-mono">50</td>
+          <td class="py-2.5 px-4 text-center font-mono text-emerald-400 font-bold">50</td>
+          <td class="py-2.5 px-4 text-right font-mono">60 Mins</td>
+        </tr>
+        <tr class="hover:bg-slate-800/30">
+          <td class="py-2.5 px-4 font-semibold text-white">Odia Language & English Grammar</td>
+          <td class="py-2.5 px-4 text-center font-mono">50</td>
+          <td class="py-2.5 px-4 text-center font-mono text-emerald-400 font-bold">50</td>
+          <td class="py-2.5 px-4 text-right font-mono">60 Mins</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>`,
+
+        faq: `<!-- Block: Collapsible FAQ Container -->
+<div class="my-6 space-y-3">
+  <h3 class="text-sm font-bold text-white mb-2">Frequently Asked Candidate Questions</h3>
+  <details class="group p-3.5 rounded-xl bg-[#081220] border border-slate-800 open:border-slate-700 transition">
+    <summary class="flex items-center justify-between cursor-pointer text-xs font-semibold text-slate-200">
+      <span>Is there negative marking in the preliminary objective exam?</span>
+      <span class="text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
+    </summary>
+    <p class="mt-2.5 text-xs text-slate-400 leading-relaxed pt-2 border-t border-slate-800/60">
+      Yes, 0.25 marks are deducted for every incorrect response in accordance with official commission guidelines.
+    </p>
+  </details>
+
+  <details class="group p-3.5 rounded-xl bg-[#081220] border border-slate-800 open:border-slate-700 transition">
+    <summary class="flex items-center justify-between cursor-pointer text-xs font-semibold text-slate-200">
+      <span>Are other state candidates eligible for Odisha civil exams?</span>
+      <span class="text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
+    </summary>
+    <p class="mt-2.5 text-xs text-slate-400 leading-relaxed pt-2 border-t border-slate-800/60">
+      Candidates must have passed an Odia language test equivalent to Middle School standard to be eligible for state appointments.
+    </p>
+  </details>
+</div>`,
+
+        cta: `<!-- Block: Navy Full-Width CTA Banner -->
+<section class="py-10 px-6 my-6 rounded-2xl bg-[#030914] border border-cyan-800/30 text-center space-y-4">
+  <h2 class="text-2xl font-extrabold text-white">Stay Informed with Common Sense Odisha</h2>
+  <p class="text-xs text-slate-400 max-w-xl mx-auto">
+    Bookmark csodisha.com for transparent, verified guidance on scholarship deadlines, job openings, and civil exams across Odisha.
+  </p>
+  <div class="flex items-center justify-center gap-3 pt-1">
+    <a href="/contact.html" class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition">
+      Join Student Network
+    </a>
+  </div>
+</section>`
+      };
+
+      return blocks[blockType] || '<!-- Empty Block -->';
+    },
+
+    updatePageContent(pageId, newContent) {
+      const pages = this.getAllPages('ALL', '');
+      const page = pages.find(p => p.id === pageId || p.file === pageId || p.path === pageId);
+      if (page) {
+        page.htmlContent = newContent;
+        page.sizeKb = ((newContent.length * 2) / 1024).toFixed(1);
+        page.lastModified = new Date().toISOString().slice(0, 10);
+        this.saveAllPages(pages);
+        this.logAudit('PAGE_UPDATED_VIA_BUILDER', 'VISUAL_BUILDER', `Page "${page.title}" (${page.file}) content updated via Visual Builder.`);
+        return page;
+      }
+      return null;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
