@@ -7018,472 +7018,551 @@ async function loadMasterNavigation() {
     /**
      * VIEW 3d: Disclaimer & Statutory Legal Notice Studio (module-03-004)
      */
+    /**
+     * VIEW 3d: Disclaimer & Statutory Legal Notice Studio (module-03-004)
+     */
     function renderDisclaimerWorkspace(container) {
       const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
       if (!root) return;
 
       try {
-        // Ensure visible
-        root.style.display = 'block';
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
         root.classList.remove('hidden');
 
         // Header Breadcrumb
-      if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
-      if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Disclaimer (module-03-004)";
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Disclaimer (module-03-004)";
 
-      // Top Action Toolbar
-      if (dom.moduleHeaderActions) {
-        dom.moduleHeaderActions.innerHTML = `
-          <div class="flex flex-wrap items-center gap-2">
-            <button id="btnSaveDisclaimerStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Save & Publish Disclaimer
-            </button>
-            <a href="/disclaimer.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              Preview Live Page ↗
-            </a>
-            <button id="btnToggleDisclaimerJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-              Raw JSON Editor
-            </button>
-            <button id="btnExportDisclaimerConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
-              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              Export Config
-            </button>
-            <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
-              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-              Import Config
-              <input id="inputImportDisclaimerConfig" type="file" accept=".json,application/json" class="hidden">
-            </label>
-            <button id="btnResetDisclaimerConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-              Reset to Default
-            </button>
-          </div>
-        `;
-      }
-
-      // Ingest Disclaimer Config
-      let disc = (window.CSOSuperStore && typeof window.CSOSuperStore.getDisclaimerConfig === 'function')
-        ? window.CSOSuperStore.getDisclaimerConfig()
-        : {
-            meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-            disclaimer: {
-              title: "Official Educational & Academic Disclaimer",
-              effectiveDate: "2026-11-01",
-              affidavitBody: "Common Sense Odisha (csodisha.com) is an autonomous, non-profit academic intelligence resource. It is not affiliated, endorsed, or operated by the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), or Government of Odisha. Official recruitment notices and gazettes remain solely authoritative.",
-              advisoryNotice: "All question patterns, syllabus maps, and cutoff predictions published on csodisha.com are synthesized from historical state gazettes for candidate educational convenience only."
-            },
-            clauses: []
-          };
-
-      disc.disclaimer = disc.disclaimer || {};
-      let currentClauses = Array.isArray(disc.clauses) ? JSON.parse(JSON.stringify(disc.clauses)) : [];
-
-      function syncDisclaimerJsonEditor() {
-        const jsonTextarea = document.getElementById('textareaDisclaimerRawJson');
-        if (jsonTextarea) {
-          const snapshot = gatherDisclaimerFormState();
-          jsonTextarea.value = JSON.stringify(snapshot, null, 2);
-        }
-      }
-
-      function gatherDisclaimerFormState() {
-        const titleInput = document.getElementById('disclaimerInputTitle');
-        const effDateInput = document.getElementById('disclaimerInputDate');
-        const affidavitTextarea = document.getElementById('disclaimerTextareaAffidavit');
-        const advisoryTextarea = document.getElementById('disclaimerTextareaAdvisory');
-
-        return {
-          meta: {
-            version: (disc.meta && disc.meta.version) || "1.0",
-            lastEditedBy: "admin@csodisha.com",
-            updatedAt: (disc.meta && disc.meta.updatedAt) || new Date().toISOString()
-          },
-          disclaimer: {
-            title: titleInput ? titleInput.value.trim() : (disc.disclaimer?.title || ''),
-            effectiveDate: effDateInput ? effDateInput.value.trim() : (disc.disclaimer?.effectiveDate || '2026-11-01'),
-            affidavitBody: affidavitTextarea ? affidavitTextarea.value.trim() : (disc.disclaimer?.affidavitBody || ''),
-            advisoryNotice: advisoryTextarea ? advisoryTextarea.value.trim() : (disc.disclaimer?.advisoryNotice || '')
-          },
-          clauses: currentClauses
-        };
-      }
-
-      function renderDisclaimerClausesList() {
-        const container = document.getElementById('disclaimerClausesContainer');
-        if (!container) return;
-
-        if (currentClauses.length === 0) {
-          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No disclaimer clauses configured. Add one below.</div>`;
-          return;
-        }
-
-        container.innerHTML = currentClauses.map((cl, idx) => `
-          <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-disclaimer-clause-index="${idx}">
-            <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full ${cl.active !== false ? 'bg-amber-400' : 'bg-slate-500'}"></span>
-                <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(cl.id || `DISC-${idx+1}`)}</span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700">Clause § ${escapeHtml(cl.number || `${idx+1}`)}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
-                  <input type="checkbox" class="disc-clause-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${cl.active !== false ? 'checked' : ''}>
-                  Active
-                </label>
-                <button data-move-disc-clause-up="${idx}" class="btn-disc-clause-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
-                  ▲
-                </button>
-                <button data-move-disc-clause-down="${idx}" class="btn-disc-clause-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentClauses.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentClauses.length - 1 ? 'disabled' : ''}>
-                  ▼
-                </button>
-                <button data-remove-disc-clause="${idx}" class="btn-remove-disc-clause px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
-                  Delete
-                </button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div class="md:col-span-1">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
-                <input type="text" class="disc-clause-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(cl.title || '')}">
-              </div>
-              <div class="md:col-span-3">
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Statutory Body / Terms</label>
-                <textarea rows="2" class="disc-clause-body-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" data-index="${idx}">${escapeHtml(cl.body || '')}</textarea>
-              </div>
-            </div>
-          </div>
-        `).join('');
-
-        container.querySelectorAll('.disc-clause-active-checkbox').forEach(cb => {
-          cb.addEventListener('change', (e) => {
-            const index = parseInt(e.target.getAttribute('data-index'), 10);
-            if (!isNaN(index) && currentClauses[index]) {
-              currentClauses[index].active = e.target.checked;
-              syncDisclaimerJsonEditor();
-            }
-          });
-        });
-
-        container.querySelectorAll('.disc-clause-title-input').forEach(input => {
-          input.addEventListener('input', (e) => {
-            const index = parseInt(e.target.getAttribute('data-index'), 10);
-            if (!isNaN(index) && currentClauses[index]) {
-              currentClauses[index].title = e.target.value;
-              syncDisclaimerJsonEditor();
-            }
-          });
-        });
-
-        container.querySelectorAll('.disc-clause-body-input').forEach(input => {
-          input.addEventListener('input', (e) => {
-            const index = parseInt(e.target.getAttribute('data-index'), 10);
-            if (!isNaN(index) && currentClauses[index]) {
-              currentClauses[index].body = e.target.value;
-              syncDisclaimerJsonEditor();
-            }
-          });
-        });
-
-        container.querySelectorAll('.btn-disc-clause-move-up').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const idx = parseInt(e.currentTarget.getAttribute('data-move-disc-clause-up'), 10);
-            if (!isNaN(idx) && idx > 0) {
-              const temp = currentClauses[idx];
-              currentClauses[idx] = currentClauses[idx - 1];
-              currentClauses[idx - 1] = temp;
-              renderDisclaimerClausesList();
-              syncDisclaimerJsonEditor();
-            }
-          });
-        });
-
-        container.querySelectorAll('.btn-disc-clause-move-down').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const idx = parseInt(e.currentTarget.getAttribute('data-move-disc-clause-down'), 10);
-            if (!isNaN(idx) && idx < currentClauses.length - 1) {
-              const temp = currentClauses[idx];
-              currentClauses[idx] = currentClauses[idx + 1];
-              currentClauses[idx + 1] = temp;
-              renderDisclaimerClausesList();
-              syncDisclaimerJsonEditor();
-            }
-          });
-        });
-
-        container.querySelectorAll('.btn-remove-disc-clause').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const index = parseInt(e.currentTarget.getAttribute('data-remove-disc-clause'), 10);
-            if (!isNaN(index) && index >= 0 && index < currentClauses.length) {
-              const removed = currentClauses.splice(index, 1)[0];
-              renderDisclaimerClausesList();
-              syncDisclaimerJsonEditor();
-              showToast(`Clause "${removed.title}" removed.`, "info");
-            }
-          });
-        });
-      }
-
-      root.innerHTML = `
-        <div class="space-y-6 font-sans">
-          <!-- Overview Card -->
-          <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <h2 class="text-base font-bold text-white flex items-center gap-2">
-                Educational & Examination Disclaimer Studio
-                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800/60">module-03-004</span>
-              </h2>
-              <p class="text-xs text-slate-400 mt-0.5">Control autonomous non-governmental status disclaimers, fair-use intellectual property declarations, and examination advisory affidavits.</p>
-            </div>
-            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
-              <span>Version: <strong class="text-cyan-400">${escapeHtml(disc.meta?.version || '1.0')}</strong></span>
-              <span>Updated: <span id="disclaimerLastUpdated" class="text-emerald-400 font-bold">${new Date(disc.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
-            </div>
-          </div>
-
-          <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
-          <div id="disclaimerJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
-                <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
-                  Raw State Developer Console (JSON)
-                </h3>
-              </div>
-              <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
-            </div>
-            <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for legal audits, compliance verification, and schema migrations.</p>
-            <textarea id="textareaDisclaimerRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
-            <div class="flex justify-end gap-2">
-              <button id="btnApplyDisclaimerRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+        // Top Action Toolbar
+        if (dom.moduleHeaderActions) {
+          dom.moduleHeaderActions.innerHTML = `
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btnSaveDisclaimerStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                Apply JSON Changes
+                Save & Publish Disclaimer
+              </button>
+              <a href="/disclaimer.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                Preview Live Page ↗
+              </a>
+              <button id="btnToggleDisclaimerJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                Raw JSON Editor
+              </button>
+              <button id="btnExportDisclaimerConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export Config
+              </button>
+              <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Import Config
+                <input id="inputImportDisclaimerConfig" type="file" accept=".json,application/json" class="hidden">
+              </label>
+              <button id="btnResetDisclaimerConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Reset to Default
               </button>
             </div>
-          </div>
+          `;
+        }
 
-          <!-- Card 1: Primary Disclaimer Affidavit -->
-          <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-              <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                Primary Examination Disclaimer & Statutory Affidavit
-              </h3>
-            </div>
+        // Ingest Disclaimer Config
+        let disc = (window.CSOSuperStore && typeof window.CSOSuperStore.getDisclaimerConfig === 'function')
+          ? window.CSOSuperStore.getDisclaimerConfig()
+          : {
+              meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+              header: {
+                title: "Official Disclaimer & Non-Affiliation Notice",
+                subtitle: "Statutory clarification on independent academic intelligence, third-party trademarks, and official gazette reconciliation.",
+                badge: "Statutory Disclosure",
+                lastReviewed: "2026-11-01"
+              },
+              notices: [],
+              emergencyNotice: {
+                enabled: true,
+                text: "Always cross-verify admit card release dates and answer keys against the primary recruitment commission portals before taking examination day actions."
+              }
+            };
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Disclaimer Document Title <span class="text-rose-400">*</span></label>
-                <input id="disclaimerInputTitle" type="text" value="${escapeHtml(disc.disclaimer?.title || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-              </div>
+        disc.header = disc.header || {};
+        disc.emergencyNotice = disc.emergencyNotice || {};
+        let currentNotices = Array.isArray(disc.notices) ? JSON.parse(JSON.stringify(disc.notices)) : [];
 
-              <div class="sm:col-span-1">
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Effective Date <span class="text-rose-400">*</span></label>
-                <input id="disclaimerInputDate" type="date" value="${escapeHtml(disc.disclaimer?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-              </div>
-            </div>
+        function syncDisclaimerJsonEditor() {
+          const jsonTextarea = document.getElementById('textareaDisclaimerRawJson');
+          if (jsonTextarea) {
+            const snapshot = gatherDisclaimerFormState();
+            jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+          }
+        }
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-200 mb-1">Autonomous Non-Governmental Affidavit Body <span class="text-rose-400">*</span></label>
-              <textarea id="disclaimerTextareaAffidavit" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(disc.disclaimer?.affidavitBody || '')}</textarea>
-            </div>
+        function gatherDisclaimerFormState() {
+          const titleInput = document.getElementById('disclaimerInputTitle');
+          const subtitleInput = document.getElementById('disclaimerInputSubtitle');
+          const badgeInput = document.getElementById('disclaimerInputBadge');
+          const dateInput = document.getElementById('disclaimerInputDate');
+          const emergToggle = document.getElementById('toggleDisclaimerEmergencyEnabled');
+          const emergText = document.getElementById('textareaDisclaimerEmergency');
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-200 mb-1">Candidate Educational Advisory Notice</label>
-              <textarea id="disclaimerTextareaAdvisory" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(disc.disclaimer?.advisoryNotice || '')}</textarea>
-            </div>
-          </div>
+          return {
+            meta: {
+              version: (disc.meta && disc.meta.version) || "2.1",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: (disc.meta && disc.meta.updatedAt) || new Date().toISOString()
+            },
+            header: {
+              title: titleInput ? titleInput.value.trim() : (disc.header?.title || ''),
+              subtitle: subtitleInput ? subtitleInput.value.trim() : (disc.header?.subtitle || ''),
+              badge: badgeInput ? badgeInput.value.trim() : (disc.header?.badge || 'Statutory Disclosure'),
+              lastReviewed: dateInput ? dateInput.value.trim() : (disc.header?.lastReviewed || '2026-11-01')
+            },
+            notices: currentNotices,
+            emergencyNotice: {
+              enabled: emergToggle ? emergToggle.checked : (disc.emergencyNotice?.enabled !== false),
+              text: emergText ? emergText.value.trim() : (disc.emergencyNotice?.text || '')
+            }
+          };
+        }
 
-          <!-- Card 2: Sectional Disclaimer Clauses (Extensible Repeater) -->
-          <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Sectional Disclaimer Clauses (Extensible)
-                </h3>
-              </div>
-              <span class="text-[11px] font-mono text-slate-400">Statutory Provisions & Notices</span>
-            </div>
+        function renderDisclaimerNoticesList() {
+          const container = document.getElementById('disclaimerNoticesContainer');
+          if (!container) return;
 
-            <!-- Clauses List -->
-            <div id="disclaimerClausesContainer" class="space-y-3"></div>
+          if (currentNotices.length === 0) {
+            container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No statutory notices configured. Add one below.</div>`;
+            return;
+          }
 
-            <!-- Add Clause Inline Form -->
-            <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
-              <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Disclaimer Clause</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div class="sm:col-span-1">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Number</label>
-                  <input id="inputNewDiscClauseNumber" type="text" placeholder="e.g. 4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+          const categoryBadges = {
+            'Statutory': 'bg-rose-950/80 text-rose-400 border-rose-800/60',
+            'Accuracy': 'bg-amber-950/80 text-amber-400 border-amber-800/60',
+            'Legal': 'bg-indigo-950/80 text-indigo-400 border-indigo-800/60',
+            'Trademarks': 'bg-cyan-950/80 text-cyan-400 border-cyan-800/60'
+          };
+
+          container.innerHTML = currentNotices.map((n, idx) => {
+            const badgeClass = categoryBadges[n.category] || 'bg-slate-800 text-slate-300 border-slate-700';
+            return `
+              <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-disclaimer-notice-index="${idx}">
+                <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full ${n.active !== false ? 'bg-amber-400' : 'bg-slate-500'}"></span>
+                    <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(n.id || `DISC-${idx+1}`)}</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${badgeClass}">${escapeHtml(n.category || 'General')}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                      <input type="checkbox" class="disc-notice-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${n.active !== false ? 'checked' : ''}>
+                      Active
+                    </label>
+                    <button data-move-disc-notice-up="${idx}" class="btn-disc-notice-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
+                      ▲
+                    </button>
+                    <button data-move-disc-notice-down="${idx}" class="btn-disc-notice-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentNotices.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentNotices.length - 1 ? 'disabled' : ''}>
+                      ▼
+                    </button>
+                    <button data-remove-disc-notice="${idx}" class="btn-remove-disc-notice px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div class="sm:col-span-3">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
-                  <input id="inputNewDiscClauseTitle" type="text" placeholder="e.g. Limitation of Liability" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div class="md:col-span-1">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Notice Category</label>
+                    <select class="disc-notice-category-select w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}">
+                      <option value="Statutory" ${n.category === 'Statutory' ? 'selected' : ''}>Statutory</option>
+                      <option value="Accuracy" ${n.category === 'Accuracy' ? 'selected' : ''}>Accuracy</option>
+                      <option value="Legal" ${n.category === 'Legal' ? 'selected' : ''}>Legal</option>
+                      <option value="Trademarks" ${n.category === 'Trademarks' ? 'selected' : ''}>Trademarks</option>
+                      <option value="General" ${n.category === 'General' ? 'selected' : ''}>General</option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-3">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Notice Title</label>
+                    <input type="text" class="disc-notice-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(n.title || '')}">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Statutory Declaration / Terms</label>
+                  <textarea rows="2" class="disc-notice-body-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" data-index="${idx}">${escapeHtml(n.body || '')}</textarea>
                 </div>
               </div>
+            `;
+          }).join('');
+
+          container.querySelectorAll('.disc-notice-active-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentNotices[index]) {
+                currentNotices[index].active = e.target.checked;
+                syncDisclaimerJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.disc-notice-category-select').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentNotices[index]) {
+                currentNotices[index].category = e.target.value;
+                renderDisclaimerNoticesList();
+                syncDisclaimerJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.disc-notice-title-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentNotices[index]) {
+                currentNotices[index].title = e.target.value;
+                syncDisclaimerJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.disc-notice-body-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentNotices[index]) {
+                currentNotices[index].body = e.target.value;
+                syncDisclaimerJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-disc-notice-move-up').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.getAttribute('data-move-disc-notice-up'), 10);
+              if (!isNaN(idx) && idx > 0) {
+                const temp = currentNotices[idx];
+                currentNotices[idx] = currentNotices[idx - 1];
+                currentNotices[idx - 1] = temp;
+                renderDisclaimerNoticesList();
+                syncDisclaimerJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-disc-notice-move-down').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.getAttribute('data-move-disc-notice-down'), 10);
+              if (!isNaN(idx) && idx < currentNotices.length - 1) {
+                const temp = currentNotices[idx];
+                currentNotices[idx] = currentNotices[idx + 1];
+                currentNotices[idx + 1] = temp;
+                renderDisclaimerNoticesList();
+                syncDisclaimerJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-remove-disc-notice').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const index = parseInt(e.currentTarget.getAttribute('data-remove-disc-notice'), 10);
+              if (!isNaN(index) && index >= 0 && index < currentNotices.length) {
+                const removed = currentNotices.splice(index, 1)[0];
+                renderDisclaimerNoticesList();
+                syncDisclaimerJsonEditor();
+                showToast(`Notice "${removed.title}" removed.`, "info");
+              }
+            });
+          });
+        }
+
+        root.innerHTML = `
+          <div class="space-y-6 font-sans">
+            <!-- Overview Card -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Content / Statutory Body</label>
-                <textarea id="textareaNewDiscClauseBody" rows="2" placeholder="Full legal terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Official Disclaimer & Statutory Disclosure Studio
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800/60">module-03-004</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Control non-affiliation declarations, gazette supremacy disclosures, third-party trademark safe harbors, and candidate exam day advisories.</p>
               </div>
-              <div class="flex justify-end">
-                <button id="btnAddDiscClauseAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  + Add Clause
+              <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+                <span>Version: <strong class="text-cyan-400">${escapeHtml(disc.meta?.version || '2.1')}</strong></span>
+                <span>Updated: <span id="disclaimerLastUpdated" class="text-emerald-400 font-bold">${new Date(disc.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
+              </div>
+            </div>
+
+            <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
+            <div id="disclaimerJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                    Raw State Developer Console (JSON)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+              </div>
+              <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for legal audits, compliance verification, and schema migrations.</p>
+              <textarea id="textareaDisclaimerRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btnApplyDisclaimerRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Apply JSON Changes
                 </button>
               </div>
             </div>
+
+            <!-- Card 1: Primary Header & Statutory Clarification -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Primary Disclaimer Header & Statutory Clarification
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Notice Title <span class="text-rose-400">*</span></label>
+                  <input id="disclaimerInputTitle" type="text" value="${escapeHtml(disc.header?.title || 'Official Disclaimer & Non-Affiliation Notice')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div class="sm:col-span-1">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Badge Tagline</label>
+                  <input id="disclaimerInputBadge" type="text" value="${escapeHtml(disc.header?.badge || 'Statutory Disclosure')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Subtitle / Clarification Summary</label>
+                  <input id="disclaimerInputSubtitle" type="text" value="${escapeHtml(disc.header?.subtitle || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div class="sm:col-span-1">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Last Reviewed Date</label>
+                  <input id="disclaimerInputDate" type="date" value="${escapeHtml(disc.header?.lastReviewed || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Sectional Statutory Notices (Extensible Repeater) -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Sectional Statutory Notices (Extensible Repeater)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Affirmative Safe Harbor Notices</span>
+              </div>
+
+              <!-- Notices List -->
+              <div id="disclaimerNoticesContainer" class="space-y-3"></div>
+
+              <!-- Add Notice Inline Form -->
+              <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Statutory Disclaimer Notice</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div class="sm:col-span-1">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Category</label>
+                    <select id="selectNewNoticeCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                      <option value="Statutory">Statutory</option>
+                      <option value="Accuracy">Accuracy</option>
+                      <option value="Legal">Legal</option>
+                      <option value="Trademarks">Trademarks</option>
+                      <option value="General">General</option>
+                    </select>
+                  </div>
+                  <div class="sm:col-span-3">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Notice Title</label>
+                    <input id="inputNewNoticeTitle" type="text" placeholder="e.g. Third-Party Exam Gateways" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Statutory Declaration Content</label>
+                  <textarea id="textareaNewNoticeBody" rows="2" placeholder="Full legal terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+                </div>
+                <div class="flex justify-end">
+                  <button id="btnAddNoticeAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    + Add Notice
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Emergency Exam Day Advisory Notice -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Emergency Candidate Verification Advisory Banner
+                  </h3>
+                </div>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
+                  <input id="toggleDisclaimerEmergencyEnabled" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" ${(disc.emergencyNotice?.enabled !== false) ? 'checked' : ''}>
+                  Enable Advisory Callout
+                </label>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Advisory Text Notice</label>
+                <textarea id="textareaDisclaimerEmergency" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(disc.emergencyNotice?.text || '')}</textarea>
+              </div>
+            </div>
           </div>
-        </div>
-      `;
+        `;
 
-      renderDisclaimerClausesList();
-      syncDisclaimerJsonEditor();
+        renderDisclaimerNoticesList();
+        syncDisclaimerJsonEditor();
 
-      // Drawer toggle
-      document.getElementById('btnToggleDisclaimerJsonDrawer')?.addEventListener('click', () => {
-        const drawer = document.getElementById('disclaimerJsonDrawer');
-        if (drawer) {
-          drawer.classList.toggle('hidden');
-          syncDisclaimerJsonEditor();
-        }
-      });
-
-      // Apply raw JSON changes
-      document.getElementById('btnApplyDisclaimerRawJsonChanges')?.addEventListener('click', () => {
-        const jsonText = document.getElementById('textareaDisclaimerRawJson')?.value;
-        if (!jsonText) return;
-        try {
-          const parsed = JSON.parse(jsonText);
-          if (parsed && typeof parsed === 'object') {
-            disc = parsed;
-            disc.disclaimer = disc.disclaimer || {};
-            currentClauses = Array.isArray(disc.clauses) ? JSON.parse(JSON.stringify(disc.clauses)) : [];
-
-            // Update form inputs
-            const t = document.getElementById('disclaimerInputTitle');
-            const d = document.getElementById('disclaimerInputDate');
-            const aff = document.getElementById('disclaimerTextareaAffidavit');
-            const adv = document.getElementById('disclaimerTextareaAdvisory');
-
-            if (t) t.value = disc.disclaimer?.title || '';
-            if (d) d.value = disc.disclaimer?.effectiveDate || '2026-11-01';
-            if (aff) aff.value = disc.disclaimer?.affidavitBody || '';
-            if (adv) adv.value = disc.disclaimer?.advisoryNotice || '';
-
-            renderDisclaimerClausesList();
-            showToast("Raw JSON parsed and applied to disclaimer form.", "success");
+        // Drawer toggle
+        document.getElementById('btnToggleDisclaimerJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('disclaimerJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            syncDisclaimerJsonEditor();
           }
-        } catch (err) {
-          showToast("JSON Syntax Error: " + err.message, "danger");
-        }
-      });
-
-      // Add Clause Handler
-      document.getElementById('btnAddDiscClauseAction')?.addEventListener('click', () => {
-        const numInput = document.getElementById('inputNewDiscClauseNumber');
-        const titleInput = document.getElementById('inputNewDiscClauseTitle');
-        const bodyInput = document.getElementById('textareaNewDiscClauseBody');
-
-        const num = numInput?.value.trim() || String(currentClauses.length + 1);
-        const title = titleInput?.value.trim() || '';
-        const body = bodyInput?.value.trim() || '';
-
-        if (!title || !body) {
-          showToast("Clause title and terms are required.", "warning");
-          return;
-        }
-
-        currentClauses.push({
-          id: `DISC-${String(currentClauses.length + 1).padStart(2, '0')}`,
-          number: num,
-          title: title,
-          body: body,
-          active: true
         });
 
-        numInput.value = '';
-        titleInput.value = '';
-        bodyInput.value = '';
-        renderDisclaimerClausesList();
-        syncDisclaimerJsonEditor();
-        showToast(`Disclaimer clause "${title}" added to active draft.`, "info");
-      });
-
-      // Save & Publish Handler
-      document.getElementById('btnSaveDisclaimerStudio')?.addEventListener('click', () => {
-        const payload = gatherDisclaimerFormState();
-
-        if (!payload.disclaimer.title || !payload.disclaimer.affidavitBody) {
-          showToast("Disclaimer title and affidavit body are required.", "warning");
-          return;
-        }
-
-        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveDisclaimerConfig === 'function') {
-          const saved = window.CSOSuperStore.saveDisclaimerConfig(payload);
-          disc = saved;
-          const dateEl = document.getElementById('disclaimerLastUpdated');
-          if (dateEl && saved.meta?.updatedAt) {
-            dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
-          }
-          syncDisclaimerJsonEditor();
-          showToast("Disclaimer published and active across portal!", "success");
-        }
-      });
-
-      // Export JSON Handler
-      document.getElementById('btnExportDisclaimerConfig')?.addEventListener('click', () => {
-        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportDisclaimerManifest === 'function') {
-          const filename = window.CSOSuperStore.exportDisclaimerManifest();
-          showToast(`Disclaimer configuration exported: ${filename}`, "success");
-        }
-      });
-
-      // Import JSON Handler
-      document.getElementById('inputImportDisclaimerConfig')?.addEventListener('change', (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
+        // Apply raw JSON changes
+        document.getElementById('btnApplyDisclaimerRawJsonChanges')?.addEventListener('click', () => {
+          const jsonText = document.getElementById('textareaDisclaimerRawJson')?.value;
+          if (!jsonText) return;
           try {
-            const content = event.target?.result;
-            if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importDisclaimerConfig === 'function') {
-              let parsed;
-              try {
-                parsed = JSON.parse(content);
-                if (parsed && parsed.disclaimer) parsed = parsed.disclaimer;
-              } catch (_) {}
+            const parsed = JSON.parse(jsonText);
+            if (parsed && typeof parsed === 'object') {
+              disc = parsed;
+              disc.header = disc.header || {};
+              disc.emergencyNotice = disc.emergencyNotice || {};
+              currentNotices = Array.isArray(disc.notices) ? JSON.parse(JSON.stringify(disc.notices)) : [];
 
-              const imported = window.CSOSuperStore.importDisclaimerConfig(JSON.stringify(parsed));
-              showToast("Disclaimer imported successfully!", "success");
-              renderDisclaimerWorkspace(root);
+              // Update form inputs
+              const t = document.getElementById('disclaimerInputTitle');
+              const sub = document.getElementById('disclaimerInputSubtitle');
+              const b = document.getElementById('disclaimerInputBadge');
+              const d = document.getElementById('disclaimerInputDate');
+              const et = document.getElementById('toggleDisclaimerEmergencyEnabled');
+              const ex = document.getElementById('textareaDisclaimerEmergency');
+
+              if (t) t.value = disc.header?.title || '';
+              if (sub) sub.value = disc.header?.subtitle || '';
+              if (b) b.value = disc.header?.badge || '';
+              if (d) d.value = disc.header?.lastReviewed || '2026-11-01';
+              if (et) et.checked = disc.emergencyNotice?.enabled !== false;
+              if (ex) ex.value = disc.emergencyNotice?.text || '';
+
+              renderDisclaimerNoticesList();
+              showToast("Raw JSON parsed and applied to disclaimer form.", "success");
             }
           } catch (err) {
-            showToast("Import failed: " + err.message, "danger");
+            showToast("JSON Syntax Error: " + err.message, "danger");
           }
-        };
-        reader.readAsText(file);
-      });
+        });
 
-      // Reset to Default Handler
-      document.getElementById('btnResetDisclaimerConfig')?.addEventListener('click', () => {
-        if (confirm("Are you sure you want to restore factory default disclaimer settings? All unsaved customizations will be reset.")) {
-          if (window.CSOSuperStore && typeof window.CSOSuperStore.resetDisclaimerConfig === 'function') {
-            window.CSOSuperStore.resetDisclaimerConfig();
-            showToast("Disclaimer restored to factory defaults.", "info");
-            renderDisclaimerWorkspace(root);
+        // Add Notice Handler
+        document.getElementById('btnAddNoticeAction')?.addEventListener('click', () => {
+          const catInput = document.getElementById('selectNewNoticeCategory');
+          const titleInput = document.getElementById('inputNewNoticeTitle');
+          const bodyInput = document.getElementById('textareaNewNoticeBody');
+
+          const cat = catInput?.value || 'Statutory';
+          const title = titleInput?.value.trim() || '';
+          const body = bodyInput?.value.trim() || '';
+
+          if (!title || !body) {
+            showToast("Notice title and declaration text are required.", "warning");
+            return;
           }
-        }
-      });
 
-      // Form input change listeners to sync with raw JSON
-      ['disclaimerInputTitle', 'disclaimerInputDate', 'disclaimerTextareaAffidavit', 'disclaimerTextareaAdvisory'].forEach(id => {
-        document.getElementById(id)?.addEventListener('input', syncDisclaimerJsonEditor);
-      });
+          currentNotices.push({
+            id: `DISC-${String(currentNotices.length + 1).padStart(2, '0')}`,
+            title: title,
+            category: cat,
+            body: body,
+            active: true
+          });
+
+          titleInput.value = '';
+          bodyInput.value = '';
+          renderDisclaimerNoticesList();
+          syncDisclaimerJsonEditor();
+          showToast(`Notice "${title}" added to active draft.`, "info");
+        });
+
+        // Save & Publish Handler
+        document.getElementById('btnSaveDisclaimerStudio')?.addEventListener('click', () => {
+          const payload = gatherDisclaimerFormState();
+
+          if (!payload.header.title) {
+            showToast("Disclaimer notice title is required.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveDisclaimerConfig === 'function') {
+            const saved = window.CSOSuperStore.saveDisclaimerConfig(payload);
+            disc = saved;
+            const dateEl = document.getElementById('disclaimerLastUpdated');
+            if (dateEl && saved.meta?.updatedAt) {
+              dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
+            }
+            syncDisclaimerJsonEditor();
+            showToast("Disclaimer & notices published and active across portal!", "success");
+          }
+        });
+
+        // Export JSON Handler
+        document.getElementById('btnExportDisclaimerConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportDisclaimerManifest === 'function') {
+            const filename = window.CSOSuperStore.exportDisclaimerManifest();
+            showToast(`Disclaimer configuration exported: ${filename}`, "success");
+          }
+        });
+
+        // Import JSON Handler
+        document.getElementById('inputImportDisclaimerConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const content = event.target?.result;
+              if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importDisclaimerConfig === 'function') {
+                let parsed;
+                try {
+                  parsed = JSON.parse(content);
+                  if (parsed && parsed.disclaimer) parsed = parsed.disclaimer;
+                } catch (_) {}
+
+                const imported = window.CSOSuperStore.importDisclaimerConfig(JSON.stringify(parsed));
+                showToast("Disclaimer imported successfully!", "success");
+                renderDisclaimerWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset to Default Handler
+        document.getElementById('btnResetDisclaimerConfig')?.addEventListener('click', () => {
+          if (confirm("Are you sure you want to restore factory default disclaimer notices? All unsaved customizations will be reset.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetDisclaimerConfig === 'function') {
+              window.CSOSuperStore.resetDisclaimerConfig();
+              showToast("Disclaimer restored to factory defaults.", "info");
+              renderDisclaimerWorkspace(root);
+            }
+          }
+        });
+
+        // Form input change listeners to sync with raw JSON
+        ['disclaimerInputTitle', 'disclaimerInputSubtitle', 'disclaimerInputBadge', 'disclaimerInputDate', 'textareaDisclaimerEmergency'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncDisclaimerJsonEditor);
+        });
+        document.getElementById('toggleDisclaimerEmergencyEnabled')?.addEventListener('change', syncDisclaimerJsonEditor);
       } catch (err) {
         root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
           <h3 class="text-lg font-bold text-red-400">Render Error in module-03-004 (Disclaimer)</h3>

@@ -3031,18 +3031,23 @@
 
       if (!config || typeof config !== 'object' || !config.meta) {
         config = {
-          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-          disclaimer: {
-            title: "Official Educational & Academic Disclaimer",
-            effectiveDate: "2026-11-01",
-            affidavitBody: "Common Sense Odisha (csodisha.com) is an autonomous, non-profit academic intelligence resource. It is not affiliated, endorsed, or operated by the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), or Government of Odisha. Official recruitment notices and gazettes remain solely authoritative.",
-            advisoryNotice: "All question patterns, syllabus maps, and cutoff predictions published on csodisha.com are synthesized from historical state gazettes for candidate educational convenience only."
+          meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          header: {
+            title: "Official Disclaimer & Non-Affiliation Notice",
+            subtitle: "Statutory clarification on independent academic intelligence, third-party trademarks, and official gazette reconciliation.",
+            badge: "Statutory Disclosure",
+            lastReviewed: "2026-11-01"
           },
-          clauses: [
-            { id: "DISC-01", number: "1", title: "Non-Governmental Entity Notice", body: "Common Sense Odisha is a community-run academic preparation portal and does not claim any statutory authority to conduct examinations or issue official notifications.", active: true },
-            { id: "DISC-02", number: "2", title: "Intellectual Property & Fair Use", body: "Previous year question papers, official syllabus circulars, and departmental gazettes referenced on this portal belong to their respective statutory examining bodies under fair use educational reporting.", active: true },
-            { id: "DISC-03", number: "3", title: "No Financial Guarantee or Fees", body: "Common Sense Odisha does not solicit or accept any monetary payments, application fees, or coaching charges for accessing state examination guidance.", active: true }
-          ]
+          notices: [
+            { id: "DISC-01", title: "Non-Affiliation with Government Recruitment Bodies", category: "Statutory", body: "Common Sense Odisha (csodisha.com) is an independent non-governmental educational portal. It is NOT affiliated with, sponsored by, authorized by, or in any way officially connected to the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), Odisha Sub-Ordinate Staff Selection Commission (OSSSC), Board of Secondary Education (BSE) Odisha, or any department of the Government of Odisha.", active: true },
+            { id: "DISC-02", title: "Examination Information Accuracy & Gazette Priority", category: "Accuracy", body: "All examination dates, syllabus matrices, mark weightages, and eligibility criteria published on this portal are compiled strictly for academic reference and candidate convenience. In the event of any discrepancy or conflict between the information presented here and the official notifications published in the Odisha Gazette or official commission websites, the official government gazette release shall strictly prevail.", active: true },
+            { id: "DISC-03", title: "No Legal or Professional Advice", category: "Legal", body: "The contents of csodisha.com do not constitute legal, recruitment, or professional advice. Candidates are strongly advised to verify all critical eligibility criteria, qualifying relaxations, and procedural guidelines directly with official recruitment advertisements.", active: true },
+            { id: "DISC-04", title: "Third-Party Trademarks & Official Logos", category: "Trademarks", body: "All trade names, trademarks, logos, and commission insignia referenced on this website remain the registered intellectual property of their respective statutory bodies. Their appearance here is purely nominative and does not imply endorsement or partnership.", active: true }
+          ],
+          emergencyNotice: {
+            enabled: true,
+            text: "Always cross-verify admit card release dates and answer keys against the primary recruitment commission portals before taking examination day actions."
+          }
         };
         try {
           localStorage.setItem('cso_disclaimer_config', JSON.stringify(config));
@@ -3057,40 +3062,46 @@
       config.meta.updatedAt = new Date().toISOString();
       config.meta.lastEditedBy = "admin@csodisha.com";
       localStorage.setItem('cso_disclaimer_config', JSON.stringify(config));
-      this.logAudit('DISCLAIMER_CONFIG_UPDATED', 'LEGAL_DISCLAIMER', `Disclaimer configuration updated (v${config.meta.version || '1.0'}).`);
+      this.logAudit('DISCLAIMER_CONFIG_UPDATED', 'LEGAL_DISCLAIMER', `Disclaimer configuration updated (v${config.meta.version || '2.1'}).`);
       return config;
     },
 
     importDisclaimerConfig(jsonString) {
       let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
       if (!parsed || typeof parsed !== 'object') throw new Error("Invalid JSON manifest.");
-      if (parsed.disclaimer && parsed.clauses) {
+      if (parsed.disclaimerConfig) parsed = parsed.disclaimerConfig;
+      else if (parsed.header && parsed.notices) {
         // payload wrapped or raw
       }
       parsed.meta = parsed.meta || {};
       parsed.meta.updatedAt = new Date().toISOString();
       localStorage.setItem('cso_disclaimer_config', JSON.stringify(parsed));
-      this.logAudit('DISCLAIMER_CONFIG_IMPORTED', 'LEGAL_DISCLAIMER', `Disclaimer configuration imported (v${parsed.meta.version || '1.0'}).`);
+      this.logAudit('DISCLAIMER_CONFIG_IMPORTED', 'LEGAL_DISCLAIMER', `Disclaimer configuration imported (v${parsed.meta.version || '2.1'}).`);
       return parsed;
     },
 
     resetDisclaimerConfig() {
       const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        disclaimer: {
-          title: "Official Educational & Academic Disclaimer",
-          effectiveDate: "2026-11-01",
-          affidavitBody: "Common Sense Odisha (csodisha.com) is an autonomous, non-profit academic intelligence resource. It is not affiliated, endorsed, or operated by the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), or Government of Odisha. Official recruitment notices and gazettes remain solely authoritative.",
-          advisoryNotice: "All question patterns, syllabus maps, and cutoff predictions published on csodisha.com are synthesized from historical state gazettes for candidate educational convenience only."
+        meta: { version: "2.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        header: {
+          title: "Official Disclaimer & Non-Affiliation Notice",
+          subtitle: "Statutory clarification on independent academic intelligence, third-party trademarks, and official gazette reconciliation.",
+          badge: "Statutory Disclosure",
+          lastReviewed: "2026-11-01"
         },
-        clauses: [
-          { id: "DISC-01", number: "1", title: "Non-Governmental Entity Notice", body: "Common Sense Odisha is a community-run academic preparation portal and does not claim any statutory authority to conduct examinations or issue official notifications.", active: true },
-          { id: "DISC-02", number: "2", title: "Intellectual Property & Fair Use", body: "Previous year question papers, official syllabus circulars, and departmental gazettes referenced on this portal belong to their respective statutory examining bodies under fair use educational reporting.", active: true },
-          { id: "DISC-03", number: "3", title: "No Financial Guarantee or Fees", body: "Common Sense Odisha does not solicit or accept any monetary payments, application fees, or coaching charges for accessing state examination guidance.", active: true }
-        ]
+        notices: [
+          { id: "DISC-01", title: "Non-Affiliation with Government Recruitment Bodies", category: "Statutory", body: "Common Sense Odisha (csodisha.com) is an independent non-governmental educational portal. It is NOT affiliated with, sponsored by, authorized by, or in any way officially connected to the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), Odisha Sub-Ordinate Staff Selection Commission (OSSSC), Board of Secondary Education (BSE) Odisha, or any department of the Government of Odisha.", active: true },
+          { id: "DISC-02", title: "Examination Information Accuracy & Gazette Priority", category: "Accuracy", body: "All examination dates, syllabus matrices, mark weightages, and eligibility criteria published on this portal are compiled strictly for academic reference and candidate convenience. In the event of any discrepancy or conflict between the information presented here and the official notifications published in the Odisha Gazette or official commission websites, the official government gazette release shall strictly prevail.", active: true },
+          { id: "DISC-03", title: "No Legal or Professional Advice", category: "Legal", body: "The contents of csodisha.com do not constitute legal, recruitment, or professional advice. Candidates are strongly advised to verify all critical eligibility criteria, qualifying relaxations, and procedural guidelines directly with official recruitment advertisements.", active: true },
+          { id: "DISC-04", title: "Third-Party Trademarks & Official Logos", category: "Trademarks", body: "All trade names, trademarks, logos, and commission insignia referenced on this website remain the registered intellectual property of their respective statutory bodies. Their appearance here is purely nominative and does not imply endorsement or partnership.", active: true }
+        ],
+        emergencyNotice: {
+          enabled: true,
+          text: "Always cross-verify admit card release dates and answer keys against the primary recruitment commission portals before taking examination day actions."
+        }
       };
       localStorage.setItem('cso_disclaimer_config', JSON.stringify(initial));
-      this.logAudit('DISCLAIMER_CONFIG_RESET', 'LEGAL_DISCLAIMER', `Disclaimer configuration restored to default factory schema.`);
+      this.logAudit('DISCLAIMER_CONFIG_RESET', 'LEGAL_DISCLAIMER', `Disclaimer configuration restored to 4-notice authentic statutory schema.`);
       return initial;
     },
 
