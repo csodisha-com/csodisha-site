@@ -303,6 +303,8 @@ async function loadMasterNavigation() {
         renderHomepageBuilderWorkspace();
       } else if (moduleId === 'module-02-005') {
         renderLandingPagesWorkspace();
+      } else if (moduleId === 'module-02-006') {
+        renderPageTemplatesWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -2929,6 +2931,184 @@ async function loadMasterNavigation() {
             updateKpis();
             renderTableRows();
           }
+        });
+      });
+    }
+
+    /**
+     * VIEW 2f: Architectural Page Templates Directory (module-02-006)
+     */
+    function renderPageTemplatesWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Page Templates (module-02-006)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnExportTemplatesBundle" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export Templates (JSON)
+        </button>
+      `;
+
+      // Get templates & calculate live usage from cso_pages_store
+      const templates = (window.CSOSuperStore && typeof window.CSOSuperStore.getPageTemplates === 'function')
+        ? window.CSOSuperStore.getPageTemplates()
+        : [];
+
+      const pages = (window.CSOSuperStore && typeof window.CSOSuperStore.getAllPages === 'function')
+        ? window.CSOSuperStore.getAllPages('ALL', '')
+        : [];
+
+      // Calculate usage mapping
+      const usageMap = {};
+      pages.forEach(p => {
+        const t = (p.template || '').toLowerCase();
+        usageMap[t] = (usageMap[t] || 0) + 1;
+      });
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Structural Template Architecture & Scaffolding Library
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-006</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Verified layout foundations enforcing standardized typography, responsive spacing, and accessibility standards across csodisha.com.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                5 Standard Templates
+              </span>
+            </div>
+          </div>
+
+          <!-- Template Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            ${templates.map(tmpl => {
+              const usageCount = usageMap[tmpl.title.toLowerCase()] || 0;
+              const catBadgeColor = tmpl.category === 'Landing' ? 'text-cyan-400 border-cyan-800/60 bg-cyan-950/40'
+                : tmpl.category === 'Education' ? 'text-indigo-400 border-indigo-800/60 bg-indigo-950/40'
+                : tmpl.category === 'Content' ? 'text-emerald-400 border-emerald-800/60 bg-emerald-950/40'
+                : tmpl.category === 'Forms' ? 'text-amber-400 border-amber-800/60 bg-amber-950/40'
+                : 'text-slate-300 border-slate-700 bg-slate-800/60';
+
+              return `
+                <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md hover:border-slate-600 transition flex flex-col justify-between space-y-4">
+                  <div class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <span class="font-mono text-xs font-bold text-cyan-400">${tmpl.id}</span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${catBadgeColor}">
+                        ${tmpl.category}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 class="text-sm font-bold text-white">${tmpl.title}</h3>
+                      <p class="text-xs text-slate-400 mt-1 leading-relaxed">${tmpl.description}</p>
+                    </div>
+
+                    <div class="pt-2 border-t border-brand-border flex items-center justify-between text-[11px] font-mono">
+                      <span class="text-slate-500">Live Routes Using:</span>
+                      <span class="px-2 py-0.5 rounded bg-[#081220] border border-slate-700 text-slate-200 font-bold">${usageCount} pages</span>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="pt-3 border-t border-brand-border flex items-center justify-between gap-1.5">
+                    <button data-id="${tmpl.id}" class="btn-create-page-from-tmpl px-2.5 py-1.5 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-bold transition flex items-center gap-1 shadow">
+                      Create Page &rarr;
+                    </button>
+                    <div class="flex items-center gap-1">
+                      <button data-id="${tmpl.id}" class="btn-preview-tmpl px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono font-semibold border border-brand-border transition">
+                        Preview
+                      </button>
+                      <button data-id="${tmpl.id}" class="btn-edit-tmpl-code px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-mono font-semibold border border-brand-border transition">
+                        Edit Code
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      // Export Bundle
+      document.getElementById('btnExportTemplatesBundle')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportTemplates === 'function') {
+          const filename = window.CSOSuperStore.exportTemplates();
+          showToast(`Templates exported: ${filename}`, "success");
+        }
+      });
+
+      // Create Page from Template
+      dom.workspaceRoot.querySelectorAll('.btn-create-page-from-tmpl').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const tmplId = e.currentTarget.getAttribute('data-id');
+          const tmpl = templates.find(t => t.id === tmplId);
+          // Navigate to module-02-002
+          selectModule('folder-02', 'module-02-002');
+          // Set template dropdown value after workspace loads
+          setTimeout(() => {
+            const select = document.getElementById('selectPageTemplate');
+            if (select && tmpl) {
+              select.value = tmpl.title;
+              select.dispatchEvent(new Event('change'));
+            }
+          }, 100);
+        });
+      });
+
+      // Preview Template
+      dom.workspaceRoot.querySelectorAll('.btn-preview-tmpl').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const tmplId = e.currentTarget.getAttribute('data-id');
+          const tmpl = templates.find(t => t.id === tmplId);
+          if (!tmpl) return;
+
+          openModal(`Preview: ${tmpl.title}`, `
+            <div class="space-y-4 font-sans text-xs">
+              <div class="p-3 bg-[#050a14] border border-brand-border rounded-lg max-h-[420px] overflow-y-auto">
+                ${tmpl.boilerplate}
+              </div>
+            </div>
+          `, `
+            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+          `);
+        });
+      });
+
+      // Edit Template Code
+      dom.workspaceRoot.querySelectorAll('.btn-edit-tmpl-code').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const tmplId = e.currentTarget.getAttribute('data-id');
+          const tmpl = templates.find(t => t.id === tmplId);
+          if (!tmpl) return;
+
+          openModal(`Edit Boilerplate: ${tmpl.title}`, `
+            <div class="space-y-3 font-sans text-xs">
+              <p class="text-slate-300">Modify the default starter markup for this template:</p>
+              <textarea id="textareaEditTmplCode" rows="12" class="w-full bg-[#050a14] border border-brand-border rounded-lg p-3 text-slate-200 text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-brand-emerald">${tmpl.boilerplate}</textarea>
+            </div>
+          `, `
+            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button id="btnSaveTmplCodeModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Save Changes</button>
+          `);
+
+          document.getElementById('btnSaveTmplCodeModal')?.addEventListener('click', () => {
+            const newCode = document.getElementById('textareaEditTmplCode')?.value;
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.updateTemplateBoilerplate === 'function') {
+              window.CSOSuperStore.updateTemplateBoilerplate(tmpl.id, newCode);
+              closeModal();
+              showToast(`Template "${tmpl.title}" updated successfully!`, "success");
+              renderPageTemplatesWorkspace();
+            }
+          });
         });
       });
     }

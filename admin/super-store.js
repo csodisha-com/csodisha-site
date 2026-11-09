@@ -1583,6 +1583,109 @@
       return filename;
     },
 
+    // 18. Page Templates Architecture Engine (module-02-006)
+    getPageTemplates() {
+      let templates = null;
+      try {
+        const raw = localStorage.getItem('cso_page_templates');
+        if (raw) templates = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!templates || !Array.isArray(templates) || templates.length === 0) {
+        templates = [
+          {
+            id: 'TMPL-01',
+            title: 'Portal Landing',
+            description: 'High-impact recruitment and admissions landing page with hero banner and quick chips.',
+            category: 'Landing',
+            boilerplate: `<section class="py-16 text-center bg-slate-900 text-white"><div class="max-w-4xl mx-auto px-4"><span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-500/20">Official Portal</span><h1 class="text-4xl font-extrabold mt-4">Odisha Academic Portal</h1><p class="text-slate-400 mt-2">Comprehensive examination updates and resources.</p></div></section>`,
+            lastModified: Date.now()
+          },
+          {
+            id: 'TMPL-02',
+            title: 'Educational Matrix',
+            description: 'Structured table format for exam syllabus, mark weightage, and download links.',
+            category: 'Education',
+            boilerplate: `<section class="py-12 bg-slate-950 text-white"><div class="max-w-5xl mx-auto px-4"><h2 class="text-2xl font-bold mb-6">Syllabus Breakdown</h2><div class="overflow-x-auto"><table class="w-full text-left text-sm border border-slate-800"><thead class="bg-slate-900 text-slate-300"><tr><th class="p-3">Subject</th><th class="p-3">Marks</th><th class="p-3">Duration</th></tr></thead><tbody class="divide-y divide-slate-800"><tr><td class="p-3">General Studies</td><td class="p-3">100</td><td class="p-3">2 Hours</td></tr></tbody></table></div></div></section>`,
+            lastModified: Date.now()
+          },
+          {
+            id: 'TMPL-03',
+            title: 'Standard Content',
+            description: 'Optimized article and guide layout with sidebar navigation and clean typography.',
+            category: 'Content',
+            boilerplate: `<article class="max-w-3xl mx-auto py-12 px-4 text-slate-200"><h1 class="text-3xl font-bold text-white mb-4">Official Notification Overview</h1><p class="text-slate-400 leading-relaxed mb-6">Detailed guidelines for candidates appearing in the state examination.</p></article>`,
+            lastModified: Date.now()
+          },
+          {
+            id: 'TMPL-04',
+            title: 'Form Desk',
+            description: 'Interactive candidate submission form with validation and feedback states.',
+            category: 'Forms',
+            boilerplate: `<section class="max-w-xl mx-auto py-12 px-4"><div class="bg-slate-900 p-6 rounded-xl border border-slate-800"><h2 class="text-xl font-bold text-white mb-4">Submit Query</h2><form class="space-y-4"><input type="text" placeholder="Full Name" class="w-full p-2.5 rounded bg-slate-800 border border-slate-700 text-white text-sm"/><textarea placeholder="Your message..." class="w-full p-2.5 rounded bg-slate-800 border border-slate-700 text-white text-sm" rows="4"></textarea><button type="button" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded text-sm">Submit</button></form></div></section>`,
+            lastModified: Date.now()
+          },
+          {
+            id: 'TMPL-05',
+            title: 'Legal Core',
+            description: 'Sectioned layout with version dates, clause numbering, and privacy standards.',
+            category: 'Legal',
+            boilerplate: `<section class="max-w-4xl mx-auto py-12 px-4 text-slate-300"><h1 class="text-3xl font-bold text-white mb-2">Terms & Policies</h1><p class="text-xs text-slate-500 mb-8">Last Updated: November 2026</p><div class="space-y-6"><h3 class="text-lg font-semibold text-white">1. Scope of Service</h3><p class="text-sm text-slate-400">All materials provided on csodisha.com are for educational guidance.</p></div></section>`,
+            lastModified: Date.now()
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_page_templates', JSON.stringify(templates));
+        } catch (_) {}
+      }
+
+      return templates;
+    },
+
+    savePageTemplates(templates) {
+      save('cso_page_templates', templates);
+    },
+
+    updateTemplateBoilerplate(id, newBoilerplate) {
+      const templates = this.getPageTemplates();
+      const tmpl = templates.find(t => t.id === id);
+      if (tmpl) {
+        tmpl.boilerplate = newBoilerplate;
+        tmpl.lastModified = Date.now();
+        this.savePageTemplates(templates);
+        this.logAudit('TEMPLATE_UPDATED', 'TEMPLATE_ENGINE', `Template ${tmpl.id} ("${tmpl.title}") boilerplate code updated.`);
+        return tmpl;
+      }
+      return null;
+    },
+
+    exportTemplates() {
+      const templates = this.getPageTemplates();
+      const timestamp = Date.now();
+      const filename = `cso-templates-bundle-${timestamp}.json`;
+      const bundle = {
+        bundleVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalTemplates: templates.length,
+        templates: templates
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('TEMPLATES_BUNDLE_EXPORTED', 'DATA_EXPORT', `Page templates bundle exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
