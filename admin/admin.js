@@ -341,6 +341,8 @@ async function loadMasterNavigation() {
         renderDisclaimerWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-005') {
         renderTermsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-006') {
+        renderCookiePolicyWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -8070,6 +8072,489 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+    /**
+     * VIEW 3f: Cookie Policy & Consent Governance Studio (module-03-006)
+     */
+    function renderCookiePolicyWorkspace(container) {
+      const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
+      if (!root) return;
+
+      try {
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        // Header Breadcrumb
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Cookie Policy (module-03-006)";
+
+        // Top Action Toolbar
+        if (dom.moduleHeaderActions) {
+          dom.moduleHeaderActions.innerHTML = `
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btnSaveCookieStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Save & Publish Policy
+              </button>
+              <a href="/cookie-policy.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                Preview Live Page ↗
+              </a>
+              <button id="btnToggleCookieJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                Raw JSON Editor
+              </button>
+              <button id="btnExportCookieConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export Config
+              </button>
+              <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Import Config
+                <input id="inputImportCookieConfig" type="file" accept=".json,application/json" class="hidden">
+              </label>
+              <button id="btnResetCookieConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Reset to Default
+              </button>
+            </div>
+          `;
+        }
+
+        // Ingest Cookie Config
+        let cookieConfig = (window.CSOSuperStore && typeof window.CSOSuperStore.getCookieConfig === 'function')
+          ? window.CSOSuperStore.getCookieConfig()
+          : {
+              meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+              banner: {
+                headline: "We respect your academic privacy",
+                description: "Common Sense Odisha uses minimal necessary cookies to keep your session secure and analyze aggregated edge traffic across all 30 districts of Odisha.",
+                acceptButtonText: "Accept All Cookies",
+                rejectButtonText: "Essential Only",
+                retentionDays: 365,
+                enabled: true
+              },
+              cookies: []
+            };
+
+        cookieConfig.banner = cookieConfig.banner || {};
+        let currentCookies = Array.isArray(cookieConfig.cookies) ? JSON.parse(JSON.stringify(cookieConfig.cookies)) : [];
+
+        function syncCookieJsonEditor() {
+          const jsonTextarea = document.getElementById('textareaCookieRawJson');
+          if (jsonTextarea) {
+            const snapshot = gatherCookieFormState();
+            jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+          }
+        }
+
+        function gatherCookieFormState() {
+          const headlineInput = document.getElementById('cookieInputHeadline');
+          const descTextarea = document.getElementById('cookieTextareaDescription');
+          const acceptInput = document.getElementById('cookieInputAcceptText');
+          const rejectInput = document.getElementById('cookieInputRejectText');
+          const retentionInput = document.getElementById('cookieInputRetentionDays');
+          const bannerToggle = document.getElementById('toggleCookieBannerEnabled');
+
+          return {
+            meta: {
+              version: (cookieConfig.meta && cookieConfig.meta.version) || "1.2",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: (cookieConfig.meta && cookieConfig.meta.updatedAt) || new Date().toISOString()
+            },
+            banner: {
+              headline: headlineInput ? headlineInput.value.trim() : (cookieConfig.banner?.headline || ''),
+              description: descTextarea ? descTextarea.value.trim() : (cookieConfig.banner?.description || ''),
+              acceptButtonText: acceptInput ? acceptInput.value.trim() : (cookieConfig.banner?.acceptButtonText || 'Accept All Cookies'),
+              rejectButtonText: rejectInput ? rejectInput.value.trim() : (cookieConfig.banner?.rejectButtonText || 'Essential Only'),
+              retentionDays: retentionInput ? parseInt(retentionInput.value, 10) || 365 : (cookieConfig.banner?.retentionDays || 365),
+              enabled: bannerToggle ? bannerToggle.checked : (cookieConfig.banner?.enabled !== false)
+            },
+            cookies: currentCookies
+          };
+        }
+
+        function renderCookiesTable() {
+          const tbody = document.getElementById('cookieItemsTableBody');
+          if (!tbody) return;
+
+          if (currentCookies.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-xs text-slate-400 font-mono">No tracking or consent cookies configured. Add one below.</td></tr>`;
+            return;
+          }
+
+          const categoryBadges = {
+            'Strictly Necessary': 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60',
+            'Functional': 'bg-cyan-950/80 text-cyan-400 border-cyan-800/60',
+            'Analytics': 'bg-indigo-950/80 text-indigo-400 border-indigo-800/60',
+            'Performance': 'bg-amber-950/80 text-amber-400 border-amber-800/60'
+          };
+
+          tbody.innerHTML = currentCookies.map((ck, idx) => {
+            const badgeClass = categoryBadges[ck.category] || 'bg-slate-800 text-slate-300 border-slate-700';
+            return `
+              <tr class="border-b border-brand-border/60 hover:bg-slate-800/40 transition">
+                <td class="px-4 py-3 font-mono text-[11px] text-slate-400">${escapeHtml(ck.id || `CK-${idx+1}`)}</td>
+                <td class="px-4 py-3 font-semibold text-xs text-white font-mono">${escapeHtml(ck.name || '')}</td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${badgeClass}">${escapeHtml(ck.category || 'Functional')}</span>
+                </td>
+                <td class="px-4 py-3 font-mono text-xs text-slate-300">${escapeHtml(ck.domain || 'csodisha.com')}</td>
+                <td class="px-4 py-3 text-xs text-cyan-400 font-mono">${escapeHtml(ck.duration || 'Session')}</td>
+                <td class="px-4 py-3 text-xs text-slate-300 max-w-xs truncate">${escapeHtml(ck.purpose || '')}</td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <label class="flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer">
+                      <input type="checkbox" class="cookie-active-toggle rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${ck.active !== false ? 'checked' : ''}>
+                      Active
+                    </label>
+                    <button data-delete-cookie="${idx}" class="btn-delete-cookie px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          tbody.querySelectorAll('.cookie-active-toggle').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentCookies[index]) {
+                currentCookies[index].active = e.target.checked;
+                syncCookieJsonEditor();
+              }
+            });
+          });
+
+          tbody.querySelectorAll('.btn-delete-cookie').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const index = parseInt(e.currentTarget.getAttribute('data-delete-cookie'), 10);
+              if (!isNaN(index) && index >= 0 && index < currentCookies.length) {
+                const removed = currentCookies.splice(index, 1)[0];
+                renderCookiesTable();
+                syncCookieJsonEditor();
+                showToast(`Cookie "${removed.name}" removed.`, "info");
+              }
+            });
+          });
+        }
+
+        root.innerHTML = `
+          <div class="space-y-6 font-sans">
+            <!-- Overview Card -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Cookie Policy & Consent Governance Studio
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-03-006</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Control candidate cookie consent banners, categorized token governance, retention policies, and statutory compliance declarations.</p>
+              </div>
+              <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+                <span>Version: <strong class="text-cyan-400">${escapeHtml(cookieConfig.meta?.version || '1.2')}</strong></span>
+                <span>Updated: <span id="cookieLastUpdated" class="text-emerald-400 font-bold">${new Date(cookieConfig.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
+              </div>
+            </div>
+
+            <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
+            <div id="cookieJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                    Raw State Developer Console (JSON)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+              </div>
+              <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for automated consent deployments, edge compliance verification, and schema migrations.</p>
+              <textarea id="textareaCookieRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btnApplyCookieRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Apply JSON Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Consent Banner & Candidate Notice Configuration -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Consent Banner & Notice Configuration
+                  </h3>
+                </div>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
+                  <input id="toggleCookieBannerEnabled" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" ${(cookieConfig.banner?.enabled !== false) ? 'checked' : ''}>
+                  Enable Cookie Consent Banner
+                </label>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Banner Headline <span class="text-rose-400">*</span></label>
+                <input id="cookieInputHeadline" type="text" value="${escapeHtml(cookieConfig.banner?.headline || 'We respect your academic privacy')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Banner Description <span class="text-rose-400">*</span></label>
+                <textarea id="cookieTextareaDescription" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(cookieConfig.banner?.description || '')}</textarea>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Accept All Button Label</label>
+                  <input id="cookieInputAcceptText" type="text" value="${escapeHtml(cookieConfig.banner?.acceptButtonText || 'Accept All Cookies')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Reject / Essential Button Label</label>
+                  <input id="cookieInputRejectText" type="text" value="${escapeHtml(cookieConfig.banner?.rejectButtonText || 'Essential Only')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Consent Validity (Days)</label>
+                  <input id="cookieInputRetentionDays" type="number" min="7" max="730" value="${cookieConfig.banner?.retentionDays || 365}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Categorized Cookie Audit Inventory (Repeater Table) -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Categorized Cookie Inventory (Extensible Table)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Statutory Consent Registry</span>
+              </div>
+
+              <!-- Table -->
+              <div class="overflow-x-auto rounded-lg border border-brand-border">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead class="bg-slate-900 text-slate-300 font-mono text-[11px] border-b border-brand-border">
+                    <tr>
+                      <th class="px-4 py-2.5">ID</th>
+                      <th class="px-4 py-2.5">Cookie Key</th>
+                      <th class="px-4 py-2.5">Category</th>
+                      <th class="px-4 py-2.5">Domain</th>
+                      <th class="px-4 py-2.5">Duration</th>
+                      <th class="px-4 py-2.5">Purpose</th>
+                      <th class="px-4 py-2.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cookieItemsTableBody"></tbody>
+                </table>
+              </div>
+
+              <!-- Inline Form to Add Cookie -->
+              <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Register Audit Cookie</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Cookie Key Name</label>
+                    <input id="inputNewCookieName" type="text" placeholder="e.g. cso_user_token" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Category</label>
+                    <select id="selectNewCookieCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                      <option value="Strictly Necessary">Strictly Necessary</option>
+                      <option value="Functional">Functional</option>
+                      <option value="Analytics">Analytics</option>
+                      <option value="Performance">Performance</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Domain</label>
+                    <input id="inputNewCookieDomain" type="text" value="csodisha.com" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Duration / Lifespan</label>
+                    <input id="inputNewCookieDuration" type="text" placeholder="e.g. 1 Year, Session" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Technical / Statutory Purpose</label>
+                  <input id="inputNewCookiePurpose" type="text" placeholder="e.g. Authenticates edge tokens for candidate accounts" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+                <div class="flex justify-end">
+                  <button id="btnAddCookieAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    + Register Cookie
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        renderCookiesTable();
+        syncCookieJsonEditor();
+
+        // Drawer toggle
+        document.getElementById('btnToggleCookieJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('cookieJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            syncCookieJsonEditor();
+          }
+        });
+
+        // Apply raw JSON changes
+        document.getElementById('btnApplyCookieRawJsonChanges')?.addEventListener('click', () => {
+          const jsonText = document.getElementById('textareaCookieRawJson')?.value;
+          if (!jsonText) return;
+          try {
+            const parsed = JSON.parse(jsonText);
+            if (parsed && typeof parsed === 'object') {
+              cookieConfig = parsed;
+              cookieConfig.banner = cookieConfig.banner || {};
+              currentCookies = Array.isArray(cookieConfig.cookies) ? JSON.parse(JSON.stringify(cookieConfig.cookies)) : [];
+
+              // Update form inputs
+              const h = document.getElementById('cookieInputHeadline');
+              const desc = document.getElementById('cookieTextareaDescription');
+              const acc = document.getElementById('cookieInputAcceptText');
+              const rej = document.getElementById('cookieInputRejectText');
+              const ret = document.getElementById('cookieInputRetentionDays');
+              const tog = document.getElementById('toggleCookieBannerEnabled');
+
+              if (h) h.value = cookieConfig.banner?.headline || '';
+              if (desc) desc.value = cookieConfig.banner?.description || '';
+              if (acc) acc.value = cookieConfig.banner?.acceptButtonText || 'Accept All Cookies';
+              if (rej) rej.value = cookieConfig.banner?.rejectButtonText || 'Essential Only';
+              if (ret) ret.value = cookieConfig.banner?.retentionDays || 365;
+              if (tog) tog.checked = cookieConfig.banner?.enabled !== false;
+
+              renderCookiesTable();
+              showToast("Raw JSON parsed and applied to cookie policy form.", "success");
+            }
+          } catch (err) {
+            showToast("JSON Syntax Error: " + err.message, "danger");
+          }
+        });
+
+        // Add Cookie Handler
+        document.getElementById('btnAddCookieAction')?.addEventListener('click', () => {
+          const nameInput = document.getElementById('inputNewCookieName');
+          const catInput = document.getElementById('selectNewCookieCategory');
+          const domInput = document.getElementById('inputNewCookieDomain');
+          const durInput = document.getElementById('inputNewCookieDuration');
+          const purpInput = document.getElementById('inputNewCookiePurpose');
+
+          const name = nameInput?.value.trim() || '';
+          const category = catInput?.value || 'Functional';
+          const domain = domInput?.value.trim() || 'csodisha.com';
+          const duration = durInput?.value.trim() || 'Session';
+          const purpose = purpInput?.value.trim() || '';
+
+          if (!name || !purpose) {
+            showToast("Cookie name and purpose are required.", "warning");
+            return;
+          }
+
+          currentCookies.push({
+            id: `CK-${String(currentCookies.length + 1).padStart(2, '0')}`,
+            name: name,
+            category: category,
+            domain: domain,
+            duration: duration,
+            purpose: purpose,
+            active: true
+          });
+
+          nameInput.value = '';
+          durInput.value = '';
+          purpInput.value = '';
+          renderCookiesTable();
+          syncCookieJsonEditor();
+          showToast(`Cookie "${name}" registered into consent policy.`, "info");
+        });
+
+        // Save & Publish Handler
+        document.getElementById('btnSaveCookieStudio')?.addEventListener('click', () => {
+          const payload = gatherCookieFormState();
+
+          if (!payload.banner.headline || !payload.banner.description) {
+            showToast("Banner headline and description are required.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCookieConfig === 'function') {
+            const saved = window.CSOSuperStore.saveCookieConfig(payload);
+            cookieConfig = saved;
+            const dateEl = document.getElementById('cookieLastUpdated');
+            if (dateEl && saved.meta?.updatedAt) {
+              dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
+            }
+            syncCookieJsonEditor();
+            showToast("Cookie policy & consent settings published successfully!", "success");
+          }
+        });
+
+        // Export JSON Handler
+        document.getElementById('btnExportCookieConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportCookieManifest === 'function') {
+            const filename = window.CSOSuperStore.exportCookieManifest();
+            showToast(`Cookie configuration exported: ${filename}`, "success");
+          }
+        });
+
+        // Import JSON Handler
+        document.getElementById('inputImportCookieConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const content = event.target?.result;
+              if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importCookieConfig === 'function') {
+                let parsed;
+                try {
+                  parsed = JSON.parse(content);
+                  if (parsed && parsed.cookiesConfig) parsed = parsed.cookiesConfig;
+                } catch (_) {}
+
+                const imported = window.CSOSuperStore.importCookieConfig(JSON.stringify(parsed));
+                showToast("Cookie policy imported successfully!", "success");
+                renderCookiePolicyWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset to Default Handler
+        document.getElementById('btnResetCookieConfig')?.addEventListener('click', () => {
+          if (confirm("Are you sure you want to restore factory default cookie policy settings? All unsaved customizations will be reset.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetCookieConfig === 'function') {
+              window.CSOSuperStore.resetCookieConfig();
+              showToast("Cookie policy restored to factory defaults.", "info");
+              renderCookiePolicyWorkspace(root);
+            }
+          }
+        });
+
+        // Form input change listeners to sync with raw JSON
+        ['cookieInputHeadline', 'cookieTextareaDescription', 'cookieInputAcceptText', 'cookieInputRejectText', 'cookieInputRetentionDays'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncCookieJsonEditor);
+        });
+        document.getElementById('toggleCookieBannerEnabled')?.addEventListener('change', syncCookieJsonEditor);
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-006 (Cookie Policy)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
     /**
      * VIEW 1e: Administrative Notifications (module-01-005)

@@ -3235,6 +3235,111 @@
       return filename;
     },
 
+    // 30. Cookie Policy & Consent Governance Engine (module-03-006)
+    getCookieConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_cookie_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object' || !config.meta) {
+        config = {
+          meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          banner: {
+            headline: "We respect your academic privacy",
+            description: "Common Sense Odisha uses minimal necessary cookies to keep your session secure and analyze aggregated edge traffic across all 30 districts of Odisha.",
+            acceptButtonText: "Accept All Cookies",
+            rejectButtonText: "Essential Only",
+            retentionDays: 365,
+            enabled: true
+          },
+          cookies: [
+            { id: "CK-01", name: "cso_admin_token", category: "Strictly Necessary", domain: "csodisha.com", duration: "2 Hours (Sliding)", purpose: "Zero-trust session anchor and authentication gate", active: true },
+            { id: "CK-02", name: "cf_clearance", category: "Strictly Necessary", domain: "csodisha.com", duration: "1 Year", purpose: "Cloudflare Turnstile bot defense verification", active: true },
+            { id: "CK-03", name: "cso_theme", category: "Functional", domain: "csodisha.com", duration: "Persistent", purpose: "Preserves user high-contrast dark theme preference", active: true },
+            { id: "CK-04", name: "cso_telemetry_id", category: "Analytics", domain: "csodisha.com", duration: "Session", purpose: "Measures edge response latency and page performance", active: true }
+          ]
+        };
+        try {
+          localStorage.setItem('cso_cookie_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+      return config;
+    },
+
+    saveCookieConfig(config) {
+      if (!config || typeof config !== 'object') throw new Error("Invalid cookie configuration payload.");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem('cso_cookie_config', JSON.stringify(config));
+      this.logAudit('COOKIE_CONFIG_UPDATED', 'COOKIE_CONSENT', `Cookie policy configuration updated (v${config.meta.version || '1.2'}).`);
+      return config;
+    },
+
+    importCookieConfig(jsonString) {
+      let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+      if (!parsed || typeof parsed !== 'object') throw new Error("Invalid JSON manifest.");
+      if (parsed.cookieConfig) parsed = parsed.cookieConfig;
+      else if (parsed.banner && parsed.cookies) {
+        // payload wrapped or raw
+      }
+      parsed.meta = parsed.meta || {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem('cso_cookie_config', JSON.stringify(parsed));
+      this.logAudit('COOKIE_CONFIG_IMPORTED', 'COOKIE_CONSENT', `Cookie policy configuration imported (v${parsed.meta.version || '1.2'}).`);
+      return parsed;
+    },
+
+    resetCookieConfig() {
+      const initial = {
+        meta: { version: "1.2", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        banner: {
+          headline: "We respect your academic privacy",
+          description: "Common Sense Odisha uses minimal necessary cookies to keep your session secure and analyze aggregated edge traffic across all 30 districts of Odisha.",
+          acceptButtonText: "Accept All Cookies",
+          rejectButtonText: "Essential Only",
+          retentionDays: 365,
+          enabled: true
+        },
+        cookies: [
+          { id: "CK-01", name: "cso_admin_token", category: "Strictly Necessary", domain: "csodisha.com", duration: "2 Hours (Sliding)", purpose: "Zero-trust session anchor and authentication gate", active: true },
+          { id: "CK-02", name: "cf_clearance", category: "Strictly Necessary", domain: "csodisha.com", duration: "1 Year", purpose: "Cloudflare Turnstile bot defense verification", active: true },
+          { id: "CK-03", name: "cso_theme", category: "Functional", domain: "csodisha.com", duration: "Persistent", purpose: "Preserves user high-contrast dark theme preference", active: true },
+          { id: "CK-04", name: "cso_telemetry_id", category: "Analytics", domain: "csodisha.com", duration: "Session", purpose: "Measures edge response latency and page performance", active: true }
+        ]
+      };
+      localStorage.setItem('cso_cookie_config', JSON.stringify(initial));
+      this.logAudit('COOKIE_CONFIG_RESET', 'COOKIE_CONSENT', `Cookie policy configuration restored to factory default schema.`);
+      return initial;
+    },
+
+    exportCookieManifest() {
+      const config = this.getCookieConfig();
+      const timestamp = Date.now();
+      const filename = `cso-cookie-config-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        cookies: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('COOKIE_MANIFEST_EXPORTED', 'DATA_EXPORT', `Cookie policy manifest exported (${filename}).`);
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
