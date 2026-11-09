@@ -409,6 +409,12 @@ async function loadMasterNavigation() {
         renderNotesPdfsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-05-004') {
         renderBooksReferencesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-005') {
+        renderSubjectsTopicsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-006') {
+        renderClassGradeWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-007') {
+        renderExaminationManagementWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -18778,6 +18784,981 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Subjects & Topics (module-05-005)
+     */
+    function renderSubjectsTopicsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getSubjectsTopicsConfig();
+        const subjects = config.subjects || [];
+        const topics = config.topicsRegistry || [];
+        const settings = config.subjectSettings || {};
+
+        const highYieldTopics = topics.filter(t => t.highYield && t.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </span>
+                    Subjects & Academic Topics Taxonomy
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    module-05-005
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage core academic subjects, high-yield examination topics, syllabus weightages, and interdisciplinary mappings.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-subject-item" class="px-3.5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Subject
+                </button>
+                <button id="btn-add-topic-item" class="px-3.5 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Topic
+                </button>
+                <button id="btn-toggle-json-sub" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-sub" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-sub" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-sub" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Indexed Subjects</span>
+                <div class="mt-1 text-2xl font-bold text-white">${subjects.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Granular Topics</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${topics.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">High-Yield Focus</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${highYieldTopics}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Cross-Disciplinary</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${settings.allowCrossDisciplinaryTags ? 'Enabled' : 'Disabled'}</div>
+              </div>
+            </div>
+
+            <!-- Subject Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Taxonomy & Weightage Configuration</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Examination Scope</label>
+                  <input type="text" id="sub-default-exam" value="${escapeHtml(settings.defaultExamTarget || 'All Odisha Exams')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="sub-cross-disc" class="sr-only peer" ${settings.allowCrossDisciplinaryTags ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Allow Cross-Disciplinary Subject Tags</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subjects Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Core Academic Subjects</h2>
+                <span class="text-xs text-slate-400">${subjects.length} disciplines</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Code / ID</th>
+                      <th class="px-4 py-3">Subject Name</th>
+                      <th class="px-4 py-3">Applicable Exams</th>
+                      <th class="px-4 py-3">Topics</th>
+                      <th class="px-4 py-3">Weightage</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sub-subjects-body" class="divide-y divide-slate-800/60">
+                    ${subjects.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          <div>${escapeHtml(item.code || 'SUB')}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(item.id || 'SUB-' + (idx+1))}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.name)}">
+                          ${escapeHtml(item.name)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300 max-w-xs truncate">
+                          ${(item.targetExams || []).map(e => `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-indigo-300 border border-indigo-800/40 mr-1">${escapeHtml(e)}</span>`).join('')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                          ${item.topicCount || 0} topics
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-emerald-400">
+                          ${item.weightagePercentage || 0}%
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="sub-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="sub-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="sub-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Granular Topics Register -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h2 class="text-base font-semibold text-white">Granular Topics Register</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">${highYieldTopics} high-yield topics mapped to exam blueprints</p>
+                </div>
+                <span class="text-xs text-slate-400">${topics.length} topics</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Topic ID</th>
+                      <th class="px-4 py-3">Topic Name</th>
+                      <th class="px-4 py-3">Subject Mapping</th>
+                      <th class="px-4 py-3">Difficulty</th>
+                      <th class="px-4 py-3 text-center">High-Yield</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sub-topics-body" class="divide-y divide-slate-800/60">
+                    ${topics.map((item, idx) => {
+                      const diffBadge = item.difficulty === 'Hard' ? 'bg-rose-950 text-rose-400 border-rose-800/50' : item.difficulty === 'Medium' ? 'bg-amber-950 text-amber-400 border-amber-800/50' : 'bg-emerald-950 text-emerald-400 border-emerald-800/50';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'TOP-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.name)}">
+                            ${escapeHtml(item.name)}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-300">
+                            ${escapeHtml(item.subjectId || 'SUB-01')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${diffBadge}">
+                              ${escapeHtml(item.difficulty || 'Medium')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="top-toggle-yield cursor-pointer rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0" data-idx="${idx}" ${item.highYield ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="top-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="top-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="top-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="sub-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Subjects & Topics Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_subjects_topics_config</span>
+              </div>
+              <textarea id="sub-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-indigo-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-sub" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const subList = [...subjects];
+        const topList = [...topics];
+
+        const saveChanges = () => {
+          config.subjectSettings = {
+            defaultExamTarget: root.querySelector('#sub-default-exam').value.trim() || 'All Odisha Exams',
+            allowCrossDisciplinaryTags: root.querySelector('#sub-cross-disc').checked
+          };
+          config.subjects = subList;
+          config.topicsRegistry = topList;
+          window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+          alert('Subjects & topics configuration saved successfully!');
+          renderSubjectsTopicsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-sub').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-sub').addEventListener('click', () => {
+          window.CSOSuperStore.exportSubjectsTopicsManifest();
+        });
+
+        root.querySelector('#btn-reset-sub').addEventListener('click', () => {
+          if (confirm('Restore subjects & topics to defaults?')) {
+            window.CSOSuperStore.resetSubjectsTopicsConfig();
+            alert('Subjects & topics reset to defaults.');
+            renderSubjectsTopicsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#sub-json-drawer');
+        root.querySelector('#btn-toggle-json-sub').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-sub').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#sub-json-raw').value;
+            window.CSOSuperStore.importSubjectsTopicsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderSubjectsTopicsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.sub-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (subList[idx]) subList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.top-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (topList[idx]) topList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.top-toggle-yield').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (topList[idx]) topList[idx].highYield = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.sub-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove subject "' + subList[idx].name + '"?')) {
+              subList.splice(idx, 1);
+              config.subjects = subList;
+              window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+              renderSubjectsTopicsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.top-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove topic "' + topList[idx].name + '"?')) {
+              topList.splice(idx, 1);
+              config.topicsRegistry = topList;
+              window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+              renderSubjectsTopicsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.sub-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = subList[idx];
+            const newName = prompt('Subject Name:', item.name);
+            if (newName === null) return;
+            const newCode = prompt('Subject Code:', item.code || '');
+            const newWeight = prompt('Weightage Percentage (%):', String(item.weightagePercentage || 15));
+
+            item.name = newName.trim() || item.name;
+            if (newCode !== null) item.code = newCode.trim();
+            if (newWeight !== null) item.weightagePercentage = parseInt(newWeight, 10) || item.weightagePercentage;
+
+            config.subjects = subList;
+            window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+            renderSubjectsTopicsWorkspace(root);
+          });
+        });
+
+        root.querySelectorAll('.top-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = topList[idx];
+            const newName = prompt('Topic Name:', item.name);
+            if (newName === null) return;
+            const newDiff = prompt('Difficulty (Easy / Medium / Hard):', item.difficulty || 'Medium');
+
+            item.name = newName.trim() || item.name;
+            if (newDiff !== null) item.difficulty = newDiff.trim();
+
+            config.topicsRegistry = topList;
+            window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+            renderSubjectsTopicsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-subject-item').addEventListener('click', () => {
+          const name = prompt('Enter Subject Name:');
+          if (!name || !name.trim()) return;
+          const code = prompt('Subject Code (e.g. OD-GEOG, MATH-ADV):', 'OD-SUB') || 'SUB';
+
+          const newId = 'SUB-' + String(subList.length + 1).padStart(2, '0');
+          subList.push({
+            id: newId,
+            code: code.trim().toUpperCase(),
+            name: name.trim(),
+            targetExams: ['OPSC OAS', 'OSSC CGL'],
+            topicCount: 10,
+            weightagePercentage: 15,
+            active: true
+          });
+          config.subjects = subList;
+          window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+          renderSubjectsTopicsWorkspace(root);
+        });
+
+        root.querySelector('#btn-add-topic-item').addEventListener('click', () => {
+          const name = prompt('Enter Topic Name:');
+          if (!name || !name.trim()) return;
+          const subId = prompt('Mapped Subject ID (e.g. SUB-01, SUB-02):', 'SUB-01') || 'SUB-01';
+          const diff = prompt('Difficulty (Easy / Medium / Hard):', 'Medium') || 'Medium';
+
+          const newId = 'TOP-' + (100 + topList.length + 1);
+          topList.push({
+            id: newId,
+            subjectId: subId.trim(),
+            name: name.trim(),
+            difficulty: diff.trim(),
+            highYield: true,
+            active: true
+          });
+          config.topicsRegistry = topList;
+          window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+          renderSubjectsTopicsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-005 (Subjects & Topics)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Class / Grade Management (module-05-006)
+     */
+    function renderClassGradeWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getClassGradeConfig();
+        const grades = config.grades || [];
+        const settings = config.tierSettings || {};
+
+        const totalEnrolled = grades.reduce((acc, g) => acc + (g.studentCount || 0), 0);
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </span>
+                    Class / Grade & Academic Tier Management
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    module-05-006
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Configure school grades, +2 intermediate streams, higher education tiers, and Odisha education board alignments.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-grade-item" class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Academic Tier
+                </button>
+                <button id="btn-toggle-json-grd" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-grd" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-grd" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-grd" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Academic Tiers</span>
+                <div class="mt-1 text-2xl font-bold text-white">${grades.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Estimated Student Coverage</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${(totalEnrolled / 100000).toFixed(2)} Lakhs</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Education Framework</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${settings.nep2020Compliant ? 'NEP 2020 Compliant' : 'Legacy Framework'}</div>
+              </div>
+            </div>
+
+            <!-- Tier Policies Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Board Alignment & Framework Compliance</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">State Education Boards</label>
+                  <input type="text" id="grd-board" value="${escapeHtml(settings.activeEducationBoard || 'BSE Odisha & CHSE')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="grd-nep" class="sr-only peer" ${settings.nep2020Compliant ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">National Education Policy (NEP) Compliant</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="grd-vocational" class="sr-only peer" ${settings.enableVocationalTracks ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enable Skill & Vocational Tracks</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Grades Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Registered Academic Classes & Streams</h2>
+                <span class="text-xs text-slate-400">${grades.length} grade levels</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Grade Code</th>
+                      <th class="px-4 py-3">Academic Tier / Title</th>
+                      <th class="px-4 py-3">Board / Authority</th>
+                      <th class="px-4 py-3">Stream</th>
+                      <th class="px-4 py-3">Est. Students</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="grd-items-body" class="divide-y divide-slate-800/60">
+                    ${grades.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          <div>${escapeHtml(item.code || 'CLS')}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(item.id || 'GRD-' + (idx+1))}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.name)}">
+                          ${escapeHtml(item.name)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                            ${escapeHtml(item.board || 'BSE Odisha')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(item.stream || 'General')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                          ${(item.studentCount || 0).toLocaleString()}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="grd-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="grd-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="grd-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="grd-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Class & Grade Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_class_grade_config</span>
+              </div>
+              <textarea id="grd-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-emerald-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-grd" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const grdList = [...grades];
+
+        const saveChanges = () => {
+          config.tierSettings = {
+            activeEducationBoard: root.querySelector('#grd-board').value.trim() || 'BSE Odisha & CHSE',
+            nep2020Compliant: root.querySelector('#grd-nep').checked,
+            enableVocationalTracks: root.querySelector('#grd-vocational').checked
+          };
+          config.grades = grdList;
+          window.CSOSuperStore.saveClassGradeConfig(config);
+          alert('Class & grade configuration saved successfully!');
+          renderClassGradeWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-grd').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-grd').addEventListener('click', () => {
+          window.CSOSuperStore.exportClassGradeManifest();
+        });
+
+        root.querySelector('#btn-reset-grd').addEventListener('click', () => {
+          if (confirm('Restore class & grade tiers to defaults?')) {
+            window.CSOSuperStore.resetClassGradeConfig();
+            alert('Class & grade tiers reset to defaults.');
+            renderClassGradeWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#grd-json-drawer');
+        root.querySelector('#btn-toggle-json-grd').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-grd').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#grd-json-raw').value;
+            window.CSOSuperStore.importClassGradeConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderClassGradeWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.grd-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (grdList[idx]) grdList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.grd-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove tier "' + grdList[idx].name + '"?')) {
+              grdList.splice(idx, 1);
+              config.grades = grdList;
+              window.CSOSuperStore.saveClassGradeConfig(config);
+              renderClassGradeWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.grd-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = grdList[idx];
+            const newName = prompt('Tier Name:', item.name);
+            if (newName === null) return;
+            const newBoard = prompt('Board / Authority:', item.board || 'BSE Odisha');
+            const newStream = prompt('Stream:', item.stream || 'General');
+
+            item.name = newName.trim() || item.name;
+            if (newBoard !== null) item.board = newBoard.trim();
+            if (newStream !== null) item.stream = newStream.trim();
+
+            config.grades = grdList;
+            window.CSOSuperStore.saveClassGradeConfig(config);
+            renderClassGradeWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-grade-item').addEventListener('click', () => {
+          const name = prompt('Enter Academic Tier Name:');
+          if (!name || !name.trim()) return;
+          const code = prompt('Grade Code (e.g. CLS-08, VOC-DIPLOMA):', 'CLS') || 'CLS';
+          const board = prompt('Board / Authority:', 'BSE Odisha') || 'BSE Odisha';
+
+          const newId = 'GRD-' + String(grdList.length + 1).padStart(2, '0');
+          grdList.push({
+            id: newId,
+            code: code.trim().toUpperCase(),
+            name: name.trim(),
+            board: board.trim(),
+            stream: 'General',
+            studentCount: 50000,
+            active: true
+          });
+          config.grades = grdList;
+          window.CSOSuperStore.saveClassGradeConfig(config);
+          renderClassGradeWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-006 (Class / Grade Management)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Examination Management (module-05-007)
+     */
+    function renderExaminationManagementWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getExaminationManagementConfig();
+        const exams = config.examinations || [];
+        const settings = config.controllerSettings || {};
+
+        const totalVacancies = exams.reduce((acc, e) => acc + (e.vacancies || 0), 0);
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </span>
+                    Official Examination Management
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                    module-05-007
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Track OPSC, OSSC, OSSSC, and BSE recruitment calendars, gazetted vacancies, and notification statuses.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-exam-item" class="px-3.5 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Register Examination
+                </button>
+                <button id="btn-toggle-json-exam" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-exam" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-exam" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-exam" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Monitored Exams</span>
+                <div class="mt-1 text-2xl font-bold text-white">${exams.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Active Vacancies</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${totalVacancies.toLocaleString()} Posts</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Gazette Auto-Sync</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${settings.autoSyncWithGazette ? 'Active' : 'Manual'}</div>
+              </div>
+            </div>
+
+            <!-- Controller Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Recruitment Sync & Verification Controls</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex items-center">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="exam-auto-sync" class="sr-only peer" ${settings.autoSyncWithGazette ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Auto-Sync Exam Dates with Official Gazettes</span>
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="exam-notify-date" class="sr-only peer" ${settings.notifyOnDateChange ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Send High-Priority Alert on Rescheduling</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Exams Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Scheduled Government Examinations</h2>
+                <span class="text-xs text-slate-400">${exams.length} exams</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Code / ID</th>
+                      <th class="px-4 py-3">Examination Name</th>
+                      <th class="px-4 py-3">Conducting Body</th>
+                      <th class="px-4 py-3">Exam Date</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Vacancies</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="exam-items-body" class="divide-y divide-slate-800/60">
+                    ${exams.map((item, idx) => {
+                      const statusBadge = item.status === 'Admit Card Released' ? 'bg-emerald-950 text-emerald-400 border-emerald-800/50' : item.status === 'Notification Active' ? 'bg-cyan-950 text-cyan-400 border-cyan-800/50' : 'bg-slate-800 text-slate-300 border-slate-700';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            <div>${escapeHtml(item.code || 'EXAM')}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(item.id || 'EXAM-' + (idx+1))}</div>
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.name)}">
+                            ${escapeHtml(item.name)}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300 max-w-xs truncate" title="${escapeHtml(item.conductingBody)}">
+                            ${escapeHtml(item.conductingBody || 'OPSC')}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-amber-300/90 whitespace-nowrap">
+                            ${escapeHtml(item.examDate || 'TBD')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${statusBadge}">
+                              ${escapeHtml(item.status || 'Scheduled')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                            ${item.vacancies ? item.vacancies.toLocaleString() : 'N/A'}
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="exam-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="exam-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="exam-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="exam-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Examination Management Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_examination_management_config</span>
+              </div>
+              <textarea id="exam-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-cyan-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-exam" class="px-3 py-1.5 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const examList = [...exams];
+
+        const saveChanges = () => {
+          config.controllerSettings = {
+            autoSyncWithGazette: root.querySelector('#exam-auto-sync').checked,
+            notifyOnDateChange: root.querySelector('#exam-notify-date').checked,
+            defaultTimezone: 'Asia/Kolkata'
+          };
+          config.examinations = examList;
+          window.CSOSuperStore.saveExaminationManagementConfig(config);
+          alert('Examination management configuration saved successfully!');
+          renderExaminationManagementWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-exam').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-exam').addEventListener('click', () => {
+          window.CSOSuperStore.exportExaminationManagementManifest();
+        });
+
+        root.querySelector('#btn-reset-exam').addEventListener('click', () => {
+          if (confirm('Restore examinations to default factory schedules?')) {
+            window.CSOSuperStore.resetExaminationManagementConfig();
+            alert('Examinations reset to defaults.');
+            renderExaminationManagementWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#exam-json-drawer');
+        root.querySelector('#btn-toggle-json-exam').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-exam').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#exam-json-raw').value;
+            window.CSOSuperStore.importExaminationManagementConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderExaminationManagementWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.exam-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (examList[idx]) examList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.exam-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove exam "' + examList[idx].name + '"?')) {
+              examList.splice(idx, 1);
+              config.examinations = examList;
+              window.CSOSuperStore.saveExaminationManagementConfig(config);
+              renderExaminationManagementWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.exam-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = examList[idx];
+            const newName = prompt('Exam Name:', item.name);
+            if (newName === null) return;
+            const newDate = prompt('Exam Date (YYYY-MM-DD):', item.examDate || '2026-12-01');
+            const newStatus = prompt('Status (Notification Active / Admit Card Released / Form Fill-up Open / Scheduled):', item.status || 'Scheduled');
+            const newVac = prompt('Vacancies:', String(item.vacancies || 0));
+
+            item.name = newName.trim() || item.name;
+            if (newDate !== null) item.examDate = newDate.trim();
+            if (newStatus !== null) item.status = newStatus.trim();
+            if (newVac !== null) item.vacancies = parseInt(newVac, 10) || 0;
+
+            config.examinations = examList;
+            window.CSOSuperStore.saveExaminationManagementConfig(config);
+            renderExaminationManagementWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-exam-item').addEventListener('click', () => {
+          const name = prompt('Enter Examination Name:');
+          if (!name || !name.trim()) return;
+          const code = prompt('Exam Code (e.g. OPSC-OAS, OSSC-CGL, POLICE-SI):', 'OPSC') || 'EXAM';
+          const body = prompt('Conducting Body:', 'Odisha Public Service Commission (OPSC)') || 'OPSC';
+          const date = prompt('Exam Date (YYYY-MM-DD):', '2026-12-20') || '2026-12-20';
+
+          const newId = 'EXAM-' + String(examList.length + 1).padStart(2, '0');
+          examList.push({
+            id: newId,
+            code: code.trim().toUpperCase(),
+            name: name.trim(),
+            conductingBody: body.trim(),
+            tier: 'State Level',
+            examDate: date.trim(),
+            status: 'Notification Active',
+            vacancies: 250,
+            active: true
+          });
+          config.examinations = examList;
+          window.CSOSuperStore.saveExaminationManagementConfig(config);
+          renderExaminationManagementWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-007 (Examination Management)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 

@@ -6287,6 +6287,271 @@
       this.logAudit("BOOKS_REFERENCES_MANIFEST_EXPORTED", "DATA_EXPORT", "Books & References manifest exported (" + filename + ").");
       return filename;
     },
+    // =========================================================================
+    // 57. Educational Resources Batch 2 (module-05-005 to module-05-007)
+    // =========================================================================
+
+    // 57.1 Subjects & Topics Engine (module-05-005)
+    getSubjectsTopicsConfig() {
+      const raw = localStorage.getItem("cso_subjects_topics_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_subjects_topics_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        subjectSettings: { allowCrossDisciplinaryTags: true, defaultExamTarget: "All Odisha Exams" },
+        subjects: [
+          { id: "SUB-01", code: "OD-HIST", name: "History & Culture of Odisha", targetExams: ["OPSC OAS", "OSSC CGL"], topicCount: 18, weightagePercentage: 15, active: true },
+          { id: "SUB-02", code: "OD-LANG", name: "Odia Language & Grammar (Vyakaran)", targetExams: ["OSSSC RI/Amin", "OTET", "OSSC CGL"], topicCount: 24, weightagePercentage: 20, active: true },
+          { id: "SUB-03", code: "GEN-POL", name: "Indian Polity & Governance", targetExams: ["OPSC OAS", "Police SI"], topicCount: 22, weightagePercentage: 18, active: true },
+          { id: "SUB-04", code: "QUANT", name: "Quantitative Aptitude & Arithmetic", targetExams: ["OSSC CGL", "OSSSC Combined"], topicCount: 30, weightagePercentage: 25, active: true }
+        ],
+        topicsRegistry: [
+          { id: "TOP-101", subjectId: "SUB-01", name: "Kalinga War, Maurya Rule & Kharavela Inscriptions", difficulty: "Medium", highYield: true, active: true },
+          { id: "TOP-102", subjectId: "SUB-02", name: "Krudanta, Taddhita & Sandhi Rules", difficulty: "Hard", highYield: true, active: true },
+          { id: "TOP-103", subjectId: "SUB-03", name: "Odisha State Legislative Assembly & High Court Jurisdiction", difficulty: "Medium", highYield: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_subjects_topics_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveSubjectsTopicsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid subjects & topics payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_subjects_topics_config", JSON.stringify(config));
+      this.logAudit("SUBJECTS_TOPICS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Subjects & Topics taxonomy saved.");
+      return config;
+    },
+
+    importSubjectsTopicsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveSubjectsTopicsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import subjects & topics: " + err.message);
+      }
+    },
+
+    resetSubjectsTopicsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        subjectSettings: { allowCrossDisciplinaryTags: true, defaultExamTarget: "All Odisha Exams" },
+        subjects: [
+          { id: "SUB-01", code: "OD-HIST", name: "History & Culture of Odisha", targetExams: ["OPSC OAS", "OSSC CGL"], topicCount: 18, weightagePercentage: 15, active: true },
+          { id: "SUB-02", code: "OD-LANG", name: "Odia Language & Grammar (Vyakaran)", targetExams: ["OSSSC RI/Amin", "OTET", "OSSC CGL"], topicCount: 24, weightagePercentage: 20, active: true },
+          { id: "SUB-03", code: "GEN-POL", name: "Indian Polity & Governance", targetExams: ["OPSC OAS", "Police SI"], topicCount: 22, weightagePercentage: 18, active: true },
+          { id: "SUB-04", code: "QUANT", name: "Quantitative Aptitude & Arithmetic", targetExams: ["OSSC CGL", "OSSSC Combined"], topicCount: 30, weightagePercentage: 25, active: true }
+        ],
+        topicsRegistry: [
+          { id: "TOP-101", subjectId: "SUB-01", name: "Kalinga War, Maurya Rule & Kharavela Inscriptions", difficulty: "Medium", highYield: true, active: true },
+          { id: "TOP-102", subjectId: "SUB-02", name: "Krudanta, Taddhita & Sandhi Rules", difficulty: "Hard", highYield: true, active: true },
+          { id: "TOP-103", subjectId: "SUB-03", name: "Odisha State Legislative Assembly & High Court Jurisdiction", difficulty: "Medium", highYield: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_subjects_topics_config", JSON.stringify(initial));
+      this.logAudit("SUBJECTS_TOPICS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Subjects & Topics restored to factory defaults.");
+      return initial;
+    },
+
+    exportSubjectsTopicsManifest() {
+      const config = this.getSubjectsTopicsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-subjects-topics-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        subjectsTopics: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("SUBJECTS_TOPICS_MANIFEST_EXPORTED", "DATA_EXPORT", "Subjects & Topics manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 57.2 Class / Grade Management Engine (module-05-006)
+    getClassGradeConfig() {
+      const raw = localStorage.getItem("cso_class_grade_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_class_grade_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        tierSettings: { activeEducationBoard: "BSE Odisha & CHSE", nep2020Compliant: true, enableVocationalTracks: true },
+        grades: [
+          { id: "GRD-01", code: "CLS-10", name: "Class 10 (High School Certificate / Matric)", board: "BSE Odisha", stream: "General Secondary", studentCount: 540000, active: true },
+          { id: "GRD-02", code: "CLS-12-SCI", name: "Class 12 (+2 Science)", board: "CHSE Odisha", stream: "Science (PCMB)", studentCount: 110000, active: true },
+          { id: "GRD-03", code: "CLS-12-ARTS", name: "Class 12 (+2 Arts & Humanities)", board: "CHSE Odisha", stream: "Arts", studentCount: 220000, active: true },
+          { id: "GRD-04", code: "CLS-12-COMM", name: "Class 12 (+2 Commerce)", board: "CHSE Odisha", stream: "Commerce", studentCount: 45000, active: true },
+          { id: "GRD-05", code: "GRAD-UG", name: "Undergraduate (Degree / B.A., B.Sc., B.Com, B.Tech)", board: "State Universities / SAMS", stream: "Higher Education", studentCount: 380000, active: true }
+        ]
+      };
+      localStorage.setItem("cso_class_grade_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveClassGradeConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid class/grade payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_class_grade_config", JSON.stringify(config));
+      this.logAudit("CLASS_GRADE_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Class & Grade educational tiers saved.");
+      return config;
+    },
+
+    importClassGradeConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveClassGradeConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import class/grade config: " + err.message);
+      }
+    },
+
+    resetClassGradeConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        tierSettings: { activeEducationBoard: "BSE Odisha & CHSE", nep2020Compliant: true, enableVocationalTracks: true },
+        grades: [
+          { id: "GRD-01", code: "CLS-10", name: "Class 10 (High School Certificate / Matric)", board: "BSE Odisha", stream: "General Secondary", studentCount: 540000, active: true },
+          { id: "GRD-02", code: "CLS-12-SCI", name: "Class 12 (+2 Science)", board: "CHSE Odisha", stream: "Science (PCMB)", studentCount: 110000, active: true },
+          { id: "GRD-03", code: "CLS-12-ARTS", name: "Class 12 (+2 Arts & Humanities)", board: "CHSE Odisha", stream: "Arts", studentCount: 220000, active: true },
+          { id: "GRD-04", code: "CLS-12-COMM", name: "Class 12 (+2 Commerce)", board: "CHSE Odisha", stream: "Commerce", studentCount: 45000, active: true },
+          { id: "GRD-05", code: "GRAD-UG", name: "Undergraduate (Degree / B.A., B.Sc., B.Com, B.Tech)", board: "State Universities / SAMS", stream: "Higher Education", studentCount: 380000, active: true }
+        ]
+      };
+      localStorage.setItem("cso_class_grade_config", JSON.stringify(initial));
+      this.logAudit("CLASS_GRADE_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Class & Grade tiers restored to factory defaults.");
+      return initial;
+    },
+
+    exportClassGradeManifest() {
+      const config = this.getClassGradeConfig();
+      const timestamp = Date.now();
+      const filename = "cso-class-grade-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        classGrade: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CLASS_GRADE_MANIFEST_EXPORTED", "DATA_EXPORT", "Class & Grade manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 57.3 Examination Management Engine (module-05-007)
+    getExaminationManagementConfig() {
+      const raw = localStorage.getItem("cso_examination_management_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_examination_management_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        controllerSettings: { autoSyncWithGazette: true, notifyOnDateChange: true, defaultTimezone: "Asia/Kolkata" },
+        examinations: [
+          { id: "EXAM-01", code: "OPSC-OAS", name: "Odisha Civil Services (OAS/OPS/OFS)", conductingBody: "Odisha Public Service Commission (OPSC)", tier: "State Gazetted Level-A/B", examDate: "2026-12-15", status: "Notification Active", vacancies: 420, active: true },
+          { id: "EXAM-02", code: "OSSC-CGL", name: "Combined Graduate Level Examination (CGL)", conductingBody: "Odisha Staff Selection Commission (OSSC)", tier: "State Level-B/C Group", examDate: "2026-11-28", status: "Admit Card Released", vacancies: 954, active: true },
+          { id: "EXAM-03", code: "OSSSC-RI", name: "Revenue Inspector (RI) & Amin Combined Recruitment", conductingBody: "Odisha Sub-ordinate Staff Selection Commission (OSSSC)", tier: "District Cadre", examDate: "2027-01-10", status: "Form Fill-up Open", vacancies: 1480, active: true },
+          { id: "EXAM-04", code: "BSE-OTET", name: "Odisha Teacher Eligibility Test (OTET)", conductingBody: "Board of Secondary Education (BSE Odisha)", tier: "State Professional Eligibility", examDate: "2026-12-05", status: "Scheduled", vacancies: 0, active: true }
+        ]
+      };
+      localStorage.setItem("cso_examination_management_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveExaminationManagementConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid examination management payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_examination_management_config", JSON.stringify(config));
+      this.logAudit("EXAMINATION_MGMT_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Examination schedules and recruitment bodies saved.");
+      return config;
+    },
+
+    importExaminationManagementConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveExaminationManagementConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import examination management config: " + err.message);
+      }
+    },
+
+    resetExaminationManagementConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        controllerSettings: { autoSyncWithGazette: true, notifyOnDateChange: true, defaultTimezone: "Asia/Kolkata" },
+        examinations: [
+          { id: "EXAM-01", code: "OPSC-OAS", name: "Odisha Civil Services (OAS/OPS/OFS)", conductingBody: "Odisha Public Service Commission (OPSC)", tier: "State Gazetted Level-A/B", examDate: "2026-12-15", status: "Notification Active", vacancies: 420, active: true },
+          { id: "EXAM-02", code: "OSSC-CGL", name: "Combined Graduate Level Examination (CGL)", conductingBody: "Odisha Staff Selection Commission (OSSC)", tier: "State Level-B/C Group", examDate: "2026-11-28", status: "Admit Card Released", vacancies: 954, active: true },
+          { id: "EXAM-03", code: "OSSSC-RI", name: "Revenue Inspector (RI) & Amin Combined Recruitment", conductingBody: "Odisha Sub-ordinate Staff Selection Commission (OSSSC)", tier: "District Cadre", examDate: "2027-01-10", status: "Form Fill-up Open", vacancies: 1480, active: true },
+          { id: "EXAM-04", code: "BSE-OTET", name: "Odisha Teacher Eligibility Test (OTET)", conductingBody: "Board of Secondary Education (BSE Odisha)", tier: "State Professional Eligibility", examDate: "2026-12-05", status: "Scheduled", vacancies: 0, active: true }
+        ]
+      };
+      localStorage.setItem("cso_examination_management_config", JSON.stringify(initial));
+      this.logAudit("EXAMINATION_MGMT_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Examination management restored to factory defaults.");
+      return initial;
+    },
+
+    exportExaminationManagementManifest() {
+      const config = this.getExaminationManagementConfig();
+      const timestamp = Date.now();
+      const filename = "cso-examination-management-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        examinationManagement: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("EXAMINATION_MGMT_MANIFEST_EXPORTED", "DATA_EXPORT", "Examination management manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
@@ -6634,6 +6899,9 @@
           studyMaterials: this.getStudyMaterialsConfig(),
           notesPdfs: this.getNotesPdfsConfig(),
           booksReferences: this.getBooksReferencesConfig(),
+          subjectsTopics: this.getSubjectsTopicsConfig(),
+          classGrade: this.getClassGradeConfig(),
+          examinationManagement: this.getExaminationManagementConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
