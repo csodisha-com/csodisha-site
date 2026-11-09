@@ -21207,6 +21207,7 @@ async function loadMasterNavigation() {
             allowLatexFormulas: root.querySelector('#qb-allow-latex').checked,
             autoTagCognitiveLevel: root.querySelector('#qb-auto-tag').checked
           };
+          config.items = qList;
           config.questions = qList;
           window.CSOSuperStore.saveQuestionBankConfig(config);
           alert('Question bank configuration saved successfully!');
@@ -21453,17 +21454,17 @@ async function loadMasterNavigation() {
                         </td>
                         <td class="px-4 py-3 text-xs text-slate-300">
                           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-800 text-cyan-300 border border-cyan-800/40">
-                            ${escapeHtml(item.examCategory || 'General')}
+                            ${escapeHtml(item.examCategory || item.examTarget || item.subject || 'General')}
                           </span>
                         </td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-400">
-                          ${item.questionCount || 0} Qs
+                          ${item.questionCount || item.totalQuestions || 0} Qs
                         </td>
                         <td class="px-4 py-3 font-mono text-xs text-amber-300">
                           ${item.durationMinutes || 15} mins
                         </td>
                         <td class="px-4 py-3 font-mono text-xs text-rose-300">
-                          -${item.negativeMarkPerQuestion || 0}
+                          -${item.negativeMarkPerQuestion || (item.passingScore ? item.passingScore + ' Pass' : 0)}
                         </td>
                         <td class="px-4 py-3 text-center">
                           <input type="checkbox" class="quiz-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
@@ -21502,6 +21503,7 @@ async function loadMasterNavigation() {
             shuffleOptions: root.querySelector('#quiz-shuffle').checked,
             showInstantExplanation: root.querySelector('#quiz-instant-exp').checked
           };
+          config.items = qzList;
           config.quizzes = qzList;
           window.CSOSuperStore.saveQuizBuilderConfig(config);
           alert('Quiz builder configuration saved successfully!');
@@ -21745,20 +21747,20 @@ async function loadMasterNavigation() {
                         </td>
                         <td class="px-4 py-3 text-xs text-slate-300">
                           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-indigo-300 border border-indigo-800/40">
-                            ${escapeHtml(item.testType || 'Full-Length')}
+                            ${escapeHtml(item.testType || item.status || 'Full-Length')}
                           </span>
                         </td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-400">
                           ${item.totalQuestions || 100} Qs
                         </td>
                         <td class="px-4 py-3 font-mono text-xs text-emerald-400">
-                          ${item.maxScore || 200}
+                          ${item.maxScore || item.totalMarks || 200}
                         </td>
                         <td class="px-4 py-3 font-mono text-xs text-amber-300">
-                          ${item.timeLimitMinutes || 120} mins
+                          ${item.timeLimitMinutes || item.durationMinutes || 120} mins
                         </td>
-                        <td class="px-4 py-3 text-xs text-rose-300/90 max-w-xs truncate" title="${escapeHtml(item.negativeMarkRatio)}">
-                          ${escapeHtml(item.negativeMarkRatio || '0.33')}
+                        <td class="px-4 py-3 text-xs text-rose-300/90 max-w-xs truncate" title="${escapeHtml(item.negativeMarkRatio || item.negativeMarkingRate || '0.33')}">
+                          ${escapeHtml(item.negativeMarkRatio || item.negativeMarkingRate || '0.33')}
                         </td>
                         <td class="px-4 py-3 text-center">
                           <input type="checkbox" class="mock-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
@@ -21797,6 +21799,7 @@ async function loadMasterNavigation() {
             simulateLiveCbreInterface: root.querySelector('#mock-cbre-sim').checked,
             enforceSectionalTimers: root.querySelector('#mock-sectional-timers').checked
           };
+          config.items = tList;
           config.tests = tList;
           window.CSOSuperStore.saveMockTestsConfig(config);
           alert('Mock tests series configuration saved successfully!');
@@ -22031,28 +22034,29 @@ async function loadMasterNavigation() {
                   </thead>
                   <tbody id="key-items-body" class="divide-y divide-slate-800/60">
                     ${keys.map((item, idx) => {
-                      const statusBadge = item.answerKeyStatus.includes('Final') ? 'bg-emerald-950 text-emerald-400 border-emerald-800/50' : 'bg-amber-950 text-amber-400 border-amber-800/50';
+                      const status = item.answerKeyStatus || item.releaseStatus || 'Provisional';
+                      const statusBadge = status.includes('Final') ? 'bg-emerald-950 text-emerald-400 border-emerald-800/50' : 'bg-amber-950 text-amber-400 border-amber-800/50';
                       return `
                         <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
                           <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
                             ${escapeHtml(item.id || 'KEY-' + (idx+1))}
                           </td>
-                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.examName)}">
-                            ${escapeHtml(item.examName)}
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.examName || item.examTitle)}">
+                            ${escapeHtml(item.examName || item.examTitle)}
                           </td>
                           <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
-                            ${escapeHtml(item.releaseDate || 'N/A')}
+                            ${escapeHtml(item.releaseDate || item.releasedDate || 'N/A')}
                           </td>
                           <td class="px-4 py-3">
                             <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${statusBadge}">
-                              ${escapeHtml(item.answerKeyStatus || 'Provisional')}
+                              ${escapeHtml(status)}
                             </span>
                           </td>
                           <td class="px-4 py-3 font-mono text-xs text-rose-400">
-                            ${item.disputedQuestionsCount || 0} disputes
+                            ${item.disputedQuestionsCount || item.setsAvailable || '0 disputes'}
                           </td>
                           <td class="px-4 py-3 text-xs text-slate-300">
-                            ${item.revisedMarksAwarded ? '<span class="text-emerald-400 font-semibold">Marks Awarded</span>' : '<span class="text-slate-500">No Adjustment</span>'}
+                            ${item.revisedMarksAwarded ? '<span class="text-emerald-400 font-semibold">Marks Awarded</span>' : item.hasDetailedExplanations ? '<span class="text-cyan-400">Detailed Solutions</span>' : '<span class="text-slate-500">No Adjustment</span>'}
                           </td>
                           <td class="px-4 py-3 text-center">
                             <input type="checkbox" class="key-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
@@ -22092,6 +22096,8 @@ async function loadMasterNavigation() {
             allowCandidateGrievance: root.querySelector('#key-allow-grievance').checked,
             requireDualGazetteRatification: root.querySelector('#key-dual-gazette').checked
           };
+          config.items = kList;
+          config.keys = kList;
           config.keysRegistry = kList;
           window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
           alert('Answer keys configuration saved successfully!');
