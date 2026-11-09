@@ -3021,6 +3021,104 @@
       return initial;
     },
 
+    // 28. Disclaimer & Legal Notice Engine (module-03-004)
+    getDisclaimerConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_disclaimer_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object' || !config.meta) {
+        config = {
+          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          disclaimer: {
+            title: "Official Educational & Academic Disclaimer",
+            effectiveDate: "2026-11-01",
+            affidavitBody: "Common Sense Odisha (csodisha.com) is an autonomous, non-profit academic intelligence resource. It is not affiliated, endorsed, or operated by the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), or Government of Odisha. Official recruitment notices and gazettes remain solely authoritative.",
+            advisoryNotice: "All question patterns, syllabus maps, and cutoff predictions published on csodisha.com are synthesized from historical state gazettes for candidate educational convenience only."
+          },
+          clauses: [
+            { id: "DISC-01", number: "1", title: "Non-Governmental Entity Notice", body: "Common Sense Odisha is a community-run academic preparation portal and does not claim any statutory authority to conduct examinations or issue official notifications.", active: true },
+            { id: "DISC-02", number: "2", title: "Intellectual Property & Fair Use", body: "Previous year question papers, official syllabus circulars, and departmental gazettes referenced on this portal belong to their respective statutory examining bodies under fair use educational reporting.", active: true },
+            { id: "DISC-03", number: "3", title: "No Financial Guarantee or Fees", body: "Common Sense Odisha does not solicit or accept any monetary payments, application fees, or coaching charges for accessing state examination guidance.", active: true }
+          ]
+        };
+        try {
+          localStorage.setItem('cso_disclaimer_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+      return config;
+    },
+
+    saveDisclaimerConfig(config) {
+      if (!config || typeof config !== 'object') throw new Error("Invalid disclaimer configuration payload.");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem('cso_disclaimer_config', JSON.stringify(config));
+      this.logAudit('DISCLAIMER_CONFIG_UPDATED', 'LEGAL_DISCLAIMER', `Disclaimer configuration updated (v${config.meta.version || '1.0'}).`);
+      return config;
+    },
+
+    importDisclaimerConfig(jsonString) {
+      let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+      if (!parsed || typeof parsed !== 'object') throw new Error("Invalid JSON manifest.");
+      if (parsed.disclaimer && parsed.clauses) {
+        // payload wrapped or raw
+      }
+      parsed.meta = parsed.meta || {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem('cso_disclaimer_config', JSON.stringify(parsed));
+      this.logAudit('DISCLAIMER_CONFIG_IMPORTED', 'LEGAL_DISCLAIMER', `Disclaimer configuration imported (v${parsed.meta.version || '1.0'}).`);
+      return parsed;
+    },
+
+    resetDisclaimerConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        disclaimer: {
+          title: "Official Educational & Academic Disclaimer",
+          effectiveDate: "2026-11-01",
+          affidavitBody: "Common Sense Odisha (csodisha.com) is an autonomous, non-profit academic intelligence resource. It is not affiliated, endorsed, or operated by the Odisha Public Service Commission (OPSC), Odisha Staff Selection Commission (OSSC), or Government of Odisha. Official recruitment notices and gazettes remain solely authoritative.",
+          advisoryNotice: "All question patterns, syllabus maps, and cutoff predictions published on csodisha.com are synthesized from historical state gazettes for candidate educational convenience only."
+        },
+        clauses: [
+          { id: "DISC-01", number: "1", title: "Non-Governmental Entity Notice", body: "Common Sense Odisha is a community-run academic preparation portal and does not claim any statutory authority to conduct examinations or issue official notifications.", active: true },
+          { id: "DISC-02", number: "2", title: "Intellectual Property & Fair Use", body: "Previous year question papers, official syllabus circulars, and departmental gazettes referenced on this portal belong to their respective statutory examining bodies under fair use educational reporting.", active: true },
+          { id: "DISC-03", number: "3", title: "No Financial Guarantee or Fees", body: "Common Sense Odisha does not solicit or accept any monetary payments, application fees, or coaching charges for accessing state examination guidance.", active: true }
+        ]
+      };
+      localStorage.setItem('cso_disclaimer_config', JSON.stringify(initial));
+      this.logAudit('DISCLAIMER_CONFIG_RESET', 'LEGAL_DISCLAIMER', `Disclaimer configuration restored to default factory schema.`);
+      return initial;
+    },
+
+    exportDisclaimerManifest() {
+      const config = this.getDisclaimerConfig();
+      const timestamp = Date.now();
+      const filename = `cso-disclaimer-config-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        disclaimer: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('DISCLAIMER_MANIFEST_EXPORTED', 'DATA_EXPORT', `Disclaimer manifest exported (${filename}).`);
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
