@@ -7495,12 +7495,15 @@ async function loadMasterNavigation() {
     /**
      * VIEW 3e: Terms & Conditions Studio (module-03-005)
      */
+    /**
+     * VIEW 3e: Terms & Conditions Studio (module-03-005)
+     */
     function renderTermsWorkspace(container) {
       const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
       if (!root) return;
 
       try {
-        // Ensure visible
+        // Explicit visibility
         root.style.display = 'block';
         root.classList.remove('hidden');
 
@@ -7516,7 +7519,7 @@ async function loadMasterNavigation() {
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Save & Publish Terms
               </button>
-              <a href="/terms-of-use/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+              <a href="/terms.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
                 <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 Preview Live Page ↗
               </a>
@@ -7545,18 +7548,18 @@ async function loadMasterNavigation() {
         let termsConfig = (window.CSOSuperStore && typeof window.CSOSuperStore.getTermsConfig === 'function')
           ? window.CSOSuperStore.getTermsConfig()
           : {
-              meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-              terms: {
-                title: "Standard Platform Terms of Use & Candidate Agreement",
+              meta: { version: "2.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+              document: {
+                title: "Terms and Conditions of Use",
+                version: "v2.4 (2026 Revision)",
                 effectiveDate: "2026-11-01",
-                governingLaw: "Information Technology Act, 2000 & Laws of India",
-                jurisdiction: "Bhubaneswar / Cuttack, Odisha, India",
-                summary: "By accessing csodisha.com, candidates agree to use the educational resources solely for legitimate personal academic preparation and competitive examination advancement."
+                governingLaw: "State of Odisha, India (Jurisdiction: High Court of Orissa / Bhubaneswar Civil Courts)"
               },
-              clauses: []
+              clauses: [],
+              fairUseNotice: "All educational materials provided on csodisha.com are free for individual study and non-commercial candidate empowerment."
             };
 
-        termsConfig.terms = termsConfig.terms || {};
+        termsConfig.document = termsConfig.document || termsConfig.terms || {};
         let currentClauses = Array.isArray(termsConfig.clauses) ? JSON.parse(JSON.stringify(termsConfig.clauses)) : [];
 
         function syncTermsJsonEditor() {
@@ -7569,25 +7572,25 @@ async function loadMasterNavigation() {
 
         function gatherTermsFormState() {
           const titleInput = document.getElementById('termsInputTitle');
+          const versionInput = document.getElementById('termsInputVersion');
           const effDateInput = document.getElementById('termsInputDate');
-          const lawInput = document.getElementById('termsInputGoverningLaw');
-          const jurInput = document.getElementById('termsInputJurisdiction');
-          const summaryTextarea = document.getElementById('termsTextareaSummary');
+          const jurTextarea = document.getElementById('termsInputJurisdiction');
+          const fairUseTextarea = document.getElementById('termsInputFairUse');
 
           return {
             meta: {
-              version: (termsConfig.meta && termsConfig.meta.version) || "1.0",
+              version: versionInput ? versionInput.value.trim() : (termsConfig.meta?.version || "2.4"),
               lastEditedBy: "admin@csodisha.com",
               updatedAt: (termsConfig.meta && termsConfig.meta.updatedAt) || new Date().toISOString()
             },
-            terms: {
-              title: titleInput ? titleInput.value.trim() : (termsConfig.terms?.title || ''),
-              effectiveDate: effDateInput ? effDateInput.value.trim() : (termsConfig.terms?.effectiveDate || '2026-11-01'),
-              governingLaw: lawInput ? lawInput.value.trim() : (termsConfig.terms?.governingLaw || ''),
-              jurisdiction: jurInput ? jurInput.value.trim() : (termsConfig.terms?.jurisdiction || ''),
-              summary: summaryTextarea ? summaryTextarea.value.trim() : (termsConfig.terms?.summary || '')
+            document: {
+              title: titleInput ? titleInput.value.trim() : (termsConfig.document?.title || 'Terms and Conditions of Use'),
+              version: versionInput ? versionInput.value.trim() : (termsConfig.document?.version || 'v2.4 (2026 Revision)'),
+              effectiveDate: effDateInput ? effDateInput.value.trim() : (termsConfig.document?.effectiveDate || '2026-11-01'),
+              governingLaw: jurTextarea ? jurTextarea.value.trim() : (termsConfig.document?.governingLaw || '')
             },
-            clauses: currentClauses
+            clauses: currentClauses,
+            fairUseNotice: fairUseTextarea ? fairUseTextarea.value.trim() : (termsConfig.fairUseNotice || '')
           };
         }
 
@@ -7631,7 +7634,7 @@ async function loadMasterNavigation() {
                   <input type="text" class="terms-clause-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(cl.title || '')}">
                 </div>
                 <div class="md:col-span-3">
-                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Contractual Terms</label>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Contractual Terms & Scope</label>
                   <textarea rows="2" class="terms-clause-body-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" data-index="${idx}">${escapeHtml(cl.body || '')}</textarea>
                 </div>
               </div>
@@ -7713,13 +7716,13 @@ async function loadMasterNavigation() {
             <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
                 <h2 class="text-base font-bold text-white flex items-center gap-2">
-                  Terms of Use & Candidate Agreement Studio
+                  Terms & Conditions of Use Studio
                   <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-800/60">module-03-005</span>
                 </h2>
-                <p class="text-xs text-slate-400 mt-0.5">Control candidate educational platform agreements, fair use provisions, external gateway liability boundaries, and jurisdiction covenants.</p>
+                <p class="text-xs text-slate-400 mt-0.5">Control candidate educational platform agreements, fair use provisions, scraper prohibitions, non-affiliation clauses, and judicial jurisdiction covenants.</p>
               </div>
               <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
-                <span>Version: <strong class="text-cyan-400">${escapeHtml(termsConfig.meta?.version || '1.0')}</strong></span>
+                <span>Version: <strong class="text-cyan-400">${escapeHtml(termsConfig.document?.version || termsConfig.meta?.version || '2.4')}</strong></span>
                 <span>Updated: <span id="termsLastUpdated" class="text-emerald-400 font-bold">${new Date(termsConfig.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
               </div>
             </div>
@@ -7745,55 +7748,48 @@ async function loadMasterNavigation() {
               </div>
             </div>
 
-            <!-- Card 1: Primary Terms Metadata -->
+            <!-- Card 1: Document Metadata & Statutory Jurisdiction -->
             <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
               <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
                 <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
                 <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                  Terms of Use Metadata & Legal Jurisdiction
+                  Document Metadata & Statutory Jurisdiction
                 </h3>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-semibold text-slate-200 mb-1">Agreement Title <span class="text-rose-400">*</span></label>
-                  <input id="termsInputTitle" type="text" value="${escapeHtml(termsConfig.terms?.title || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Document Title <span class="text-rose-400">*</span></label>
+                  <input id="termsInputTitle" type="text" value="${escapeHtml(termsConfig.document?.title || 'Terms and Conditions of Use')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Document Version <span class="text-rose-400">*</span></label>
+                  <input id="termsInputVersion" type="text" value="${escapeHtml(termsConfig.document?.version || termsConfig.meta?.version || 'v2.4 (2026 Revision)')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
 
                 <div>
                   <label class="block text-xs font-semibold text-slate-200 mb-1">Effective Date <span class="text-rose-400">*</span></label>
-                  <input id="termsInputDate" type="date" value="${escapeHtml(termsConfig.terms?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-200 mb-1">Governing Legislation <span class="text-rose-400">*</span></label>
-                  <input id="termsInputGoverningLaw" type="text" value="${escapeHtml(termsConfig.terms?.governingLaw || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-slate-200 mb-1">Judicial Jurisdiction</label>
-                  <input id="termsInputJurisdiction" type="text" value="${escapeHtml(termsConfig.terms?.jurisdiction || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  <input id="termsInputDate" type="date" value="${escapeHtml(termsConfig.document?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-200 mb-1">Summary Preamble</label>
-                <textarea id="termsTextareaSummary" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(termsConfig.terms?.summary || '')}</textarea>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Governing Law & Statutory Jurisdiction <span class="text-rose-400">*</span></label>
+                <textarea id="termsInputJurisdiction" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(termsConfig.document?.governingLaw || '')}</textarea>
               </div>
             </div>
 
-            <!-- Card 2: Sectional Terms Clauses (Extensible Repeater) -->
+            <!-- Card 2: Sectional Legal Clauses (Repeater) -->
             <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
               <div class="flex items-center justify-between pb-3 border-b border-brand-border">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
                   <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                    Sectional Terms & Contractual Clauses (Extensible)
+                    Sectional Legal Clauses (Extensible Repeater)
                   </h3>
                 </div>
-                <span class="text-[11px] font-mono text-slate-400">Binding Platform Rules</span>
+                <span class="text-[11px] font-mono text-slate-400">Enforceable Terms & Conditions</span>
               </div>
 
               <!-- Clauses List -->
@@ -7801,20 +7797,20 @@ async function loadMasterNavigation() {
 
               <!-- Add Clause Inline Form -->
               <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
-                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Contractual Clause</h4>
+                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Legal Clause</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div class="sm:col-span-1">
-                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Section Number</label>
-                    <input id="inputNewTermsClauseNumber" type="text" placeholder="e.g. 4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Number</label>
+                    <input id="inputNewTermsClauseNumber" type="text" placeholder="e.g. 6" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                   </div>
                   <div class="sm:col-span-3">
                     <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
-                    <input id="inputNewTermsClauseTitle" type="text" placeholder="e.g. Account Suspension & Ban" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                    <input id="inputNewTermsClauseTitle" type="text" placeholder="e.g. Severability & Waiver" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
                   </div>
                 </div>
                 <div>
                   <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Content / Contractual Terms</label>
-                  <textarea id="textareaNewTermsClauseBody" rows="2" placeholder="Full terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+                  <textarea id="textareaNewTermsClauseBody" rows="2" placeholder="Full legal terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
                 </div>
                 <div class="flex justify-end">
                   <button id="btnAddTermsClauseAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
@@ -7822,6 +7818,21 @@ async function loadMasterNavigation() {
                     + Add Clause
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Fair Use & Candidate Assurance -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Fair Use & Candidate Educational Empowerment Assurance
+                </h3>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Fair Use Notice</label>
+                <textarea id="termsInputFairUse" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(termsConfig.fairUseNotice || '')}</textarea>
               </div>
             </div>
           </div>
@@ -7847,21 +7858,21 @@ async function loadMasterNavigation() {
             const parsed = JSON.parse(jsonText);
             if (parsed && typeof parsed === 'object') {
               termsConfig = parsed;
-              termsConfig.terms = termsConfig.terms || {};
+              termsConfig.document = termsConfig.document || termsConfig.terms || {};
               currentClauses = Array.isArray(termsConfig.clauses) ? JSON.parse(JSON.stringify(termsConfig.clauses)) : [];
 
               // Update form inputs
               const t = document.getElementById('termsInputTitle');
+              const v = document.getElementById('termsInputVersion');
               const d = document.getElementById('termsInputDate');
-              const law = document.getElementById('termsInputGoverningLaw');
               const jur = document.getElementById('termsInputJurisdiction');
-              const sum = document.getElementById('termsTextareaSummary');
+              const fu = document.getElementById('termsInputFairUse');
 
-              if (t) t.value = termsConfig.terms?.title || '';
-              if (d) d.value = termsConfig.terms?.effectiveDate || '2026-11-01';
-              if (law) law.value = termsConfig.terms?.governingLaw || '';
-              if (jur) jur.value = termsConfig.terms?.jurisdiction || '';
-              if (sum) sum.value = termsConfig.terms?.summary || '';
+              if (t) t.value = termsConfig.document?.title || '';
+              if (v) v.value = termsConfig.document?.version || termsConfig.meta?.version || '';
+              if (d) d.value = termsConfig.document?.effectiveDate || '2026-11-01';
+              if (jur) jur.value = termsConfig.document?.governingLaw || '';
+              if (fu) fu.value = termsConfig.fairUseNotice || '';
 
               renderTermsClausesList();
               showToast("Raw JSON parsed and applied to terms form.", "success");
@@ -7906,8 +7917,8 @@ async function loadMasterNavigation() {
         document.getElementById('btnSaveTermsStudio')?.addEventListener('click', () => {
           const payload = gatherTermsFormState();
 
-          if (!payload.terms.title || !payload.terms.governingLaw) {
-            showToast("Agreement title and governing law are required.", "warning");
+          if (!payload.document.title || !payload.document.governingLaw) {
+            showToast("Agreement title and governing law/jurisdiction are required.", "warning");
             return;
           }
 
@@ -7970,7 +7981,7 @@ async function loadMasterNavigation() {
         });
 
         // Form input change listeners to sync with raw JSON
-        ['termsInputTitle', 'termsInputDate', 'termsInputGoverningLaw', 'termsInputJurisdiction', 'termsTextareaSummary'].forEach(id => {
+        ['termsInputTitle', 'termsInputVersion', 'termsInputDate', 'termsInputJurisdiction', 'termsInputFairUse'].forEach(id => {
           document.getElementById(id)?.addEventListener('input', syncTermsJsonEditor);
         });
       } catch (err) {
@@ -7980,8 +7991,6 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
-
-
 
     /**
      * VIEW 1e: Administrative Notifications (module-01-005)

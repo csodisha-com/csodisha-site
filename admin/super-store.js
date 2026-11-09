@@ -3129,19 +3129,21 @@
 
       if (!config || typeof config !== 'object' || !config.meta) {
         config = {
-          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-          terms: {
-            title: "Standard Platform Terms of Use & Candidate Agreement",
+          meta: { version: "2.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: {
+            title: "Terms and Conditions of Use",
+            version: "v2.4 (2026 Revision)",
             effectiveDate: "2026-11-01",
-            governingLaw: "Information Technology Act, 2000 & Laws of India",
-            jurisdiction: "Bhubaneswar / Cuttack, Odisha, India",
-            summary: "By accessing csodisha.com, candidates agree to use the educational resources solely for legitimate personal academic preparation and competitive examination advancement."
+            governingLaw: "State of Odisha, India (Jurisdiction: High Court of Orissa / Bhubaneswar Civil Courts)"
           },
           clauses: [
-            { id: "TERM-01", number: "1", title: "Acceptance of Educational Terms", body: "Access to csodisha.com syllabus pattern guides and mock questions is subject to continuous adherence to non-commercial fair use.", active: true },
-            { id: "TERM-02", number: "2", title: "Intellectual Property & Attribution", body: "Original editorial analyses and educational compilations created by CSO are protected under Indian copyright. Users may cite excerpts with clear attribution.", active: true },
-            { id: "TERM-03", number: "3", title: "Limitation of Liability & External Portals", body: "Common Sense Odisha provides external redirection links to official OPSC/OSSC portals. CSO bears no liability for technical outages or schedule changes on third-party government servers.", active: true }
-          ]
+            { id: "TERM-01", number: "1", title: "Acceptance of Agreement & Educational Scope", body: "By accessing or using Common Sense Odisha (csodisha.com), you agree to be bound by these Terms and Conditions. The platform operates solely as a non-profit academic intelligence and educational navigation gateway across all 30 districts of Odisha.", active: true },
+            { id: "TERM-02", number: "2", title: "Intellectual Property & Fair Use", body: "Original syllabus breakdown structures, editorial notes, and portal assets are proprietary to Common Sense Odisha. State syllabus patterns and gazette releases are curated under fair dealing provisions solely for candidate guidance.", active: true },
+            { id: "TERM-03", number: "3", title: "Prohibited Platform Conduct", body: "Users agree not to deploy automated scrapers, spiders, or extraction bots that burden edge server resources, nor attempt unauthorized access into administrative endpoints or authentication gates.", active: true },
+            { id: "TERM-04", number: "4", title: "Statutory Non-Affiliation", body: "Common Sense Odisha is an autonomous civic platform and is NOT affiliated with, sponsored by, or endorsed by OPSC, OSSC, OSSSC, or BSE Odisha.", active: true },
+            { id: "TERM-05", number: "5", title: "Limitation of Liability", body: "While every effort is made to maintain 100% gazette accuracy, candidates are strictly advised to cross-verify all critical dates, qualifying marks, and recruitment guidelines with original state notifications.", active: true }
+          ],
+          fairUseNotice: "All educational materials provided on csodisha.com are free for individual study and non-commercial candidate empowerment."
         };
         try {
           localStorage.setItem('cso_terms_config', JSON.stringify(config));
@@ -3156,38 +3158,44 @@
       config.meta.updatedAt = new Date().toISOString();
       config.meta.lastEditedBy = "admin@csodisha.com";
       localStorage.setItem('cso_terms_config', JSON.stringify(config));
-      this.logAudit('TERMS_CONFIG_UPDATED', 'TERMS_OF_USE', `Terms configuration updated (v${config.meta.version || '1.0'}).`);
+      this.logAudit('TERMS_CONFIG_UPDATED', 'TERMS_OF_USE', `Terms configuration updated (v${config.meta.version || '2.4'}).`);
       return config;
     },
 
     importTermsConfig(jsonString) {
       let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
       if (!parsed || typeof parsed !== 'object') throw new Error("Invalid JSON manifest.");
+      if (parsed.termsConfig) parsed = parsed.termsConfig;
+      else if (parsed.terms && parsed.clauses) {
+        // payload wrapped or raw
+      }
       parsed.meta = parsed.meta || {};
       parsed.meta.updatedAt = new Date().toISOString();
       localStorage.setItem('cso_terms_config', JSON.stringify(parsed));
-      this.logAudit('TERMS_CONFIG_IMPORTED', 'TERMS_OF_USE', `Terms configuration imported (v${parsed.meta.version || '1.0'}).`);
+      this.logAudit('TERMS_CONFIG_IMPORTED', 'TERMS_OF_USE', `Terms configuration imported (v${parsed.meta.version || '2.4'}).`);
       return parsed;
     },
 
     resetTermsConfig() {
       const initial = {
-        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
-        terms: {
-          title: "Standard Platform Terms of Use & Candidate Agreement",
+        meta: { version: "2.4", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: {
+          title: "Terms and Conditions of Use",
+          version: "v2.4 (2026 Revision)",
           effectiveDate: "2026-11-01",
-          governingLaw: "Information Technology Act, 2000 & Laws of India",
-          jurisdiction: "Bhubaneswar / Cuttack, Odisha, India",
-          summary: "By accessing csodisha.com, candidates agree to use the educational resources solely for legitimate personal academic preparation and competitive examination advancement."
+          governingLaw: "State of Odisha, India (Jurisdiction: High Court of Orissa / Bhubaneswar Civil Courts)"
         },
         clauses: [
-          { id: "TERM-01", number: "1", title: "Acceptance of Educational Terms", body: "Access to csodisha.com syllabus pattern guides and mock questions is subject to continuous adherence to non-commercial fair use.", active: true },
-          { id: "TERM-02", number: "2", title: "Intellectual Property & Attribution", body: "Original editorial analyses and educational compilations created by CSO are protected under Indian copyright. Users may cite excerpts with clear attribution.", active: true },
-          { id: "TERM-03", number: "3", title: "Limitation of Liability & External Portals", body: "Common Sense Odisha provides external redirection links to official OPSC/OSSC portals. CSO bears no liability for technical outages or schedule changes on third-party government servers.", active: true }
-        ]
+          { id: "TERM-01", number: "1", title: "Acceptance of Agreement & Educational Scope", body: "By accessing or using Common Sense Odisha (csodisha.com), you agree to be bound by these Terms and Conditions. The platform operates solely as a non-profit academic intelligence and educational navigation gateway across all 30 districts of Odisha.", active: true },
+          { id: "TERM-02", number: "2", title: "Intellectual Property & Fair Use", body: "Original syllabus breakdown structures, editorial notes, and portal assets are proprietary to Common Sense Odisha. State syllabus patterns and gazette releases are curated under fair dealing provisions solely for candidate guidance.", active: true },
+          { id: "TERM-03", number: "3", title: "Prohibited Platform Conduct", body: "Users agree not to deploy automated scrapers, spiders, or extraction bots that burden edge server resources, nor attempt unauthorized access into administrative endpoints or authentication gates.", active: true },
+          { id: "TERM-04", number: "4", title: "Statutory Non-Affiliation", body: "Common Sense Odisha is an autonomous civic platform and is NOT affiliated with, sponsored by, or endorsed by OPSC, OSSC, OSSSC, or BSE Odisha.", active: true },
+          { id: "TERM-05", number: "5", title: "Limitation of Liability", body: "While every effort is made to maintain 100% gazette accuracy, candidates are strictly advised to cross-verify all critical dates, qualifying marks, and recruitment guidelines with original state notifications.", active: true }
+        ],
+        fairUseNotice: "All educational materials provided on csodisha.com are free for individual study and non-commercial candidate empowerment."
       };
       localStorage.setItem('cso_terms_config', JSON.stringify(initial));
-      this.logAudit('TERMS_CONFIG_RESET', 'TERMS_OF_USE', `Terms configuration restored to default factory schema.`);
+      this.logAudit('TERMS_CONFIG_RESET', 'TERMS_OF_USE', `Terms configuration restored to authentic 5-clause default schema.`);
       return initial;
     },
 
