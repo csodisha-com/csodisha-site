@@ -4025,6 +4025,392 @@
       return filename;
     },
 
+    
+    // 38. Candidate FAQs Engine (module-03-014)
+    getFaqsConfig() {
+      const raw = localStorage.getItem("cso_faqs_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_faqs_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Candidate Frequently Asked Questions", badge: "Verified Academic Knowledgebase", lastReviewed: "2026-11-01" },
+        categories: ["General", "OPSC / OSSC Exams", "Syllabus Verification", "Technical Access", "Grievance Desk"],
+        items: [
+          { id: "FAQ-01", question: "Is Common Sense Odisha an official government portal?", answer: "No. Common Sense Odisha is an independent civic and educational intelligence gateway. We synthesize official Odisha Gazette publications and commission releases to assist aspirants across all 30 districts.", category: "General", active: true },
+          { id: "FAQ-02", question: "Are study materials and syllabus breakdowns 100% free?", answer: "Yes. All digital materials, syllabus roadmaps, and PYQ analysis tools are delivered completely free without subscription paywalls.", category: "Syllabus Verification", active: true },
+          { id: "FAQ-03", question: "How often are examination updates verified against official gazettes?", answer: "Our academic editorial desk runs reconciliation scans within 24 hours of any formal gazette notification released by OPSC, OSSC, OSSSC, or BSE Odisha.", category: "OPSC / OSSC Exams", active: true },
+          { id: "FAQ-04", question: "Who do I contact if I discover a discrepancy in syllabus markings?", answer: "Aspirants can submit errata directly to corrections@csodisha.com or through our Corrections Desk under module-03-009.", category: "Grievance Desk", active: true }
+        ]
+      };
+      localStorage.setItem("cso_faqs_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveFaqsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid FAQs configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_faqs_config", JSON.stringify(config));
+      this.logAudit("FAQS_CONFIG_UPDATED", "FAQS_ENGINE", "FAQs knowledgebase configuration saved.");
+      return config;
+    },
+
+    importFaqsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveFaqsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import FAQs knowledgebase: " + err.message);
+      }
+    },
+
+    resetFaqsConfig() {
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Candidate Frequently Asked Questions", badge: "Verified Academic Knowledgebase", lastReviewed: "2026-11-01" },
+        categories: ["General", "OPSC / OSSC Exams", "Syllabus Verification", "Technical Access", "Grievance Desk"],
+        items: [
+          { id: "FAQ-01", question: "Is Common Sense Odisha an official government portal?", answer: "No. Common Sense Odisha is an independent civic and educational intelligence gateway. We synthesize official Odisha Gazette publications and commission releases to assist aspirants across all 30 districts.", category: "General", active: true },
+          { id: "FAQ-02", question: "Are study materials and syllabus breakdowns 100% free?", answer: "Yes. All digital materials, syllabus roadmaps, and PYQ analysis tools are delivered completely free without subscription paywalls.", category: "Syllabus Verification", active: true },
+          { id: "FAQ-03", question: "How often are examination updates verified against official gazettes?", answer: "Our academic editorial desk runs reconciliation scans within 24 hours of any formal gazette notification released by OPSC, OSSC, OSSSC, or BSE Odisha.", category: "OPSC / OSSC Exams", active: true },
+          { id: "FAQ-04", question: "Who do I contact if I discover a discrepancy in syllabus markings?", answer: "Aspirants can submit errata directly to corrections@csodisha.com or through our Corrections Desk under module-03-009.", category: "Grievance Desk", active: true }
+        ]
+      };
+      localStorage.setItem("cso_faqs_config", JSON.stringify(initial));
+      this.logAudit("FAQS_CONFIG_RESET", "FAQS_ENGINE", "FAQs knowledgebase restored to defaults.");
+      return initial;
+    },
+
+    exportFaqsManifest() {
+      const config = this.getFaqsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-faqs-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        faqs: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("FAQS_MANIFEST_EXPORTED", "DATA_EXPORT", "FAQs manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 39. Custom Information Pages Engine (module-03-015)
+    getCustomPagesConfig() {
+      const raw = localStorage.getItem("cso_custom_pages_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_custom_pages_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        pages: [
+          {
+            id: "CUST-01",
+            slug: "academic-node-charter",
+            title: "Odisha Academic Node Charter",
+            category: "Institutional",
+            badge: "Civic Mission",
+            summary: "Charter outlining our district volunteer network and grassroots educational data verification.",
+            content: "The Odisha Academic Node operates decentralized study cells across Balasore, Mayurbhanj, Koraput, and Sambalpur to verify candidate notification needs directly.",
+            published: true,
+            updatedAt: "2026-11-01"
+          },
+          {
+            id: "CUST-02",
+            slug: "tribal-district-outreach",
+            title: "Tribal District Educational Outreach",
+            category: "Public Outreach",
+            badge: "Low-Bandwidth Inclusion",
+            summary: "Initiative to distribute offline-cached PDF syllabi to candidates with limited cellular connectivity.",
+            content: "Through offline PWA distribution, educational resources reach aspiring youth in southern and western Odisha without high-speed data barriers.",
+            published: true,
+            updatedAt: "2026-11-01"
+          }
+        ]
+      };
+      localStorage.setItem("cso_custom_pages_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveCustomPagesConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid custom pages payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_custom_pages_config", JSON.stringify(config));
+      this.logAudit("CUSTOM_PAGES_CONFIG_UPDATED", "CUSTOM_PAGES", "Custom information pages configuration saved.");
+      return config;
+    },
+
+    importCustomPagesConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveCustomPagesConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import custom pages: " + err.message);
+      }
+    },
+
+    resetCustomPagesConfig() {
+      const initial = {
+        meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        pages: [
+          {
+            id: "CUST-01",
+            slug: "academic-node-charter",
+            title: "Odisha Academic Node Charter",
+            category: "Institutional",
+            badge: "Civic Mission",
+            summary: "Charter outlining our district volunteer network and grassroots educational data verification.",
+            content: "The Odisha Academic Node operates decentralized study cells across Balasore, Mayurbhanj, Koraput, and Sambalpur to verify candidate notification needs directly.",
+            published: true,
+            updatedAt: "2026-11-01"
+          },
+          {
+            id: "CUST-02",
+            slug: "tribal-district-outreach",
+            title: "Tribal District Educational Outreach",
+            category: "Public Outreach",
+            badge: "Low-Bandwidth Inclusion",
+            summary: "Initiative to distribute offline-cached PDF syllabi to candidates with limited cellular connectivity.",
+            content: "Through offline PWA distribution, educational resources reach aspiring youth in southern and western Odisha without high-speed data barriers.",
+            published: true,
+            updatedAt: "2026-11-01"
+          }
+        ]
+      };
+      localStorage.setItem("cso_custom_pages_config", JSON.stringify(initial));
+      this.logAudit("CUSTOM_PAGES_CONFIG_RESET", "CUSTOM_PAGES", "Custom information pages restored to defaults.");
+      return initial;
+    },
+
+    exportCustomPagesManifest() {
+      const config = this.getCustomPagesConfig();
+      const timestamp = Date.now();
+      const filename = "cso-custom-pages-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        customPages: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CUSTOM_PAGES_MANIFEST_EXPORTED", "DATA_EXPORT", "Custom pages manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 40. Legal Page Revision History Engine (module-03-016)
+    getLegalRevisionsConfig() {
+      const raw = localStorage.getItem("cso_legal_revisions_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_legal_revisions_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "3.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Legal & Statutory Policy Revision Log", badge: "Statutory Transparency Audit Trail", lastAudited: "2026-11-01" },
+        revisions: [
+          {
+            id: "REV-2026-06",
+            date: "2026-11-01",
+            moduleName: "module-03-007 Copyright & DMCA",
+            version: "v2.0",
+            editor: "Legal & Redressal Cell",
+            summary: "Reconciled fair dealing statutory provisions with Section 52(1)(a) of Indian Copyright Act and configured 36h DMCA redressal SLA.",
+            route: "/copyright.html"
+          },
+          {
+            id: "REV-2026-05",
+            date: "2026-11-01",
+            moduleName: "module-03-006 Cookie Policy",
+            version: "v1.2",
+            editor: "Privacy Compliance Team",
+            summary: "Codified edge telemetry cookies and session token lifecycles with 365-day retention policy.",
+            route: "/cookie-policy.html"
+          },
+          {
+            id: "REV-2026-04",
+            date: "2026-11-01",
+            moduleName: "module-03-005 Terms & Conditions",
+            version: "v2.4",
+            editor: "Statutory Governance Desk",
+            summary: "Formalized 5-clause terms covering acceptance of educational scope and High Court of Orissa jurisdiction.",
+            route: "/terms.html"
+          },
+          {
+            id: "REV-2026-03",
+            date: "2026-11-01",
+            moduleName: "module-03-004 Official Disclaimer",
+            version: "v2.1",
+            editor: "Legal Counsel",
+            summary: "Reinforced non-affiliation notices regarding OPSC, OSSC, and OSSSC government recruitment commissions.",
+            route: "/disclaimer.html"
+          },
+          {
+            id: "REV-2026-02",
+            date: "2026-11-01",
+            moduleName: "module-03-003 Privacy Policy",
+            version: "v2.4",
+            editor: "Data Protection Officer",
+            summary: "DPDP Act 2023 compliance alignment, grievance turnaround SLA (48h), and zero-commercialization pledge.",
+            route: "/privacy.html"
+          },
+          {
+            id: "REV-2026-01",
+            date: "2026-10-15",
+            moduleName: "module-03-001 Site Identity & Mission",
+            version: "v2.0",
+            editor: "Academic Directorate",
+            summary: "Standardized 30-district candidate educational mission and non-profit identity standards.",
+            route: "/about.html"
+          }
+        ]
+      };
+      localStorage.setItem("cso_legal_revisions_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveLegalRevisionsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid legal revisions configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_legal_revisions_config", JSON.stringify(config));
+      this.logAudit("LEGAL_REVISIONS_CONFIG_UPDATED", "LEGAL_REVISIONS", "Legal revisions log saved.");
+      return config;
+    },
+
+    importLegalRevisionsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveLegalRevisionsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import legal revisions: " + err.message);
+      }
+    },
+
+    resetLegalRevisionsConfig() {
+      const initial = {
+        meta: { version: "3.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: { title: "Legal & Statutory Policy Revision Log", badge: "Statutory Transparency Audit Trail", lastAudited: "2026-11-01" },
+        revisions: [
+          {
+            id: "REV-2026-06",
+            date: "2026-11-01",
+            moduleName: "module-03-007 Copyright & DMCA",
+            version: "v2.0",
+            editor: "Legal & Redressal Cell",
+            summary: "Reconciled fair dealing statutory provisions with Section 52(1)(a) of Indian Copyright Act and configured 36h DMCA redressal SLA.",
+            route: "/copyright.html"
+          },
+          {
+            id: "REV-2026-05",
+            date: "2026-11-01",
+            moduleName: "module-03-006 Cookie Policy",
+            version: "v1.2",
+            editor: "Privacy Compliance Team",
+            summary: "Codified edge telemetry cookies and session token lifecycles with 365-day retention policy.",
+            route: "/cookie-policy.html"
+          },
+          {
+            id: "REV-2026-04",
+            date: "2026-11-01",
+            moduleName: "module-03-005 Terms & Conditions",
+            version: "v2.4",
+            editor: "Statutory Governance Desk",
+            summary: "Formalized 5-clause terms covering acceptance of educational scope and High Court of Orissa jurisdiction.",
+            route: "/terms.html"
+          },
+          {
+            id: "REV-2026-03",
+            date: "2026-11-01",
+            moduleName: "module-03-004 Official Disclaimer",
+            version: "v2.1",
+            editor: "Legal Counsel",
+            summary: "Reinforced non-affiliation notices regarding OPSC, OSSC, and OSSSC government recruitment commissions.",
+            route: "/disclaimer.html"
+          },
+          {
+            id: "REV-2026-02",
+            date: "2026-11-01",
+            moduleName: "module-03-003 Privacy Policy",
+            version: "v2.4",
+            editor: "Data Protection Officer",
+            summary: "DPDP Act 2023 compliance alignment, grievance turnaround SLA (48h), and zero-commercialization pledge.",
+            route: "/privacy.html"
+          },
+          {
+            id: "REV-2026-01",
+            date: "2026-10-15",
+            moduleName: "module-03-001 Site Identity & Mission",
+            version: "v2.0",
+            editor: "Academic Directorate",
+            summary: "Standardized 30-district candidate educational mission and non-profit identity standards.",
+            route: "/about.html"
+          }
+        ]
+      };
+      localStorage.setItem("cso_legal_revisions_config", JSON.stringify(initial));
+      this.logAudit("LEGAL_REVISIONS_CONFIG_RESET", "LEGAL_REVISIONS", "Legal revisions log restored to defaults.");
+      return initial;
+    },
+
+    exportLegalRevisionsManifest() {
+      const config = this.getLegalRevisionsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-legal-revisions-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        legalRevisions: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("LEGAL_REVISIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "Legal revisions manifest exported (" + filename + ").");
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
@@ -4342,6 +4728,9 @@
           refund: this.getRefundConfig(),
           delivery: this.getDeliveryConfig(),
           community: this.getCommunityConfig(),
+          faqs: this.getFaqsConfig(),
+          customPages: this.getCustomPagesConfig(),
+          legalRevisions: this.getLegalRevisionsConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
