@@ -4912,6 +4912,337 @@
       return filename;
     },
 
+    
+    // 45. Announcements & Notices Engine (module-04-005)
+    getAnnouncementsConfig() {
+      const raw = localStorage.getItem("cso_announcements_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_announcements_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        ribbonSettings: { showTopRibbon: true, globalNoticeText: "OPSC OAS 2026 Prelims application deadline extended till 30th November.", bannerType: "Urgent" },
+        notices: [
+          { id: "NOT-01", title: "OSSC CGL Tier-II Technical Services Examination Date Rescheduled", category: "Exam Schedule", urgency: "High", targetAudience: "All Candidates", expiryDate: "2026-12-15", dismissible: true, active: true },
+          { id: "NOT-02", title: "Notice regarding verification of sports certificate for Police SI Recruitment", category: "Verification", urgency: "Medium", targetAudience: "SI Aspirants", expiryDate: "2026-11-25", dismissible: false, active: true },
+          { id: "NOT-03", title: "BSE Odisha OTET Answer Key Grievance Window Open", category: "Answer Key", urgency: "High", targetAudience: "Teacher Candidates", expiryDate: "2026-11-18", dismissible: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_announcements_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveAnnouncementsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid announcements configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_announcements_config", JSON.stringify(config));
+      this.logAudit("ANNOUNCEMENTS_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Announcements & notices catalog updated.");
+      return config;
+    },
+
+    importAnnouncementsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveAnnouncementsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import announcements: " + err.message);
+      }
+    },
+
+    resetAnnouncementsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        ribbonSettings: { showTopRibbon: true, globalNoticeText: "OPSC OAS 2026 Prelims application deadline extended till 30th November.", bannerType: "Urgent" },
+        notices: [
+          { id: "NOT-01", title: "OSSC CGL Tier-II Technical Services Examination Date Rescheduled", category: "Exam Schedule", urgency: "High", targetAudience: "All Candidates", expiryDate: "2026-12-15", dismissible: true, active: true },
+          { id: "NOT-02", title: "Notice regarding verification of sports certificate for Police SI Recruitment", category: "Verification", urgency: "Medium", targetAudience: "SI Aspirants", expiryDate: "2026-11-25", dismissible: false, active: true },
+          { id: "NOT-03", title: "BSE Odisha OTET Answer Key Grievance Window Open", category: "Answer Key", urgency: "High", targetAudience: "Teacher Candidates", expiryDate: "2026-11-18", dismissible: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_announcements_config", JSON.stringify(initial));
+      this.logAudit("ANNOUNCEMENTS_CONFIG_RESET", "CONTENT_PUBLISHING", "Announcements & notices restored to defaults.");
+      return initial;
+    },
+
+    exportAnnouncementsManifest() {
+      const config = this.getAnnouncementsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-announcements-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        announcements: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("ANNOUNCEMENTS_MANIFEST_EXPORTED", "DATA_EXPORT", "Announcements manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 46. Featured Content Engine (module-04-006)
+    getFeaturedContentConfig() {
+      const raw = localStorage.getItem("cso_featured_content_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_featured_content_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        showcaseSettings: { heroSliderEnabled: true, maxShowcaseSlots: 4, autoPlayIntervalSec: 6 },
+        featuredItems: [
+          { id: "FEAT-01", title: "OPSC OAS 2026 Master Strategy & Cutoff Predictor", contentType: "Article", placement: "Hero Banner", priority: 1, clickUrl: "/about.html", badge: "Aspirant Choice", active: true },
+          { id: "FEAT-02", title: "Odisha Gazette Reconciliation Log & Corrigenda Tracker", contentType: "Tool / Desk", placement: "Home Spotlight", priority: 2, clickUrl: "/corrections-policy.html", badge: "Trust Layer", active: true },
+          { id: "FEAT-03", title: "Complete 30 Districts Candidate Study Center Directory", contentType: "Directory", placement: "Sidebar Feature", priority: 3, clickUrl: "/contact.html", badge: "Verified", active: true }
+        ]
+      };
+      localStorage.setItem("cso_featured_content_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveFeaturedContentConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid featured content payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_featured_content_config", JSON.stringify(config));
+      this.logAudit("FEATURED_CONTENT_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Featured content slots updated.");
+      return config;
+    },
+
+    importFeaturedContentConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveFeaturedContentConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import featured content: " + err.message);
+      }
+    },
+
+    resetFeaturedContentConfig() {
+      const initial = {
+        meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        showcaseSettings: { heroSliderEnabled: true, maxShowcaseSlots: 4, autoPlayIntervalSec: 6 },
+        featuredItems: [
+          { id: "FEAT-01", title: "OPSC OAS 2026 Master Strategy & Cutoff Predictor", contentType: "Article", placement: "Hero Banner", priority: 1, clickUrl: "/about.html", badge: "Aspirant Choice", active: true },
+          { id: "FEAT-02", title: "Odisha Gazette Reconciliation Log & Corrigenda Tracker", contentType: "Tool / Desk", placement: "Home Spotlight", priority: 2, clickUrl: "/corrections-policy.html", badge: "Trust Layer", active: true },
+          { id: "FEAT-03", title: "Complete 30 Districts Candidate Study Center Directory", contentType: "Directory", placement: "Sidebar Feature", priority: 3, clickUrl: "/contact.html", badge: "Verified", active: true }
+        ]
+      };
+      localStorage.setItem("cso_featured_content_config", JSON.stringify(initial));
+      this.logAudit("FEATURED_CONTENT_CONFIG_RESET", "CONTENT_PUBLISHING", "Featured content restored to defaults.");
+      return initial;
+    },
+
+    exportFeaturedContentManifest() {
+      const config = this.getFeaturedContentConfig();
+      const timestamp = Date.now();
+      const filename = "cso-featured-content-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        featuredContent: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("FEATURED_CONTENT_MANIFEST_EXPORTED", "DATA_EXPORT", "Featured content manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 47. Content Categories Taxonomy Engine (module-04-007)
+    getContentCategoriesConfig() {
+      const raw = localStorage.getItem("cso_content_categories_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_content_categories_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        categories: [
+          { id: "CAT-01", slug: "civil-services", name: "Civil Services (OPSC OAS)", description: "Odisha Administrative Services, Judicial Services, and State Police Services recruitment intelligence.", icon: "🏛️", count: 48, active: true },
+          { id: "CAT-02", slug: "staff-selection", name: "Staff Selection (OSSC)", description: "Combined Graduate Level (CGL), Technical Services, CTSRE, and Ministerial cadres.", icon: "📋", count: 72, active: true },
+          { id: "CAT-03", slug: "subordinate-services", name: "Subordinate Services (OSSSC)", description: "Revenue Inspector (RI), ARI, Amin, Panchayat Executive Officer (PEO), and Forester.", icon: "🌾", count: 65, active: true },
+          { id: "CAT-04", slug: "teacher-education", name: "Teacher Education & TET", description: "OTET, OSSTET, High School Teacher (RHT), and Junior Teacher certification and recruitment.", icon: "🎓", count: 34, active: true },
+          { id: "CAT-05", slug: "police-defence", name: "Police & State Uniformed Services", description: "Odisha Police Sub-Inspector, Constable, Excise SI, and Fire Services recruitment.", icon: "🛡️", count: 29, active: true }
+        ]
+      };
+      localStorage.setItem("cso_content_categories_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveContentCategoriesConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid content categories configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_content_categories_config", JSON.stringify(config));
+      this.logAudit("CONTENT_CATEGORIES_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Content categories taxonomy updated.");
+      return config;
+    },
+
+    importContentCategoriesConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveContentCategoriesConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import content categories: " + err.message);
+      }
+    },
+
+    resetContentCategoriesConfig() {
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        categories: [
+          { id: "CAT-01", slug: "civil-services", name: "Civil Services (OPSC OAS)", description: "Odisha Administrative Services, Judicial Services, and State Police Services recruitment intelligence.", icon: "🏛️", count: 48, active: true },
+          { id: "CAT-02", slug: "staff-selection", name: "Staff Selection (OSSC)", description: "Combined Graduate Level (CGL), Technical Services, CTSRE, and Ministerial cadres.", icon: "📋", count: 72, active: true },
+          { id: "CAT-03", slug: "subordinate-services", name: "Subordinate Services (OSSSC)", description: "Revenue Inspector (RI), ARI, Amin, Panchayat Executive Officer (PEO), and Forester.", icon: "🌾", count: 65, active: true },
+          { id: "CAT-04", slug: "teacher-education", name: "Teacher Education & TET", description: "OTET, OSSTET, High School Teacher (RHT), and Junior Teacher certification and recruitment.", icon: "🎓", count: 34, active: true },
+          { id: "CAT-05", slug: "police-defence", name: "Police & State Uniformed Services", description: "Odisha Police Sub-Inspector, Constable, Excise SI, and Fire Services recruitment.", icon: "🛡️", count: 29, active: true }
+        ]
+      };
+      localStorage.setItem("cso_content_categories_config", JSON.stringify(initial));
+      this.logAudit("CONTENT_CATEGORIES_CONFIG_RESET", "CONTENT_PUBLISHING", "Content categories restored to defaults.");
+      return initial;
+    },
+
+    exportContentCategoriesManifest() {
+      const config = this.getContentCategoriesConfig();
+      const timestamp = Date.now();
+      const filename = "cso-content-categories-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        contentCategories: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CONTENT_CATEGORIES_MANIFEST_EXPORTED", "DATA_EXPORT", "Content categories manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 48. Tags & Taxonomies Engine (module-04-008)
+    getTagsConfig() {
+      const raw = localStorage.getItem("cso_tags_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_tags_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.3", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        tags: [
+          { id: "TAG-01", name: "Syllabus Breakdown", slug: "syllabus-breakdown", usageCount: 64, color: "#0ea5e9", active: true },
+          { id: "TAG-02", name: "Cutoff Analysis", slug: "cutoff-analysis", usageCount: 42, color: "#10b981", active: true },
+          { id: "TAG-03", name: "Gazette Corrigendum", slug: "gazette-corrigendum", usageCount: 38, color: "#f59e0b", active: true },
+          { id: "TAG-04", name: "Exam Date Rescheduled", slug: "exam-rescheduled", usageCount: 29, color: "#e11d48", active: true },
+          { id: "TAG-05", name: "Previous Year Papers", slug: "previous-year-papers", usageCount: 85, color: "#8b5cf6", active: true },
+          { id: "TAG-06", name: "Odia Typing Test", slug: "odia-typing-test", usageCount: 19, color: "#14b8a6", active: true }
+        ]
+      };
+      localStorage.setItem("cso_tags_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveTagsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid tags configuration payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_tags_config", JSON.stringify(config));
+      this.logAudit("TAGS_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Tags taxonomy updated.");
+      return config;
+    },
+
+    importTagsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveTagsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import tags: " + err.message);
+      }
+    },
+
+    resetTagsConfig() {
+      const initial = {
+        meta: { version: "1.3", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        tags: [
+          { id: "TAG-01", name: "Syllabus Breakdown", slug: "syllabus-breakdown", usageCount: 64, color: "#0ea5e9", active: true },
+          { id: "TAG-02", name: "Cutoff Analysis", slug: "cutoff-analysis", usageCount: 42, color: "#10b981", active: true },
+          { id: "TAG-03", name: "Gazette Corrigendum", slug: "gazette-corrigendum", usageCount: 38, color: "#f59e0b", active: true },
+          { id: "TAG-04", name: "Exam Date Rescheduled", slug: "exam-rescheduled", usageCount: 29, color: "#e11d48", active: true },
+          { id: "TAG-05", name: "Previous Year Papers", slug: "previous-year-papers", usageCount: 85, color: "#8b5cf6", active: true },
+          { id: "TAG-06", name: "Odia Typing Test", slug: "odia-typing-test", usageCount: 19, color: "#14b8a6", active: true }
+        ]
+      };
+      localStorage.setItem("cso_tags_config", JSON.stringify(initial));
+      this.logAudit("TAGS_CONFIG_RESET", "CONTENT_PUBLISHING", "Tags taxonomy restored to defaults.");
+      return initial;
+    },
+
+    exportTagsManifest() {
+      const config = this.getTagsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-tags-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        tags: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("TAGS_MANIFEST_EXPORTED", "DATA_EXPORT", "Tags manifest exported (" + filename + ").");
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
@@ -5236,6 +5567,10 @@
           articles: this.getArticlesConfig(),
           news: this.getNewsConfig(),
           currentAffairs: this.getCurrentAffairsConfig(),
+          announcements: this.getAnnouncementsConfig(),
+          featuredContent: this.getFeaturedContentConfig(),
+          contentCategories: this.getContentCategoriesConfig(),
+          tags: this.getTagsConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

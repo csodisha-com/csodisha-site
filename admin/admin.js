@@ -371,6 +371,14 @@ async function loadMasterNavigation() {
         renderNewsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-04-004') {
         renderCurrentAffairsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-005') {
+        renderAnnouncementsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-006') {
+        renderFeaturedContentWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-007') {
+        renderContentCategoriesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-008') {
+        renderTagsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -13990,6 +13998,1329 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW 4e: Announcements & Notices Studio (module-04-005)
+     */
+    function renderAnnouncementsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Announcements & Notices (module-04-005)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getAnnouncementsConfig() : {
+          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          ribbonSettings: { showTopRibbon: true, globalNoticeText: "OPSC OAS 2026 Prelims application deadline extended till 30th November.", bannerType: "Urgent" },
+          notices: [
+            { id: "NOT-01", title: "OSSC CGL Tier-II Technical Services Examination Date Rescheduled", category: "Exam Schedule", urgency: "High", targetAudience: "All Candidates", expiryDate: "2026-12-15", dismissible: true, active: true },
+            { id: "NOT-02", title: "Notice regarding verification of sports certificate for Police SI Recruitment", category: "Verification", urgency: "Medium", targetAudience: "SI Aspirants", expiryDate: "2026-11-25", dismissible: false, active: true },
+            { id: "NOT-03", title: "BSE Odisha OTET Answer Key Grievance Window Open", category: "Answer Key", urgency: "High", targetAudience: "Teacher Candidates", expiryDate: "2026-11-18", dismissible: true, active: true }
+          ]
+        };
+
+        const ribbon = config.ribbonSettings || {};
+        const notices = Array.isArray(config.notices) ? config.notices : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Announcements &amp; Statutory Notices Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-rose-950/80 text-rose-400 border border-rose-800/60">module-04-005</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Broadcast high-priority commission notices, global header ribbons, and candidate alerts.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleAnnouncementsJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportAnnouncementsConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportAnnouncementsConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetAnnouncementsConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveAnnouncementsConfig" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Global Header Ribbon Settings -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Site-Wide Header Notice Ribbon</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.0')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="flex items-center pt-5">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
+                    <input type="checkbox" id="ribbonToggleShow" class="rounded bg-slate-950 border-slate-700 text-rose-500" ${ribbon.showTopRibbon !== false ? 'checked' : ''}>
+                    <span>Display Top Ribbon</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Banner Type</label>
+                  <select id="ribbonSelectType" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-amber-300 focus:outline-none focus:border-rose-500 transition">
+                    <option value="Urgent" ${ribbon.bannerType === 'Urgent' ? 'selected' : ''}>Urgent</option>
+                    <option value="Information" ${ribbon.bannerType === 'Information' ? 'selected' : ''}>Information</option>
+                    <option value="Warning" ${ribbon.bannerType === 'Warning' ? 'selected' : ''}>Warning</option>
+                  </select>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Global Notice Text</label>
+                  <input type="text" id="ribbonInputText" value="${escapeHtml(ribbon.globalNoticeText || '')}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition" placeholder="Banner notification copy">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Candidate Notices Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Statutory Candidate Notices</h3>
+                </div>
+                <button type="button" id="btnAddNoticeItem" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-xs rounded border border-rose-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Publish Notice</span>
+                </button>
+              </div>
+
+              <div id="noticesListContainer" class="space-y-4">
+                ${notices.map((nt, idx) => `
+                  <div class="notice-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-rose-950/80 text-rose-400 border border-rose-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="notice-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-rose-400" value="${escapeHtml(nt.id || '')}" placeholder="ID">
+                        <input type="text" class="notice-cat-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="${escapeHtml(nt.category || '')}" placeholder="Category">
+                        <select class="notice-urgency-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs ${nt.urgency === 'High' ? 'text-rose-400' : 'text-amber-400'}">
+                          <option value="High" ${nt.urgency === 'High' ? 'selected' : ''}>High</option>
+                          <option value="Medium" ${nt.urgency === 'Medium' ? 'selected' : ''}>Medium</option>
+                          <option value="Low" ${nt.urgency === 'Low' ? 'selected' : ''}>Low</option>
+                        </select>
+                        <input type="text" class="notice-audience-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="${escapeHtml(nt.targetAudience || 'All Candidates')}" placeholder="Target Audience">
+                        <input type="date" class="notice-expiry-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${escapeHtml(nt.expiryDate || '')}">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                          <input type="checkbox" class="notice-dismiss-toggle rounded bg-slate-900 border-slate-700 text-rose-500" ${nt.dismissible ? 'checked' : ''}>
+                          <span>Dismissible</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-emerald-400 ml-2">
+                          <input type="checkbox" class="notice-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" ${nt.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-notice text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Notice">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="notice-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(nt.title || '')}" placeholder="Notice Headline">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="announcementsJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_announcements_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatAnnouncementsRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyAnnouncementsRawJsonChanges" class="px-3 py-0.5 bg-rose-600 hover:bg-rose-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaAnnouncementsRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-rose-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-rose-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncAnnouncementsJsonEditor = () => {
+          const currentConfig = harvestAnnouncementsForm();
+          const jsonTextarea = document.getElementById('textareaAnnouncementsRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestAnnouncementsForm = () => {
+          const rows = document.querySelectorAll('.notice-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.notice-id-input')?.value.trim() || '',
+              title: r.querySelector('.notice-title-input')?.value.trim() || '',
+              category: r.querySelector('.notice-cat-input')?.value.trim() || 'General',
+              urgency: r.querySelector('.notice-urgency-select')?.value || 'High',
+              targetAudience: r.querySelector('.notice-audience-input')?.value.trim() || 'All Candidates',
+              expiryDate: r.querySelector('.notice-expiry-input')?.value || '',
+              dismissible: r.querySelector('.notice-dismiss-toggle')?.checked ?? false,
+              active: r.querySelector('.notice-active-toggle')?.checked ?? true
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.0",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            ribbonSettings: {
+              showTopRibbon: document.getElementById('ribbonToggleShow')?.checked ?? true,
+              bannerType: document.getElementById('ribbonSelectType')?.value || 'Urgent',
+              globalNoticeText: document.getElementById('ribbonInputText')?.value.trim() || ''
+            },
+            notices: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleAnnouncementsJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('announcementsJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncAnnouncementsJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatAnnouncementsRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaAnnouncementsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyAnnouncementsRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaAnnouncementsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAnnouncementsConfig === 'function') {
+                window.CSOSuperStore.saveAnnouncementsConfig(parsed);
+                showToast("JSON applied and notices saved!", "success");
+                renderAnnouncementsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddNoticeItem')?.addEventListener('click', () => {
+          const container = document.getElementById('noticesListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.notice-row-item').length + 1;
+          const newId = 'NOT-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "notice-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-rose-950/80 text-rose-400 border border-rose-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="notice-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-rose-400" value="${newId}" placeholder="ID">
+                <input type="text" class="notice-cat-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300" value="Exam Schedule" placeholder="Category">
+                <select class="notice-urgency-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-rose-400">
+                  <option value="High" selected>High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                <input type="text" class="notice-audience-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="All Candidates" placeholder="Target Audience">
+                <input type="date" class="notice-expiry-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 ml-2">
+                  <input type="checkbox" class="notice-dismiss-toggle rounded bg-slate-900 border-slate-700 text-rose-500" checked>
+                  <span>Dismissible</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-emerald-400 ml-2">
+                  <input type="checkbox" class="notice-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-notice text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Notice">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="notice-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Notice Headline">
+            </div>
+          `;
+          container.appendChild(div);
+          attachNoticeRowListeners(div);
+          syncAnnouncementsJsonEditor();
+        });
+
+        const attachNoticeRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-notice')?.addEventListener('click', () => {
+            parent.remove();
+            syncAnnouncementsJsonEditor();
+          });
+          parent.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', syncAnnouncementsJsonEditor);
+            input.addEventListener('change', syncAnnouncementsJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.notice-row-item').forEach(attachNoticeRowListeners);
+
+        document.getElementById('btnSaveAnnouncementsConfig')?.addEventListener('click', () => {
+          const newConfig = harvestAnnouncementsForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveAnnouncementsConfig === 'function') {
+            window.CSOSuperStore.saveAnnouncementsConfig(newConfig);
+            showToast("Announcements & notices saved successfully!", "success");
+            syncAnnouncementsJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportAnnouncementsConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportAnnouncementsManifest === 'function') {
+            window.CSOSuperStore.exportAnnouncementsManifest();
+            showToast("Announcements manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportAnnouncementsConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.announcements) parsed = parsed.announcements;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importAnnouncementsConfig === 'function') {
+                window.CSOSuperStore.importAnnouncementsConfig(JSON.stringify(parsed));
+                showToast("Announcements imported successfully!", "success");
+                renderAnnouncementsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetAnnouncementsConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default announcements? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetAnnouncementsConfig === 'function') {
+              window.CSOSuperStore.resetAnnouncementsConfig();
+              showToast("Announcements restored to defaults.", "info");
+              renderAnnouncementsWorkspace(root);
+            }
+          }
+        });
+
+        ['ribbonToggleShow', 'ribbonSelectType', 'ribbonInputText'].forEach(id => {
+          const el = document.getElementById(id);
+          el?.addEventListener('input', syncAnnouncementsJsonEditor);
+          el?.addEventListener('change', syncAnnouncementsJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-005 (Announcements & Notices)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 4f: Featured Content & Showcase Studio (module-04-006)
+     */
+    function renderFeaturedContentWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Featured Content (module-04-006)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getFeaturedContentConfig() : {
+          meta: { version: "1.1", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          showcaseSettings: { heroSliderEnabled: true, maxShowcaseSlots: 4, autoPlayIntervalSec: 6 },
+          featuredItems: [
+            { id: "FEAT-01", title: "OPSC OAS 2026 Master Strategy & Cutoff Predictor", contentType: "Article", placement: "Hero Banner", priority: 1, clickUrl: "/about.html", badge: "Aspirant Choice", active: true },
+            { id: "FEAT-02", title: "Odisha Gazette Reconciliation Log & Corrigenda Tracker", contentType: "Tool / Desk", placement: "Home Spotlight", priority: 2, clickUrl: "/corrections-policy.html", badge: "Trust Layer", active: true },
+            { id: "FEAT-03", title: "Complete 30 Districts Candidate Study Center Directory", contentType: "Directory", placement: "Sidebar Feature", priority: 3, clickUrl: "/contact.html", badge: "Verified", active: true }
+          ]
+        };
+
+        const settings = config.showcaseSettings || {};
+        const items = Array.isArray(config.featuredItems) ? config.featuredItems : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Featured Content &amp; Showcase Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800/60">module-04-006</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Curate hero spotlights, homepage highlights, and priority carousel placements.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleFeaturedJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportFeaturedConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportFeaturedConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetFeaturedConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveFeaturedConfig" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Showcase Slider Rules -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Hero Showcase Settings</h3>
+                </div>
+                <span class="text-xs font-mono text-slate-400">v${escapeHtml(config.meta?.version || '1.1')}</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center pt-2">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
+                    <input type="checkbox" id="featToggleHeroSlider" class="rounded bg-slate-950 border-slate-700 text-amber-500" ${settings.heroSliderEnabled !== false ? 'checked' : ''}>
+                    <span>Enable Homepage Hero Carousel</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Max Showcase Slots</label>
+                  <input type="number" id="featInputMaxSlots" value="${settings.maxShowcaseSlots || 4}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Rotation Interval (Sec)</label>
+                  <input type="number" id="featInputRotationSec" value="${settings.autoPlayIntervalSec || 6}" class="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Featured Items Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Showcase Items List</h3>
+                </div>
+                <button type="button" id="btnAddFeaturedItem" class="px-2.5 py-1 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 text-xs rounded border border-amber-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Showcase Slot</span>
+                </button>
+              </div>
+
+              <div id="featuredListContainer" class="space-y-4">
+                ${items.map((it, idx) => `
+                  <div class="feat-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-amber-950/80 text-amber-400 border border-amber-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="feat-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-400" value="${escapeHtml(it.id || '')}" placeholder="ID">
+                        <input type="text" class="feat-type-input w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="${escapeHtml(it.contentType || 'Article')}" placeholder="Content Type">
+                        <select class="feat-placement-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300">
+                          <option value="Hero Banner" ${it.placement === 'Hero Banner' ? 'selected' : ''}>Hero Banner</option>
+                          <option value="Home Spotlight" ${it.placement === 'Home Spotlight' ? 'selected' : ''}>Home Spotlight</option>
+                          <option value="Sidebar Feature" ${it.placement === 'Sidebar Feature' ? 'selected' : ''}>Sidebar Feature</option>
+                        </select>
+                        <input type="number" class="feat-priority-input w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center text-slate-200" value="${it.priority || 1}" title="Priority Rank">
+                        <input type="text" class="feat-badge-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="${escapeHtml(it.badge || '')}" placeholder="Showcase Badge">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-emerald-400 ml-2">
+                          <input type="checkbox" class="feat-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" ${it.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-feat text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Slot">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="feat-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(it.title || '')}" placeholder="Showcase Title">
+                    </div>
+                    <div>
+                      <input type="text" class="feat-url-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-400 font-mono" value="${escapeHtml(it.clickUrl || '')}" placeholder="/destination-route.html">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="featuredJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_featured_content_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatFeaturedRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyFeaturedRawJsonChanges" class="px-3 py-0.5 bg-amber-600 hover:bg-amber-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaFeaturedRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-amber-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncFeaturedJsonEditor = () => {
+          const currentConfig = harvestFeaturedForm();
+          const jsonTextarea = document.getElementById('textareaFeaturedRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestFeaturedForm = () => {
+          const rows = document.querySelectorAll('.feat-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.feat-id-input')?.value.trim() || '',
+              title: r.querySelector('.feat-title-input')?.value.trim() || '',
+              contentType: r.querySelector('.feat-type-input')?.value.trim() || 'Article',
+              placement: r.querySelector('.feat-placement-select')?.value || 'Hero Banner',
+              priority: parseInt(r.querySelector('.feat-priority-input')?.value || '1', 10),
+              clickUrl: r.querySelector('.feat-url-input')?.value.trim() || '',
+              badge: r.querySelector('.feat-badge-input')?.value.trim() || '',
+              active: r.querySelector('.feat-active-toggle')?.checked ?? true
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.1",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            showcaseSettings: {
+              heroSliderEnabled: document.getElementById('featToggleHeroSlider')?.checked ?? true,
+              maxShowcaseSlots: parseInt(document.getElementById('featInputMaxSlots')?.value || '4', 10),
+              autoPlayIntervalSec: parseInt(document.getElementById('featInputRotationSec')?.value || '6', 10)
+            },
+            featuredItems: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleFeaturedJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('featuredJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncFeaturedJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatFeaturedRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaFeaturedRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyFeaturedRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaFeaturedRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveFeaturedContentConfig === 'function') {
+                window.CSOSuperStore.saveFeaturedContentConfig(parsed);
+                showToast("JSON applied and featured slots saved!", "success");
+                renderFeaturedContentWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddFeaturedItem')?.addEventListener('click', () => {
+          const container = document.getElementById('featuredListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.feat-row-item').length + 1;
+          const newId = 'FEAT-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "feat-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-amber-950/80 text-amber-400 border border-amber-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="feat-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-400" value="${newId}" placeholder="ID">
+                <input type="text" class="feat-type-input w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-sky-400" value="Article" placeholder="Content Type">
+                <select class="feat-placement-select bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-300">
+                  <option value="Hero Banner" selected>Hero Banner</option>
+                  <option value="Home Spotlight">Home Spotlight</option>
+                  <option value="Sidebar Feature">Sidebar Feature</option>
+                </select>
+                <input type="number" class="feat-priority-input w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center text-slate-200" value="${nextIdx}" title="Priority Rank">
+                <input type="text" class="feat-badge-input w-36 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400" value="Featured" placeholder="Showcase Badge">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-emerald-400 ml-2">
+                  <input type="checkbox" class="feat-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-feat text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Slot">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="feat-title-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Showcase Title">
+            </div>
+            <div>
+              <input type="text" class="feat-url-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-400 font-mono" value="/" placeholder="/destination-route.html">
+            </div>
+          `;
+          container.appendChild(div);
+          attachFeatRowListeners(div);
+          syncFeaturedJsonEditor();
+        });
+
+        const attachFeatRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-feat')?.addEventListener('click', () => {
+            parent.remove();
+            syncFeaturedJsonEditor();
+          });
+          parent.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', syncFeaturedJsonEditor);
+            input.addEventListener('change', syncFeaturedJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.feat-row-item').forEach(attachFeatRowListeners);
+
+        document.getElementById('btnSaveFeaturedConfig')?.addEventListener('click', () => {
+          const newConfig = harvestFeaturedForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveFeaturedContentConfig === 'function') {
+            window.CSOSuperStore.saveFeaturedContentConfig(newConfig);
+            showToast("Featured content slots saved successfully!", "success");
+            syncFeaturedJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportFeaturedConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportFeaturedContentManifest === 'function') {
+            window.CSOSuperStore.exportFeaturedContentManifest();
+            showToast("Featured content manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportFeaturedConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.featuredContent) parsed = parsed.featuredContent;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importFeaturedContentConfig === 'function') {
+                window.CSOSuperStore.importFeaturedContentConfig(JSON.stringify(parsed));
+                showToast("Featured content imported successfully!", "success");
+                renderFeaturedContentWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetFeaturedConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default featured content? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetFeaturedContentConfig === 'function') {
+              window.CSOSuperStore.resetFeaturedContentConfig();
+              showToast("Featured content restored to defaults.", "info");
+              renderFeaturedContentWorkspace(root);
+            }
+          }
+        });
+
+        ['featToggleHeroSlider', 'featInputMaxSlots', 'featInputRotationSec'].forEach(id => {
+          const el = document.getElementById(id);
+          el?.addEventListener('input', syncFeaturedJsonEditor);
+          el?.addEventListener('change', syncFeaturedJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-006 (Featured Content)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 4g: Content Categories Taxonomy Studio (module-04-007)
+     */
+    function renderContentCategoriesWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Content Categories (module-04-007)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getContentCategoriesConfig() : {
+          meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          categories: [
+            { id: "CAT-01", slug: "civil-services", name: "Civil Services (OPSC OAS)", description: "Odisha Administrative Services, Judicial Services, and State Police Services recruitment intelligence.", icon: "🏛️", count: 48, active: true },
+            { id: "CAT-02", slug: "staff-selection", name: "Staff Selection (OSSC)", description: "Combined Graduate Level (CGL), Technical Services, CTSRE, and Ministerial cadres.", icon: "📋", count: 72, active: true }
+          ]
+        };
+
+        const categories = Array.isArray(config.categories) ? config.categories : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Content Categories &amp; Taxonomy Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">module-04-007</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Classify academic resources into primary commission streams and educational tracks.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleCatJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportCatConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportCatConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetCatConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveCatConfig" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card: Categories Repeater -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Configured Streams &amp; Tracks</h3>
+                </div>
+                <button type="button" id="btnAddCatItem" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-xs rounded border border-emerald-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>New Category</span>
+                </button>
+              </div>
+
+              <div id="catListContainer" class="space-y-4">
+                ${categories.map((cat, idx) => `
+                  <div class="cat-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="cat-icon-input w-12 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center text-xl" value="${escapeHtml(cat.icon || '📚')}" title="Icon / Emoji">
+                        <input type="text" class="cat-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${escapeHtml(cat.id || '')}" placeholder="ID">
+                        <input type="text" class="cat-slug-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="${escapeHtml(cat.slug || '')}" placeholder="slug-name">
+                        <input type="number" class="cat-count-input w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="${cat.count || 0}" title="Active Content Items Count">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-emerald-400 ml-2">
+                          <input type="checkbox" class="cat-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" ${cat.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-cat text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Category">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <div>
+                      <input type="text" class="cat-name-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="${escapeHtml(cat.name || '')}" placeholder="Category Display Name">
+                    </div>
+                    <div>
+                      <textarea class="cat-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Category Scope Description">${escapeHtml(cat.description || '')}</textarea>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="catJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_content_categories_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatCatRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyCatRawJsonChanges" class="px-3 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaCatRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-emerald-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-emerald-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncCatJsonEditor = () => {
+          const currentConfig = harvestCatForm();
+          const jsonTextarea = document.getElementById('textareaCatRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestCatForm = () => {
+          const rows = document.querySelectorAll('.cat-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.cat-id-input')?.value.trim() || '',
+              icon: r.querySelector('.cat-icon-input')?.value.trim() || '📚',
+              slug: r.querySelector('.cat-slug-input')?.value.trim() || '',
+              name: r.querySelector('.cat-name-input')?.value.trim() || '',
+              description: r.querySelector('.cat-desc-input')?.value.trim() || '',
+              count: parseInt(r.querySelector('.cat-count-input')?.value || '0', 10),
+              active: r.querySelector('.cat-active-toggle')?.checked ?? true
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "2.0",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            categories: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleCatJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('catJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncCatJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatCatRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCatRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyCatRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaCatRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveContentCategoriesConfig === 'function') {
+                window.CSOSuperStore.saveContentCategoriesConfig(parsed);
+                showToast("JSON applied and categories saved!", "success");
+                renderContentCategoriesWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddCatItem')?.addEventListener('click', () => {
+          const container = document.getElementById('catListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.cat-row-item').length + 1;
+          const newId = 'CAT-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "cat-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="cat-icon-input w-12 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center text-xl" value="📘" title="Icon / Emoji">
+                <input type="text" class="cat-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-emerald-400" value="${newId}" placeholder="ID">
+                <input type="text" class="cat-slug-input w-44 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="stream-${nextIdx}" placeholder="slug-name">
+                <input type="number" class="cat-count-input w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" value="0" title="Active Content Items Count">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-emerald-400 ml-2">
+                  <input type="checkbox" class="cat-active-toggle rounded bg-slate-900 border-slate-700 text-emerald-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-cat text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Category">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div>
+              <input type="text" class="cat-name-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium" value="" placeholder="Category Display Name">
+            </div>
+            <div>
+              <textarea class="cat-desc-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-300 resize-y" rows="2" placeholder="Category Scope Description"></textarea>
+            </div>
+          `;
+          container.appendChild(div);
+          attachCatRowListeners(div);
+          syncCatJsonEditor();
+        });
+
+        const attachCatRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-cat')?.addEventListener('click', () => {
+            parent.remove();
+            syncCatJsonEditor();
+          });
+          parent.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', syncCatJsonEditor);
+            input.addEventListener('change', syncCatJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.cat-row-item').forEach(attachCatRowListeners);
+
+        document.getElementById('btnSaveCatConfig')?.addEventListener('click', () => {
+          const newConfig = harvestCatForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveContentCategoriesConfig === 'function') {
+            window.CSOSuperStore.saveContentCategoriesConfig(newConfig);
+            showToast("Categories saved successfully!", "success");
+            syncCatJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportCatConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportContentCategoriesManifest === 'function') {
+            window.CSOSuperStore.exportContentCategoriesManifest();
+            showToast("Categories manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportCatConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.contentCategories) parsed = parsed.contentCategories;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importContentCategoriesConfig === 'function') {
+                window.CSOSuperStore.importContentCategoriesConfig(JSON.stringify(parsed));
+                showToast("Categories imported successfully!", "success");
+                renderContentCategoriesWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetCatConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default categories? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetContentCategoriesConfig === 'function') {
+              window.CSOSuperStore.resetContentCategoriesConfig();
+              showToast("Categories restored to defaults.", "info");
+              renderContentCategoriesWorkspace(root);
+            }
+          }
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-007 (Content Categories)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    /**
+     * VIEW 4h: Tags & Taxonomies Studio (module-04-008)
+     */
+    function renderTagsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+
+      try {
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Content & Publishing";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Tags (module-04-008)";
+
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        const config = window.CSOSuperStore ? window.CSOSuperStore.getTagsConfig() : {
+          meta: { version: "1.3", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          tags: [
+            { id: "TAG-01", name: "Syllabus Breakdown", slug: "syllabus-breakdown", usageCount: 64, color: "#0ea5e9", active: true },
+            { id: "TAG-02", name: "Cutoff Analysis", slug: "cutoff-analysis", usageCount: 42, color: "#10b981", active: true }
+          ]
+        };
+
+        const tags = Array.isArray(config.tags) ? config.tags : [];
+
+        root.innerHTML = `
+          <div class="space-y-6 w-full max-w-full text-slate-100 pb-16">
+            <!-- Action Toolbar Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-lg backdrop-blur">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-lg">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-white tracking-wide">Tags &amp; Keywords Taxonomy Studio</h2>
+                    <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-sky-950/80 text-sky-400 border border-sky-800/60">module-04-008</span>
+                  </div>
+                  <p class="text-xs text-slate-400">Manage granular subject tags, exam phase keywords, and candidate search facets.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="btnToggleTagsJsonDrawer" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                  <span>Raw JSON Editor</span>
+                </button>
+                <button type="button" id="btnExportTagsConfig" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Export</span>
+                </button>
+                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Import</span>
+                  <input type="file" id="inputImportTagsConfig" accept=".json" class="hidden">
+                </label>
+                <button type="button" id="btnResetTagsConfig" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 flex items-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Reset</span>
+                </button>
+                <button type="button" id="btnSaveTagsConfig" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs rounded-lg shadow-md flex items-center gap-1.5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card: Tags Repeater & Cloud -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                  <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Candidate Search &amp; Topic Tags</h3>
+                </div>
+                <button type="button" id="btnAddTagItem" class="px-2.5 py-1 bg-sky-600/20 hover:bg-sky-600/40 text-sky-300 text-xs rounded border border-sky-500/30 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>New Tag</span>
+                </button>
+              </div>
+
+              <!-- Interactive Tag Cloud Preview -->
+              <div class="flex flex-wrap items-center gap-2 p-3 bg-slate-950/60 border border-slate-800/80 rounded-lg">
+                <span class="text-xs text-slate-400 font-mono mr-2">Preview Cloud:</span>
+                ${tags.filter(t => t.active !== false).map(t => `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border" style="background-color: ${escapeHtml(t.color || '#0ea5e9')}20; border-color: ${escapeHtml(t.color || '#0ea5e9')}50; color: ${escapeHtml(t.color || '#0ea5e9')};">
+                    #${escapeHtml(t.name || '')}
+                    <span class="text-[10px] opacity-75 font-mono">(${t.usageCount || 0})</span>
+                  </span>
+                `).join('')}
+              </div>
+
+              <!-- Tags Rows -->
+              <div id="tagsListContainer" class="space-y-3">
+                ${tags.map((tg, idx) => `
+                  <div class="tag-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3 space-y-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-sky-950/80 text-sky-400 border border-sky-800 text-xs font-bold rounded">#${idx + 1}</span>
+                        <input type="text" class="tag-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="${escapeHtml(tg.id || '')}" placeholder="ID">
+                        <input type="text" class="tag-name-input w-48 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-medium" value="${escapeHtml(tg.name || '')}" placeholder="Tag Name">
+                        <input type="text" class="tag-slug-input w-40 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-slate-300" value="${escapeHtml(tg.slug || '')}" placeholder="tag-slug">
+                        <input type="color" class="tag-color-input w-8 h-7 bg-slate-900 border border-slate-700 rounded cursor-pointer p-0.5" value="${tg.color || '#0ea5e9'}" title="Tag Highlight Color">
+                        <input type="number" class="tag-usage-input w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center text-slate-300" value="${tg.usageCount || 0}" title="Usage Count">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-sky-400 ml-2">
+                          <input type="checkbox" class="tag-active-toggle rounded bg-slate-900 border-slate-700 text-sky-500" ${tg.active !== false ? 'checked' : ''}>
+                          <span>Active</span>
+                        </label>
+                      </div>
+                      <button type="button" class="btn-remove-tag text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Tag">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Collapsible Raw JSON Drawer -->
+            <div id="tagsJsonDrawer" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-inner space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-amber-400">cso_tags_config</span>
+                  <span class="text-xs text-slate-500">Live JSON Payload</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnFormatTagsRawJson" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded border border-slate-700 transition">Format</button>
+                  <button type="button" id="btnApplyTagsRawJsonChanges" class="px-3 py-0.5 bg-sky-600 hover:bg-sky-500 text-xs font-medium text-white rounded shadow transition">Apply to Form</button>
+                </div>
+              </div>
+              <textarea id="textareaTagsRawJson" rows="12" class="w-full bg-slate-900/90 font-mono text-xs text-sky-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-sky-500 transition leading-normal"></textarea>
+            </div>
+          </div>
+        `;
+
+        // Sync helper
+        const syncTagsJsonEditor = () => {
+          const currentConfig = harvestTagsForm();
+          const jsonTextarea = document.getElementById('textareaTagsRawJson');
+          if (jsonTextarea) {
+            jsonTextarea.value = JSON.stringify(currentConfig, null, 2);
+          }
+        };
+
+        const harvestTagsForm = () => {
+          const rows = document.querySelectorAll('.tag-row-item');
+          const list = [];
+          rows.forEach(r => {
+            list.push({
+              id: r.querySelector('.tag-id-input')?.value.trim() || '',
+              name: r.querySelector('.tag-name-input')?.value.trim() || '',
+              slug: r.querySelector('.tag-slug-input')?.value.trim() || '',
+              color: r.querySelector('.tag-color-input')?.value || '#0ea5e9',
+              usageCount: parseInt(r.querySelector('.tag-usage-input')?.value || '0', 10),
+              active: r.querySelector('.tag-active-toggle')?.checked ?? true
+            });
+          });
+
+          return {
+            meta: {
+              version: config.meta?.version || "1.3",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: new Date().toISOString()
+            },
+            tags: list
+          };
+        };
+
+        // Attach listeners
+        document.getElementById('btnToggleTagsJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('tagsJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+              syncTagsJsonEditor();
+            }
+          }
+        });
+
+        document.getElementById('btnFormatTagsRawJson')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaTagsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              jsonTextarea.value = JSON.stringify(parsed, null, 2);
+            } catch (err) {
+              showToast("Invalid JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnApplyTagsRawJsonChanges')?.addEventListener('click', () => {
+          const jsonTextarea = document.getElementById('textareaTagsRawJson');
+          if (jsonTextarea) {
+            try {
+              const parsed = JSON.parse(jsonTextarea.value);
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.saveTagsConfig === 'function') {
+                window.CSOSuperStore.saveTagsConfig(parsed);
+                showToast("JSON applied and tags saved!", "success");
+                renderTagsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Failed to apply JSON: " + err.message, "danger");
+            }
+          }
+        });
+
+        document.getElementById('btnAddTagItem')?.addEventListener('click', () => {
+          const container = document.getElementById('tagsListContainer');
+          if (!container) return;
+          const nextIdx = container.querySelectorAll('.tag-row-item').length + 1;
+          const newId = 'TAG-0' + nextIdx;
+          const div = document.createElement('div');
+          div.className = "tag-row-item bg-slate-950/60 border border-slate-800/80 rounded-lg p-3 space-y-2";
+          div.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 flex items-center justify-center bg-sky-950/80 text-sky-400 border border-sky-800 text-xs font-bold rounded">#${nextIdx}</span>
+                <input type="text" class="tag-id-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-sky-400" value="${newId}" placeholder="ID">
+                <input type="text" class="tag-name-input w-48 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-medium" value="" placeholder="Tag Name">
+                <input type="text" class="tag-slug-input w-40 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-slate-300" value="tag-${nextIdx}" placeholder="tag-slug">
+                <input type="color" class="tag-color-input w-8 h-7 bg-slate-900 border border-slate-700 rounded cursor-pointer p-0.5" value="#0ea5e9" title="Tag Highlight Color">
+                <input type="number" class="tag-usage-input w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-center text-slate-300" value="0" title="Usage Count">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs text-sky-400 ml-2">
+                  <input type="checkbox" class="tag-active-toggle rounded bg-slate-900 border-slate-700 text-sky-500" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+              <button type="button" class="btn-remove-tag text-slate-400 hover:text-rose-400 p-1 transition" title="Delete Tag">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+          attachTagRowListeners(div);
+          syncTagsJsonEditor();
+        });
+
+        const attachTagRowListeners = (parent) => {
+          parent.querySelector('.btn-remove-tag')?.addEventListener('click', () => {
+            parent.remove();
+            syncTagsJsonEditor();
+          });
+          parent.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', syncTagsJsonEditor);
+            input.addEventListener('change', syncTagsJsonEditor);
+          });
+        };
+
+        document.querySelectorAll('.tag-row-item').forEach(attachTagRowListeners);
+
+        document.getElementById('btnSaveTagsConfig')?.addEventListener('click', () => {
+          const newConfig = harvestTagsForm();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveTagsConfig === 'function') {
+            window.CSOSuperStore.saveTagsConfig(newConfig);
+            showToast("Tags taxonomy saved successfully!", "success");
+            syncTagsJsonEditor();
+          }
+        });
+
+        document.getElementById('btnExportTagsConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportTagsManifest === 'function') {
+            window.CSOSuperStore.exportTagsManifest();
+            showToast("Tags manifest exported.", "info");
+          }
+        });
+
+        document.getElementById('inputImportTagsConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              let parsed = JSON.parse(event.target.result);
+              if (parsed && parsed.tags) parsed = parsed.tags;
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.importTagsConfig === 'function') {
+                window.CSOSuperStore.importTagsConfig(JSON.stringify(parsed));
+                showToast("Tags imported successfully!", "success");
+                renderTagsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetTagsConfig')?.addEventListener('click', () => {
+          if (confirm("Restore factory default tags? Unsaved changes will be lost.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetTagsConfig === 'function') {
+              window.CSOSuperStore.resetTagsConfig();
+              showToast("Tags restored to defaults.", "info");
+              renderTagsWorkspace(root);
+            }
+          }
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-008 (Tags)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 
