@@ -9712,6 +9712,267 @@
       return filename;
     },
 
+    // --- MODULE 08-013: Tax Configuration ---
+    getTaxConfigurationConfig() {
+      const DEFAULT_TAX_CONFIG = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        taxSettings: { gstin: "21AAACC1206M1ZV", stateCode: "21 (Odisha)", compositionScheme: false, defaultCurrency: "INR" },
+        items: [
+          { id: "TAX-01", taxRuleName: "Intra-State Digital Education GST", slabType: "GST 18%", cgstRate: 9.0, sgstRate: 9.0, igstRate: 0.0, sacHsn: "998431", applicability: "Odisha Candidates", active: true },
+          { id: "TAX-02", taxRuleName: "Inter-State Digital Subscription IGST", slabType: "IGST 18%", cgstRate: 0.0, sgstRate: 0.0, igstRate: 18.0, sacHsn: "998431", applicability: "Rest of India Candidates", active: true },
+          { id: "TAX-03", taxRuleName: "Printed Gazettes & Exempt Publications", slabType: "Exempt (0%)", cgstRate: 0.0, sgstRate: 0.0, igstRate: 0.0, sacHsn: "490110", applicability: "Physical Study Materials", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_tax_configuration_config', 'rules', () => DEFAULT_TAX_CONFIG);
+    },
+    saveTaxConfigurationConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.rules = cfg.items || cfg.rules || [];
+      cfg.items = cfg.rules;
+      localStorage.setItem('cso_tax_configuration_config', JSON.stringify(cfg));
+      this.logAudit("TAX_CONFIGURATION_SAVED", "FINANCE", "Tax Configuration updated with " + cfg.items.length + " rules.");
+    },
+    resetTaxConfigurationConfig() {
+      const DEFAULT_TAX_CONFIG = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        taxSettings: { gstin: "21AAACC1206M1ZV", stateCode: "21 (Odisha)", compositionScheme: false, defaultCurrency: "INR" },
+        items: [
+          { id: "TAX-01", taxRuleName: "Intra-State Digital Education GST", slabType: "GST 18%", cgstRate: 9.0, sgstRate: 9.0, igstRate: 0.0, sacHsn: "998431", applicability: "Odisha Candidates", active: true },
+          { id: "TAX-02", taxRuleName: "Inter-State Digital Subscription IGST", slabType: "IGST 18%", cgstRate: 0.0, sgstRate: 0.0, igstRate: 18.0, sacHsn: "998431", applicability: "Rest of India Candidates", active: true },
+          { id: "TAX-03", taxRuleName: "Printed Gazettes & Exempt Publications", slabType: "Exempt (0%)", cgstRate: 0.0, sgstRate: 0.0, igstRate: 0.0, sacHsn: "490110", applicability: "Physical Study Materials", active: true }
+        ]
+      };
+      localStorage.setItem('cso_tax_configuration_config', JSON.stringify(DEFAULT_TAX_CONFIG));
+      this.logAudit("TAX_CONFIGURATION_RESET", "FINANCE", "Tax Configuration restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_TAX_CONFIG));
+    },
+    exportTaxConfigurationManifest() {
+      const config = this.getTaxConfigurationConfig();
+      const filename = "tax_configuration_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("TAX_CONFIGURATION_EXPORTED", "DATA_EXPORT", "Tax configuration manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-014: Payouts & Settlements ---
+    getPayoutsSettlementsConfig() {
+      const DEFAULT_PAYOUTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalSettledINR: 425900, pendingPayoutINR: 18240, gatewayFeesDeductedINR: 9820 },
+        items: [
+          { id: "PAY-901", payoutRef: "SETTL-2026-901", gateway: "Razorpay", bankAccount: "HDFC Bank (Acct: ...8821)", grossAmountINR: 84500, deductionsINR: 1690, netAmountINR: 82810, utrNumber: "UTRHDFC091823901", settlementDate: "2026-11-06", status: "Settled", active: true },
+          { id: "PAY-902", payoutRef: "SETTL-2026-902", gateway: "Cashfree", bankAccount: "HDFC Bank (Acct: ...8821)", grossAmountINR: 42100, deductionsINR: 842, netAmountINR: 41258, utrNumber: "UTRHDFC091824110", settlementDate: "2026-11-07", status: "Settled", active: true },
+          { id: "PAY-903", payoutRef: "SETTL-2026-903", gateway: "Razorpay", bankAccount: "HDFC Bank (Acct: ...8821)", grossAmountINR: 18600, deductionsINR: 372, netAmountINR: 18228, utrNumber: "Processing...", settlementDate: "2026-11-09", status: "In Transit", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_payouts_settlements_config', 'settlements', () => DEFAULT_PAYOUTS);
+    },
+    savePayoutsSettlementsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.settlements = cfg.items || cfg.settlements || [];
+      cfg.items = cfg.settlements;
+      localStorage.setItem('cso_payouts_settlements_config', JSON.stringify(cfg));
+      this.logAudit("PAYOUTS_SETTLEMENTS_SAVED", "FINANCE", "Payouts & Settlements updated with " + cfg.items.length + " entries.");
+    },
+    resetPayoutsSettlementsConfig() {
+      const DEFAULT_PAYOUTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalSettledINR: 425900, pendingPayoutINR: 18240, gatewayFeesDeductedINR: 9820 },
+        items: [
+          { id: "PAY-901", payoutRef: "SETTL-2026-901", gateway: "Razorpay", bankAccount: "HDFC Bank (Acct: ...8821)", grossAmountINR: 84500, deductionsINR: 1690, netAmountINR: 82810, utrNumber: "UTRHDFC091823901", settlementDate: "2026-11-06", status: "Settled", active: true },
+          { id: "PAY-902", payoutRef: "SETTL-2026-902", gateway: "Cashfree", bankAccount: "HDFC Bank (Acct: ...8821)", grossAmountINR: 42100, deductionsINR: 842, netAmountINR: 41258, utrNumber: "UTRHDFC091824110", settlementDate: "2026-11-07", status: "Settled", active: true },
+          { id: "PAY-903", payoutRef: "SETTL-2026-903", gateway: "Razorpay", bankAccount: "HDFC Bank (Acct: ...8821)", grossAmountINR: 18600, deductionsINR: 372, netAmountINR: 18228, utrNumber: "Processing...", settlementDate: "2026-11-09", status: "In Transit", active: true }
+        ]
+      };
+      localStorage.setItem('cso_payouts_settlements_config', JSON.stringify(DEFAULT_PAYOUTS));
+      this.logAudit("PAYOUTS_SETTLEMENTS_RESET", "FINANCE", "Payouts & Settlements restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_PAYOUTS));
+    },
+    exportPayoutsSettlementsManifest() {
+      const config = this.getPayoutsSettlementsConfig();
+      const filename = "payouts_settlements_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PAYOUTS_SETTLEMENTS_EXPORTED", "DATA_EXPORT", "Payouts & Settlements manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-015: Reconciliation ---
+    getReconciliationConfig() {
+      const DEFAULT_RECONCILIATION = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalAuditedCount: 1420, matchedCount: 1418, discrepancyCount: 2, matchedPercentage: "99.85%" },
+        items: [
+          { id: "REC-01", cyclePeriod: "November 2026 (W1)", gatewayLedgerINR: 145200, bankCreditINR: 145200, varianceINR: 0, status: "Fully Reconciled", auditedDate: "2026-11-07", active: true },
+          { id: "REC-02", cyclePeriod: "October 2026 (Full)", gatewayLedgerINR: 280700, bankCreditINR: 280700, varianceINR: 0, status: "Fully Reconciled", auditedDate: "2026-11-01", active: true },
+          { id: "REC-03", cyclePeriod: "Current Open Cycle", gatewayLedgerINR: 56600, bankCreditINR: 56101, varianceINR: -499, status: "Pending Settlement Window", auditedDate: "2026-11-09", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_reconciliation_config', 'cycles', () => DEFAULT_RECONCILIATION);
+    },
+    saveReconciliationConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.cycles = cfg.items || cfg.cycles || [];
+      cfg.items = cfg.cycles;
+      localStorage.setItem('cso_reconciliation_config', JSON.stringify(cfg));
+      this.logAudit("RECONCILIATION_SAVED", "FINANCE", "Reconciliation cycles updated with " + cfg.items.length + " periods.");
+    },
+    resetReconciliationConfig() {
+      const DEFAULT_RECONCILIATION = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalAuditedCount: 1420, matchedCount: 1418, discrepancyCount: 2, matchedPercentage: "99.85%" },
+        items: [
+          { id: "REC-01", cyclePeriod: "November 2026 (W1)", gatewayLedgerINR: 145200, bankCreditINR: 145200, varianceINR: 0, status: "Fully Reconciled", auditedDate: "2026-11-07", active: true },
+          { id: "REC-02", cyclePeriod: "October 2026 (Full)", gatewayLedgerINR: 280700, bankCreditINR: 280700, varianceINR: 0, status: "Fully Reconciled", auditedDate: "2026-11-01", active: true },
+          { id: "REC-03", cyclePeriod: "Current Open Cycle", gatewayLedgerINR: 56600, bankCreditINR: 56101, varianceINR: -499, status: "Pending Settlement Window", auditedDate: "2026-11-09", active: true }
+        ]
+      };
+      localStorage.setItem('cso_reconciliation_config', JSON.stringify(DEFAULT_RECONCILIATION));
+      this.logAudit("RECONCILIATION_RESET", "FINANCE", "Reconciliation cycles restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_RECONCILIATION));
+    },
+    exportReconciliationManifest() {
+      const config = this.getReconciliationConfig();
+      const filename = "reconciliation_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("RECONCILIATION_EXPORTED", "DATA_EXPORT", "Reconciliation manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-016: Finance Reports ---
+    getFinanceReportsConfig() {
+      const DEFAULT_FINANCE_REPORTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "REP-01", reportTitle: "Monthly P&L & Revenue Statement (October 2026)", period: "2026-10", grossRevenueINR: 280700, taxLiabilityINR: 42800, operationalCostsINR: 35000, netOperatingProfitINR: 202900, fileFormat: "PDF & CSV", active: true },
+          { id: "REP-02", reportTitle: "Q2 FY26 Comprehensive Financial Audit", period: "Q2 FY2026-27", grossRevenueINR: 760400, taxLiabilityINR: 116000, operationalCostsINR: 92000, netOperatingProfitINR: 552400, fileFormat: "PDF & CSV", active: true },
+          { id: "REP-03", reportTitle: "Gateway Processing Fees & Interchange Expense Ledger", period: "2026-10", grossRevenueINR: 280700, taxLiabilityINR: 0, operationalCostsINR: 5614, netOperatingProfitINR: -5614, fileFormat: "CSV", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_finance_reports_config', 'reports', () => DEFAULT_FINANCE_REPORTS);
+    },
+    saveFinanceReportsConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.reports = cfg.items || cfg.reports || [];
+      cfg.items = cfg.reports;
+      localStorage.setItem('cso_finance_reports_config', JSON.stringify(cfg));
+      this.logAudit("FINANCE_REPORTS_SAVED", "FINANCE", "Finance Reports registry updated with " + cfg.items.length + " statements.");
+    },
+    resetFinanceReportsConfig() {
+      const DEFAULT_FINANCE_REPORTS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "REP-01", reportTitle: "Monthly P&L & Revenue Statement (October 2026)", period: "2026-10", grossRevenueINR: 280700, taxLiabilityINR: 42800, operationalCostsINR: 35000, netOperatingProfitINR: 202900, fileFormat: "PDF & CSV", active: true },
+          { id: "REP-02", reportTitle: "Q2 FY26 Comprehensive Financial Audit", period: "Q2 FY2026-27", grossRevenueINR: 760400, taxLiabilityINR: 116000, operationalCostsINR: 92000, netOperatingProfitINR: 552400, fileFormat: "PDF & CSV", active: true },
+          { id: "REP-03", reportTitle: "Gateway Processing Fees & Interchange Expense Ledger", period: "2026-10", grossRevenueINR: 280700, taxLiabilityINR: 0, operationalCostsINR: 5614, netOperatingProfitINR: -5614, fileFormat: "CSV", active: true }
+        ]
+      };
+      localStorage.setItem('cso_finance_reports_config', JSON.stringify(DEFAULT_FINANCE_REPORTS));
+      this.logAudit("FINANCE_REPORTS_RESET", "FINANCE", "Finance Reports registry restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_FINANCE_REPORTS));
+    },
+    exportFinanceReportsManifest() {
+      const config = this.getFinanceReportsConfig();
+      const filename = "finance_reports_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FINANCE_REPORTS_EXPORTED", "DATA_EXPORT", "Finance Reports manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-017: Payment Webhooks ---
+    getPaymentWebhooksConfig() {
+      const DEFAULT_WEBHOOKS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "WHK-101", eventId: "evt_rzp_pay_90112", provider: "Razorpay", eventType: "payment.captured", entityId: "pay_PkJd9124", httpStatus: 200, deliveryStatus: "Delivered", timestamp: "2026-11-08 14:22:11", active: true },
+          { id: "WHK-102", eventId: "evt_cf_ord_84102", provider: "Cashfree", eventType: "order.paid", entityId: "order_cf_9941", httpStatus: 200, deliveryStatus: "Delivered", timestamp: "2026-11-08 15:45:02", active: true },
+          { id: "WHK-103", eventId: "evt_rzp_rfnd_1029", provider: "Razorpay", eventType: "refund.processed", entityId: "rfnd_OkLd9912", httpStatus: 200, deliveryStatus: "Delivered", timestamp: "2026-11-02 11:10:05", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_payment_webhooks_config', 'logs', () => DEFAULT_WEBHOOKS);
+    },
+    savePaymentWebhooksConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.logs = cfg.items || cfg.logs || [];
+      cfg.items = cfg.logs;
+      localStorage.setItem('cso_payment_webhooks_config', JSON.stringify(cfg));
+      this.logAudit("PAYMENT_WEBHOOKS_SAVED", "FINANCE", "Payment Webhooks log updated with " + cfg.items.length + " events.");
+    },
+    resetPaymentWebhooksConfig() {
+      const DEFAULT_WEBHOOKS = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "WHK-101", eventId: "evt_rzp_pay_90112", provider: "Razorpay", eventType: "payment.captured", entityId: "pay_PkJd9124", httpStatus: 200, deliveryStatus: "Delivered", timestamp: "2026-11-08 14:22:11", active: true },
+          { id: "WHK-102", eventId: "evt_cf_ord_84102", provider: "Cashfree", eventType: "order.paid", entityId: "order_cf_9941", httpStatus: 200, deliveryStatus: "Delivered", timestamp: "2026-11-08 15:45:02", active: true },
+          { id: "WHK-103", eventId: "evt_rzp_rfnd_1029", provider: "Razorpay", eventType: "refund.processed", entityId: "rfnd_OkLd9912", httpStatus: 200, deliveryStatus: "Delivered", timestamp: "2026-11-02 11:10:05", active: true }
+        ]
+      };
+      localStorage.setItem('cso_payment_webhooks_config', JSON.stringify(DEFAULT_WEBHOOKS));
+      this.logAudit("PAYMENT_WEBHOOKS_RESET", "FINANCE", "Payment Webhooks log restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_WEBHOOKS));
+    },
+    exportPaymentWebhooksManifest() {
+      const config = this.getPaymentWebhooksConfig();
+      const filename = "payment_webhooks_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PAYMENT_WEBHOOKS_EXPORTED", "DATA_EXPORT", "Payment Webhooks log manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 08-018: Fraud & Risk Events ---
+    getFraudRiskConfig() {
+      const DEFAULT_FRAUD_RISK = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        riskPolicy: { maxFailedAttemptsPerIP: 3, blockAnonymousVPN: true, geoFencingIndiaOnly: true },
+        items: [
+          { id: "RISK-01", eventCode: "VEL-LIMIT-EXCEED", targetIdentifier: "IP: 185.220.101.45 (Tor Exit Node)", riskScore: "95/100 (Critical)", autoAction: "Auto-Blocked at Edge", eventTimestamp: "2026-11-07 03:14:22", active: true },
+          { id: "RISK-02", eventCode: "MULTIPLE-CARD-FAIL", targetIdentifier: "candidate.spoof@tempmail.com", riskScore: "78/100 (High)", autoAction: "Rate-Limited (24h cooldown)", eventTimestamp: "2026-11-08 21:05:40", active: true },
+          { id: "RISK-03", eventCode: "UNUSUAL-LOCATION-SPIKE", targetIdentifier: "Session: AS9121 (Non-IN Origin)", riskScore: "50/100 (Medium)", autoAction: "Mandatory OTP Challenge Enforced", eventTimestamp: "2026-11-09 10:12:15", active: true }
+        ]
+      };
+      return this._hydrateConfig('cso_fraud_risk_config', 'events', () => DEFAULT_FRAUD_RISK);
+    },
+    saveFraudRiskConfig(cfg) {
+      cfg = cfg || {};
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      cfg.events = cfg.items || cfg.events || [];
+      cfg.items = cfg.events;
+      localStorage.setItem('cso_fraud_risk_config', JSON.stringify(cfg));
+      this.logAudit("FRAUD_RISK_SAVED", "FINANCE", "Fraud & Risk events updated with " + cfg.items.length + " incidents.");
+    },
+    resetFraudRiskConfig() {
+      const DEFAULT_FRAUD_RISK = {
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        riskPolicy: { maxFailedAttemptsPerIP: 3, blockAnonymousVPN: true, geoFencingIndiaOnly: true },
+        items: [
+          { id: "RISK-01", eventCode: "VEL-LIMIT-EXCEED", targetIdentifier: "IP: 185.220.101.45 (Tor Exit Node)", riskScore: "95/100 (Critical)", autoAction: "Auto-Blocked at Edge", eventTimestamp: "2026-11-07 03:14:22", active: true },
+          { id: "RISK-02", eventCode: "MULTIPLE-CARD-FAIL", targetIdentifier: "candidate.spoof@tempmail.com", riskScore: "78/100 (High)", autoAction: "Rate-Limited (24h cooldown)", eventTimestamp: "2026-11-08 21:05:40", active: true },
+          { id: "RISK-03", eventCode: "UNUSUAL-LOCATION-SPIKE", targetIdentifier: "Session: AS9121 (Non-IN Origin)", riskScore: "50/100 (Medium)", autoAction: "Mandatory OTP Challenge Enforced", eventTimestamp: "2026-11-09 10:12:15", active: true }
+        ]
+      };
+      localStorage.setItem('cso_fraud_risk_config', JSON.stringify(DEFAULT_FRAUD_RISK));
+      this.logAudit("FRAUD_RISK_RESET", "FINANCE", "Fraud & Risk events restored to factory default.");
+      return JSON.parse(JSON.stringify(DEFAULT_FRAUD_RISK));
+    },
+    exportFraudRiskManifest() {
+      const config = this.getFraudRiskConfig();
+      const filename = "fraud_risk_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FRAUD_RISK_EXPORTED", "DATA_EXPORT", "Fraud & Risk manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 
@@ -10281,7 +10542,25 @@
           storageUsage: this.getStorageUsageConfig(),
           duplicateDetection: this.getDuplicateDetectionConfig(),
           brokenFileLinks: this.getBrokenFileLinksConfig(),
-          mediaOptimization: this.getMediaOptimizationConfig()
+          mediaOptimization: this.getMediaOptimizationConfig(),
+          paymentOverview: this.getPaymentOverviewConfig(),
+          paymentGatewaySettings: this.getPaymentGatewaySettingsConfig(),
+          transactions: this.getTransactionsConfig(),
+          orders: this.getOrdersConfig(),
+          paidResources: this.getPaidResourcesConfig(),
+          productsPricing: this.getProductsPricingConfig(),
+          subscriptions: this.getSubscriptionsConfig(),
+          memberships: this.getMembershipsConfig(),
+          donations: this.getDonationsConfig(),
+          couponsOffers: this.getCouponsOffersConfig(),
+          refundsDisputes: this.getRefundsDisputesConfig(),
+          invoicesReceipts: this.getInvoicesReceiptsConfig(),
+          taxConfiguration: this.getTaxConfigurationConfig(),
+          payoutsSettlements: this.getPayoutsSettlementsConfig(),
+          reconciliation: this.getReconciliationConfig(),
+          financeReports: this.getFinanceReportsConfig(),
+          paymentWebhooks: this.getPaymentWebhooksConfig(),
+          fraudRisk: this.getFraudRiskConfig()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');

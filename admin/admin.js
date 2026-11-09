@@ -526,6 +526,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-08-010') { renderCouponsOffersWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-08-011') { renderRefundsDisputesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-08-012') { renderInvoicesReceiptsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-013') { renderTaxConfigurationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-014') { renderPayoutsSettlementsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-015') { renderReconciliationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-016') { renderFinanceReportsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-017') { renderPaymentWebhooksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-08-018') { renderFraudRiskWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -756,6 +762,18 @@ async function loadMasterNavigation() {
         renderRefundsDisputesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-08-012') {
         renderInvoicesReceiptsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-013') {
+        renderTaxConfigurationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-014') {
+        renderPayoutsSettlementsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-015') {
+        renderReconciliationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-016') {
+        renderFinanceReportsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-017') {
+        renderPaymentWebhooksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-08-018') {
+        renderFraudRiskWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -34077,6 +34095,1532 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // --- MODULE 08-013: Tax Configuration Workspace ---
+    function renderTaxConfigurationWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getTaxConfigurationConfig();
+        let rules = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+        let searchTerm = '';
+        const settings = config.taxSettings || { gstin: "21AAACC1206M1ZV", stateCode: "21 (Odisha)", compositionScheme: false };
+
+        function render() {
+          const activeRules = rules.filter(r => r.active !== false);
+          const filtered = rules.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.taxRuleName || '').toLowerCase().includes(term) || (r.slabType || '').toLowerCase().includes(term) || (r.sacHsn || '').toLowerCase().includes(term) || (r.applicability || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">GST / COMPLIANCE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-013</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Tax Rules, HSN/SAC &amp; GST Configuration</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define intra-state (CGST + SGST), inter-state (IGST) slabs, HSN/SAC codes, and GSTIN registration parameters</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-tax" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Tax Rule
+                  </button>
+                  <button id="btn-inspect-tax" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-tax" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-tax" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat / Meta Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Registered GSTIN</span>
+                  <p class="text-xl font-bold font-mono text-emerald-400 mt-1">${settings.gstin || '21AAACC1206M1ZV'}</p>
+                  <span class="text-[11px] text-slate-500">State: ${settings.stateCode || '21 (Odisha)'}</span>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Active Tax Slabs</span>
+                  <p class="text-2xl font-bold text-white mt-1">${activeRules.length} <span class="text-xs text-slate-500 font-normal">configured</span></p>
+                  <span class="text-[11px] text-slate-500">Standard Rate: 18% GST (9% CGST + 9% SGST)</span>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Filing Regime</span>
+                  <p class="text-2xl font-bold text-indigo-400 mt-1">${settings.compositionScheme ? 'Composition' : 'Regular GST'}</p>
+                  <span class="text-[11px] text-slate-500">HSN Primary: SAC 998431</span>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="tax-search-input" value="${searchTerm}" placeholder="Filter rules by title, slab, SAC/HSN..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${rules.length} tax rules</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Rule ID</th>
+                        <th class="py-3 px-4">Tax Rule Name</th>
+                        <th class="py-3 px-4">Slab Type</th>
+                        <th class="py-3 px-4">CGST %</th>
+                        <th class="py-3 px-4">SGST %</th>
+                        <th class="py-3 px-4">IGST %</th>
+                        <th class="py-3 px-4">SAC / HSN</th>
+                        <th class="py-3 px-4">Applicability</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="10" class="py-8 text-center text-slate-500 font-sans">No tax rules match filter.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-emerald-400">${r.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${r.taxRuleName || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${r.slabType || ''}</span></td>
+                          <td class="py-3 px-4 text-slate-300">${r.cgstRate || 0}%</td>
+                          <td class="py-3 px-4 text-slate-300">${r.sgstRate || 0}%</td>
+                          <td class="py-3 px-4 text-slate-300">${r.igstRate || 0}%</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${r.sacHsn || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300 max-w-xs truncate">${r.applicability || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                              ${r.active !== false ? 'Active' : 'Disabled'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${r.id}" class="btn-toggle-tax px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                ${r.active !== false ? 'Disable' : 'Enable'}
+                              </button>
+                              <button data-id="${r.id}" class="btn-del-tax px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#tax-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#tax-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-tax');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Add New GST Tax Rule',
+                subtitle: 'Define rate breakdown, jurisdiction split, and HSN/SAC classification',
+                fields: [
+                  { name: 'taxRuleName', label: 'Rule Description', type: 'text', placeholder: 'e.g. Offline Interview Masterclass GST', required: true },
+                  { name: 'slabType', label: 'Tax Slab Type', type: 'select', options: [
+                    { value: 'GST 18%', label: 'GST 18% (9% CGST + 9% SGST)' },
+                    { value: 'IGST 18%', label: 'IGST 18% (Out-of-State)' },
+                    { value: 'GST 5%', label: 'GST 5% (2.5% + 2.5%)' },
+                    { value: 'Exempt (0%)', label: 'Exempt (0%)' }
+                  ], default: 'GST 18%' },
+                  { name: 'sacHsn', label: 'HSN / SAC Code', type: 'text', placeholder: '998431', default: '998431', required: true },
+                  { name: 'applicability', label: 'Geographic / Product Scope', type: 'text', placeholder: 'e.g. Odisha Aspirant Mock Test Registrations', required: true }
+                ],
+                onSubmit: (data) => {
+                  let cgst = 0, sgst = 0, igst = 0;
+                  if (data.slabType === 'GST 18%') { cgst = 9.0; sgst = 9.0; }
+                  else if (data.slabType === 'IGST 18%') { igst = 18.0; }
+                  else if (data.slabType === 'GST 5%') { cgst = 2.5; sgst = 2.5; }
+                  const newRule = {
+                    id: 'TAX-0' + (rules.length + 1),
+                    taxRuleName: data.taxRuleName.trim(),
+                    slabType: data.slabType,
+                    cgstRate: cgst,
+                    sgstRate: sgst,
+                    igstRate: igst,
+                    sacHsn: data.sacHsn.trim() || '998431',
+                    applicability: data.applicability.trim(),
+                    active: true
+                  };
+                  rules.push(newRule);
+                  config.rules = rules;
+                  config.items = rules;
+                  store.saveTaxConfigurationConfig(config);
+                  showToast('Tax rule created successfully.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Toggle Active
+          container.querySelectorAll('.btn-toggle-tax').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = rules.find(r => r.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.rules = rules;
+                config.items = rules;
+                store.saveTaxConfigurationConfig(config);
+                showToast(`Tax rule ${id} status toggled.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete Rule
+          container.querySelectorAll('.btn-del-tax').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Delete tax rule ${id}?`)) {
+                rules = rules.filter(r => r.id !== id);
+                config.rules = rules;
+                config.items = rules;
+                store.saveTaxConfigurationConfig(config);
+                showToast(`Tax rule ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-tax');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Tax Configuration Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-tax');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportTaxConfigurationManifest();
+              showToast('Tax configuration manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-tax');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset tax configuration to factory default?')) {
+                config = store.resetTaxConfigurationConfig();
+                rules = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+                showToast('Tax configuration restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-014: Payouts & Settlements Workspace ---
+    function renderPayoutsSettlementsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPayoutsSettlementsConfig();
+        let settlements = Array.isArray(config.settlements || config.items) ? [...(config.settlements || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalSettled = settlements.filter(s => s.status === 'Settled').reduce((acc, s) => acc + (Number(s.netAmountINR) || 0), 0);
+          const inTransit = settlements.filter(s => s.status !== 'Settled').reduce((acc, s) => acc + (Number(s.netAmountINR) || 0), 0);
+          const totalDeductions = settlements.reduce((acc, s) => acc + (Number(s.deductionsINR) || 0), 0);
+          const filtered = settlements.filter(s => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (s.payoutRef || '').toLowerCase().includes(term) || (s.gateway || '').toLowerCase().includes(term) || (s.utrNumber || '').toLowerCase().includes(term) || (s.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">BANK TRANSFERS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-014</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Gateway Payouts &amp; Bank Settlements</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track daily T+1/T+2 gateway settlements, merchant fee withholdings, UTR numbers, and bank credit confirmations</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-payout" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Record Settlement
+                  </button>
+                  <button id="btn-inspect-payout" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-payout" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-payout" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Net Settled (Bank Credited)</span>
+                  <p class="text-2xl font-bold text-white mt-1">₹${totalSettled.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Settlements In-Transit / Pending</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">₹${inTransit.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Gateway Deductions &amp; Fees</span>
+                  <p class="text-2xl font-bold text-slate-300 mt-1">₹${totalDeductions.toLocaleString('en-IN')}</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="payout-search-input" value="${searchTerm}" placeholder="Filter by UTR, gateway, or settlement ref..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${settlements.length} settlement batches</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Payout Ref</th>
+                        <th class="py-3 px-4">Gateway</th>
+                        <th class="py-3 px-4">Destination Bank</th>
+                        <th class="py-3 px-4">Gross Collected</th>
+                        <th class="py-3 px-4">Fees Deducted</th>
+                        <th class="py-3 px-4">Net Payout</th>
+                        <th class="py-3 px-4">UTR Number</th>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="10" class="py-8 text-center text-slate-500 font-sans">No settlement records found.</td>
+                        </tr>
+                      ` : filtered.map(s => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-blue-400">${s.payoutRef || ''}</td>
+                          <td class="py-3 px-4 font-sans text-white font-medium">${s.gateway || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-400">${s.bankAccount || 'HDFC Bank (...8821)'}</td>
+                          <td class="py-3 px-4 text-slate-300">₹${Number(s.grossAmountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-rose-400">-₹${Number(s.deductionsINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-emerald-400 font-bold">₹${Number(s.netAmountINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-slate-300 text-[11px]">${s.utrNumber || 'Processing...'}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${s.settlementDate || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${s.status || 'In Transit'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${s.status !== 'Settled' ? `
+                                <button data-id="${s.id}" class="btn-confirm-payout px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Confirm UTR
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Verified</span>
+                              `}
+                              <button data-id="${s.id}" class="btn-del-payout px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Remove
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#payout-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#payout-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Record Settlement Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-payout');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Log Gateway Payout / Settlement Batch',
+                subtitle: 'Record bank deposit reconciliation with gateway fee deductions and UTR',
+                fields: [
+                  { name: 'gateway', label: 'Payment Gateway', type: 'select', options: [
+                    { value: 'Razorpay', label: 'Razorpay Standard' },
+                    { value: 'Cashfree', label: 'Cashfree Payments' },
+                    { value: 'PayU', label: 'PayU India' }
+                  ], default: 'Razorpay' },
+                  { name: 'grossAmountINR', label: 'Gross Volume Collected (INR)', type: 'number', placeholder: '50000', required: true },
+                  { name: 'deductionsINR', label: 'Gateway MDR & GST Deductions (INR)', type: 'number', placeholder: '1000', default: '1000', required: true },
+                  { name: 'utrNumber', label: 'Bank UTR Reference Number', type: 'text', placeholder: 'e.g. UTRHDFC091824999', required: true },
+                  { name: 'status', label: 'Settlement Status', type: 'select', options: [
+                    { value: 'Settled', label: 'Settled (Bank Credited)' },
+                    { value: 'In Transit', label: 'In Transit (Pending T+1)' }
+                  ], default: 'Settled' }
+                ],
+                onSubmit: (data) => {
+                  const gross = Number(data.grossAmountINR) || 0;
+                  const ded = Number(data.deductionsINR) || 0;
+                  const net = gross - ded;
+                  const newSettlement = {
+                    id: 'PAY-' + Math.floor(910 + Math.random() * 80),
+                    payoutRef: 'SETTL-2026-' + Math.floor(910 + Math.random() * 80),
+                    gateway: data.gateway,
+                    bankAccount: 'HDFC Bank (Acct: ...8821)',
+                    grossAmountINR: gross,
+                    deductionsINR: ded,
+                    netAmountINR: net,
+                    utrNumber: data.utrNumber.trim(),
+                    settlementDate: new Date().toISOString().slice(0, 10),
+                    status: data.status,
+                    active: true
+                  };
+                  settlements.unshift(newSettlement);
+                  config.settlements = settlements;
+                  config.items = settlements;
+                  store.savePayoutsSettlementsConfig(config);
+                  showToast('Settlement batch recorded.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Confirm UTR
+          container.querySelectorAll('.btn-confirm-payout').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = settlements.find(s => s.id === id);
+              if (item) {
+                item.status = 'Settled';
+                if (!item.utrNumber || item.utrNumber.includes('Processing')) {
+                  item.utrNumber = 'UTRHDFC09' + Math.floor(100000 + Math.random() * 900000);
+                }
+                config.settlements = settlements;
+                config.items = settlements;
+                store.savePayoutsSettlementsConfig(config);
+                showToast(`Settlement ${item.payoutRef} confirmed as Settled.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-payout').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove settlement record ${id}?`)) {
+                settlements = settlements.filter(s => s.id !== id);
+                config.settlements = settlements;
+                config.items = settlements;
+                store.savePayoutsSettlementsConfig(config);
+                showToast(`Settlement record ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-payout');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Payouts & Settlements Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-payout');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportPayoutsSettlementsManifest();
+              showToast('Settlements manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-payout');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset payouts and settlements to factory default?')) {
+                config = store.resetPayoutsSettlementsConfig();
+                settlements = Array.isArray(config.settlements || config.items) ? [...(config.settlements || config.items)] : [];
+                showToast('Settlements restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-015: Reconciliation Workspace ---
+    function renderReconciliationWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getReconciliationConfig();
+        let cycles = Array.isArray(config.cycles || config.items) ? [...(config.cycles || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalAudited = cycles.length;
+          const reconciledCount = cycles.filter(c => c.varianceINR === 0).length;
+          const totalVarianceINR = cycles.reduce((acc, c) => acc + (Number(c.varianceINR) || 0), 0);
+          const filtered = cycles.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.cyclePeriod || '').toLowerCase().includes(term) || (c.status || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">AUDIT VERIFICATION</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-015</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Ledger &amp; Bank Statement Reconciliation</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated balance matching between gateway captured revenue, bank credits, and ledger variance audits</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-rec" class="px-3.5 py-2 text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Cycle Audit
+                  </button>
+                  <button id="btn-inspect-rec" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-rec" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-rec" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Reconciliation Rate</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${Math.round((reconciledCount / (totalAudited || 1)) * 100)}% <span class="text-xs text-slate-500 font-normal">matched</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Open Variance (Timing Diff)</span>
+                  <p class="text-2xl font-bold ${totalVarianceINR === 0 ? 'text-white' : 'text-amber-400'} mt-1">₹${totalVarianceINR.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Audited Settlement Cycles</span>
+                  <p class="text-2xl font-bold text-cyan-400 mt-1">${cycles.length} <span class="text-xs text-slate-500 font-normal">batches</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="rec-search-input" value="${searchTerm}" placeholder="Search cycle period or status..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${cycles.length} audit cycles</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Cycle ID</th>
+                        <th class="py-3 px-4">Accounting Period</th>
+                        <th class="py-3 px-4">Gateway Ledger</th>
+                        <th class="py-3 px-4">Bank Credit</th>
+                        <th class="py-3 px-4">Variance</th>
+                        <th class="py-3 px-4">Audit Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No reconciliation records found.</td>
+                        </tr>
+                      ` : filtered.map(c => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-cyan-400">${c.id || ''}</td>
+                          <td class="py-3 px-4 font-sans text-white font-medium">${c.cyclePeriod || ''}</td>
+                          <td class="py-3 px-4 text-slate-300">₹${Number(c.gatewayLedgerINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-slate-300">₹${Number(c.bankCreditINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-bold ${c.varianceINR === 0 ? 'text-emerald-400' : 'text-amber-400'}">
+                            ${c.varianceINR === 0 ? '₹0.00' : (c.varianceINR > 0 ? '+₹' : '-₹') + Math.abs(c.varianceINR).toLocaleString('en-IN')}
+                          </td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${c.auditedDate || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${c.status.includes('Reconciled') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${c.status || 'Pending'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              ${c.varianceINR !== 0 ? `
+                                <button data-id="${c.id}" class="btn-clear-rec px-2.5 py-1 text-[11px] font-medium rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 transition">
+                                  Balance Out
+                                </button>
+                              ` : `
+                                <span class="text-[11px] text-slate-500">Matched</span>
+                              `}
+                              <button data-id="${c.id}" class="btn-del-rec px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                                Archive
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#rec-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#rec-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-rec');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Open Financial Reconciliation Cycle',
+                subtitle: 'Compare gateway captured total vs physical bank statement credit',
+                fields: [
+                  { name: 'cyclePeriod', label: 'Accounting Cycle Period', type: 'text', placeholder: 'e.g. November 2026 (W2)', required: true },
+                  { name: 'gatewayLedgerINR', label: 'Gateway Captured Total (INR)', type: 'number', placeholder: '150000', required: true },
+                  { name: 'bankCreditINR', label: 'Bank Statement Verified Credit (INR)', type: 'number', placeholder: '150000', required: true },
+                  { name: 'status', label: 'Reconciliation State', type: 'select', options: [
+                    { value: 'Fully Reconciled', label: 'Fully Reconciled (Zero Variance)' },
+                    { value: 'Pending Settlement Window', label: 'Pending Settlement Window' },
+                    { value: 'Investigation Flagged', label: 'Investigation Flagged' }
+                  ], default: 'Fully Reconciled' }
+                ],
+                onSubmit: (data) => {
+                  const gw = Number(data.gatewayLedgerINR) || 0;
+                  const bk = Number(data.bankCreditINR) || 0;
+                  const variance = bk - gw;
+                  const newCycle = {
+                    id: 'REC-0' + (cycles.length + 1),
+                    cyclePeriod: data.cyclePeriod.trim(),
+                    gatewayLedgerINR: gw,
+                    bankCreditINR: bk,
+                    varianceINR: variance,
+                    status: variance === 0 ? 'Fully Reconciled' : data.status,
+                    auditedDate: new Date().toISOString().slice(0, 10),
+                    active: true
+                  };
+                  cycles.unshift(newCycle);
+                  config.cycles = cycles;
+                  config.items = cycles;
+                  store.saveReconciliationConfig(config);
+                  showToast('Reconciliation cycle logged.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Balance out variance
+          container.querySelectorAll('.btn-clear-rec').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = cycles.find(c => c.id === id);
+              if (item) {
+                item.bankCreditINR = item.gatewayLedgerINR;
+                item.varianceINR = 0;
+                item.status = 'Fully Reconciled';
+                config.cycles = cycles;
+                config.items = cycles;
+                store.saveReconciliationConfig(config);
+                showToast(`Cycle ${item.cyclePeriod} balanced and reconciled.`, 'success');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-rec').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Archive reconciliation cycle ${id}?`)) {
+                cycles = cycles.filter(c => c.id !== id);
+                config.cycles = cycles;
+                config.items = cycles;
+                store.saveReconciliationConfig(config);
+                showToast(`Cycle ${id} archived.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-rec');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Reconciliation Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-rec');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportReconciliationManifest();
+              showToast('Reconciliation manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-rec');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset reconciliation cycles to factory default?')) {
+                config = store.resetReconciliationConfig();
+                cycles = Array.isArray(config.cycles || config.items) ? [...(config.cycles || config.items)] : [];
+                showToast('Reconciliation cycles restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-015', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-015</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-016: Finance Reports Workspace ---
+    function renderFinanceReportsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFinanceReportsConfig();
+        let reports = Array.isArray(config.reports || config.items) ? [...(config.reports || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalRevenueAudit = reports.reduce((acc, r) => acc + (Number(r.grossRevenueINR) || 0), 0);
+          const totalNetProfitAudit = reports.reduce((acc, r) => acc + (Number(r.netOperatingProfitINR) || 0), 0);
+          const filtered = reports.filter(r => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (r.reportTitle || '').toLowerCase().includes(term) || (r.period || '').toLowerCase().includes(term) || (r.fileFormat || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20">EXECUTIVE STATEMENTS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-016</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Financial Statements, P&amp;L &amp; Balance Sheets</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Generate monthly profit and loss statements, quarterly tax summaries, operational expense audits, and CSV export packages</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-rep" class="px-3.5 py-2 text-xs font-semibold text-white bg-fuchsia-600 hover:bg-fuchsia-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Statement
+                  </button>
+                  <button id="btn-inspect-rep" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-rep" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-rep" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Audited Turnover</span>
+                  <p class="text-2xl font-bold text-white mt-1">₹${totalRevenueAudit.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Net Operating Surplus (EBITDA)</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">₹${totalNetProfitAudit.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Statements &amp; Filing Sets</span>
+                  <p class="text-2xl font-bold text-fuchsia-400 mt-1">${reports.length} <span class="text-xs text-slate-500 font-normal">reports</span></p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="rep-search-input" value="${searchTerm}" placeholder="Search report title, fiscal period, format..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-fuchsia-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${reports.length} statements</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Report ID</th>
+                        <th class="py-3 px-4">Report Title</th>
+                        <th class="py-3 px-4">Fiscal Period</th>
+                        <th class="py-3 px-4">Gross Revenue</th>
+                        <th class="py-3 px-4">Tax Liability</th>
+                        <th class="py-3 px-4">Opex Costs</th>
+                        <th class="py-3 px-4">Net Surplus</th>
+                        <th class="py-3 px-4">Format</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="9" class="py-8 text-center text-slate-500 font-sans">No financial statements found.</td>
+                        </tr>
+                      ` : filtered.map(r => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-fuchsia-400">${r.id || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-semibold">${r.reportTitle || ''}</td>
+                          <td class="py-3 px-4 font-sans text-slate-300"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[11px]">${r.period || ''}</span></td>
+                          <td class="py-3 px-4 text-white font-bold">₹${Number(r.grossRevenueINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-rose-400">₹${Number(r.taxLiabilityINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 text-slate-400">₹${Number(r.operationalCostsINR || 0).toLocaleString('en-IN')}</td>
+                          <td class="py-3 px-4 font-bold ${r.netOperatingProfitINR >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                            ₹${Number(r.netOperatingProfitINR || 0).toLocaleString('en-IN')}
+                          </td>
+                          <td class="py-3 px-4 font-sans text-slate-400 text-[11px]">${r.fileFormat || 'PDF'}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${r.id}" class="btn-dl-rep px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                Download
+                              </button>
+                              <button data-id="${r.id}" class="btn-del-rep px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#rep-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#rep-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-rep');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Generate Fiscal Statement / Audit Report',
+                subtitle: 'Summarize gross billings, GST liabilities, and operational margins',
+                fields: [
+                  { name: 'reportTitle', label: 'Report Title', type: 'text', placeholder: 'e.g. Monthly P&L Statement (November 2026)', required: true },
+                  { name: 'period', label: 'Fiscal Period', type: 'text', placeholder: 'e.g. 2026-11', default: '2026-11', required: true },
+                  { name: 'grossRevenueINR', label: 'Gross Revenue (INR)', type: 'number', placeholder: '320000', required: true },
+                  { name: 'taxLiabilityINR', label: 'Tax Liability (INR)', type: 'number', placeholder: '48000', required: true },
+                  { name: 'operationalCostsINR', label: 'Operating Costs & Gateway Fees (INR)', type: 'number', placeholder: '38000', required: true },
+                  { name: 'fileFormat', label: 'Export Format', type: 'select', options: [
+                    { value: 'PDF & CSV', label: 'PDF & CSV' },
+                    { value: 'PDF Only', label: 'PDF Only' },
+                    { value: 'CSV', label: 'CSV' }
+                  ], default: 'PDF & CSV' }
+                ],
+                onSubmit: (data) => {
+                  const gross = Number(data.grossRevenueINR) || 0;
+                  const tax = Number(data.taxLiabilityINR) || 0;
+                  const opex = Number(data.operationalCostsINR) || 0;
+                  const profit = gross - tax - opex;
+                  const newRep = {
+                    id: 'REP-0' + (reports.length + 1),
+                    reportTitle: data.reportTitle.trim(),
+                    period: data.period.trim(),
+                    grossRevenueINR: gross,
+                    taxLiabilityINR: tax,
+                    operationalCostsINR: opex,
+                    netOperatingProfitINR: profit,
+                    fileFormat: data.fileFormat,
+                    active: true
+                  };
+                  reports.unshift(newRep);
+                  config.reports = reports;
+                  config.items = reports;
+                  store.saveFinanceReportsConfig(config);
+                  showToast('Financial statement generated.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Download statement summary
+          container.querySelectorAll('.btn-dl-rep').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = reports.find(r => r.id === id);
+              if (item) {
+                showToast(`Generated download package for ${item.reportTitle}`, 'info');
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-rep').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove financial statement ${id}?`)) {
+                reports = reports.filter(r => r.id !== id);
+                config.reports = reports;
+                config.items = reports;
+                store.saveFinanceReportsConfig(config);
+                showToast(`Statement ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-rep');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Finance Reports Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-rep');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportFinanceReportsManifest();
+              showToast('Finance reports manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-rep');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset financial statements to factory default?')) {
+                config = store.resetFinanceReportsConfig();
+                reports = Array.isArray(config.reports || config.items) ? [...(config.reports || config.items)] : [];
+                showToast('Financial statements restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-016', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-017: Payment Webhooks Workspace ---
+    function renderPaymentWebhooksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPaymentWebhooksConfig();
+        let logs = Array.isArray(config.logs || config.items) ? [...(config.logs || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const successCount = logs.filter(l => Number(l.httpStatus) === 200).length;
+          const filtered = logs.filter(l => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (l.eventId || '').toLowerCase().includes(term) || (l.provider || '').toLowerCase().includes(term) || (l.eventType || '').toLowerCase().includes(term) || (l.entityId || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">EVENT BUS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-017</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Payment Webhooks &amp; Gateway Event Ingestion</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time webhook listener feed for payment captures, refund events, subscription renewals, and delivery status</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-whk" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Simulate Webhook
+                  </button>
+                  <button id="btn-inspect-whk" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-whk" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-whk" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Total Ingested Events</span>
+                  <p class="text-2xl font-bold text-white mt-1">${logs.length}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Delivery Success Rate (HTTP 200)</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${Math.round((successCount / (logs.length || 1)) * 100)}% <span class="text-xs text-slate-500 font-normal">(${successCount}/${logs.length})</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Webhook Dispatch Status</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">Healthy &amp; Active</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="whk-search-input" value="${searchTerm}" placeholder="Search event ID, provider, event type..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${logs.length} webhook payloads</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Event ID</th>
+                        <th class="py-3 px-4">Provider</th>
+                        <th class="py-3 px-4">Event Type</th>
+                        <th class="py-3 px-4">Entity ID</th>
+                        <th class="py-3 px-4">HTTP Response</th>
+                        <th class="py-3 px-4">Delivery</th>
+                        <th class="py-3 px-4">Timestamp</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-8 text-center text-slate-500 font-sans">No webhook event logs found.</td>
+                        </tr>
+                      ` : filtered.map(l => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-emerald-400">${l.eventId || ''}</td>
+                          <td class="py-3 px-4 font-sans text-white font-medium">${l.provider || ''}</td>
+                          <td class="py-3 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[11px]">${l.eventType || ''}</span></td>
+                          <td class="py-3 px-4 text-slate-300 text-[11px]">${l.entityId || ''}</td>
+                          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${Number(l.httpStatus) === 200 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">${l.httpStatus || 200}</span></td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${l.deliveryStatus || 'Delivered'}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${l.timestamp || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${l.id}" class="btn-replay-whk px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                Replay
+                              </button>
+                              <button data-id="${l.id}" class="btn-del-whk px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Clear
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#whk-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#whk-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Simulate Webhook Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-whk');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Simulate Gateway Webhook Payload',
+                subtitle: 'Trigger a mock webhook event to test server notification delivery',
+                fields: [
+                  { name: 'provider', label: 'Payment Provider', type: 'select', options: [
+                    { value: 'Razorpay', label: 'Razorpay' },
+                    { value: 'Cashfree', label: 'Cashfree' },
+                    { value: 'PayU', label: 'PayU India' }
+                  ], default: 'Razorpay' },
+                  { name: 'eventType', label: 'Webhook Event Type', type: 'select', options: [
+                    { value: 'payment.captured', label: 'payment.captured' },
+                    { value: 'payment.failed', label: 'payment.failed' },
+                    { value: 'refund.processed', label: 'refund.processed' },
+                    { value: 'subscription.charged', label: 'subscription.charged' }
+                  ], default: 'payment.captured' },
+                  { name: 'entityId', label: 'Associated Transaction / Payment ID', type: 'text', placeholder: 'e.g. pay_Test99201', required: true }
+                ],
+                onSubmit: (data) => {
+                  const newWhk = {
+                    id: 'WHK-' + Math.floor(100 + Math.random() * 900),
+                    eventId: 'evt_' + data.provider.toLowerCase().slice(0, 3) + '_' + Math.random().toString(36).substr(2, 7),
+                    provider: data.provider,
+                    eventType: data.eventType,
+                    entityId: data.entityId.trim(),
+                    httpStatus: 200,
+                    deliveryStatus: 'Delivered',
+                    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                    active: true
+                  };
+                  logs.unshift(newWhk);
+                  config.logs = logs;
+                  config.items = logs;
+                  store.savePaymentWebhooksConfig(config);
+                  showToast('Webhook payload dispatched successfully.', 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Replay
+          container.querySelectorAll('.btn-replay-whk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = logs.find(l => l.id === id);
+              if (item) {
+                showToast(`Replayed webhook ${item.eventId} -> HTTP 200 OK`, 'success');
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-whk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Remove webhook log entry ${id}?`)) {
+                logs = logs.filter(l => l.id !== id);
+                config.logs = logs;
+                config.items = logs;
+                store.savePaymentWebhooksConfig(config);
+                showToast(`Log ${id} removed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-whk');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Payment Webhooks Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-whk');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportPaymentWebhooksManifest();
+              showToast('Webhooks log manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-whk');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset webhook log history to factory defaults?')) {
+                config = store.resetPaymentWebhooksConfig();
+                logs = Array.isArray(config.logs || config.items) ? [...(config.logs || config.items)] : [];
+                showToast('Webhook logs restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-017', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-017</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // --- MODULE 08-018: Fraud & Risk Events Workspace ---
+    function renderFraudRiskWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getFraudRiskConfig();
+        let events = Array.isArray(config.events || config.items) ? [...(config.events || config.items)] : [];
+        let searchTerm = '';
+        const policy = config.riskPolicy || { maxFailedAttemptsPerIP: 3, blockAnonymousVPN: true, geoFencingIndiaOnly: true };
+
+        function render() {
+          const highRiskCount = events.filter(e => (e.riskScore || '').includes('Critical') || (e.riskScore || '').includes('High')).length;
+          const filtered = events.filter(e => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (e.eventCode || '').toLowerCase().includes(term) || (e.targetIdentifier || '').toLowerCase().includes(term) || (e.autoAction || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">SECURITY &amp; SHIELD</span>
+                    <span class="text-xs text-slate-400 font-mono">module-08-018</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Fraud Detection, Velocity Limits &amp; Risk Guard</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated velocity triggers, card test attack mitigation, Tor/VPN edge blocking, and IP geofencing defense</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="btn-add-risk" class="px-3.5 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Flag Risk Target
+                  </button>
+                  <button id="btn-inspect-risk" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-risk" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-risk" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-800/40 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">High / Critical Risk Flags</span>
+                  <p class="text-2xl font-bold text-rose-400 mt-1">${highRiskCount} <span class="text-xs text-slate-500 font-normal">mitigated</span></p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Edge Geofencing</span>
+                  <p class="text-2xl font-bold text-emerald-400 mt-1">${policy.geoFencingIndiaOnly ? 'India Only (Enforced)' : 'Global'}</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                  <span class="text-slate-400 text-xs">Tor / VPN Blocking</span>
+                  <p class="text-2xl font-bold text-amber-400 mt-1">${policy.blockAnonymousVPN ? 'Active (Auto-Drop)' : 'Monitor'}</p>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                  <input type="text" id="risk-search-input" value="${searchTerm}" placeholder="Filter by event code, IP, email, action..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition">
+                </div>
+                <span class="text-xs text-slate-400">Showing ${filtered.length} of ${events.length} flagged security events</span>
+              </div>
+
+              <!-- Table -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/50 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th class="py-3 px-4">Event Code</th>
+                        <th class="py-3 px-4">Target Identifier (IP / Session / Email)</th>
+                        <th class="py-3 px-4">Risk Evaluation</th>
+                        <th class="py-3 px-4">Automated Action Taken</th>
+                        <th class="py-3 px-4">Timestamp</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="6" class="py-8 text-center text-slate-500 font-sans">No fraud or risk incidents logged.</td>
+                        </tr>
+                      ` : filtered.map(e => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="py-3 px-4 font-bold text-rose-400">${e.eventCode || ''}</td>
+                          <td class="py-3 px-4 text-white font-sans font-medium">${e.targetIdentifier || ''}</td>
+                          <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${(e.riskScore || '').includes('Critical') ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : ((e.riskScore || '').includes('High') ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20')}">
+                              ${e.riskScore || ''}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 font-sans text-slate-300">${e.autoAction || ''}</td>
+                          <td class="py-3 px-4 text-slate-400 text-[11px]">${e.eventTimestamp || ''}</td>
+                          <td class="py-3 px-4 text-right font-sans">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button data-id="${e.id}" class="btn-unblock-risk px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                                Unblock
+                              </button>
+                              <button data-id="${e.id}" class="btn-del-risk px-2.5 py-1 text-[11px] font-medium rounded-lg bg-rose-950/30 hover:bg-rose-950/60 text-rose-400 hover:text-rose-300 transition">
+                                Dismiss
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bind search
+          const searchInput = container.querySelector('#risk-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const el = container.querySelector('#risk-search-input');
+              if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+            });
+          }
+
+          // Create Modal Trigger
+          const btnAdd = container.querySelector('#btn-add-risk');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              openModuleCreateModal({
+                title: 'Add Manual Security Flag / IP Ban',
+                subtitle: 'Ban an abusive IP address, suspect card testing identity, or spoofed origin',
+                fields: [
+                  { name: 'eventCode', label: 'Threat Classification', type: 'select', options: [
+                    { value: 'MANUAL-ADMIN-BAN', label: 'MANUAL-ADMIN-BAN' },
+                    { value: 'VEL-LIMIT-EXCEED', label: 'VEL-LIMIT-EXCEED' },
+                    { value: 'MULTIPLE-CARD-FAIL', label: 'MULTIPLE-CARD-FAIL' },
+                    { value: 'PROXY-VPN-BLOCKED', label: 'PROXY-VPN-BLOCKED' }
+                  ], default: 'MANUAL-ADMIN-BAN' },
+                  { name: 'targetIdentifier', label: 'Target IP / Email / CIDR', type: 'text', placeholder: 'e.g. IP: 103.21.244.0/24', required: true },
+                  { name: 'riskScore', label: 'Assigned Risk Score', type: 'select', options: [
+                    { value: '99/100 (Critical)', label: '99/100 (Critical)' },
+                    { value: '80/100 (High)', label: '80/100 (High)' },
+                    { value: '50/100 (Medium)', label: '50/100 (Medium)' }
+                  ], default: '99/100 (Critical)' },
+                  { name: 'autoAction', label: 'Action to Enforce', type: 'select', options: [
+                    { value: 'Permanently Banned at Cloudflare Edge', label: 'Permanently Banned at Cloudflare Edge' },
+                    { value: 'Rate-Limited (24h cooldown)', label: 'Rate-Limited (24h cooldown)' },
+                    { value: 'Mandatory OTP Challenge Enforced', label: 'Mandatory OTP Challenge Enforced' }
+                  ], default: 'Permanently Banned at Cloudflare Edge' }
+                ],
+                onSubmit: (data) => {
+                  const newRisk = {
+                    id: 'RISK-0' + (events.length + 1),
+                    eventCode: data.eventCode,
+                    targetIdentifier: data.targetIdentifier.trim(),
+                    riskScore: data.riskScore,
+                    autoAction: data.autoAction,
+                    eventTimestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+                    active: true
+                  };
+                  events.unshift(newRisk);
+                  config.events = events;
+                  config.items = events;
+                  store.saveFraudRiskConfig(config);
+                  showToast(`Threat rule for ${newRisk.targetIdentifier} active.`, 'success');
+                  render();
+                }
+              });
+            });
+          }
+
+          // Unblock
+          container.querySelectorAll('.btn-unblock-risk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              const item = events.find(ev => ev.id === id);
+              if (item) {
+                item.autoAction = 'Whitelisted / Cleared by Admin';
+                item.riskScore = '10/100 (Low)';
+                config.events = events;
+                config.items = events;
+                store.saveFraudRiskConfig(config);
+                showToast(`Target ${item.targetIdentifier} whitelisted.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Delete
+          container.querySelectorAll('.btn-del-risk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = e.currentTarget.getAttribute('data-id');
+              if (confirm(`Dismiss risk incident ${id}?`)) {
+                events = events.filter(ev => ev.id !== id);
+                config.events = events;
+                config.items = events;
+                store.saveFraudRiskConfig(config);
+                showToast(`Incident ${id} dismissed.`, 'info');
+                render();
+              }
+            });
+          });
+
+          // Schema inspection
+          const btnInspect = container.querySelector('#btn-inspect-risk');
+          if (btnInspect) {
+            btnInspect.addEventListener('click', () => {
+              openInspectSchemaModal('Fraud & Risk Schema', config);
+            });
+          }
+
+          // Export Manifest
+          const btnExport = container.querySelector('#btn-export-risk');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              store.exportFraudRiskManifest();
+              showToast('Fraud & risk manifest JSON exported.', 'success');
+            });
+          }
+
+          // Reset
+          const btnReset = container.querySelector('#btn-reset-risk');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset fraud & risk rules to factory default?')) {
+                config = store.resetFraudRiskConfig();
+                events = Array.isArray(config.events || config.items) ? [...(config.events || config.items)] : [];
+                showToast('Fraud & risk rules restored to default.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-08-018', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-08-018</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 

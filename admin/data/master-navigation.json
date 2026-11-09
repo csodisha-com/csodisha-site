@@ -597,32 +597,32 @@
         {
           "id": "module-08-013",
           "title": "Tax Configuration",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-08-014",
           "title": "Payouts & Settlements",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-08-015",
           "title": "Reconciliation",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-08-016",
           "title": "Finance Reports",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-08-017",
           "title": "Payment Webhooks",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-08-018",
           "title": "Fraud & Risk Events",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },
