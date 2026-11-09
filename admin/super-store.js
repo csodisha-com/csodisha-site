@@ -7210,6 +7210,215 @@
       return filename;
     },
 
+    // -------------------------------------------------------------
+    // ENGINE 60.1: Resource Collections Engine (module-05-016)
+    // -------------------------------------------------------------
+    getResourceCollectionsConfig() {
+      const fallback = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        collectionSettings: { enableDynamicBundling: true, highlightTrendingCollections: true },
+        collections: [
+          { id: "COL-01", title: "OPSC OAS 2026 Prelims Foundation Bundle", category: "Civil Services", itemCount: 12, totalSize: "45.2 MB", badge: "Flagship Kit", targetExam: "OPSC OAS", downloadCount: 3820, active: true },
+          { id: "COL-02", title: "OSSC CGL Mathematics & Reasoning Master Pack", category: "Staff Selection", itemCount: 8, totalSize: "22.8 MB", badge: "High Yield", targetExam: "OSSC CGL", downloadCount: 5190, active: true },
+          { id: "COL-03", title: "Odisha History & Geography 30-Districts Gazetteer Archive", category: "General Studies", itemCount: 15, totalSize: "68.4 MB", badge: "State Heritage", targetExam: "All Odisha Exams", downloadCount: 2940, active: true }
+        ]
+      };
+      const raw = localStorage.getItem("cso_resource_collections_config");
+      if (!raw) return fallback;
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          meta: parsed.meta || fallback.meta,
+          collectionSettings: parsed.collectionSettings || fallback.collectionSettings,
+          collections: Array.isArray(parsed.collections) ? parsed.collections : fallback.collections
+        };
+      } catch (e) {
+        console.error("Failed to parse cso_resource_collections_config", e);
+        return fallback;
+      }
+    },
+
+    saveResourceCollectionsConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        collectionSettings: {
+          enableDynamicBundling: Boolean(config.collectionSettings?.enableDynamicBundling),
+          highlightTrendingCollections: Boolean(config.collectionSettings?.highlightTrendingCollections)
+        },
+        collections: Array.isArray(config.collections) ? config.collections.map(c => ({
+          id: String(c.id || "COL-" + Math.floor(10 + Math.random() * 90)),
+          title: String(c.title || "").trim(),
+          category: String(c.category || "General Studies").trim(),
+          itemCount: Number(c.itemCount || 0),
+          totalSize: String(c.totalSize || "0 MB").trim(),
+          badge: String(c.badge || "Standard").trim(),
+          targetExam: String(c.targetExam || "All Odisha Exams").trim(),
+          downloadCount: Number(c.downloadCount || 0),
+          active: c.active !== false
+        })) : []
+      };
+      localStorage.setItem("cso_resource_collections_config", JSON.stringify(clean));
+      this.logAudit("RESOURCE_COLLECTIONS_UPDATED", "EDUCATIONAL_RESOURCES", "Resource collections updated (" + clean.collections.length + " collections).");
+      return true;
+    },
+
+    resetResourceCollectionsConfig() {
+      localStorage.removeItem("cso_resource_collections_config");
+      this.logAudit("RESOURCE_COLLECTIONS_RESET", "SYSTEM_RESET", "Resource collections configuration reset to factory defaults.");
+      return this.getResourceCollectionsConfig();
+    },
+
+    exportResourceCollectionsManifest() {
+      const config = this.getResourceCollectionsConfig();
+      const filename = "resource_collections_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("RESOURCE_COLLECTIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "Resource collections manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // -------------------------------------------------------------
+    // ENGINE 60.2: Downloads & Access Rules Engine (module-05-017)
+    // -------------------------------------------------------------
+    getDownloadsRulesConfig() {
+      const fallback = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        rulesSettings: { enforceRateLimiting: true, maxDownloadsPerHour: 50, requireAuthForProtectedPdfs: false },
+        accessTiers: [
+          { id: "TIER-01", name: "Public Open Access", userGroup: "Anonymous / Guest", dailyLimitMb: 250, allowedFormats: ["PDF", "EPUB", "HTML"], active: true },
+          { id: "TIER-02", name: "Registered Aspirant", userGroup: "Registered Citizen", dailyLimitMb: 1024, allowedFormats: ["PDF", "EPUB", "ZIP", "CSV"], active: true },
+          { id: "TIER-03", name: "Faculty / Verified Educator", userGroup: "Verified Contributor", dailyLimitMb: 5120, allowedFormats: ["All Formats + High-Res Scans"], active: true }
+        ]
+      };
+      const raw = localStorage.getItem("cso_downloads_rules_config");
+      if (!raw) return fallback;
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          meta: parsed.meta || fallback.meta,
+          rulesSettings: parsed.rulesSettings || fallback.rulesSettings,
+          accessTiers: Array.isArray(parsed.accessTiers) ? parsed.accessTiers : fallback.accessTiers
+        };
+      } catch (e) {
+        console.error("Failed to parse cso_downloads_rules_config", e);
+        return fallback;
+      }
+    },
+
+    saveDownloadsRulesConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        rulesSettings: {
+          enforceRateLimiting: Boolean(config.rulesSettings?.enforceRateLimiting),
+          maxDownloadsPerHour: Number(config.rulesSettings?.maxDownloadsPerHour || 50),
+          requireAuthForProtectedPdfs: Boolean(config.rulesSettings?.requireAuthForProtectedPdfs)
+        },
+        accessTiers: Array.isArray(config.accessTiers) ? config.accessTiers.map(t => ({
+          id: String(t.id || "TIER-" + Math.floor(10 + Math.random() * 90)),
+          name: String(t.name || "").trim(),
+          userGroup: String(t.userGroup || "General").trim(),
+          dailyLimitMb: Number(t.dailyLimitMb || 250),
+          allowedFormats: Array.isArray(t.allowedFormats) ? t.allowedFormats : String(t.allowedFormats || "PDF").split(",").map(f => f.trim()).filter(Boolean),
+          active: t.active !== false
+        })) : []
+      };
+      localStorage.setItem("cso_downloads_rules_config", JSON.stringify(clean));
+      this.logAudit("DOWNLOADS_RULES_UPDATED", "EDUCATIONAL_RESOURCES", "Downloads & Access rules updated (" + clean.accessTiers.length + " tiers).");
+      return true;
+    },
+
+    resetDownloadsRulesConfig() {
+      localStorage.removeItem("cso_downloads_rules_config");
+      this.logAudit("DOWNLOADS_RULES_RESET", "SYSTEM_RESET", "Downloads & Access rules configuration reset to factory defaults.");
+      return this.getDownloadsRulesConfig();
+    },
+
+    exportDownloadsRulesManifest() {
+      const config = this.getDownloadsRulesConfig();
+      const filename = "downloads_rules_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("DOWNLOADS_RULES_MANIFEST_EXPORTED", "DATA_EXPORT", "Downloads rules manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // -------------------------------------------------------------
+    // ENGINE 60.3: Government Schemes Engine (module-05-018)
+    // -------------------------------------------------------------
+    getGovernmentSchemesConfig() {
+      const fallback = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        schemeSettings: { autoSyncDbtPortals: true, showIncomeCeilingRules: true },
+        schemes: [
+          { id: "SCHM-01", name: "KALIA (Krushak Assistance for Livelihood and Income Augmentation)", department: "Agriculture & Farmers' Empowerment", beneficiaryGroup: "Small / Marginal Farmers & Landless Laborers", financialAssistance: "Rs. 10,000 per family/year", applicationMode: "Online DBT / Mo Seva Kendra", active: true },
+          { id: "SCHM-02", name: "Biju Swasthya Kalyan Yojana (BSKY) / Nabin Card", department: "Health & Family Welfare", beneficiaryGroup: "Economically Weaker Families & Women", financialAssistance: "Secondary & Tertiary care up to Rs. 5-10 Lakhs", applicationMode: "BSKY Health Card Portal", active: true },
+          { id: "SCHM-03", name: "Sudakshya Scheme for Girls in ITI & Polytechnic", department: "Skill Development & Technical Education", beneficiaryGroup: "Girl Students in Technical Trades", financialAssistance: "100% Tuition Waiver + Uniform & Maintenance Allowance", applicationMode: "SAMS Odisha Portal", active: true }
+        ]
+      };
+      const raw = localStorage.getItem("cso_government_schemes_config");
+      if (!raw) return fallback;
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          meta: parsed.meta || fallback.meta,
+          schemeSettings: parsed.schemeSettings || fallback.schemeSettings,
+          schemes: Array.isArray(parsed.schemes) ? parsed.schemes : fallback.schemes
+        };
+      } catch (e) {
+        console.error("Failed to parse cso_government_schemes_config", e);
+        return fallback;
+      }
+    },
+
+    saveGovernmentSchemesConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        schemeSettings: {
+          autoSyncDbtPortals: Boolean(config.schemeSettings?.autoSyncDbtPortals),
+          showIncomeCeilingRules: Boolean(config.schemeSettings?.showIncomeCeilingRules)
+        },
+        schemes: Array.isArray(config.schemes) ? config.schemes.map(s => ({
+          id: String(s.id || "SCHM-" + Math.floor(10 + Math.random() * 90)),
+          name: String(s.name || "").trim(),
+          department: String(s.department || "General Administration").trim(),
+          beneficiaryGroup: String(s.beneficiaryGroup || "General Citizens").trim(),
+          financialAssistance: String(s.financialAssistance || "N/A").trim(),
+          applicationMode: String(s.applicationMode || "Online Portal").trim(),
+          active: s.active !== false
+        })) : []
+      };
+      localStorage.setItem("cso_government_schemes_config", JSON.stringify(clean));
+      this.logAudit("GOVERNMENT_SCHEMES_UPDATED", "EDUCATIONAL_RESOURCES", "Government schemes updated (" + clean.schemes.length + " schemes).");
+      return true;
+    },
+
+    resetGovernmentSchemesConfig() {
+      localStorage.removeItem("cso_government_schemes_config");
+      this.logAudit("GOVERNMENT_SCHEMES_RESET", "SYSTEM_RESET", "Government schemes configuration reset to factory defaults.");
+      return this.getGovernmentSchemesConfig();
+    },
+
+    exportGovernmentSchemesManifest() {
+      const config = this.getGovernmentSchemesConfig();
+      const filename = "government_schemes_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("GOVERNMENT_SCHEMES_MANIFEST_EXPORTED", "DATA_EXPORT", "Government schemes manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
@@ -7570,6 +7779,9 @@
           quizBuilder: this.getQuizBuilderConfig(),
           mockTests: this.getMockTestsConfig(),
           answerKeysExplanations: this.getAnswerKeysExplanationsConfig(),
+      resourceCollections: this.getResourceCollectionsConfig(),
+      downloadsRules: this.getDownloadsRulesConfig(),
+      governmentSchemes: this.getGovernmentSchemesConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

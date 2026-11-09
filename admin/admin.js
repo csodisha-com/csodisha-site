@@ -431,6 +431,12 @@ async function loadMasterNavigation() {
         renderMockTestsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-05-015') {
         renderAnswerKeysExplanationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-016') {
+        renderResourceCollectionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-017') {
+        renderDownloadsAccessRulesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-018') {
+        renderGovernmentSchemesWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -22115,6 +22121,1071 @@ async function loadMasterNavigation() {
       } catch (err) {
         root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
           <h3 class="text-lg font-bold text-red-400">Render Error in module-05-015 (Answer Keys & Explanations)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 05-016: Resource Collections Workspace
+     */
+    function renderResourceCollectionsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = superStore.getResourceCollectionsConfig();
+        let collections = Array.isArray(config.collections) ? [...config.collections] : [];
+        let filterCategory = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = collections.filter(item => {
+            const matchesCat = filterCategory === 'All' || item.category === filterCategory;
+            const matchesSearch = !searchQuery ||
+              (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.targetExam && item.targetExam.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.badge && item.badge.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesCat && matchesSearch;
+          });
+
+          const totalDownloads = collections.reduce((acc, c) => acc + (Number(c.downloadCount) || 0), 0);
+          const activeKits = collections.filter(c => c.active).length;
+          const categories = Array.from(new Set(collections.map(c => c.category).filter(Boolean)));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 5</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-016</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">Resource Collections & Flagship Bundles</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Curate, bundle, and package high-yield multi-resource study kits for civil service candidates</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-collection" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Bundle
+                  </button>
+                  <button id="btn-inspect-collections" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-collections" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-collections" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Stats Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Bundles</div>
+                  <div class="text-2xl font-bold text-white mt-1">${collections.length}</div>
+                  <div class="text-[11px] text-indigo-400 mt-1 flex items-center gap-1">
+                    <span>${categories.length} Categories</span>
+                  </div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Kits</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeKits}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Live for candidates</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Dispatched</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${totalDownloads.toLocaleString()}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Direct kit downloads</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Dynamic Bundling</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.collectionSettings?.enableDynamicBundling ? 'Enabled' : 'Disabled'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Trending: ${config.collectionSettings?.highlightTrendingCollections ? 'ON' : 'OFF'}</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar & Search -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/30 p-3.5 rounded-xl border border-slate-800/60">
+                <div class="flex items-center gap-2 flex-1 max-w-md">
+                  <div class="relative w-full">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input id="collection-search-input" type="text" placeholder="Search by title, exam, or tag badge..." value="${escapeHtml(searchQuery)}" class="w-full pl-9 pr-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-400">Category:</span>
+                  <select id="collection-cat-filter" class="bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-200 px-2.5 py-1.5 focus:outline-none focus:border-indigo-500">
+                    <option value="All">All Categories (${collections.length})</option>
+                    ${categories.map(c => `<option value="${escapeHtml(c)}" ${filterCategory === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Main Table -->
+              <div class="bg-slate-900/50 rounded-xl border border-slate-800/80 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Bundle ID</th>
+                        <th class="px-4 py-3">Kit Title</th>
+                        <th class="px-4 py-3">Category & Target Exam</th>
+                        <th class="px-4 py-3">Contents</th>
+                        <th class="px-4 py-3">Badge Tag</th>
+                        <th class="px-4 py-3">Downloads</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="collection-items-body" class="divide-y divide-slate-800/60">
+                      ${filtered.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'COL-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                            ${escapeHtml(item.title)}
+                          </td>
+                          <td class="px-4 py-3">
+                            <div class="text-slate-200 font-medium">${escapeHtml(item.category || 'General')}</div>
+                            <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(item.targetExam || 'General')}</div>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-indigo-300">
+                            ${item.itemCount || 0} items · ${escapeHtml(item.totalSize || '0 MB')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border bg-indigo-950/60 text-indigo-300 border-indigo-800/50">
+                              ${escapeHtml(item.badge || 'Standard')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-emerald-400">
+                            ${Number(item.downloadCount || 0).toLocaleString()}
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <button class="btn-toggle-active relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                            </button>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="btn-edit-collection text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Collection">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-delete-collection text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Collection">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500 italic">No resource bundles found matching query.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="collections-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Resource Collections JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_resource_collections_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-collections" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-collections" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-collections-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#collection-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const catFilter = root.querySelector('#collection-cat-filter');
+          if (catFilter) {
+            catFilter.addEventListener('change', (e) => {
+              filterCategory = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-collection');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const title = prompt('Enter Bundle / Collection Title:');
+              if (!title) return;
+              const category = prompt('Category (e.g., Civil Services, Staff Selection, General Studies):', 'Civil Services') || 'Civil Services';
+              const targetExam = prompt('Target Exam (e.g., OPSC OAS, OSSC CGL, All Odisha Exams):', 'OPSC OAS') || 'All Odisha Exams';
+              const itemCount = parseInt(prompt('Total Resource Count in Bundle:', '10') || '10', 10);
+              const totalSize = prompt('Approximate Total Download Size (e.g., 35.5 MB):', '35.0 MB') || '35.0 MB';
+              const badge = prompt('Tag Badge (e.g., Flagship Kit, High Yield, State Heritage):', 'Flagship Kit') || 'Flagship Kit';
+
+              const newKit = {
+                id: 'COL-' + Math.floor(10 + Math.random() * 90),
+                title: title.trim(),
+                category: category.trim(),
+                targetExam: targetExam.trim(),
+                itemCount: isNaN(itemCount) ? 10 : itemCount,
+                totalSize: totalSize.trim(),
+                badge: badge.trim(),
+                downloadCount: 0,
+                active: true
+              };
+
+              collections.unshift(newKit);
+              config.collections = collections;
+              superStore.saveResourceCollectionsConfig(config);
+              superStore.showToast('Resource Bundle created successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = collections.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.collections = collections;
+                superStore.saveResourceCollectionsConfig(config);
+                superStore.showToast(`Bundle ${item.id} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-collection').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = collections.find(c => c.id === id);
+              if (!item) return;
+
+              const title = prompt('Edit Kit Title:', item.title);
+              if (title === null) return;
+              const category = prompt('Edit Category:', item.category) || item.category;
+              const targetExam = prompt('Edit Target Exam:', item.targetExam) || item.targetExam;
+              const itemCount = parseInt(prompt('Edit Resource Count:', String(item.itemCount || 10)) || '10', 10);
+              const totalSize = prompt('Edit Total Size:', item.totalSize) || item.totalSize;
+              const badge = prompt('Edit Badge:', item.badge) || item.badge;
+
+              item.title = title.trim();
+              item.category = category.trim();
+              item.targetExam = targetExam.trim();
+              item.itemCount = isNaN(itemCount) ? item.itemCount : itemCount;
+              item.totalSize = totalSize.trim();
+              item.badge = badge.trim();
+
+              config.collections = collections;
+              superStore.saveResourceCollectionsConfig(config);
+              superStore.showToast('Bundle details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-collection').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Are you sure you want to delete bundle ${id}?`)) {
+                collections = collections.filter(c => c.id !== id);
+                config.collections = collections;
+                superStore.saveResourceCollectionsConfig(config);
+                superStore.showToast('Bundle removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-collections');
+          const drawer = root.querySelector('#collections-raw-drawer');
+          const textarea = root.querySelector('#raw-collections-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-collections');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-collections');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                superStore.saveResourceCollectionsConfig(parsed);
+                config = superStore.getResourceCollectionsConfig();
+                collections = Array.isArray(config.collections) ? [...config.collections] : [];
+                superStore.showToast('Resource Collections configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-collections');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = superStore.exportResourceCollectionsManifest();
+              superStore.showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-collections');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Resource Collections to factory configuration? Any manual bundles will be lost.')) {
+                config = superStore.resetResourceCollectionsConfig();
+                collections = Array.isArray(config.collections) ? [...config.collections] : [];
+                superStore.showToast('Resource Collections reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-016', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-016 (Resource Collections)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 05-017: Downloads & Access Rules Workspace
+     */
+    function renderDownloadsAccessRulesWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = superStore.getDownloadsRulesConfig();
+        let tiers = Array.isArray(config.accessTiers) ? [...config.accessTiers] : [];
+        let searchQuery = '';
+
+        function render() {
+          const filtered = tiers.filter(item => {
+            return !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.userGroup && item.userGroup.toLowerCase().includes(searchQuery.toLowerCase()));
+          });
+
+          const activeTiersCount = tiers.filter(t => t.active).length;
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 5</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-017</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">Downloads & Access Rules Management</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Enforce quota policies, bandwidth caps, rate limits, and tiered format access</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-tier" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Tier
+                  </button>
+                  <button id="btn-inspect-rules" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-rules" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-rules" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Policy Controls & Stats -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                  <div>
+                    <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Rate Limiting</div>
+                    <div class="text-xl font-bold text-white mt-1">${config.rulesSettings?.enforceRateLimiting ? 'Active' : 'Disabled'}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Cap: ${config.rulesSettings?.maxDownloadsPerHour || 50} DLs/hr</div>
+                  </div>
+                  <button id="btn-toggle-ratelimit" class="px-2.5 py-1 text-xs rounded border cursor-pointer ${config.rulesSettings?.enforceRateLimiting ? 'bg-emerald-950 text-emerald-400 border-emerald-800/60' : 'bg-slate-800 text-slate-400 border-slate-700'}">
+                    ${config.rulesSettings?.enforceRateLimiting ? 'Enforcing' : 'Bypass'}
+                  </button>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                  <div>
+                    <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Protected Documents</div>
+                    <div class="text-xl font-bold text-indigo-400 mt-1">${config.rulesSettings?.requireAuthForProtectedPdfs ? 'Auth Required' : 'Public'}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">For restricted test papers</div>
+                  </div>
+                  <button id="btn-toggle-auth-req" class="px-2.5 py-1 text-xs rounded border cursor-pointer ${config.rulesSettings?.requireAuthForProtectedPdfs ? 'bg-indigo-950 text-indigo-400 border-indigo-800/60' : 'bg-slate-800 text-slate-400 border-slate-700'}">
+                    Toggle
+                  </button>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Access Tiers</div>
+                  <div class="text-xl font-bold text-amber-400 mt-1">${tiers.length} Tiers</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">${activeTiersCount} Active Policies</div>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center justify-between bg-slate-900/30 p-3.5 rounded-xl border border-slate-800/60">
+                <div class="relative w-full max-w-md">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  <input id="tier-search-input" type="text" placeholder="Search tier by name or user group..." value="${escapeHtml(searchQuery)}" class="w-full pl-9 pr-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                </div>
+              </div>
+
+              <!-- Main Table -->
+              <div class="bg-slate-900/50 rounded-xl border border-slate-800/80 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Tier ID</th>
+                        <th class="px-4 py-3">Tier Name</th>
+                        <th class="px-4 py-3">User Target Group</th>
+                        <th class="px-4 py-3">Daily Limit</th>
+                        <th class="px-4 py-3">Allowed File Formats</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tier-items-body" class="divide-y divide-slate-800/60">
+                      ${filtered.map((item, idx) => {
+                        const formats = Array.isArray(item.allowedFormats) ? item.allowedFormats : [item.allowedFormats];
+                        return `
+                          <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                            <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                              ${escapeHtml(item.id || 'TIER-' + (idx+1))}
+                            </td>
+                            <td class="px-4 py-3 font-medium text-white">
+                              ${escapeHtml(item.name)}
+                            </td>
+                            <td class="px-4 py-3 text-slate-300 font-mono text-xs">
+                              ${escapeHtml(item.userGroup || 'General')}
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs font-semibold text-amber-400">
+                              ${item.dailyLimitMb >= 1024 ? (item.dailyLimitMb / 1024).toFixed(1) + ' GB/day' : item.dailyLimitMb + ' MB/day'}
+                            </td>
+                            <td class="px-4 py-3">
+                              <div class="flex flex-wrap gap-1">
+                                ${formats.map(f => `
+                                  <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                                    ${escapeHtml(f)}
+                                  </span>
+                                `).join('')}
+                              </div>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                              <button class="btn-toggle-active-tier relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                              </button>
+                            </td>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                              <button class="btn-edit-tier text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Tier Policy">
+                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                              </button>
+                              <button class="btn-delete-tier text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Tier">
+                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                              </button>
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="text-center py-8 text-slate-500 italic">No access tiers found matching search criteria.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="rules-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Downloads & Rules JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_downloads_rules_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-rules" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-rules" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-rules-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#tier-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const btnRateLimit = root.querySelector('#btn-toggle-ratelimit');
+          if (btnRateLimit) {
+            btnRateLimit.addEventListener('click', () => {
+              config.rulesSettings = config.rulesSettings || {};
+              config.rulesSettings.enforceRateLimiting = !config.rulesSettings.enforceRateLimiting;
+              superStore.saveDownloadsRulesConfig(config);
+              superStore.showToast(`Rate limiting ${config.rulesSettings.enforceRateLimiting ? 'enabled' : 'disabled'}.`, 'info');
+              render();
+            });
+          }
+
+          const btnAuthReq = root.querySelector('#btn-toggle-auth-req');
+          if (btnAuthReq) {
+            btnAuthReq.addEventListener('click', () => {
+              config.rulesSettings = config.rulesSettings || {};
+              config.rulesSettings.requireAuthForProtectedPdfs = !config.rulesSettings.requireAuthForProtectedPdfs;
+              superStore.saveDownloadsRulesConfig(config);
+              superStore.showToast(`Document authentication ${config.rulesSettings.requireAuthForProtectedPdfs ? 'enforced' : 'set to public'}.`, 'info');
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-tier');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Enter Access Tier Name:');
+              if (!name) return;
+              const userGroup = prompt('Target User Group (e.g. Registered Citizen, Student Member, Premium):', 'Registered Citizen') || 'Registered Citizen';
+              const limit = parseInt(prompt('Daily Quota in MB (e.g., 500, 1024, 2048):', '1024') || '1024', 10);
+              const formatsStr = prompt('Allowed formats comma-separated (e.g. PDF, EPUB, ZIP):', 'PDF, EPUB') || 'PDF';
+
+              const newTier = {
+                id: 'TIER-' + Math.floor(10 + Math.random() * 90),
+                name: name.trim(),
+                userGroup: userGroup.trim(),
+                dailyLimitMb: isNaN(limit) ? 1024 : limit,
+                allowedFormats: formatsStr.split(',').map(f => f.trim()).filter(Boolean),
+                active: true
+              };
+
+              tiers.push(newTier);
+              config.accessTiers = tiers;
+              superStore.saveDownloadsRulesConfig(config);
+              superStore.showToast('Access tier created successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active-tier').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tiers.find(t => t.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.accessTiers = tiers;
+                superStore.saveDownloadsRulesConfig(config);
+                superStore.showToast(`Tier ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-tier').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = tiers.find(t => t.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Tier Name:', item.name);
+              if (name === null) return;
+              const userGroup = prompt('Edit User Group:', item.userGroup) || item.userGroup;
+              const limit = parseInt(prompt('Edit Daily Limit (MB):', String(item.dailyLimitMb || 1024)) || '1024', 10);
+              const currentFormats = Array.isArray(item.allowedFormats) ? item.allowedFormats.join(', ') : item.allowedFormats;
+              const formatsStr = prompt('Edit Allowed Formats (comma-separated):', currentFormats) || 'PDF';
+
+              item.name = name.trim();
+              item.userGroup = userGroup.trim();
+              item.dailyLimitMb = isNaN(limit) ? item.dailyLimitMb : limit;
+              item.allowedFormats = formatsStr.split(',').map(f => f.trim()).filter(Boolean);
+
+              config.accessTiers = tiers;
+              superStore.saveDownloadsRulesConfig(config);
+              superStore.showToast('Tier details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-tier').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete access tier ${id}?`)) {
+                tiers = tiers.filter(t => t.id !== id);
+                config.accessTiers = tiers;
+                superStore.saveDownloadsRulesConfig(config);
+                superStore.showToast('Access tier removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-rules');
+          const drawer = root.querySelector('#rules-raw-drawer');
+          const textarea = root.querySelector('#raw-rules-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-rules');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-rules');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                superStore.saveDownloadsRulesConfig(parsed);
+                config = superStore.getDownloadsRulesConfig();
+                tiers = Array.isArray(config.accessTiers) ? [...config.accessTiers] : [];
+                superStore.showToast('Downloads & Access Rules saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-rules');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = superStore.exportDownloadsRulesManifest();
+              superStore.showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-rules');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Downloads & Access Rules to factory configuration?')) {
+                config = superStore.resetDownloadsRulesConfig();
+                tiers = Array.isArray(config.accessTiers) ? [...config.accessTiers] : [];
+                superStore.showToast('Rules reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-017', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-017 (Downloads & Access Rules)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 05-018: Government Schemes Workspace
+     */
+    function renderGovernmentSchemesWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = superStore.getGovernmentSchemesConfig();
+        let schemes = Array.isArray(config.schemes) ? [...config.schemes] : [];
+        let filterDept = 'All';
+        let searchQuery = '';
+
+        function render() {
+          const filtered = schemes.filter(item => {
+            const matchesDept = filterDept === 'All' || item.department === filterDept;
+            const matchesSearch = !searchQuery ||
+              (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.beneficiaryGroup && item.beneficiaryGroup.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.department && item.department.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesDept && matchesSearch;
+          });
+
+          const activeCount = schemes.filter(s => s.active).length;
+          const departments = Array.from(new Set(schemes.map(s => s.department).filter(Boolean)));
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 05 · Batch 5</span>
+                    <span class="text-xs text-slate-400 font-mono">module-05-018</span>
+                  </div>
+                  <h2 class="text-xl font-bold text-white tracking-tight mt-1">Odisha Government Schemes Directory</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage state welfare programs, scholarship guidelines, DBT portals, and beneficiary criteria</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="btn-add-scheme" class="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add Scheme
+                  </button>
+                  <button id="btn-inspect-schemes" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Inspect JSON
+                  </button>
+                  <button id="btn-export-schemes" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                  </button>
+                  <button id="btn-reset-schemes" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Metrics Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Schemes</div>
+                  <div class="text-2xl font-bold text-white mt-1">${schemes.length}</div>
+                  <div class="text-[11px] text-indigo-400 mt-1">${departments.length} State Departments</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Programs</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Enrolling / Ongoing</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">DBT Integration</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.schemeSettings?.autoSyncDbtPortals ? 'Enabled' : 'Manual'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Direct Benefit Transfer</div>
+                </div>
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Income Ceilings</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.schemeSettings?.showIncomeCeilingRules ? 'Shown' : 'Hidden'}</div>
+                  <div class="text-[11px] text-slate-400 mt-1">Eligibility Criteria</div>
+                </div>
+              </div>
+
+              <!-- Filter Bar & Search -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/30 p-3.5 rounded-xl border border-slate-800/60">
+                <div class="flex items-center gap-2 flex-1 max-w-md">
+                  <div class="relative w-full">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input id="scheme-search-input" type="text" placeholder="Search by scheme name or beneficiary group..." value="${escapeHtml(searchQuery)}" class="w-full pl-9 pr-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-400">Department:</span>
+                  <select id="scheme-dept-filter" class="bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-200 px-2.5 py-1.5 focus:outline-none focus:border-indigo-500">
+                    <option value="All">All Departments (${schemes.length})</option>
+                    ${departments.map(d => `<option value="${escapeHtml(d)}" ${filterDept === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Main Table -->
+              <div class="bg-slate-900/50 rounded-xl border border-slate-800/80 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th class="px-4 py-3">Scheme ID</th>
+                        <th class="px-4 py-3">Scheme Name</th>
+                        <th class="px-4 py-3">Department</th>
+                        <th class="px-4 py-3">Beneficiary Group</th>
+                        <th class="px-4 py-3">Financial Assistance</th>
+                        <th class="px-4 py-3">Application Mode</th>
+                        <th class="px-4 py-3 text-center">Active</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="scheme-items-body" class="divide-y divide-slate-800/60">
+                      ${filtered.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'SCHM-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.name)}">
+                            ${escapeHtml(item.name)}
+                          </td>
+                          <td class="px-4 py-3 text-slate-300 font-medium">
+                            ${escapeHtml(item.department || 'General Administration')}
+                          </td>
+                          <td class="px-4 py-3 text-slate-400 max-w-xs truncate" title="${escapeHtml(item.beneficiaryGroup)}">
+                            ${escapeHtml(item.beneficiaryGroup || 'General Citizens')}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-amber-300">
+                            ${escapeHtml(item.financialAssistance || 'N/A')}
+                          </td>
+                          <td class="px-4 py-3 text-cyan-300 font-mono text-xs">
+                            ${escapeHtml(item.applicationMode || 'Online Portal')}
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <button class="btn-toggle-active-scheme relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.active ? 'bg-indigo-600' : 'bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${item.active ? 'translate-x-4' : 'translate-x-0'}"></span>
+                            </button>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="btn-edit-scheme text-indigo-400 hover:text-indigo-300 p-1 mr-1" data-id="${escapeHtml(item.id)}" title="Edit Scheme">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-delete-scheme text-rose-400 hover:text-rose-300 p-1" data-id="${escapeHtml(item.id)}" title="Delete Scheme">
+                              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500 italic">No government schemes found matching search criteria.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Raw Config Drawer -->
+              <div id="schemes-raw-drawer" class="hidden bg-slate-900/80 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-200">Raw Government Schemes JSON</span>
+                    <span class="text-[10px] text-slate-400 font-mono">(SuperStore: cso_government_schemes_config)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-save-raw-schemes" class="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded cursor-pointer">Save Changes</button>
+                    <button id="btn-close-raw-schemes" class="px-2.5 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded cursor-pointer">Close</button>
+                  </div>
+                </div>
+                <textarea id="raw-schemes-editor" rows="12" class="w-full bg-slate-950 font-mono text-xs text-indigo-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+            </div>
+          `;
+
+          wireEvents();
+        }
+
+        function wireEvents() {
+          const searchInput = root.querySelector('#scheme-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const deptFilter = root.querySelector('#scheme-dept-filter');
+          if (deptFilter) {
+            deptFilter.addEventListener('change', (e) => {
+              filterDept = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-scheme');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const name = prompt('Enter Scheme Name:');
+              if (!name) return;
+              const dept = prompt('Department (e.g. Higher Education, Agriculture, Skill Development):', 'General Administration') || 'General Administration';
+              const beneficiary = prompt('Beneficiary Group (e.g. Students, Small Farmers, Women):', 'All Citizens') || 'All Citizens';
+              const assistance = prompt('Financial Assistance Details (e.g., Rs. 10,000 / Free Tuition):', 'Rs. 5,000 / year') || 'N/A';
+              const mode = prompt('Application Mode (e.g. SAMS Odisha Portal, Online DBT, Mo Seva Kendra):', 'Online Portal') || 'Online Portal';
+
+              const newScheme = {
+                id: 'SCHM-' + Math.floor(10 + Math.random() * 90),
+                name: name.trim(),
+                department: dept.trim(),
+                beneficiaryGroup: beneficiary.trim(),
+                financialAssistance: assistance.trim(),
+                applicationMode: mode.trim(),
+                active: true
+              };
+
+              schemes.unshift(newScheme);
+              config.schemes = schemes;
+              superStore.saveGovernmentSchemesConfig(config);
+              superStore.showToast('Government scheme added successfully.', 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-active-scheme').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = schemes.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.schemes = schemes;
+                superStore.saveGovernmentSchemesConfig(config);
+                superStore.showToast(`Scheme ${item.name} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-scheme').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = schemes.find(s => s.id === id);
+              if (!item) return;
+
+              const name = prompt('Edit Scheme Name:', item.name);
+              if (name === null) return;
+              const dept = prompt('Edit Department:', item.department) || item.department;
+              const beneficiary = prompt('Edit Beneficiary Group:', item.beneficiaryGroup) || item.beneficiaryGroup;
+              const assistance = prompt('Edit Financial Assistance:', item.financialAssistance) || item.financialAssistance;
+              const mode = prompt('Edit Application Mode:', item.applicationMode) || item.applicationMode;
+
+              item.name = name.trim();
+              item.department = dept.trim();
+              item.beneficiaryGroup = beneficiary.trim();
+              item.financialAssistance = assistance.trim();
+              item.applicationMode = mode.trim();
+
+              config.schemes = schemes;
+              superStore.saveGovernmentSchemesConfig(config);
+              superStore.showToast('Scheme details updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-scheme').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete scheme ${id}?`)) {
+                schemes = schemes.filter(s => s.id !== id);
+                config.schemes = schemes;
+                superStore.saveGovernmentSchemesConfig(config);
+                superStore.showToast('Scheme removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-schemes');
+          const drawer = root.querySelector('#schemes-raw-drawer');
+          const textarea = root.querySelector('#raw-schemes-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-schemes');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-schemes');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                superStore.saveGovernmentSchemesConfig(parsed);
+                config = superStore.getGovernmentSchemesConfig();
+                schemes = Array.isArray(config.schemes) ? [...config.schemes] : [];
+                superStore.showToast('Government schemes configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-schemes');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = superStore.exportGovernmentSchemesManifest();
+              superStore.showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-schemes');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Government Schemes to factory configuration? Any manual additions will be lost.')) {
+                config = superStore.resetGovernmentSchemesConfig();
+                schemes = Array.isArray(config.schemes) ? [...config.schemes] : [];
+                superStore.showToast('Government schemes reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-05-018', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-05-018 (Government Schemes)</h3>
           <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
         </div>`;
       }
