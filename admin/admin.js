@@ -307,6 +307,8 @@ async function loadMasterNavigation() {
         renderPageTemplatesWorkspace();
       } else if (moduleId === 'module-02-007') {
         renderReusableSectionsWorkspace();
+      } else if (moduleId === 'module-02-008') {
+        renderPageRevisionsWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -3444,6 +3446,288 @@ async function loadMasterNavigation() {
             closeModal();
             showToast(`Section "${created.title}" created successfully!`, "success");
             renderGrid();
+          }
+        });
+      });
+    }
+
+    /**
+     * VIEW 2h: Historical Page Revisions & Rollback Engine (module-02-008)
+     */
+    function renderPageRevisionsWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Page Revisions (module-02-008)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnCreateManualSnapshot" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Create Snapshot
+          </button>
+          <button id="btnExportRevisionsJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Revisions (JSON)
+          </button>
+        </div>
+      `;
+
+      // Get all pages to populate filter dropdown
+      const pages = (window.CSOSuperStore && typeof window.CSOSuperStore.getAllPages === 'function')
+        ? window.CSOSuperStore.getAllPages('ALL', '')
+        : [];
+
+      const pageOptionsHtml = pages.map(p => {
+        return `<option value="${p.path}">${p.path} &mdash; ${p.title}</option>`;
+      }).join('');
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Audit Trail, Page Version History & Rollback Console
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-008</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Inspect granular editorial diffs, track modifications per route, and instantly roll back live public pages to known-good snapshots.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Rollback Engine Ready
+              </span>
+            </div>
+          </div>
+
+          <!-- Page Filter & Search Controls -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <span class="text-xs font-mono text-slate-400 whitespace-nowrap">Filter Route:</span>
+              <select id="revisionPageFilter" class="bg-[#081220] border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white font-sans focus:outline-none focus:ring-1 focus:ring-brand-emerald w-full sm:w-auto max-w-[320px]">
+                <option value="ALL">All Pages & Routes</option>
+                ${pageOptionsHtml}
+              </select>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400" id="revisionCountBadge">
+              -- historical snapshots
+            </div>
+          </div>
+
+          <!-- Revisions Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Version History Manifest
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono">Live Ingestion from cso_page_revisions</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Revision ID</th>
+                    <th class="py-2.5 px-4 font-semibold">Route & Page Title</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Version</th>
+                    <th class="py-2.5 px-4 font-semibold">Timestamp</th>
+                    <th class="py-2.5 px-4 font-semibold">Author</th>
+                    <th class="py-2.5 px-4 font-semibold">Change Summary</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Size</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="revisionsTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      let activePageFilter = 'ALL';
+
+      function renderRevisionsTable() {
+        const tbody = document.getElementById('revisionsTableBody');
+        const countBadge = document.getElementById('revisionCountBadge');
+        if (!tbody) return;
+
+        const revisions = (window.CSOSuperStore && typeof window.CSOSuperStore.getPageRevisions === 'function')
+          ? window.CSOSuperStore.getPageRevisions(activePageFilter)
+          : [];
+
+        if (countBadge) countBadge.textContent = `${revisions.length} historical snapshots recorded`;
+
+        if (revisions.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="py-10 text-center text-slate-500 font-mono text-xs">
+                No revision history records found for the selected route.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = revisions.map(rev => {
+          const dateStr = new Date(rev.timestamp).toLocaleString();
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">${rev.id}</td>
+              <td class="py-2.5 px-4">
+                <div class="font-bold text-white">${rev.title}</div>
+                <div class="text-[10px] font-mono text-emerald-400 mt-0.5">${rev.pagePath}</div>
+              </td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-200 border border-slate-700">
+                  ${rev.version}
+                </span>
+              </td>
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-xs whitespace-nowrap">${dateStr}</td>
+              <td class="py-2.5 px-4 font-mono text-slate-300 text-[11px] whitespace-nowrap">${rev.author}</td>
+              <td class="py-2.5 px-4 text-slate-300 max-w-[280px] truncate" title="${rev.changeSummary}">${rev.changeSummary}</td>
+              <td class="py-2.5 px-4 text-center font-mono text-slate-400 text-xs whitespace-nowrap">${rev.sizeKb} KB</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button data-id="${rev.id}" class="btn-inspect-rev px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold border border-brand-border transition">
+                    Inspect
+                  </button>
+                  <button data-id="${rev.id}" class="btn-restore-rev px-2.5 py-1.5 rounded bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 hover:text-white text-xs font-mono font-bold border border-amber-800/50 transition">
+                    Restore
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Inspect Snapshot
+        tbody.querySelectorAll('.btn-inspect-rev').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const revId = e.currentTarget.getAttribute('data-id');
+            const rev = window.CSOSuperStore?.getPageRevisions('ALL').find(r => r.id === revId);
+            if (!rev) return;
+
+            openModal(`Inspect Snapshot: ${rev.id} (${rev.version})`, `
+              <div class="space-y-4 font-sans text-xs">
+                <div class="grid grid-cols-2 gap-3 p-3 bg-[#081220] border border-brand-border rounded-lg font-mono text-[11px]">
+                  <div><span class="text-slate-500">Route:</span> <strong class="text-white">${rev.pagePath}</strong></div>
+                  <div><span class="text-slate-500">Author:</span> <strong class="text-white">${rev.author}</strong></div>
+                  <div><span class="text-slate-500">Timestamp:</span> <strong class="text-white">${new Date(rev.timestamp).toLocaleString()}</strong></div>
+                  <div><span class="text-slate-500">Payload:</span> <strong class="text-white">${rev.sizeKb} KB</strong></div>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 font-bold block mb-1">Editorial Change Summary:</span>
+                  <p class="text-slate-200 bg-[#081220] p-2.5 rounded border border-brand-border">${rev.changeSummary}</p>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 font-bold block mb-1">Archived Markup:</span>
+                  <textarea readonly rows="8" class="w-full bg-[#040810] border border-brand-border rounded p-3 text-slate-300 font-mono text-xs focus:outline-none select-all">${rev.snapshotHtml || '<!-- No markup attached -->'}</textarea>
+                </div>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+            `);
+          });
+        });
+
+        // Wire Restore Version
+        tbody.querySelectorAll('.btn-restore-rev').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const revId = e.currentTarget.getAttribute('data-id');
+            const rev = window.CSOSuperStore?.getPageRevisions('ALL').find(r => r.id === revId);
+            if (!rev) return;
+
+            openModal(`Rollback to ${rev.version} (${rev.id})`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div class="p-3 bg-amber-950/40 border border-amber-500/40 rounded-lg text-amber-200">
+                  <strong>Warning:</strong> Restoring this revision will overwrite the active content and payload footprint for <strong class="text-white font-mono">${rev.pagePath}</strong> with snapshot <strong class="text-white font-mono">${rev.version}</strong>.
+                </div>
+                <p class="text-slate-300">Are you sure you want to proceed with this rollback?</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmRollbackModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white transition">Confirm Rollback</button>
+            `);
+
+            document.getElementById('btnConfirmRollbackModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.restoreRevision === 'function') {
+                try {
+                  window.CSOSuperStore.restoreRevision(rev.id);
+                  showToast(`Successfully rolled back ${rev.pagePath} to ${rev.version}!`, "success");
+                  renderRevisionsTable();
+                } catch (err) {
+                  showToast(err.message, "error");
+                }
+              }
+            });
+          });
+        });
+      }
+
+      renderRevisionsTable();
+
+      // Page Filter Dropdown Change
+      const pageFilter = document.getElementById('revisionPageFilter');
+      if (pageFilter) {
+        pageFilter.addEventListener('change', (e) => {
+          activePageFilter = e.target.value;
+          renderRevisionsTable();
+        });
+      }
+
+      // Export JSON
+      document.getElementById('btnExportRevisionsJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportRevisions === 'function') {
+          const filename = window.CSOSuperStore.exportRevisions();
+          showToast(`Revisions archive exported: ${filename}`, "success");
+        }
+      });
+
+      // Create Manual Snapshot Modal
+      document.getElementById('btnCreateManualSnapshot')?.addEventListener('click', () => {
+        openModal("Create Historical Page Snapshot", `
+          <div class="space-y-4 font-sans text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Target Page Route <span class="text-rose-400">*</span></label>
+              <select id="selectSnapshotPageRoute" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+                ${pageOptionsHtml}
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Editorial Change Summary <span class="text-rose-400">*</span></label>
+              <textarea id="inputSnapshotSummary" rows="3" placeholder="Describe the changes made in this revision..." class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs"></textarea>
+            </div>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnSubmitSnapshotModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Capture Snapshot</button>
+        `);
+
+        document.getElementById('btnSubmitSnapshotModal')?.addEventListener('click', () => {
+          const path = document.getElementById('selectSnapshotPageRoute')?.value;
+          const summary = document.getElementById('inputSnapshotSummary')?.value.trim();
+
+          if (!summary) {
+            showToast("Please enter an editorial change summary.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.createRevisionSnapshot === 'function') {
+            const created = window.CSOSuperStore.createRevisionSnapshot(path, summary);
+            if (created) {
+              closeModal();
+              showToast(`Snapshot ${created.id} (${created.version}) captured!`, "success");
+              renderRevisionsTable();
+            } else {
+              showToast("Failed to create snapshot.", "error");
+            }
           }
         });
       });

@@ -1835,6 +1835,163 @@
       return filename;
     },
 
+    // 20. Page Revisions & Historical Rollback Engine (module-02-008)
+    getPageRevisions(pageFilter = 'ALL') {
+      let revisions = null;
+      try {
+        const raw = localStorage.getItem('cso_page_revisions');
+        if (raw) revisions = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!revisions || !Array.isArray(revisions) || revisions.length === 0) {
+        revisions = [
+          {
+            id: 'REV-001',
+            pageId: 'PAGE-001',
+            pagePath: '/',
+            title: 'Homepage & Portal Gate',
+            version: 'v2.4',
+            author: 'admin@csodisha.com',
+            timestamp: Date.now() - 86400000,
+            changeSummary: 'Updated hero headline copy and quick examination tags.',
+            sizeKb: '23.9',
+            snapshotHtml: '<!-- Homepage Snapshot v2.4 -->\n<section class="hero">\n  <h1>Common Sense Odisha</h1>\n  <p>Be Self-Reliant | Build a Better Tomorrow</p>\n</section>'
+          },
+          {
+            id: 'REV-002',
+            pageId: 'PAGE-002',
+            pagePath: '/resources.html',
+            title: 'Educational Resources Directory',
+            version: 'v3.1',
+            author: 'admin@csodisha.com',
+            timestamp: Date.now() - 172800000,
+            changeSummary: 'Added OSSC CGL 2026 preliminary syllabus table.',
+            sizeKb: '28.5',
+            snapshotHtml: '<!-- Resources Snapshot v3.1 -->\n<div class="resources-matrix">\n  <h2>OSSC CGL 2026 Syllabus Matrix</h2>\n</div>'
+          },
+          {
+            id: 'REV-003',
+            pageId: 'PAGE-004',
+            pagePath: '/contact.html',
+            title: 'Student Contact & Inquiries',
+            version: 'v1.8',
+            author: 'admin@csodisha.com',
+            timestamp: Date.now() - 259200000,
+            changeSummary: 'Added Odisha district dropdown selector and storage hooks.',
+            sizeKb: '14.1',
+            snapshotHtml: '<!-- Contact Snapshot v1.8 -->\n<form id="contactForm">\n  <select name="district"><option>Cuttack</option><option>Khordha</option></select>\n</form>'
+          },
+          {
+            id: 'REV-004',
+            pageId: 'PAGE-005',
+            pagePath: '/privacy-policy/',
+            title: 'Privacy Policy',
+            version: 'v1.2',
+            author: 'admin@csodisha.com',
+            timestamp: Date.now() - 604800000,
+            changeSummary: 'Updated data retention notice for academic candidates.',
+            sizeKb: '6.3',
+            snapshotHtml: '<!-- Privacy Snapshot v1.2 -->\n<article>\n  <h2>Candidate Privacy Protection</h2>\n</article>'
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_page_revisions', JSON.stringify(revisions));
+        } catch (_) {}
+      }
+
+      const pFilter = pageFilter || 'ALL';
+      let filtered = revisions;
+
+      if (pFilter !== 'ALL') {
+        filtered = revisions.filter(r => r.pagePath === pFilter || r.pageId === pFilter);
+      }
+
+      return filtered.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    },
+
+    savePageRevisions(revisions) {
+      save('cso_page_revisions', revisions);
+    },
+
+    restoreRevision(revisionId) {
+      const revisions = this.getPageRevisions('ALL');
+      const rev = revisions.find(r => r.id === revisionId);
+      if (!rev) {
+        throw new Error(`Revision ${revisionId} not found`);
+      }
+
+      const pages = this.getAllPages('ALL', '');
+      const page = pages.find(p => p.id === rev.pageId || p.path === rev.pagePath);
+
+      if (page) {
+        page.lastModified = new Date().toISOString().slice(0, 10);
+        page.sizeKb = rev.sizeKb || page.sizeKb;
+        if (rev.snapshotHtml) {
+          page.htmlContent = rev.snapshotHtml;
+        }
+        this.saveAllPages(pages);
+      }
+
+      this.logAudit('PAGE_REVISION_RESTORED', 'REVISION_CONTROL', `Revision ${rev.id} (${rev.version}) for "${rev.title}" restored.`);
+      return { success: true, page, revision: rev };
+    },
+
+    createRevisionSnapshot(pageId, changeSummary = 'Manual snapshot created') {
+      const pages = this.getAllPages('ALL', '');
+      const page = pages.find(p => p.id === pageId || p.path === pageId);
+      if (!page) return null;
+
+      const revisions = this.getPageRevisions('ALL');
+      const uniqueId = 'REV-' + Date.now().toString().slice(-4);
+      const existingCount = revisions.filter(r => r.pageId === page.id).length;
+      const versionStr = `v${existingCount + 1}.0`;
+
+      const newRev = {
+        id: uniqueId,
+        pageId: page.id,
+        pagePath: page.path,
+        title: page.title,
+        version: versionStr,
+        author: 'admin@csodisha.com',
+        timestamp: Date.now(),
+        changeSummary: changeSummary,
+        sizeKb: page.sizeKb || '15.0',
+        snapshotHtml: page.htmlContent || `<!-- Snapshot ${versionStr} for ${page.title} -->`
+      };
+
+      revisions.unshift(newRev);
+      this.savePageRevisions(revisions);
+      this.logAudit('REVISION_SNAPSHOT_CREATED', 'REVISION_CONTROL', `Snapshot ${newRev.id} (${versionStr}) created for ${page.title}.`);
+      return newRev;
+    },
+
+    exportRevisions() {
+      const revisions = this.getPageRevisions('ALL');
+      const timestamp = Date.now();
+      const filename = `cso-page-revisions-${timestamp}.json`;
+      const bundle = {
+        revisionManifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalSnapshots: revisions.length,
+        revisions: revisions
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('PAGE_REVISIONS_EXPORTED', 'DATA_EXPORT', `Page revisions archive exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
