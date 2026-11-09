@@ -5242,6 +5242,283 @@
       this.logAudit("TAGS_MANIFEST_EXPORTED", "DATA_EXPORT", "Tags manifest exported (" + filename + ").");
       return filename;
     },
+    // 49. Editorial Calendar Engine (module-04-009)
+    getEditorialCalendarConfig() {
+      const raw = localStorage.getItem("cso_editorial_calendar_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_editorial_calendar_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        viewSettings: { defaultView: "Timeline", highlightUrgentDeadlines: true, autoSyncExamDates: true },
+        events: [
+          { id: "CAL-01", title: "OPSC OAS 2026 Prelims 60-Day High-Yield Revision Series", targetExam: "OPSC OAS", dueDate: "2026-11-20", curator: "Editorial Desk", priority: "High", status: "In Progress", active: true },
+          { id: "CAL-02", title: "OSSC CGL Mathematics & Reasoning PYQ Solution Capsule", targetExam: "OSSC CGL", dueDate: "2026-11-25", curator: "Quant Research Team", priority: "Medium", status: "Scheduled", active: true },
+          { id: "CAL-03", title: "Odisha Primary Teacher (OTET) Pedagogy Master Blueprint", targetExam: "OTET / OSSTET", dueDate: "2026-12-02", curator: "Pedagogy Cell", priority: "Normal", status: "Drafting", active: true }
+        ]
+      };
+      localStorage.setItem("cso_editorial_calendar_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveEditorialCalendarConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid editorial calendar payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_editorial_calendar_config", JSON.stringify(config));
+      this.logAudit("CALENDAR_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Editorial calendar schedule and events saved.");
+      return config;
+    },
+
+    importEditorialCalendarConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveEditorialCalendarConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import editorial calendar: " + err.message);
+      }
+    },
+
+    resetEditorialCalendarConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        viewSettings: { defaultView: "Timeline", highlightUrgentDeadlines: true, autoSyncExamDates: true },
+        events: [
+          { id: "CAL-01", title: "OPSC OAS 2026 Prelims 60-Day High-Yield Revision Series", targetExam: "OPSC OAS", dueDate: "2026-11-20", curator: "Editorial Desk", priority: "High", status: "In Progress", active: true },
+          { id: "CAL-02", title: "OSSC CGL Mathematics & Reasoning PYQ Solution Capsule", targetExam: "OSSC CGL", dueDate: "2026-11-25", curator: "Quant Research Team", priority: "Medium", status: "Scheduled", active: true },
+          { id: "CAL-03", title: "Odisha Primary Teacher (OTET) Pedagogy Master Blueprint", targetExam: "OTET / OSSTET", dueDate: "2026-12-02", curator: "Pedagogy Cell", priority: "Normal", status: "Drafting", active: true }
+        ]
+      };
+      localStorage.setItem("cso_editorial_calendar_config", JSON.stringify(initial));
+      this.logAudit("CALENDAR_CONFIG_RESET", "CONTENT_PUBLISHING", "Editorial calendar schedule restored to factory defaults.");
+      return initial;
+    },
+
+    exportEditorialCalendarManifest() {
+      const config = this.getEditorialCalendarConfig();
+      const timestamp = Date.now();
+      const filename = "cso-editorial-calendar-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        editorialCalendar: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CALENDAR_MANIFEST_EXPORTED", "DATA_EXPORT", "Editorial calendar manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 50. Publishing Workflow Engine (module-04-010)
+    getPublishingWorkflowConfig() {
+      const raw = localStorage.getItem("cso_publishing_workflow_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_publishing_workflow_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          requireDualApprovalForGazette: true,
+          enforceFactCheckingStage: true,
+          autoArchiveAfterDays: 180,
+          mandatoryDisclaimerOnNotifications: true
+        },
+        stages: [
+          { id: "STG-01", name: "Drafting", role: "Content Creator", order: 1, color: "#64748b", active: true },
+          { id: "STG-02", name: "Syllabus Verification", role: "Subject Matter Expert", order: 2, color: "#0ea5e9", active: true },
+          { id: "STG-03", name: "Fact & Gazette Audit", role: "Legal / Senior Editor", order: 3, color: "#f59e0b", active: true },
+          { id: "STG-04", name: "Final Editorial Approval", role: "Editor-in-Chief", order: 4, color: "#8b5cf6", active: true },
+          { id: "STG-05", name: "Published Live", role: "System Automation", order: 5, color: "#10b981", active: true }
+        ],
+        queue: [
+          { id: "WF-101", title: "OPSC Combined Technical Services Paper II Key Analysis", author: "Dr. B. K. Jena", stage: "Fact & Gazette Audit", submissionDate: "2026-11-08", urgency: "High", active: true },
+          { id: "WF-102", title: "OSSSC Panchayat Executive Officer (PEO) Computer Skill Syllabus", author: "M. Pattnaik", stage: "Syllabus Verification", submissionDate: "2026-11-07", urgency: "Medium", active: true },
+          { id: "WF-103", title: "Odisha Subordinate Finance Service Audit Assistant Guide", author: "Editorial Cell", stage: "Drafting", submissionDate: "2026-11-09", urgency: "Low", active: true }
+        ]
+      };
+      localStorage.setItem("cso_publishing_workflow_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    savePublishingWorkflowConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid publishing workflow payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_publishing_workflow_config", JSON.stringify(config));
+      this.logAudit("WORKFLOW_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Publishing workflow stages and governance saved.");
+      return config;
+    },
+
+    importPublishingWorkflowConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.savePublishingWorkflowConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import publishing workflow: " + err.message);
+      }
+    },
+
+    resetPublishingWorkflowConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        settings: {
+          requireDualApprovalForGazette: true,
+          enforceFactCheckingStage: true,
+          autoArchiveAfterDays: 180,
+          mandatoryDisclaimerOnNotifications: true
+        },
+        stages: [
+          { id: "STG-01", name: "Drafting", role: "Content Creator", order: 1, color: "#64748b", active: true },
+          { id: "STG-02", name: "Syllabus Verification", role: "Subject Matter Expert", order: 2, color: "#0ea5e9", active: true },
+          { id: "STG-03", name: "Fact & Gazette Audit", role: "Legal / Senior Editor", order: 3, color: "#f59e0b", active: true },
+          { id: "STG-04", name: "Final Editorial Approval", role: "Editor-in-Chief", order: 4, color: "#8b5cf6", active: true },
+          { id: "STG-05", name: "Published Live", role: "System Automation", order: 5, color: "#10b981", active: true }
+        ],
+        queue: [
+          { id: "WF-101", title: "OPSC Combined Technical Services Paper II Key Analysis", author: "Dr. B. K. Jena", stage: "Fact & Gazette Audit", submissionDate: "2026-11-08", urgency: "High", active: true },
+          { id: "WF-102", title: "OSSSC Panchayat Executive Officer (PEO) Computer Skill Syllabus", author: "M. Pattnaik", stage: "Syllabus Verification", submissionDate: "2026-11-07", urgency: "Medium", active: true },
+          { id: "WF-103", title: "Odisha Subordinate Finance Service Audit Assistant Guide", author: "Editorial Cell", stage: "Drafting", submissionDate: "2026-11-09", urgency: "Low", active: true }
+        ]
+      };
+      localStorage.setItem("cso_publishing_workflow_config", JSON.stringify(initial));
+      this.logAudit("WORKFLOW_CONFIG_RESET", "CONTENT_PUBLISHING", "Publishing workflow restored to factory defaults.");
+      return initial;
+    },
+
+    exportPublishingWorkflowManifest() {
+      const config = this.getPublishingWorkflowConfig();
+      const timestamp = Date.now();
+      const filename = "cso-publishing-workflow-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        publishingWorkflow: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("WORKFLOW_MANIFEST_EXPORTED", "DATA_EXPORT", "Publishing workflow manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 51. Scheduled Content Engine (module-04-011)
+    getScheduledContentConfig() {
+      const raw = localStorage.getItem("cso_scheduled_content_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_scheduled_content_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        dispatcherSettings: {
+          timezone: "Asia/Kolkata",
+          cronWorkerIntervalMinutes: 5,
+          autoNotifySubscribersOnRelease: true,
+          retryFailedDispatchCount: 3
+        },
+        items: [
+          { id: "SCH-01", title: "OPSC OAS Prelims Mock Exam 01 Answer Key with Explanation", scheduledDate: "2026-11-15T09:00:00+05:30", category: "Mock Tests", channel: "Web Portal & Telegram", status: "Pending", active: true },
+          { id: "SCH-02", title: "Weekly Odisha Gazetted Current Affairs Round-up (Vol. 44)", scheduledDate: "2026-11-16T08:00:00+05:30", category: "Current Affairs", channel: "Web Portal", status: "Pending", active: true },
+          { id: "SCH-03", title: "OSSC Amin & Survey Officer Technical Paper Guide", scheduledDate: "2026-11-18T10:30:00+05:30", category: "Technical Exams", channel: "Web Portal & PDF Dispatch", status: "Queued", active: true }
+        ]
+      };
+      localStorage.setItem("cso_scheduled_content_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveScheduledContentConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid scheduled content payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_scheduled_content_config", JSON.stringify(config));
+      this.logAudit("SCHEDULED_CONTENT_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Scheduled content dispatches and queue saved.");
+      return config;
+    },
+
+    importScheduledContentConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveScheduledContentConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import scheduled content: " + err.message);
+      }
+    },
+
+    resetScheduledContentConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        dispatcherSettings: {
+          timezone: "Asia/Kolkata",
+          cronWorkerIntervalMinutes: 5,
+          autoNotifySubscribersOnRelease: true,
+          retryFailedDispatchCount: 3
+        },
+        items: [
+          { id: "SCH-01", title: "OPSC OAS Prelims Mock Exam 01 Answer Key with Explanation", scheduledDate: "2026-11-15T09:00:00+05:30", category: "Mock Tests", channel: "Web Portal & Telegram", status: "Pending", active: true },
+          { id: "SCH-02", title: "Weekly Odisha Gazetted Current Affairs Round-up (Vol. 44)", scheduledDate: "2026-11-16T08:00:00+05:30", category: "Current Affairs", channel: "Web Portal", status: "Pending", active: true },
+          { id: "SCH-03", title: "OSSC Amin & Survey Officer Technical Paper Guide", scheduledDate: "2026-11-18T10:30:00+05:30", category: "Technical Exams", channel: "Web Portal & PDF Dispatch", status: "Queued", active: true }
+        ]
+      };
+      localStorage.setItem("cso_scheduled_content_config", JSON.stringify(initial));
+      this.logAudit("SCHEDULED_CONTENT_CONFIG_RESET", "CONTENT_PUBLISHING", "Scheduled content dispatches restored to factory defaults.");
+      return initial;
+    },
+
+    exportScheduledContentManifest() {
+      const config = this.getScheduledContentConfig();
+      const timestamp = Date.now();
+      const filename = "cso-scheduled-content-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        scheduledContent: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("SCHEDULED_CONTENT_MANIFEST_EXPORTED", "DATA_EXPORT", "Scheduled content manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
@@ -5571,6 +5848,9 @@
           featuredContent: this.getFeaturedContentConfig(),
           contentCategories: this.getContentCategoriesConfig(),
           tags: this.getTagsConfig(),
+          editorialCalendar: this.getEditorialCalendarConfig(),
+          publishingWorkflow: this.getPublishingWorkflowConfig(),
+          scheduledContent: this.getScheduledContentConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

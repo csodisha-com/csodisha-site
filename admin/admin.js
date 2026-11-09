@@ -379,6 +379,12 @@ async function loadMasterNavigation() {
         renderContentCategoriesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-04-008') {
         renderTagsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-009') {
+        renderEditorialCalendarWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-010') {
+        renderPublishingWorkflowWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-011') {
+        renderScheduledContentWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -15320,6 +15326,966 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Editorial Calendar (module-04-009)
+     */
+    function renderEditorialCalendarWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getEditorialCalendarConfig();
+        const events = config.events || [];
+        const viewSettings = config.viewSettings || {};
+
+        const urgentCount = events.filter(e => e.priority === 'High' && e.active).length;
+        const inProgressCount = events.filter(e => e.status === 'In Progress').length;
+        const totalActive = events.filter(e => e.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </span>
+                    Editorial Calendar
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    module-04-009
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Plan, schedule, and orchestrate high-yield study materials and exam-specific editorial releases across Odisha.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-cal-event" class="px-3.5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Milestone
+                </button>
+                <button id="btn-toggle-json-cal" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-cal" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-cal" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-cal" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Scheduled Milestones</span>
+                <div class="mt-1 text-2xl font-bold text-white">${events.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Campaigns</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${totalActive}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">In Progress</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${inProgressCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">High Priority</span>
+                <div class="mt-1 text-2xl font-bold text-rose-400">${urgentCount}</div>
+              </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Calendar Automation & View Settings</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Workspace View</label>
+                  <select id="cal-default-view" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <option value="Timeline" ${viewSettings.defaultView === 'Timeline' ? 'selected' : ''}>Timeline View</option>
+                    <option value="ExamCalendar" ${viewSettings.defaultView === 'ExamCalendar' ? 'selected' : ''}>Exam-Centric Grid</option>
+                    <option value="Kanban" ${viewSettings.defaultView === 'Kanban' ? 'selected' : ''}>Editorial Kanban</option>
+                  </select>
+                </div>
+                <div class="flex items-center pt-6">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="cal-highlight-urgent" class="sr-only peer" ${viewSettings.highlightUrgentDeadlines ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Highlight Urgent Deadlines (< 7 Days)</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-6">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="cal-auto-sync" class="sr-only peer" ${viewSettings.autoSyncExamDates ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Auto-sync Gazette Exam Dates</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Milestones Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Editorial Production Schedule</h2>
+                <span class="text-xs text-slate-400">${events.length} planned items</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">ID / Priority</th>
+                      <th class="px-4 py-3">Milestone Title</th>
+                      <th class="px-4 py-3">Target Exam</th>
+                      <th class="px-4 py-3">Due Date</th>
+                      <th class="px-4 py-3">Curator</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cal-events-body" class="divide-y divide-slate-800/60">
+                    ${events.map((evt, idx) => {
+                      const priorityColor = evt.priority === 'High' ? 'text-rose-400 bg-rose-500/10 border-rose-500/30' : evt.priority === 'Medium' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+                      const statusColor = evt.status === 'Completed' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : evt.status === 'In Progress' ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30' : 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3">
+                            <div class="font-mono text-xs font-semibold text-slate-400">${escapeHtml(evt.id || 'CAL-' + (idx+1))}</div>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${priorityColor}">
+                              ${escapeHtml(evt.priority || 'Normal')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(evt.title)}">
+                            ${escapeHtml(evt.title)}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-cyan-300 border border-cyan-800/40">
+                              ${escapeHtml(evt.targetExam || 'General')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-300">
+                            ${escapeHtml(evt.dueDate || 'Unscheduled')}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-400">
+                            ${escapeHtml(evt.curator || 'Unassigned')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusColor}">
+                              ${escapeHtml(evt.status || 'Drafting')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="cal-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${evt.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="cal-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="cal-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${events.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          No editorial calendar milestones scheduled. Click "Add Milestone" to create one.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="cal-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Editorial Calendar Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_editorial_calendar_config</span>
+              </div>
+              <textarea id="cal-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-indigo-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-cal" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Listeners
+        const eventsList = [...events];
+
+        const saveChanges = () => {
+          config.viewSettings = {
+            defaultView: root.querySelector('#cal-default-view').value,
+            highlightUrgentDeadlines: root.querySelector('#cal-highlight-urgent').checked,
+            autoSyncExamDates: root.querySelector('#cal-auto-sync').checked
+          };
+          config.events = eventsList;
+          window.CSOSuperStore.saveEditorialCalendarConfig(config);
+          alert('Editorial calendar configuration saved successfully!');
+          renderEditorialCalendarWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-cal').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-cal').addEventListener('click', () => {
+          window.CSOSuperStore.exportEditorialCalendarManifest();
+        });
+
+        root.querySelector('#btn-reset-cal').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the editorial calendar to default factory milestones?')) {
+            window.CSOSuperStore.resetEditorialCalendarConfig();
+            alert('Editorial calendar reset to defaults.');
+            renderEditorialCalendarWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#cal-json-drawer');
+        root.querySelector('#btn-toggle-json-cal').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-cal').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#cal-json-raw').value;
+            window.CSOSuperStore.importEditorialCalendarConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderEditorialCalendarWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.cal-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (eventsList[idx]) {
+              eventsList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.cal-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove milestone "' + eventsList[idx].title + '"?')) {
+              eventsList.splice(idx, 1);
+              config.events = eventsList;
+              window.CSOSuperStore.saveEditorialCalendarConfig(config);
+              renderEditorialCalendarWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.cal-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const evt = eventsList[idx];
+            const newTitle = prompt('Milestone Title:', evt.title);
+            if (newTitle === null) return;
+            const newExam = prompt('Target Exam:', evt.targetExam || 'OPSC OAS');
+            const newDate = prompt('Due Date (YYYY-MM-DD):', evt.dueDate || '2026-11-30');
+            const newCurator = prompt('Curator / Desk:', evt.curator || 'Editorial Desk');
+            const newPriority = prompt('Priority (High / Medium / Normal):', evt.priority || 'Normal');
+            const newStatus = prompt('Status (Drafting / In Progress / Scheduled / Completed):', evt.status || 'Drafting');
+
+            evt.title = newTitle.trim() || evt.title;
+            if (newExam !== null) evt.targetExam = newExam.trim();
+            if (newDate !== null) evt.dueDate = newDate.trim();
+            if (newCurator !== null) evt.curator = newCurator.trim();
+            if (newPriority !== null) evt.priority = newPriority.trim();
+            if (newStatus !== null) evt.status = newStatus.trim();
+
+            config.events = eventsList;
+            window.CSOSuperStore.saveEditorialCalendarConfig(config);
+            renderEditorialCalendarWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-cal-event').addEventListener('click', () => {
+          const title = prompt('Enter Milestone Title:');
+          if (!title || !title.trim()) return;
+          const targetExam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL, OTET):', 'OPSC OAS') || 'General';
+          const dueDate = prompt('Target Due Date (YYYY-MM-DD):', '2026-12-01') || '2026-12-01';
+          const curator = prompt('Curator / Desk:', 'Editorial Desk') || 'Editorial Desk';
+          const priority = prompt('Priority (High, Medium, Normal):', 'Normal') || 'Normal';
+
+          const newId = 'CAL-' + String(eventsList.length + 1).padStart(2, '0');
+          eventsList.push({
+            id: newId,
+            title: title.trim(),
+            targetExam: targetExam.trim(),
+            dueDate: dueDate.trim(),
+            curator: curator.trim(),
+            priority: priority.trim(),
+            status: 'Drafting',
+            active: true
+          });
+          config.events = eventsList;
+          window.CSOSuperStore.saveEditorialCalendarConfig(config);
+          renderEditorialCalendarWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-009 (Editorial Calendar)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Publishing Workflow (module-04-010)
+     */
+    function renderPublishingWorkflowWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getPublishingWorkflowConfig();
+        const stages = config.stages || [];
+        const queue = config.queue || [];
+        const settings = config.settings || {};
+
+        const urgentQueueCount = queue.filter(q => q.urgency === 'High' && q.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    Publishing Workflow
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    module-04-010
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage multi-tier governance, fact-checking audits, gazette verification checkpoints, and live release authorizations.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-wf-item" class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Submit to Queue
+                </button>
+                <button id="btn-toggle-json-wf" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-wf" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-wf" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-wf" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Pipeline Visual Stages -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+              <h2 class="text-base font-semibold text-white">Governed Editorial Pipeline Stages</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-2">
+                ${stages.map((stg) => `
+                  <div class="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="w-1.5 h-full absolute left-0 top-0 bottom-0" style="background-color: ${escapeHtml(stg.color || '#64748b')}"></div>
+                    <div class="pl-2">
+                      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Step 0${stg.order}</span>
+                      <h4 class="text-sm font-semibold text-white mt-0.5 truncate">${escapeHtml(stg.name)}</h4>
+                      <p class="text-[11px] text-slate-400 mt-1 truncate">${escapeHtml(stg.role)}</p>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Workflow Settings -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Editorial Governance & Safety Safeguards</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="flex items-center">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="wf-dual-approval" class="sr-only peer" ${settings.requireDualApprovalForGazette ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Dual Approval for Gazette Info</span>
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="wf-enforce-factcheck" class="sr-only peer" ${settings.enforceFactCheckingStage ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enforce Fact-Checking Stage</span>
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="wf-disclaimer-notif" class="sr-only peer" ${settings.mandatoryDisclaimerOnNotifications ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Mandatory Statutory Disclaimers</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Auto-Archive Inactive After (Days)</label>
+                  <input type="number" id="wf-auto-archive-days" value="${settings.autoArchiveAfterDays || 180}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Review Queue Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h2 class="text-base font-semibold text-white">Active Review & Approval Queue</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">${urgentQueueCount} items flagged with high urgency</p>
+                </div>
+                <span class="text-xs text-slate-400">${queue.length} items in pipeline</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Tracking ID</th>
+                      <th class="px-4 py-3">Article / Guide Title</th>
+                      <th class="px-4 py-3">Author</th>
+                      <th class="px-4 py-3">Current Stage</th>
+                      <th class="px-4 py-3">Submission</th>
+                      <th class="px-4 py-3">Urgency</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="wf-queue-body" class="divide-y divide-slate-800/60">
+                    ${queue.map((item, idx) => {
+                      const urgencyColor = item.urgency === 'High' ? 'text-rose-400 bg-rose-500/10 border-rose-500/30' : item.urgency === 'Medium' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'WF-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                            ${escapeHtml(item.title)}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            ${escapeHtml(item.author || 'Author Desk')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-emerald-400 border border-emerald-500/30">
+                              ${escapeHtml(item.stage || 'Drafting')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                            ${escapeHtml(item.submissionDate || 'N/A')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${urgencyColor}">
+                              ${escapeHtml(item.urgency || 'Normal')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="wf-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="wf-advance-btn px-2 py-1 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Advance</button>
+                            <button class="wf-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="wf-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${queue.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          Workflow queue is empty. Click "Submit to Queue" to introduce fresh content items.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="wf-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Publishing Workflow Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_publishing_workflow_config</span>
+              </div>
+              <textarea id="wf-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-emerald-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-wf" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const queueList = [...queue];
+
+        const saveChanges = () => {
+          config.settings = {
+            requireDualApprovalForGazette: root.querySelector('#wf-dual-approval').checked,
+            enforceFactCheckingStage: root.querySelector('#wf-enforce-factcheck').checked,
+            mandatoryDisclaimerOnNotifications: root.querySelector('#wf-disclaimer-notif').checked,
+            autoArchiveAfterDays: parseInt(root.querySelector('#wf-auto-archive-days').value, 10) || 180
+          };
+          config.queue = queueList;
+          window.CSOSuperStore.savePublishingWorkflowConfig(config);
+          alert('Publishing workflow configuration saved successfully!');
+          renderPublishingWorkflowWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-wf').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-wf').addEventListener('click', () => {
+          window.CSOSuperStore.exportPublishingWorkflowManifest();
+        });
+
+        root.querySelector('#btn-reset-wf').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the workflow stages and queue to default factory settings?')) {
+            window.CSOSuperStore.resetPublishingWorkflowConfig();
+            alert('Publishing workflow reset to defaults.');
+            renderPublishingWorkflowWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#wf-json-drawer');
+        root.querySelector('#btn-toggle-json-wf').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-wf').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#wf-json-raw').value;
+            window.CSOSuperStore.importPublishingWorkflowConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderPublishingWorkflowWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.wf-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (queueList[idx]) {
+              queueList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.wf-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove item "' + queueList[idx].title + '" from workflow queue?')) {
+              queueList.splice(idx, 1);
+              config.queue = queueList;
+              window.CSOSuperStore.savePublishingWorkflowConfig(config);
+              renderPublishingWorkflowWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.wf-advance-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = queueList[idx];
+            const stageNames = stages.map(s => s.name);
+            const currentIdx = stageNames.indexOf(item.stage);
+            if (currentIdx !== -1 && currentIdx < stageNames.length - 1) {
+              item.stage = stageNames[currentIdx + 1];
+              alert(`Item advanced to stage: "${item.stage}"`);
+              config.queue = queueList;
+              window.CSOSuperStore.savePublishingWorkflowConfig(config);
+              renderPublishingWorkflowWorkspace(root);
+            } else {
+              alert('Item is already in the final stage ("' + item.stage + '").');
+            }
+          });
+        });
+
+        root.querySelectorAll('.wf-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = queueList[idx];
+            const newTitle = prompt('Article / Guide Title:', item.title);
+            if (newTitle === null) return;
+            const newAuthor = prompt('Author / Desk:', item.author || 'Author Desk');
+            const newStage = prompt('Workflow Stage (Drafting, Syllabus Verification, Fact & Gazette Audit, Final Editorial Approval, Published Live):', item.stage || 'Drafting');
+            const newUrgency = prompt('Urgency (High / Medium / Low):', item.urgency || 'Normal');
+
+            item.title = newTitle.trim() || item.title;
+            if (newAuthor !== null) item.author = newAuthor.trim();
+            if (newStage !== null) item.stage = newStage.trim();
+            if (newUrgency !== null) item.urgency = newUrgency.trim();
+
+            config.queue = queueList;
+            window.CSOSuperStore.savePublishingWorkflowConfig(config);
+            renderPublishingWorkflowWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-wf-item').addEventListener('click', () => {
+          const title = prompt('Enter Content Title for Review:');
+          if (!title || !title.trim()) return;
+          const author = prompt('Author Name / Desk:', 'Editorial Cell') || 'Editorial Cell';
+          const stage = prompt('Initial Stage (Drafting, Syllabus Verification, Fact & Gazette Audit, Final Editorial Approval):', 'Drafting') || 'Drafting';
+          const urgency = prompt('Urgency (High, Medium, Low):', 'Medium') || 'Medium';
+
+          const newId = 'WF-' + (100 + queueList.length + 1);
+          queueList.push({
+            id: newId,
+            title: title.trim(),
+            author: author.trim(),
+            stage: stage.trim(),
+            submissionDate: new Date().toISOString().split('T')[0],
+            urgency: urgency.trim(),
+            active: true
+          });
+          config.queue = queueList;
+          window.CSOSuperStore.savePublishingWorkflowConfig(config);
+          renderPublishingWorkflowWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-010 (Publishing Workflow)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Scheduled Content (module-04-011)
+     */
+    function renderScheduledContentWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getScheduledContentConfig();
+        const items = config.items || [];
+        const dispatcherSettings = config.dispatcherSettings || {};
+
+        const pendingCount = items.filter(i => i.status === 'Pending' && i.active).length;
+        const queuedCount = items.filter(i => i.status === 'Queued' && i.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    Scheduled Content
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    module-04-011
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Configure automated cron workers, dispatch timestamps, and synchronized multi-channel content releases across Odisha.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-sch-item" class="px-3.5 py-2 text-xs font-medium text-white bg-amber-600 hover:bg-amber-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Schedule Release
+                </button>
+                <button id="btn-toggle-json-sch" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-sch" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-sch" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-sch" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Scheduled Dispatches</span>
+                <div class="mt-1 text-2xl font-bold text-white">${items.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Pending Release</span>
+                <div class="mt-1 text-2xl font-bold text-amber-400">${pendingCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Queued for Ingestion</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${queuedCount}</div>
+              </div>
+            </div>
+
+            <!-- Dispatcher Cron Settings -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Automated Dispatch Engine Configuration</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Timezone</label>
+                  <input type="text" id="sch-tz" value="${escapeHtml(dispatcherSettings.timezone || 'Asia/Kolkata')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Cron Worker Interval (Minutes)</label>
+                  <input type="number" id="sch-interval" value="${dispatcherSettings.cronWorkerIntervalMinutes || 5}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Max Retry Dispatches</label>
+                  <input type="number" id="sch-retry" value="${dispatcherSettings.retryFailedDispatchCount || 3}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="sch-notify-sub" class="sr-only peer" ${dispatcherSettings.autoNotifySubscribersOnRelease ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Auto-Notify Subscribers</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scheduled Dispatches Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Upcoming Dispatches & Releases</h2>
+                <span class="text-xs text-slate-400">${items.length} items in schedule</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Dispatch ID</th>
+                      <th class="px-4 py-3">Target Title</th>
+                      <th class="px-4 py-3">Scheduled Release Time</th>
+                      <th class="px-4 py-3">Category</th>
+                      <th class="px-4 py-3">Distribution Channel</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sch-items-body" class="divide-y divide-slate-800/60">
+                    ${items.map((item, idx) => {
+                      const statusColor = item.status === 'Released' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : item.status === 'Pending' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'SCH-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                            ${escapeHtml(item.title)}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-amber-300/90 whitespace-nowrap">
+                            ${escapeHtml(item.scheduledDate || 'Unscheduled')}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            ${escapeHtml(item.category || 'General')}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-400">
+                            ${escapeHtml(item.channel || 'Web Portal')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusColor}">
+                              ${escapeHtml(item.status || 'Pending')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="sch-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-amber-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="sch-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="sch-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${items.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          No scheduled releases in queue. Click "Schedule Release" to queue an automated publication.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="sch-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Scheduled Content Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_scheduled_content_config</span>
+              </div>
+              <textarea id="sch-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-amber-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-sch" class="px-3 py-1.5 text-xs font-medium text-white bg-amber-600 hover:bg-amber-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const itemsList = [...items];
+
+        const saveChanges = () => {
+          config.dispatcherSettings = {
+            timezone: root.querySelector('#sch-tz').value.trim() || 'Asia/Kolkata',
+            cronWorkerIntervalMinutes: parseInt(root.querySelector('#sch-interval').value, 10) || 5,
+            retryFailedDispatchCount: parseInt(root.querySelector('#sch-retry').value, 10) || 3,
+            autoNotifySubscribersOnRelease: root.querySelector('#sch-notify-sub').checked
+          };
+          config.items = itemsList;
+          window.CSOSuperStore.saveScheduledContentConfig(config);
+          alert('Scheduled content configuration saved successfully!');
+          renderScheduledContentWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-sch').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-sch').addEventListener('click', () => {
+          window.CSOSuperStore.exportScheduledContentManifest();
+        });
+
+        root.querySelector('#btn-reset-sch').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the scheduled release items to defaults?')) {
+            window.CSOSuperStore.resetScheduledContentConfig();
+            alert('Scheduled content dispatches reset to defaults.');
+            renderScheduledContentWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#sch-json-drawer');
+        root.querySelector('#btn-toggle-json-sch').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-sch').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#sch-json-raw').value;
+            window.CSOSuperStore.importScheduledContentConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderScheduledContentWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.sch-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (itemsList[idx]) {
+              itemsList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.sch-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove scheduled dispatch "' + itemsList[idx].title + '"?')) {
+              itemsList.splice(idx, 1);
+              config.items = itemsList;
+              window.CSOSuperStore.saveScheduledContentConfig(config);
+              renderScheduledContentWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.sch-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = itemsList[idx];
+            const newTitle = prompt('Scheduled Content Title:', item.title);
+            if (newTitle === null) return;
+            const newDate = prompt('Scheduled Release Timestamp (ISO string or YYYY-MM-DDTHH:mm:ss+05:30):', item.scheduledDate);
+            const newCat = prompt('Category:', item.category || 'General');
+            const newChan = prompt('Distribution Channel:', item.channel || 'Web Portal');
+            const newStatus = prompt('Status (Pending / Queued / Released):', item.status || 'Pending');
+
+            item.title = newTitle.trim() || item.title;
+            if (newDate !== null) item.scheduledDate = newDate.trim();
+            if (newCat !== null) item.category = newCat.trim();
+            if (newChan !== null) item.channel = newChan.trim();
+            if (newStatus !== null) item.status = newStatus.trim();
+
+            config.items = itemsList;
+            window.CSOSuperStore.saveScheduledContentConfig(config);
+            renderScheduledContentWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-sch-item').addEventListener('click', () => {
+          const title = prompt('Enter Scheduled Content Title:');
+          if (!title || !title.trim()) return;
+          const scheduledDate = prompt('Release Timestamp (YYYY-MM-DDTHH:mm:ss+05:30):', new Date(Date.now() + 86400000).toISOString().replace('Z', '+05:30')) || '';
+          const category = prompt('Category (e.g. Current Affairs, Mock Tests, Gazette):', 'Current Affairs') || 'Current Affairs';
+          const channel = prompt('Distribution Channel (e.g. Web Portal, Telegram, Email Newsletter):', 'Web Portal & Telegram') || 'Web Portal';
+
+          const newId = 'SCH-' + String(itemsList.length + 1).padStart(2, '0');
+          itemsList.push({
+            id: newId,
+            title: title.trim(),
+            scheduledDate: scheduledDate.trim(),
+            category: category.trim(),
+            channel: channel.trim(),
+            status: 'Pending',
+            active: true
+          });
+          config.items = itemsList;
+          window.CSOSuperStore.saveScheduledContentConfig(config);
+          renderScheduledContentWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-011 (Scheduled Content)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 
