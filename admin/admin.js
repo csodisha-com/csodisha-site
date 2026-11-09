@@ -391,6 +391,14 @@ async function loadMasterNavigation() {
         renderContentRevisionsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-04-014') {
         renderBulkContentOperationsWorkspace(dom.workspaceRoot);
+      } else if (folderId === 'folder-jobs-careers') {
+        renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_jobs_careers_tree', 'Jobs & Careers Directory', '💼', moduleId);
+      } else if (folderId === 'folder-schemes-benefits') {
+        renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_schemes_benefits_tree', 'Schemes & Benefits Directory', '🏛', moduleId);
+      } else if (folderId === 'folder-study-library') {
+        renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_study_library_tree', 'Study Library Directory', '📖', moduleId);
+      } else if (folderId === 'folder-community') {
+        renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_community_tree', 'Community Directory', '👥', moduleId);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -17194,6 +17202,361 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Menu Hierarchy & Tree Directory Manager
+     * Used by: folder-jobs-careers, folder-schemes-benefits, folder-study-library, folder-community
+     */
+    function renderMenuTreeWorkspace(container, folderKey, folderTitle, folderIcon, activeModuleId) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const tree = window.CSOSuperStore.getMenuTree(folderKey);
+
+        function countAll(nodes) {
+          let count = 0;
+          for (const n of nodes) {
+            count++;
+            if (n.children && n.children.length > 0) count += countAll(n.children);
+          }
+          return count;
+        }
+
+        const totalNodes = countAll(tree);
+        const rootDirectories = tree.filter(n => n.type === 'directory').length;
+
+        // Flatten helper for searchable list / editor
+        function flatten(nodes, depth = 0, parentTitle = 'Root') {
+          let acc = [];
+          for (const n of nodes) {
+            acc.push({ ...n, depth, parentTitle });
+            if (n.children && n.children.length > 0) {
+              acc = acc.concat(flatten(n.children, depth + 1, n.title));
+            }
+          }
+          return acc;
+        }
+
+        const flatList = flatten(tree);
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xl">
+                      ${escapeHtml(folderIcon || '📁')}
+                    </span>
+                    ${escapeHtml(folderTitle)}
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    ${escapeHtml(folderKey)}
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Extensible multi-tier directory tree, page routes, SEO schemas, articles, and downloadable file vaults.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-tree-node" class="px-3.5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Directory / Node
+                </button>
+                <button id="btn-toggle-json-tree" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-tree" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-tree" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-tree" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Tree
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Top-Level Categories</span>
+                <div class="mt-1 text-2xl font-bold text-white">${tree.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Indexed Nodes</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${totalNodes}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Directory Containers</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${rootDirectories}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Public Status</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">100% Active</div>
+              </div>
+            </div>
+
+            <!-- Quick Filter & Search -->
+            <div class="flex items-center gap-3">
+              <div class="relative flex-1">
+                <input type="text" id="tree-search-input" placeholder="Search directory nodes, slugs, or titles..." class="w-full px-4 py-2 bg-slate-900/80 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 pl-10">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+            </div>
+
+            <!-- Hierarchy Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h2 class="text-base font-semibold text-white">Directory Structure & Leaf Nodes</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Showing ${flatList.length} indexed directory records</p>
+                </div>
+                <span class="text-xs text-slate-400 font-mono">${folderKey}</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Node Title & Hierarchy</th>
+                      <th class="px-4 py-3">Slug / Route</th>
+                      <th class="px-4 py-3">Type</th>
+                      <th class="px-4 py-3">Files</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tree-nodes-body" class="divide-y divide-slate-800/60">
+                    ${flatList.map((item) => {
+                      const indentPx = item.depth * 24;
+                      const typeBadge = item.type === 'directory' ? 'bg-indigo-950 text-indigo-400 border-indigo-800/50' : item.type === 'redirect' ? 'bg-amber-950 text-amber-400 border-amber-800/50' : 'bg-slate-800 text-slate-300 border-slate-700';
+                      const statusBadge = item.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700';
+                      const fileCount = item.files ? item.files.length : 0;
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors tree-node-row" data-id="${escapeHtml(item.id)}" data-title="${escapeHtml(item.title.toLowerCase())}">
+                          <td class="px-4 py-3">
+                            <div style="padding-left: ${indentPx}px;" class="flex items-center gap-2">
+                              ${item.depth > 0 ? '<span class="text-slate-600 font-mono">└─</span>' : ''}
+                              <span class="text-base">${item.type === 'directory' ? '📁' : item.type === 'redirect' ? '🔗' : '📄'}</span>
+                              <div>
+                                <div class="font-medium text-white truncate max-w-sm" title="${escapeHtml(item.title)}">
+                                  ${escapeHtml(item.title)}
+                                </div>
+                                <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(item.id)}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-400 max-w-xs truncate" title="${escapeHtml(item.slug || '')}">
+                            ${escapeHtml(item.slug || '')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${typeBadge}">
+                              ${escapeHtml(item.type || 'page')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-400">
+                            ${fileCount > 0 ? `<span class="text-cyan-400 font-semibold">${fileCount} files</span>` : '<span class="text-slate-600">—</span>'}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusBadge}">
+                              ${escapeHtml(item.status || 'Published')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="node-add-child-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-id="${escapeHtml(item.id)}">+ Sub-node</button>
+                            <button class="node-edit-btn px-2 py-1 text-xs text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded cursor-pointer transition-colors" data-id="${escapeHtml(item.id)}">Edit</button>
+                            <button class="node-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-id="${escapeHtml(item.id)}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${flatList.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">
+                          No directory nodes found. Click "Reset Defaults" or "Add Directory / Node".
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="tree-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Menu Tree Configuration JSON</h3>
+                <span class="text-xs text-slate-400">${escapeHtml(folderKey)}</span>
+              </div>
+              <textarea id="tree-json-raw" rows="14" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-indigo-500">${escapeHtml(JSON.stringify(tree, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-tree" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        root.querySelector('#btn-save-tree').addEventListener('click', () => {
+          window.CSOSuperStore.saveMenuTree(folderKey, tree);
+          alert('Menu tree configuration saved successfully!');
+          renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+        });
+
+        root.querySelector('#btn-export-tree').addEventListener('click', () => {
+          window.CSOSuperStore.exportMenuTree(folderKey);
+        });
+
+        root.querySelector('#btn-reset-tree').addEventListener('click', () => {
+          if (confirm('Restore ' + folderTitle + ' back to authentic website directory defaults?')) {
+            window.CSOSuperStore.resetMenuTree(folderKey);
+            alert('Directory restored to initial defaults.');
+            renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+          }
+        });
+
+        const drawer = root.querySelector('#tree-json-drawer');
+        root.querySelector('#btn-toggle-json-tree').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-tree').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#tree-json-raw').value;
+            window.CSOSuperStore.importMenuTree(folderKey, raw);
+            alert('Tree JSON imported successfully!');
+            renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        // Search Filter
+        const searchInput = root.querySelector('#tree-search-input');
+        searchInput.addEventListener('input', (e) => {
+          const q = e.target.value.toLowerCase().trim();
+          root.querySelectorAll('.tree-node-row').forEach(row => {
+            const title = row.dataset.title || '';
+            const id = row.dataset.id ? row.dataset.id.toLowerCase() : '';
+            if (!q || title.includes(q) || id.includes(q)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        });
+
+        // Add root node
+        root.querySelector('#btn-add-tree-node').addEventListener('click', () => {
+          const title = prompt('Enter New Directory / Node Title:');
+          if (!title || !title.trim()) return;
+          const slug = prompt('URL Slug:', title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'node';
+          const type = prompt('Node Type (directory / page / article / redirect / file_vault):', 'directory') || 'directory';
+
+          const newNode = {
+            id: 'NODE-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+            title: title.trim(),
+            slug: slug.trim(),
+            type: type.trim(),
+            status: 'Published',
+            scheduledDate: null,
+            redirectUrl: '',
+            redirectTarget: '_self',
+            seo: { metaTitle: title.trim() + ' | Common Sense Odisha', metaDescription: '', ogImage: '/assets/images/og-default.jpg' },
+            article: { author: 'Admin', readTime: '3 min', bodyMarkdown: '# ' + title.trim() },
+            files: [],
+            children: []
+          };
+
+          window.CSOSuperStore.addNode(folderKey, null, newNode);
+          renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+        });
+
+        // Add child node
+        root.querySelectorAll('.node-add-child-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const parentId = e.currentTarget.dataset.id;
+            const title = prompt('Enter Sub-node Title:');
+            if (!title || !title.trim()) return;
+            const slug = prompt('URL Slug:', title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'sub-node';
+            const type = prompt('Type (page / article / directory / redirect / file_vault):', 'page') || 'page';
+
+            const newNode = {
+              id: 'NODE-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+              title: title.trim(),
+              slug: slug.trim(),
+              type: type.trim(),
+              status: 'Published',
+              scheduledDate: null,
+              redirectUrl: '',
+              redirectTarget: '_self',
+              seo: { metaTitle: title.trim() + ' | Common Sense Odisha', metaDescription: '', ogImage: '/assets/images/og-default.jpg' },
+              article: { author: 'Admin', readTime: '3 min', bodyMarkdown: '# ' + title.trim() },
+              files: [],
+              children: []
+            };
+
+            window.CSOSuperStore.addNode(folderKey, parentId, newNode);
+            renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+          });
+        });
+
+        // Edit node
+        root.querySelectorAll('.node-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const nodeId = e.currentTarget.dataset.id;
+            const node = window.CSOSuperStore.findNode(tree, nodeId);
+            if (!node) return;
+
+            const newTitle = prompt('Node Title:', node.title);
+            if (newTitle === null) return;
+            const newSlug = prompt('Slug:', node.slug || '');
+            const newStatus = prompt('Status (Published / Draft / Review / Scheduled):', node.status || 'Published');
+            const newType = prompt('Type (directory / page / article / redirect / file_vault):', node.type || 'page');
+
+            const patch = {
+              title: newTitle.trim() || node.title,
+              slug: newSlug !== null ? newSlug.trim() : node.slug,
+              status: newStatus !== null ? newStatus.trim() : node.status,
+              type: newType !== null ? newType.trim() : node.type
+            };
+
+            window.CSOSuperStore.saveNode(folderKey, nodeId, patch);
+            renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+          });
+        });
+
+        // Delete node
+        root.querySelectorAll('.node-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const nodeId = e.currentTarget.dataset.id;
+            const node = window.CSOSuperStore.findNode(tree, nodeId);
+            const title = node ? node.title : nodeId;
+            if (confirm('Delete node "' + title + '" and all its sub-elements?')) {
+              window.CSOSuperStore.deleteNode(folderKey, nodeId);
+              renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+            }
+          });
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in Menu Tree Workspace (${escapeHtml(folderTitle)})</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 

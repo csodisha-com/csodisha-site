@@ -1,0 +1,1616 @@
+[
+  {
+    "id": "CM-GRP-01",
+    "title": "Local & Odisha Communities",
+    "slug": "local-odisha-communities",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=0",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Local & Odisha Communities | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Local & Odisha Communities.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Local & Odisha Communities\n\nAuthentic Odisha knowledgebase and directory for Local & Odisha Communities."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-001",
+        "title": "District & Regional Forums",
+        "slug": "district-regional-forums",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "District & Regional Forums | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for District & Regional Forums.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# District & Regional Forums\n\nVerified public information for District & Regional Forums."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-002",
+            "title": "Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara)",
+            "slug": "coastal-odisha-puri-cuttack-balasore-jagatsinghpur-kendrapara",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara)\n\nVerified public information for Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara)."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-003",
+            "title": "Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh)",
+            "slug": "western-odisha-sambalpur-bargarh-bolangir-jharsuguda-sundargarh",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh)\n\nVerified public information for Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh)."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-004",
+            "title": "Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri)",
+            "slug": "southern-odisha-ganjam-gajapati-koraput-rayagada-malkangiri",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri)\n\nVerified public information for Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri)."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-005",
+            "title": "Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal)",
+            "slug": "northern-central-odisha-mayurbhanj-keonjhar-angul-dhenkanal",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal)\n\nVerified public information for Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal)."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-006",
+        "title": "Panchayat & Urban Civic Groups",
+        "slug": "panchayat-urban-civic-groups",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Panchayat & Urban Civic Groups | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Panchayat & Urban Civic Groups.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Panchayat & Urban Civic Groups\n\nVerified public information for Panchayat & Urban Civic Groups."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-007",
+            "title": "Gram Panchayat Citizen Circles",
+            "slug": "gram-panchayat-citizen-circles",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Gram Panchayat Citizen Circles | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Gram Panchayat Citizen Circles.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Gram Panchayat Citizen Circles\n\nVerified public information for Gram Panchayat Citizen Circles."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-008",
+            "title": "Urban Local Bodies & Resident Associations",
+            "slug": "urban-local-bodies-resident-associations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Urban Local Bodies & Resident Associations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Urban Local Bodies & Resident Associations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Urban Local Bodies & Resident Associations\n\nVerified public information for Urban Local Bodies & Resident Associations."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-02",
+    "title": "Students, Educators & Mentorship",
+    "slug": "students-educators-mentorship",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=1",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Students, Educators & Mentorship | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Students, Educators & Mentorship.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Students, Educators & Mentorship\n\nAuthentic Odisha knowledgebase and directory for Students, Educators & Mentorship."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-009",
+        "title": "School & College Student Circles",
+        "slug": "school-college-student-circles",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "School & College Student Circles | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for School & College Student Circles.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# School & College Student Circles\n\nVerified public information for School & College Student Circles."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-010",
+            "title": "Secondary & Higher Secondary Study Circles",
+            "slug": "secondary-higher-secondary-study-circles",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Secondary & Higher Secondary Study Circles | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Secondary & Higher Secondary Study Circles.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Secondary & Higher Secondary Study Circles\n\nVerified public information for Secondary & Higher Secondary Study Circles."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-011",
+            "title": "Undergraduate & University Study Collectives",
+            "slug": "undergraduate-university-study-collectives",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Undergraduate & University Study Collectives | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Undergraduate & University Study Collectives.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Undergraduate & University Study Collectives\n\nVerified public information for Undergraduate & University Study Collectives."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-012",
+        "title": "Educators, Teachers & Mentorship Hub",
+        "slug": "educators-teachers-mentorship-hub",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Educators, Teachers & Mentorship Hub | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Educators, Teachers & Mentorship Hub.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Educators, Teachers & Mentorship Hub\n\nVerified public information for Educators, Teachers & Mentorship Hub."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-013",
+            "title": "School Teachers & Pedagogy Network",
+            "slug": "school-teachers-pedagogy-network",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "School Teachers & Pedagogy Network | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for School Teachers & Pedagogy Network.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# School Teachers & Pedagogy Network\n\nVerified public information for School Teachers & Pedagogy Network."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-014",
+            "title": "Higher Education Mentors & Researchers",
+            "slug": "higher-education-mentors-researchers",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Higher Education Mentors & Researchers | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Higher Education Mentors & Researchers.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Higher Education Mentors & Researchers\n\nVerified public information for Higher Education Mentors & Researchers."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-03",
+    "title": "Careers, Business & Professional Networks",
+    "slug": "careers-business-professional-networks",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=2",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Careers, Business & Professional Networks | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Careers, Business & Professional Networks.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Careers, Business & Professional Networks\n\nAuthentic Odisha knowledgebase and directory for Careers, Business & Professional Networks."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-015",
+        "title": "Job Seekers & Competitive Aspirants",
+        "slug": "job-seekers-competitive-aspirants",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Job Seekers & Competitive Aspirants | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Job Seekers & Competitive Aspirants.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Job Seekers & Competitive Aspirants\n\nVerified public information for Job Seekers & Competitive Aspirants."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-016",
+            "title": "OPSC, OSSC & OSSSC Exam Aspirants",
+            "slug": "opsc-ossc-osssc-exam-aspirants",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "OPSC, OSSC & OSSSC Exam Aspirants | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for OPSC, OSSC & OSSSC Exam Aspirants.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# OPSC, OSSC & OSSSC Exam Aspirants\n\nVerified public information for OPSC, OSSC & OSSSC Exam Aspirants."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-017",
+            "title": "Banking, Railway & SSC Central Exam Forums",
+            "slug": "banking-railway-ssc-central-exam-forums",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Banking, Railway & SSC Central Exam Forums | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Banking, Railway & SSC Central Exam Forums.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Banking, Railway & SSC Central Exam Forums\n\nVerified public information for Banking, Railway & SSC Central Exam Forums."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-018",
+        "title": "Entrepreneurs, Startups & MSMEs",
+        "slug": "entrepreneurs-startups-msmes",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Entrepreneurs, Startups & MSMEs | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Entrepreneurs, Startups & MSMEs.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Entrepreneurs, Startups & MSMEs\n\nVerified public information for Entrepreneurs, Startups & MSMEs."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-019",
+            "title": "Odisha Startup Founders & Innovators",
+            "slug": "odisha-startup-founders-innovators",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Startup Founders & Innovators | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odisha Startup Founders & Innovators.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Startup Founders & Innovators\n\nVerified public information for Odisha Startup Founders & Innovators."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-020",
+            "title": "Small Business & Trade Guilds",
+            "slug": "small-business-trade-guilds",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Small Business & Trade Guilds | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Small Business & Trade Guilds.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Small Business & Trade Guilds\n\nVerified public information for Small Business & Trade Guilds."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-04",
+    "title": "Agriculture & Rural Livelihoods",
+    "slug": "agriculture-rural-livelihoods",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=3",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Agriculture & Rural Livelihoods | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Agriculture & Rural Livelihoods.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Agriculture & Rural Livelihoods\n\nAuthentic Odisha knowledgebase and directory for Agriculture & Rural Livelihoods."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-021",
+        "title": "Farmer Collectives & Organic Growers",
+        "slug": "farmer-collectives-organic-growers",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Farmer Collectives & Organic Growers | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Farmer Collectives & Organic Growers.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Farmer Collectives & Organic Growers\n\nVerified public information for Farmer Collectives & Organic Growers."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-022",
+            "title": "Krushak Knowledge Sharing Circles",
+            "slug": "krushak-knowledge-sharing-circles",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Krushak Knowledge Sharing Circles | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Krushak Knowledge Sharing Circles.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Krushak Knowledge Sharing Circles\n\nVerified public information for Krushak Knowledge Sharing Circles."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-023",
+            "title": "Millet Mission & Indigenous Crops",
+            "slug": "millet-mission-indigenous-crops",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Millet Mission & Indigenous Crops | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Millet Mission & Indigenous Crops.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Millet Mission & Indigenous Crops\n\nVerified public information for Millet Mission & Indigenous Crops."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-024",
+        "title": "Allied Rural Sectors",
+        "slug": "allied-rural-sectors",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Allied Rural Sectors | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Allied Rural Sectors.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Allied Rural Sectors\n\nVerified public information for Allied Rural Sectors."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-025",
+            "title": "Dairy, Poultry & Livestock Keepers",
+            "slug": "dairy-poultry-livestock-keepers",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Dairy, Poultry & Livestock Keepers | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Dairy, Poultry & Livestock Keepers.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Dairy, Poultry & Livestock Keepers\n\nVerified public information for Dairy, Poultry & Livestock Keepers."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-026",
+            "title": "Fisheries & Coastal Livelihoods",
+            "slug": "fisheries-coastal-livelihoods",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Fisheries & Coastal Livelihoods | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Fisheries & Coastal Livelihoods.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Fisheries & Coastal Livelihoods\n\nVerified public information for Fisheries & Coastal Livelihoods."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-05",
+    "title": "Women, Families, Health & Inclusion",
+    "slug": "women-families-health-inclusion",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=4",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Women, Families, Health & Inclusion | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Women, Families, Health & Inclusion.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Women, Families, Health & Inclusion\n\nAuthentic Odisha knowledgebase and directory for Women, Families, Health & Inclusion."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-027",
+        "title": "Mission Shakti & Women Groups",
+        "slug": "mission-shakti-women-groups",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Mission Shakti & Women Groups | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Mission Shakti & Women Groups.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Mission Shakti & Women Groups\n\nVerified public information for Mission Shakti & Women Groups."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-028",
+            "title": "Self-Help Groups (SHGs) & Financial Literacy",
+            "slug": "self-help-groups-shgs-financial-literacy",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Self-Help Groups (SHGs) & Financial Literacy | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Self-Help Groups (SHGs) & Financial Literacy.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Self-Help Groups (SHGs) & Financial Literacy\n\nVerified public information for Self-Help Groups (SHGs) & Financial Literacy."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-029",
+            "title": "Women Health, Safety & Legal Rights",
+            "slug": "women-health-safety-legal-rights",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Women Health, Safety & Legal Rights | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Women Health, Safety & Legal Rights.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Women Health, Safety & Legal Rights\n\nVerified public information for Women Health, Safety & Legal Rights."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-030",
+        "title": "Special Beneficiaries & Inclusion",
+        "slug": "special-beneficiaries-inclusion",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Special Beneficiaries & Inclusion | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Special Beneficiaries & Inclusion.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Special Beneficiaries & Inclusion\n\nVerified public information for Special Beneficiaries & Inclusion."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-031",
+            "title": "Divyangjan (Persons with Disabilities) Support",
+            "slug": "divyangjan-persons-with-disabilities-support",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Divyangjan (Persons with Disabilities) Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Divyangjan (Persons with Disabilities) Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Divyangjan (Persons with Disabilities) Support\n\nVerified public information for Divyangjan (Persons with Disabilities) Support."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-032",
+            "title": "Senior Citizens & Elder Care Forums",
+            "slug": "senior-citizens-elder-care-forums",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Senior Citizens & Elder Care Forums | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Senior Citizens & Elder Care Forums.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Senior Citizens & Elder Care Forums\n\nVerified public information for Senior Citizens & Elder Care Forums."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-06",
+    "title": "Youth, NGOs & Volunteering",
+    "slug": "youth-ngos-volunteering",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=5",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Youth, NGOs & Volunteering | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Youth, NGOs & Volunteering.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Youth, NGOs & Volunteering\n\nAuthentic Odisha knowledgebase and directory for Youth, NGOs & Volunteering."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-033",
+        "title": "Youth Development & Leadership",
+        "slug": "youth-development-leadership",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Youth Development & Leadership | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Youth Development & Leadership.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Youth Development & Leadership\n\nVerified public information for Youth Development & Leadership."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-034",
+            "title": "NYKS, NSS & Youth Clubs",
+            "slug": "nyks-nss-youth-clubs",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "NYKS, NSS & Youth Clubs | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for NYKS, NSS & Youth Clubs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# NYKS, NSS & Youth Clubs\n\nVerified public information for NYKS, NSS & Youth Clubs."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-035",
+            "title": "Skill Development & Vocational Circles",
+            "slug": "skill-development-vocational-circles",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Skill Development & Vocational Circles | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Skill Development & Vocational Circles.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Skill Development & Vocational Circles\n\nVerified public information for Skill Development & Vocational Circles."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-036",
+        "title": "Civil Society & NGOs",
+        "slug": "civil-society-ngos",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Civil Society & NGOs | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Civil Society & NGOs.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Civil Society & NGOs\n\nVerified public information for Civil Society & NGOs."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-037",
+            "title": "Non-Profit Networks in Odisha",
+            "slug": "non-profit-networks-in-odisha",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Non-Profit Networks in Odisha | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Non-Profit Networks in Odisha.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Non-Profit Networks in Odisha\n\nVerified public information for Non-Profit Networks in Odisha."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-038",
+            "title": "Volunteering Opportunities",
+            "slug": "volunteering-opportunities",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Volunteering Opportunities | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Volunteering Opportunities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Volunteering Opportunities\n\nVerified public information for Volunteering Opportunities."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-07",
+    "title": "Culture, Sports & Traditional Communities",
+    "slug": "culture-sports-traditional-communities",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=6",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Culture, Sports & Traditional Communities | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Culture, Sports & Traditional Communities.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Culture, Sports & Traditional Communities\n\nAuthentic Odisha knowledgebase and directory for Culture, Sports & Traditional Communities."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-039",
+        "title": "Odisha Heritage & Arts",
+        "slug": "odisha-heritage-arts",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Odisha Heritage & Arts | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Odisha Heritage & Arts.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Odisha Heritage & Arts\n\nVerified public information for Odisha Heritage & Arts."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-040",
+            "title": "Odia Language, Literature & Poetry",
+            "slug": "odia-language-literature-poetry",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odia Language, Literature & Poetry | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odia Language, Literature & Poetry.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odia Language, Literature & Poetry\n\nVerified public information for Odia Language, Literature & Poetry."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-041",
+            "title": "Traditional Handlooms & Handicrafts",
+            "slug": "traditional-handlooms-handicrafts",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Traditional Handlooms & Handicrafts | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Traditional Handlooms & Handicrafts.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Traditional Handlooms & Handicrafts\n\nVerified public information for Traditional Handlooms & Handicrafts."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-042",
+        "title": "Sports & Athletics Networks",
+        "slug": "sports-athletics-networks",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Sports & Athletics Networks | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Sports & Athletics Networks.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Sports & Athletics Networks\n\nVerified public information for Sports & Athletics Networks."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-043",
+            "title": "Hockey, Football & Athletic Clubs",
+            "slug": "hockey-football-athletic-clubs",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Hockey, Football & Athletic Clubs | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Hockey, Football & Athletic Clubs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Hockey, Football & Athletic Clubs\n\nVerified public information for Hockey, Football & Athletic Clubs."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-044",
+            "title": "Indigenous Games & Yoga Clubs",
+            "slug": "indigenous-games-yoga-clubs",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Indigenous Games & Yoga Clubs | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Indigenous Games & Yoga Clubs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Indigenous Games & Yoga Clubs\n\nVerified public information for Indigenous Games & Yoga Clubs."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-08",
+    "title": "Environment, Science & Technology",
+    "slug": "environment-science-technology",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=7",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Environment, Science & Technology | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Environment, Science & Technology.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Environment, Science & Technology\n\nAuthentic Odisha knowledgebase and directory for Environment, Science & Technology."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-045",
+        "title": "Environmental Conservation & Climate",
+        "slug": "environmental-conservation-climate",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Environmental Conservation & Climate | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Environmental Conservation & Climate.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Environmental Conservation & Climate\n\nVerified public information for Environmental Conservation & Climate."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-046",
+            "title": "Forest & Wildlife Conservation",
+            "slug": "forest-wildlife-conservation",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Forest & Wildlife Conservation | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Forest & Wildlife Conservation.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Forest & Wildlife Conservation\n\nVerified public information for Forest & Wildlife Conservation."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-047",
+            "title": "Disaster Preparedness & Climate Action",
+            "slug": "disaster-preparedness-climate-action",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Disaster Preparedness & Climate Action | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Disaster Preparedness & Climate Action.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Disaster Preparedness & Climate Action\n\nVerified public information for Disaster Preparedness & Climate Action."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-048",
+        "title": "Open Science & Technology Innovation",
+        "slug": "open-science-technology-innovation",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Open Science & Technology Innovation | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Open Science & Technology Innovation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Open Science & Technology Innovation\n\nVerified public information for Open Science & Technology Innovation."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-049",
+            "title": "Coding & Open Source Developers",
+            "slug": "coding-open-source-developers",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Coding & Open Source Developers | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Coding & Open Source Developers.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Coding & Open Source Developers\n\nVerified public information for Coding & Open Source Developers."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-050",
+            "title": "Science Clubs & STEM Outreach",
+            "slug": "science-clubs-stem-outreach",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Science Clubs & STEM Outreach | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Science Clubs & STEM Outreach.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Science Clubs & STEM Outreach\n\nVerified public information for Science Clubs & STEM Outreach."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-09",
+    "title": "Digital, International & Community Forums",
+    "slug": "digital-international-community-forums",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=8",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Digital, International & Community Forums | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Digital, International & Community Forums.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Digital, International & Community Forums\n\nAuthentic Odisha knowledgebase and directory for Digital, International & Community Forums."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-051",
+        "title": "Global Odia Diaspora Networks",
+        "slug": "global-odia-diaspora-networks",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Global Odia Diaspora Networks | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Global Odia Diaspora Networks.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Global Odia Diaspora Networks\n\nVerified public information for Global Odia Diaspora Networks."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-052",
+            "title": "International Odia Societies (OSSA, OSA, UK, Middle East)",
+            "slug": "international-odia-societies-ossa-osa-uk-middle-east",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Odia Societies (OSSA, OSA, UK, Middle East) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for International Odia Societies (OSSA, OSA, UK, Middle East).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Odia Societies (OSSA, OSA, UK, Middle East)\n\nVerified public information for International Odia Societies (OSSA, OSA, UK, Middle East)."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-053",
+            "title": "Knowledge & Skill Remittance",
+            "slug": "knowledge-skill-remittance",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Knowledge & Skill Remittance | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Knowledge & Skill Remittance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Knowledge & Skill Remittance\n\nVerified public information for Knowledge & Skill Remittance."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-054",
+        "title": "Digital & Virtual Discussion Hubs",
+        "slug": "digital-virtual-discussion-hubs",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Digital & Virtual Discussion Hubs | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Digital & Virtual Discussion Hubs.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Digital & Virtual Discussion Hubs\n\nVerified public information for Digital & Virtual Discussion Hubs."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-055",
+            "title": "Online Knowledge Commons",
+            "slug": "online-knowledge-commons",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Online Knowledge Commons | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Online Knowledge Commons.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Online Knowledge Commons\n\nVerified public information for Online Knowledge Commons."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-056",
+            "title": "Ask CSO Community Helpdesk",
+            "slug": "ask-cso-community-helpdesk",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Ask CSO Community Helpdesk | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Ask CSO Community Helpdesk.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Ask CSO Community Helpdesk\n\nVerified public information for Ask CSO Community Helpdesk."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CM-GRP-10",
+    "title": "Community Directory, Safety & Governance",
+    "slug": "community-directory-safety-governance",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/community/?section=9",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Community Directory, Safety & Governance | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Community Directory, Safety & Governance.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "5 min",
+      "bodyMarkdown": "# Community Directory, Safety & Governance\n\nAuthentic Odisha knowledgebase and directory for Community Directory, Safety & Governance."
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "CM-NODE-057",
+        "title": "Community Guidelines & Moderation",
+        "slug": "community-guidelines-moderation",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Community Guidelines & Moderation | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Community Guidelines & Moderation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Community Guidelines & Moderation\n\nVerified public information for Community Guidelines & Moderation."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-058",
+            "title": "Code of Conduct & Civic Standards",
+            "slug": "code-of-conduct-civic-standards",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Code of Conduct & Civic Standards | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Code of Conduct & Civic Standards.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Code of Conduct & Civic Standards\n\nVerified public information for Code of Conduct & Civic Standards."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-059",
+            "title": "Content Verification & Fact-Checking",
+            "slug": "content-verification-fact-checking",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Content Verification & Fact-Checking | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Content Verification & Fact-Checking.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Content Verification & Fact-Checking\n\nVerified public information for Content Verification & Fact-Checking."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "CM-NODE-060",
+        "title": "Safety, Support & Grievance Redressal",
+        "slug": "safety-support-grievance-redressal",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Safety, Support & Grievance Redressal | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Safety, Support & Grievance Redressal.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Safety, Support & Grievance Redressal\n\nVerified public information for Safety, Support & Grievance Redressal."
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "CM-NODE-061",
+            "title": "Reporting Safety Concerns",
+            "slug": "reporting-safety-concerns",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Reporting Safety Concerns | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Reporting Safety Concerns.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Reporting Safety Concerns\n\nVerified public information for Reporting Safety Concerns."
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "CM-NODE-062",
+            "title": "Feedback & Continuous Improvement",
+            "slug": "feedback-continuous-improvement",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Feedback & Continuous Improvement | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Feedback & Continuous Improvement.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Feedback & Continuous Improvement\n\nVerified public information for Feedback & Continuous Improvement."
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1441,6 +1441,210 @@
           "status": "planned"
         }
       ]
+    },
+    {
+      "id": "folder-jobs-careers",
+      "title": "Jobs & Careers Directory",
+      "modules": [
+        {
+          "id": "module-jc-001",
+          "title": "Jobs & Recruitment",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-002",
+          "title": "Career Explorer",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-003",
+          "title": "Eligibility & Qualification Explorer",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-004",
+          "title": "Courses, Entrance Exams & Certifications",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-005",
+          "title": "Scholarships & Financial Support",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-006",
+          "title": "International & Overseas Opportunities",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-007",
+          "title": "Career Development & Employability",
+          "status": "active"
+        },
+        {
+          "id": "module-jc-008",
+          "title": "Institutions, Official Portals & Verification",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "folder-schemes-benefits",
+      "title": "Schemes & Benefits Directory",
+      "modules": [
+        {
+          "id": "module-sb-001",
+          "title": "Government & Public Welfare",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-002",
+          "title": "Education, Employment & Talent",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-003",
+          "title": "Agriculture, Business & Livelihoods",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-004",
+          "title": "Health, Housing & Financial Protection",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-005",
+          "title": "Communities & Special Beneficiaries",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-006",
+          "title": "Private, Global & Innovation Support",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-007",
+          "title": "Find Schemes & Check Eligibility",
+          "status": "active"
+        },
+        {
+          "id": "module-sb-008",
+          "title": "Citizen Services & Verification",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "folder-study-library",
+      "title": "Study Library Directory",
+      "modules": [
+        {
+          "id": "module-sl-001",
+          "title": "Early Childhood & Primary Education",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-002",
+          "title": "School & Higher Secondary Education",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-003",
+          "title": "Undergraduate, Postgraduate & Research",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-004",
+          "title": "Competitive Exams & Teacher Education",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-005",
+          "title": "Professional, Vocational & Digital Skills",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-006",
+          "title": "Subjects, Languages & Study Materials",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-007",
+          "title": "International & Inclusive Education",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-008",
+          "title": "Life Skills, Culture & Lifelong Learning",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-009",
+          "title": "Libraries, Educators & Learning Support",
+          "status": "active"
+        },
+        {
+          "id": "module-sl-010",
+          "title": "Odisha Study Hub & Resource Organisation",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "folder-community",
+      "title": "Community Directory",
+      "modules": [
+        {
+          "id": "module-cm-001",
+          "title": "Local & Odisha Communities",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-002",
+          "title": "Students, Educators & Mentorship",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-003",
+          "title": "Careers, Business & Professional Networks",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-004",
+          "title": "Agriculture & Rural Livelihoods",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-005",
+          "title": "Women, Families, Health & Inclusion",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-006",
+          "title": "Youth, NGOs & Volunteering",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-007",
+          "title": "Culture, Sports & Traditional Communities",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-008",
+          "title": "Environment, Science & Technology",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-009",
+          "title": "Digital, International & Community Forums",
+          "status": "active"
+        },
+        {
+          "id": "module-cm-010",
+          "title": "Community Directory, Safety & Governance",
+          "status": "active"
+        }
+      ]
     }
   ]
 }

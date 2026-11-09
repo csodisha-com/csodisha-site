@@ -1,0 +1,2182 @@
+[
+  {
+    "id": "JC-SEC-01",
+    "title": "Jobs & Recruitment",
+    "slug": "jobs-recruitment",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=0",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Jobs & Recruitment | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Jobs & Recruitment on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Jobs & Recruitment"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-001",
+        "title": "Jobs & Recruitment Directory",
+        "slug": "jobs-recruitment-directory",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Jobs & Recruitment Directory | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Jobs & Recruitment Directory.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Jobs & Recruitment Directory"
+        },
+        "files": [
+          {
+            "id": "F-27GG",
+            "name": "jobs-recruitment-directory-guide.pdf",
+            "url": "/assets/pdf/jobs-recruitment-directory.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-002",
+            "title": "National-Level Government Jobs & Recruitment",
+            "slug": "national-level-government-jobs-recruitment",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "National-Level Government Jobs & Recruitment | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for National-Level Government Jobs & Recruitment.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# National-Level Government Jobs & Recruitment"
+            },
+            "files": [
+              {
+                "id": "F-ANG6",
+                "name": "national-level-government-jobs-recruitment-guide.pdf",
+                "url": "/assets/pdf/national-level-government-jobs-recruitment.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-015",
+            "title": "Odisha State-Level Jobs & Recruitment",
+            "slug": "odisha-state-level-jobs-recruitment",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha State-Level Jobs & Recruitment | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Odisha State-Level Jobs & Recruitment.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha State-Level Jobs & Recruitment"
+            },
+            "files": [
+              {
+                "id": "F-XI9D",
+                "name": "odisha-state-level-jobs-recruitment-guide.pdf",
+                "url": "/assets/pdf/odisha-state-level-jobs-recruitment.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-028",
+            "title": "Other State Government Jobs",
+            "slug": "other-state-government-jobs",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Other State Government Jobs | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Other State Government Jobs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Other State Government Jobs"
+            },
+            "files": [
+              {
+                "id": "F-E0RC",
+                "name": "other-state-government-jobs-guide.pdf",
+                "url": "/assets/pdf/other-state-government-jobs.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-02",
+    "title": "Career Explorer",
+    "slug": "career-explorer",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=1",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Career Explorer | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Career Explorer on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Career Explorer"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-138",
+        "title": "Careers by Educational Qualification",
+        "slug": "careers-by-educational-qualification",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Careers by Educational Qualification | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Careers by Educational Qualification.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Careers by Educational Qualification"
+        },
+        "files": [
+          {
+            "id": "F-9NWV",
+            "name": "careers-by-educational-qualification-guide.pdf",
+            "url": "/assets/pdf/careers-by-educational-qualification.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-139",
+            "title": "School-Level Qualifications",
+            "slug": "school-level-qualifications",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "School-Level Qualifications | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for School-Level Qualifications.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# School-Level Qualifications"
+            },
+            "files": [
+              {
+                "id": "F-SQB5",
+                "name": "school-level-qualifications-guide.pdf",
+                "url": "/assets/pdf/school-level-qualifications.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-140",
+            "title": "Undergraduate Qualifications",
+            "slug": "undergraduate-qualifications",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Undergraduate Qualifications | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Undergraduate Qualifications.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Undergraduate Qualifications"
+            },
+            "files": [
+              {
+                "id": "F-J4S2",
+                "name": "undergraduate-qualifications-guide.pdf",
+                "url": "/assets/pdf/undergraduate-qualifications.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-141",
+            "title": "Diploma and Technical Qualifications",
+            "slug": "diploma-and-technical-qualifications",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Diploma and Technical Qualifications | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Diploma and Technical Qualifications.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Diploma and Technical Qualifications"
+            },
+            "files": [
+              {
+                "id": "F-CHZO",
+                "name": "diploma-and-technical-qualifications-guide.pdf",
+                "url": "/assets/pdf/diploma-and-technical-qualifications.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-145",
+        "title": "Careers by Stream and Subject",
+        "slug": "careers-by-stream-and-subject",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Careers by Stream and Subject | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Careers by Stream and Subject.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Careers by Stream and Subject"
+        },
+        "files": [
+          {
+            "id": "F-FRKF",
+            "name": "careers-by-stream-and-subject-guide.pdf",
+            "url": "/assets/pdf/careers-by-stream-and-subject.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-146",
+            "title": "Arts and Humanities",
+            "slug": "arts-and-humanities",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Arts and Humanities | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Arts and Humanities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Arts and Humanities"
+            },
+            "files": [
+              {
+                "id": "F-KI5P",
+                "name": "arts-and-humanities-guide.pdf",
+                "url": "/assets/pdf/arts-and-humanities.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-147",
+            "title": "Science",
+            "slug": "science",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Science | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Science.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Science"
+            },
+            "files": [
+              {
+                "id": "F-JR8I",
+                "name": "science-guide.pdf",
+                "url": "/assets/pdf/science.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-148",
+            "title": "Commerce and Finance",
+            "slug": "commerce-and-finance",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Commerce and Finance | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Commerce and Finance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Commerce and Finance"
+            },
+            "files": [
+              {
+                "id": "F-6A64",
+                "name": "commerce-and-finance-guide.pdf",
+                "url": "/assets/pdf/commerce-and-finance.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-154",
+        "title": "Careers by Sector and Occupation",
+        "slug": "careers-by-sector-and-occupation",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Careers by Sector and Occupation | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Careers by Sector and Occupation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Careers by Sector and Occupation"
+        },
+        "files": [
+          {
+            "id": "F-E17G",
+            "name": "careers-by-sector-and-occupation-guide.pdf",
+            "url": "/assets/pdf/careers-by-sector-and-occupation.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-155",
+            "title": "Government and Public Administration",
+            "slug": "government-and-public-administration",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Government and Public Administration | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Government and Public Administration.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Government and Public Administration"
+            },
+            "files": [
+              {
+                "id": "F-49VJ",
+                "name": "government-and-public-administration-guide.pdf",
+                "url": "/assets/pdf/government-and-public-administration.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-156",
+            "title": "Education and Academia",
+            "slug": "education-and-academia",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Education and Academia | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Education and Academia.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Education and Academia"
+            },
+            "files": [
+              {
+                "id": "F-K10X",
+                "name": "education-and-academia-guide.pdf",
+                "url": "/assets/pdf/education-and-academia.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-157",
+            "title": "Banking, Finance and Insurance",
+            "slug": "banking-finance-and-insurance",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Banking, Finance and Insurance | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Banking, Finance and Insurance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Banking, Finance and Insurance"
+            },
+            "files": [
+              {
+                "id": "F-1BAX",
+                "name": "banking-finance-and-insurance-guide.pdf",
+                "url": "/assets/pdf/banking-finance-and-insurance.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-03",
+    "title": "Eligibility & Qualification Explorer",
+    "slug": "eligibility-qualification-explorer",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=2",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Eligibility & Qualification Explorer | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Eligibility & Qualification Explorer on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Eligibility & Qualification Explorer"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-265",
+        "title": "Eligibility & Qualification Explorer",
+        "slug": "eligibility-qualification-explorer",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Eligibility & Qualification Explorer | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Eligibility & Qualification Explorer.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Eligibility & Qualification Explorer"
+        },
+        "files": [
+          {
+            "id": "F-FFNO",
+            "name": "eligibility-qualification-explorer-guide.pdf",
+            "url": "/assets/pdf/eligibility-qualification-explorer.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-266",
+            "title": "Educational Eligibility",
+            "slug": "educational-eligibility",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Educational Eligibility | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Educational Eligibility.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Educational Eligibility"
+            },
+            "files": [
+              {
+                "id": "F-2ZD6",
+                "name": "educational-eligibility-guide.pdf",
+                "url": "/assets/pdf/educational-eligibility.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-267",
+            "title": "Age Eligibility",
+            "slug": "age-eligibility",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Age Eligibility | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Age Eligibility.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Age Eligibility"
+            },
+            "files": [
+              {
+                "id": "F-8DSL",
+                "name": "age-eligibility-guide.pdf",
+                "url": "/assets/pdf/age-eligibility.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-268",
+            "title": "Reservation and Category Rules",
+            "slug": "reservation-and-category-rules",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Reservation and Category Rules | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Reservation and Category Rules.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Reservation and Category Rules"
+            },
+            "files": [
+              {
+                "id": "F-Y0GT",
+                "name": "reservation-and-category-rules-guide.pdf",
+                "url": "/assets/pdf/reservation-and-category-rules.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-04",
+    "title": "Courses, Entrance Exams & Certifications",
+    "slug": "courses-entrance-exams-certifications",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=3",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Courses, Entrance Exams & Certifications | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Courses, Entrance Exams & Certifications on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Courses, Entrance Exams & Certifications"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-272",
+        "title": "Courses, Degrees and Educational Pathways",
+        "slug": "courses-degrees-and-educational-pathways",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Courses, Degrees and Educational Pathways | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Courses, Degrees and Educational Pathways.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Courses, Degrees and Educational Pathways"
+        },
+        "files": [
+          {
+            "id": "F-Q5YZ",
+            "name": "courses-degrees-and-educational-pathways-guide.pdf",
+            "url": "/assets/pdf/courses-degrees-and-educational-pathways.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-273",
+            "title": "School-to-Higher-Education Pathways",
+            "slug": "school-to-higher-education-pathways",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "School-to-Higher-Education Pathways | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for School-to-Higher-Education Pathways.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# School-to-Higher-Education Pathways"
+            },
+            "files": [
+              {
+                "id": "F-B1VN",
+                "name": "school-to-higher-education-pathways-guide.pdf",
+                "url": "/assets/pdf/school-to-higher-education-pathways.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-274",
+            "title": "Undergraduate Courses",
+            "slug": "undergraduate-courses",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Undergraduate Courses | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Undergraduate Courses.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Undergraduate Courses"
+            },
+            "files": [
+              {
+                "id": "F-VIFI",
+                "name": "undergraduate-courses-guide.pdf",
+                "url": "/assets/pdf/undergraduate-courses.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-275",
+            "title": "Postgraduate Courses",
+            "slug": "postgraduate-courses",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Postgraduate Courses | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Postgraduate Courses.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Postgraduate Courses"
+            },
+            "files": [
+              {
+                "id": "F-L2IS",
+                "name": "postgraduate-courses-guide.pdf",
+                "url": "/assets/pdf/postgraduate-courses.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-279",
+        "title": "Entrance Examinations and Admission Tests",
+        "slug": "entrance-examinations-and-admission-tests",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Entrance Examinations and Admission Tests | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Entrance Examinations and Admission Tests.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Entrance Examinations and Admission Tests"
+        },
+        "files": [
+          {
+            "id": "F-V731",
+            "name": "entrance-examinations-and-admission-tests-guide.pdf",
+            "url": "/assets/pdf/entrance-examinations-and-admission-tests.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-280",
+            "title": "School-Level Entrance Examinations",
+            "slug": "school-level-entrance-examinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "School-Level Entrance Examinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for School-Level Entrance Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# School-Level Entrance Examinations"
+            },
+            "files": [
+              {
+                "id": "F-LZ3T",
+                "name": "school-level-entrance-examinations-guide.pdf",
+                "url": "/assets/pdf/school-level-entrance-examinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-281",
+            "title": "Undergraduate Entrance Examinations",
+            "slug": "undergraduate-entrance-examinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Undergraduate Entrance Examinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Undergraduate Entrance Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Undergraduate Entrance Examinations"
+            },
+            "files": [
+              {
+                "id": "F-DZL1",
+                "name": "undergraduate-entrance-examinations-guide.pdf",
+                "url": "/assets/pdf/undergraduate-entrance-examinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-282",
+            "title": "Postgraduate Entrance Examinations",
+            "slug": "postgraduate-entrance-examinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Postgraduate Entrance Examinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Postgraduate Entrance Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Postgraduate Entrance Examinations"
+            },
+            "files": [
+              {
+                "id": "F-WBTT",
+                "name": "postgraduate-entrance-examinations-guide.pdf",
+                "url": "/assets/pdf/postgraduate-entrance-examinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-285",
+        "title": "Competitive and Recruitment Examinations",
+        "slug": "competitive-and-recruitment-examinations",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Competitive and Recruitment Examinations | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Competitive and Recruitment Examinations.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Competitive and Recruitment Examinations"
+        },
+        "files": [
+          {
+            "id": "F-4D4F",
+            "name": "competitive-and-recruitment-examinations-guide.pdf",
+            "url": "/assets/pdf/competitive-and-recruitment-examinations.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-286",
+            "title": "National Examinations",
+            "slug": "national-examinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "National Examinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for National Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# National Examinations"
+            },
+            "files": [
+              {
+                "id": "F-SRTV",
+                "name": "national-examinations-guide.pdf",
+                "url": "/assets/pdf/national-examinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-287",
+            "title": "Odisha Examinations",
+            "slug": "odisha-examinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Examinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Odisha Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Examinations"
+            },
+            "files": [
+              {
+                "id": "F-8XWD",
+                "name": "odisha-examinations-guide.pdf",
+                "url": "/assets/pdf/odisha-examinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-288",
+            "title": "Teaching Eligibility Examinations",
+            "slug": "teaching-eligibility-examinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Teaching Eligibility Examinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Teaching Eligibility Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Teaching Eligibility Examinations"
+            },
+            "files": [
+              {
+                "id": "F-0JQP",
+                "name": "teaching-eligibility-examinations-guide.pdf",
+                "url": "/assets/pdf/teaching-eligibility-examinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-05",
+    "title": "Scholarships & Financial Support",
+    "slug": "scholarships-financial-support",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=4",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Scholarships & Financial Support | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Scholarships & Financial Support on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Scholarships & Financial Support"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-307",
+        "title": "Scholarships, Fellowships and Education Funding",
+        "slug": "scholarships-fellowships-and-education-funding",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Scholarships, Fellowships and Education Funding | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Scholarships, Fellowships and Education Funding.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Scholarships, Fellowships and Education Funding"
+        },
+        "files": [
+          {
+            "id": "F-1MFU",
+            "name": "scholarships-fellowships-and-education-funding-guide.pdf",
+            "url": "/assets/pdf/scholarships-fellowships-and-education-funding.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-308",
+            "title": "Odisha Scholarships and Support",
+            "slug": "odisha-scholarships-and-support",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Scholarships and Support | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Odisha Scholarships and Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Scholarships and Support"
+            },
+            "files": [
+              {
+                "id": "F-LXE6",
+                "name": "odisha-scholarships-and-support-guide.pdf",
+                "url": "/assets/pdf/odisha-scholarships-and-support.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-309",
+            "title": "Central Government Scholarships",
+            "slug": "central-government-scholarships",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Central Government Scholarships | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Central Government Scholarships.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Central Government Scholarships"
+            },
+            "files": [
+              {
+                "id": "F-EAEF",
+                "name": "central-government-scholarships-guide.pdf",
+                "url": "/assets/pdf/central-government-scholarships.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-310",
+            "title": "Scholarships by Education Level",
+            "slug": "scholarships-by-education-level",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Scholarships by Education Level | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Scholarships by Education Level.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Scholarships by Education Level"
+            },
+            "files": [
+              {
+                "id": "F-8E9K",
+                "name": "scholarships-by-education-level-guide.pdf",
+                "url": "/assets/pdf/scholarships-by-education-level.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-06",
+    "title": "International & Overseas Opportunities",
+    "slug": "international-overseas-opportunities",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=5",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "International & Overseas Opportunities | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of International & Overseas Opportunities on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# International & Overseas Opportunities"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-315",
+        "title": "International Education and Admissions",
+        "slug": "international-education-and-admissions",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "International Education and Admissions | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International Education and Admissions.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# International Education and Admissions"
+        },
+        "files": [
+          {
+            "id": "F-3AGU",
+            "name": "international-education-and-admissions-guide.pdf",
+            "url": "/assets/pdf/international-education-and-admissions.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-316",
+            "title": "Study Destinations",
+            "slug": "study-destinations",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Study Destinations | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Study Destinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Study Destinations"
+            },
+            "files": [
+              {
+                "id": "F-QFRW",
+                "name": "study-destinations-guide.pdf",
+                "url": "/assets/pdf/study-destinations.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-317",
+            "title": "International Study Levels",
+            "slug": "international-study-levels",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Study Levels | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International Study Levels.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Study Levels"
+            },
+            "files": [
+              {
+                "id": "F-W5SD",
+                "name": "international-study-levels-guide.pdf",
+                "url": "/assets/pdf/international-study-levels.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-318",
+            "title": "International Admission Requirements",
+            "slug": "international-admission-requirements",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Admission Requirements | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International Admission Requirements.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Admission Requirements"
+            },
+            "files": [
+              {
+                "id": "F-P0J2",
+                "name": "international-admission-requirements-guide.pdf",
+                "url": "/assets/pdf/international-admission-requirements.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-320",
+        "title": "International Jobs and Employment",
+        "slug": "international-jobs-and-employment",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "International Jobs and Employment | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International Jobs and Employment.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# International Jobs and Employment"
+        },
+        "files": [
+          {
+            "id": "F-I1SX",
+            "name": "international-jobs-and-employment-guide.pdf",
+            "url": "/assets/pdf/international-jobs-and-employment.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-321",
+            "title": "Overseas government jobs",
+            "slug": "overseas-government-jobs",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Overseas government jobs | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Overseas government jobs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Overseas government jobs"
+            },
+            "files": [
+              {
+                "id": "F-Z5TR",
+                "name": "overseas-government-jobs-guide.pdf",
+                "url": "/assets/pdf/overseas-government-jobs.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-322",
+            "title": "International private-sector jobs",
+            "slug": "international-private-sector-jobs",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International private-sector jobs | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International private-sector jobs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International private-sector jobs"
+            },
+            "files": [
+              {
+                "id": "F-MKQ9",
+                "name": "international-private-sector-jobs-guide.pdf",
+                "url": "/assets/pdf/international-private-sector-jobs.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-323",
+            "title": "Multinational company employment",
+            "slug": "multinational-company-employment",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Multinational company employment | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Multinational company employment.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Multinational company employment"
+            },
+            "files": [
+              {
+                "id": "F-FUET",
+                "name": "multinational-company-employment-guide.pdf",
+                "url": "/assets/pdf/multinational-company-employment.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-337",
+        "title": "International Internships, Research and Exchange",
+        "slug": "international-internships-research-and-exchange",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "International Internships, Research and Exchange | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International Internships, Research and Exchange.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# International Internships, Research and Exchange"
+        },
+        "files": [
+          {
+            "id": "F-QM4A",
+            "name": "international-internships-research-and-exchange-guide.pdf",
+            "url": "/assets/pdf/international-internships-research-and-exchange.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-338",
+            "title": "International student internships",
+            "slug": "international-student-internships",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International student internships | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International student internships.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International student internships"
+            },
+            "files": [
+              {
+                "id": "F-OTKU",
+                "name": "international-student-internships-guide.pdf",
+                "url": "/assets/pdf/international-student-internships.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-339",
+            "title": "Graduate internship programmes",
+            "slug": "graduate-internship-programmes",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Graduate internship programmes | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Graduate internship programmes.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Graduate internship programmes"
+            },
+            "files": [
+              {
+                "id": "F-UQBU",
+                "name": "graduate-internship-programmes-guide.pdf",
+                "url": "/assets/pdf/graduate-internship-programmes.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-340",
+            "title": "Research internships",
+            "slug": "research-internships",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Research internships | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Research internships.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Research internships"
+            },
+            "files": [
+              {
+                "id": "F-BOPE",
+                "name": "research-internships-guide.pdf",
+                "url": "/assets/pdf/research-internships.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-07",
+    "title": "Career Development & Employability",
+    "slug": "career-development-employability",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=6",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Career Development & Employability | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Career Development & Employability on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Career Development & Employability"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-363",
+        "title": "Career Planning and Guidance",
+        "slug": "career-planning-and-guidance",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Career Planning and Guidance | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Career Planning and Guidance.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Career Planning and Guidance"
+        },
+        "files": [
+          {
+            "id": "F-N0AT",
+            "name": "career-planning-and-guidance-guide.pdf",
+            "url": "/assets/pdf/career-planning-and-guidance.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-364",
+            "title": "Career Discovery",
+            "slug": "career-discovery",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Career Discovery | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Career Discovery.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Career Discovery"
+            },
+            "files": [
+              {
+                "id": "F-UVT6",
+                "name": "career-discovery-guide.pdf",
+                "url": "/assets/pdf/career-discovery.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-365",
+            "title": "Career Planning",
+            "slug": "career-planning",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Career Planning | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Career Planning.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Career Planning"
+            },
+            "files": [
+              {
+                "id": "F-IPFX",
+                "name": "career-planning-guide.pdf",
+                "url": "/assets/pdf/career-planning.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-366",
+            "title": "Career Guidance Services",
+            "slug": "career-guidance-services",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Career Guidance Services | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Career Guidance Services.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Career Guidance Services"
+            },
+            "files": [
+              {
+                "id": "F-OD99",
+                "name": "career-guidance-services-guide.pdf",
+                "url": "/assets/pdf/career-guidance-services.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-367",
+        "title": "Application Preparation",
+        "slug": "application-preparation",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Application Preparation | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Application Preparation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Application Preparation"
+        },
+        "files": [
+          {
+            "id": "F-MQKP",
+            "name": "application-preparation-guide.pdf",
+            "url": "/assets/pdf/application-preparation.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-368",
+            "title": "Application Documents",
+            "slug": "application-documents",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Application Documents | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Application Documents.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Application Documents"
+            },
+            "files": [
+              {
+                "id": "F-KVOE",
+                "name": "application-documents-guide.pdf",
+                "url": "/assets/pdf/application-documents.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-369",
+            "title": "Government Job Application Support",
+            "slug": "government-job-application-support",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Government Job Application Support | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Government Job Application Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Government Job Application Support"
+            },
+            "files": [
+              {
+                "id": "F-382V",
+                "name": "government-job-application-support-guide.pdf",
+                "url": "/assets/pdf/government-job-application-support.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-370",
+            "title": "Private-Sector Application Support",
+            "slug": "private-sector-application-support",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Private-Sector Application Support | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Private-Sector Application Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Private-Sector Application Support"
+            },
+            "files": [
+              {
+                "id": "F-A7KV",
+                "name": "private-sector-application-support-guide.pdf",
+                "url": "/assets/pdf/private-sector-application-support.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-372",
+        "title": "Interview and Selection Preparation",
+        "slug": "interview-and-selection-preparation",
+        "type": "page",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Interview and Selection Preparation | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Interview and Selection Preparation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Interview and Selection Preparation"
+        },
+        "files": [
+          {
+            "id": "F-H5L0",
+            "name": "interview-and-selection-preparation-guide.pdf",
+            "url": "/assets/pdf/interview-and-selection-preparation.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "JC-SEC-08",
+    "title": "Institutions, Official Portals & Verification",
+    "slug": "institutions-official-portals-verification",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/jobs-careers/?section=7",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Institutions, Official Portals & Verification | Jobs & Careers | Common Sense Odisha",
+      "metaDescription": "Verified directory of Institutions, Official Portals & Verification on Common Sense Odisha.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Institutions, Official Portals & Verification"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "JC-NODE-383",
+        "title": "Educational Institutions Directory",
+        "slug": "educational-institutions-directory",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Educational Institutions Directory | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Educational Institutions Directory.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Educational Institutions Directory"
+        },
+        "files": [
+          {
+            "id": "F-RSX3",
+            "name": "educational-institutions-directory-guide.pdf",
+            "url": "/assets/pdf/educational-institutions-directory.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-384",
+            "title": "Odisha Institutions",
+            "slug": "odisha-institutions",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Institutions | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Odisha Institutions.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Institutions"
+            },
+            "files": [
+              {
+                "id": "F-GT8Z",
+                "name": "odisha-institutions-guide.pdf",
+                "url": "/assets/pdf/odisha-institutions.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-385",
+            "title": "Institutions Across India",
+            "slug": "institutions-across-india",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Institutions Across India | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Institutions Across India.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Institutions Across India"
+            },
+            "files": [
+              {
+                "id": "F-QUHZ",
+                "name": "institutions-across-india-guide.pdf",
+                "url": "/assets/pdf/institutions-across-india.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-386",
+            "title": "International Institutions",
+            "slug": "international-institutions",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Institutions | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for International Institutions.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Institutions"
+            },
+            "files": [
+              {
+                "id": "F-GI1I",
+                "name": "international-institutions-guide.pdf",
+                "url": "/assets/pdf/international-institutions.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-388",
+        "title": "Official Recruitment Authorities and Portals",
+        "slug": "official-recruitment-authorities-and-portals",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Official Recruitment Authorities and Portals | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Official Recruitment Authorities and Portals.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Official Recruitment Authorities and Portals"
+        },
+        "files": [
+          {
+            "id": "F-QC6N",
+            "name": "official-recruitment-authorities-and-portals-guide.pdf",
+            "url": "/assets/pdf/official-recruitment-authorities-and-portals.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": [
+          {
+            "id": "JC-NODE-389",
+            "title": "National Recruitment Authorities",
+            "slug": "national-recruitment-authorities",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "National Recruitment Authorities | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for National Recruitment Authorities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# National Recruitment Authorities"
+            },
+            "files": [
+              {
+                "id": "F-HMQC",
+                "name": "national-recruitment-authorities-guide.pdf",
+                "url": "/assets/pdf/national-recruitment-authorities.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-390",
+            "title": "Odisha Recruitment Authorities",
+            "slug": "odisha-recruitment-authorities",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Recruitment Authorities | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Odisha Recruitment Authorities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Recruitment Authorities"
+            },
+            "files": [
+              {
+                "id": "F-F2D9",
+                "name": "odisha-recruitment-authorities-guide.pdf",
+                "url": "/assets/pdf/odisha-recruitment-authorities.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          },
+          {
+            "id": "JC-NODE-391",
+            "title": "Other State Recruitment Authorities",
+            "slug": "other-state-recruitment-authorities",
+            "type": "page",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Other State Recruitment Authorities | Jobs & Careers | Common Sense Odisha",
+              "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Other State Recruitment Authorities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Other State Recruitment Authorities"
+            },
+            "files": [
+              {
+                "id": "F-PJWV",
+                "name": "other-state-recruitment-authorities-guide.pdf",
+                "url": "/assets/pdf/other-state-recruitment-authorities.pdf",
+                "size": "1.2 MB",
+                "uploadedAt": "2026-11-09"
+              }
+            ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "JC-NODE-393",
+        "title": "Professional, Regulatory and Accreditation Authorities",
+        "slug": "professional-regulatory-and-accreditation-authorities",
+        "type": "page",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Professional, Regulatory and Accreditation Authorities | Jobs & Careers | Common Sense Odisha",
+          "metaDescription": "Authentic Odisha career notifications, syllabus breakdown, and recruitment guides for Professional, Regulatory and Accreditation Authorities.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Professional, Regulatory and Accreditation Authorities"
+        },
+        "files": [
+          {
+            "id": "F-PIKD",
+            "name": "professional-regulatory-and-accreditation-authorities-guide.pdf",
+            "url": "/assets/pdf/professional-regulatory-and-accreditation-authorities.pdf",
+            "size": "1.2 MB",
+            "uploadedAt": "2026-11-09"
+          }
+        ],
+        "children": []
+      }
+    ]
+  }
+]

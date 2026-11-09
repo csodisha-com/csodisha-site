@@ -1,0 +1,2546 @@
+[
+  {
+    "id": "SL-GRP-01",
+    "title": "Early Childhood & Primary Education",
+    "slug": "early-childhood-primary-education",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=0",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Early Childhood & Primary Education | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Early Childhood & Primary Education.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Early Childhood & Primary Education"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-001",
+        "title": "Early Childhood, Playgroup & Kindergarten",
+        "slug": "early-childhood-playgroup-kindergarten",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Early Childhood, Playgroup & Kindergarten | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Early Childhood, Playgroup & Kindergarten.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Early Childhood, Playgroup & Kindergarten"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-002",
+            "title": "Early Childhood Education",
+            "slug": "early-childhood-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Early Childhood Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Early Childhood Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Early Childhood Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-010",
+            "title": "Foundational Literacy",
+            "slug": "foundational-literacy",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Foundational Literacy | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Foundational Literacy.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Foundational Literacy"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-018",
+            "title": "Foundational Numeracy",
+            "slug": "foundational-numeracy",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Foundational Numeracy | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Foundational Numeracy.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Foundational Numeracy"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-042",
+        "title": "Foundational Learning & Primary School — Classes 1–5",
+        "slug": "foundational-learning-primary-school-classes-15",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Foundational Learning & Primary School — Classes 1–5 | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Foundational Learning & Primary School — Classes 1–5.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Foundational Learning & Primary School — Classes 1–5"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-043",
+            "title": "Class 1",
+            "slug": "class-1",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 1 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 1.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 1"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-052",
+            "title": "Class 2",
+            "slug": "class-2",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 2 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 2.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 2"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-059",
+            "title": "Class 3",
+            "slug": "class-3",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 3 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 3.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 3"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-02",
+    "title": "School & Higher Secondary Education",
+    "slug": "school-higher-secondary-education",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=1",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "School & Higher Secondary Education | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for School & Higher Secondary Education.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# School & Higher Secondary Education"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-101",
+        "title": "Upper Primary & Middle School — Classes 6–8",
+        "slug": "upper-primary-middle-school-classes-68",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Upper Primary & Middle School — Classes 6–8 | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Upper Primary & Middle School — Classes 6–8.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Upper Primary & Middle School — Classes 6–8"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-102",
+            "title": "Class 6",
+            "slug": "class-6",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 6 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 6.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 6"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-113",
+            "title": "Class 7",
+            "slug": "class-7",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 7 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 7.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 7"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-123",
+            "title": "Class 8",
+            "slug": "class-8",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 8 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 8.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 8"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-152",
+        "title": "Secondary Education — Classes 9–10",
+        "slug": "secondary-education-classes-910",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Secondary Education — Classes 9–10 | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Secondary Education — Classes 9–10.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Secondary Education — Classes 9–10"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-153",
+            "title": "Class 9",
+            "slug": "class-9",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 9 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 9.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 9"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-170",
+            "title": "Class 10",
+            "slug": "class-10",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 10 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 10.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 10"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-179",
+            "title": "Mathematics",
+            "slug": "mathematics",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Mathematics | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Mathematics.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Mathematics"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-206",
+        "title": "Higher Secondary Education — Classes 11–12",
+        "slug": "higher-secondary-education-classes-1112",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Higher Secondary Education — Classes 11–12 | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Higher Secondary Education — Classes 11–12.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Higher Secondary Education — Classes 11–12"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-207",
+            "title": "Class 11",
+            "slug": "class-11",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 11 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 11.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 11"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-246",
+            "title": "Class 12",
+            "slug": "class-12",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Class 12 | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Class 12.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Class 12"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-255",
+            "title": "Higher Secondary Study Resources",
+            "slug": "higher-secondary-study-resources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Higher Secondary Study Resources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Higher Secondary Study Resources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Higher Secondary Study Resources"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-03",
+    "title": "Undergraduate, Postgraduate & Research",
+    "slug": "undergraduate-postgraduate-research",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=2",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Undergraduate, Postgraduate & Research | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Undergraduate, Postgraduate & Research.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Undergraduate, Postgraduate & Research"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-298",
+        "title": "Undergraduate Education — Bachelor's Degrees",
+        "slug": "undergraduate-education-bachelors-degrees",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Undergraduate Education — Bachelor's Degrees | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Undergraduate Education — Bachelor's Degrees.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Undergraduate Education — Bachelor's Degrees"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-299",
+            "title": "Arts and Humanities",
+            "slug": "arts-and-humanities",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Arts and Humanities | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Arts and Humanities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Arts and Humanities"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-316",
+            "title": "Natural and Mathematical Sciences",
+            "slug": "natural-and-mathematical-sciences",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Natural and Mathematical Sciences | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Natural and Mathematical Sciences.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Natural and Mathematical Sciences"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-332",
+            "title": "Commerce, Finance and Management",
+            "slug": "commerce-finance-and-management",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Commerce, Finance and Management | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Commerce, Finance and Management.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Commerce, Finance and Management"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-427",
+        "title": "Postgraduate Education — Master's Degrees",
+        "slug": "postgraduate-education-masters-degrees",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Postgraduate Education — Master's Degrees | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Postgraduate Education — Master's Degrees.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Postgraduate Education — Master's Degrees"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-428",
+            "title": "Arts and Humanities",
+            "slug": "arts-and-humanities",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Arts and Humanities | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Arts and Humanities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Arts and Humanities"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-445",
+            "title": "Science and Mathematics",
+            "slug": "science-and-mathematics",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Science and Mathematics | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Science and Mathematics.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Science and Mathematics"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-459",
+            "title": "Commerce, Management and Finance",
+            "slug": "commerce-management-and-finance",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Commerce, Management and Finance | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Commerce, Management and Finance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Commerce, Management and Finance"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-516",
+        "title": "Doctoral, Postdoctoral & Advanced Research",
+        "slug": "doctoral-postdoctoral-advanced-research",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Doctoral, Postdoctoral & Advanced Research | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Doctoral, Postdoctoral & Advanced Research.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Doctoral, Postdoctoral & Advanced Research"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-517",
+            "title": "Doctoral Education",
+            "slug": "doctoral-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Doctoral Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Doctoral Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Doctoral Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-531",
+            "title": "Postdoctoral and Advanced Research",
+            "slug": "postdoctoral-and-advanced-research",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Postdoctoral and Advanced Research | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Postdoctoral and Advanced Research.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Postdoctoral and Advanced Research"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-539",
+            "title": "Research Funding and Grants",
+            "slug": "research-funding-and-grants",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Research Funding and Grants | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Research Funding and Grants.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Research Funding and Grants"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-04",
+    "title": "Competitive Exams & Teacher Education",
+    "slug": "competitive-exams-teacher-education",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=3",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Competitive Exams & Teacher Education | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Competitive Exams & Teacher Education.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Competitive Exams & Teacher Education"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-628",
+        "title": "Teacher Education, Pedagogy & Educational Practice",
+        "slug": "teacher-education-pedagogy-educational-practice",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Teacher Education, Pedagogy & Educational Practice | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Teacher Education, Pedagogy & Educational Practice.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Teacher Education, Pedagogy & Educational Practice"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-629",
+            "title": "Teacher Education Qualifications",
+            "slug": "teacher-education-qualifications",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Teacher Education Qualifications | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Teacher Education Qualifications.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Teacher Education Qualifications"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-637",
+            "title": "B.Ed and M.Ed Papers",
+            "slug": "bed-and-med-papers",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "B.Ed and M.Ed Papers | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for B.Ed and M.Ed Papers.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# B.Ed and M.Ed Papers"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-654",
+            "title": "Pedagogy by School Subject",
+            "slug": "pedagogy-by-school-subject",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Pedagogy by School Subject | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Pedagogy by School Subject.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Pedagogy by School Subject"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-710",
+        "title": "Competitive, Entrance & Eligibility Examinations",
+        "slug": "competitive-entrance-eligibility-examinations",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Competitive, Entrance & Eligibility Examinations | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Competitive, Entrance & Eligibility Examinations.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Competitive, Entrance & Eligibility Examinations"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-711",
+            "title": "School-Level Entrance and Scholarship Examinations",
+            "slug": "school-level-entrance-and-scholarship-examinations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "School-Level Entrance and Scholarship Examinations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for School-Level Entrance and Scholarship Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# School-Level Entrance and Scholarship Examinations"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-719",
+            "title": "Undergraduate Entrance Examinations",
+            "slug": "undergraduate-entrance-examinations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Undergraduate Entrance Examinations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Undergraduate Entrance Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Undergraduate Entrance Examinations"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-730",
+            "title": "Postgraduate Entrance Examinations",
+            "slug": "postgraduate-entrance-examinations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Postgraduate Entrance Examinations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Postgraduate Entrance Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Postgraduate Entrance Examinations"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-792",
+        "title": "Previous-Year Papers, Question Banks & Assessment",
+        "slug": "previous-year-papers-question-banks-assessment",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Previous-Year Papers, Question Banks & Assessment | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Previous-Year Papers, Question Banks & Assessment.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Previous-Year Papers, Question Banks & Assessment"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-793",
+            "title": "School Examinations",
+            "slug": "school-examinations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "School Examinations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for School Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# School Examinations"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-799",
+            "title": "University Examinations",
+            "slug": "university-examinations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "University Examinations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for University Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# University Examinations"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-805",
+            "title": "Competitive and Recruitment Examinations",
+            "slug": "competitive-and-recruitment-examinations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Competitive and Recruitment Examinations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Competitive and Recruitment Examinations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Competitive and Recruitment Examinations"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-05",
+    "title": "Professional, Vocational & Digital Skills",
+    "slug": "professional-vocational-digital-skills",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=4",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Professional, Vocational & Digital Skills | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Professional, Vocational & Digital Skills.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Professional, Vocational & Digital Skills"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-838",
+        "title": "Professional Education, Licences & Industry Certifications",
+        "slug": "professional-education-licences-industry-certifications",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Professional Education, Licences & Industry Certifications | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Professional Education, Licences & Industry Certifications.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Professional Education, Licences & Industry Certifications"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-839",
+            "title": "Accounting and Finance",
+            "slug": "accounting-and-finance",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Accounting and Finance | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Accounting and Finance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Accounting and Finance"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-847",
+            "title": "Law and Legal Practice",
+            "slug": "law-and-legal-practice",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Law and Legal Practice | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Law and Legal Practice.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Law and Legal Practice"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-854",
+            "title": "Medical and Health Professions",
+            "slug": "medical-and-health-professions",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Medical and Health Professions | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Medical and Health Professions.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Medical and Health Professions"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-894",
+        "title": "Vocational, Technical & Skill Education",
+        "slug": "vocational-technical-skill-education",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Vocational, Technical & Skill Education | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Vocational, Technical & Skill Education.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Vocational, Technical & Skill Education"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-895",
+            "title": "Industrial Training Institute (ITI)",
+            "slug": "industrial-training-institute-iti",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Industrial Training Institute (ITI) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Industrial Training Institute (ITI).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Industrial Training Institute (ITI)"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-907",
+            "title": "Diploma and Polytechnic Education",
+            "slug": "diploma-and-polytechnic-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Diploma and Polytechnic Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Diploma and Polytechnic Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Diploma and Polytechnic Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-917",
+            "title": "Industry Skills",
+            "slug": "industry-skills",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Industry Skills | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Industry Skills.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Industry Skills"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-946",
+        "title": "Computer Science, Digital Skills & Emerging Technology",
+        "slug": "computer-science-digital-skills-emerging-technology",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Computer Science, Digital Skills & Emerging Technology | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Computer Science, Digital Skills & Emerging Technology.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Computer Science, Digital Skills & Emerging Technology"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-947",
+            "title": "Computer Fundamentals",
+            "slug": "computer-fundamentals",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Computer Fundamentals | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Computer Fundamentals.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Computer Fundamentals"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-955",
+            "title": "Programming and Software Development",
+            "slug": "programming-and-software-development",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Programming and Software Development | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Programming and Software Development.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Programming and Software Development"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-965",
+            "title": "Web and Mobile Development",
+            "slug": "web-and-mobile-development",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Web and Mobile Development | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Web and Mobile Development.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Web and Mobile Development"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-06",
+    "title": "Subjects, Languages & Study Materials",
+    "slug": "subjects-languages-study-materials",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=5",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Subjects, Languages & Study Materials | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Subjects, Languages & Study Materials.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Subjects, Languages & Study Materials"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-1024",
+        "title": "Subject-Wise Knowledge Library",
+        "slug": "subject-wise-knowledge-library",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Subject-Wise Knowledge Library | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Subject-Wise Knowledge Library.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Subject-Wise Knowledge Library"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1025",
+            "title": "Languages and Linguistics",
+            "slug": "languages-and-linguistics",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Languages and Linguistics | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Languages and Linguistics.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Languages and Linguistics"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1038",
+            "title": "Mathematics and Statistics",
+            "slug": "mathematics-and-statistics",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Mathematics and Statistics | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Mathematics and Statistics.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Mathematics and Statistics"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1051",
+            "title": "Physical Sciences",
+            "slug": "physical-sciences",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Physical Sciences | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Physical Sciences.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Physical Sciences"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1155",
+        "title": "Textbooks, Notes & Study Materials Repository",
+        "slug": "textbooks-notes-study-materials-repository",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Textbooks, Notes & Study Materials Repository | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Textbooks, Notes & Study Materials Repository.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Textbooks, Notes & Study Materials Repository"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1156",
+            "title": "Official Curriculum Resources",
+            "slug": "official-curriculum-resources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Official Curriculum Resources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Official Curriculum Resources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Official Curriculum Resources"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1162",
+            "title": "Textbooks and Reference Books",
+            "slug": "textbooks-and-reference-books",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Textbooks and Reference Books | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Textbooks and Reference Books.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Textbooks and Reference Books"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1169",
+            "title": "Notes and Revision Material",
+            "slug": "notes-and-revision-material",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Notes and Revision Material | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Notes and Revision Material.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Notes and Revision Material"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1202",
+        "title": "Languages, Literature & Communication",
+        "slug": "languages-literature-communication",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Languages, Literature & Communication | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Languages, Literature & Communication.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Languages, Literature & Communication"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1203",
+            "title": "English Language Learning",
+            "slug": "english-language-learning",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "English Language Learning | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for English Language Learning.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# English Language Learning"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1216",
+            "title": "Odia Language",
+            "slug": "odia-language",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odia Language | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odia Language.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odia Language"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1226",
+            "title": "Hindi and Other Indian Languages",
+            "slug": "hindi-and-other-indian-languages",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Hindi and Other Indian Languages | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Hindi and Other Indian Languages.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Hindi and Other Indian Languages"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-07",
+    "title": "International & Inclusive Education",
+    "slug": "international-inclusive-education",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=6",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "International & Inclusive Education | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for International & Inclusive Education.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# International & Inclusive Education"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-1280",
+        "title": "International Education & Global Learning",
+        "slug": "international-education-global-learning",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "International Education & Global Learning | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for International Education & Global Learning.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# International Education & Global Learning"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1281",
+            "title": "International School Curricula",
+            "slug": "international-school-curricula",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International School Curricula | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for International School Curricula.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International School Curricula"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1287",
+            "title": "International Higher Education",
+            "slug": "international-higher-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Higher Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for International Higher Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Higher Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1295",
+            "title": "International Admissions",
+            "slug": "international-admissions",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Admissions | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for International Admissions.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Admissions"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1324",
+        "title": "Special Education, Inclusion & Accessible Learning",
+        "slug": "special-education-inclusion-accessible-learning",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Special Education, Inclusion & Accessible Learning | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Special Education, Inclusion & Accessible Learning.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Special Education, Inclusion & Accessible Learning"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1325",
+            "title": "Inclusive Education",
+            "slug": "inclusive-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Inclusive Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Inclusive Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Inclusive Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1332",
+            "title": "Disability-Specific Learning Support",
+            "slug": "disability-specific-learning-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Disability-Specific Learning Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Disability-Specific Learning Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Disability-Specific Learning Support"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1341",
+            "title": "Accessible Learning Formats",
+            "slug": "accessible-learning-formats",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Accessible Learning Formats | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Accessible Learning Formats.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Accessible Learning Formats"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-08",
+    "title": "Life Skills, Culture & Lifelong Learning",
+    "slug": "life-skills-culture-lifelong-learning",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=7",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Life Skills, Culture & Lifelong Learning | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Life Skills, Culture & Lifelong Learning.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Life Skills, Culture & Lifelong Learning"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-1364",
+        "title": "Arts, Culture, Sports & Extracurricular Learning",
+        "slug": "arts-culture-sports-extracurricular-learning",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Arts, Culture, Sports & Extracurricular Learning | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Arts, Culture, Sports & Extracurricular Learning.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Arts, Culture, Sports & Extracurricular Learning"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1365",
+            "title": "Visual Arts",
+            "slug": "visual-arts",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Visual Arts | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Visual Arts.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Visual Arts"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1373",
+            "title": "Performing Arts",
+            "slug": "performing-arts",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Performing Arts | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Performing Arts.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Performing Arts"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1381",
+            "title": "Indian and Odisha Culture",
+            "slug": "indian-and-odisha-culture",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Indian and Odisha Culture | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Indian and Odisha Culture.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Indian and Odisha Culture"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1418",
+        "title": "Life Skills, Financial Literacy & General Knowledge",
+        "slug": "life-skills-financial-literacy-general-knowledge",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Life Skills, Financial Literacy & General Knowledge | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Life Skills, Financial Literacy & General Knowledge.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Life Skills, Financial Literacy & General Knowledge"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1419",
+            "title": "Personal Development",
+            "slug": "personal-development",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Personal Development | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Personal Development.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Personal Development"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1428",
+            "title": "Study Skills",
+            "slug": "study-skills",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Study Skills | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Study Skills.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Study Skills"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1437",
+            "title": "Financial Literacy",
+            "slug": "financial-literacy",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Financial Literacy | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Financial Literacy.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Financial Literacy"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1478",
+        "title": "Adult Learning, Continuing Education & Lifelong Learning",
+        "slug": "adult-learning-continuing-education-lifelong-learning",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Adult Learning, Continuing Education & Lifelong Learning | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Adult Learning, Continuing Education & Lifelong Learning.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Adult Learning, Continuing Education & Lifelong Learning"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1479",
+            "title": "Adult Literacy",
+            "slug": "adult-literacy",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Adult Literacy | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Adult Literacy.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Adult Literacy"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1485",
+            "title": "Adult and Continuing Education",
+            "slug": "adult-and-continuing-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Adult and Continuing Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Adult and Continuing Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Adult and Continuing Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1492",
+            "title": "Digital and Financial Skills",
+            "slug": "digital-and-financial-skills",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Digital and Financial Skills | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Digital and Financial Skills.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Digital and Financial Skills"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-09",
+    "title": "Libraries, Educators & Learning Support",
+    "slug": "libraries-educators-learning-support",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=8",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Libraries, Educators & Learning Support | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Libraries, Educators & Learning Support.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Libraries, Educators & Learning Support"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-1515",
+        "title": "Libraries, Archives, Open Educational Resources & Reference",
+        "slug": "libraries-archives-open-educational-resources-reference",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Libraries, Archives, Open Educational Resources & Reference | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Libraries, Archives, Open Educational Resources & Reference.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Libraries, Archives, Open Educational Resources & Reference"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1516",
+            "title": "Digital Libraries",
+            "slug": "digital-libraries",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Digital Libraries | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Digital Libraries.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Digital Libraries"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1523",
+            "title": "Open Educational Resources (OER)",
+            "slug": "open-educational-resources-oer",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Open Educational Resources (OER) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Open Educational Resources (OER).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Open Educational Resources (OER)"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1531",
+            "title": "Encyclopaedias and Reference Works",
+            "slug": "encyclopaedias-and-reference-works",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Encyclopaedias and Reference Works | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Encyclopaedias and Reference Works.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Encyclopaedias and Reference Works"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1564",
+        "title": "Parents, Educators, Mentors & Learning Support",
+        "slug": "parents-educators-mentors-learning-support",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Parents, Educators, Mentors & Learning Support | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Parents, Educators, Mentors & Learning Support.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Parents, Educators, Mentors & Learning Support"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1565",
+            "title": "Parent and Caregiver Resources",
+            "slug": "parent-and-caregiver-resources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Parent and Caregiver Resources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Parent and Caregiver Resources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Parent and Caregiver Resources"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1574",
+            "title": "Educator Resources",
+            "slug": "educator-resources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Educator Resources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Educator Resources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Educator Resources"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1584",
+            "title": "Mentoring and Academic Support",
+            "slug": "mentoring-and-academic-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Mentoring and Academic Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Mentoring and Academic Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Mentoring and Academic Support"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SL-GRP-10",
+    "title": "Odisha Study Hub & Resource Organisation",
+    "slug": "odisha-study-hub-resource-organisation",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/study-library/?section=9",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Odisha Study Hub & Resource Organisation | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Odisha Study Hub & Resource Organisation.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Odisha Study Hub & Resource Organisation"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SL-NODE-1607",
+        "title": "Odisha-Specific Study Library",
+        "slug": "odisha-specific-study-library",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Odisha-Specific Study Library | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Odisha-Specific Study Library.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Odisha-Specific Study Library"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1608",
+            "title": "Odisha School Education",
+            "slug": "odisha-school-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha School Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odisha School Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha School Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1615",
+            "title": "Odisha Higher Secondary Education",
+            "slug": "odisha-higher-secondary-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Higher Secondary Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odisha Higher Secondary Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Higher Secondary Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1622",
+            "title": "Odisha Higher Education",
+            "slug": "odisha-higher-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Higher Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odisha Higher Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Higher Education"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SL-NODE-1657",
+        "title": "Study Library Resource Formats & Organisation",
+        "slug": "study-library-resource-formats-organisation",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Study Library Resource Formats & Organisation | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Study Library Resource Formats & Organisation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Study Library Resource Formats & Organisation"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SL-NODE-1658",
+            "title": "Core Academic Resources",
+            "slug": "core-academic-resources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Core Academic Resources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Core Academic Resources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Core Academic Resources"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1665",
+            "title": "Practice and Assessment",
+            "slug": "practice-and-assessment",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Practice and Assessment | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Practice and Assessment.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Practice and Assessment"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SL-NODE-1673",
+            "title": "Practical and Project Resources",
+            "slug": "practical-and-project-resources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Practical and Project Resources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Practical and Project Resources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Practical and Project Resources"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

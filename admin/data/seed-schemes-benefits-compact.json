@@ -1,0 +1,2322 @@
+[
+  {
+    "id": "SB-GRP-01",
+    "title": "Government & Public Welfare",
+    "slug": "government-public-welfare",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=0",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Government & Public Welfare | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Government & Public Welfare.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Government & Public Welfare"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-001",
+        "title": "Government Schemes",
+        "slug": "government-schemes",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Government Schemes | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Government Schemes.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Government Schemes"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-002",
+            "title": "Central Government Schemes",
+            "slug": "central-government-schemes",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Central Government Schemes | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Central Government Schemes.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Central Government Schemes"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-010",
+            "title": "Odisha Government Schemes",
+            "slug": "odisha-government-schemes",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Government Schemes | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odisha Government Schemes.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Government Schemes"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-021",
+            "title": "Other State and Union Territory Schemes",
+            "slug": "other-state-and-union-territory-schemes",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Other State and Union Territory Schemes | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Other State and Union Territory Schemes.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Other State and Union Territory Schemes"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-042",
+        "title": "Public Welfare & Essential Living Benefits",
+        "slug": "public-welfare-essential-living-benefits",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Public Welfare & Essential Living Benefits | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Public Welfare & Essential Living Benefits.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Public Welfare & Essential Living Benefits"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-043",
+            "title": "Food Security and Nutrition",
+            "slug": "food-security-and-nutrition",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Food Security and Nutrition | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Food Security and Nutrition.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Food Security and Nutrition"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-050",
+            "title": "Housing and Shelter",
+            "slug": "housing-and-shelter",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Housing and Shelter | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Housing and Shelter.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Housing and Shelter"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-058",
+            "title": "Water, Sanitation and Clean Energy",
+            "slug": "water-sanitation-and-clean-energy",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Water, Sanitation and Clean Energy | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Water, Sanitation and Clean Energy.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Water, Sanitation and Clean Energy"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-119",
+        "title": "Odisha-Focused Schemes & Benefits Directory",
+        "slug": "odisha-focused-schemes-benefits-directory",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Odisha-Focused Schemes & Benefits Directory | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Odisha-Focused Schemes & Benefits Directory.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Odisha-Focused Schemes & Benefits Directory"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-120",
+            "title": "Odisha Government Departments",
+            "slug": "odisha-government-departments",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Odisha Government Departments | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Odisha Government Departments.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Odisha Government Departments"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-139",
+            "title": "District-Wise Scheme Directories",
+            "slug": "district-wise-scheme-directories",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "District-Wise Scheme Directories | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for District-Wise Scheme Directories.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# District-Wise Scheme Directories"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-170",
+            "title": "Local-Level Benefits",
+            "slug": "local-level-benefits",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Local-Level Benefits | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Local-Level Benefits.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Local-Level Benefits"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-02",
+    "title": "Education, Employment & Talent",
+    "slug": "education-employment-talent",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=1",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Education, Employment & Talent | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Education, Employment & Talent.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Education, Employment & Talent"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-186",
+        "title": "Education, Students & Academic Support",
+        "slug": "education-students-academic-support",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Education, Students & Academic Support | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Education, Students & Academic Support.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Education, Students & Academic Support"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-187",
+            "title": "Early Childhood and School Education",
+            "slug": "early-childhood-and-school-education",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Early Childhood and School Education | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Early Childhood and School Education.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Early Childhood and School Education"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-195",
+            "title": "Scholarships and Stipends",
+            "slug": "scholarships-and-stipends",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Scholarships and Stipends | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Scholarships and Stipends.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Scholarships and Stipends"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-208",
+            "title": "Fees and Student Living Costs",
+            "slug": "fees-and-student-living-costs",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Fees and Student Living Costs | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Fees and Student Living Costs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Fees and Student Living Costs"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-257",
+        "title": "Employment, Skills, Livelihood & Self-Reliance",
+        "slug": "employment-skills-livelihood-self-reliance",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Employment, Skills, Livelihood & Self-Reliance | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Employment, Skills, Livelihood & Self-Reliance.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Employment, Skills, Livelihood & Self-Reliance"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-258",
+            "title": "Employment Generation",
+            "slug": "employment-generation",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Employment Generation | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Employment Generation.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Employment Generation"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-264",
+            "title": "Skill Development and Training",
+            "slug": "skill-development-and-training",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Skill Development and Training | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Skill Development and Training.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Skill Development and Training"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-273",
+            "title": "Apprenticeships and Work-Based Learning",
+            "slug": "apprenticeships-and-work-based-learning",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Apprenticeships and Work-Based Learning | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Apprenticeships and Work-Based Learning.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Apprenticeships and Work-Based Learning"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-312",
+        "title": "Youth, Sports, Arts, Culture & Talent Development",
+        "slug": "youth-sports-arts-culture-talent-development",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Youth, Sports, Arts, Culture & Talent Development | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Youth, Sports, Arts, Culture & Talent Development.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Youth, Sports, Arts, Culture & Talent Development"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-313",
+            "title": "Youth Development",
+            "slug": "youth-development",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Youth Development | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Youth Development.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Youth Development"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-319",
+            "title": "Sports and Fitness",
+            "slug": "sports-and-fitness",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Sports and Fitness | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Sports and Fitness.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Sports and Fitness"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-326",
+            "title": "Arts and Cultural Development",
+            "slug": "arts-and-cultural-development",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Arts and Cultural Development | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Arts and Cultural Development.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Arts and Cultural Development"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-03",
+    "title": "Agriculture, Business & Livelihoods",
+    "slug": "agriculture-business-livelihoods",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=2",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Agriculture, Business & Livelihoods | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Agriculture, Business & Livelihoods.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Agriculture, Business & Livelihoods"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-341",
+        "title": "Agriculture, Farmers, Fisheries & Rural Development",
+        "slug": "agriculture-farmers-fisheries-rural-development",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Agriculture, Farmers, Fisheries & Rural Development | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Agriculture, Farmers, Fisheries & Rural Development.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Agriculture, Farmers, Fisheries & Rural Development"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-342",
+            "title": "Farmer Financial Assistance",
+            "slug": "farmer-financial-assistance",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Farmer Financial Assistance | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Farmer Financial Assistance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Farmer Financial Assistance"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-348",
+            "title": "Seeds, Fertilisers and Farm Inputs",
+            "slug": "seeds-fertilisers-and-farm-inputs",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Seeds, Fertilisers and Farm Inputs | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Seeds, Fertilisers and Farm Inputs.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Seeds, Fertilisers and Farm Inputs"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-354",
+            "title": "Irrigation, Water and Land",
+            "slug": "irrigation-water-and-land",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Irrigation, Water and Land | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Irrigation, Water and Land.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Irrigation, Water and Land"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-412",
+        "title": "Business, Finance, Entrepreneurship & Industry",
+        "slug": "business-finance-entrepreneurship-industry",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Business, Finance, Entrepreneurship & Industry | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Business, Finance, Entrepreneurship & Industry.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Business, Finance, Entrepreneurship & Industry"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-413",
+            "title": "Business Startup Support",
+            "slug": "business-startup-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Business Startup Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Business Startup Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Business Startup Support"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-419",
+            "title": "Micro, Small and Medium Enterprises",
+            "slug": "micro-small-and-medium-enterprises",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Micro, Small and Medium Enterprises | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Micro, Small and Medium Enterprises.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Micro, Small and Medium Enterprises"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-427",
+            "title": "Loans, Credit and Financial Assistance",
+            "slug": "loans-credit-and-financial-assistance",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Loans, Credit and Financial Assistance | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Loans, Credit and Financial Assistance.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Loans, Credit and Financial Assistance"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-475",
+        "title": "Cooperatives, Self-Help Groups & Collective Enterprises",
+        "slug": "cooperatives-self-help-groups-collective-enterprises",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Cooperatives, Self-Help Groups & Collective Enterprises | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Cooperatives, Self-Help Groups & Collective Enterprises.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Cooperatives, Self-Help Groups & Collective Enterprises"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-476",
+            "title": "Self-Help Groups",
+            "slug": "self-help-groups",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Self-Help Groups | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Self-Help Groups.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Self-Help Groups"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-483",
+            "title": "Cooperatives",
+            "slug": "cooperatives",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Cooperatives | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Cooperatives.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Cooperatives"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-490",
+            "title": "Producer Organisations",
+            "slug": "producer-organisations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Producer Organisations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Producer Organisations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Producer Organisations"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-04",
+    "title": "Health, Housing & Financial Protection",
+    "slug": "health-housing-financial-protection",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=3",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Health, Housing & Financial Protection | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Health, Housing & Financial Protection.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Health, Housing & Financial Protection"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-536",
+        "title": "Healthcare, Nutrition, Housing & Essential Services",
+        "slug": "healthcare-nutrition-housing-essential-services",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Healthcare, Nutrition, Housing & Essential Services | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Healthcare, Nutrition, Housing & Essential Services.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Healthcare, Nutrition, Housing & Essential Services"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-537",
+            "title": "Healthcare Access",
+            "slug": "healthcare-access",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Healthcare Access | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Healthcare Access.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Healthcare Access"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-545",
+            "title": "Maternal, Reproductive and Child Health",
+            "slug": "maternal-reproductive-and-child-health",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Maternal, Reproductive and Child Health | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Maternal, Reproductive and Child Health.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Maternal, Reproductive and Child Health"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-552",
+            "title": "Disease-Specific Support",
+            "slug": "disease-specific-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Disease-Specific Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Disease-Specific Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Disease-Specific Support"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-596",
+        "title": "Insurance, Pensions, Legal Aid & Financial Protection",
+        "slug": "insurance-pensions-legal-aid-financial-protection",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Insurance, Pensions, Legal Aid & Financial Protection | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Insurance, Pensions, Legal Aid & Financial Protection.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Insurance, Pensions, Legal Aid & Financial Protection"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-597",
+            "title": "Insurance and Risk Protection",
+            "slug": "insurance-and-risk-protection",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Insurance and Risk Protection | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Insurance and Risk Protection.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Insurance and Risk Protection"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-604",
+            "title": "Pensions and Retirement",
+            "slug": "pensions-and-retirement",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Pensions and Retirement | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Pensions and Retirement.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Pensions and Retirement"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-610",
+            "title": "Compensation and Financial Relief",
+            "slug": "compensation-and-financial-relief",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Compensation and Financial Relief | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Compensation and Financial Relief.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Compensation and Financial Relief"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-634",
+        "title": "Disaster Relief, Climate Resilience & Emergency Assistance",
+        "slug": "disaster-relief-climate-resilience-emergency-assistance",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Disaster Relief, Climate Resilience & Emergency Assistance | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Disaster Relief, Climate Resilience & Emergency Assistance.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Disaster Relief, Climate Resilience & Emergency Assistance"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-635",
+            "title": "Natural Disaster Relief",
+            "slug": "natural-disaster-relief",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Natural Disaster Relief | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Natural Disaster Relief.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Natural Disaster Relief"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-642",
+            "title": "Emergency Household Support",
+            "slug": "emergency-household-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Emergency Household Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Emergency Household Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Emergency Household Support"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-649",
+            "title": "Livelihood and Asset Recovery",
+            "slug": "livelihood-and-asset-recovery",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Livelihood and Asset Recovery | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Livelihood and Asset Recovery.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Livelihood and Asset Recovery"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-05",
+    "title": "Communities & Special Beneficiaries",
+    "slug": "communities-special-beneficiaries",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=4",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Communities & Special Beneficiaries | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Communities & Special Beneficiaries.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Communities & Special Beneficiaries"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-696",
+        "title": "Women’s Empowerment, Gender Equity & Safety",
+        "slug": "womens-empowerment-gender-equity-safety",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Women’s Empowerment, Gender Equity & Safety | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Women’s Empowerment, Gender Equity & Safety.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Women’s Empowerment, Gender Equity & Safety"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-697",
+            "title": "Financial Independence",
+            "slug": "financial-independence",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Financial Independence | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Financial Independence.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Financial Independence"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-703",
+            "title": "Education and Career Advancement",
+            "slug": "education-and-career-advancement",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Education and Career Advancement | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Education and Career Advancement.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Education and Career Advancement"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-709",
+            "title": "Health and Family Support",
+            "slug": "health-and-family-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Health and Family Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Health and Family Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Health and Family Support"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-728",
+        "title": "Tribal, Social Justice & Community Development",
+        "slug": "tribal-social-justice-community-development",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Tribal, Social Justice & Community Development | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Tribal, Social Justice & Community Development.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Tribal, Social Justice & Community Development"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-729",
+            "title": "Scheduled Tribe and Tribal Community Welfare",
+            "slug": "scheduled-tribe-and-tribal-community-welfare",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Scheduled Tribe and Tribal Community Welfare | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Scheduled Tribe and Tribal Community Welfare.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Scheduled Tribe and Tribal Community Welfare"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-737",
+            "title": "Scheduled Caste Welfare",
+            "slug": "scheduled-caste-welfare",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Scheduled Caste Welfare | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Scheduled Caste Welfare.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Scheduled Caste Welfare"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-743",
+            "title": "Other Eligible Communities",
+            "slug": "other-eligible-communities",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Other Eligible Communities | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Other Eligible Communities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Other Eligible Communities"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-762",
+        "title": "Government Employees, Pensioners, Ex-Servicemen & Dependants",
+        "slug": "government-employees-pensioners-ex-servicemen-dependants",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Government Employees, Pensioners, Ex-Servicemen & Dependants | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Government Employees, Pensioners, Ex-Servicemen & Dependants.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Government Employees, Pensioners, Ex-Servicemen & Dependants"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-763",
+            "title": "Government Employee Benefits",
+            "slug": "government-employee-benefits",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Government Employee Benefits | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Government Employee Benefits.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Government Employee Benefits"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-770",
+            "title": "Pensioners and Retired Employees",
+            "slug": "pensioners-and-retired-employees",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Pensioners and Retired Employees | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Pensioners and Retired Employees.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Pensioners and Retired Employees"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-776",
+            "title": "Defence Personnel and Veterans",
+            "slug": "defence-personnel-and-veterans",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Defence Personnel and Veterans | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Defence Personnel and Veterans.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Defence Personnel and Veterans"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-06",
+    "title": "Private, Global & Innovation Support",
+    "slug": "private-global-innovation-support",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=5",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Private, Global & Innovation Support | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Private, Global & Innovation Support.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Private, Global & Innovation Support"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-815",
+        "title": "Private Companies, CSR, Foundations, Trusts & NGOs",
+        "slug": "private-companies-csr-foundations-trusts-ngos",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Private Companies, CSR, Foundations, Trusts & NGOs | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Private Companies, CSR, Foundations, Trusts & NGOs.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Private Companies, CSR, Foundations, Trusts & NGOs"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-816",
+            "title": "Corporate Social Responsibility (CSR)",
+            "slug": "corporate-social-responsibility-csr",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Corporate Social Responsibility (CSR) | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Corporate Social Responsibility (CSR).",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Corporate Social Responsibility (CSR)"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-827",
+            "title": "Private Foundations and Charitable Trusts",
+            "slug": "private-foundations-and-charitable-trusts",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Private Foundations and Charitable Trusts | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Private Foundations and Charitable Trusts.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Private Foundations and Charitable Trusts"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-836",
+            "title": "NGOs and Nonprofit Organisations",
+            "slug": "ngos-and-nonprofit-organisations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "NGOs and Nonprofit Organisations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for NGOs and Nonprofit Organisations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# NGOs and Nonprofit Organisations"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-868",
+        "title": "International Schemes, Overseas Support & Global Development",
+        "slug": "international-schemes-overseas-support-global-development",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "International Schemes, Overseas Support & Global Development | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for International Schemes, Overseas Support & Global Development.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# International Schemes, Overseas Support & Global Development"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-869",
+            "title": "Foreign Government Scholarships",
+            "slug": "foreign-government-scholarships",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Foreign Government Scholarships | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Foreign Government Scholarships.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Foreign Government Scholarships"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-876",
+            "title": "International University Financial Aid",
+            "slug": "international-university-financial-aid",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International University Financial Aid | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for International University Financial Aid.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International University Financial Aid"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-883",
+            "title": "International Development Organisations",
+            "slug": "international-development-organisations",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "International Development Organisations | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for International Development Organisations.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# International Development Organisations"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-913",
+        "title": "Science, Research, Innovation & Technology Grants",
+        "slug": "science-research-innovation-technology-grants",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Science, Research, Innovation & Technology Grants | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Science, Research, Innovation & Technology Grants.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Science, Research, Innovation & Technology Grants"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-914",
+            "title": "Student Innovation",
+            "slug": "student-innovation",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Student Innovation | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Student Innovation.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Student Innovation"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-920",
+            "title": "Research Funding",
+            "slug": "research-funding",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Research Funding | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Research Funding.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Research Funding"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-928",
+            "title": "Startup and Technology Innovation",
+            "slug": "startup-and-technology-innovation",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Startup and Technology Innovation | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Startup and Technology Innovation.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Startup and Technology Innovation"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-07",
+    "title": "Find Schemes & Check Eligibility",
+    "slug": "find-schemes-check-eligibility",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=6",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Find Schemes & Check Eligibility | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Find Schemes & Check Eligibility.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Find Schemes & Check Eligibility"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-980",
+        "title": "Schemes by Beneficiary — Find Support for Your Situation",
+        "slug": "schemes-by-beneficiary-find-support-for-your-situation",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Schemes by Beneficiary — Find Support for Your Situation | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Schemes by Beneficiary — Find Support for Your Situation.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Schemes by Beneficiary — Find Support for Your Situation"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-981",
+            "title": "Students and Learners",
+            "slug": "students-and-learners",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Students and Learners | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Students and Learners.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Students and Learners"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-989",
+            "title": "Jobseekers and Workers",
+            "slug": "jobseekers-and-workers",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Jobseekers and Workers | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Jobseekers and Workers.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Jobseekers and Workers"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-998",
+            "title": "Farmers and Rural Households",
+            "slug": "farmers-and-rural-households",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Farmers and Rural Households | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Farmers and Rural Households.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Farmers and Rural Households"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-1047",
+        "title": "Schemes by Benefit Type — What Kind of Help Do You Need?",
+        "slug": "schemes-by-benefit-type-what-kind-of-help-do-you-need",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Schemes by Benefit Type — What Kind of Help Do You Need? | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Schemes by Benefit Type — What Kind of Help Do You Need?.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Schemes by Benefit Type — What Kind of Help Do You Need?"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-1048",
+            "title": "Direct Financial Benefits",
+            "slug": "direct-financial-benefits",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Direct Financial Benefits | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Direct Financial Benefits.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Direct Financial Benefits"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1054",
+            "title": "Subsidies and Cost Reductions",
+            "slug": "subsidies-and-cost-reductions",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Subsidies and Cost Reductions | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Subsidies and Cost Reductions.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Subsidies and Cost Reductions"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1061",
+            "title": "Loans and Credit Support",
+            "slug": "loans-and-credit-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Loans and Credit Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Loans and Credit Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Loans and Credit Support"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-1100",
+        "title": "Schemes by Eligibility and Application Stage",
+        "slug": "schemes-by-eligibility-and-application-stage",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Schemes by Eligibility and Application Stage | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Schemes by Eligibility and Application Stage.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Schemes by Eligibility and Application Stage"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-1101",
+            "title": "Eligibility Criteria",
+            "slug": "eligibility-criteria",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Eligibility Criteria | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Eligibility Criteria.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Eligibility Criteria"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1112",
+            "title": "Application Requirements",
+            "slug": "application-requirements",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Application Requirements | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Application Requirements.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Application Requirements"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1121",
+            "title": "Application Lifecycle",
+            "slug": "application-lifecycle",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Application Lifecycle | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Application Lifecycle.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Application Lifecycle"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SB-GRP-08",
+    "title": "Citizen Services & Verification",
+    "slug": "citizen-services-verification",
+    "type": "directory",
+    "status": "Published",
+    "scheduledDate": null,
+    "redirectUrl": "/schemes-benefits/?section=7",
+    "redirectTarget": "_self",
+    "seo": {
+      "metaTitle": "Citizen Services & Verification | Common Sense Odisha",
+      "metaDescription": "Directory index and verified resources for Citizen Services & Verification.",
+      "ogImage": "/assets/images/og-default.jpg"
+    },
+    "article": {
+      "author": "Editorial Desk",
+      "readTime": "3 min",
+      "bodyMarkdown": "# Citizen Services & Verification"
+    },
+    "files": [],
+    "children": [
+      {
+        "id": "SB-NODE-1142",
+        "title": "Public Service Access, Citizen Rights & Grievances",
+        "slug": "public-service-access-citizen-rights-grievances",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Public Service Access, Citizen Rights & Grievances | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Public Service Access, Citizen Rights & Grievances.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Public Service Access, Citizen Rights & Grievances"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-1143",
+            "title": "Citizen Service Centres",
+            "slug": "citizen-service-centres",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Citizen Service Centres | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Citizen Service Centres.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Citizen Service Centres"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1148",
+            "title": "Eligibility and Documentation Support",
+            "slug": "eligibility-and-documentation-support",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Eligibility and Documentation Support | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Eligibility and Documentation Support.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Eligibility and Documentation Support"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1155",
+            "title": "Grievances and Appeals",
+            "slug": "grievances-and-appeals",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Grievances and Appeals | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Grievances and Appeals.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Grievances and Appeals"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-1177",
+        "title": "Scheme Authorities, Official Portals & Verification Directory",
+        "slug": "scheme-authorities-official-portals-verification-directory",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "Scheme Authorities, Official Portals & Verification Directory | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for Scheme Authorities, Official Portals & Verification Directory.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# Scheme Authorities, Official Portals & Verification Directory"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-1178",
+            "title": "Government Authorities",
+            "slug": "government-authorities",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Government Authorities | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Government Authorities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Government Authorities"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1186",
+            "title": "Sector-Specific Authorities",
+            "slug": "sector-specific-authorities",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Sector-Specific Authorities | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Sector-Specific Authorities.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Sector-Specific Authorities"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1195",
+            "title": "Non-Government Funding Sources",
+            "slug": "non-government-funding-sources",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Non-Government Funding Sources | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Non-Government Funding Sources.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Non-Government Funding Sources"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "SB-NODE-1219",
+        "title": "CSO Scheme Trust Layer & Public Awareness",
+        "slug": "cso-scheme-trust-layer-public-awareness",
+        "type": "directory",
+        "status": "Published",
+        "scheduledDate": null,
+        "redirectUrl": "",
+        "redirectTarget": "_self",
+        "seo": {
+          "metaTitle": "CSO Scheme Trust Layer & Public Awareness | Common Sense Odisha",
+          "metaDescription": "Verified details, eligibility, notifications, and links for CSO Scheme Trust Layer & Public Awareness.",
+          "ogImage": "/assets/images/og-default.jpg"
+        },
+        "article": {
+          "author": "Editorial Desk",
+          "readTime": "3 min",
+          "bodyMarkdown": "# CSO Scheme Trust Layer & Public Awareness"
+        },
+        "files": [],
+        "children": [
+          {
+            "id": "SB-NODE-1220",
+            "title": "Scheme Authenticity",
+            "slug": "scheme-authenticity",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Scheme Authenticity | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Scheme Authenticity.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Scheme Authenticity"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1226",
+            "title": "Information Currency",
+            "slug": "information-currency",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Information Currency | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Information Currency.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Information Currency"
+            },
+            "files": [],
+            "children": []
+          },
+          {
+            "id": "SB-NODE-1233",
+            "title": "Transparency",
+            "slug": "transparency",
+            "type": "directory",
+            "status": "Published",
+            "scheduledDate": null,
+            "redirectUrl": "",
+            "redirectTarget": "_self",
+            "seo": {
+              "metaTitle": "Transparency | Common Sense Odisha",
+              "metaDescription": "Verified details, eligibility, notifications, and links for Transparency.",
+              "ogImage": "/assets/images/og-default.jpg"
+            },
+            "article": {
+              "author": "Editorial Desk",
+              "readTime": "3 min",
+              "bodyMarkdown": "# Transparency"
+            },
+            "files": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

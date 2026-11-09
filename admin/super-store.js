@@ -5760,6 +5760,207 @@
       this.logAudit("BULK_OPS_MANIFEST_EXPORTED", "DATA_EXPORT", "Bulk content operations manifest exported (" + filename + ").");
       return filename;
     },
+    // =========================================================================
+    // 55. Public Navigation Hierarchy & Menu Tree Engines
+    // Keys: cso_jobs_careers_tree, cso_schemes_benefits_tree, cso_study_library_tree, cso_community_tree
+    // =========================================================================
+
+    _validateFolderKey(folderKey) {
+      const allowed = [
+        "cso_jobs_careers_tree",
+        "cso_schemes_benefits_tree",
+        "cso_study_library_tree",
+        "cso_community_tree"
+      ];
+      if (!allowed.includes(folderKey)) {
+        throw new Error("Invalid menu tree folderKey: " + folderKey + ". Must be one of: " + allowed.join(", "));
+      }
+      return folderKey;
+    },
+
+    getMenuTree(folderKey) {
+      this._validateFolderKey(folderKey);
+      const raw = localStorage.getItem(folderKey);
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse " + folderKey, e);
+        }
+      }
+
+      // Check fallback trees bundle
+      if (window.__CSO_FALLBACK_TREES__ && window.__CSO_FALLBACK_TREES__[folderKey]) {
+        const seed = JSON.parse(JSON.stringify(window.__CSO_FALLBACK_TREES__[folderKey]));
+        localStorage.setItem(folderKey, JSON.stringify(seed));
+        return seed;
+      }
+
+      // Minimal safe default if fallback trees script not loaded
+      const defaultTree = [
+        {
+          id: "NODE-01",
+          title: "Directory Root",
+          slug: "root",
+          type: "directory",
+          status: "Published",
+          scheduledDate: null,
+          redirectUrl: "",
+          redirectTarget: "_self",
+          seo: { metaTitle: "Directory Root | Common Sense Odisha", metaDescription: "Verified public directory.", ogImage: "/assets/images/og-default.jpg" },
+          article: { author: "Admin", readTime: "5 min", bodyMarkdown: "# Directory Root\n\nWelcome to the directory." },
+          files: [],
+          children: []
+        }
+      ];
+      localStorage.setItem(folderKey, JSON.stringify(defaultTree));
+      return defaultTree;
+    },
+
+    saveMenuTree(folderKey, tree) {
+      this._validateFolderKey(folderKey);
+      if (!Array.isArray(tree)) throw new Error("Tree must be an array of nodes");
+      localStorage.setItem(folderKey, JSON.stringify(tree));
+      this.logAudit("MENU_TREE_SAVED", "NAVIGATION_ENGINE", "Menu tree updated for " + folderKey + " (" + tree.length + " root nodes).");
+      return tree;
+    },
+
+    findNode(tree, nodeId) {
+      if (!Array.isArray(tree)) return null;
+      for (const node of tree) {
+        if (node.id === nodeId) return node;
+        if (node.children && node.children.length > 0) {
+          const found = this.findNode(node.children, nodeId);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
+
+    saveNode(folderKey, nodeId, nodeData) {
+      this._validateFolderKey(folderKey);
+      const tree = this.getMenuTree(folderKey);
+      const target = this.findNode(tree, nodeId);
+      if (!target) {
+        throw new Error("Node not found: " + nodeId + " in " + folderKey);
+      }
+
+      // Merge node data
+      Object.assign(target, nodeData);
+      target.id = nodeId; // preserve ID
+      target.updatedAt = new Date().toISOString();
+
+      this.saveMenuTree(folderKey, tree);
+      this.logAudit("MENU_NODE_UPDATED", "NAVIGATION_ENGINE", "Node " + nodeId + " ('" + target.title + "') updated in " + folderKey);
+      return target;
+    },
+
+    addNode(folderKey, parentId, newNode) {
+      this._validateFolderKey(folderKey);
+      const tree = this.getMenuTree(folderKey);
+
+      if (!newNode || typeof newNode !== "object") throw new Error("Invalid newNode payload");
+      if (!newNode.id) {
+        newNode.id = "NODE-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      }
+      newNode.status = newNode.status || "Published";
+      newNode.type = newNode.type || "page";
+      newNode.children = newNode.children || [];
+      newNode.createdAt = new Date().toISOString();
+
+      if (!parentId || parentId === "root" || parentId === null) {
+        // Append to root
+        tree.push(newNode);
+      } else {
+        const parent = this.findNode(tree, parentId);
+        if (!parent) {
+          throw new Error("Parent node not found: " + parentId + " in " + folderKey);
+        }
+        parent.children = parent.children || [];
+        parent.children.push(newNode);
+      }
+
+      this.saveMenuTree(folderKey, tree);
+      this.logAudit("MENU_NODE_ADDED", "NAVIGATION_ENGINE", "New node " + newNode.id + " ('" + newNode.title + "') appended under " + (parentId || "root"));
+      return newNode;
+    },
+
+    deleteNode(folderKey, nodeId) {
+      this._validateFolderKey(folderKey);
+      const tree = this.getMenuTree(folderKey);
+
+      function removeRecursive(nodes, id) {
+        const idx = nodes.findIndex(n => n.id === id);
+        if (idx !== -1) {
+          const removed = nodes.splice(idx, 1)[0];
+          return removed;
+        }
+        for (const n of nodes) {
+          if (n.children && n.children.length > 0) {
+            const found = removeRecursive(n.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      }
+
+      const deleted = removeRecursive(tree, nodeId);
+      if (!deleted) {
+        throw new Error("Node " + nodeId + " not found for deletion in " + folderKey);
+      }
+
+      this.saveMenuTree(folderKey, tree);
+      this.logAudit("MENU_NODE_DELETED", "NAVIGATION_ENGINE", "Node " + nodeId + " ('" + deleted.title + "') deleted from " + folderKey);
+      return deleted;
+    },
+
+    exportMenuTree(folderKey) {
+      this._validateFolderKey(folderKey);
+      const tree = this.getMenuTree(folderKey);
+      const timestamp = Date.now();
+      const filename = folderKey + "-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        folderKey: folderKey,
+        tree: tree
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("MENU_TREE_EXPORTED", "DATA_EXPORT", "Menu tree " + folderKey + " exported (" + filename + ").");
+      return filename;
+    },
+
+    importMenuTree(folderKey, jsonString) {
+      this._validateFolderKey(folderKey);
+      try {
+        let parsed = JSON.parse(jsonString);
+        if (parsed && parsed.tree && Array.isArray(parsed.tree)) {
+          parsed = parsed.tree;
+        }
+        if (!Array.isArray(parsed)) throw new Error("Parsed JSON must be an array of nodes");
+        return this.saveMenuTree(folderKey, parsed);
+      } catch (err) {
+        throw new Error("Failed to import menu tree for " + folderKey + ": " + err.message);
+      }
+    },
+
+    resetMenuTree(folderKey) {
+      this._validateFolderKey(folderKey);
+      localStorage.removeItem(folderKey);
+      const restored = this.getMenuTree(folderKey);
+      this.logAudit("MENU_TREE_RESET", "NAVIGATION_ENGINE", "Menu tree " + folderKey + " restored to initial directory defaults.");
+      return restored;
+    },
+
 
 
 
@@ -6097,6 +6298,10 @@
           contentArchive: this.getContentArchiveConfig(),
           contentRevisions: this.getContentRevisionsConfig(),
           bulkContentOperations: this.getBulkContentOperationsConfig(),
+          jobsCareersTree: this.getMenuTree("cso_jobs_careers_tree"),
+          schemesBenefitsTree: this.getMenuTree("cso_schemes_benefits_tree"),
+          studyLibraryTree: this.getMenuTree("cso_study_library_tree"),
+          communityTree: this.getMenuTree("cso_community_tree"),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
