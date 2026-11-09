@@ -323,6 +323,8 @@ async function loadMasterNavigation() {
         renderPrivacyPolicyWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-004') {
         renderDisclaimerWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-005') {
+        renderTermsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -5239,10 +5241,11 @@ async function loadMasterNavigation() {
       const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
       if (!root) return;
 
-      root.style.display = 'block';
-      root.classList.remove('hidden');
+      try {
+        root.style.display = 'block';
+        root.classList.remove('hidden');
 
-      // Header Breadcrumb
+        // Header Breadcrumb
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "About Us (module-03-001)";
 
@@ -5933,6 +5936,12 @@ async function loadMasterNavigation() {
         document.getElementById(id)?.addEventListener('input', syncJsonEditor);
       });
       document.getElementById('toggleAboutHeroEnabled')?.addEventListener('change', syncJsonEditor);
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-001 (About Us)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
     }
 
     /**
@@ -5942,10 +5951,11 @@ async function loadMasterNavigation() {
       const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
       if (!root) return;
 
-      root.style.display = 'block';
-      root.classList.remove('hidden');
+      try {
+        root.style.display = 'block';
+        root.classList.remove('hidden');
 
-      // Header Breadcrumb
+        // Header Breadcrumb
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Contact Us (module-03-002)";
 
@@ -6438,6 +6448,12 @@ async function loadMasterNavigation() {
         document.getElementById(id)?.addEventListener('input', syncContactJsonEditor);
       });
       document.getElementById('toggleAutoResponseEnabled')?.addEventListener('change', syncContactJsonEditor);
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-002 (Contact Us)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
     }
 
     // Retain legacy renderContactDirectoryWorkspace alias
@@ -6452,10 +6468,11 @@ async function loadMasterNavigation() {
       const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
       if (!root) return;
 
-      root.style.display = 'block';
-      root.classList.remove('hidden');
+      try {
+        root.style.display = 'block';
+        root.classList.remove('hidden');
 
-      // Header Breadcrumb
+        // Header Breadcrumb
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Privacy Policy (module-03-003)";
 
@@ -6974,6 +6991,12 @@ async function loadMasterNavigation() {
       ['privacyInputVersion', 'privacyInputDate', 'privacyInputDpo', 'privacyInputAct', 'privacyInputJurisdiction', 'inputRetentionInquiryDays', 'inputRetentionAuditDays', 'textareaRetentionSummary'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', syncPrivacyJsonEditor);
       });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-003 (Privacy Policy)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
     }
 
     /**
@@ -6983,11 +7006,12 @@ async function loadMasterNavigation() {
       const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
       if (!root) return;
 
-      // Ensure visible
-      root.style.display = 'block';
-      root.classList.remove('hidden');
+      try {
+        // Ensure visible
+        root.style.display = 'block';
+        root.classList.remove('hidden');
 
-      // Header Breadcrumb
+        // Header Breadcrumb
       if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
       if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Disclaimer (module-03-004)";
 
@@ -7444,7 +7468,503 @@ async function loadMasterNavigation() {
       ['disclaimerInputTitle', 'disclaimerInputDate', 'disclaimerTextareaAffidavit', 'disclaimerTextareaAdvisory'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', syncDisclaimerJsonEditor);
       });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-004 (Disclaimer)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
     }
+
+    /**
+     * VIEW 3e: Terms & Conditions Studio (module-03-005)
+     */
+    function renderTermsWorkspace(container) {
+      const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
+      if (!root) return;
+
+      try {
+        // Ensure visible
+        root.style.display = 'block';
+        root.classList.remove('hidden');
+
+        // Header Breadcrumb
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Terms & Conditions (module-03-005)";
+
+        // Top Action Toolbar
+        if (dom.moduleHeaderActions) {
+          dom.moduleHeaderActions.innerHTML = `
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btnSaveTermsStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Save & Publish Terms
+              </button>
+              <a href="/terms-of-use/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                Preview Live Page ↗
+              </a>
+              <button id="btnToggleTermsJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                Raw JSON Editor
+              </button>
+              <button id="btnExportTermsConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export Config
+              </button>
+              <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Import Config
+                <input id="inputImportTermsConfig" type="file" accept=".json,application/json" class="hidden">
+              </label>
+              <button id="btnResetTermsConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Reset to Default
+              </button>
+            </div>
+          `;
+        }
+
+        // Ingest Terms Config
+        let termsConfig = (window.CSOSuperStore && typeof window.CSOSuperStore.getTermsConfig === 'function')
+          ? window.CSOSuperStore.getTermsConfig()
+          : {
+              meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+              terms: {
+                title: "Standard Platform Terms of Use & Candidate Agreement",
+                effectiveDate: "2026-11-01",
+                governingLaw: "Information Technology Act, 2000 & Laws of India",
+                jurisdiction: "Bhubaneswar / Cuttack, Odisha, India",
+                summary: "By accessing csodisha.com, candidates agree to use the educational resources solely for legitimate personal academic preparation and competitive examination advancement."
+              },
+              clauses: []
+            };
+
+        termsConfig.terms = termsConfig.terms || {};
+        let currentClauses = Array.isArray(termsConfig.clauses) ? JSON.parse(JSON.stringify(termsConfig.clauses)) : [];
+
+        function syncTermsJsonEditor() {
+          const jsonTextarea = document.getElementById('textareaTermsRawJson');
+          if (jsonTextarea) {
+            const snapshot = gatherTermsFormState();
+            jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+          }
+        }
+
+        function gatherTermsFormState() {
+          const titleInput = document.getElementById('termsInputTitle');
+          const effDateInput = document.getElementById('termsInputDate');
+          const lawInput = document.getElementById('termsInputGoverningLaw');
+          const jurInput = document.getElementById('termsInputJurisdiction');
+          const summaryTextarea = document.getElementById('termsTextareaSummary');
+
+          return {
+            meta: {
+              version: (termsConfig.meta && termsConfig.meta.version) || "1.0",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: (termsConfig.meta && termsConfig.meta.updatedAt) || new Date().toISOString()
+            },
+            terms: {
+              title: titleInput ? titleInput.value.trim() : (termsConfig.terms?.title || ''),
+              effectiveDate: effDateInput ? effDateInput.value.trim() : (termsConfig.terms?.effectiveDate || '2026-11-01'),
+              governingLaw: lawInput ? lawInput.value.trim() : (termsConfig.terms?.governingLaw || ''),
+              jurisdiction: jurInput ? jurInput.value.trim() : (termsConfig.terms?.jurisdiction || ''),
+              summary: summaryTextarea ? summaryTextarea.value.trim() : (termsConfig.terms?.summary || '')
+            },
+            clauses: currentClauses
+          };
+        }
+
+        function renderTermsClausesList() {
+          const container = document.getElementById('termsClausesContainer');
+          if (!container) return;
+
+          if (currentClauses.length === 0) {
+            container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No terms clauses configured. Add one below.</div>`;
+            return;
+          }
+
+          container.innerHTML = currentClauses.map((cl, idx) => `
+            <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-terms-clause-index="${idx}">
+              <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full ${cl.active !== false ? 'bg-indigo-400' : 'bg-slate-500'}"></span>
+                  <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(cl.id || `TERM-${idx+1}`)}</span>
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-slate-700">Section § ${escapeHtml(cl.number || `${idx+1}`)}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                    <input type="checkbox" class="terms-clause-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${cl.active !== false ? 'checked' : ''}>
+                    Active
+                  </label>
+                  <button data-move-terms-clause-up="${idx}" class="btn-terms-clause-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
+                    ▲
+                  </button>
+                  <button data-move-terms-clause-down="${idx}" class="btn-terms-clause-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentClauses.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentClauses.length - 1 ? 'disabled' : ''}>
+                    ▼
+                  </button>
+                  <button data-remove-terms-clause="${idx}" class="btn-remove-terms-clause px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                    Delete
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="md:col-span-1">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
+                  <input type="text" class="terms-clause-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(cl.title || '')}">
+                </div>
+                <div class="md:col-span-3">
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Contractual Terms</label>
+                  <textarea rows="2" class="terms-clause-body-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" data-index="${idx}">${escapeHtml(cl.body || '')}</textarea>
+                </div>
+              </div>
+            </div>
+          `).join('');
+
+          container.querySelectorAll('.terms-clause-active-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].active = e.target.checked;
+                syncTermsJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.terms-clause-title-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].title = e.target.value;
+                syncTermsJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.terms-clause-body-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].body = e.target.value;
+                syncTermsJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-terms-clause-move-up').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.getAttribute('data-move-terms-clause-up'), 10);
+              if (!isNaN(idx) && idx > 0) {
+                const temp = currentClauses[idx];
+                currentClauses[idx] = currentClauses[idx - 1];
+                currentClauses[idx - 1] = temp;
+                renderTermsClausesList();
+                syncTermsJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-terms-clause-move-down').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.getAttribute('data-move-terms-clause-down'), 10);
+              if (!isNaN(idx) && idx < currentClauses.length - 1) {
+                const temp = currentClauses[idx];
+                currentClauses[idx] = currentClauses[idx + 1];
+                currentClauses[idx + 1] = temp;
+                renderTermsClausesList();
+                syncTermsJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-remove-terms-clause').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const index = parseInt(e.currentTarget.getAttribute('data-remove-terms-clause'), 10);
+              if (!isNaN(index) && index >= 0 && index < currentClauses.length) {
+                const removed = currentClauses.splice(index, 1)[0];
+                renderTermsClausesList();
+                syncTermsJsonEditor();
+                showToast(`Clause "${removed.title}" removed.`, "info");
+              }
+            });
+          });
+        }
+
+        root.innerHTML = `
+          <div class="space-y-6 font-sans">
+            <!-- Overview Card -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Terms of Use & Candidate Agreement Studio
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-800/60">module-03-005</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Control candidate educational platform agreements, fair use provisions, external gateway liability boundaries, and jurisdiction covenants.</p>
+              </div>
+              <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+                <span>Version: <strong class="text-cyan-400">${escapeHtml(termsConfig.meta?.version || '1.0')}</strong></span>
+                <span>Updated: <span id="termsLastUpdated" class="text-emerald-400 font-bold">${new Date(termsConfig.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
+              </div>
+            </div>
+
+            <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
+            <div id="termsJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                    Raw State Developer Console (JSON)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+              </div>
+              <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for legal audits, compliance verification, and schema migrations.</p>
+              <textarea id="textareaTermsRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btnApplyTermsRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Apply JSON Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Primary Terms Metadata -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Terms of Use Metadata & Legal Jurisdiction
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Agreement Title <span class="text-rose-400">*</span></label>
+                  <input id="termsInputTitle" type="text" value="${escapeHtml(termsConfig.terms?.title || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Effective Date <span class="text-rose-400">*</span></label>
+                  <input id="termsInputDate" type="date" value="${escapeHtml(termsConfig.terms?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Governing Legislation <span class="text-rose-400">*</span></label>
+                  <input id="termsInputGoverningLaw" type="text" value="${escapeHtml(termsConfig.terms?.governingLaw || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Judicial Jurisdiction</label>
+                  <input id="termsInputJurisdiction" type="text" value="${escapeHtml(termsConfig.terms?.jurisdiction || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Summary Preamble</label>
+                <textarea id="termsTextareaSummary" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(termsConfig.terms?.summary || '')}</textarea>
+              </div>
+            </div>
+
+            <!-- Card 2: Sectional Terms Clauses (Extensible Repeater) -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Sectional Terms & Contractual Clauses (Extensible)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Binding Platform Rules</span>
+              </div>
+
+              <!-- Clauses List -->
+              <div id="termsClausesContainer" class="space-y-3"></div>
+
+              <!-- Add Clause Inline Form -->
+              <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Contractual Clause</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div class="sm:col-span-1">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Section Number</label>
+                    <input id="inputNewTermsClauseNumber" type="text" placeholder="e.g. 4" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                  <div class="sm:col-span-3">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
+                    <input id="inputNewTermsClauseTitle" type="text" placeholder="e.g. Account Suspension & Ban" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Content / Contractual Terms</label>
+                  <textarea id="textareaNewTermsClauseBody" rows="2" placeholder="Full terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+                </div>
+                <div class="flex justify-end">
+                  <button id="btnAddTermsClauseAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    + Add Clause
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        renderTermsClausesList();
+        syncTermsJsonEditor();
+
+        // Drawer toggle
+        document.getElementById('btnToggleTermsJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('termsJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            syncTermsJsonEditor();
+          }
+        });
+
+        // Apply raw JSON changes
+        document.getElementById('btnApplyTermsRawJsonChanges')?.addEventListener('click', () => {
+          const jsonText = document.getElementById('textareaTermsRawJson')?.value;
+          if (!jsonText) return;
+          try {
+            const parsed = JSON.parse(jsonText);
+            if (parsed && typeof parsed === 'object') {
+              termsConfig = parsed;
+              termsConfig.terms = termsConfig.terms || {};
+              currentClauses = Array.isArray(termsConfig.clauses) ? JSON.parse(JSON.stringify(termsConfig.clauses)) : [];
+
+              // Update form inputs
+              const t = document.getElementById('termsInputTitle');
+              const d = document.getElementById('termsInputDate');
+              const law = document.getElementById('termsInputGoverningLaw');
+              const jur = document.getElementById('termsInputJurisdiction');
+              const sum = document.getElementById('termsTextareaSummary');
+
+              if (t) t.value = termsConfig.terms?.title || '';
+              if (d) d.value = termsConfig.terms?.effectiveDate || '2026-11-01';
+              if (law) law.value = termsConfig.terms?.governingLaw || '';
+              if (jur) jur.value = termsConfig.terms?.jurisdiction || '';
+              if (sum) sum.value = termsConfig.terms?.summary || '';
+
+              renderTermsClausesList();
+              showToast("Raw JSON parsed and applied to terms form.", "success");
+            }
+          } catch (err) {
+            showToast("JSON Syntax Error: " + err.message, "danger");
+          }
+        });
+
+        // Add Clause Handler
+        document.getElementById('btnAddTermsClauseAction')?.addEventListener('click', () => {
+          const numInput = document.getElementById('inputNewTermsClauseNumber');
+          const titleInput = document.getElementById('inputNewTermsClauseTitle');
+          const bodyInput = document.getElementById('textareaNewTermsClauseBody');
+
+          const num = numInput?.value.trim() || String(currentClauses.length + 1);
+          const title = titleInput?.value.trim() || '';
+          const body = bodyInput?.value.trim() || '';
+
+          if (!title || !body) {
+            showToast("Clause title and terms are required.", "warning");
+            return;
+          }
+
+          currentClauses.push({
+            id: `TERM-${String(currentClauses.length + 1).padStart(2, '0')}`,
+            number: num,
+            title: title,
+            body: body,
+            active: true
+          });
+
+          numInput.value = '';
+          titleInput.value = '';
+          bodyInput.value = '';
+          renderTermsClausesList();
+          syncTermsJsonEditor();
+          showToast(`Terms clause "${title}" added to active draft.`, "info");
+        });
+
+        // Save & Publish Handler
+        document.getElementById('btnSaveTermsStudio')?.addEventListener('click', () => {
+          const payload = gatherTermsFormState();
+
+          if (!payload.terms.title || !payload.terms.governingLaw) {
+            showToast("Agreement title and governing law are required.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveTermsConfig === 'function') {
+            const saved = window.CSOSuperStore.saveTermsConfig(payload);
+            termsConfig = saved;
+            const dateEl = document.getElementById('termsLastUpdated');
+            if (dateEl && saved.meta?.updatedAt) {
+              dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
+            }
+            syncTermsJsonEditor();
+            showToast("Terms & Conditions published and active across portal!", "success");
+          }
+        });
+
+        // Export JSON Handler
+        document.getElementById('btnExportTermsConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportTermsManifest === 'function') {
+            const filename = window.CSOSuperStore.exportTermsManifest();
+            showToast(`Terms configuration exported: ${filename}`, "success");
+          }
+        });
+
+        // Import JSON Handler
+        document.getElementById('inputImportTermsConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const content = event.target?.result;
+              if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importTermsConfig === 'function') {
+                let parsed;
+                try {
+                  parsed = JSON.parse(content);
+                  if (parsed && parsed.terms) parsed = parsed.terms;
+                } catch (_) {}
+
+                const imported = window.CSOSuperStore.importTermsConfig(JSON.stringify(parsed));
+                showToast("Terms configuration imported successfully!", "success");
+                renderTermsWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset to Default Handler
+        document.getElementById('btnResetTermsConfig')?.addEventListener('click', () => {
+          if (confirm("Are you sure you want to restore factory default terms? All unsaved customizations will be reset.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetTermsConfig === 'function') {
+              window.CSOSuperStore.resetTermsConfig();
+              showToast("Terms restored to factory defaults.", "info");
+              renderTermsWorkspace(root);
+            }
+          }
+        });
+
+        // Form input change listeners to sync with raw JSON
+        ['termsInputTitle', 'termsInputDate', 'termsInputGoverningLaw', 'termsInputJurisdiction', 'termsTextareaSummary'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncTermsJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-005 (Terms & Conditions)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
     /**

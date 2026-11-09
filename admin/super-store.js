@@ -3119,6 +3119,103 @@
       return filename;
     },
 
+    // 29. Terms & Conditions Engine (module-03-005)
+    getTermsConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_terms_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object' || !config.meta) {
+        config = {
+          meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          terms: {
+            title: "Standard Platform Terms of Use & Candidate Agreement",
+            effectiveDate: "2026-11-01",
+            governingLaw: "Information Technology Act, 2000 & Laws of India",
+            jurisdiction: "Bhubaneswar / Cuttack, Odisha, India",
+            summary: "By accessing csodisha.com, candidates agree to use the educational resources solely for legitimate personal academic preparation and competitive examination advancement."
+          },
+          clauses: [
+            { id: "TERM-01", number: "1", title: "Acceptance of Educational Terms", body: "Access to csodisha.com syllabus pattern guides and mock questions is subject to continuous adherence to non-commercial fair use.", active: true },
+            { id: "TERM-02", number: "2", title: "Intellectual Property & Attribution", body: "Original editorial analyses and educational compilations created by CSO are protected under Indian copyright. Users may cite excerpts with clear attribution.", active: true },
+            { id: "TERM-03", number: "3", title: "Limitation of Liability & External Portals", body: "Common Sense Odisha provides external redirection links to official OPSC/OSSC portals. CSO bears no liability for technical outages or schedule changes on third-party government servers.", active: true }
+          ]
+        };
+        try {
+          localStorage.setItem('cso_terms_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+      return config;
+    },
+
+    saveTermsConfig(config) {
+      if (!config || typeof config !== 'object') throw new Error("Invalid terms configuration payload.");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem('cso_terms_config', JSON.stringify(config));
+      this.logAudit('TERMS_CONFIG_UPDATED', 'TERMS_OF_USE', `Terms configuration updated (v${config.meta.version || '1.0'}).`);
+      return config;
+    },
+
+    importTermsConfig(jsonString) {
+      let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+      if (!parsed || typeof parsed !== 'object') throw new Error("Invalid JSON manifest.");
+      parsed.meta = parsed.meta || {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem('cso_terms_config', JSON.stringify(parsed));
+      this.logAudit('TERMS_CONFIG_IMPORTED', 'TERMS_OF_USE', `Terms configuration imported (v${parsed.meta.version || '1.0'}).`);
+      return parsed;
+    },
+
+    resetTermsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        terms: {
+          title: "Standard Platform Terms of Use & Candidate Agreement",
+          effectiveDate: "2026-11-01",
+          governingLaw: "Information Technology Act, 2000 & Laws of India",
+          jurisdiction: "Bhubaneswar / Cuttack, Odisha, India",
+          summary: "By accessing csodisha.com, candidates agree to use the educational resources solely for legitimate personal academic preparation and competitive examination advancement."
+        },
+        clauses: [
+          { id: "TERM-01", number: "1", title: "Acceptance of Educational Terms", body: "Access to csodisha.com syllabus pattern guides and mock questions is subject to continuous adherence to non-commercial fair use.", active: true },
+          { id: "TERM-02", number: "2", title: "Intellectual Property & Attribution", body: "Original editorial analyses and educational compilations created by CSO are protected under Indian copyright. Users may cite excerpts with clear attribution.", active: true },
+          { id: "TERM-03", number: "3", title: "Limitation of Liability & External Portals", body: "Common Sense Odisha provides external redirection links to official OPSC/OSSC portals. CSO bears no liability for technical outages or schedule changes on third-party government servers.", active: true }
+        ]
+      };
+      localStorage.setItem('cso_terms_config', JSON.stringify(initial));
+      this.logAudit('TERMS_CONFIG_RESET', 'TERMS_OF_USE', `Terms configuration restored to default factory schema.`);
+      return initial;
+    },
+
+    exportTermsManifest() {
+      const config = this.getTermsConfig();
+      const timestamp = Date.now();
+      const filename = `cso-terms-config-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        terms: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('TERMS_MANIFEST_EXPORTED', 'DATA_EXPORT', `Terms of use manifest exported (${filename}).`);
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();
