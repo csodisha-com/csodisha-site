@@ -1992,6 +1992,186 @@
       return filename;
     },
 
+    // 21. Staged Drafts & Previews Engine (module-02-009)
+    getPageDrafts(statusFilter = 'ALL') {
+      let drafts = null;
+      try {
+        const raw = localStorage.getItem('cso_page_drafts');
+        if (raw) drafts = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!drafts || !Array.isArray(drafts) || drafts.length === 0) {
+        drafts = [
+          {
+            id: 'DFT-001',
+            title: 'OSSC Traffic Sub-Inspector 2026 Notification',
+            path: '/ossc-traffic-si-2026.html',
+            author: 'editorial@csodisha.com',
+            progress: 85,
+            status: 'Review Ready',
+            lastSaved: Date.now() - 7200000,
+            markup: '<div class="py-12 px-6 max-w-4xl mx-auto"><span class="bg-amber-500/10 text-amber-400 text-xs px-2.5 py-1 rounded-full border border-amber-500/20">Draft Preview</span><h1 class="text-3xl font-bold text-white mt-4">OSSC Traffic SI Recruitment 2026</h1><p class="text-slate-400 mt-2">Comprehensive syllabus, physical fitness criteria, and online application dates.</p></div>'
+          },
+          {
+            id: 'DFT-002',
+            title: 'Nirman Shramik Education Assistance Guide',
+            path: '/scholarships/nirman-shramik-2026.html',
+            author: 'academic@csodisha.com',
+            progress: 60,
+            status: 'In Progress',
+            lastSaved: Date.now() - 21600000,
+            markup: '<div class="py-12 px-6 max-w-4xl mx-auto"><span class="bg-amber-500/10 text-amber-400 text-xs px-2.5 py-1 rounded-full border border-amber-500/20">Draft Preview</span><h1 class="text-3xl font-bold text-white mt-4">Nirman Shramik Kalyan Yojana</h1><p class="text-slate-400 mt-2">Scholarship incentives for children of registered construction workers across Odisha.</p></div>'
+          },
+          {
+            id: 'DFT-003',
+            title: 'Tentative State Recruitment Calendar 2027',
+            path: '/exam-calendar-2027.html',
+            author: 'admin@csodisha.com',
+            progress: 40,
+            status: 'In Progress',
+            lastSaved: Date.now() - 86400000,
+            markup: '<div class="py-12 px-6 max-w-4xl mx-auto"><span class="bg-amber-500/10 text-amber-400 text-xs px-2.5 py-1 rounded-full border border-amber-500/20">Draft Preview</span><h1 class="text-3xl font-bold text-white mt-4">State Exam Schedule 2027</h1><p class="text-slate-400 mt-2">Preliminary roadmap for OPSC, OSSC, and BSE Odisha exams.</p></div>'
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_page_drafts', JSON.stringify(drafts));
+        } catch (_) {}
+      }
+
+      const sFilter = (statusFilter || 'ALL').toUpperCase();
+      let filtered = drafts;
+      if (sFilter !== 'ALL') {
+        filtered = drafts.filter(d => (d.status || '').toUpperCase() === sFilter);
+      }
+
+      return filtered.sort((a, b) => (b.lastSaved || 0) - (a.lastSaved || 0));
+    },
+
+    savePageDrafts(drafts) {
+      save('cso_page_drafts', drafts);
+    },
+
+    savePageDraft(draftData) {
+      const drafts = this.getPageDrafts('ALL');
+      let draft = null;
+
+      if (draftData.id) {
+        draft = drafts.find(d => d.id === draftData.id);
+        if (draft) {
+          draft.title = draftData.title || draft.title;
+          draft.path = draftData.path || draft.path;
+          draft.author = draftData.author || draft.author;
+          draft.progress = draftData.progress !== undefined ? draftData.progress : draft.progress;
+          draft.status = draftData.status || draft.status;
+          draft.markup = draftData.markup !== undefined ? draftData.markup : draft.markup;
+          draft.lastSaved = Date.now();
+        }
+      }
+
+      if (!draft) {
+        const uniqueId = 'DFT-' + Date.now().toString().slice(-4);
+        draft = {
+          id: uniqueId,
+          title: draftData.title || 'Untitled Draft',
+          path: draftData.path || `/draft-${uniqueId.toLowerCase()}.html`,
+          author: draftData.author || 'admin@csodisha.com',
+          progress: draftData.progress !== undefined ? draftData.progress : 50,
+          status: draftData.status || 'In Progress',
+          markup: draftData.markup || '<div class="p-6 text-white">Draft Content</div>',
+          lastSaved: Date.now()
+        };
+        drafts.unshift(draft);
+      }
+
+      this.savePageDrafts(drafts);
+      this.logAudit('DRAFT_SAVED', 'STAGING_STUDIO', `Page draft ${draft.id} ("${draft.title}") saved.`);
+      return draft;
+    },
+
+    promoteDraftToLive(draftId) {
+      const drafts = this.getPageDrafts('ALL');
+      const draft = drafts.find(d => d.id === draftId);
+      if (!draft) {
+        throw new Error(`Draft ${draftId} not found`);
+      }
+
+      const pages = this.getAllPages('ALL', '');
+      const cleanPath = draft.path.startsWith('/') ? draft.path : '/' + draft.path;
+      const cleanFile = cleanPath.replace(/^\//, '');
+      const markup = draft.markup || '';
+      const sizeKb = ((markup.length * 2) / 1024).toFixed(1);
+
+      let targetPage = pages.find(p => p.path === cleanPath || p.file === cleanFile);
+      if (targetPage) {
+        targetPage.title = draft.title;
+        targetPage.htmlContent = markup;
+        targetPage.sizeKb = sizeKb;
+        targetPage.status = 'Live';
+        targetPage.lastModified = new Date().toISOString().slice(0, 10);
+      } else {
+        targetPage = {
+          id: 'PAGE-' + Date.now().toString().slice(-4),
+          path: cleanPath,
+          file: cleanFile,
+          title: draft.title,
+          template: 'Standard Content',
+          status: 'Live',
+          sizeKb: sizeKb,
+          lastModified: new Date().toISOString().slice(0, 10),
+          htmlContent: markup
+        };
+        pages.unshift(targetPage);
+      }
+
+      this.saveAllPages(pages);
+
+      // Remove from drafts
+      const remainingDrafts = drafts.filter(d => d.id !== draftId);
+      this.savePageDrafts(remainingDrafts);
+
+      this.logAudit('DRAFT_PROMOTED_TO_LIVE', 'STAGING_STUDIO', `Draft ${draft.id} ("${draft.title}") promoted to live production route ${cleanPath}.`);
+      return targetPage;
+    },
+
+    deleteDraft(draftId) {
+      let drafts = this.getPageDrafts('ALL');
+      const prevLen = drafts.length;
+      drafts = drafts.filter(d => d.id !== draftId);
+      if (drafts.length !== prevLen) {
+        this.savePageDrafts(drafts);
+        this.logAudit('DRAFT_DELETED', 'STAGING_STUDIO', `Draft ${draftId} removed from staging.`);
+        return true;
+      }
+      return false;
+    },
+
+    exportDrafts() {
+      const drafts = this.getPageDrafts('ALL');
+      const timestamp = Date.now();
+      const filename = `cso-staged-drafts-${timestamp}.json`;
+      const bundle = {
+        stagingManifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalDrafts: drafts.length,
+        drafts: drafts
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('PAGE_DRAFTS_EXPORTED', 'DATA_EXPORT', `Staged drafts archive exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;

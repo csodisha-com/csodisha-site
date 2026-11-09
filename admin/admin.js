@@ -309,6 +309,8 @@ async function loadMasterNavigation() {
         renderReusableSectionsWorkspace();
       } else if (moduleId === 'module-02-008') {
         renderPageRevisionsWorkspace();
+      } else if (moduleId === 'module-02-009') {
+        renderDraftsAndPreviewsWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -3728,6 +3730,379 @@ async function loadMasterNavigation() {
             } else {
               showToast("Failed to create snapshot.", "error");
             }
+          }
+        });
+      });
+    }
+
+    /**
+     * VIEW 2i: Pre-Production Staging & Draft Previews (module-02-009)
+     */
+    function renderDraftsAndPreviewsWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Drafts & Previews (module-02-009)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnNewDraftTop" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + New Staged Draft
+          </button>
+          <button id="btnExportDraftsJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Drafts (JSON)
+          </button>
+        </div>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Pre-Production Staging & Draft Publishing Hub
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-009</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Author and review work-in-progress examination articles, test responsive rendering in an isolated sandbox, and promote to live production.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold">
+                  <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  Staging Sandbox Online
+                </span>
+              </div>
+            </div>
+
+            <!-- Metric Summary Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Total Staged Drafts</span>
+                <div id="kpiTotalDrafts" class="text-xl font-bold font-mono text-white mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Unpublished working copies</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Review Ready</span>
+                <div id="kpiReviewReady" class="text-xl font-bold font-mono text-cyan-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Ready for promotion</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">In Progress</span>
+                <div id="kpiInProgress" class="text-xl font-bold font-mono text-amber-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Under editorial review</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Filter Tabs & Search -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div id="draftStatusTabsContainer" class="flex flex-wrap items-center gap-1.5">
+              <button data-status="ALL" class="draft-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white">All Drafts</button>
+              <button data-status="Review Ready" class="draft-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Review Ready</button>
+              <button data-status="In Progress" class="draft-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">In Progress</button>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400" id="draftCountBadge">
+              -- staged drafts
+            </div>
+          </div>
+
+          <!-- Staging Directory Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Staged Drafts Register
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono">Live Ingestion from cso_page_drafts</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Draft ID</th>
+                    <th class="py-2.5 px-4 font-semibold">Title & Proposed Route</th>
+                    <th class="py-2.5 px-4 font-semibold">Author</th>
+                    <th class="py-2.5 px-4 font-semibold" style="width: 140px;">Progress</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Status</th>
+                    <th class="py-2.5 px-4 font-semibold">Last Saved</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="draftsTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      let activeStatusFilter = 'ALL';
+
+      function updateKpis() {
+        const allDrafts = (window.CSOSuperStore && typeof window.CSOSuperStore.getPageDrafts === 'function')
+          ? window.CSOSuperStore.getPageDrafts('ALL')
+          : [];
+
+        const reviewCount = allDrafts.filter(d => d.status === 'Review Ready').length;
+        const inProgCount = allDrafts.filter(d => d.status === 'In Progress').length;
+
+        const elTotal = document.getElementById('kpiTotalDrafts');
+        const elReview = document.getElementById('kpiReviewReady');
+        const elProg = document.getElementById('kpiInProgress');
+
+        if (elTotal) elTotal.textContent = allDrafts.length;
+        if (elReview) elReview.textContent = reviewCount;
+        if (elProg) elProg.textContent = inProgCount;
+      }
+
+      function renderDraftsTable() {
+        const tbody = document.getElementById('draftsTableBody');
+        const badge = document.getElementById('draftCountBadge');
+        if (!tbody) return;
+
+        const drafts = (window.CSOSuperStore && typeof window.CSOSuperStore.getPageDrafts === 'function')
+          ? window.CSOSuperStore.getPageDrafts(activeStatusFilter)
+          : [];
+
+        if (badge) badge.textContent = `${drafts.length} staged drafts in repository`;
+
+        if (drafts.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="py-10 text-center text-slate-500 font-mono text-xs">
+                No staged drafts found matching the current filter.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = drafts.map(d => {
+          const isReview = d.status === 'Review Ready';
+          const statusBadge = isReview
+            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">REVIEW READY</span>`
+            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">IN PROGRESS</span>`;
+
+          const progressColor = isReview ? 'bg-cyan-400' : 'bg-amber-400';
+          const timeAgo = formatTimeAgo(d.lastSaved);
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">${d.id}</td>
+              <td class="py-2.5 px-4">
+                <div class="font-bold text-white">${d.title}</div>
+                <div class="text-[10px] font-mono text-slate-400 mt-0.5">${d.path}</div>
+              </td>
+              <td class="py-2.5 px-4 font-mono text-slate-300 text-[11px] whitespace-nowrap">${d.author}</td>
+              <td class="py-2.5 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
+                    <div class="${progressColor} h-full rounded-full" style="width: ${d.progress || 50}%"></div>
+                  </div>
+                  <span class="text-[10px] font-mono text-slate-400">${d.progress || 50}%</span>
+                </div>
+              </td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">${statusBadge}</td>
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-xs whitespace-nowrap">${timeAgo}</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button data-id="${d.id}" class="btn-preview-draft px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-mono font-semibold border border-brand-border transition">
+                    Preview &nearr;
+                  </button>
+                  <button data-id="${d.id}" class="btn-promote-draft px-2 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-mono font-bold transition shadow" title="Promote to Live Production">
+                    Promote to Live
+                  </button>
+                  <button data-id="${d.id}" class="btn-delete-draft px-2 py-1 rounded bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 text-xs font-mono border border-rose-800/50 transition" title="Delete Draft">
+                    &times;
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Preview
+        tbody.querySelectorAll('.btn-preview-draft').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const draftId = e.currentTarget.getAttribute('data-id');
+            const draft = window.CSOSuperStore?.getPageDrafts('ALL').find(d => d.id === draftId);
+            if (!draft) return;
+
+            openModal(`Draft Preview: ${draft.title}`, `
+              <div class="space-y-4 font-sans text-xs">
+                <div class="flex items-center justify-between p-3 bg-[#081220] border border-brand-border rounded-lg font-mono text-[11px]">
+                  <div>Proposed Route: <strong class="text-cyan-400">${draft.path}</strong></div>
+                  <div>Author: <strong class="text-slate-300">${draft.author}</strong></div>
+                </div>
+                <div class="p-5 bg-[#040810] border border-brand-border rounded-lg max-h-[460px] overflow-y-auto">
+                  ${draft.markup || '<p class="text-slate-500">No markup authored yet.</p>'}
+                </div>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+            `);
+          });
+        });
+
+        // Wire Promote to Live
+        tbody.querySelectorAll('.btn-promote-draft').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const draftId = e.currentTarget.getAttribute('data-id');
+            const draft = window.CSOSuperStore?.getPageDrafts('ALL').find(d => d.id === draftId);
+            if (!draft) return;
+
+            openModal(`Promote to Live Production`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div class="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-lg text-emerald-200">
+                  <strong>Confirmation:</strong> This will publish draft <strong class="text-white font-mono">${draft.id}</strong> to the public production route <strong class="text-white font-mono">${draft.path}</strong>.
+                </div>
+                <p class="text-slate-300">Are you ready to make this content live for all candidates across Odisha?</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmPromoteModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Publish Live</button>
+            `);
+
+            document.getElementById('btnConfirmPromoteModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.promoteDraftToLive === 'function') {
+                try {
+                  const promoted = window.CSOSuperStore.promoteDraftToLive(draft.id);
+                  showToast(`Draft promoted to live route ${promoted.path}!`, "success");
+                  updateKpis();
+                  renderDraftsTable();
+                } catch (err) {
+                  showToast(err.message, "error");
+                }
+              }
+            });
+          });
+        });
+
+        // Wire Delete
+        tbody.querySelectorAll('.btn-delete-draft').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const draftId = e.currentTarget.getAttribute('data-id');
+            openModal(`Delete Draft ${draftId}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <p class="text-slate-300">Are you sure you want to permanently delete this staged draft? All uncommitted markup will be removed.</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmDeleteDraftModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Delete Draft</button>
+            `);
+
+            document.getElementById('btnConfirmDeleteDraftModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.deleteDraft === 'function') {
+                window.CSOSuperStore.deleteDraft(draftId);
+                showToast(`Draft ${draftId} deleted`, "warning");
+                updateKpis();
+                renderDraftsTable();
+              }
+            });
+          });
+        });
+      }
+
+      // Initial Renders
+      updateKpis();
+      renderDraftsTable();
+
+      // Tab Switching
+      document.querySelectorAll('.draft-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          activeStatusFilter = e.currentTarget.getAttribute('data-status') || 'ALL';
+          document.querySelectorAll('.draft-tab-btn').forEach(b => {
+            b.className = "draft-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+          });
+          e.currentTarget.className = "draft-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white";
+          renderDraftsTable();
+        });
+      });
+
+      // Export Drafts
+      document.getElementById('btnExportDraftsJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportDrafts === 'function') {
+          const filename = window.CSOSuperStore.exportDrafts();
+          showToast(`Staged drafts archive exported: ${filename}`, "success");
+        }
+      });
+
+      // New Draft Modal
+      document.getElementById('btnNewDraftTop')?.addEventListener('click', () => {
+        openModal("Create New Staged Draft", `
+          <div class="space-y-4 font-sans text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Draft Page Title <span class="text-rose-400">*</span></label>
+              <input id="inputNewDraftTitle" type="text" placeholder="e.g. OSSC Welfare Extension Officer 2026" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Proposed Route Path <span class="text-rose-400">*</span></label>
+              <input id="inputNewDraftPath" type="text" placeholder="/welfare-extension-officer-2026.html" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Author Email</label>
+                <input id="inputNewDraftAuthor" type="text" value="editorial@csodisha.com" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Initial Status</label>
+                <select id="selectNewDraftStatus" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+                  <option value="In Progress" selected>In Progress</option>
+                  <option value="Review Ready">Review Ready</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Initial Staged HTML Markup</label>
+              <textarea id="textareaNewDraftMarkup" rows="6" class="w-full bg-[#050a14] border border-brand-border rounded p-3 text-slate-200 text-xs font-mono leading-relaxed" placeholder="<div class=&quot;py-8&quot;><h1>...</h1></div>"></textarea>
+            </div>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnSubmitNewDraftModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Create Staged Draft</button>
+        `);
+
+        // Auto-slug in draft modal
+        const titleInput = document.getElementById('inputNewDraftTitle');
+        const pathInput = document.getElementById('inputNewDraftPath');
+        if (titleInput && pathInput) {
+          titleInput.addEventListener('input', () => {
+            const slug = titleInput.value.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            pathInput.value = '/' + (slug || 'draft') + '.html';
+          });
+        }
+
+        document.getElementById('btnSubmitNewDraftModal')?.addEventListener('click', () => {
+          const title = titleInput?.value.trim();
+          const path = pathInput?.value.trim();
+          const author = document.getElementById('inputNewDraftAuthor')?.value.trim();
+          const status = document.getElementById('selectNewDraftStatus')?.value;
+          const markup = document.getElementById('textareaNewDraftMarkup')?.value;
+
+          if (!title) {
+            showToast("Please provide a draft title.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.savePageDraft === 'function') {
+            const created = window.CSOSuperStore.savePageDraft({
+              title,
+              path: path || '/draft.html',
+              author: author || 'editorial@csodisha.com',
+              status: status || 'In Progress',
+              progress: status === 'Review Ready' ? 85 : 45,
+              markup: markup || `<div class="py-8 px-4 max-w-3xl mx-auto"><h1 class="text-2xl font-bold text-white">${title}</h1></div>`
+            });
+            closeModal();
+            showToast(`Draft "${created.title}" created in staging!`, "success");
+            updateKpis();
+            renderDraftsTable();
           }
         });
       });
