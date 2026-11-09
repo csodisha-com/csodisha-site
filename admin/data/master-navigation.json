@@ -774,12 +774,12 @@
         {
           "id": "module-10-009",
           "title": "Push Notifications",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-10-010",
           "title": "In-App Messages",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-10-011",
@@ -789,17 +789,17 @@
         {
           "id": "module-10-012",
           "title": "Help Centre",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-10-013",
           "title": "Support Categories",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-10-014",
           "title": "Spam & Abuse Reports",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

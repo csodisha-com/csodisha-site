@@ -11418,6 +11418,286 @@
       this.logAudit("NEWSLETTER_SUBSCRIBERS_EXPORTED", "DATA_EXPORT", `Newsletter subscribers exported (${filename}).`);
       return filename;
     },
+    // ==========================================
+    // FOLDER 10 (COMMUNICATION & SUPPORT) - BATCH 2
+    // ==========================================
+
+    // --- MODULE 10-008: Notifications ---
+    getNotificationsConfig() {
+      return _hydrateConfig("cso_notifications_config", "notifications", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalDispatched: 64200, unreadCount: 5210, systemAlerts: 18 },
+        items: [
+          { id: "NTF-01", title: "OPSC OAS 2026 Prelims Admit Card Out", recipientScope: "All Aspirants", triggerType: "Exam Gazette Alert", targetUrl: "/jobs-careers/?filter=opsc", readStatus: "Read", priority: "High", createdAt: "2026-11-08 09:30", active: true },
+          { id: "NTF-02", title: "Your Mock Test #14 Ranking is Available", recipientScope: "User: USR-1001", triggerType: "Test Evaluation", targetUrl: "/study-library/mock-evaluations", readStatus: "Unread", priority: "Medium", createdAt: "2026-11-09 11:15", active: true },
+          { id: "NTF-03", title: "Payment Successful: 1-Year All-Access Pass", recipientScope: "User: USR-1002", triggerType: "Billing Confirmation", targetUrl: "/admin/?folder=folder-08&module=module-08-012", readStatus: "Read", priority: "Normal", createdAt: "2026-11-09 14:20", active: true }
+        ]
+      }));
+    },
+
+    saveNotificationsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.notifications || cfg.items || [];
+      cfg.items = list;
+      cfg.notifications = list;
+      localStorage.setItem("cso_notifications_config", JSON.stringify(cfg));
+      this.logAudit("NOTIFICATIONS_UPDATED", "COMMUNICATIONS", `Notifications config updated (${list.length} records).`);
+      return true;
+    },
+
+    resetNotificationsConfig() {
+      localStorage.removeItem("cso_notifications_config");
+      const fresh = this.getNotificationsConfig();
+      this.logAudit("NOTIFICATIONS_RESET", "COMMUNICATIONS", "Notifications config reset to defaults.");
+      return fresh;
+    },
+
+    exportNotificationsManifest() {
+      const config = this.getNotificationsConfig();
+      const filename = "notifications_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("NOTIFICATIONS_EXPORTED", "DATA_EXPORT", `Notifications manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-009: Push Notifications ---
+    getPushNotificationsConfig() {
+      return _hydrateConfig("cso_push_notifications_config", "pushes", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { activeSubscribers: 28400, deliverySuccessRate: "98.8%", totalSentToday: 14200 },
+        items: [
+          { id: "PSH-01", notificationTitle: "New Gazette: OSSSC Combined Recruitment 2026", bodyText: "Application window opens tomorrow for 1,200+ vacancies across Odisha districts.", targetAudience: "All WebPush Subscribers", clickActionUrl: "https://csodisha.com/jobs-careers/", sentTime: "2026-11-08 17:00", deliveryCount: 28400, active: true },
+          { id: "PSH-02", notificationTitle: "Daily Odia Vyakaran Quiz #42 Live", bodyText: "10 rapid-fire questions to test your syllabus grasp today.", targetAudience: "Study Library Tagged", clickActionUrl: "https://csodisha.com/study-library/", sentTime: "2026-11-09 08:00", deliveryCount: 16100, active: true }
+        ]
+      }));
+    },
+
+    savePushNotificationsConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.pushes || cfg.items || [];
+      cfg.items = list;
+      cfg.pushes = list;
+      localStorage.setItem("cso_push_notifications_config", JSON.stringify(cfg));
+      this.logAudit("PUSH_NOTIFICATIONS_UPDATED", "COMMUNICATIONS", `Push notifications updated (${list.length} records).`);
+      return true;
+    },
+
+    resetPushNotificationsConfig() {
+      localStorage.removeItem("cso_push_notifications_config");
+      const fresh = this.getPushNotificationsConfig();
+      this.logAudit("PUSH_NOTIFICATIONS_RESET", "COMMUNICATIONS", "Push notifications reset to defaults.");
+      return fresh;
+    },
+
+    exportPushNotificationsManifest() {
+      const config = this.getPushNotificationsConfig();
+      const filename = "push_notifications_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("PUSH_NOTIFICATIONS_EXPORTED", "DATA_EXPORT", `Push notifications manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-010: In-App Messages ---
+    getInAppMessagesConfig() {
+      return _hydrateConfig("cso_inapp_messages_config", "messages", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "IAM-01", messageName: "Scheduled Platform Upgrade Notice", modalType: "Slide-In Bottom Toast", headline: "Cloudflare D1 Infrastructure Maintenance", bodyContent: "Scheduled maintenance on Sunday 02:00 AM - 04:00 AM IST. Mock test engines may experience minor latency.", dismissible: true, displayFrequency: "Once Per Session", active: true },
+          { id: "IAM-02", messageName: "Balasore District Circle Launch", modalType: "Center Dialog", headline: "Connect with Fellow Aspirants in Balasore", bodyContent: "Join the verified district discussion forum to exchange local exam center updates and group notes.", dismissible: true, displayFrequency: "Once", active: true }
+        ]
+      }));
+    },
+
+    saveInAppMessagesConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.messages || cfg.items || [];
+      cfg.items = list;
+      cfg.messages = list;
+      localStorage.setItem("cso_inapp_messages_config", JSON.stringify(cfg));
+      this.logAudit("INAPP_MESSAGES_UPDATED", "COMMUNICATIONS", `In-app messages updated (${list.length} records).`);
+      return true;
+    },
+
+    resetInAppMessagesConfig() {
+      localStorage.removeItem("cso_inapp_messages_config");
+      const fresh = this.getInAppMessagesConfig();
+      this.logAudit("INAPP_MESSAGES_RESET", "COMMUNICATIONS", "In-app messages reset to defaults.");
+      return fresh;
+    },
+
+    exportInAppMessagesManifest() {
+      const config = this.getInAppMessagesConfig();
+      const filename = "inapp_messages_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("INAPP_MESSAGES_EXPORTED", "DATA_EXPORT", `In-app messages manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-011: Announcement Banners ---
+    getAnnouncementBannersConfig() {
+      return _hydrateConfig("cso_announcement_banners_config", "banners", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "BNR-01", bannerText: "OPSC OAS 2026 Notification officially published! Check vacancies, eligibility & syllabus details.", themeColor: "amber", ctaLabel: "View Details", ctaUrl: "/jobs-careers/?section=0", targetPages: "All Pages", position: "Top Fixed Bar", active: true },
+          { id: "BNR-02", bannerText: "Odisha State Scholarship Portal (SSP) last date extended to December 31, 2026.", themeColor: "blue", ctaLabel: "Read Guidelines", ctaUrl: "/schemes-benefits/?section=0", targetPages: "Schemes & Tools", position: "Header Banner", active: true },
+          { id: "BNR-03", bannerText: "Emergency: OSSC CGL Exam Date Rescheduled to Dec 15 due to Cyclone Alert.", themeColor: "red", ctaLabel: "Official Circular", ctaUrl: "/jobs-careers/?filter=ossc", targetPages: "Home & Jobs", position: "Top Fixed Bar", active: false }
+        ]
+      }));
+    },
+
+    saveAnnouncementBannersConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.banners || cfg.items || [];
+      cfg.items = list;
+      cfg.banners = list;
+      localStorage.setItem("cso_announcement_banners_config", JSON.stringify(cfg));
+      this.logAudit("ANNOUNCEMENT_BANNERS_UPDATED", "COMMUNICATIONS", `Announcement banners updated (${list.length} records).`);
+      return true;
+    },
+
+    resetAnnouncementBannersConfig() {
+      localStorage.removeItem("cso_announcement_banners_config");
+      const fresh = this.getAnnouncementBannersConfig();
+      this.logAudit("ANNOUNCEMENT_BANNERS_RESET", "COMMUNICATIONS", "Announcement banners reset to defaults.");
+      return fresh;
+    },
+
+    exportAnnouncementBannersManifest() {
+      const config = this.getAnnouncementBannersConfig();
+      const filename = "announcement_banners_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("ANNOUNCEMENT_BANNERS_EXPORTED", "DATA_EXPORT", `Announcement banners manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-012: Help Centre ---
+    getHelpCentreConfig() {
+      return _hydrateConfig("cso_help_centre_config", "articles", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalArticles: 42, viewsCount: 19840, helpfulUpvotes: 1420 },
+        items: [
+          { id: "HLP-01", articleTitle: "How to Download Official Gazette Notification PDFs", category: "General Navigation", readTime: "3 min", views: 4210, helpfulCount: 390, lastUpdated: "2026-10-14", active: true },
+          { id: "HLP-02", articleTitle: "Troubleshooting UPI Payment Failures on Razorpay / Cashfree", category: "Payments & Invoices", readTime: "4 min", views: 6810, helpfulCount: 580, lastUpdated: "2026-11-01", active: true },
+          { id: "HLP-03", articleTitle: "How Mock Test Percentiles and Statewide Ranks Are Calculated", category: "Study Library", readTime: "5 min", views: 8820, helpfulCount: 450, lastUpdated: "2026-11-05", active: true }
+        ]
+      }));
+    },
+
+    saveHelpCentreConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.articles || cfg.items || [];
+      cfg.items = list;
+      cfg.articles = list;
+      localStorage.setItem("cso_help_centre_config", JSON.stringify(cfg));
+      this.logAudit("HELP_CENTRE_UPDATED", "COMMUNICATIONS", `Help centre articles updated (${list.length} records).`);
+      return true;
+    },
+
+    resetHelpCentreConfig() {
+      localStorage.removeItem("cso_help_centre_config");
+      const fresh = this.getHelpCentreConfig();
+      this.logAudit("HELP_CENTRE_RESET", "COMMUNICATIONS", "Help centre reset to defaults.");
+      return fresh;
+    },
+
+    exportHelpCentreManifest() {
+      const config = this.getHelpCentreConfig();
+      const filename = "help_centre_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("HELP_CENTRE_EXPORTED", "DATA_EXPORT", `Help centre manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-013: Support Categories ---
+    getSupportCategoriesConfig() {
+      return _hydrateConfig("cso_support_categories_config", "categories", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        items: [
+          { id: "CAT-01", categoryName: "Payment & Subscription Queries", departmentLead: "CS Odisha Billing Desk", slaTarget: "4 Hours", ticketCount: 48, defaultPriority: "High", active: true },
+          { id: "CAT-02", categoryName: "Account Access & OTP Issues", departmentLead: "Platform Operations", slaTarget: "2 Hours", ticketCount: 34, defaultPriority: "High", active: true },
+          { id: "CAT-03", categoryName: "Syllabus & Errata Reporting", departmentLead: "Academic Editorial Board", slaTarget: "12 Hours", ticketCount: 82, defaultPriority: "Normal", active: true },
+          { id: "CAT-04", categoryName: "General Exam Information & Queries", departmentLead: "Community Moderator Desk", slaTarget: "24 Hours", ticketCount: 110, defaultPriority: "Normal", active: true }
+        ]
+      }));
+    },
+
+    saveSupportCategoriesConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.categories || cfg.items || [];
+      cfg.items = list;
+      cfg.categories = list;
+      localStorage.setItem("cso_support_categories_config", JSON.stringify(cfg));
+      this.logAudit("SUPPORT_CATEGORIES_UPDATED", "COMMUNICATIONS", `Support categories updated (${list.length} records).`);
+      return true;
+    },
+
+    resetSupportCategoriesConfig() {
+      localStorage.removeItem("cso_support_categories_config");
+      const fresh = this.getSupportCategoriesConfig();
+      this.logAudit("SUPPORT_CATEGORIES_RESET", "COMMUNICATIONS", "Support categories reset to defaults.");
+      return fresh;
+    },
+
+    exportSupportCategoriesManifest() {
+      const config = this.getSupportCategoriesConfig();
+      const filename = "support_categories_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SUPPORT_CATEGORIES_EXPORTED", "DATA_EXPORT", `Support categories manifest exported (${filename}).`);
+      return filename;
+    },
+
+    // --- MODULE 10-014: Spam & Abuse Reports ---
+    getSpamAbuseConfig() {
+      return _hydrateConfig("cso_spam_abuse_config", "incidents", () => ({
+        meta: { version: "1.0", updatedAt: new Date().toISOString() },
+        summary: { totalSpamIncidents: 64, blockedAddresses: 19, honeypotTrapped: 45 },
+        items: [
+          { id: "SPM-01", suspectIdentifier: "bot_crawler_98@tempmail.com", abuseType: "Form Ingestion Flooding", trapTrigger: "Contact Form HoneyPot", ipAddress: "194.26.29.112", actionTaken: "Auto-Banned at Cloudflare Edge", loggedAt: "2026-11-07 02:40", active: true },
+          { id: "SPM-02", suspectIdentifier: "scam_job_offer@gmail.com", abuseType: "Prohibited Exam Coaching Links", trapTrigger: "Keyword Regex Filter", ipAddress: "45.154.255.80", actionTaken: "Quarantined for Review", loggedAt: "2026-11-08 19:15", active: true },
+          { id: "SPM-03", suspectIdentifier: "rate_limit_excess@103.44.12.9", abuseType: "Rapid OTP Request Exhaustion", trapTrigger: "Rate Limiter (20 req/min)", ipAddress: "103.44.12.9", actionTaken: "Temporary IP Cooldown (24h)", loggedAt: "2026-11-09 13:50", active: true }
+        ]
+      }));
+    },
+
+    saveSpamAbuseConfig(cfg) {
+      if (!cfg) return false;
+      cfg.meta = cfg.meta || {};
+      cfg.meta.updatedAt = new Date().toISOString();
+      const list = cfg.incidents || cfg.items || [];
+      cfg.items = list;
+      cfg.incidents = list;
+      localStorage.setItem("cso_spam_abuse_config", JSON.stringify(cfg));
+      this.logAudit("SPAM_ABUSE_UPDATED", "COMMUNICATIONS", `Spam abuse incidents updated (${list.length} records).`);
+      return true;
+    },
+
+    resetSpamAbuseConfig() {
+      localStorage.removeItem("cso_spam_abuse_config");
+      const fresh = this.getSpamAbuseConfig();
+      this.logAudit("SPAM_ABUSE_RESET", "COMMUNICATIONS", "Spam abuse incidents reset to defaults.");
+      return fresh;
+    },
+
+    exportSpamAbuseManifest() {
+      const config = this.getSpamAbuseConfig();
+      const filename = "spam_abuse_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SPAM_ABUSE_EXPORTED", "DATA_EXPORT", `Spam abuse manifest exported (${filename}).`);
+      return filename;
+    },
+
 
 
 
@@ -12038,6 +12318,14 @@
           emailTemplates: this.getEmailTemplatesConfig(),
           emailCampaigns: this.getEmailCampaignsConfig(),
           newsletterSubscribers: this.getNewsletterSubscribersConfig(),
+          notifications: this.getNotificationsConfig(),
+          pushNotifications: this.getPushNotificationsConfig(),
+          inAppMessages: this.getInAppMessagesConfig(),
+          announcementBanners: this.getAnnouncementBannersConfig(),
+          helpCentre: this.getHelpCentreConfig(),
+          supportCategories: this.getSupportCategoriesConfig(),
+          spamAbuse: this.getSpamAbuseConfig(),
+
 
         }
       };

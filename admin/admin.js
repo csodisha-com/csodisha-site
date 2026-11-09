@@ -558,6 +558,14 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-10-005') { renderEmailTemplatesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-10-006') { renderEmailCampaignsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-10-007') { renderNewsletterSubscribersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-008') { renderNotificationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-009') { renderPushNotificationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-010') { renderInAppMessagesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-011') { renderAnnouncementBannersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-012') { renderHelpCentreWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-013') { renderSupportCategoriesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-10-014') { renderSpamAbuseWorkspace(dom.workspaceRoot); return; }
+
 
 
       // Route to specialized views
@@ -853,6 +861,21 @@ async function loadMasterNavigation() {
         renderEmailCampaignsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-10-007') {
         renderNewsletterSubscribersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-008') {
+        renderNotificationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-009') {
+        renderPushNotificationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-010') {
+        renderInAppMessagesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-011') {
+        renderAnnouncementBannersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-012') {
+        renderHelpCentreWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-013') {
+        renderSupportCategoriesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-10-014') {
+        renderSpamAbuseWorkspace(dom.workspaceRoot);
+
 
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
@@ -42559,6 +42582,1993 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-10-007', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // FOLDER 10 (COMMUNICATION & SUPPORT) - BATCH 2 WORKSPACES
+    // ==========================================
+
+    /**
+     * MODULE 10-008: Notifications
+     */
+    function renderNotificationsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getNotificationsConfig();
+        let notifications = Array.isArray(config.notifications || config.items) ? [...(config.notifications || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const unreadCount = notifications.filter(n => (n.readStatus || '').toLowerCase() === 'unread').length;
+          const highCount = notifications.filter(n => (n.priority || '').toLowerCase() === 'high').length;
+          const filtered = notifications.filter(n => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (n.title || '').toLowerCase().includes(term) ||
+                   (n.recipientScope || '').toLowerCase().includes(term) ||
+                   (n.triggerType || '').toLowerCase().includes(term) ||
+                   (n.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">NOTIFICATIONS CENTER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">System &amp; User Notifications</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Transactional alert logs, candidate inbox dispatches, and examination updates</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddNotification" class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-lg shadow-sky-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Dispatch Notification
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Dispatched</div>
+                  <div class="text-2xl font-bold text-white mt-1">${(config.summary?.totalDispatched || 64200).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${notifications.length} tracked alert entries</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Unread In Inboxes</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${(config.summary?.unreadCount || 5210).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${unreadCount} unread in current filter</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">High Priority</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${highCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Admit cards &amp; urgent gazettes</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Delivery Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">99.9%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Real-time socket &amp; DB sync</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoNotificationsSearch" placeholder="Search by title, recipient, trigger type, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${notifications.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Notice ID</th>
+                      <th class="px-4 py-3">Headline &amp; Action Link</th>
+                      <th class="px-4 py-3">Recipient Scope</th>
+                      <th class="px-4 py-3">Trigger Type</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Priority</th>
+                      <th class="px-4 py-3">Created</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No notifications match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-sky-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium">${item.title}</div>
+                          <div class="text-[10px] text-slate-400 font-mono truncate">${item.targetUrl || '/'}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.recipientScope}</td>
+                        <td class="px-4 py-3 text-sky-300 font-medium">${item.triggerType}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.readStatus || '').toLowerCase() === 'read' ? 'bg-slate-700 text-slate-300' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }">${item.readStatus || 'Unread'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.priority || '').toLowerCase() === 'high' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            (item.priority || '').toLowerCase() === 'medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-700 text-slate-300'
+                          }">${item.priority || 'Normal'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-[10px] text-slate-400">${item.createdAt || ''}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-read" data-id="${item.id}" title="Toggle Read Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Notification" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Notification" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoNotificationsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoNotificationsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-008', 'Notifications Schema', {
+              id: 'string (unique notification ID, e.g. NTF-04)',
+              title: 'string (notification headline text)',
+              recipientScope: 'string (e.g. All Aspirants, User: USR-1001, Paid Subscribers)',
+              triggerType: 'string (Exam Gazette Alert | Test Evaluation | Billing Confirmation | System Notice)',
+              targetUrl: 'string (relative destination link)',
+              readStatus: 'string (Read | Unread)',
+              priority: 'string (Normal | Medium | High)',
+              createdAt: 'string (YYYY-MM-DD HH:MM)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportNotificationsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset notifications to factory defaults?')) {
+              store.resetNotificationsConfig();
+              config = store.getNotificationsConfig();
+              notifications = [...(config.notifications || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddNotification')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Dispatch Notification',
+              fields: [
+                { name: 'title', label: 'Notification Headline', type: 'text', placeholder: 'e.g. OSSC CGL 2026 Mains Hall Tickets Released', required: true },
+                { name: 'recipientScope', label: 'Recipient Scope', type: 'text', placeholder: 'e.g. All Aspirants or User ID', defaultValue: 'All Aspirants', required: true },
+                { name: 'triggerType', label: 'Trigger Type', type: 'select', options: ['Exam Gazette Alert', 'Test Evaluation', 'Billing Confirmation', 'System Maintenance', 'Community Update'], defaultValue: 'Exam Gazette Alert' },
+                { name: 'targetUrl', label: 'Destination URL', type: 'text', placeholder: 'e.g. /jobs-careers/?filter=ossc', defaultValue: '/jobs-careers/' },
+                { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'Medium', 'High'], defaultValue: 'High' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'NTF-' + String(notifications.length + 1).padStart(2, '0'),
+                  title: data.title.trim(),
+                  recipientScope: data.recipientScope.trim(),
+                  triggerType: data.triggerType,
+                  targetUrl: data.targetUrl.trim(),
+                  readStatus: 'Unread',
+                  priority: data.priority,
+                  createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                  active: true
+                };
+                notifications.unshift(newRecord);
+                config.notifications = notifications;
+                config.items = notifications;
+                store.saveNotificationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-read"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = notifications.find(n => n.id === id);
+              if (item) {
+                item.readStatus = item.readStatus === 'Read' ? 'Unread' : 'Read';
+                config.notifications = notifications;
+                config.items = notifications;
+                store.saveNotificationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = notifications.find(n => n.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Notification: ' + item.id,
+                fields: [
+                  { name: 'title', label: 'Notification Headline', type: 'text', defaultValue: item.title, required: true },
+                  { name: 'recipientScope', label: 'Recipient Scope', type: 'text', defaultValue: item.recipientScope, required: true },
+                  { name: 'triggerType', label: 'Trigger Type', type: 'text', defaultValue: item.triggerType, required: true },
+                  { name: 'targetUrl', label: 'Destination URL', type: 'text', defaultValue: item.targetUrl || '' },
+                  { name: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'Medium', 'High'], defaultValue: item.priority },
+                  { name: 'readStatus', label: 'Status', type: 'select', options: ['Read', 'Unread'], defaultValue: item.readStatus }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  item.recipientScope = data.recipientScope.trim();
+                  item.triggerType = data.triggerType.trim();
+                  item.targetUrl = data.targetUrl.trim();
+                  item.priority = data.priority;
+                  item.readStatus = data.readStatus;
+                  config.notifications = notifications;
+                  config.items = notifications;
+                  store.saveNotificationsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete notification ' + id + '?')) {
+                notifications = notifications.filter(n => n.id !== id);
+                config.notifications = notifications;
+                config.items = notifications;
+                store.saveNotificationsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-009: Push Notifications
+     */
+    function renderPushNotificationsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPushNotificationsConfig();
+        let pushes = Array.isArray(config.pushes || config.items) ? [...(config.pushes || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalDelivered = pushes.reduce((acc, p) => acc + (Number(p.deliveryCount) || 0), 0);
+          const activeCount = pushes.filter(p => p.active !== false).length;
+          const filtered = pushes.filter(p => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (p.notificationTitle || '').toLowerCase().includes(term) ||
+                   (p.bodyText || '').toLowerCase().includes(term) ||
+                   (p.targetAudience || '').toLowerCase().includes(term) ||
+                   (p.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">WEBPUSH DISPATCH</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Web Push Notifications</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Browser service-worker notifications, urgent exam flashes, and daily quiz reminders</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddPush" class="px-3.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-semibold text-white shadow-lg shadow-orange-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Send Push Alert
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Subscribed Devices</div>
+                  <div class="text-2xl font-bold text-white mt-1">${(config.summary?.activeSubscribers || 28400).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Chrome &amp; Firefox webpush endpoints</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Delivery Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary?.deliverySuccessRate || '98.8%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">FCM / WebPush TTL compliant</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-orange-400 uppercase tracking-wider">Total Sent Recorded</div>
+                  <div class="text-2xl font-bold text-orange-400 mt-1">${totalDelivered.toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Across active push broadcasts</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Average CTR</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">14.6%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Direct clickthrough to portal</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPushSearch" placeholder="Search by title, body narrative, audience, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${pushes.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Push ID</th>
+                      <th class="px-4 py-3">Notification Title &amp; Body</th>
+                      <th class="px-4 py-3">Target Audience</th>
+                      <th class="px-4 py-3">Action URL</th>
+                      <th class="px-4 py-3">Sent Time</th>
+                      <th class="px-4 py-3">Delivered</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No push notifications match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-orange-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-sm">
+                          <div class="text-white font-medium">${item.notificationTitle}</div>
+                          <div class="text-[10px] text-slate-400 line-clamp-1">${item.bodyText}</div>
+                        </td>
+                        <td class="px-4 py-3 text-orange-300">${item.targetAudience}</td>
+                        <td class="px-4 py-3 max-w-xs font-mono text-[10px] text-slate-300 truncate" title="${item.clickActionUrl}">${item.clickActionUrl}</td>
+                        <td class="px-4 py-3 text-[10px] text-slate-400">${item.sentTime}</td>
+                        <td class="px-4 py-3 font-mono font-bold text-white">${(item.deliveryCount || 0).toLocaleString()}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Archived'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Archive" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-orange-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Push Notification" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-orange-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Push Notification" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoPushSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoPushSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-009', 'Push Notifications Schema', {
+              id: 'string (unique push ID, e.g. PSH-03)',
+              notificationTitle: 'string (push toast headline)',
+              bodyText: 'string (concise notification body text)',
+              targetAudience: 'string (e.g. All WebPush Subscribers, Study Library Tagged)',
+              clickActionUrl: 'string (URL opened on click)',
+              sentTime: 'string (YYYY-MM-DD HH:MM)',
+              deliveryCount: 'number (number of devices receiving message)',
+              active: 'boolean (flag to show in recent alerts list)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPushNotificationsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset push notifications to factory defaults?')) {
+              store.resetPushNotificationsConfig();
+              config = store.getPushNotificationsConfig();
+              pushes = [...(config.pushes || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddPush')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Send Web Push Notification',
+              fields: [
+                { name: 'notificationTitle', label: 'Push Title', type: 'text', placeholder: 'e.g. OPSC OAS 2026 Answer Key Released', required: true },
+                { name: 'bodyText', label: 'Notification Body', type: 'textarea', placeholder: 'e.g. Download official answer keys and challenge questionable questions before Nov 15.', required: true },
+                { name: 'targetAudience', label: 'Target Audience', type: 'select', options: ['All WebPush Subscribers', 'Study Library Tagged', 'Paid Members Cohort', 'District Hub Balasore'], defaultValue: 'All WebPush Subscribers' },
+                { name: 'clickActionUrl', label: 'Click Action URL', type: 'text', placeholder: 'https://csodisha.com/jobs-careers/', defaultValue: 'https://csodisha.com/jobs-careers/', required: true }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'PSH-' + String(pushes.length + 1).padStart(2, '0'),
+                  notificationTitle: data.notificationTitle.trim(),
+                  bodyText: data.bodyText.trim(),
+                  targetAudience: data.targetAudience,
+                  clickActionUrl: data.clickActionUrl.trim(),
+                  sentTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                  deliveryCount: 28400,
+                  active: true
+                };
+                pushes.unshift(newRecord);
+                config.pushes = pushes;
+                config.items = pushes;
+                store.savePushNotificationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = pushes.find(p => p.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.pushes = pushes;
+                config.items = pushes;
+                store.savePushNotificationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = pushes.find(p => p.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Push Notification: ' + item.id,
+                fields: [
+                  { name: 'notificationTitle', label: 'Push Title', type: 'text', defaultValue: item.notificationTitle, required: true },
+                  { name: 'bodyText', label: 'Body Text', type: 'textarea', defaultValue: item.bodyText, required: true },
+                  { name: 'targetAudience', label: 'Target Audience', type: 'text', defaultValue: item.targetAudience, required: true },
+                  { name: 'clickActionUrl', label: 'Action URL', type: 'text', defaultValue: item.clickActionUrl, required: true },
+                  { name: 'deliveryCount', label: 'Delivered Count', type: 'number', defaultValue: String(item.deliveryCount || 0) }
+                ],
+                onSave: (data) => {
+                  item.notificationTitle = data.notificationTitle.trim();
+                  item.bodyText = data.bodyText.trim();
+                  item.targetAudience = data.targetAudience.trim();
+                  item.clickActionUrl = data.clickActionUrl.trim();
+                  item.deliveryCount = parseInt(data.deliveryCount, 10) || 0;
+                  config.pushes = pushes;
+                  config.items = pushes;
+                  store.savePushNotificationsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete push notification ' + id + '?')) {
+                pushes = pushes.filter(p => p.id !== id);
+                config.pushes = pushes;
+                config.items = pushes;
+                store.savePushNotificationsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-010: In-App Messages
+     */
+    function renderInAppMessagesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getInAppMessagesConfig();
+        let messages = Array.isArray(config.messages || config.items) ? [...(config.messages || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = messages.filter(m => m.active !== false).length;
+          const filtered = messages.filter(m => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (m.messageName || '').toLowerCase().includes(term) ||
+                   (m.headline || '').toLowerCase().includes(term) ||
+                   (m.modalType || '').toLowerCase().includes(term) ||
+                   (m.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">MODAL &amp; TOASTS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">In-App Messages &amp; Interstitials</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Bottom sheet toasts, centered announcements, and maintenance alerts shown inside portal</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddMessage" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New In-App Message
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Messages</div>
+                  <div class="text-2xl font-bold text-white mt-1">${messages.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Configured in-app experiences</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Active Campaigns</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Triggering on candidate navigation</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">Dismissible Rate</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">100%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Non-blocking user experience</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Impression Cap</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">Once / Session</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Local session storage guarded</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoInAppSearch" placeholder="Search by name, headline, modal type, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${messages.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Message ID</th>
+                      <th class="px-4 py-3">Campaign Name &amp; Headline</th>
+                      <th class="px-4 py-3">Modal Type</th>
+                      <th class="px-4 py-3 max-w-sm">Body Content</th>
+                      <th class="px-4 py-3">Frequency</th>
+                      <th class="px-4 py-3">Dismissible</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No in-app messages match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-cyan-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium">${item.messageName}</div>
+                          <div class="text-[10px] text-cyan-300">${item.headline}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">${item.modalType}</span>
+                        </td>
+                        <td class="px-4 py-3 max-w-sm text-slate-300">
+                          <p class="line-clamp-2 text-xs">${item.bodyContent}</p>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 text-[11px]">${item.displayFrequency}</td>
+                        <td class="px-4 py-3 text-emerald-400 font-medium">${item.dismissible ? 'Yes (X)' : 'Forced'}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit In-App Message" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Message" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoInAppSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoInAppSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-010', 'In-App Messages Schema', {
+              id: 'string (unique message ID, e.g. IAM-03)',
+              messageName: 'string (internal campaign moniker)',
+              modalType: 'string (Slide-In Bottom Toast | Center Dialog | Floating Pip)',
+              headline: 'string (dialog title displayed to aspirant)',
+              bodyContent: 'string (full instructional / informational text)',
+              dismissible: 'boolean (allows user close action)',
+              displayFrequency: 'string (Once Per Session | Once | Always)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportInAppMessagesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset in-app messages to factory defaults?')) {
+              store.resetInAppMessagesConfig();
+              config = store.getInAppMessagesConfig();
+              messages = [...(config.messages || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddMessage')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create In-App Message',
+              fields: [
+                { name: 'messageName', label: 'Message Campaign Name', type: 'text', placeholder: 'e.g. Free Mock Test Series 5 Now Open', required: true },
+                { name: 'headline', label: 'Headline Title', type: 'text', placeholder: 'e.g. Test Your Readiness: Prelims Paper 1 Live', required: true },
+                { name: 'modalType', label: 'Modal Type', type: 'select', options: ['Slide-In Bottom Toast', 'Center Dialog', 'Floating Banner'], defaultValue: 'Slide-In Bottom Toast' },
+                { name: 'bodyContent', label: 'Body Content', type: 'textarea', placeholder: 'Enter complete message text for candidates...', required: true },
+                { name: 'displayFrequency', label: 'Display Frequency', type: 'select', options: ['Once Per Session', 'Once', 'Always'], defaultValue: 'Once Per Session' },
+                { name: 'dismissible', label: 'Dismissible by User', type: 'select', options: ['true', 'false'], defaultValue: 'true' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'IAM-' + String(messages.length + 1).padStart(2, '0'),
+                  messageName: data.messageName.trim(),
+                  headline: data.headline.trim(),
+                  modalType: data.modalType,
+                  bodyContent: data.bodyContent.trim(),
+                  displayFrequency: data.displayFrequency,
+                  dismissible: data.dismissible === 'true',
+                  active: true
+                };
+                messages.unshift(newRecord);
+                config.messages = messages;
+                config.items = messages;
+                store.saveInAppMessagesConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = messages.find(m => m.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.messages = messages;
+                config.items = messages;
+                store.saveInAppMessagesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = messages.find(m => m.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit In-App Message: ' + item.id,
+                fields: [
+                  { name: 'messageName', label: 'Campaign Name', type: 'text', defaultValue: item.messageName, required: true },
+                  { name: 'headline', label: 'Headline', type: 'text', defaultValue: item.headline, required: true },
+                  { name: 'modalType', label: 'Modal Type', type: 'select', options: ['Slide-In Bottom Toast', 'Center Dialog', 'Floating Banner'], defaultValue: item.modalType },
+                  { name: 'bodyContent', label: 'Body Content', type: 'textarea', defaultValue: item.bodyContent, required: true },
+                  { name: 'displayFrequency', label: 'Frequency', type: 'select', options: ['Once Per Session', 'Once', 'Always'], defaultValue: item.displayFrequency },
+                  { name: 'dismissible', label: 'Dismissible', type: 'select', options: ['true', 'false'], defaultValue: item.dismissible ? 'true' : 'false' }
+                ],
+                onSave: (data) => {
+                  item.messageName = data.messageName.trim();
+                  item.headline = data.headline.trim();
+                  item.modalType = data.modalType;
+                  item.bodyContent = data.bodyContent.trim();
+                  item.displayFrequency = data.displayFrequency;
+                  item.dismissible = data.dismissible === 'true';
+                  config.messages = messages;
+                  config.items = messages;
+                  store.saveInAppMessagesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete message ' + id + '?')) {
+                messages = messages.filter(m => m.id !== id);
+                config.messages = messages;
+                config.items = messages;
+                store.saveInAppMessagesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-011: Announcement Banners
+     */
+    function renderAnnouncementBannersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAnnouncementBannersConfig();
+        let banners = Array.isArray(config.banners || config.items) ? [...(config.banners || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const activeCount = banners.filter(b => b.active).length;
+          const filtered = banners.filter(b => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (b.bannerText || '').toLowerCase().includes(term) ||
+                   (b.targetPages || '').toLowerCase().includes(term) ||
+                   (b.ctaLabel || '').toLowerCase().includes(term) ||
+                   (b.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">MARQUEE &amp; STRIPS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Announcement Banners</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Top-bar notification strips, high-visibility exam flash ribbons, and CTA links</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddBanner" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white shadow-lg shadow-amber-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Announcement
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Banners</div>
+                  <div class="text-2xl font-bold text-white mt-1">${banners.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Configured banner notifications</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Currently Live</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Rendered at top of site</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Priority Level</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">High Urgency</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Immediate aspirant visibility</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">CTA Click Rate</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">22.4%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Action button navigation</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoBannersSearch" placeholder="Search by text, target pages, CTA, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${banners.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Banner ID</th>
+                      <th class="px-4 py-3 max-w-sm">Banner Message</th>
+                      <th class="px-4 py-3">Theme</th>
+                      <th class="px-4 py-3">CTA Button &amp; URL</th>
+                      <th class="px-4 py-3">Target Pages</th>
+                      <th class="px-4 py-3">Position</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No announcement banners match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-amber-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-sm">
+                          <p class="text-white text-xs font-medium">${item.bannerText}</p>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.themeColor === 'amber' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                            item.themeColor === 'red' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
+                            'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                          }">${item.themeColor || 'amber'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="text-amber-400 font-medium">${item.ctaLabel}</div>
+                          <div class="text-[10px] text-slate-400 font-mono truncate max-w-xs">${item.ctaUrl}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 text-[11px]">${item.targetPages}</td>
+                        <td class="px-4 py-3 text-slate-400 text-[10px]">${item.position || 'Top Fixed Bar'}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Banner" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Banner" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoBannersSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoBannersSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-011', 'Announcement Banners Schema', {
+              id: 'string (unique banner identifier, e.g. BNR-04)',
+              bannerText: 'string (marquee or banner message body)',
+              themeColor: 'string (amber | blue | red | emerald)',
+              ctaLabel: 'string (button text, e.g. View Details)',
+              ctaUrl: 'string (destination URL)',
+              targetPages: 'string (e.g. All Pages, Schemes & Tools, Home & Jobs)',
+              position: 'string (Top Fixed Bar | Header Banner | Sticky Footer)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAnnouncementBannersManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset announcement banners to factory defaults?')) {
+              store.resetAnnouncementBannersConfig();
+              config = store.getAnnouncementBannersConfig();
+              banners = [...(config.banners || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddBanner')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Announcement Banner',
+              fields: [
+                { name: 'bannerText', label: 'Banner Announcement Text', type: 'text', placeholder: 'e.g. OSSSC Junior Assistant 2026 Admit Cards Now Live!', required: true },
+                { name: 'themeColor', label: 'Color Theme', type: 'select', options: ['amber', 'blue', 'red', 'emerald'], defaultValue: 'amber' },
+                { name: 'ctaLabel', label: 'Button CTA Text', type: 'text', placeholder: 'e.g. Download Now', defaultValue: 'View Details', required: true },
+                { name: 'ctaUrl', label: 'Destination Link', type: 'text', placeholder: 'e.g. /jobs-careers/?filter=osssc', defaultValue: '/jobs-careers/', required: true },
+                { name: 'targetPages', label: 'Target Pages', type: 'select', options: ['All Pages', 'Home & Jobs', 'Schemes & Tools', 'Study Library'], defaultValue: 'All Pages' },
+                { name: 'position', label: 'Position', type: 'select', options: ['Top Fixed Bar', 'Header Banner', 'Sticky Footer'], defaultValue: 'Top Fixed Bar' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'BNR-' + String(banners.length + 1).padStart(2, '0'),
+                  bannerText: data.bannerText.trim(),
+                  themeColor: data.themeColor,
+                  ctaLabel: data.ctaLabel.trim(),
+                  ctaUrl: data.ctaUrl.trim(),
+                  targetPages: data.targetPages,
+                  position: data.position,
+                  active: true
+                };
+                banners.unshift(newRecord);
+                config.banners = banners;
+                config.items = banners;
+                store.saveAnnouncementBannersConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = banners.find(b => b.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.banners = banners;
+                config.items = banners;
+                store.saveAnnouncementBannersConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = banners.find(b => b.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Banner: ' + item.id,
+                fields: [
+                  { name: 'bannerText', label: 'Banner Text', type: 'text', defaultValue: item.bannerText, required: true },
+                  { name: 'themeColor', label: 'Color Theme', type: 'select', options: ['amber', 'blue', 'red', 'emerald'], defaultValue: item.themeColor },
+                  { name: 'ctaLabel', label: 'CTA Label', type: 'text', defaultValue: item.ctaLabel, required: true },
+                  { name: 'ctaUrl', label: 'CTA URL', type: 'text', defaultValue: item.ctaUrl, required: true },
+                  { name: 'targetPages', label: 'Target Pages', type: 'text', defaultValue: item.targetPages, required: true },
+                  { name: 'position', label: 'Position', type: 'select', options: ['Top Fixed Bar', 'Header Banner', 'Sticky Footer'], defaultValue: item.position || 'Top Fixed Bar' }
+                ],
+                onSave: (data) => {
+                  item.bannerText = data.bannerText.trim();
+                  item.themeColor = data.themeColor;
+                  item.ctaLabel = data.ctaLabel.trim();
+                  item.ctaUrl = data.ctaUrl.trim();
+                  item.targetPages = data.targetPages.trim();
+                  item.position = data.position;
+                  config.banners = banners;
+                  config.items = banners;
+                  store.saveAnnouncementBannersConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete banner ' + id + '?')) {
+                banners = banners.filter(b => b.id !== id);
+                config.banners = banners;
+                config.items = banners;
+                store.saveAnnouncementBannersConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-012: Help Centre
+     */
+    function renderHelpCentreWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getHelpCentreConfig();
+        let articles = Array.isArray(config.articles || config.items) ? [...(config.articles || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalViews = articles.reduce((acc, a) => acc + (Number(a.views) || 0), 0);
+          const totalHelpful = articles.reduce((acc, a) => acc + (Number(a.helpfulCount) || 0), 0);
+          const filtered = articles.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.articleTitle || '').toLowerCase().includes(term) ||
+                   (a.category || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">KNOWLEDGE REPOSITORY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-012</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Help Centre &amp; FAQs</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Self-service guides, payment troubleshooting articles, and candidate FAQs</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddArticle" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Publish Article
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Articles</div>
+                  <div class="text-2xl font-bold text-white mt-1">${(config.summary?.totalArticles || 42).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${articles.length} featured active guides</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Total Article Views</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${totalViews.toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Self-service solutions provided</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Helpful Upvotes</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalHelpful.toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Candidate satisfaction 94.2%</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Deflection Rate</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">68.5%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Resolved without opening tickets</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoHelpSearch" placeholder="Search by article title, category, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${articles.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Article ID</th>
+                      <th class="px-4 py-3">Title &amp; Category</th>
+                      <th class="px-4 py-3">Read Time</th>
+                      <th class="px-4 py-3">Total Views</th>
+                      <th class="px-4 py-3">Helpful Votes</th>
+                      <th class="px-4 py-3">Last Updated</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No help articles match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-emerald-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 max-w-xs">
+                          <div class="text-white font-medium">${item.articleTitle}</div>
+                          <div class="text-[10px] text-emerald-300">${item.category}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">${item.readTime || '3 min'}</td>
+                        <td class="px-4 py-3 font-mono text-white font-bold">${(item.views || 0).toLocaleString()}</td>
+                        <td class="px-4 py-3 text-emerald-400 font-mono font-medium">👍 ${(item.helpfulCount || 0).toLocaleString()}</td>
+                        <td class="px-4 py-3 text-[10px] text-slate-400">${item.lastUpdated || ''}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Published' : 'Draft'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Published / Draft" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Article" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Article" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoHelpSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoHelpSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-012', 'Help Centre Schema', {
+              id: 'string (unique article identifier, e.g. HLP-04)',
+              articleTitle: 'string (headline title of guide / tutorial)',
+              category: 'string (General Navigation | Payments & Invoices | Study Library | Account Access)',
+              readTime: 'string (e.g. 3 min, 5 min)',
+              views: 'number (total page views recorded)',
+              helpfulCount: 'number (thumbs up count)',
+              lastUpdated: 'string (YYYY-MM-DD)',
+              active: 'boolean (publication flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportHelpCentreManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset help centre articles to factory defaults?')) {
+              store.resetHelpCentreConfig();
+              config = store.getHelpCentreConfig();
+              articles = [...(config.articles || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddArticle')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Publish Help Centre Article',
+              fields: [
+                { name: 'articleTitle', label: 'Article Title', type: 'text', placeholder: 'e.g. How to Submit Exam Center Change Request Online', required: true },
+                { name: 'category', label: 'Category', type: 'select', options: ['General Navigation', 'Payments & Invoices', 'Study Library', 'Account Access', 'District Study Centers'], defaultValue: 'General Navigation' },
+                { name: 'readTime', label: 'Estimated Read Time', type: 'text', placeholder: 'e.g. 4 min', defaultValue: '3 min' },
+                { name: 'active', label: 'Publish Immediately', type: 'select', options: ['true', 'false'], defaultValue: 'true' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'HLP-' + String(articles.length + 1).padStart(2, '0'),
+                  articleTitle: data.articleTitle.trim(),
+                  category: data.category,
+                  readTime: data.readTime.trim(),
+                  views: 1,
+                  helpfulCount: 0,
+                  lastUpdated: new Date().toISOString().slice(0, 10),
+                  active: data.active === 'true'
+                };
+                articles.unshift(newRecord);
+                config.articles = articles;
+                config.items = articles;
+                store.saveHelpCentreConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = articles.find(a => a.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.articles = articles;
+                config.items = articles;
+                store.saveHelpCentreConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = articles.find(a => a.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Article: ' + item.id,
+                fields: [
+                  { name: 'articleTitle', label: 'Article Title', type: 'text', defaultValue: item.articleTitle, required: true },
+                  { name: 'category', label: 'Category', type: 'select', options: ['General Navigation', 'Payments & Invoices', 'Study Library', 'Account Access', 'District Study Centers'], defaultValue: item.category },
+                  { name: 'readTime', label: 'Read Time', type: 'text', defaultValue: item.readTime || '3 min' },
+                  { name: 'views', label: 'Views Count', type: 'number', defaultValue: String(item.views || 0) },
+                  { name: 'helpfulCount', label: 'Helpful Votes', type: 'number', defaultValue: String(item.helpfulCount || 0) }
+                ],
+                onSave: (data) => {
+                  item.articleTitle = data.articleTitle.trim();
+                  item.category = data.category;
+                  item.readTime = data.readTime.trim();
+                  item.views = parseInt(data.views, 10) || 0;
+                  item.helpfulCount = parseInt(data.helpfulCount, 10) || 0;
+                  item.lastUpdated = new Date().toISOString().slice(0, 10);
+                  config.articles = articles;
+                  config.items = articles;
+                  store.saveHelpCentreConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete article ' + id + '?')) {
+                articles = articles.filter(a => a.id !== id);
+                config.articles = articles;
+                config.items = articles;
+                store.saveHelpCentreConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-013: Support Categories
+     */
+    function renderSupportCategoriesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSupportCategoriesConfig();
+        let categories = Array.isArray(config.categories || config.items) ? [...(config.categories || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const totalTickets = categories.reduce((acc, c) => acc + (Number(c.ticketCount) || 0), 0);
+          const activeCount = categories.filter(c => c.active !== false).length;
+          const filtered = categories.filter(c => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (c.categoryName || '').toLowerCase().includes(term) ||
+                   (c.departmentLead || '').toLowerCase().includes(term) ||
+                   (c.slaTarget || '').toLowerCase().includes(term) ||
+                   (c.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">ROUTING MATRIX</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-013</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Support Categories &amp; Routing</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Department assignment, SLA target guidelines, and inquiry classification taxonomies</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddCategory" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Category
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Categories</div>
+                  <div class="text-2xl font-bold text-white mt-1">${categories.length}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeCount} actively receiving tickets</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Total Categorized Tickets</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1">${totalTickets.toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Routed across departments</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Fastest SLA</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">2 Hours</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Platform Operations (OTP/Auth)</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Auto-Triage Rate</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">98.2%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Keyword machine classification</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoCategorySearch" placeholder="Search by category name, department lead, SLA, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${categories.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Category ID</th>
+                      <th class="px-4 py-3">Category Name</th>
+                      <th class="px-4 py-3">Department Lead</th>
+                      <th class="px-4 py-3">SLA Target</th>
+                      <th class="px-4 py-3">Ticket Volume</th>
+                      <th class="px-4 py-3">Default Priority</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No support categories match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-indigo-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 font-medium text-white">${item.categoryName}</td>
+                        <td class="px-4 py-3 text-indigo-300">${item.departmentLead}</td>
+                        <td class="px-4 py-3 font-mono text-slate-300">${item.slaTarget}</td>
+                        <td class="px-4 py-3 font-mono text-white font-bold">${item.ticketCount || 0}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.defaultPriority === 'High' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            'bg-slate-700 text-slate-300'
+                          }">${item.defaultPriority || 'Normal'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active !== false ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active / Disabled" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Category" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Category" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoCategorySearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoCategorySearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-013', 'Support Categories Schema', {
+              id: 'string (unique category identifier, e.g. CAT-05)',
+              categoryName: 'string (category title)',
+              departmentLead: 'string (responsible team or officer role)',
+              slaTarget: 'string (e.g. 2 Hours, 4 Hours, 12 Hours, 24 Hours)',
+              ticketCount: 'number (total ticket volume routed to category)',
+              defaultPriority: 'string (High | Normal | Critical)',
+              active: 'boolean (active routing flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSupportCategoriesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset support categories to factory defaults?')) {
+              store.resetSupportCategoriesConfig();
+              config = store.getSupportCategoriesConfig();
+              categories = [...(config.categories || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddCategory')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Support Category',
+              fields: [
+                { name: 'categoryName', label: 'Category Name', type: 'text', placeholder: 'e.g. Mock Test Technical Support', required: true },
+                { name: 'departmentLead', label: 'Department / Lead', type: 'text', placeholder: 'e.g. Test Engine Infrastructure Desk', required: true },
+                { name: 'slaTarget', label: 'SLA Target', type: 'select', options: ['2 Hours', '4 Hours', '8 Hours', '12 Hours', '24 Hours', '48 Hours'], defaultValue: '4 Hours' },
+                { name: 'defaultPriority', label: 'Default Priority', type: 'select', options: ['Normal', 'High', 'Critical'], defaultValue: 'Normal' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'CAT-' + String(categories.length + 1).padStart(2, '0'),
+                  categoryName: data.categoryName.trim(),
+                  departmentLead: data.departmentLead.trim(),
+                  slaTarget: data.slaTarget,
+                  ticketCount: 0,
+                  defaultPriority: data.defaultPriority,
+                  active: true
+                };
+                categories.unshift(newRecord);
+                config.categories = categories;
+                config.items = categories;
+                store.saveSupportCategoriesConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = categories.find(c => c.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.categories = categories;
+                config.items = categories;
+                store.saveSupportCategoriesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = categories.find(c => c.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Category: ' + item.id,
+                fields: [
+                  { name: 'categoryName', label: 'Category Name', type: 'text', defaultValue: item.categoryName, required: true },
+                  { name: 'departmentLead', label: 'Department Lead', type: 'text', defaultValue: item.departmentLead, required: true },
+                  { name: 'slaTarget', label: 'SLA Target', type: 'select', options: ['2 Hours', '4 Hours', '8 Hours', '12 Hours', '24 Hours', '48 Hours'], defaultValue: item.slaTarget },
+                  { name: 'defaultPriority', label: 'Default Priority', type: 'select', options: ['Normal', 'High', 'Critical'], defaultValue: item.defaultPriority },
+                  { name: 'ticketCount', label: 'Ticket Volume', type: 'number', defaultValue: String(item.ticketCount || 0) }
+                ],
+                onSave: (data) => {
+                  item.categoryName = data.categoryName.trim();
+                  item.departmentLead = data.departmentLead.trim();
+                  item.slaTarget = data.slaTarget;
+                  item.defaultPriority = data.defaultPriority;
+                  item.ticketCount = parseInt(data.ticketCount, 10) || 0;
+                  config.categories = categories;
+                  config.items = categories;
+                  store.saveSupportCategoriesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete category ' + id + '?')) {
+                categories = categories.filter(c => c.id !== id);
+                config.categories = categories;
+                config.items = categories;
+                store.saveSupportCategoriesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 10-014: Spam & Abuse Reports
+     */
+    function renderSpamAbuseWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSpamAbuseConfig();
+        let incidents = Array.isArray(config.incidents || config.items) ? [...(config.incidents || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const bannedCount = incidents.filter(i => (i.actionTaken || '').toLowerCase().includes('banned')).length;
+          const filtered = incidents.filter(i => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (i.suspectIdentifier || '').toLowerCase().includes(term) ||
+                   (i.abuseType || '').toLowerCase().includes(term) ||
+                   (i.ipAddress || '').toLowerCase().includes(term) ||
+                   (i.trapTrigger || '').toLowerCase().includes(term) ||
+                   (i.id || '').toLowerCase().includes(term);
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">SECURITY &amp; SHIELD</span>
+                    <span class="text-xs text-slate-400 font-mono">module-10-014</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Spam &amp; Abuse Reports</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Honeypot trap logs, edge rate-limiting blocks, and abusive email quarantine desk</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddIncident" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log Incident
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Spam Incidents</div>
+                  <div class="text-2xl font-bold text-white mt-1">${(config.summary?.totalSpamIncidents || 64).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${incidents.length} logged records</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Blocked Edge IPs</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${(config.summary?.blockedAddresses || 19).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${bannedCount} active ban rules</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Honeypot Trapped</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${(config.summary?.honeypotTrapped || 45).toLocaleString()}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Silent form submission drops</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Clean Deflection</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">100%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Zero spam leaked to live forums</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSpamSearch" placeholder="Search by suspect email/handle, abuse type, IP, or trap trigger..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${incidents.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Incident ID</th>
+                      <th class="px-4 py-3">Suspect Identifier</th>
+                      <th class="px-4 py-3">Abuse Type</th>
+                      <th class="px-4 py-3">Trap Trigger</th>
+                      <th class="px-4 py-3 font-mono">IP Address</th>
+                      <th class="px-4 py-3">Action Taken</th>
+                      <th class="px-4 py-3">Logged At</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No spam incidents match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-rose-400 font-semibold">${item.id}</td>
+                        <td class="px-4 py-3 text-white font-mono">${item.suspectIdentifier}</td>
+                        <td class="px-4 py-3 text-rose-300 font-medium">${item.abuseType}</td>
+                        <td class="px-4 py-3 text-slate-300">${item.trapTrigger}</td>
+                        <td class="px-4 py-3 font-mono text-slate-400">${item.ipAddress}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            (item.actionTaken || '').toLowerCase().includes('banned') ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            (item.actionTaken || '').toLowerCase().includes('quarantined') ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-700 text-slate-300'
+                          }">${item.actionTaken}</span>
+                        </td>
+                        <td class="px-4 py-3 text-[10px] text-slate-400">${item.loggedAt}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-action" data-id="${item.id}" title="Toggle Ban / Quarantined" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Incident" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Incident" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSpamSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSpamSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('module-10-014', 'Spam & Abuse Reports Schema', {
+              id: 'string (unique incident identifier, e.g. SPM-04)',
+              suspectIdentifier: 'string (email address, username, or bot handle)',
+              abuseType: 'string (Form Ingestion Flooding | Prohibited Exam Coaching Links | Rapid OTP Request Exhaustion)',
+              trapTrigger: 'string (Contact Form HoneyPot | Keyword Regex Filter | Rate Limiter)',
+              ipAddress: 'string (IPv4 or IPv6 address)',
+              actionTaken: 'string (Auto-Banned at Cloudflare Edge | Quarantined for Review | Temporary IP Cooldown)',
+              loggedAt: 'string (YYYY-MM-DD HH:MM)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSpamAbuseManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset spam and abuse logs to factory defaults?')) {
+              store.resetSpamAbuseConfig();
+              config = store.getSpamAbuseConfig();
+              incidents = [...(config.incidents || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddIncident')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Log Spam / Abuse Incident',
+              fields: [
+                { name: 'suspectIdentifier', label: 'Suspect Identifier (Email / Handle)', type: 'text', placeholder: 'e.g. spammer_bot@fakeexam.com', required: true },
+                { name: 'abuseType', label: 'Abuse Type', type: 'select', options: ['Form Ingestion Flooding', 'Prohibited Exam Coaching Links', 'Rapid OTP Request Exhaustion', 'Comment Spam Flooding', 'Credential Stuffing'], defaultValue: 'Form Ingestion Flooding' },
+                { name: 'trapTrigger', label: 'Trap Trigger', type: 'text', placeholder: 'e.g. Contact Form HoneyPot', defaultValue: 'Contact Form HoneyPot', required: true },
+                { name: 'ipAddress', label: 'IP Address', type: 'text', placeholder: 'e.g. 194.26.29.115', required: true },
+                { name: 'actionTaken', label: 'Action Taken', type: 'select', options: ['Auto-Banned at Cloudflare Edge', 'Quarantined for Review', 'Temporary IP Cooldown (24h)'], defaultValue: 'Auto-Banned at Cloudflare Edge' }
+              ],
+              onSave: (data) => {
+                const newRecord = {
+                  id: 'SPM-' + String(incidents.length + 1).padStart(2, '0'),
+                  suspectIdentifier: data.suspectIdentifier.trim(),
+                  abuseType: data.abuseType,
+                  trapTrigger: data.trapTrigger.trim(),
+                  ipAddress: data.ipAddress.trim(),
+                  actionTaken: data.actionTaken,
+                  loggedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+                  active: true
+                };
+                incidents.unshift(newRecord);
+                config.incidents = incidents;
+                config.items = incidents;
+                store.saveSpamAbuseConfig(config);
+                render();
+              }
+            });
+          });
+
+          // Row actions
+          container.querySelectorAll('button[data-action="toggle-action"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = incidents.find(i => i.id === id);
+              if (item) {
+                item.actionTaken = item.actionTaken.includes('Banned') ? 'Quarantined for Review' : 'Auto-Banned at Cloudflare Edge';
+                config.incidents = incidents;
+                config.items = incidents;
+                store.saveSpamAbuseConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = incidents.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Incident: ' + item.id,
+                fields: [
+                  { name: 'suspectIdentifier', label: 'Suspect Identifier', type: 'text', defaultValue: item.suspectIdentifier, required: true },
+                  { name: 'abuseType', label: 'Abuse Type', type: 'text', defaultValue: item.abuseType, required: true },
+                  { name: 'trapTrigger', label: 'Trap Trigger', type: 'text', defaultValue: item.trapTrigger, required: true },
+                  { name: 'ipAddress', label: 'IP Address', type: 'text', defaultValue: item.ipAddress, required: true },
+                  { name: 'actionTaken', label: 'Action Taken', type: 'select', options: ['Auto-Banned at Cloudflare Edge', 'Quarantined for Review', 'Temporary IP Cooldown (24h)'], defaultValue: item.actionTaken }
+                ],
+                onSave: (data) => {
+                  item.suspectIdentifier = data.suspectIdentifier.trim();
+                  item.abuseType = data.abuseType.trim();
+                  item.trapTrigger = data.trapTrigger.trim();
+                  item.ipAddress = data.ipAddress.trim();
+                  item.actionTaken = data.actionTaken;
+                  config.incidents = incidents;
+                  config.items = incidents;
+                  store.saveSpamAbuseConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete incident ' + id + '?')) {
+                incidents = incidents.filter(i => i.id !== id);
+                config.incidents = incidents;
+                config.items = incidents;
+                store.saveSpamAbuseConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-10-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-10-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 
