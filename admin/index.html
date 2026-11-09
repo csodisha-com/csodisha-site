@@ -1,799 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-[#081220] text-slate-100">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Super Admin Control Panel | Common Sense Odisha</title>
-  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./admin.css">
-  <!-- Immediate Authentication Route Guard -->
-  <script src="./admin-guard-v2.js?v=20261108"></script>
+  <script src="./admin-guard-v2.js?v=20261109"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS Odisha — Master Super Admin Console (241 Modules)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#081220',
+              slate: '#0f172a',
+              card: '#131f36',
+              border: '#1e2e4a',
+              emerald: '#0fa968',
+              emeraldHover: '#0d9259',
+              amber: '#f59e0b',
+              crimson: '#ef4444',
+              cyan: '#06b6d4',
+              indigo: '#6366f1'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #081220; }
+    ::-webkit-scrollbar-thumb { background: #1e2e4a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0fa968; }
+    .badge-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+  </style>
 </head>
-<body>
+<body class="h-full flex flex-col overflow-hidden font-sans antialiased bg-[#081220] selection:bg-brand-emerald selection:text-white">
 
-  <!-- Page Initialization Loader -->
-  <div class="admin-page-loader" id="admin-page-loader" role="status" aria-label="Loading admin dashboard">
-    <div class="admin-spinner" aria-hidden="true"></div>
-    <div class="admin-loader-text">Initializing Super Admin Workspace...</div>
-  </div>
+  <!-- ========================================================================= -->
+  <!-- TOP TELEMETRY & COMMAND BAR                                               -->
+  <!-- ========================================================================= -->
+  <header class="h-16 flex-shrink-0 bg-brand-slate border-b border-brand-border px-4 lg:px-6 flex items-center justify-between z-30 shadow-lg">
+    <!-- Brand & Mobile Toggle -->
+    <div class="flex items-center gap-3">
+      <button id="btnToggleSidebar" class="lg:hidden p-2 text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-emerald rounded-lg" aria-label="Toggle Navigation Drawer">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
 
-  <!-- Off-Canvas Mobile Drawer Backdrop -->
-  <div class="admin-backdrop" id="admin-backdrop" aria-hidden="true"></div>
-
-  <!-- Dashboard Shell -->
-  <div class="admin-shell">
-
-    <!-- Fixed Desktop & Off-Canvas Mobile Sidebar -->
-    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Super Administrator Navigation">
-      <div class="sidebar-header">
-        <a href="/admin/" class="sidebar-brand" title="CSO Super Admin">
-          <img src="/assets/images/cso-logo.svg" alt="CSO" width="96" height="34">
-          <div>
-            <div class="sidebar-brand-title">CS ODISHA</div>
-            <div class="sidebar-brand-sub">Super Control</div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-emerald to-emerald-800 flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-brand-emerald/20 border border-emerald-400/30">
+          CSO
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-100 tracking-tight text-sm lg:text-base leading-none">Common Sense Odisha</span>
+            <span class="px-1.5 py-0.5 text-[10px] uppercase font-mono font-bold tracking-wider bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded">v1.0 Pro</span>
           </div>
-        </a>
-        <button type="button" class="btn-sidebar-close" id="btn-sidebar-close" aria-label="Close navigation drawer">&times;</button>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Master Command Suite (241 Modules)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Edge & Session Telemetry -->
+    <div class="hidden xl:flex items-center gap-6 text-xs font-mono">
+      <!-- Edge Health -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081220] border border-brand-border">
+        <span class="relative flex h-2 w-2">
+          <span class="badge-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-emerald"></span>
+        </span>
+        <span class="text-slate-300">CF Edge: <strong class="text-brand-emerald font-semibold">SIN (Singapore)</strong></span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-400">RTT: <strong class="text-slate-200">14ms</strong></span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-400">D1: <strong class="text-cyan-400">Synced</strong></span>
       </div>
 
-      <nav class="sidebar-nav" aria-label="Super Admin Domains">
-        <span class="nav-heading">Operational Core</span>
-        <button type="button" class="nav-item active" data-tab="tab-overview" aria-current="page">
-          <span class="nav-icon" aria-hidden="true">📊</span>
-          <span>1. Overview &amp; Telemetry</span>
-        </button>
+      <!-- Live Session Duration Counter -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081220] border border-brand-border">
+        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-slate-400">Session:</span>
+        <span id="sessionTimer" class="text-brand-emerald font-semibold">00:00:00</span>
+      </div>
+    </div>
 
-        <button type="button" class="nav-item" data-tab="tab-users">
-          <span class="nav-icon" aria-hidden="true">👥</span>
-          <span>2. User Management</span>
-        </button>
+    <!-- Right Panic Actions & Admin Profile -->
+    <div class="flex items-center gap-2.5">
+      <!-- Quick Action: Purge Cache -->
+      <button id="btnPurgeCache" title="Purge Cloudflare Edge CDN Cache" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Purge CDN</span>
+      </button>
 
-        <button type="button" class="nav-item" data-tab="tab-roles">
-          <span class="nav-icon" aria-hidden="true">🛡️</span>
-          <span>3. Roles &amp; Permissions (RBAC)</span>
-        </button>
+      <!-- Quick Action: Maintenance Switch -->
+      <button id="btnMaintenanceToggle" title="Toggle Maintenance Mode" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+        <span class="w-2 h-2 rounded-full bg-slate-500" id="maintenanceStatusDot"></span>
+        <span id="maintenanceStatusText">Maint: OFF</span>
+      </button>
 
-        <button type="button" class="nav-item" data-tab="tab-cms">
-          <span class="nav-icon" aria-hidden="true">✍️</span>
-          <span>4. Content Studio &amp; Pages</span>
-        </button>
+      <!-- Super Admin Identity Pill -->
+      <div class="flex items-center gap-2 pl-2 border-l border-brand-border">
+        <div class="w-8 h-8 rounded-full bg-brand-emerald/20 border border-brand-emerald/50 flex items-center justify-center text-brand-emerald font-bold text-xs">
+          SA
+        </div>
+        <div class="hidden sm:block text-left text-xs">
+          <p class="font-bold text-slate-200 leading-tight">admin@csodisha.com</p>
+          <span class="text-[10px] text-brand-emerald uppercase font-mono font-semibold">Super Admin</span>
+        </div>
+      </div>
 
-        <span class="nav-heading">Platform Architecture</span>
-        <button type="button" class="nav-item" data-tab="tab-system">
-          <span class="nav-icon" aria-hidden="true">⚙️</span>
-          <span>5. System &amp; Integrations</span>
-        </button>
+      <button id="btnSignOut" title="Sign Out Securely" class="p-2 text-slate-400 hover:text-brand-crimson hover:bg-brand-crimson/10 rounded-lg transition" aria-label="Sign Out">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </header>
 
-        <button type="button" class="nav-item" data-tab="tab-security">
-          <span class="nav-icon" aria-hidden="true">🔒</span>
-          <span>6. Security &amp; Sessions</span>
-        </button>
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE LAYOUT (SIDEBAR + CONTENT)                                  -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex overflow-hidden relative">
 
-        <button type="button" class="nav-item" data-tab="tab-audit">
-          <span class="nav-icon" aria-hidden="true">📜</span>
-          <span>7. Immutable Audit Trail</span>
-        </button>
+    <!-- Mobile Overlay Backdrop -->
+    <div id="mobileDrawerBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-        <button type="button" class="nav-item" data-tab="tab-database">
-          <span class="nav-icon" aria-hidden="true">🗄️</span>
-          <span>8. Cloudflare D1 Database</span>
-        </button>
+    <!-- SIDEBAR: 19 FOLDERS & 241 MODULES ACCORDION -->
+    <aside id="sidebarConsole" class="w-72 lg:w-80 flex-shrink-0 bg-[#0b1628] border-r border-brand-border flex flex-col z-50 fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+      
+      <!-- Module Quick Search -->
+      <div class="p-3 border-b border-brand-border bg-brand-slate">
+        <div class="relative">
+          <input type="text" id="moduleSearchInput" placeholder="Filter 241 modules..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-emerald focus:ring-1 focus:ring-brand-emerald transition" autocomplete="off" />
+          <svg class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span id="searchCountBadge" class="hidden absolute right-2 top-2 px-1.5 py-0.5 text-[9px] font-mono bg-brand-emerald text-white font-bold rounded">0</span>
+        </div>
+      </div>
 
-        <span class="nav-heading">Emergency &amp; Broadcast</span>
-        <button type="button" class="nav-item" data-tab="tab-recovery">
-          <span class="nav-icon" aria-hidden="true">💾</span>
-          <span>9. Backup &amp; Recovery</span>
-        </button>
-
-        <button type="button" class="nav-item" data-tab="tab-notifications">
-          <span class="nav-icon" aria-hidden="true">📢</span>
-          <span>10. Broadcast &amp; Alerts</span>
-          <span class="nav-badge" id="sidebar-notif-badge">3</span>
-        </button>
+      <!-- Navigation Tree Container -->
+      <nav id="accordionNav" class="flex-1 overflow-y-auto px-2 py-3 space-y-1.5 text-xs" aria-label="19 Folders Master Tree">
+        <!-- Folders & Modules will be rendered here via JavaScript from master-navigation.json data -->
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <div class="sidebar-avatar" aria-hidden="true">SA</div>
-          <div class="sidebar-user-meta">
-            <span class="sidebar-user-name">Super Administrator</span>
-            <span class="sidebar-user-email">admin@csodisha.com</span>
-          </div>
+      <!-- Sidebar Footer Stats -->
+      <div class="p-3 bg-brand-slate border-t border-brand-border text-[11px] font-mono text-slate-400 flex items-center justify-between">
+        <div>
+          <span>Coverage: </span>
+          <strong class="text-brand-emerald">241 / 241</strong>
         </div>
-        <button type="button" class="btn-sidebar-signout" id="btn-signout">
-          <span aria-hidden="true">🔒</span>
-          <span>Sign Out</span>
-        </button>
+        <span class="text-slate-500">100% Mapped</span>
       </div>
     </aside>
 
-    <!-- Main Workspace -->
-    <div class="admin-workspace">
-
-      <!-- Topbar Header -->
-      <header class="admin-topbar">
-        <div class="topbar-left">
-          <button type="button" class="btn-mobile-toggle" id="btn-mobile-toggle" aria-label="Open navigation menu">
-            &#9776;
-          </button>
-          <h1 class="topbar-title" id="topbar-title">Dashboard Overview &amp; System Telemetry</h1>
+    <!-- CONTENT CANVAS -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#081220] overflow-y-auto">
+      
+      <!-- Dynamic Breadcrumb & Module Heading Bar -->
+      <div class="bg-brand-slate/60 border-b border-brand-border px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
+        <div>
+          <nav class="flex items-center gap-1.5 text-xs text-slate-400 mb-1" aria-label="Breadcrumbs">
+            <span class="text-slate-500">Console</span>
+            <span class="text-slate-600">/</span>
+            <span id="breadcrumbFolder" class="font-medium text-slate-300">Dashboard & Command Centre</span>
+            <span class="text-slate-600">/</span>
+            <span id="breadcrumbModule" class="font-semibold text-brand-emerald">Overview</span>
+          </nav>
+          <h1 id="activeModuleHeading" class="text-lg lg:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            Overview
+            <span id="activeModuleIdPill" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">module-01-001</span>
+          </h1>
         </div>
 
-        <div class="topbar-right">
-          <div class="system-status-indicator" title="Cloudflare Worker Edge Status">
-            <span class="status-pulse" aria-hidden="true"></span>
-            <span>Edge Node: SIN (Singapore)</span>
-          </div>
-
-          <div class="admin-badge-top" id="super-admin-badge">
-            <span aria-hidden="true">🛡️</span>
-            <span>SUPER ADMIN: admin@csodisha.com</span>
-            <span class="session-timer" id="session-timer-display" title="Active session duration">00:00:00</span>
-          </div>
+        <!-- Dynamic Action Buttons Header -->
+        <div id="moduleHeaderActions" class="flex items-center gap-2">
+          <!-- Populated by view controllers -->
         </div>
-      </header>
+      </div>
 
-      <!-- Dynamic Tab Content Modules -->
-      <main class="admin-content" id="admin-content-area">
+      <!-- Live Dynamic Workspace Canvas Container -->
+      <div id="workspaceRoot" class="p-4 lg:p-6 flex-1 space-y-6">
+        <!-- Dynamic content injected here -->
+      </div>
+    </main>
+  </div>
 
-        <!-- ===================================================================
-             Tab 1: Dashboard Overview & System Telemetry
-             =================================================================== -->
-        <section class="admin-module active" id="tab-overview" role="tabpanel" aria-label="Overview">
-          <!-- Metric Telemetry Cards -->
-          <div class="metrics-grid">
-            <div class="metric-card">
-              <div class="metric-header">
-                <span class="metric-label">Active Users</span>
-                <span class="metric-icon" aria-hidden="true">👥</span>
-              </div>
-              <div class="metric-val" id="metric-users-val">6</div>
-              <div class="metric-meta">5 Verified &bull; 1 Suspended</div>
-            </div>
+  <!-- ========================================================================= -->
+  <!-- MODALS & TOAST NOTIFICATION CONTAINER                                      -->
+  <!-- ========================================================================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
-            <div class="metric-card warning" id="metric-card-inquiries" style="cursor: pointer;" title="Click to view inquiries">
-              <div class="metric-header">
-                <span class="metric-label">Inquiries &amp; Forms</span>
-                <span class="metric-icon" aria-hidden="true">📬</span>
-              </div>
-              <div class="metric-val" id="metric-inquiries-val">0</div>
-              <div class="metric-meta" id="metric-inquiries-meta">Synced from Public Desk</div>
-            </div>
-
-            <div class="metric-card info">
-              <div class="metric-header">
-                <span class="metric-label">Cloudflare Edge Node</span>
-                <span class="metric-icon" aria-hidden="true">⚡</span>
-              </div>
-              <div class="metric-val">14 ms</div>
-              <div class="metric-meta">Bhubaneswar / SIN CDN Gateway</div>
-            </div>
-
-            <div class="metric-card saffron">
-              <div class="metric-header">
-                <span class="metric-label">D1 SQL Storage</span>
-                <span class="metric-icon" aria-hidden="true">🗄️</span>
-              </div>
-              <div class="metric-val">13.6 MB</div>
-              <div class="metric-meta">87,330 Queries in past 24h</div>
-            </div>
-          </div>
-
-          <!-- Panic Action Bar -->
-          <div class="panic-action-bar">
-            <div class="panic-info">
-              <span class="panic-icon" aria-hidden="true">🚨</span>
-              <div>
-                <div class="panic-title">Master Panic &amp; Quick Control Bar</div>
-                <div class="panic-desc">Direct executive actions affecting global site state and CDN caching.</div>
-              </div>
-            </div>
-            <div class="panic-buttons">
-              <button type="button" class="btn-saffron btn-sm" id="btn-quick-purge-cache">
-                <span>⚡ Purge CDN Cache</span>
-              </button>
-              <button type="button" class="btn-secondary btn-sm" id="btn-toggle-maintenance">
-                <span>🛠️ Toggle Maintenance Mode</span>
-              </button>
-              <button type="button" class="btn-danger btn-sm" id="btn-emergency-broadcast-quick">
-                <span>📢 Push Emergency Notice</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Live Activity Stream & Recent Inquiries -->
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Live Platform Activity Stream</h2>
-                <p class="card-desc">Real-time operational events across user registrations, inquiries, and security barriers.</p>
-              </div>
-              <button type="button" class="btn-secondary btn-sm" id="btn-refresh-overview">
-                <span>🔄 Refresh Feed</span>
-              </button>
-            </div>
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Timestamp (IST)</th>
-                    <th>Actor</th>
-                    <th>Event Category</th>
-                    <th>Target Entity</th>
-                    <th>Summary Details</th>
-                  </tr>
-                </thead>
-                <tbody id="overview-activity-table">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 2: User Management & Verification Desk
-             =================================================================== -->
-        <section class="admin-module" id="tab-users" role="tabpanel" aria-label="Users">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">User Registry &amp; Verification Desk</h2>
-                <p class="card-desc">Manage authenticated platform accounts, manual email approvals, and credential revocations.</p>
-              </div>
-              <div style="display: flex; gap: 8px;">
-                <input type="search" id="user-search-input" class="admin-input" placeholder="Search by name, email, or phone..." style="max-width: 260px;">
-                <button type="button" class="btn-secondary btn-sm" id="btn-export-users-csv">
-                  <span>📥 Export CSV</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email Address</th>
-                    <th>Phone</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Registered At</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="users-table-body">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- ===================================================================
-               Inquiries & Citizen Help Desk (cso_super_inquiries)
-               Accessible directly via #tab-inquiries or under #tab-users
-               =================================================================== -->
-          <div class="admin-card" id="tab-inquiries" style="margin-top: 24px;">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Public Inquiries &amp; Citizen Help Desk</h2>
-                <p class="card-desc">Incoming citizen submissions formatted from <code>contact.html</code> and synced in real-time with <code>cso_super_inquiries</code>.</p>
-              </div>
-              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                <input type="search" id="inquiry-search-input" class="admin-input" placeholder="Search by name, email, district, subject..." style="max-width: 280px;">
-                <button type="button" class="btn-secondary btn-sm" id="btn-export-inquiries-csv">
-                  <span>📥 Export Inquiries</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Inquiry ID</th>
-                    <th>Date / Time</th>
-                    <th>Citizen Name</th>
-                    <th>Contact Details</th>
-                    <th>District</th>
-                    <th>Subject</th>
-                    <th>Message</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="inquiries-table-body">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 3: Role & Permission Management (RBAC)
-             =================================================================== -->
-        <section class="admin-module" id="tab-roles" role="tabpanel" aria-label="Roles">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Role-Based Access Control (RBAC) Matrix</h2>
-                <p class="card-desc">Hierarchical delegation across 10 platform domains. Super Admin retains immutable supreme rights.</p>
-              </div>
-              <button type="button" class="btn-primary btn-sm" id="btn-open-delegate-modal">
-                <span>➕ Delegate Role</span>
-              </button>
-            </div>
-
-            <div class="rbac-grid" id="rbac-cards-container">
-              <!-- Injected via JavaScript -->
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 4: Content Management & Dynamic Page Builder
-             =================================================================== -->
-        <section class="admin-module" id="tab-cms" role="tabpanel" aria-label="Content">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Content Studio &amp; Dynamic Page Builder</h2>
-                <p class="card-desc">Create, edit, and publish dynamic guides, syllabus updates, and SEO meta descriptions.</p>
-              </div>
-              <button type="button" class="btn-primary btn-sm" id="btn-new-page">
-                <span>➕ Create New Page</span>
-              </button>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Page Title</th>
-                    <th>Slug / Route</th>
-                    <th>Template</th>
-                    <th>Status</th>
-                    <th>Last Updated</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="cms-pages-table-body">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 5: System Management & Integrations
-             =================================================================== -->
-        <section class="admin-module" id="tab-system" role="tabpanel" aria-label="System">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Global Feature Flags &amp; Master Toggles</h2>
-                <p class="card-desc">Manage registration gates, inquiry dispatch throttling, and maintenance mode.</p>
-              </div>
-              <button type="button" class="btn-primary btn-sm" id="btn-save-system-flags">
-                <span>💾 Save System State</span>
-              </button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-              <div style="background: var(--admin-surface-card); padding: 16px; border-radius: 8px; border: 1px solid var(--admin-border);">
-                <label style="display: flex; align-items: center; justify-content: space-between; font-weight: 600;">
-                  <span>Public User Registration</span>
-                  <input type="checkbox" id="flag-registration" style="width: 20px; height: 20px; accent-color: var(--admin-emerald-bright);">
-                </label>
-                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 6px;">Controls whether new visitors can sign up for community accounts.</p>
-              </div>
-
-              <div style="background: var(--admin-surface-card); padding: 16px; border-radius: 8px; border: 1px solid var(--admin-border);">
-                <label style="display: flex; align-items: center; justify-content: space-between; font-weight: 600;">
-                  <span>Contact Form Dispatch</span>
-                  <input type="checkbox" id="flag-inquiries" style="width: 20px; height: 20px; accent-color: var(--admin-emerald-bright);">
-                </label>
-                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 6px;">Accepts new contact submissions into the administrator pipeline.</p>
-              </div>
-
-              <div style="background: var(--admin-surface-card); padding: 16px; border-radius: 8px; border: 1px solid var(--admin-border);">
-                <label style="display: flex; align-items: center; justify-content: space-between; font-weight: 600;">
-                  <span>Maintenance Mode</span>
-                  <input type="checkbox" id="flag-maintenance" style="width: 20px; height: 20px; accent-color: var(--admin-saffron);">
-                </label>
-                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 6px;">Bypassed automatically for authenticated Super Admin session.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <h2 class="card-title">Node Integration Hub &amp; SMTP Relay</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-              <div class="form-group">
-                <label class="form-label" for="sys-inbound-email">Primary Administrative Mail Routing</label>
-                <input type="email" id="sys-inbound-email" class="admin-input" value="admin@csodisha.com" readonly>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="sys-forwarding-email">Forwarding Destination (Gmail Routing)</label>
-                <input type="email" id="sys-forwarding-email" class="admin-input" value="cso.team.odisha@gmail.com">
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-              <div class="form-group">
-                <label class="form-label" for="sys-smtp-host">Outbound SMTP Host (Relay)</label>
-                <input type="text" id="sys-smtp-host" class="admin-input" value="smtp.gmail.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="sys-smtp-port">Port</label>
-                <input type="number" id="sys-smtp-port" class="admin-input" value="587">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="sys-head-code">Custom Head Code Injection (Analytics / Metas)</label>
-              <textarea id="sys-head-code" class="admin-textarea" rows="4"></textarea>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 6: Security Centre & Active Session Monitor
-             =================================================================== -->
-        <section class="admin-module" id="tab-security" role="tabpanel" aria-label="Security">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Active Browser Sessions</h2>
-                <p class="card-desc">Inspect all currently active sessions with IP geolocation and device metadata.</p>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Session ID</th>
-                    <th>User</th>
-                    <th>IP Address &amp; Geo</th>
-                    <th>Browser / Device</th>
-                    <th>Login Time (UTC)</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="security-sessions-table">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Threat Defense &amp; IP Rules</h2>
-                <p class="card-desc">Block malicious automated scanners or whitelist administrative access subnets.</p>
-              </div>
-              <button type="button" class="btn-primary btn-sm" id="btn-add-ip-rule">
-                <span>➕ Add IP Rule</span>
-              </button>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>IP / Subnet CIDR</th>
-                    <th>Action</th>
-                    <th>Reason / Notes</th>
-                    <th>Added Date</th>
-                  </tr>
-                </thead>
-                <tbody id="security-ip-table">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 7: Immutable Audit Trail & Action Logs
-             =================================================================== -->
-        <section class="admin-module" id="tab-audit" role="tabpanel" aria-label="Audit">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Immutable Administrative Audit Trail</h2>
-                <p class="card-desc">Cryptographically chronological log of all executive actions across csodisha.com.</p>
-              </div>
-              <div style="display: flex; gap: 8px;">
-                <input type="search" id="audit-search-input" class="admin-input" placeholder="Filter audit events..." style="max-width: 240px;">
-                <button type="button" class="btn-secondary btn-sm" id="btn-export-audit-json">
-                  <span>📥 Export JSON</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Log ID</th>
-                    <th>Timestamp (UTC / IST)</th>
-                    <th>Actor</th>
-                    <th>Event Type</th>
-                    <th>Target</th>
-                    <th>Origin IP</th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody id="audit-table-body">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 8: Cloudflare D1 Monitoring & Schema Inspector
-             =================================================================== -->
-        <section class="admin-module" id="tab-database" role="tabpanel" aria-label="Database">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Cloudflare D1 SQL Telemetry &amp; Schema Inspector</h2>
-                <p class="card-desc">Database: <code>cso-primary-d1-prod</code> &bull; Region: <code>ap-south-1 (Bhubaneswar Edge)</code></p>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Table Name</th>
-                    <th>Estimated Row Count</th>
-                    <th>Columns</th>
-                    <th>Allocated Size</th>
-                    <th>Integrity Check</th>
-                  </tr>
-                </thead>
-                <tbody id="d1-tables-body">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Sandboxed Read-Only SQL Query Console</h2>
-                <p class="card-desc">Execute safe <code>SELECT</code> queries against replica edge state.</p>
-              </div>
-              <button type="button" class="btn-primary btn-sm" id="btn-run-sql">
-                <span>▶ Run Query</span>
-              </button>
-            </div>
-            <textarea id="sql-query-input" class="admin-textarea" rows="3">SELECT id, name, email, status FROM users LIMIT 5;</textarea>
-            <div class="code-console" id="sql-query-output">
-              // Click "Run Query" to inspect live result sets.
-            </div>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 9: Backup & Disaster Recovery
-             =================================================================== -->
-        <section class="admin-module" id="tab-recovery" role="tabpanel" aria-label="Recovery">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Production State Backup &amp; Snapshots</h2>
-                <p class="card-desc">Export complete database states, CMS pages, configuration flags, and audit records.</p>
-              </div>
-              <button type="button" class="btn-primary btn-sm" id="btn-create-snapshot">
-                <span>💾 Create Full Platform Snapshot</span>
-              </button>
-            </div>
-            <p style="font-size: 0.88rem; color: var(--admin-text-secondary);">
-              Snapshots contain full JSON states conforming to <code>CSO-SUPER-2026.11</code> schema. Recommended prior to major syllabus updates or deployment refactors.
-            </p>
-          </div>
-
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Emergency Disaster Recovery Console</h2>
-                <p class="card-desc">Restore state from an authenticated backup snapshot or invoke emergency protocols.</p>
-              </div>
-              <button type="button" class="btn-danger btn-sm" id="btn-panic-lockdown">
-                <span>🚨 Enforce Panic Lockdown</span>
-              </button>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="snapshot-file-input">Drop or Select Snapshot File (.json)</label>
-              <input type="file" id="snapshot-file-input" class="admin-input" accept=".json">
-            </div>
-            <button type="button" class="btn-secondary" id="btn-restore-snapshot">
-              <span>🔄 Restore from Snapshot</span>
-            </button>
-          </div>
-        </section>
-
-        <!-- ===================================================================
-             Tab 10: Notification Hub & Broadcast Centre
-             =================================================================== -->
-        <section class="admin-module" id="tab-notifications" role="tabpanel" aria-label="Notifications">
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Administrative Alert Feed</h2>
-                <p class="card-desc">Critical alerts regarding edge nodes, failed security challenges, and visitor surges.</p>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Severity</th>
-                    <th>Alert Title</th>
-                    <th>Description</th>
-                    <th>Timestamp (UTC)</th>
-                  </tr>
-                </thead>
-                <tbody id="notifications-table-body">
-                  <!-- Injected via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Public Homepage Broadcast Engine</h2>
-                <p class="card-desc">Publish emergency notices, exam admit card updates, or alerts directly to the public home portal.</p>
-              </div>
-              <button type="button" class="btn-danger btn-sm" id="btn-takedown-broadcast">
-                <span>✕ Take Down Live Banner</span>
-              </button>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="broadcast-headline-input">Announcement Headline</label>
-              <input type="text" id="broadcast-headline-input" class="admin-input" placeholder="e.g. OSSC Combined Recruitment Exam 2026: Admit Cards Available Now">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="broadcast-link-input">Action Destination URL</label>
-              <input type="text" id="broadcast-link-input" class="admin-input" placeholder="/jobs-careers/ or https://ossc.gov.in">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="broadcast-severity-select">Severity Level &amp; Visual Accent</label>
-              <select id="broadcast-severity-select" class="admin-select">
-                <option value="info">Info: #0fa968 (Odisha Emerald)</option>
-                <option value="notice">Notice: #d97706 (Amber)</option>
-                <option value="urgent">Urgent: #dc2626 (Crimson)</option>
-              </select>
-            </div>
-
-            <button type="button" class="btn-primary" id="btn-publish-broadcast">
-              <span>📢 Publish to Homepage Portal</span>
-            </button>
-          </div>
-        </section>
-
-      </main>
+  <!-- Generic Global Action Modal -->
+  <div id="globalModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-slate border border-brand-border rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-5 py-4 border-b border-brand-border flex items-center justify-between">
+        <h3 id="modalTitle" class="font-bold text-white text-base">Modal Window</h3>
+        <button id="btnModalClose" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <div id="modalBody" class="p-5 overflow-y-auto space-y-4 text-xs text-slate-300 flex-1"></div>
+      <div id="modalFooter" class="px-5 py-3 border-t border-brand-border bg-[#081220] flex items-center justify-end gap-2"></div>
     </div>
   </div>
 
-  <!-- Page Builder Modal -->
-  <div class="admin-modal" id="modal-page-builder" role="dialog" aria-modal="true" aria-labelledby="builder-title">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title" id="builder-title">Content Studio Page Editor</h3>
-        <button type="button" class="modal-close" id="btn-close-builder" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label" for="builder-page-title">Page Title</label>
-          <input type="text" id="builder-page-title" class="admin-input" placeholder="e.g. Odisha Civil Services Preparation Guide">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="builder-page-slug">Slug Route</label>
-          <input type="text" id="builder-page-slug" class="admin-input" placeholder="/study/ocs-guide-2026">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="builder-template-select">Template Selector</label>
-          <select id="builder-template-select" class="admin-select">
-            <option value="Standard Article">Standard Article</option>
-            <option value="Syllabus Guide">Syllabus Guide</option>
-            <option value="Full-Width Resource">Full-Width Resource</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="builder-seo-desc">SEO Meta Description</label>
-          <textarea id="builder-seo-desc" class="admin-textarea" rows="2" placeholder="Search engine description..."></textarea>
-        </div>
-
-        <div class="split-editor">
-          <div class="form-group">
-            <label class="form-label" for="builder-html-content">HTML / Markdown Content</label>
-            <textarea id="builder-html-content" class="admin-textarea" rows="8"><h2>Mastering the OCS Examination</h2><p>Comprehensive guide for Odisha aspirants.</p></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Live HTML Preview</label>
-            <div class="editor-preview" id="builder-preview-box"></div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="btn-save-draft">Save Draft</button>
-        <button type="button" class="btn-primary" id="btn-publish-page">Publish to Production</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Role Delegation Modal -->
-  <div class="admin-modal" id="modal-role-delegate" role="dialog" aria-modal="true" aria-labelledby="delegate-title">
-    <div class="modal-dialog" style="max-width: 500px;">
-      <div class="modal-header">
-        <h3 class="modal-title" id="delegate-title">Delegate Role &amp; Permissions</h3>
-        <button type="button" class="modal-close" id="btn-close-delegate" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label" for="delegate-user-select">Select User</label>
-          <select id="delegate-user-select" class="admin-select"></select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="delegate-role-select">Target Role</label>
-          <select id="delegate-role-select" class="admin-select">
-            <option value="Administrator">Administrator</option>
-            <option value="Moderator">Moderator</option>
-            <option value="Support Desk">Support Desk</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="btn-cancel-delegate">Cancel</button>
-        <button type="button" class="btn-primary" id="btn-confirm-delegate">Confirm Delegation</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Client-Side State Scripts -->
-  <script src="./super-store.js?v=20261108"></script>
-  <script src="./admin.js?v=20261108"></script>
-
-  <!-- Unconditional Loader Dismissal Fail-Safe -->
-  <script>
-    (function() {
-      function forceHideLoader() {
-        const loader = document.getElementById('admin-page-loader');
-        if (loader) {
-          loader.classList.add('fade-out');
-          setTimeout(() => { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 400);
-        }
-      }
-      if (document.readyState === 'complete') {
-        setTimeout(forceHideLoader, 600);
-      } else {
-        window.addEventListener('load', () => setTimeout(forceHideLoader, 600));
-        setTimeout(forceHideLoader, 1500);
-      }
-    })();
-  </script>
+    <!-- Client-Side State & Controller Scripts -->
+  <script src="./super-store.js?v=20261109"></script>
+  <script src="./admin.js?v=20261109"></script>
 </body>
 </html>
