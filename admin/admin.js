@@ -301,6 +301,8 @@ async function loadMasterNavigation() {
         renderVisualPageBuilderWorkspace();
       } else if (moduleId === 'module-02-004') {
         renderHomepageBuilderWorkspace();
+      } else if (moduleId === 'module-02-005') {
+        renderLandingPagesWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -2540,6 +2542,394 @@ async function loadMasterNavigation() {
           }
           showToast("Homepage layout & copy published successfully!", "success");
         }
+      });
+    }
+
+    /**
+     * VIEW 2e: Campaign Landing Pages Hub (module-02-005)
+     */
+    function renderLandingPagesWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Landing Pages (module-02-005)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnCreateLandingPageTop" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Create Landing Page
+          </button>
+          <button id="btnExportLandingPages" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Campaigns (JSON)
+          </button>
+        </div>
+      `;
+
+      // Workspace Template
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Special Examination & Scholarship Landing Pages
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-005</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">High-converting dedicated campaign gateways for targeted student acquisition, admit card releases, and scholarship drives.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Campaign Engine Active
+                </span>
+              </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Active Live Campaigns</span>
+                <div id="kpiActiveCampaigns" class="text-xl font-bold font-mono text-emerald-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Public gateways live</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Total Campaign Visits</span>
+                <div id="kpiTotalVisits" class="text-xl font-bold font-mono text-white mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Aggregate traffic</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Average Conversion Rate</span>
+                <div id="kpiAvgConversion" class="text-xl font-bold font-mono text-cyan-400 mt-1">-- %</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">CTA click-throughs</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Pipeline / Drafts</span>
+                <div id="kpiDraftCampaigns" class="text-xl font-bold font-mono text-amber-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Upcoming promotions</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters & Search Controls -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-6 relative">
+                <input id="landingSearchInput" type="text" placeholder="Search campaign title or slug (e.g. ossc-cgl or Teaching)..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+
+              <div class="sm:col-span-3">
+                <select id="landingCategoryFilter" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                  <option value="ALL">All Categories</option>
+                  <option value="OSSC">OSSC Exams</option>
+                  <option value="OPSC">OPSC Civil Services</option>
+                  <option value="Teaching">Teaching & TET</option>
+                  <option value="Scholarships">Scholarships</option>
+                  <option value="General">General Outreach</option>
+                </select>
+              </div>
+
+              <div class="sm:col-span-3">
+                <select id="landingStatusFilter" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                  <option value="ALL">All Statuses</option>
+                  <option value="LIVE">Live Only</option>
+                  <option value="DRAFT">Draft Only</option>
+                  <option value="PAUSED">Paused Only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Directory Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Landing Page Inventory
+                <span id="landingCountBadge" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">-- campaigns</span>
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono">Live Ingestion from cso_landing_pages_store</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Campaign ID</th>
+                    <th class="py-2.5 px-4 font-semibold">Title & Route Slug</th>
+                    <th class="py-2.5 px-4 font-semibold">Category</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Status</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Views</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Conversions</th>
+                    <th class="py-2.5 px-4 font-semibold">Expiry Date</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="landingTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Filter State
+      let searchKeyword = '';
+      let selectedCategory = 'ALL';
+      let selectedStatus = 'ALL';
+
+      function updateKpis() {
+        const allPages = (window.CSOSuperStore && typeof window.CSOSuperStore.getLandingPages === 'function')
+          ? window.CSOSuperStore.getLandingPages('ALL', 'ALL', '')
+          : [];
+
+        const liveCount = allPages.filter(p => p.status === 'Live').length;
+        const draftCount = allPages.filter(p => p.status === 'Draft').length;
+        const totalVisits = allPages.reduce((acc, p) => acc + (p.views || 0), 0);
+        const totalConversions = allPages.reduce((acc, p) => acc + (p.conversions || 0), 0);
+        const avgRate = totalVisits > 0 ? ((totalConversions / totalVisits) * 100).toFixed(1) : '0.0';
+
+        const kpiLive = document.getElementById('kpiActiveCampaigns');
+        if (kpiLive) kpiLive.textContent = liveCount;
+
+        const kpiVisits = document.getElementById('kpiTotalVisits');
+        if (kpiVisits) kpiVisits.textContent = totalVisits.toLocaleString();
+
+        const kpiAvg = document.getElementById('kpiAvgConversion');
+        if (kpiAvg) kpiAvg.textContent = `${avgRate}%`;
+
+        const kpiDraft = document.getElementById('kpiDraftCampaigns');
+        if (kpiDraft) kpiDraft.textContent = draftCount;
+      }
+
+      function renderTableRows() {
+        const tbody = document.getElementById('landingTableBody');
+        const badge = document.getElementById('landingCountBadge');
+        if (!tbody) return;
+
+        const pages = (window.CSOSuperStore && typeof window.CSOSuperStore.getLandingPages === 'function')
+          ? window.CSOSuperStore.getLandingPages(selectedCategory, selectedStatus, searchKeyword)
+          : [];
+
+        if (badge) badge.textContent = `${pages.length} campaigns`;
+
+        if (pages.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="py-8 text-center text-slate-500 font-mono text-xs">
+                No landing campaigns match the selected criteria.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = pages.map(p => {
+          let statusBadge = '';
+          if (p.status === 'Live') {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">LIVE</span>`;
+          } else if (p.status === 'Paused') {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">PAUSED</span>`;
+          } else {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">DRAFT</span>`;
+          }
+
+          const catBadgeColor = p.category === 'OSSC' ? 'text-cyan-400 border-cyan-800/60 bg-cyan-950/40'
+            : p.category === 'Teaching' ? 'text-indigo-400 border-indigo-800/60 bg-indigo-950/40'
+            : p.category === 'Scholarships' ? 'text-emerald-400 border-emerald-800/60 bg-emerald-950/40'
+            : 'text-slate-300 border-slate-700 bg-slate-800/60';
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">${p.id}</td>
+              <td class="py-2.5 px-4">
+                <div class="font-bold text-white">${p.title}</div>
+                <div class="text-[10px] font-mono text-slate-400 mt-0.5">${p.path}</div>
+              </td>
+              <td class="py-2.5 px-4 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${catBadgeColor}">
+                  ${p.category}
+                </span>
+              </td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">${statusBadge}</td>
+              <td class="py-2.5 px-4 text-right font-mono font-bold text-slate-200 whitespace-nowrap">${(p.views || 0).toLocaleString()}</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="font-mono font-bold text-emerald-400">${p.conversions || 0}</div>
+                <div class="text-[10px] font-mono text-slate-500">${p.conversionRate || '0.0%'}</div>
+              </td>
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-xs whitespace-nowrap">${p.expiry || 'Open'}</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button data-id="${p.id}" class="btn-toggle-lp-status px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-mono text-[11px] font-semibold border border-brand-border transition" title="Toggle Live/Paused">
+                    ${p.status === 'Live' ? 'Pause' : 'Activate'}
+                  </button>
+                  <a href="${p.path}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-0.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 font-mono text-[11px] font-semibold border border-brand-border transition">
+                    Preview &nearr;
+                  </a>
+                  <button data-id="${p.id}" class="btn-delete-lp px-2 py-1 rounded bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 font-mono text-[11px] font-semibold border border-rose-800/50 transition" title="Delete Campaign">
+                    &times;
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Action Buttons
+        tbody.querySelectorAll('.btn-toggle-lp-status').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.toggleLandingPageStatus === 'function') {
+              const updated = window.CSOSuperStore.toggleLandingPageStatus(id);
+              if (updated) {
+                showToast(`Campaign ${id} is now ${updated.status}`, "info");
+                updateKpis();
+                renderTableRows();
+              }
+            }
+          });
+        });
+
+        tbody.querySelectorAll('.btn-delete-lp').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            openModal(`Delete Campaign ${id}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <p class="text-slate-300">Are you sure you want to delete this landing page campaign record? This action cannot be undone.</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmDeleteLpModal" class="px-3 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Confirm Delete</button>
+            `);
+
+            document.getElementById('btnConfirmDeleteLpModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.deleteLandingPage === 'function') {
+                window.CSOSuperStore.deleteLandingPage(id);
+                showToast(`Campaign ${id} deleted`, "warning");
+                updateKpis();
+                renderTableRows();
+              }
+            });
+          });
+        });
+      }
+
+      // Initial Renders
+      updateKpis();
+      renderTableRows();
+
+      // Search & Filters Listeners
+      const searchInput = document.getElementById('landingSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchKeyword = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      const catSelect = document.getElementById('landingCategoryFilter');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => {
+          selectedCategory = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      const statusSelect = document.getElementById('landingStatusFilter');
+      if (statusSelect) {
+        statusSelect.addEventListener('change', (e) => {
+          selectedStatus = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      // Top Actions Listeners
+      document.getElementById('btnExportLandingPages')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportLandingPagesReport === 'function') {
+          const filename = window.CSOSuperStore.exportLandingPagesReport();
+          showToast(`Exported campaigns: ${filename}`, "success");
+        }
+      });
+
+      document.getElementById('btnCreateLandingPageTop')?.addEventListener('click', () => {
+        openModal("Create New Landing Page Campaign", `
+          <div class="space-y-4 font-sans text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Campaign Title <span class="text-rose-400">*</span></label>
+              <input id="inputNewLpTitle" type="text" placeholder="e.g. OPSC OAS Prelims 2026 Booster" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Target Route Slug <span class="text-rose-400">*</span></label>
+              <div class="flex items-center">
+                <span class="px-2 py-2 rounded-l bg-slate-900 border border-r-0 border-brand-border text-slate-500 font-mono text-[11px]">/landing/</span>
+                <input id="inputNewLpSlug" type="text" placeholder="opsc-oas-2026" class="w-full bg-[#081220] border border-brand-border rounded-r px-3 py-2 text-white text-xs font-mono">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Category</label>
+                <select id="selectNewLpCategory" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs">
+                  <option value="OSSC">OSSC Exams</option>
+                  <option value="OPSC">OPSC Civil Services</option>
+                  <option value="Teaching">Teaching & TET</option>
+                  <option value="Scholarships">Scholarships</option>
+                  <option value="General">General Outreach</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Campaign Expiry Date</label>
+                <input id="inputNewLpExpiry" type="date" value="2026-12-31" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+              </div>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Primary CTA Destination URL</label>
+              <input id="inputNewLpCtaUrl" type="text" value="/resources.html" class="w-full bg-[#081220] border border-brand-border rounded px-3 py-2 text-white text-xs font-mono">
+            </div>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnSubmitNewLpModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Create Campaign</button>
+        `);
+
+        // Auto slug generation inside modal
+        const titleInput = document.getElementById('inputNewLpTitle');
+        const slugInput = document.getElementById('inputNewLpSlug');
+        if (titleInput && slugInput) {
+          titleInput.addEventListener('input', () => {
+            slugInput.value = titleInput.value.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+          });
+        }
+
+        document.getElementById('btnSubmitNewLpModal')?.addEventListener('click', () => {
+          const title = titleInput?.value.trim();
+          const slug = slugInput?.value.trim();
+          const category = document.getElementById('selectNewLpCategory')?.value;
+          const expiry = document.getElementById('inputNewLpExpiry')?.value;
+          const ctaUrl = document.getElementById('inputNewLpCtaUrl')?.value.trim();
+
+          if (!title) {
+            showToast("Please provide a campaign title.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.createLandingPage === 'function') {
+            const created = window.CSOSuperStore.createLandingPage({
+              title,
+              slug,
+              category,
+              expiry,
+              ctaUrl
+            });
+            closeModal();
+            showToast(`Campaign "${created.title}" created successfully!`, "success");
+            updateKpis();
+            renderTableRows();
+          }
+        });
       });
     }
 

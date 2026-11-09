@@ -1421,6 +1421,168 @@
       return config;
     },
 
+    // 17. Landing Page Campaigns Management Engine (module-02-005)
+    getLandingPages(filterCategory = 'ALL', filterStatus = 'ALL', search = '') {
+      let pages = null;
+      try {
+        const raw = localStorage.getItem('cso_landing_pages_store');
+        if (raw) pages = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!pages || !Array.isArray(pages) || pages.length === 0) {
+        pages = [
+          {
+            id: 'LP-01',
+            title: 'OSSC CGL 2026 Preliminary Gateway',
+            slug: 'ossc-cgl-2026',
+            path: '/landing/ossc-cgl-2026.html',
+            category: 'OSSC',
+            status: 'Live',
+            views: 1840,
+            conversions: 261,
+            conversionRate: '14.2%',
+            expiry: '2026-12-31',
+            createdAt: Date.now() - 604800000
+          },
+          {
+            id: 'LP-02',
+            title: 'OTET & OSSTET Teaching Entrance Special',
+            slug: 'odisha-tet-2026',
+            path: '/landing/odisha-tet-2026.html',
+            category: 'Teaching',
+            status: 'Live',
+            views: 1210,
+            conversions: 224,
+            conversionRate: '18.5%',
+            expiry: '2026-11-30',
+            createdAt: Date.now() - 1209600000
+          },
+          {
+            id: 'LP-03',
+            title: 'Medhabruti & Post-Matric Scholarship Helpdesk',
+            slug: 'scholarship-guide',
+            path: '/landing/scholarship-guide.html',
+            category: 'Scholarships',
+            status: 'Draft',
+            views: 0,
+            conversions: 0,
+            conversionRate: '0.0%',
+            expiry: '2027-01-15',
+            createdAt: Date.now() - 86400000
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_landing_pages_store', JSON.stringify(pages));
+        } catch (_) {}
+      }
+
+      const catFilter = (filterCategory || 'ALL').toUpperCase();
+      const statFilter = (filterStatus || 'ALL').toUpperCase();
+      const sq = (search || '').toLowerCase().trim();
+
+      return pages.filter(p => {
+        if (catFilter !== 'ALL' && (p.category || '').toUpperCase() !== catFilter) {
+          return false;
+        }
+        if (statFilter !== 'ALL' && (p.status || '').toUpperCase() !== statFilter) {
+          return false;
+        }
+        if (sq) {
+          const matchTitle = (p.title || '').toLowerCase().includes(sq);
+          const matchSlug = (p.slug || '').toLowerCase().includes(sq);
+          const matchCat = (p.category || '').toLowerCase().includes(sq);
+          if (!matchTitle && !matchSlug && !matchCat) return false;
+        }
+        return true;
+      });
+    },
+
+    saveLandingPages(pages) {
+      save('cso_landing_pages_store', pages);
+    },
+
+    toggleLandingPageStatus(id) {
+      const pages = this.getLandingPages('ALL', 'ALL', '');
+      const page = pages.find(p => p.id === id);
+      if (page) {
+        const oldStatus = page.status;
+        page.status = (oldStatus === 'Live') ? 'Paused' : 'Live';
+        this.saveLandingPages(pages);
+        this.logAudit('LANDING_PAGE_STATUS_TOGGLED', 'CAMPAIGN_MANAGER', `Campaign ${page.id} ("${page.title}") status changed from ${oldStatus} to ${page.status}.`);
+        return page;
+      }
+      return null;
+    },
+
+    createLandingPage(payload) {
+      const pages = this.getLandingPages('ALL', 'ALL', '');
+      const uniqueId = 'LP-' + Date.now().toString().slice(-4);
+      const cleanSlug = (payload.slug || payload.title || 'campaign')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-');
+
+      const newPage = {
+        id: uniqueId,
+        title: payload.title || 'Untitled Campaign',
+        slug: cleanSlug,
+        path: `/landing/${cleanSlug}.html`,
+        category: payload.category || 'General',
+        status: 'Draft',
+        views: 0,
+        conversions: 0,
+        conversionRate: '0.0%',
+        expiry: payload.expiry || '2026-12-31',
+        ctaUrl: payload.ctaUrl || '/resources.html',
+        createdAt: Date.now()
+      };
+
+      pages.unshift(newPage);
+      this.saveLandingPages(pages);
+      this.logAudit('LANDING_PAGE_CREATED', 'CAMPAIGN_MANAGER', `New landing page campaign created: "${newPage.title}" (${newPage.id}).`);
+      return newPage;
+    },
+
+    deleteLandingPage(id) {
+      let pages = this.getLandingPages('ALL', 'ALL', '');
+      const initialLen = pages.length;
+      pages = pages.filter(p => p.id !== id);
+      if (pages.length !== initialLen) {
+        this.saveLandingPages(pages);
+        this.logAudit('LANDING_PAGE_DELETED', 'CAMPAIGN_MANAGER', `Campaign ${id} removed.`);
+        return true;
+      }
+      return false;
+    },
+
+    exportLandingPagesReport() {
+      const pages = this.getLandingPages('ALL', 'ALL', '');
+      const timestamp = Date.now();
+      const filename = `cso-landing-campaigns-${timestamp}.json`;
+      const report = {
+        reportVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalCampaigns: pages.length,
+        campaigns: pages
+      };
+
+      const jsonStr = JSON.stringify(report, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('LANDING_PAGES_EXPORTED', 'DATA_EXPORT', `Landing page campaigns report exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
