@@ -320,6 +320,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-06-001') { renderMasterCategoriesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-06-002') { renderSubcategoriesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-06-003') { renderTagsTaxonomiesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-004') { renderHeaderNavigationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-005') { renderMegaMenuWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-006') { renderFooterNavigationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-06-007') { renderSidebarMenusWorkspace(dom.workspaceRoot); return; }
 
       // Route to specialized views
       if (moduleId === 'module-01-001') {
@@ -480,6 +484,14 @@ async function loadMasterNavigation() {
         renderSubcategoriesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-06-003') {
         renderTagsTaxonomiesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-004') {
+        renderHeaderNavigationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-005') {
+        renderMegaMenuWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-006') {
+        renderFooterNavigationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-06-007') {
+        renderSidebarMenusWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -25669,6 +25681,1141 @@ async function loadMasterNavigation() {
         console.error('Render error in module-06-003', err);
         root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
           <h3 class="text-sm font-bold">Render Error in module-06-003 (Tags & Taxonomies)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+
+
+    // =========================================================================
+    // FOLDER 06 (BATCH 2): Navigation Workspaces (06-004 to 06-007)
+    // =========================================================================
+
+    /**
+     * MODULE 06-004: Header Navigation Workspace
+     */
+    function renderHeaderNavigationWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getHeaderNavigationConfig();
+        const list = config.items || config.navItems || [];
+        let navItems = [...list];
+        let searchQuery = '';
+
+        function render() {
+          const filtered = navItems.filter(item => {
+            return !searchQuery ||
+              (item.label && item.label.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.path && item.path.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (item.badge && item.badge.toLowerCase().includes(searchQuery.toLowerCase()));
+          });
+
+          const activeCount = navItems.filter(n => n.active).length;
+          const mobileCount = navItems.filter(n => n.showOnMobile && n.active).length;
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">Folder 06 · Batch 2</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Header Navbar &amp; Top Menus</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Control global top navbar links, CTA badges, responsive drawer priority, and link destinations.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-nav" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Header Link
+                  </button>
+                  <button id="btn-inspect-nav" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-nav" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-nav" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Statistics & Settings Bar -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Top Nav Links</div>
+                  <div class="text-2xl font-bold text-white mt-1">${navItems.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Links</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${activeCount} of ${navItems.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Rendered on Mobile</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${mobileCount}</div>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/80">
+                <div class="relative flex-1 max-w-xs">
+                  <input type="text" id="nav-search" value="${escapeHtml(searchQuery)}" placeholder="Search navigation items..." class="w-full bg-slate-950/80 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                  <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <div class="text-xs text-slate-400 font-mono">
+                  Showing ${filtered.length} of ${navItems.length} header links
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="nav-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-blue-400 font-semibold">cso_header_navigation_config (Raw JSON)</span>
+                  <button id="btn-close-raw-nav" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-nav-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-nav" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Table Container -->
+              <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-md">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider font-semibold text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th class="py-3 px-4">Item ID</th>
+                        <th class="py-3 px-4">Menu Label</th>
+                        <th class="py-3 px-4">Route Path</th>
+                        <th class="py-3 px-4 text-center">Order Weight</th>
+                        <th class="py-3 px-4 text-center">Badge</th>
+                        <th class="py-3 px-4 text-center">Mobile</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-sans">
+                      ${filtered.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="text-center py-8 text-slate-500">
+                            No header navigation links found.
+                          </td>
+                        </tr>
+                      ` : filtered.map(item => `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                          <td class="py-3 px-4 font-mono font-semibold text-blue-400">
+                            ${escapeHtml(item.id)}
+                          </td>
+                          <td class="py-3 px-4 font-semibold text-white">
+                            ${escapeHtml(item.label)}
+                          </td>
+                          <td class="py-3 px-4 font-mono text-slate-400">
+                            ${escapeHtml(item.path)}
+                          </td>
+                          <td class="py-3 px-4 text-center font-mono text-slate-300">
+                            ${item.orderWeight || 1}
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            ${item.badge ? `
+                              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                ${escapeHtml(item.badge)}
+                              </span>
+                            ` : `<span class="text-slate-600">—</span>`}
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono ${item.showOnMobile ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500 bg-slate-800'}">
+                              ${item.showOnMobile ? 'Yes' : 'No'}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-center">
+                            <button class="btn-toggle-nav-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${item.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}" data-id="${escapeHtml(item.id)}">
+                              ${item.active ? 'Active' : 'Disabled'}
+                            </button>
+                          </td>
+                          <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button class="btn-edit-nav px-2.5 py-1 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Edit</button>
+                              <button class="btn-delete-nav px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event Handlers
+          const searchInput = root.querySelector('#nav-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchQuery = e.target.value;
+              render();
+            });
+          }
+
+          const btnAdd = root.querySelector('#btn-add-nav');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const label = prompt('Menu Label (e.g. Notifications):');
+              if (!label || !label.trim()) return;
+
+              const path = prompt('URL Route Path:', '/notifications/') || '/';
+              const badge = prompt('Optional Badge (e.g. New, Live, Updates):', '') || '';
+              const orderWeight = parseInt(prompt('Order Weight (1-99):', String(navItems.length + 1)), 10) || (navItems.length + 1);
+
+              const newItem = {
+                id: 'NAV-' + String(navItems.length + 1).padStart(2, '0'),
+                label: label.trim(),
+                path: path.trim(),
+                target: '_self',
+                orderWeight: orderWeight,
+                showOnMobile: true,
+                badge: badge.trim(),
+                active: true
+              };
+
+              navItems.push(newItem);
+              config.navItems = navItems;
+              store.saveHeaderNavigationConfig(config);
+              showToast(`Header link ${newItem.label} added.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-nav-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = navItems.find(n => n.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.navItems = navItems;
+                store.saveHeaderNavigationConfig(config);
+                showToast(`Link ${item.label} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-nav').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = navItems.find(n => n.id === id);
+              if (!item) return;
+
+              const label = prompt('Edit Menu Label:', item.label);
+              if (label === null) return;
+              const path = prompt('Edit Route Path:', item.path) || item.path;
+              const badge = prompt('Edit Badge:', item.badge) || '';
+              const orderWeight = parseInt(prompt('Edit Order Weight:', String(item.orderWeight)), 10) || item.orderWeight;
+
+              item.label = label.trim();
+              item.path = path.trim();
+              item.badge = badge.trim();
+              item.orderWeight = orderWeight;
+
+              config.navItems = navItems;
+              store.saveHeaderNavigationConfig(config);
+              showToast('Navigation link updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-nav').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete header navigation link ${id}?`)) {
+                navItems = navItems.filter(n => n.id !== id);
+                config.navItems = navItems;
+                store.saveHeaderNavigationConfig(config);
+                showToast('Link removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-nav');
+          const drawer = root.querySelector('#nav-raw-drawer');
+          const textarea = root.querySelector('#raw-nav-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-nav');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-nav');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveHeaderNavigationConfig(parsed);
+                config = store.getHeaderNavigationConfig();
+                navItems = [...(config.items || config.navItems || [])];
+                showToast('Header navigation configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-nav');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportHeaderNavigationManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-nav');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Header Navigation to factory configuration?')) {
+                config = store.resetHeaderNavigationConfig();
+                navItems = [...(config.items || config.navItems || [])];
+                showToast('Header navigation reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-004', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-004 (Header Navigation)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 06-005: Mega Menu Workspace
+     */
+    function renderMegaMenuWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getMegaMenuConfig();
+        const list = config.items || config.panels || [];
+        let panels = [...list];
+        let searchQuery = '';
+
+        function render() {
+          const filtered = panels.filter(p => {
+            return !searchQuery ||
+              (p.triggerLabel && p.triggerLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
+              (p.triggerPath && p.triggerPath.toLowerCase().includes(searchQuery.toLowerCase()));
+          });
+
+          const totalColumns = panels.reduce((acc, p) => acc + (Array.isArray(p.columns) ? p.columns.length : 0), 0);
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">Folder 06 · Batch 2</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Mega Menu Panelling Studio</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Configure multi-column dropdown trays, grouped portal deep links, and highlighted feature cards.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-panel" class="px-3.5 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Mega Panel
+                  </button>
+                  <button id="btn-inspect-mega" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-mega" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-mega" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics Bar -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Mega Dropdown Panels</div>
+                  <div class="text-2xl font-bold text-white mt-1">${panels.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Grouped Link Columns</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${totalColumns}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active State</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${panels.filter(p => p.active).length} of ${panels.length}</div>
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="mega-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-violet-400 font-semibold">cso_mega_menu_config (Raw JSON)</span>
+                  <button id="btn-close-raw-mega" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-mega-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-violet-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-mega" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Panels Cards Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${filtered.map(item => `
+                  <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 p-5 space-y-4 shadow-xl backdrop-blur-md flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <span class="text-xs font-mono text-violet-400 font-semibold">${escapeHtml(item.id)}</span>
+                        <div class="flex items-center gap-1.5">
+                          <button class="btn-toggle-mega-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${item.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'}" data-id="${escapeHtml(item.id)}">
+                            ${item.active ? 'Active' : 'Disabled'}
+                          </button>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <h3 class="text-base font-bold text-white">${escapeHtml(item.triggerLabel)}</h3>
+                        <p class="text-xs font-mono text-slate-400 mt-0.5">${escapeHtml(item.triggerPath)}</p>
+                      </div>
+
+                      <div class="mt-4 space-y-3">
+                        ${(item.columns || []).map(col => `
+                          <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800/60">
+                            <span class="text-[11px] font-semibold text-slate-300 block mb-1.5">${escapeHtml(col.title)}</span>
+                            <div class="space-y-1">
+                              ${(col.links || []).map(l => `
+                                <div class="text-[11px] text-slate-400 flex items-center justify-between">
+                                  <span>${escapeHtml(l.label)}</span>
+                                  <span class="font-mono text-[10px] text-slate-600">${escapeHtml(l.url)}</span>
+                                </div>
+                              `).join('')}
+                            </div>
+                          </div>
+                        `).join('')}
+                      </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                      <span class="text-slate-500 font-mono">Weight: ${item.orderWeight}</span>
+                      <div class="flex gap-2">
+                        <button class="btn-edit-mega px-2.5 py-1 text-xs text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Edit</button>
+                        <button class="btn-delete-mega px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Event Handlers
+          const btnAdd = root.querySelector('#btn-add-panel');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const label = prompt('Trigger Label (e.g. Examinations & Syllabus):');
+              if (!label || !label.trim()) return;
+
+              const path = prompt('Trigger Route Path:', '/study-library/') || '/';
+
+              const newPanel = {
+                id: 'MEGA-' + String(panels.length + 1).padStart(2, '0'),
+                triggerLabel: label.trim(),
+                triggerPath: path.trim(),
+                orderWeight: panels.length + 1,
+                featuredBadge: 'Featured',
+                columns: [
+                  { title: 'Primary Links', links: [{ label: 'Overview', url: path.trim() }] }
+                ],
+                active: true
+              };
+
+              panels.push(newPanel);
+              config.panels = panels;
+              store.saveMegaMenuConfig(config);
+              showToast(`Mega panel ${newPanel.triggerLabel} created.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-mega-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = panels.find(p => p.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.panels = panels;
+                store.saveMegaMenuConfig(config);
+                showToast(`Mega menu ${item.triggerLabel} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-mega').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = panels.find(p => p.id === id);
+              if (!item) return;
+
+              const label = prompt('Edit Trigger Label:', item.triggerLabel);
+              if (label === null) return;
+              const path = prompt('Edit Trigger Path:', item.triggerPath) || item.triggerPath;
+
+              item.triggerLabel = label.trim();
+              item.triggerPath = path.trim();
+
+              config.panels = panels;
+              store.saveMegaMenuConfig(config);
+              showToast('Mega menu panel updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-mega').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete mega menu panel ${id}?`)) {
+                panels = panels.filter(p => p.id !== id);
+                config.panels = panels;
+                store.saveMegaMenuConfig(config);
+                showToast('Panel removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-mega');
+          const drawer = root.querySelector('#mega-raw-drawer');
+          const textarea = root.querySelector('#raw-mega-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-mega');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-mega');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveMegaMenuConfig(parsed);
+                config = store.getMegaMenuConfig();
+                panels = [...(config.items || config.panels || [])];
+                showToast('Mega menu configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-mega');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportMegaMenuManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-mega');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Mega Menu to factory configuration?')) {
+                config = store.resetMegaMenuConfig();
+                panels = [...(config.items || config.panels || [])];
+                showToast('Mega menu reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-005', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-005 (Mega Menu)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 06-006: Footer Navigation Workspace
+     */
+    function renderFooterNavigationWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getFooterNavigationConfig();
+        const list = config.items || config.sections || [];
+        let sections = [...list];
+
+        function render() {
+          const totalLinks = sections.reduce((acc, s) => acc + (Array.isArray(s.links) ? s.links.length : 0), 0);
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Folder 06 · Batch 2</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Footer Columns &amp; Legal Sitemap</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Organize footer link columns, official board directory links, legal policies, and copyright statement.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-section" class="px-3.5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Footer Column
+                  </button>
+                  <button id="btn-inspect-foot" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-foot" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-foot" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics Bar -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Footer Columns</div>
+                  <div class="text-2xl font-bold text-white mt-1">${sections.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Indexed Destination Links</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${totalLinks}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active Columns</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${sections.filter(s => s.active).length} of ${sections.length}</div>
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="foot-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-amber-400 font-semibold">cso_footer_navigation_config (Raw JSON)</span>
+                  <button id="btn-close-raw-foot" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-foot-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-foot" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Footer Columns Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${sections.map(sec => `
+                  <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 p-5 space-y-4 shadow-xl backdrop-blur-md flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <span class="text-xs font-mono text-amber-400 font-semibold">${escapeHtml(sec.id)}</span>
+                        <div class="flex items-center gap-1.5">
+                          <button class="btn-toggle-foot-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${sec.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'}" data-id="${escapeHtml(sec.id)}">
+                            ${sec.active ? 'Active' : 'Disabled'}
+                          </button>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <h3 class="text-base font-bold text-white">${escapeHtml(sec.title)}</h3>
+                      </div>
+
+                      <div class="mt-4 space-y-2">
+                        ${(sec.links || []).map(l => `
+                          <div class="text-xs text-slate-300 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60 flex items-center justify-between">
+                            <span>${escapeHtml(l.label)}</span>
+                            <span class="font-mono text-[10px] text-slate-500">${escapeHtml(l.url)}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                      <span class="text-slate-500 font-mono">Weight: ${sec.orderWeight}</span>
+                      <div class="flex gap-2">
+                        <button class="btn-edit-foot px-2.5 py-1 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(sec.id)}">Edit</button>
+                        <button class="btn-delete-foot px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(sec.id)}">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Event Handlers
+          const btnAdd = root.querySelector('#btn-add-section');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const title = prompt('Footer Column Title (e.g. Citizen Services):');
+              if (!title || !title.trim()) return;
+
+              const newSec = {
+                id: 'FOOT-' + String(sections.length + 1).padStart(2, '0'),
+                title: title.trim(),
+                orderWeight: sections.length + 1,
+                links: [{ label: 'Direct Portal', url: '/' }],
+                active: true
+              };
+
+              sections.push(newSec);
+              config.sections = sections;
+              store.saveFooterNavigationConfig(config);
+              showToast(`Footer column ${newSec.title} added.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-foot-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.sections = sections;
+                store.saveFooterNavigationConfig(config);
+                showToast(`Column ${item.title} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-foot').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = sections.find(s => s.id === id);
+              if (!item) return;
+
+              const title = prompt('Edit Column Title:', item.title);
+              if (title === null) return;
+
+              item.title = title.trim();
+
+              config.sections = sections;
+              store.saveFooterNavigationConfig(config);
+              showToast('Footer column updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-foot').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete footer column ${id}?`)) {
+                sections = sections.filter(s => s.id !== id);
+                config.sections = sections;
+                store.saveFooterNavigationConfig(config);
+                showToast('Column removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-foot');
+          const drawer = root.querySelector('#foot-raw-drawer');
+          const textarea = root.querySelector('#raw-foot-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-foot');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-foot');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveFooterNavigationConfig(parsed);
+                config = store.getFooterNavigationConfig();
+                sections = [...(config.items || config.sections || [])];
+                showToast('Footer navigation configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-foot');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportFooterNavigationManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-foot');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Footer Navigation to factory configuration?')) {
+                config = store.resetFooterNavigationConfig();
+                sections = [...(config.items || config.sections || [])];
+                showToast('Footer navigation reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-006', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-006 (Footer Navigation)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * MODULE 06-007: Sidebar Menus Workspace
+     */
+    function renderSidebarMenusWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) {
+        console.error("CSOSuperStore is not initialized.");
+        return;
+      }
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.innerHTML = '';
+      root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+      root.classList.remove('hidden');
+
+      try {
+        let config = store.getSidebarMenusConfig();
+        const list = config.items || config.menus || [];
+        let menus = [...list];
+
+        function render() {
+          const totalLinks = menus.reduce((acc, m) => acc + (Array.isArray(m.items) ? m.items.length : 0), 0);
+
+          root.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Header & Action Controls -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800 backdrop-blur-md">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-pink-500/20 text-pink-300 border border-pink-500/30">Folder 06 · Batch 2</span>
+                    <span class="text-xs text-slate-400 font-mono">module-06-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Sidebar Menus &amp; Context Accordions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define drawer channel links, deep portal sub-sections, and contextual sticky menu trees.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <button id="btn-add-side" class="px-3.5 py-2 text-xs font-semibold text-white bg-pink-600 hover:bg-pink-500 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Sidebar Menu Group
+                  </button>
+                  <button id="btn-inspect-side" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Raw Schema
+                  </button>
+                  <button id="btn-export-side" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="btn-reset-side" class="px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Factory Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Metrics Bar -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Sidebar Channel Groups</div>
+                  <div class="text-2xl font-bold text-white mt-1">${menus.length}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Accordion Links</div>
+                  <div class="text-2xl font-bold text-pink-400 mt-1">${totalLinks}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 backdrop-blur-sm">
+                  <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Active State</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${menus.filter(m => m.active).length} of ${menus.length}</div>
+                </div>
+              </div>
+
+              <!-- Raw Schema Drawer -->
+              <div id="side-raw-drawer" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-pink-400 font-semibold">cso_sidebar_menus_config (Raw JSON)</span>
+                  <button id="btn-close-raw-side" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">Close</button>
+                </div>
+                <textarea id="raw-side-editor" rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-pink-500"></textarea>
+                <div class="flex justify-end">
+                  <button id="btn-save-raw-side" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-pink-600 hover:bg-pink-500 rounded-lg">Apply JSON Schema</button>
+                </div>
+              </div>
+
+              <!-- Sidebar Groups Cards Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${menus.map(item => `
+                  <div class="bg-slate-900/60 rounded-2xl border border-slate-800/80 p-5 space-y-4 shadow-xl backdrop-blur-md flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <span class="text-xs font-mono text-pink-400 font-semibold">${escapeHtml(item.id)}</span>
+                        <div class="flex items-center gap-1.5">
+                          <button class="btn-toggle-side-active px-2 py-0.5 text-[10px] font-semibold rounded-full border transition cursor-pointer ${item.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'}" data-id="${escapeHtml(item.id)}">
+                            ${item.active ? 'Active' : 'Disabled'}
+                          </button>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <h3 class="text-base font-bold text-white">${escapeHtml(item.title)}</h3>
+                        <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700">${escapeHtml(item.groupKey)}</span>
+                      </div>
+
+                      <div class="mt-4 space-y-2">
+                        ${(item.items || []).map(link => `
+                          <div class="text-xs text-slate-300 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60 flex items-center justify-between">
+                            <span>${escapeHtml(link.label)}</span>
+                            <span class="font-mono text-[10px] text-slate-500">${escapeHtml(link.url)}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                      <span class="text-slate-500 font-mono">Weight: ${item.orderWeight}</span>
+                      <div class="flex gap-2">
+                        <button class="btn-edit-side px-2.5 py-1 text-xs text-pink-400 hover:text-pink-300 hover:bg-pink-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Edit</button>
+                        <button class="btn-delete-side px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer" data-id="${escapeHtml(item.id)}">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Event Handlers
+          const btnAdd = root.querySelector('#btn-add-side');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+              const title = prompt('Sidebar Menu Title (e.g. Current Affairs Vault):');
+              if (!title || !title.trim()) return;
+
+              const groupKey = prompt('Sidebar Group Key (e.g. NEWS_SIDEBAR):', 'SIDEBAR') || 'SIDEBAR';
+
+              const newMenu = {
+                id: 'SIDE-' + String(menus.length + 1).padStart(2, '0'),
+                groupKey: groupKey.trim().toUpperCase(),
+                title: title.trim(),
+                orderWeight: menus.length + 1,
+                items: [{ label: 'Overview', url: '/' }],
+                active: true
+              };
+
+              menus.push(newMenu);
+              config.menus = menus;
+              store.saveSidebarMenusConfig(config);
+              showToast(`Sidebar group ${newMenu.title} created.`, 'success');
+              render();
+            });
+          }
+
+          root.querySelectorAll('.btn-toggle-side-active').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = menus.find(m => m.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.menus = menus;
+                store.saveSidebarMenusConfig(config);
+                showToast(`Sidebar menu ${item.title} ${item.active ? 'activated' : 'deactivated'}.`, 'info');
+                render();
+              }
+            });
+          });
+
+          root.querySelectorAll('.btn-edit-side').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = menus.find(m => m.id === id);
+              if (!item) return;
+
+              const title = prompt('Edit Title:', item.title);
+              if (title === null) return;
+
+              item.title = title.trim();
+
+              config.menus = menus;
+              store.saveSidebarMenusConfig(config);
+              showToast('Sidebar menu updated.', 'success');
+              render();
+            });
+          });
+
+          root.querySelectorAll('.btn-delete-side').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm(`Delete sidebar group ${id}?`)) {
+                menus = menus.filter(m => m.id !== id);
+                config.menus = menus;
+                store.saveSidebarMenusConfig(config);
+                showToast('Sidebar group removed.', 'info');
+                render();
+              }
+            });
+          });
+
+          const btnInspect = root.querySelector('#btn-inspect-side');
+          const drawer = root.querySelector('#side-raw-drawer');
+          const textarea = root.querySelector('#raw-side-editor');
+          if (btnInspect && drawer && textarea) {
+            btnInspect.addEventListener('click', () => {
+              drawer.classList.toggle('hidden');
+              if (!drawer.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(config, null, 2);
+              }
+            });
+          }
+
+          const btnClose = root.querySelector('#btn-close-raw-side');
+          if (btnClose && drawer) {
+            btnClose.addEventListener('click', () => {
+              drawer.classList.add('hidden');
+            });
+          }
+
+          const btnSaveRaw = root.querySelector('#btn-save-raw-side');
+          if (btnSaveRaw && textarea) {
+            btnSaveRaw.addEventListener('click', () => {
+              try {
+                const parsed = JSON.parse(textarea.value);
+                store.saveSidebarMenusConfig(parsed);
+                config = store.getSidebarMenusConfig();
+                menus = [...(config.items || config.menus || [])];
+                showToast('Sidebar menus configuration saved.', 'success');
+                render();
+              } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+              }
+            });
+          }
+
+          const btnExport = root.querySelector('#btn-export-side');
+          if (btnExport) {
+            btnExport.addEventListener('click', () => {
+              const filename = store.exportSidebarMenusManifest();
+              showToast(`Exported manifest: ${filename}`, 'success');
+            });
+          }
+
+          const btnReset = root.querySelector('#btn-reset-side');
+          if (btnReset) {
+            btnReset.addEventListener('click', () => {
+              if (confirm('Reset Sidebar Menus to factory configuration?')) {
+                config = store.resetSidebarMenusConfig();
+                menus = [...(config.items || config.menus || [])];
+                showToast('Sidebar menus reset to factory defaults.', 'info');
+                render();
+              }
+            });
+          }
+        }
+
+        render();
+
+      } catch (err) {
+        console.error('Render error in module-06-007', err);
+        root.innerHTML = `<div class="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
+          <h3 class="text-sm font-bold">Render Error in module-06-007 (Sidebar Menus)</h3>
           <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
         </div>`;
       }

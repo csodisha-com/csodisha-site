@@ -7838,6 +7838,336 @@
       return filename;
     },
 
+    // =========================================================================
+    // FOLDER 06 (BATCH 2): Navigation Structures (06-004 to 06-007)
+    // =========================================================================
+
+    // --- MODULE 06-004: Header Navigation Engine ---
+    getHeaderNavigationConfig() {
+      return this._hydrateConfig("cso_header_navigation_config", "navItems", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        navbarSettings: { sticky: true, showSearchTrigger: true, enableMobileDrawer: true },
+        navItems: [
+          { id: "NAV-01", label: "Jobs & Careers", path: "/jobs-careers/?section=0", target: "_self", orderWeight: 1, showOnMobile: true, badge: "Updates", active: true },
+          { id: "NAV-02", label: "Schemes & Benefits", path: "/schemes-benefits/?section=0", target: "_self", orderWeight: 2, showOnMobile: true, badge: "", active: true },
+          { id: "NAV-03", label: "Study Library", path: "/study-library/?section=0", target: "_self", orderWeight: 3, showOnMobile: true, badge: "PYQ", active: true },
+          { id: "NAV-04", label: "Community", path: "/community/?section=0", target: "_self", orderWeight: 4, showOnMobile: true, badge: "", active: true },
+          { id: "NAV-05", label: "Tools", path: "/tools/", target: "_self", orderWeight: 5, showOnMobile: false, badge: "Free", active: true }
+        ]
+      }));
+    },
+
+    saveHeaderNavigationConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        navbarSettings: {
+          sticky: config.navbarSettings?.sticky !== false,
+          showSearchTrigger: config.navbarSettings?.showSearchTrigger !== false,
+          enableMobileDrawer: config.navbarSettings?.enableMobileDrawer !== false
+        },
+        navItems: Array.isArray(config.navItems || config.items) ? (config.navItems || config.items).map((item, i) => ({
+          id: String(item.id || "NAV-" + String(i + 1).padStart(2, "0")),
+          label: String(item.label || "").trim(),
+          path: String(item.path || "/").trim(),
+          target: String(item.target || "_self").trim(),
+          orderWeight: parseInt(item.orderWeight, 10) || (i + 1),
+          showOnMobile: item.showOnMobile !== false,
+          badge: String(item.badge || "").trim(),
+          active: item.active !== false
+        })) : []
+      };
+      clean.items = clean.navItems;
+      localStorage.setItem("cso_header_navigation_config", JSON.stringify(clean));
+      this.logAudit("HEADER_NAV_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Header navigation configuration updated (" + clean.navItems.length + " links).");
+      return true;
+    },
+
+    resetHeaderNavigationConfig() {
+      localStorage.removeItem("cso_header_navigation_config");
+      this.logAudit("HEADER_NAV_CONFIG_RESET", "SYSTEM_RESET", "Header navigation reset to factory defaults.");
+      return this.getHeaderNavigationConfig();
+    },
+
+    exportHeaderNavigationManifest() {
+      const config = this.getHeaderNavigationConfig();
+      const filename = "header_navigation_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("HEADER_NAV_MANIFEST_EXPORTED", "DATA_EXPORT", "Header navigation manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-005: Mega Menu Engine ---
+    getMegaMenuConfig() {
+      return this._hydrateConfig("cso_mega_menu_config", "panels", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        megaMenuSettings: { animation: "fade", showFeaturedCard: true, columnCount: 3 },
+        panels: [
+          {
+            id: "MEGA-01",
+            triggerLabel: "Jobs & Recruitment",
+            triggerPath: "/jobs-careers/",
+            orderWeight: 1,
+            featuredBadge: "Live Portals",
+            columns: [
+              { title: "State Recruitment", links: [{ label: "OPSC OAS & OPS", url: "/jobs-careers/#opsc" }, { label: "OSSC CGL & CTSRE", url: "/jobs-careers/#ossc" }, { label: "OSSSC Combined Amin/RI", url: "/jobs-careers/#osssc" }] },
+              { title: "Admit & Hall Tickets", links: [{ label: "Preliminary Cards", url: "/jobs-careers/#admit" }, { label: "Written Exam Venues", url: "/jobs-careers/#venues" }] },
+              { title: "Notifications", links: [{ label: "Gazette Corrigendums", url: "/jobs-careers/#notices" }, { label: "Cutoff Archives", url: "/jobs-careers/#cutoff" }] }
+            ],
+            active: true
+          },
+          {
+            id: "MEGA-02",
+            triggerLabel: "Academic Library",
+            triggerPath: "/study-library/",
+            orderWeight: 2,
+            featuredBadge: "Free PDFs",
+            columns: [
+              { title: "Exam Papers", links: [{ label: "OPSC OAS Prelims (2015-2025)", url: "/study-library/#pyq-oas" }, { label: "OSSC CGL Tier-I & II", url: "/study-library/#pyq-cgl" }] },
+              { title: "Bilingual Notes", links: [{ label: "Odisha History & Heritage", url: "/study-library/#hist" }, { label: "Odia Vyakaran Compendium", url: "/study-library/#odia" }] },
+              { title: "Mock Series", links: [{ label: "Full Length Mock 1 (OMR)", url: "/study-library/#mock" }, { label: "Daily Speed Drills", url: "/study-library/#quiz" }] }
+            ],
+            active: true
+          },
+          {
+            id: "MEGA-03",
+            triggerLabel: "Schemes & Citizen Support",
+            triggerPath: "/schemes-benefits/",
+            orderWeight: 3,
+            featuredBadge: "Direct Welfare",
+            columns: [
+              { title: "Student Welfare", links: [{ label: "e-Medhabruti Portal", url: "/schemes-benefits/#medha" }, { label: "Post-Matric ST/SC Support", url: "/schemes-benefits/#postmatric" }] },
+              { title: "Livelihood & Agriculture", links: [{ label: "KALIA Chhatra Bruti", url: "/schemes-benefits/#kalia" }, { label: "Skill Odisha Initiatives", url: "/schemes-benefits/#osda" }] },
+              { title: "Eligibility Checkers", links: [{ label: "Direct Subsidy Calculator", url: "/schemes-benefits/#checker" }] }
+            ],
+            active: true
+          }
+        ]
+      }));
+    },
+
+    saveMegaMenuConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        megaMenuSettings: {
+          animation: String(config.megaMenuSettings?.animation || "fade").trim(),
+          showFeaturedCard: config.megaMenuSettings?.showFeaturedCard !== false,
+          columnCount: parseInt(config.megaMenuSettings?.columnCount, 10) || 3
+        },
+        panels: Array.isArray(config.panels || config.items) ? (config.panels || config.items).map((p, i) => ({
+          id: String(p.id || "MEGA-" + String(i + 1).padStart(2, "0")),
+          triggerLabel: String(p.triggerLabel || "").trim(),
+          triggerPath: String(p.triggerPath || "/").trim(),
+          orderWeight: parseInt(p.orderWeight, 10) || (i + 1),
+          featuredBadge: String(p.featuredBadge || "").trim(),
+          columns: Array.isArray(p.columns) ? p.columns : [],
+          active: p.active !== false
+        })) : []
+      };
+      clean.items = clean.panels;
+      localStorage.setItem("cso_mega_menu_config", JSON.stringify(clean));
+      this.logAudit("MEGA_MENU_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Mega menu panels updated (" + clean.panels.length + " panels).");
+      return true;
+    },
+
+    resetMegaMenuConfig() {
+      localStorage.removeItem("cso_mega_menu_config");
+      this.logAudit("MEGA_MENU_CONFIG_RESET", "SYSTEM_RESET", "Mega menu panels reset to factory defaults.");
+      return this.getMegaMenuConfig();
+    },
+
+    exportMegaMenuManifest() {
+      const config = this.getMegaMenuConfig();
+      const filename = "mega_menu_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("MEGA_MENU_MANIFEST_EXPORTED", "DATA_EXPORT", "Mega menu manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-006: Footer Navigation Engine ---
+    getFooterNavigationConfig() {
+      return this._hydrateConfig("cso_footer_navigation_config", "sections", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        footerSettings: { copyrightNotice: "© 2026 Common Sense Odisha (csodisha.com). Official Public Utility & Resource Directory.", showDisclaimerBadge: true },
+        sections: [
+          {
+            id: "FOOT-01",
+            title: "Examinations & Portals",
+            orderWeight: 1,
+            links: [
+              { label: "OPSC Official Portal", url: "https://opsc.gov.in", external: true },
+              { label: "OSSC Staff Portal", url: "https://ossc.gov.in", external: true },
+              { label: "OSSSC Combined Board", url: "https://osssc.gov.in", external: true },
+              { label: "BSE Odisha Board", url: "http://bseodisha.ac.in", external: true }
+            ],
+            active: true
+          },
+          {
+            id: "FOOT-02",
+            title: "Educational Resources",
+            orderWeight: 2,
+            links: [
+              { label: "Previous Year Questions", url: "/study-library/?section=0" },
+              { label: "Gazette Syllabus Blueprints", url: "/study-library/?section=1" },
+              { label: "Model Answer Keys", url: "/study-library/?section=2" },
+              { label: "Age & Cutoff Calculator", url: "/tools/" }
+            ],
+            active: true
+          },
+          {
+            id: "FOOT-03",
+            title: "Governance & Policies",
+            orderWeight: 3,
+            links: [
+              { label: "About Us & Mission", url: "/about" },
+              { label: "Editorial Integrity", url: "/editorial" },
+              { label: "Privacy Policy", url: "/privacy" },
+              { label: "Terms of Service", url: "/terms" },
+              { label: "Grievance Contact Desk", url: "/contact" }
+            ],
+            active: true
+          }
+        ]
+      }));
+    },
+
+    saveFooterNavigationConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        footerSettings: {
+          copyrightNotice: String(config.footerSettings?.copyrightNotice || "").trim(),
+          showDisclaimerBadge: config.footerSettings?.showDisclaimerBadge !== false
+        },
+        sections: Array.isArray(config.sections || config.items) ? (config.sections || config.items).map((sec, i) => ({
+          id: String(sec.id || "FOOT-" + String(i + 1).padStart(2, "0")),
+          title: String(sec.title || "").trim(),
+          orderWeight: parseInt(sec.orderWeight, 10) || (i + 1),
+          links: Array.isArray(sec.links) ? sec.links : [],
+          active: sec.active !== false
+        })) : []
+      };
+      clean.items = clean.sections;
+      localStorage.setItem("cso_footer_navigation_config", JSON.stringify(clean));
+      this.logAudit("FOOTER_NAV_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Footer navigation configuration updated (" + clean.sections.length + " columns).");
+      return true;
+    },
+
+    resetFooterNavigationConfig() {
+      localStorage.removeItem("cso_footer_navigation_config");
+      this.logAudit("FOOTER_NAV_CONFIG_RESET", "SYSTEM_RESET", "Footer navigation reset to factory defaults.");
+      return this.getFooterNavigationConfig();
+    },
+
+    exportFooterNavigationManifest() {
+      const config = this.getFooterNavigationConfig();
+      const filename = "footer_navigation_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("FOOTER_NAV_MANIFEST_EXPORTED", "DATA_EXPORT", "Footer navigation manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // --- MODULE 06-007: Sidebar Menus Engine ---
+    getSidebarMenusConfig() {
+      return this._hydrateConfig("cso_sidebar_menus_config", "menus", () => ({
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        sidebarSettings: { collapsibleAccordions: true, rememberExpandedState: true },
+        menus: [
+          {
+            id: "SIDE-01",
+            groupKey: "JOBS_SIDEBAR",
+            title: "Recruitment Portals",
+            orderWeight: 1,
+            items: [
+              { label: "OPSC Notifications", url: "/jobs-careers/?filter=opsc", icon: "file-text" },
+              { label: "OSSC Examination Dates", url: "/jobs-careers/?filter=ossc", icon: "calendar" },
+              { label: "OSSSC Combined Postings", url: "/jobs-careers/?filter=osssc", icon: "briefcase" }
+            ],
+            active: true
+          },
+          {
+            id: "SIDE-02",
+            groupKey: "STUDY_SIDEBAR",
+            title: "Study Vault Channels",
+            orderWeight: 2,
+            items: [
+              { label: "Question Papers (2020-26)", url: "/study-library/?cat=pyq", icon: "book-open" },
+              { label: "Full Length Mock Series", url: "/study-library/?cat=mock", icon: "award" },
+              { label: "Odia Vyakaran Drills", url: "/study-library/?cat=odia", icon: "feather" }
+            ],
+            active: true
+          },
+          {
+            id: "SIDE-03",
+            groupKey: "DISTRICTS_SIDEBAR",
+            title: "30 Districts of Odisha",
+            orderWeight: 3,
+            items: [
+              { label: "Coastal Odisha (Khordha/Cuttack/Puri)", url: "/community/?region=coastal", icon: "map-pin" },
+              { label: "Western Odisha (Sambalpur/Bargarh)", url: "/community/?region=western", icon: "map-pin" },
+              { label: "Southern & Northern Cadres", url: "/community/?region=north-south", icon: "map-pin" }
+            ],
+            active: true
+          }
+        ]
+      }));
+    },
+
+    saveSidebarMenusConfig(config) {
+      if (!config) return false;
+      const clean = {
+        meta: {
+          version: "1.0",
+          lastEditedBy: "admin@csodisha.com",
+          updatedAt: new Date().toISOString()
+        },
+        sidebarSettings: {
+          collapsibleAccordions: config.sidebarSettings?.collapsibleAccordions !== false,
+          rememberExpandedState: config.sidebarSettings?.rememberExpandedState !== false
+        },
+        menus: Array.isArray(config.menus || config.items) ? (config.menus || config.items).map((m, i) => ({
+          id: String(m.id || "SIDE-" + String(i + 1).padStart(2, "0")),
+          groupKey: String(m.groupKey || "SIDEBAR").trim().toUpperCase(),
+          title: String(m.title || "").trim(),
+          orderWeight: parseInt(m.orderWeight, 10) || (i + 1),
+          items: Array.isArray(m.items) ? m.items : [],
+          active: m.active !== false
+        })) : []
+      };
+      clean.items = clean.menus;
+      localStorage.setItem("cso_sidebar_menus_config", JSON.stringify(clean));
+      this.logAudit("SIDEBAR_MENUS_CONFIG_UPDATED", "CATEGORIES_NAVIGATION", "Sidebar menus configuration updated (" + clean.menus.length + " groups).");
+      return true;
+    },
+
+    resetSidebarMenusConfig() {
+      localStorage.removeItem("cso_sidebar_menus_config");
+      this.logAudit("SIDEBAR_MENUS_CONFIG_RESET", "SYSTEM_RESET", "Sidebar menus reset to factory defaults.");
+      return this.getSidebarMenusConfig();
+    },
+
+    exportSidebarMenusManifest() {
+      const config = this.getSidebarMenusConfig();
+      const filename = "sidebar_menus_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+      this.downloadJson(filename, config);
+      this.logAudit("SIDEBAR_MENUS_MANIFEST_EXPORTED", "DATA_EXPORT", "Sidebar menus manifest exported (" + filename + ").");
+      return filename;
+    },
+
+
 
 
 
@@ -8208,6 +8538,10 @@
       masterCategories: this.getMasterCategoriesConfig(),
       subcategories: this.getSubcategoriesConfig(),
       tagsTaxonomies: this.getTagsTaxonomiesConfig(),
+      headerNavigation: this.getHeaderNavigationConfig(),
+      megaMenu: this.getMegaMenuConfig(),
+      footerNavigation: this.getFooterNavigationConfig(),
+      sidebarMenus: this.getSidebarMenusConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
