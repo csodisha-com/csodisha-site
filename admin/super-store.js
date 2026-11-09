@@ -843,6 +843,133 @@
       this.logAudit('BANNER_TAKEDOWN', 'HOMEPAGE_BROADCAST', 'Active homepage announcement removed.');
     },
 
+    // 14. Website Analytics & Client Environment Telemetry (module-01-007)
+    getAnalyticsData() {
+      let data = null;
+      try {
+        const raw = localStorage.getItem('cso_analytics_store');
+        if (raw) data = JSON.parse(raw);
+      } catch (_) {}
+
+      const clientEnv = {
+        userAgent: (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : 'Mozilla/5.0 (Server / Node Runtime)',
+        platform: (typeof navigator !== 'undefined' && navigator.platform) ? navigator.platform : 'Linux x86_64',
+        language: (typeof navigator !== 'undefined' && navigator.language) ? navigator.language : 'en-US',
+        screenResolution: (typeof window !== 'undefined' && window.screen) ? (window.screen.width + 'x' + window.screen.height) : '1920x1080',
+        onlineStatus: (typeof navigator !== 'undefined' && navigator.onLine) ? 'Online (HTTP/2)' : 'Offline',
+        hardwareConcurrency: (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) ? navigator.hardwareConcurrency : 4
+      };
+
+      if (!data || typeof data !== 'object') {
+        data = {
+          totalPageViews: 8421,
+          uniqueSessions: 3120,
+          cacheHitRatio: "98.4%",
+          avgLatencyMs: 16,
+          topRoutes: [
+            { path: "/", title: "Homepage Portal", views: 4210, lastHit: "Just now", status: "200 OK" },
+            { path: "/resources.html", title: "Educational Resources Directory", views: 2840, lastHit: "4m ago", status: "200 OK" },
+            { path: "/contact.html", title: "Inquiry & Contact Desk", views: 820, lastHit: "12m ago", status: "200 OK" },
+            { path: "/admin/", title: "Super Admin Control Console", views: 430, lastHit: "Just now", status: "200 OK" },
+            { path: "/about.html", title: "About Us Mission Page", views: 121, lastHit: "1h ago", status: "200 OK" }
+          ],
+          deviceBreakdown: {
+            mobile: 68,
+            desktop: 32
+          },
+          currentClientEnvironment: clientEnv
+        };
+        try {
+          localStorage.setItem('cso_analytics_store', JSON.stringify(data));
+        } catch (_) {}
+      } else {
+        // Update client environment dynamically
+        data.currentClientEnvironment = clientEnv;
+      }
+
+      return data;
+    },
+
+    recordPageView(path) {
+      let data = this.getAnalyticsData();
+      data.totalPageViews = (data.totalPageViews || 0) + 1;
+
+      if (Array.isArray(data.topRoutes)) {
+        const route = data.topRoutes.find(r => r.path === path);
+        if (route) {
+          route.views = (route.views || 0) + 1;
+          route.lastHit = 'Just now';
+        } else {
+          data.topRoutes.push({
+            path,
+            title: path,
+            views: 1,
+            lastHit: 'Just now',
+            status: '200 OK'
+          });
+        }
+      }
+
+      try {
+        localStorage.setItem('cso_analytics_store', JSON.stringify(data));
+      } catch (_) {}
+      return data;
+    },
+
+    resetAnalytics() {
+      const resetData = {
+        totalPageViews: 0,
+        uniqueSessions: 1,
+        cacheHitRatio: "100%",
+        avgLatencyMs: 12,
+        topRoutes: [
+          { path: "/", title: "Homepage Portal", views: 0, lastHit: "Reset", status: "200 OK" },
+          { path: "/resources.html", title: "Educational Resources Directory", views: 0, lastHit: "Reset", status: "200 OK" },
+          { path: "/contact.html", title: "Inquiry & Contact Desk", views: 0, lastHit: "Reset", status: "200 OK" },
+          { path: "/admin/", title: "Super Admin Control Console", views: 0, lastHit: "Reset", status: "200 OK" },
+          { path: "/about.html", title: "About Us Mission Page", views: 0, lastHit: "Reset", status: "200 OK" }
+        ],
+        deviceBreakdown: {
+          mobile: 70,
+          desktop: 30
+        },
+        currentClientEnvironment: {
+          userAgent: (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : 'Mozilla/5.0',
+          platform: (typeof navigator !== 'undefined' && navigator.platform) ? navigator.platform : 'Linux',
+          language: (typeof navigator !== 'undefined' && navigator.language) ? navigator.language : 'en-US',
+          screenResolution: (typeof window !== 'undefined' && window.screen) ? (window.screen.width + 'x' + window.screen.height) : '1920x1080',
+          onlineStatus: 'Online (HTTP/2)',
+          hardwareConcurrency: (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) ? navigator.hardwareConcurrency : 4
+        }
+      };
+
+      try {
+        localStorage.setItem('cso_analytics_store', JSON.stringify(resetData));
+      } catch (_) {}
+
+      this.logAudit('ANALYTICS_COUNTERS_RESET', 'TELEMETRY_ENGINE', 'All client session analytics and route view counters reset to zero.');
+      return resetData;
+    },
+
+    exportAnalyticsReport() {
+      const data = this.getAnalyticsData();
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const filename = `cso-analytics-report-${Date.now()}.json`;
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('ANALYTICS_REPORT_EXPORTED', 'DATA_EXPORT', `Analytics telemetry report exported (${filename}).`);
+      return filename;
+    },
+
     // 13. Submission Moderation & Pending Approvals Queue (module-01-006)
     getApprovals(type = 'ALL', status = 'PENDING') {
       let list = null;
