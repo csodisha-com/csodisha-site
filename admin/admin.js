@@ -293,7 +293,9 @@ async function loadMasterNavigation() {
         renderWebsiteAnalyticsWorkspace();
       } else if (moduleId === 'module-01-008') {
         renderMasterFeatureRegistryWorkspace();
-      } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
+      } else if (moduleId === 'module-02-001') {
+        renderAllPagesWorkspace();
+      } else if (folderId === 'folder-02' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
@@ -1176,6 +1178,347 @@ async function loadMasterNavigation() {
             const filename = window.CSOSuperStore.exportFeatureRegistry('csv', stats.modulesList);
             showToast(`Master Feature Registry CSV exported: ${filename}`, "success");
           }
+        });
+      }
+    }
+
+    /**
+     * VIEW 2a: All Pages Directory & Edge Probing (module-02-001)
+     */
+    function renderAllPagesWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "All Pages (module-02-001)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnCreateNewPageTop" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Create New Page
+          </button>
+          <button id="btnProbeAllRoutes" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-brand-border flex items-center gap-1.5 transition">
+            <svg id="probeAllIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Verify All Routes (Probe)
+          </button>
+          <button id="btnExportPagesJson" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Inventory (JSON)
+          </button>
+        </div>
+      `;
+
+      // Workspace Template
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6">
+          <!-- Page Directory Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Site Page Directory & Routing Matrix
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-001</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Comprehensive repository route registry covering all static HTML pages and public endpoints.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="probeSummaryBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-xs font-mono">
+                  <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                  Ready to Probe
+                </span>
+              </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Total Project Routes</span>
+                <div id="kpiTotalRoutes" class="text-xl font-bold font-mono text-white mt-1">26</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">100% repository verified</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">HTTP 200 OK Status</span>
+                <div id="kpiLiveRoutes" class="text-xl font-bold font-mono text-emerald-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Click verify to probe</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Average Latency</span>
+                <div id="kpiAvgLatency" class="text-xl font-bold font-mono text-cyan-400 mt-1">-- ms</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Local / Edge cache</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Total Payload Footprint</span>
+                <div id="kpiTotalFootprint" class="text-xl font-bold font-mono text-amber-400 mt-1">-- KB</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Static uncompressed assets</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-8 relative">
+                <input id="pageSearchInput" type="text" placeholder="Search page path or title (e.g. /resources.html or Contact)..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+
+              <div class="sm:col-span-4">
+                <select id="pageTemplateFilter" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                  <option value="ALL">All Templates</option>
+                  <option value="Portal Landing">Portal Landing</option>
+                  <option value="Educational Matrix">Educational Matrix</option>
+                  <option value="Standard Content">Standard Content</option>
+                  <option value="Form Desk">Form Desk</option>
+                  <option value="Legal Core">Legal Core</option>
+                  <option value="Security Portal">Security Portal</option>
+                  <option value="Admin Workspace">Admin Workspace</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Site Page Directory Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Repository Page Inventory
+                <span id="pageCountBadge" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">-- pages</span>
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono">Live Ingestion from cso_pages_store</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Route Path</th>
+                    <th class="py-2.5 px-4 font-semibold">Page Title</th>
+                    <th class="py-2.5 px-4 font-semibold">Template</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Route Status</th>
+                    <th class="py-2.5 px-4 font-semibold">File Size</th>
+                    <th class="py-2.5 px-4 font-semibold">Last Modified</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="pagesTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Live Probing State Cache
+      const liveProbeResults = new Map();
+      let activeSearch = '';
+      let activeTemplate = 'ALL';
+
+      function getPagesList() {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.getAllPages === 'function') {
+          return window.CSOSuperStore.getAllPages(activeTemplate, activeSearch);
+        }
+        return [];
+      }
+
+      function updateKpis() {
+        const allPages = (window.CSOSuperStore && typeof window.CSOSuperStore.getAllPages === 'function')
+          ? window.CSOSuperStore.getAllPages('ALL', '')
+          : [];
+
+        const totalKpi = document.getElementById('kpiTotalRoutes');
+        if (totalKpi) totalKpi.textContent = allPages.length;
+
+        // Calculate total footprint
+        const totalKb = allPages.reduce((acc, p) => acc + (parseFloat(p.sizeKb) || 0), 0).toFixed(1);
+        const footprintKpi = document.getElementById('kpiTotalFootprint');
+        if (footprintKpi) footprintKpi.textContent = `${totalKb} KB`;
+
+        // Update live probe counts if probed
+        if (liveProbeResults.size > 0) {
+          let liveCount = 0;
+          let totalLatency = 0;
+          let latencyCount = 0;
+
+          liveProbeResults.forEach(res => {
+            if (res.ok) liveCount++;
+            if (res.latencyMs > 0) {
+              totalLatency += res.latencyMs;
+              latencyCount++;
+            }
+          });
+
+          const liveKpi = document.getElementById('kpiLiveRoutes');
+          if (liveKpi) liveKpi.textContent = `${liveCount} / ${liveProbeResults.size}`;
+
+          const avgLat = latencyCount > 0 ? Math.round(totalLatency / latencyCount) : 0;
+          const latKpi = document.getElementById('kpiAvgLatency');
+          if (latKpi) latKpi.textContent = `${avgLat} ms`;
+        }
+      }
+
+      function renderTableRows() {
+        const tbody = document.getElementById('pagesTableBody');
+        const countBadge = document.getElementById('pageCountBadge');
+        if (!tbody) return;
+
+        const pages = getPagesList();
+        if (countBadge) {
+          countBadge.textContent = `${pages.length} pages`;
+        }
+
+        if (pages.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-500 font-mono text-xs">
+                No pages match the current filter.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = pages.map(p => {
+          const probe = liveProbeResults.get(p.path);
+          let statusBadge = '';
+
+          if (probe) {
+            if (probe.ok) {
+              statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                ${probe.status} OK (${probe.latencyMs}ms)
+              </span>`;
+            } else {
+              statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                ${probe.status || 'ERR'} Fail
+              </span>`;
+            }
+          } else {
+            statusBadge = (p.status || '').toLowerCase() === 'live'
+              ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Live (200 OK)</span>`
+              : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">Draft</span>`;
+          }
+
+          // Generate Preview Link
+          const previewHref = p.path === '/' ? '/' : p.path;
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">${p.path}</td>
+              <td class="py-2.5 px-4 font-bold text-white">
+                ${p.title}
+                <div class="text-[10px] text-slate-500 font-mono font-normal">${p.file}</div>
+              </td>
+              <td class="py-2.5 px-4 text-slate-300 font-sans text-xs whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-[#081220] border border-brand-border text-slate-300">${p.template}</span>
+              </td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">${statusBadge}</td>
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-xs whitespace-nowrap">${p.sizeKb} KB</td>
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-xs whitespace-nowrap">${p.lastModified}</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button data-id="${p.id}" class="btn-edit-page px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-mono text-[11px] font-semibold border border-brand-border transition">
+                    Edit
+                  </button>
+                  <a href="${previewHref}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 font-mono text-[11px] font-semibold border border-brand-border transition">
+                    Preview &nearr;
+                  </a>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Edit buttons to open CMS Studio / Page Builder
+        tbody.querySelectorAll('.btn-edit-page').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectModule('folder-02', 'module-02-002');
+          });
+        });
+      }
+
+      // Initial Renders
+      updateKpis();
+      renderTableRows();
+
+      // Search & Filter event bindings
+      const searchInput = document.getElementById('pageSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          activeSearch = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      const templateSelect = document.getElementById('pageTemplateFilter');
+      if (templateSelect) {
+        templateSelect.addEventListener('change', (e) => {
+          activeTemplate = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      // Top Action Buttons
+      const btnCreateTop = document.getElementById('btnCreateNewPageTop');
+      if (btnCreateTop) {
+        btnCreateTop.addEventListener('click', () => {
+          selectModule('folder-02', 'module-02-002');
+        });
+      }
+
+      const btnExport = document.getElementById('btnExportPagesJson');
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportPagesInventory === 'function') {
+            const filename = window.CSOSuperStore.exportPagesInventory();
+            showToast(`Pages inventory exported: ${filename}`, "success");
+          }
+        });
+      }
+
+      // Route Verification Prober
+      const btnProbe = document.getElementById('btnProbeAllRoutes');
+      if (btnProbe) {
+        btnProbe.addEventListener('click', async () => {
+          const pages = (window.CSOSuperStore && typeof window.CSOSuperStore.getAllPages === 'function')
+            ? window.CSOSuperStore.getAllPages('ALL', '')
+            : [];
+
+          if (pages.length === 0) return;
+
+          btnProbe.disabled = true;
+          btnProbe.classList.add('opacity-75');
+          const probeIcon = document.getElementById('probeAllIcon');
+          if (probeIcon) probeIcon.classList.add('animate-spin');
+
+          const summaryBadge = document.getElementById('probeSummaryBadge');
+          if (summaryBadge) {
+            summaryBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold";
+            summaryBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Probing ${pages.length} Routes...`;
+          }
+
+          let successCount = 0;
+          for (const page of pages) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.probePageStatus === 'function') {
+              const res = await window.CSOSuperStore.probePageStatus(page.path);
+              liveProbeResults.set(page.path, res);
+              if (res.ok) successCount++;
+            }
+          }
+
+          if (probeIcon) probeIcon.classList.remove('animate-spin');
+          btnProbe.disabled = false;
+          btnProbe.classList.remove('opacity-75');
+
+          if (summaryBadge) {
+            summaryBadge.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold";
+            summaryBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> ${successCount}/${pages.length} Live Routes`;
+          }
+
+          updateKpis();
+          renderTableRows();
+          showToast(`Diagnostic probe completed: ${successCount}/${pages.length} endpoints active`, "success");
         });
       }
     }

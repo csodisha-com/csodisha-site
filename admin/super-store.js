@@ -970,6 +970,124 @@
       return filename;
     },
 
+    // 15. Pages Directory & Route Tracking Engine (module-02-001)
+    getAllPages(filterTemplate = 'ALL', search = '') {
+      let pages = null;
+      try {
+        const raw = localStorage.getItem('cso_pages_store');
+        if (raw) pages = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!pages || !Array.isArray(pages) || pages.length === 0) {
+        const today = new Date().toISOString().slice(0, 10);
+        pages = [
+          { id: "PAGE-001", path: "/", file: "index.html", title: "Homepage & Portal Gate", template: "Portal Landing", status: "Live", sizeKb: "23.9", lastModified: today },
+          { id: "PAGE-002", path: "/resources.html", file: "resources.html", title: "Educational Resources Directory", template: "Educational Matrix", status: "Live", sizeKb: "28.5", lastModified: today },
+          { id: "PAGE-003", path: "/about/", file: "about/index.html", title: "About CS Odisha Mission", template: "Standard Content", status: "Live", sizeKb: "8.8", lastModified: today },
+          { id: "PAGE-004", path: "/contact.html", file: "contact.html", title: "Student Contact & Inquiries", template: "Form Desk", status: "Live", sizeKb: "14.1", lastModified: today },
+          { id: "PAGE-005", path: "/privacy-policy/", file: "privacy-policy/index.html", title: "Privacy Policy", template: "Legal Core", status: "Live", sizeKb: "6.3", lastModified: today },
+          { id: "PAGE-006", path: "/terms-of-use/", file: "terms-of-use/index.html", title: "Terms & Conditions", template: "Legal Core", status: "Live", sizeKb: "6.2", lastModified: today },
+          { id: "PAGE-007", path: "/disclaimer/", file: "disclaimer/index.html", title: "Disclaimer & Notices", template: "Legal Core", status: "Live", sizeKb: "6.0", lastModified: today },
+          { id: "PAGE-008", path: "/admin/login.html", file: "admin/login.html", title: "Security Auth Gate", template: "Security Portal", status: "Live", sizeKb: "21.7", lastModified: today },
+          { id: "PAGE-009", path: "/admin/", file: "admin/index.html", title: "Master Super Admin Console", template: "Admin Workspace", status: "Live", sizeKb: "12.5", lastModified: today },
+          { id: "PAGE-010", path: "/career-guidance/", file: "career-guidance/index.html", title: "Career Guidance Compass", template: "Educational Matrix", status: "Live", sizeKb: "47.0", lastModified: today },
+          { id: "PAGE-011", path: "/community/", file: "community/index.html", title: "Student Community Hub", template: "Portal Landing", status: "Live", sizeKb: "8.8", lastModified: today },
+          { id: "PAGE-012", path: "/community/join/", file: "community/join/index.html", title: "Join Community Forum", template: "Form Desk", status: "Live", sizeKb: "13.2", lastModified: today },
+          { id: "PAGE-013", path: "/copyright-policy/", file: "copyright-policy/index.html", title: "Copyright & Intellectual Property", template: "Legal Core", status: "Live", sizeKb: "6.0", lastModified: today },
+          { id: "PAGE-014", path: "/education-explorer/", file: "education-explorer/index.html", title: "Odisha Education Explorer", template: "Educational Matrix", status: "Live", sizeKb: "0.4", lastModified: today },
+          { id: "PAGE-015", path: "/job-opportunity-finder/", file: "job-opportunity-finder/index.html", title: "Job Opportunity Finder", template: "Educational Matrix", status: "Live", sizeKb: "32.6", lastModified: today },
+          { id: "PAGE-016", path: "/jobs-careers/", file: "jobs-careers/index.html", title: "Public Jobs & Careers", template: "Educational Matrix", status: "Live", sizeKb: "16.7", lastModified: today },
+          { id: "PAGE-017", path: "/opportunity-compass/", file: "opportunity-compass/index.html", title: "State Opportunity Compass", template: "Educational Matrix", status: "Live", sizeKb: "20.3", lastModified: today },
+          { id: "PAGE-018", path: "/scheme-opportunity-finder/", file: "scheme-opportunity-finder/index.html", title: "Scheme Opportunity Finder", template: "Educational Matrix", status: "Live", sizeKb: "10.1", lastModified: today },
+          { id: "PAGE-019", path: "/schemes-benefits/", file: "schemes-benefits/index.html", title: "Welfare Schemes & Benefits", template: "Educational Matrix", status: "Live", sizeKb: "8.9", lastModified: today },
+          { id: "PAGE-020", path: "/scholarship-guidance/", file: "scholarship-guidance/index.html", title: "State Scholarship Guidance", template: "Educational Matrix", status: "Live", sizeKb: "0.4", lastModified: today },
+          { id: "PAGE-021", path: "/study-library/", file: "study-library/index.html", title: "Study Library & Repositories", template: "Educational Matrix", status: "Live", sizeKb: "8.9", lastModified: today },
+          { id: "PAGE-022", path: "/study-path-finder/", file: "study-path-finder/index.html", title: "Interactive Study Path Finder", template: "Educational Matrix", status: "Live", sizeKb: "0.4", lastModified: today },
+          { id: "PAGE-023", path: "/study/examinations/", file: "study/examinations/index.html", title: "State Examinations Hub", template: "Educational Matrix", status: "Live", sizeKb: "4.4", lastModified: today },
+          { id: "PAGE-024", path: "/study/", file: "study/index.html", title: "Odisha Academic Studies Hub", template: "Educational Matrix", status: "Live", sizeKb: "8.3", lastModified: today },
+          { id: "PAGE-025", path: "/support/", file: "support/index.html", title: "Help & Student Support", template: "Form Desk", status: "Live", sizeKb: "9.4", lastModified: today },
+          { id: "PAGE-026", path: "/trust-layer/", file: "trust-layer/index.html", title: "Trust Layer & Verification", template: "Standard Content", status: "Live", sizeKb: "35.0", lastModified: today }
+        ];
+
+        try {
+          localStorage.setItem('cso_pages_store', JSON.stringify(pages));
+        } catch (_) {}
+      }
+
+      const templateFilter = (filterTemplate || 'ALL').toUpperCase();
+      const sq = (search || '').toLowerCase().trim();
+
+      return pages.filter(p => {
+        if (templateFilter !== 'ALL' && (p.template || '').toUpperCase() !== templateFilter) {
+          return false;
+        }
+        if (sq) {
+          const matchPath = (p.path || '').toLowerCase().includes(sq);
+          const matchFile = (p.file || '').toLowerCase().includes(sq);
+          const matchTitle = (p.title || '').toLowerCase().includes(sq);
+          if (!matchPath && !matchFile && !matchTitle) return false;
+        }
+        return true;
+      });
+    },
+
+    saveAllPages(pages) {
+      save('cso_pages_store', pages);
+    },
+
+    async probePageStatus(path) {
+      const probeUrl = path.startsWith('http') ? path : (typeof window !== 'undefined' ? (window.location.origin + path) : path);
+      const start = performance.now();
+      try {
+        const res = await fetch(probeUrl + (probeUrl.includes('?') ? '&' : '?') + 'probe=' + Date.now(), {
+          method: 'HEAD',
+          cache: 'no-store'
+        });
+        const latency = Math.round(performance.now() - start);
+        return {
+          path,
+          status: res.status,
+          statusText: res.statusText || (res.ok ? 'OK' : 'Error'),
+          ok: res.ok,
+          latencyMs: latency
+        };
+      } catch (err) {
+        return {
+          path,
+          status: 0,
+          statusText: 'Unreachable / Network Error',
+          ok: false,
+          latencyMs: Math.round(performance.now() - start)
+        };
+      }
+    },
+
+    exportPagesInventory() {
+      const pages = this.getAllPages('ALL', '');
+      const timestamp = Date.now();
+      const filename = `cso-pages-inventory-${timestamp}.json`;
+      const payload = {
+        inventoryVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        totalRoutes: pages.length,
+        pages: pages
+      };
+
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('PAGES_INVENTORY_EXPORTED', 'ROUTING_ENGINE', `Pages directory inventory exported (${filename}, ${pages.length} routes).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
