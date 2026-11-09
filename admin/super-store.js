@@ -3340,6 +3340,125 @@
       return filename;
     },
 
+    // 31. Copyright Notice & DMCA Engine (module-03-007)
+    getCopyrightConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_copyright_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object' || !config.meta) {
+        config = {
+          meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+          document: {
+            title: "Copyright Notice & DMCA Policy",
+            copyrightYear: "2023 - 2026",
+            effectiveDate: "2026-11-01",
+            badge: "Intellectual Property & Fair Dealing"
+          },
+          officer: {
+            name: "Designated Copyright & Grievance Officer",
+            email: "dmca@csodisha.com",
+            secondaryEmail: "legal@csodisha.com",
+            address: "Common Sense Odisha Academic Node, Legal & Statutory Redressal Cell, Bhubaneswar / Balasore, Odisha - 751001",
+            slaResponseHours: 48
+          },
+          clauses: [
+            { id: "CP-01", number: "1", title: "Proprietary Original Works", category: "Proprietary", body: "All original editorial guides, pedagogical structures, examination strategy charts, UI graphics, and software code on csodisha.com are proprietary works protected under the Indian Copyright Act, 1957.", active: true },
+            { id: "CP-02", number: "2", title: "Fair Dealing in State Recruitment & Academic Content", category: "Fair Use", body: "Official state recruitment notifications, syllabi outlines, and public gazette orders issued by OPSC, OSSC, OSSSC, and BSE Odisha are cited or summarized under fair dealing provisions (Section 52 of the Indian Copyright Act, 1957) purely for educational commentary, student awareness, and non-commercial candidate guidance.", active: true },
+            { id: "CP-03", number: "3", title: "Third-Party Logos & Nominative Fair Use", category: "Trademarks", body: "Institutional emblems, logos, and acronyms of statutory examination boards are displayed solely for nominative identification of respective recruitment tests. Common Sense Odisha claims no ownership over third-party trademarks.", active: true },
+            { id: "CP-04", number: "4", title: "DMCA & Statutory Notice Takedown Procedure", category: "Takedown", body: "If you are a copyright owner or authorized agent and believe content on this portal infringes your intellectual property, submit a written notice to dmca@csodisha.com including: proof of ownership, specific infringing URL, identification of work, and contact details. Bona fide notices are resolved within 48 business hours.", active: true },
+            { id: "CP-05", number: "5", title: "Repeat Infringer Policy", category: "Enforcement", body: "In accordance with standard digital service governance, any user or contributor repeatedly uploading unauthorized materials to interactive portal sections will have their access terminated immediately.", active: true }
+          ],
+          fairUseNotice: "Content is published solely for candidate guidance in Odisha. Commercial reproduction or unauthorized paid redistribution is strictly prohibited."
+        };
+        try {
+          localStorage.setItem('cso_copyright_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+      return config;
+    },
+
+    saveCopyrightConfig(config) {
+      if (!config || typeof config !== 'object') throw new Error("Invalid copyright configuration payload.");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem('cso_copyright_config', JSON.stringify(config));
+      this.logAudit('COPYRIGHT_CONFIG_UPDATED', 'COPYRIGHT_DMCA', `Copyright configuration updated (v${config.meta.version || '2.0'}).`);
+      return config;
+    },
+
+    importCopyrightConfig(jsonString) {
+      let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+      if (!parsed || typeof parsed !== 'object') throw new Error("Invalid JSON manifest.");
+      if (parsed.copyrightConfig) parsed = parsed.copyrightConfig;
+      else if (parsed.document && parsed.clauses) {
+        // payload wrapped or raw
+      }
+      parsed.meta = parsed.meta || {};
+      parsed.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem('cso_copyright_config', JSON.stringify(parsed));
+      this.logAudit('COPYRIGHT_CONFIG_IMPORTED', 'COPYRIGHT_DMCA', `Copyright configuration imported (v${parsed.meta.version || '2.0'}).`);
+      return parsed;
+    },
+
+    resetCopyrightConfig() {
+      const initial = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: {
+          title: "Copyright Notice & DMCA Policy",
+          copyrightYear: "2023 - 2026",
+          effectiveDate: "2026-11-01",
+          badge: "Intellectual Property & Fair Dealing"
+        },
+        officer: {
+          name: "Designated Copyright & Grievance Officer",
+          email: "dmca@csodisha.com",
+          secondaryEmail: "legal@csodisha.com",
+          address: "Common Sense Odisha Academic Node, Legal & Statutory Redressal Cell, Bhubaneswar / Balasore, Odisha - 751001",
+          slaResponseHours: 48
+        },
+        clauses: [
+          { id: "CP-01", number: "1", title: "Proprietary Original Works", category: "Proprietary", body: "All original editorial guides, pedagogical structures, examination strategy charts, UI graphics, and software code on csodisha.com are proprietary works protected under the Indian Copyright Act, 1957.", active: true },
+          { id: "CP-02", number: "2", title: "Fair Dealing in State Recruitment & Academic Content", category: "Fair Use", body: "Official state recruitment notifications, syllabi outlines, and public gazette orders issued by OPSC, OSSC, OSSSC, and BSE Odisha are cited or summarized under fair dealing provisions (Section 52 of the Indian Copyright Act, 1957) purely for educational commentary, student awareness, and non-commercial candidate guidance.", active: true },
+          { id: "CP-03", number: "3", title: "Third-Party Logos & Nominative Fair Use", category: "Trademarks", body: "Institutional emblems, logos, and acronyms of statutory examination boards are displayed solely for nominative identification of respective recruitment tests. Common Sense Odisha claims no ownership over third-party trademarks.", active: true },
+          { id: "CP-04", number: "4", title: "DMCA & Statutory Notice Takedown Procedure", category: "Takedown", body: "If you are a copyright owner or authorized agent and believe content on this portal infringes your intellectual property, submit a written notice to dmca@csodisha.com including: proof of ownership, specific infringing URL, identification of work, and contact details. Bona fide notices are resolved within 48 business hours.", active: true },
+          { id: "CP-05", number: "5", title: "Repeat Infringer Policy", category: "Enforcement", body: "In accordance with standard digital service governance, any user or contributor repeatedly uploading unauthorized materials to interactive portal sections will have their access terminated immediately.", active: true }
+        ],
+        fairUseNotice: "Content is published solely for candidate guidance in Odisha. Commercial reproduction or unauthorized paid redistribution is strictly prohibited."
+      };
+      localStorage.setItem('cso_copyright_config', JSON.stringify(initial));
+      this.logAudit('COPYRIGHT_CONFIG_RESET', 'COPYRIGHT_DMCA', `Copyright configuration restored to factory default schema.`);
+      return initial;
+    },
+
+    exportCopyrightManifest() {
+      const config = this.getCopyrightConfig();
+      const timestamp = Date.now();
+      const filename = `cso-copyright-config-${timestamp}.json`;
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        copyright: config
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('COPYRIGHT_MANIFEST_EXPORTED', 'DATA_EXPORT', `Copyright manifest exported (${filename}).`);
+      return filename;
+    },
+
     exportPrivacyManifest() {
       const config = this.getPrivacyConfig();
       const timestamp = Date.now();

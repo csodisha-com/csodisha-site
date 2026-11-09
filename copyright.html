@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Copyright Notice, Fair Dealing & DMCA Grievance Policy for Common Sense Odisha (csodisha.com) - Educational intelligence and copyright governance.">
+  <title>Copyright &amp; DMCA Policy | Common Sense Odisha</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .copyright-main {
+      max-width: 960px;
+      margin: 32px auto 64px;
+      padding: 0 20px;
+    }
+    .copyright-breadcrumbs {
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      color: var(--mut, #64748b);
+    }
+    .copyright-breadcrumbs a {
+      color: #0fa968;
+      text-decoration: none;
+    }
+    .copyright-breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    .copyright-hero {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 16px;
+      padding: 36px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .copyright-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .copyright-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(15, 169, 104, 0.1);
+      color: #0fa968;
+      border: 1px solid rgba(15, 169, 104, 0.2);
+    }
+    .copyright-version-badge {
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .copyright-hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      color: var(--tx, #0f172a);
+      line-height: 1.25;
+    }
+    .copyright-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.88rem;
+      color: var(--mut, #64748b);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--bd, #e2e8f0);
+    }
+
+    .officer-card {
+      background: linear-gradient(135deg, rgba(240, 253, 250, 0.8), rgba(241, 245, 249, 0.9));
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .officer-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .officer-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #0d9488;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .officer-title-block h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #0f766e;
+    }
+    .officer-title-block p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      color: #134e4a;
+    }
+    .officer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      font-size: 0.88rem;
+    }
+    .officer-grid-item {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .officer-grid-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #0f766e;
+      margin-bottom: 4px;
+    }
+    .officer-grid-val {
+      color: #1e293b;
+      word-break: break-word;
+    }
+    .officer-grid-val a {
+      color: #0d9488;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .officer-grid-val a:hover {
+      text-decoration: underline;
+    }
+
+    .clause-card {
+      background: var(--card, #ffffff);
+      border: 1px solid var(--bd, #d8e0e8);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .clause-card:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+    .clause-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .clause-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .clause-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(15, 169, 104, 0.12);
+      color: #0fa968;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .clause-cat {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .clause-cat.ip {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border-color: rgba(14, 165, 233, 0.2);
+    }
+    .clause-cat.fair {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .clause-cat.dmca {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .clause-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--tx, #0f172a);
+      margin: 0;
+    }
+    .clause-body {
+      color: var(--mut, #475569);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .fair-use-card {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-top: 32px;
+      color: #92400e;
+    }
+    .fair-use-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      color: #78350f;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fair-use-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #92400e;
+    }
+
+    @media (max-width: 640px) {
+      .copyright-hero {
+        padding: 24px 20px;
+      }
+      .officer-card {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="copyright-main">
+  <div class="copyright-breadcrumbs">
+    <a href="index.html">Home</a> &gt; <span>Copyright &amp; DMCA</span>
+  </div>
+
+  <section class="copyright-hero">
+    <div class="copyright-badge-group">
+      <span class="copyright-badge" id="copyright-badge">Intellectual Property &amp; Fair Dealing</span>
+      <span class="copyright-version-badge" id="copyright-version-badge">Version 2.0</span>
+    </div>
+    <h1 id="copyright-title">Copyright Notice &amp; DMCA Policy</h1>
+    <div class="copyright-meta-strip">
+      <div><strong>Copyright Year:</strong> <span id="copyright-year">2023 - 2026</span></div>
+      <div><strong>Effective Date:</strong> <span id="copyright-effective-date">2026-11-01</span></div>
+      <div><strong>Governing Law:</strong> Indian Copyright Act, 1957 &amp; DMCA Title 17 U.S.C. § 512</div>
+    </div>
+  </section>
+
+  <!-- Designated Grievance Officer Card -->
+  <section class="officer-card">
+    <div class="officer-header">
+      <div class="officer-icon-box">⚖️</div>
+      <div class="officer-title-block">
+        <h2 id="copyright-officer-name">Designated Copyright &amp; Grievance Officer</h2>
+        <p>Statutory Point of Contact for Takedown Notices, Counter-Claims &amp; Licensing Queries</p>
+      </div>
+    </div>
+    <div class="officer-grid">
+      <div class="officer-grid-item">
+        <div class="officer-grid-label">Primary Redressal Email</div>
+        <div class="officer-grid-val"><a id="copyright-officer-email" href="mailto:dmca@csodisha.com">dmca@csodisha.com</a></div>
+      </div>
+      <div class="officer-grid-item">
+        <div class="officer-grid-label">Secondary / Legal Cell</div>
+        <div class="officer-grid-val"><a id="copyright-officer-secondary-email" href="mailto:legal@csodisha.com">legal@csodisha.com</a></div>
+      </div>
+      <div class="officer-grid-item">
+        <div class="officer-grid-label">Statutory Takedown SLA</div>
+        <div class="officer-grid-val" id="copyright-officer-sla">Acknowledgment within 24 Hours • Resolution in 36 Hours</div>
+      </div>
+      <div class="officer-grid-item" style="grid-column: 1 / -1;">
+        <div class="officer-grid-label">Postal / Physical Correspondence Address</div>
+        <div class="officer-grid-val" id="copyright-officer-address">Common Sense Odisha Academic Node, Legal &amp; Statutory Redressal Cell, Bhubaneswar / Balasore, Odisha - 756001, India</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sectional Clauses Container -->
+  <div id="copyright-clauses-container">
+    <!-- Clauses hydrated dynamically -->
+  </div>
+
+  <!-- Fair Use Statutory Notice Box -->
+  <section class="fair-use-card" id="copyright-fair-use-box">
+    <h3>
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Fair Dealing &amp; Educational De-Minimis Exemption Notice
+    </h3>
+    <p id="copyright-fair-use-notice">Common Sense Odisha operates strictly under Section 52(1)(a) of the Indian Copyright Act, 1957 (Fair Dealing for private or personal use, research, and criticism) and Title 17 U.S. Code § 107. Third-party examination logos, seal marks, syllabus excerpts, and gazette citations are invoked exclusively for factual nomination, educational identification, and public awareness across Odisha without any assertion of proprietary ownership.</p>
+  </section>
+</main>
+
+<script>
+(function() {
+  function escapeText(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getCategoryClass(cat) {
+    if (!cat) return '';
+    var c = String(cat).toLowerCase();
+    if (c.indexOf('intellectual') !== -1 || c.indexOf('ip') !== -1) return 'ip';
+    if (c.indexOf('fair') !== -1 || c.indexOf('statutory') !== -1) return 'fair';
+    if (c.indexOf('dmca') !== -1 || c.indexOf('takedown') !== -1) return 'dmca';
+    return '';
+  }
+
+  function hydrateCopyrightPolicy() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem('cso_copyright_config');
+    } catch (_) {}
+
+    var config = null;
+    if (raw) {
+      try {
+        config = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!config || typeof config !== 'object') {
+      config = {
+        meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        document: {
+          title: "Copyright Notice & DMCA Policy",
+          copyrightYear: "2023 - 2026",
+          effectiveDate: "2026-11-01",
+          badge: "Intellectual Property & Fair Dealing"
+        },
+        officer: {
+          name: "Designated Copyright & Grievance Officer",
+          email: "dmca@csodisha.com",
+          secondaryEmail: "legal@csodisha.com",
+          address: "Common Sense Odisha Academic Node, Legal & Statutory Redressal Cell, Bhubaneswar / Balasore, Odisha - 756001, India",
+          responseSlaHours: 36
+        },
+        clauses: [
+          { id: "CP-01", number: "1", title: "Proprietary Original Content & Editorial Compilations", category: "Intellectual Property", body: "All original analyses, curated editorial explanations, custom infographics, dynamic mock exam architectures, algorithms, interface layouts, and proprietary code hosted on Common Sense Odisha (csodisha.com) are the intellectual property of Common Sense Odisha and protected under the Indian Copyright Act, 1957, as well as applicable international copyright conventions.", active: true },
+          { id: "CP-02", number: "2", title: "Fair Dealing & Non-Commercial Educational Exemption", category: "Fair Dealing", body: "Third-party recruitment notifications, syllabi, official answer keys, question paper formats, and gazette notifications referenced or mirrored on this portal remain the exclusive property of their respective government examination authorities (including OPSC, OSSSC, OSSC, BPEO, and CHSE). These materials are published solely for non-profit academic research, student guidance, and fair criticism in strict compliance with Section 52(1)(a) of the Indian Copyright Act, 1957 and Title 17 U.S. Code § 107.", active: true },
+          { id: "CP-03", number: "3", title: "DMCA Takedown Notice & Notice-and-Takedown Protocol", category: "DMCA Compliance", body: "If you are a copyright owner, or authorized representative thereof, and believe that any content hosted on csodisha.com infringes upon your copyright under the DMCA or Indian law, you may submit a formal Notice of Infringement to our Designated Copyright Officer with: 1) Identification of copyrighted work; 2) Direct URL of infringing link; 3) Contact details; 4) Good faith statement.", active: true },
+          { id: "CP-04", number: "4", title: "Counter-Notification & Restoration Procedure", category: "DMCA Compliance", body: "If you believe content you uploaded or contributed was erroneously removed due to mistake or misidentification, you may submit a counter-notification to dmca@csodisha.com with physical/electronic signature, identification of removed material, and declaration under penalty of perjury.", active: true },
+          { id: "CP-05", number: "5", title: "Repeat Infringer Policy & Access Revocation", category: "Enforcement", body: "In appropriate circumstances and at our sole discretion, Common Sense Odisha will terminate or block access privileges of users, guest contributors, or community forum participants who are identified as repeat infringers of intellectual property rights.", active: true }
+        ],
+        fairUseNotice: "Common Sense Odisha operates strictly under Section 52(1)(a) of the Indian Copyright Act, 1957 (Fair Dealing for private or personal use, research, and criticism) and Title 17 U.S. Code § 107. Third-party examination logos, seal marks, syllabus excerpts, and gazette citations are invoked exclusively for factual nomination, educational identification, and public awareness across Odisha without any assertion of proprietary ownership."
+      };
+    }
+
+    var doc = config.document || {};
+    var off = config.officer || {};
+
+    // Header & Badges
+    var badgeEl = document.getElementById('copyright-badge');
+    if (badgeEl && doc.badge) badgeEl.textContent = doc.badge;
+
+    var vBadgeEl = document.getElementById('copyright-version-badge');
+    if (vBadgeEl && config.meta && config.meta.version) {
+      vBadgeEl.textContent = "Version " + config.meta.version;
+    }
+
+    var titleEl = document.getElementById('copyright-title');
+    if (titleEl && doc.title) titleEl.textContent = doc.title;
+
+    var yearEl = document.getElementById('copyright-year');
+    if (yearEl && doc.copyrightYear) yearEl.textContent = doc.copyrightYear;
+
+    var dateEl = document.getElementById('copyright-effective-date');
+    if (dateEl && doc.effectiveDate) dateEl.textContent = doc.effectiveDate;
+
+    // Designated Officer
+    var offNameEl = document.getElementById('copyright-officer-name');
+    if (offNameEl && off.name) offNameEl.textContent = off.name;
+
+    var offEmailEl = document.getElementById('copyright-officer-email');
+    if (offEmailEl && off.email) {
+      offEmailEl.textContent = off.email;
+      offEmailEl.href = "mailto:" + off.email;
+    }
+
+    var offSecEmailEl = document.getElementById('copyright-officer-secondary-email');
+    if (offSecEmailEl && off.secondaryEmail) {
+      offSecEmailEl.textContent = off.secondaryEmail;
+      offSecEmailEl.href = "mailto:" + off.secondaryEmail;
+    }
+
+    var offAddressEl = document.getElementById('copyright-officer-address');
+    if (offAddressEl && off.address) offAddressEl.textContent = off.address;
+
+    var offSlaEl = document.getElementById('copyright-officer-sla');
+    if (offSlaEl && off.responseSlaHours) {
+      offSlaEl.textContent = "Acknowledgment within 24 Hours • Resolution in " + off.responseSlaHours + " Hours";
+    }
+
+    // Fair Use Notice
+    var fuEl = document.getElementById('copyright-fair-use-notice');
+    if (fuEl && config.fairUseNotice) fuEl.textContent = config.fairUseNotice;
+
+    // Clauses
+    var clausesWrap = document.getElementById('copyright-clauses-container');
+    var clausesList = Array.isArray(config.clauses) ? config.clauses.filter(function(cl) { return cl.active !== false; }) : [];
+    if (clausesWrap && clausesList.length > 0) {
+      clausesWrap.innerHTML = clausesList.map(function(cl, idx) {
+        var num = cl.number || (idx + 1);
+        var catClass = getCategoryClass(cl.category);
+        return '<article class="clause-card">' +
+               '  <div class="clause-header">' +
+               '    <div class="clause-badge-wrap">' +
+               '      <span class="clause-num">§' + escapeText(num) + '</span>' +
+               '      <span class="clause-cat ' + catClass + '">' + escapeText(cl.category || 'Statutory') + '</span>' +
+               '    </div>' +
+               '  </div>' +
+               '  <h2 class="clause-title">' + escapeText(cl.title || '') + '</h2>' +
+               '  <div class="clause-body" style="margin-top: 10px;">' + escapeText(cl.body || '') + '</div>' +
+               '</article>';
+      }).join('');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateCopyrightPolicy);
+  } else {
+    hydrateCopyrightPolicy();
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'cso_copyright_config') {
+      hydrateCopyrightPolicy();
+    }
+  });
+})();
+</script>
+<script src="assets/cso-auth-client.js"></script>
+<script src="assets/shared-header.js"></script>
+</body>
+</html>

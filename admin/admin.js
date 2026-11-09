@@ -343,6 +343,8 @@ async function loadMasterNavigation() {
         renderTermsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-03-006') {
         renderCookiePolicyWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-03-007') {
+        renderCopyrightWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -8554,6 +8556,618 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+    /**
+     * VIEW 3g: Copyright Notice & DMCA Studio (module-03-007)
+     */
+    function renderCopyrightWorkspace(container) {
+      const root = container || dom.workspaceRoot || document.getElementById('workspaceRoot');
+      if (!root) return;
+
+      try {
+        root.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 400px !important; width: 100% !important; opacity: 1 !important; visibility: visible !important;';
+        root.classList.remove('hidden');
+
+        // Header Breadcrumb
+        if (dom.breadcrumbFolder) dom.breadcrumbFolder.textContent = "Website Information & Legal";
+        if (dom.breadcrumbModule) dom.breadcrumbModule.textContent = "Copyright & DMCA (module-03-007)";
+
+        // Top Action Toolbar
+        if (dom.moduleHeaderActions) {
+          dom.moduleHeaderActions.innerHTML = `
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btnSaveCopyrightStudio" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Save & Publish Policy
+              </button>
+              <a href="/copyright.html" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                Preview Live Page ↗
+              </a>
+              <button id="btnToggleCopyrightJsonDrawer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                Raw JSON Editor
+              </button>
+              <button id="btnExportCopyrightConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export Config
+              </button>
+              <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Import Config
+                <input id="inputImportCopyrightConfig" type="file" accept=".json,application/json" class="hidden">
+              </label>
+              <button id="btnResetCopyrightConfig" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Reset to Default
+              </button>
+            </div>
+          `;
+        }
+
+        // Ingest Copyright Config
+        let copyConfig = (window.CSOSuperStore && typeof window.CSOSuperStore.getCopyrightConfig === 'function')
+          ? window.CSOSuperStore.getCopyrightConfig()
+          : {
+              meta: { version: "2.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+              document: {
+                title: "Copyright Notice & DMCA Policy",
+                copyrightYear: "2023 - 2026",
+                effectiveDate: "2026-11-01",
+                badge: "Intellectual Property & Fair Dealing"
+              },
+              officer: {
+                name: "Designated Copyright & Grievance Officer",
+                email: "dmca@csodisha.com",
+                secondaryEmail: "legal@csodisha.com",
+                address: "Common Sense Odisha Academic Node, Legal & Statutory Redressal Cell, Bhubaneswar / Balasore, Odisha - 751001",
+                slaResponseHours: 48
+              },
+              clauses: [],
+              fairUseNotice: "Content is published solely for candidate guidance in Odisha. Commercial reproduction or unauthorized paid redistribution is strictly prohibited."
+            };
+
+        copyConfig.document = copyConfig.document || {};
+        copyConfig.officer = copyConfig.officer || {};
+        let currentClauses = Array.isArray(copyConfig.clauses) ? JSON.parse(JSON.stringify(copyConfig.clauses)) : [];
+
+        function syncCopyrightJsonEditor() {
+          const jsonTextarea = document.getElementById('textareaCopyrightRawJson');
+          if (jsonTextarea) {
+            const snapshot = gatherCopyrightFormState();
+            jsonTextarea.value = JSON.stringify(snapshot, null, 2);
+          }
+        }
+
+        function gatherCopyrightFormState() {
+          const titleInput = document.getElementById('copyrightInputTitle');
+          const yearInput = document.getElementById('copyrightInputYear');
+          const effDateInput = document.getElementById('copyrightInputDate');
+          const badgeInput = document.getElementById('copyrightInputBadge');
+
+          const officerName = document.getElementById('copyrightOfficerName');
+          const officerEmail = document.getElementById('copyrightOfficerEmail');
+          const officerSecEmail = document.getElementById('copyrightOfficerSecEmail');
+          const officerSla = document.getElementById('copyrightOfficerSla');
+          const officerAddr = document.getElementById('copyrightOfficerAddress');
+
+          const fairUseText = document.getElementById('copyrightInputFairUse');
+
+          return {
+            meta: {
+              version: (copyConfig.meta && copyConfig.meta.version) || "2.0",
+              lastEditedBy: "admin@csodisha.com",
+              updatedAt: (copyConfig.meta && copyConfig.meta.updatedAt) || new Date().toISOString()
+            },
+            document: {
+              title: titleInput ? titleInput.value.trim() : (copyConfig.document?.title || ''),
+              copyrightYear: yearInput ? yearInput.value.trim() : (copyConfig.document?.copyrightYear || '2023 - 2026'),
+              effectiveDate: effDateInput ? effDateInput.value.trim() : (copyConfig.document?.effectiveDate || '2026-11-01'),
+              badge: badgeInput ? badgeInput.value.trim() : (copyConfig.document?.badge || 'Intellectual Property & Fair Dealing')
+            },
+            officer: {
+              name: officerName ? officerName.value.trim() : (copyConfig.officer?.name || ''),
+              email: officerEmail ? officerEmail.value.trim() : (copyConfig.officer?.email || 'dmca@csodisha.com'),
+              secondaryEmail: officerSecEmail ? officerSecEmail.value.trim() : (copyConfig.officer?.secondaryEmail || 'legal@csodisha.com'),
+              address: officerAddr ? officerAddr.value.trim() : (copyConfig.officer?.address || ''),
+              slaResponseHours: officerSla ? parseInt(officerSla.value, 10) || 48 : (copyConfig.officer?.slaResponseHours || 48)
+            },
+            clauses: currentClauses,
+            fairUseNotice: fairUseText ? fairUseText.value.trim() : (copyConfig.fairUseNotice || '')
+          };
+        }
+
+        function renderCopyrightClausesList() {
+          const container = document.getElementById('copyrightClausesContainer');
+          if (!container) return;
+
+          if (currentClauses.length === 0) {
+            container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 font-mono">No copyright clauses configured. Add one below.</div>`;
+            return;
+          }
+
+          const categoryBadges = {
+            'Proprietary': 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60',
+            'Fair Use': 'bg-cyan-950/80 text-cyan-400 border-cyan-800/60',
+            'Trademarks': 'bg-amber-950/80 text-amber-400 border-amber-800/60',
+            'Takedown': 'bg-indigo-950/80 text-indigo-400 border-indigo-800/60',
+            'Enforcement': 'bg-rose-950/80 text-rose-400 border-rose-800/60'
+          };
+
+          container.innerHTML = currentClauses.map((cl, idx) => {
+            const badgeClass = categoryBadges[cl.category] || 'bg-slate-800 text-slate-300 border-slate-700';
+            return `
+              <div class="p-4 rounded-xl bg-[#081220] border border-brand-border space-y-3 group" data-copyright-clause-index="${idx}">
+                <div class="flex items-center justify-between gap-3 border-b border-brand-border/60 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full ${cl.active !== false ? 'bg-indigo-400' : 'bg-slate-500'}"></span>
+                    <span class="text-xs font-mono font-bold text-slate-400">${escapeHtml(cl.id || `CP-${idx+1}`)}</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${badgeClass}">${escapeHtml(cl.category || 'Fair Use')}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                      <input type="checkbox" class="copy-clause-active-checkbox rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-0" data-index="${idx}" ${cl.active !== false ? 'checked' : ''}>
+                      Active
+                    </label>
+                    <button data-move-copy-clause-up="${idx}" class="btn-copy-clause-move-up px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up" ${idx === 0 ? 'disabled' : ''}>
+                      ▲
+                    </button>
+                    <button data-move-copy-clause-down="${idx}" class="btn-copy-clause-move-down px-1.5 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition ${idx === currentClauses.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down" ${idx === currentClauses.length - 1 ? 'disabled' : ''}>
+                      ▼
+                    </button>
+                    <button data-remove-copy-clause="${idx}" class="btn-remove-copy-clause px-2 py-1 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-950/80 rounded border border-rose-900/50 transition">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div class="md:col-span-1">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Category</label>
+                    <select class="copy-clause-category-select w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}">
+                      <option value="Proprietary" ${cl.category === 'Proprietary' ? 'selected' : ''}>Proprietary</option>
+                      <option value="Fair Use" ${cl.category === 'Fair Use' ? 'selected' : ''}>Fair Use</option>
+                      <option value="Trademarks" ${cl.category === 'Trademarks' ? 'selected' : ''}>Trademarks</option>
+                      <option value="Takedown" ${cl.category === 'Takedown' ? 'selected' : ''}>Takedown</option>
+                      <option value="Enforcement" ${cl.category === 'Enforcement' ? 'selected' : ''}>Enforcement</option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-3">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
+                    <input type="text" class="copy-clause-title-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald" data-index="${idx}" value="${escapeHtml(cl.title || '')}">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Statutory Provisions & Content</label>
+                  <textarea rows="2" class="copy-clause-body-input w-full bg-[#040810] border border-brand-border rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed" data-index="${idx}">${escapeHtml(cl.body || '')}</textarea>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          container.querySelectorAll('.copy-clause-active-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].active = e.target.checked;
+                syncCopyrightJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.copy-clause-category-select').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].category = e.target.value;
+                renderCopyrightClausesList();
+                syncCopyrightJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.copy-clause-title-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].title = e.target.value;
+                syncCopyrightJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.copy-clause-body-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+              const index = parseInt(e.target.getAttribute('data-index'), 10);
+              if (!isNaN(index) && currentClauses[index]) {
+                currentClauses[index].body = e.target.value;
+                syncCopyrightJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-copy-clause-move-up').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.getAttribute('data-move-copy-clause-up'), 10);
+              if (!isNaN(idx) && idx > 0) {
+                const temp = currentClauses[idx];
+                currentClauses[idx] = currentClauses[idx - 1];
+                currentClauses[idx - 1] = temp;
+                renderCopyrightClausesList();
+                syncCopyrightJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-copy-clause-move-down').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt(e.currentTarget.getAttribute('data-move-copy-clause-down'), 10);
+              if (!isNaN(idx) && idx < currentClauses.length - 1) {
+                const temp = currentClauses[idx];
+                currentClauses[idx] = currentClauses[idx + 1];
+                currentClauses[idx + 1] = temp;
+                renderCopyrightClausesList();
+                syncCopyrightJsonEditor();
+              }
+            });
+          });
+
+          container.querySelectorAll('.btn-remove-copy-clause').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const index = parseInt(e.currentTarget.getAttribute('data-remove-copy-clause'), 10);
+              if (!isNaN(index) && index >= 0 && index < currentClauses.length) {
+                const removed = currentClauses.splice(index, 1)[0];
+                renderCopyrightClausesList();
+                syncCopyrightJsonEditor();
+                showToast(`Clause "${removed.title}" removed.`, "info");
+              }
+            });
+          });
+        }
+
+        root.innerHTML = `
+          <div class="space-y-6 font-sans">
+            <!-- Overview Card -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Copyright Notice & DMCA Takedown Studio
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-800/60">module-03-007</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Control proprietary copyright notices, Indian Copyright Act 1957 fair dealing safe harbors, designated DMCA agent coordinates, and repeat infringer policies.</p>
+              </div>
+              <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg flex items-center gap-3">
+                <span>Version: <strong class="text-cyan-400">${escapeHtml(copyConfig.meta?.version || '2.0')}</strong></span>
+                <span>Updated: <span id="copyrightLastUpdated" class="text-emerald-400 font-bold">${new Date(copyConfig.meta?.updatedAt || Date.now()).toLocaleDateString()}</span></span>
+              </div>
+            </div>
+
+            <!-- Card 4: Raw State Developer Console (Collapsible / Drawer) -->
+            <div id="copyrightJsonDrawer" class="hidden p-5 rounded-xl bg-slate-950 border border-purple-800/60 shadow-lg space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-purple-900/60">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-purple-200 uppercase tracking-wider">
+                    Raw State Developer Console (JSON)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-purple-400">Direct State Mutation Buffer</span>
+              </div>
+              <p class="text-xs text-slate-400">Directly edit the raw JSON configuration state. Useful for legal audits, compliance verification, and schema migrations.</p>
+              <textarea id="textareaCopyrightRawJson" rows="12" class="w-full bg-[#030712] border border-purple-900/50 rounded-lg p-3 text-white text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-purple-400"></textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btnApplyCopyrightRawJsonChanges" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow transition flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Apply JSON Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 1: Document Metadata & Copyright Timeline -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Copyright Document Metadata & Year Epoch
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Notice Title <span class="text-rose-400">*</span></label>
+                  <input id="copyrightInputTitle" type="text" value="${escapeHtml(copyConfig.document?.title || 'Copyright Notice & DMCA Policy')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Copyright Year Range</label>
+                  <input id="copyrightInputYear" type="text" value="${escapeHtml(copyConfig.document?.copyrightYear || '2023 - 2026')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Effective Date <span class="text-rose-400">*</span></label>
+                  <input id="copyrightInputDate" type="date" value="${escapeHtml(copyConfig.document?.effectiveDate || '2026-11-01')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Badge Tagline</label>
+                <input id="copyrightInputBadge" type="text" value="${escapeHtml(copyConfig.document?.badge || 'Intellectual Property & Fair Dealing')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+              </div>
+            </div>
+
+            <!-- Card 2: Designated DMCA & Statutory Grievance Officer -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Designated Copyright & Statutory Grievance Officer
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Officer Role / Designation <span class="text-rose-400">*</span></label>
+                  <input id="copyrightOfficerName" type="text" value="${escapeHtml(copyConfig.officer?.name || 'Designated Copyright & Grievance Officer')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Primary DMCA Email <span class="text-rose-400">*</span></label>
+                  <input id="copyrightOfficerEmail" type="email" value="${escapeHtml(copyConfig.officer?.email || 'dmca@csodisha.com')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Legal Escalation Email</label>
+                  <input id="copyrightOfficerSecEmail" type="email" value="${escapeHtml(copyConfig.officer?.secondaryEmail || 'legal@csodisha.com')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="sm:col-span-3">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Physical Liaison Address</label>
+                  <input id="copyrightOfficerAddress" type="text" value="${escapeHtml(copyConfig.officer?.address || '')}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Takedown SLA (Hours)</label>
+                  <input id="copyrightOfficerSla" type="number" min="12" max="168" value="${copyConfig.officer?.slaResponseHours || 48}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Sectional Legal Clauses (Repeater) -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                    Sectional Copyright & DMCA Clauses (Extensible Repeater)
+                  </h3>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400">Statutory Provisions & Takedown Rules</span>
+              </div>
+
+              <!-- Clauses List -->
+              <div id="copyrightClausesContainer" class="space-y-3"></div>
+
+              <!-- Add Clause Inline Form -->
+              <div class="p-4 rounded-xl bg-slate-900/60 border border-brand-border/80 space-y-3">
+                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">+ Add Copyright Clause</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div class="sm:col-span-1">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Category</label>
+                    <select id="selectNewCopyClauseCategory" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                      <option value="Proprietary">Proprietary</option>
+                      <option value="Fair Use">Fair Use</option>
+                      <option value="Trademarks">Trademarks</option>
+                      <option value="Takedown">Takedown</option>
+                      <option value="Enforcement">Enforcement</option>
+                    </select>
+                  </div>
+                  <div class="sm:col-span-3">
+                    <label class="block text-[11px] font-medium text-slate-400 mb-1">Clause Title</label>
+                    <input id="inputNewCopyClauseTitle" type="text" placeholder="e.g. Counter-Notification Procedure" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-400 mb-1">Statutory Clause Content</label>
+                  <textarea id="textareaNewCopyClauseBody" rows="2" placeholder="Full statutory terms..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald"></textarea>
+                </div>
+                <div class="flex justify-end">
+                  <button id="btnAddCopyClauseAction" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    + Add Clause
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Fair Use & Non-Commercial Notice -->
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md text-slate-200 space-y-4">
+              <div class="flex items-center gap-2 pb-3 border-b border-brand-border">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                  Fair Use & Candidate Educational Purpose Assurance
+                </h3>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1">Fair Use Notice Statement</label>
+                <textarea id="copyrightInputFairUse" rows="2" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${escapeHtml(copyConfig.fairUseNotice || '')}</textarea>
+              </div>
+            </div>
+          </div>
+        `;
+
+        renderCopyrightClausesList();
+        syncCopyrightJsonEditor();
+
+        // Drawer toggle
+        document.getElementById('btnToggleCopyrightJsonDrawer')?.addEventListener('click', () => {
+          const drawer = document.getElementById('copyrightJsonDrawer');
+          if (drawer) {
+            drawer.classList.toggle('hidden');
+            syncCopyrightJsonEditor();
+          }
+        });
+
+        // Apply raw JSON changes
+        document.getElementById('btnApplyCopyrightRawJsonChanges')?.addEventListener('click', () => {
+          const jsonText = document.getElementById('textareaCopyrightRawJson')?.value;
+          if (!jsonText) return;
+          try {
+            const parsed = JSON.parse(jsonText);
+            if (parsed && typeof parsed === 'object') {
+              copyConfig = parsed;
+              copyConfig.document = copyConfig.document || {};
+              copyConfig.officer = copyConfig.officer || {};
+              currentClauses = Array.isArray(copyConfig.clauses) ? JSON.parse(JSON.stringify(copyConfig.clauses)) : [];
+
+              // Update form inputs
+              const t = document.getElementById('copyrightInputTitle');
+              const yr = document.getElementById('copyrightInputYear');
+              const d = document.getElementById('copyrightInputDate');
+              const b = document.getElementById('copyrightInputBadge');
+
+              const on = document.getElementById('copyrightOfficerName');
+              const oe = document.getElementById('copyrightOfficerEmail');
+              const ose = document.getElementById('copyrightOfficerSecEmail');
+              const oa = document.getElementById('copyrightOfficerAddress');
+              const os = document.getElementById('copyrightOfficerSla');
+
+              const fu = document.getElementById('copyrightInputFairUse');
+
+              if (t) t.value = copyConfig.document?.title || '';
+              if (yr) yr.value = copyConfig.document?.copyrightYear || '2023 - 2026';
+              if (d) d.value = copyConfig.document?.effectiveDate || '2026-11-01';
+              if (b) b.value = copyConfig.document?.badge || '';
+
+              if (on) on.value = copyConfig.officer?.name || '';
+              if (oe) oe.value = copyConfig.officer?.email || '';
+              if (ose) ose.value = copyConfig.officer?.secondaryEmail || '';
+              if (oa) oa.value = copyConfig.officer?.address || '';
+              if (os) os.value = copyConfig.officer?.slaResponseHours || 48;
+
+              if (fu) fu.value = copyConfig.fairUseNotice || '';
+
+              renderCopyrightClausesList();
+              showToast("Raw JSON parsed and applied to copyright form.", "success");
+            }
+          } catch (err) {
+            showToast("JSON Syntax Error: " + err.message, "danger");
+          }
+        });
+
+        // Add Clause Handler
+        document.getElementById('btnAddCopyClauseAction')?.addEventListener('click', () => {
+          const catInput = document.getElementById('selectNewCopyClauseCategory');
+          const titleInput = document.getElementById('inputNewCopyClauseTitle');
+          const bodyInput = document.getElementById('textareaNewCopyClauseBody');
+
+          const cat = catInput?.value || 'Fair Use';
+          const title = titleInput?.value.trim() || '';
+          const body = bodyInput?.value.trim() || '';
+
+          if (!title || !body) {
+            showToast("Clause title and statutory terms are required.", "warning");
+            return;
+          }
+
+          currentClauses.push({
+            id: `CP-${String(currentClauses.length + 1).padStart(2, '0')}`,
+            number: String(currentClauses.length + 1),
+            title: title,
+            category: cat,
+            body: body,
+            active: true
+          });
+
+          titleInput.value = '';
+          bodyInput.value = '';
+          renderCopyrightClausesList();
+          syncCopyrightJsonEditor();
+          showToast(`Clause "${title}" added to active draft.`, "info");
+        });
+
+        // Save & Publish Handler
+        document.getElementById('btnSaveCopyrightStudio')?.addEventListener('click', () => {
+          const payload = gatherCopyrightFormState();
+
+          if (!payload.document.title || !payload.officer.email) {
+            showToast("Document title and DMCA officer email are required.", "warning");
+            return;
+          }
+
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.saveCopyrightConfig === 'function') {
+            const saved = window.CSOSuperStore.saveCopyrightConfig(payload);
+            copyConfig = saved;
+            const dateEl = document.getElementById('copyrightLastUpdated');
+            if (dateEl && saved.meta?.updatedAt) {
+              dateEl.textContent = new Date(saved.meta.updatedAt).toLocaleDateString();
+            }
+            syncCopyrightJsonEditor();
+            showToast("Copyright & DMCA policy published successfully!", "success");
+          }
+        });
+
+        // Export JSON Handler
+        document.getElementById('btnExportCopyrightConfig')?.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportCopyrightManifest === 'function') {
+            const filename = window.CSOSuperStore.exportCopyrightManifest();
+            showToast(`Copyright configuration exported: ${filename}`, "success");
+          }
+        });
+
+        // Import JSON Handler
+        document.getElementById('inputImportCopyrightConfig')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const content = event.target?.result;
+              if (typeof content === 'string' && window.CSOSuperStore && typeof window.CSOSuperStore.importCopyrightConfig === 'function') {
+                let parsed;
+                try {
+                  parsed = JSON.parse(content);
+                  if (parsed && parsed.copyright) parsed = parsed.copyright;
+                } catch (_) {}
+
+                const imported = window.CSOSuperStore.importCopyrightConfig(JSON.stringify(parsed));
+                showToast("Copyright policy imported successfully!", "success");
+                renderCopyrightWorkspace(root);
+              }
+            } catch (err) {
+              showToast("Import failed: " + err.message, "danger");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset to Default Handler
+        document.getElementById('btnResetCopyrightConfig')?.addEventListener('click', () => {
+          if (confirm("Are you sure you want to restore factory default copyright settings? All unsaved customizations will be reset.")) {
+            if (window.CSOSuperStore && typeof window.CSOSuperStore.resetCopyrightConfig === 'function') {
+              window.CSOSuperStore.resetCopyrightConfig();
+              showToast("Copyright policy restored to factory defaults.", "info");
+              renderCopyrightWorkspace(root);
+            }
+          }
+        });
+
+        // Form input change listeners to sync with raw JSON
+        ['copyrightInputTitle', 'copyrightInputYear', 'copyrightInputDate', 'copyrightInputBadge', 'copyrightOfficerName', 'copyrightOfficerEmail', 'copyrightOfficerSecEmail', 'copyrightOfficerAddress', 'copyrightOfficerSla', 'copyrightInputFairUse'].forEach(id => {
+          document.getElementById(id)?.addEventListener('input', syncCopyrightJsonEditor);
+        });
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-03-007 (Copyright & DMCA)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
     /**
