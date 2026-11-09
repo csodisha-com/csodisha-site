@@ -2360,6 +2360,181 @@
       return filename;
     },
 
+    // 23. Trash & Recovery Engine (module-02-011)
+    getTrashedPages(typeFilter = 'ALL', search = '') {
+      let trash = null;
+      try {
+        const raw = localStorage.getItem('cso_pages_trash');
+        if (raw) trash = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!trash || !Array.isArray(trash) || trash.length === 0) {
+        trash = [
+          {
+            id: 'TRSH-001',
+            originalId: 'PAGE-099',
+            title: 'OSSC CGL 2024 Preliminary Notice (Superseded)',
+            path: '/notices/archived-ossc-cgl-2024-prelims.html',
+            type: 'Page',
+            deletedBy: 'admin@csodisha.com',
+            deletedAt: Date.now() - 172800000,
+            expiresAt: Date.now() + (28 * 86400000),
+            originalPayload: {
+              id: 'PAGE-099',
+              title: 'OSSC CGL 2024 Preliminary Notice',
+              path: '/notices/archived-ossc-cgl-2024-prelims.html',
+              file: 'archived-ossc-cgl-2024-prelims.html',
+              template: 'Standard Content',
+              status: 'Live',
+              sizeKb: '24.1',
+              lastModified: '2024-11-01',
+              htmlContent: '<article class="p-8"><h1>Superseded Notice</h1><p>Archived examination syllabus.</p></article>'
+            }
+          },
+          {
+            id: 'TRSH-002',
+            originalId: 'DFT-088',
+            title: 'Obsolete Teaching Pedagogy Draft v1.0',
+            path: '/drafts/old-syllabus-guide-draft.html',
+            type: 'Draft',
+            deletedBy: 'editorial@csodisha.com',
+            deletedAt: Date.now() - 432000000,
+            expiresAt: Date.now() + (25 * 86400000),
+            originalPayload: {
+              id: 'DFT-088',
+              title: 'Obsolete Teaching Pedagogy Draft v1.0',
+              path: '/drafts/old-syllabus-guide-draft.html',
+              author: 'editorial@csodisha.com',
+              progress: 50,
+              status: 'In Progress',
+              markup: '<div class="p-6"><h1>Old Teaching Pedagogy Draft</h1></div>'
+            }
+          },
+          {
+            id: 'TRSH-003',
+            originalId: 'LP-077',
+            title: 'Expired 2025 Special Recruitment Campaign',
+            path: '/landing/expired-special-drive-2025.html',
+            type: 'Campaign',
+            deletedBy: 'admin@csodisha.com',
+            deletedAt: Date.now() - 1036800000,
+            expiresAt: Date.now() + (18 * 86400000),
+            originalPayload: {
+              id: 'LP-077',
+              title: 'Expired 2025 Special Recruitment',
+              slug: 'expired-special-drive-2025',
+              path: '/landing/expired-special-drive-2025.html',
+              category: 'General',
+              status: 'Paused',
+              views: 320,
+              conversions: 12,
+              conversionRate: '3.8%',
+              expiry: '2025-12-31'
+            }
+          }
+        ];
+
+        try {
+          localStorage.setItem('cso_pages_trash', JSON.stringify(trash));
+        } catch (_) {}
+      }
+
+      const tFilter = (typeFilter || 'ALL').toUpperCase();
+      const sq = (search || '').toLowerCase().trim();
+
+      return trash.filter(item => {
+        if (tFilter !== 'ALL' && (item.type || '').toUpperCase() !== tFilter) {
+          return false;
+        }
+        if (sq) {
+          const matchTitle = (item.title || '').toLowerCase().includes(sq);
+          const matchPath = (item.path || '').toLowerCase().includes(sq);
+          const matchBy = (item.deletedBy || '').toLowerCase().includes(sq);
+          if (!matchTitle && !matchPath && !matchBy) return false;
+        }
+        return true;
+      }).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+    },
+
+    saveTrashedPages(trash) {
+      save('cso_pages_trash', trash);
+    },
+
+    restoreFromTrash(trashId) {
+      const trash = this.getTrashedPages('ALL', '');
+      const item = trash.find(t => t.id === trashId);
+      if (!item) {
+        throw new Error(`Trash record ${trashId} not found`);
+      }
+
+      if (item.type === 'Page') {
+        const pages = this.getAllPages('ALL', '');
+        pages.unshift(item.originalPayload);
+        this.saveAllPages(pages);
+      } else if (item.type === 'Draft') {
+        const drafts = this.getPageDrafts('ALL');
+        drafts.unshift(item.originalPayload);
+        this.savePageDrafts(drafts);
+      } else if (item.type === 'Campaign') {
+        const campaigns = this.getLandingPages('ALL', 'ALL', '');
+        campaigns.unshift(item.originalPayload);
+        this.saveLandingPages(campaigns);
+      }
+
+      // Remove from trash
+      const remaining = trash.filter(t => t.id !== trashId);
+      this.saveTrashedPages(remaining);
+
+      this.logAudit('PAGE_RESTORED_FROM_TRASH', 'RECYCLE_BIN', `Item ${item.id} ("${item.title}", ${item.type}) restored to active repository.`);
+      return { success: true, item };
+    },
+
+    permanentlyDeleteTrashItem(trashId) {
+      let trash = this.getTrashedPages('ALL', '');
+      const prevLen = trash.length;
+      trash = trash.filter(t => t.id !== trashId);
+      if (trash.length !== prevLen) {
+        this.saveTrashedPages(trash);
+        this.logAudit('PAGE_PERMANENTLY_PURGED', 'RECYCLE_BIN', `Trashed item ${trashId} permanently purged.`);
+        return true;
+      }
+      return false;
+    },
+
+    emptyTrash() {
+      const count = this.getTrashedPages('ALL', '').length;
+      this.saveTrashedPages([]);
+      this.logAudit('RECYCLE_BIN_EMPTIED', 'RECYCLE_BIN', `Recycle bin emptied (${count} assets purged).`);
+      return count;
+    },
+
+    exportTrashManifest() {
+      const trash = this.getTrashedPages('ALL', '');
+      const timestamp = Date.now();
+      const filename = `cso-recycle-bin-manifest-${timestamp}.json`;
+      const bundle = {
+        recycleBinManifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        retentionPolicy: "30-Day Auto Purge",
+        totalTrashedItems: trash.length,
+        trashManifest: trash
+      };
+
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.logAudit('TRASH_MANIFEST_EXPORTED', 'DATA_EXPORT', `Recycle bin manifest exported (${filename}).`);
+      return filename;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;

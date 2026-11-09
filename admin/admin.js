@@ -313,6 +313,8 @@ async function loadMasterNavigation() {
         renderDraftsAndPreviewsWorkspace();
       } else if (moduleId === 'module-02-010') {
         renderScheduledPagesWorkspace();
+      } else if (moduleId === 'module-02-011') {
+        renderTrashAndRestoreWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -4532,6 +4534,351 @@ async function loadMasterNavigation() {
             showToast(`Release "${created.title}" scheduled for ${new Date(publishAt).toLocaleString()}!`, "success");
             updateKpis();
             renderSchedulesTable();
+          }
+        });
+      });
+    }
+
+    /**
+     * VIEW 2k: Recycle Bin & Trash Recovery Engine (module-02-011)
+     */
+    function renderTrashAndRestoreWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Trash & Restore (module-02-011)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnEmptyTrashTop" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-rose-600 hover:bg-rose-500 text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Empty Trash Now
+          </button>
+          <button id="btnExportTrashJson" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Manifest (JSON)
+          </button>
+        </div>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  System Recycle Bin & Soft-Deleted Asset Vault
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-011</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Recover mistakenly deleted public routes, restore archived drafts and campaign gateways, or enforce permanent zero-trust storage purges.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-xs font-mono">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  30-Day Auto Purge Cycle
+                </span>
+              </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Total Trashed Items</span>
+                <div id="kpiTotalTrash" class="text-xl font-bold font-mono text-white mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Recoverable assets</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Trashed Pages</span>
+                <div id="kpiTrashPages" class="text-xl font-bold font-mono text-cyan-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Static route backups</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block font-mono">Drafts & Campaigns</span>
+                <div id="kpiTrashDrafts" class="text-xl font-bold font-mono text-amber-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">Staged and promotional files</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Tabs & Search Bar -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div id="trashTypeTabsContainer" class="flex flex-wrap items-center gap-1.5">
+              <button data-type="ALL" class="trash-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white">All Items</button>
+              <button data-type="Page" class="trash-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Pages</button>
+              <button data-type="Draft" class="trash-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Drafts</button>
+              <button data-type="Campaign" class="trash-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300">Campaigns</button>
+            </div>
+
+            <!-- Search input -->
+            <div class="relative min-w-[240px]">
+              <input id="trashSearchInput" type="text" placeholder="Search title or deleted route..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-8 pr-3 py-1.5 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+              <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+          </div>
+
+          <!-- Trashed Assets Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Trash Manifest Register
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono" id="trashCountBadge">-- trashed assets</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Trash ID</th>
+                    <th class="py-2.5 px-4 font-semibold">Asset Title & Original Route</th>
+                    <th class="py-2.5 px-4 font-semibold">Type</th>
+                    <th class="py-2.5 px-4 font-semibold">Deleted By</th>
+                    <th class="py-2.5 px-4 font-semibold">Deleted Date</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Retention</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="trashTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      let activeTypeFilter = 'ALL';
+      let activeSearch = '';
+
+      function updateKpis() {
+        const allTrash = (window.CSOSuperStore && typeof window.CSOSuperStore.getTrashedPages === 'function')
+          ? window.CSOSuperStore.getTrashedPages('ALL', '')
+          : [];
+
+        const pageCount = allTrash.filter(t => t.type === 'Page').length;
+        const otherCount = allTrash.filter(t => t.type !== 'Page').length;
+
+        const elTotal = document.getElementById('kpiTotalTrash');
+        const elPages = document.getElementById('kpiTrashPages');
+        const elDrafts = document.getElementById('kpiTrashDrafts');
+
+        if (elTotal) elTotal.textContent = allTrash.length;
+        if (elPages) elPages.textContent = pageCount;
+        if (elDrafts) elDrafts.textContent = otherCount;
+      }
+
+      function renderTrashTable() {
+        const tbody = document.getElementById('trashTableBody');
+        const badge = document.getElementById('trashCountBadge');
+        if (!tbody) return;
+
+        const items = (window.CSOSuperStore && typeof window.CSOSuperStore.getTrashedPages === 'function')
+          ? window.CSOSuperStore.getTrashedPages(activeTypeFilter, activeSearch)
+          : [];
+
+        if (badge) badge.textContent = `${items.length} recoverable assets in bin`;
+
+        if (items.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">
+                Recycle bin is empty. No deleted pages or drafts.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = items.map(item => {
+          const typeBadgeColor = item.type === 'Page' ? 'text-cyan-400 border-cyan-800/60 bg-cyan-950/40'
+            : item.type === 'Draft' ? 'text-amber-400 border-amber-800/60 bg-amber-950/40'
+            : 'text-purple-400 border-purple-800/60 bg-purple-950/40';
+
+          const daysLeft = Math.max(0, Math.ceil((item.expiresAt - Date.now()) / (86400000)));
+          const deletedDateStr = new Date(item.deletedAt).toLocaleDateString();
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-rose-400 whitespace-nowrap">${item.id}</td>
+              <td class="py-2.5 px-4">
+                <div class="font-bold text-white">${item.title}</div>
+                <div class="text-[10px] font-mono text-slate-400 mt-0.5">${item.path}</div>
+              </td>
+              <td class="py-2.5 px-4 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${typeBadgeColor}">
+                  ${item.type}
+                </span>
+              </td>
+              <td class="py-2.5 px-4 font-mono text-slate-300 text-[11px] whitespace-nowrap">${item.deletedBy}</td>
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-xs whitespace-nowrap">${deletedDateStr}</td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                  ${daysLeft} days left
+                </span>
+              </td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button data-id="${item.id}" class="btn-inspect-trash px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold border border-brand-border transition">
+                    Inspect
+                  </button>
+                  <button data-id="${item.id}" class="btn-restore-trash px-2 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-mono font-bold transition shadow" title="Restore to Active Store">
+                    Restore Asset
+                  </button>
+                  <button data-id="${item.id}" class="btn-purge-trash px-2 py-1 rounded bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 text-xs font-mono border border-rose-800/50 transition" title="Purge Permanently">
+                    Purge
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Inspect Snapshot
+        tbody.querySelectorAll('.btn-inspect-trash').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const trashId = e.currentTarget.getAttribute('data-id');
+            const item = window.CSOSuperStore?.getTrashedPages('ALL', '').find(t => t.id === trashId);
+            if (!item) return;
+
+            openModal(`Inspect Trashed Asset: ${item.id}`, `
+              <div class="space-y-4 font-sans text-xs">
+                <div class="grid grid-cols-2 gap-3 p-3 bg-[#081220] border border-brand-border rounded-lg font-mono text-[11px]">
+                  <div>Asset Type: <strong class="text-cyan-400">${item.type}</strong></div>
+                  <div>Deleted By: <strong class="text-slate-300">${item.deletedBy}</strong></div>
+                  <div>Original Route: <strong class="text-white">${item.path}</strong></div>
+                  <div>Deleted At: <strong class="text-slate-300">${new Date(item.deletedAt).toLocaleString()}</strong></div>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 font-bold block mb-1">Original Payload Manifest:</span>
+                  <textarea readonly rows="8" class="w-full bg-[#040810] border border-brand-border rounded p-3 text-slate-300 font-mono text-xs focus:outline-none select-all">${JSON.stringify(item.originalPayload, null, 2)}</textarea>
+                </div>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+            `);
+          });
+        });
+
+        // Wire Restore
+        tbody.querySelectorAll('.btn-restore-trash').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const trashId = e.currentTarget.getAttribute('data-id');
+            const item = window.CSOSuperStore?.getTrashedPages('ALL', '').find(t => t.id === trashId);
+            if (!item) return;
+
+            openModal(`Restore Asset: ${item.title}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div class="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-lg text-emerald-200">
+                  <strong>Restoration:</strong> This will restore <strong class="text-white font-mono">${item.title}</strong> (${item.type}) back into the active production matrix.
+                </div>
+                <p class="text-slate-300">Are you sure you want to restore this asset?</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmRestoreModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Restore Now</button>
+            `);
+
+            document.getElementById('btnConfirmRestoreModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.restoreFromTrash === 'function') {
+                try {
+                  window.CSOSuperStore.restoreFromTrash(item.id);
+                  showToast(`Restored "${item.title}" successfully!`, "success");
+                  updateKpis();
+                  renderTrashTable();
+                } catch (err) {
+                  showToast(err.message, "error");
+                }
+              }
+            });
+          });
+        });
+
+        // Wire Purge
+        tbody.querySelectorAll('.btn-purge-trash').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const trashId = e.currentTarget.getAttribute('data-id');
+            openModal(`Purge Permanently: ${trashId}`, `
+              <div class="space-y-3 font-sans text-xs">
+                <div class="p-3 bg-rose-950/40 border border-rose-500/40 rounded-lg text-rose-200">
+                  <strong>Permanent Data Loss:</strong> Purging this item will permanently destroy its snapshot from browser storage and the rollback cache.
+                </div>
+                <p class="text-slate-300">Are you sure you want to proceed with permanent destruction?</p>
+              </div>
+            `, `
+              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button id="btnConfirmPurgeModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Purge Permanently</button>
+            `);
+
+            document.getElementById('btnConfirmPurgeModal')?.addEventListener('click', () => {
+              closeModal();
+              if (window.CSOSuperStore && typeof window.CSOSuperStore.permanentlyDeleteTrashItem === 'function') {
+                window.CSOSuperStore.permanentlyDeleteTrashItem(trashId);
+                showToast(`Asset ${trashId} permanently purged.`, "warning");
+                updateKpis();
+                renderTrashTable();
+              }
+            });
+          });
+        });
+      }
+
+      // Initial Renders
+      updateKpis();
+      renderTrashTable();
+
+      // Tab Switching
+      document.querySelectorAll('.trash-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          activeTypeFilter = e.currentTarget.getAttribute('data-type') || 'ALL';
+          document.querySelectorAll('.trash-tab-btn').forEach(b => {
+            b.className = "trash-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition bg-slate-800 hover:bg-slate-700 text-slate-300";
+          });
+          e.currentTarget.className = "trash-tab-btn px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-brand-emerald text-white";
+          renderTrashTable();
+        });
+      });
+
+      // Search Listener
+      const searchInput = document.getElementById('trashSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          activeSearch = e.target.value;
+          renderTrashTable();
+        });
+      }
+
+      // Export Manifest
+      document.getElementById('btnExportTrashJson')?.addEventListener('click', () => {
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.exportTrashManifest === 'function') {
+          const filename = window.CSOSuperStore.exportTrashManifest();
+          showToast(`Trash manifest exported: ${filename}`, "success");
+        }
+      });
+
+      // Empty Trash Action
+      document.getElementById('btnEmptyTrashTop')?.addEventListener('click', () => {
+        openModal("Empty Complete Recycle Bin", `
+          <div class="space-y-3 font-sans text-xs">
+            <div class="p-3 bg-rose-950/40 border border-rose-500/40 rounded-lg text-rose-200">
+              <strong>Caution:</strong> This will permanently delete all soft-deleted pages, drafts, and campaigns currently stored in the recycle bin.
+            </div>
+            <p class="text-slate-300">This action is irreversible. Are you sure you wish to empty the trash?</p>
+          </div>
+        `, `
+          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btnConfirmEmptyTrashModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Empty Trash</button>
+        `);
+
+        document.getElementById('btnConfirmEmptyTrashModal')?.addEventListener('click', () => {
+          closeModal();
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.emptyTrash === 'function') {
+            const count = window.CSOSuperStore.emptyTrash();
+            showToast(`Recycle bin emptied (${count} assets purged).`, "warning");
+            updateKpis();
+            renderTrashTable();
           }
         });
       });
