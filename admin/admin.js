@@ -355,6 +355,41 @@ async function loadMasterNavigation() {
     }
 
     function renderOverviewWorkspace() {
+      // Calculate live real metrics from super-store or localStorage
+      let metrics = {
+        userCount: 0,
+        resourceCount: 0,
+        unreadInquiries: 0,
+        totalInquiries: 0,
+        storageKb: '0.00'
+      };
+
+      if (window.CSOSuperStore && typeof window.CSOSuperStore.getLiveMetrics === 'function') {
+        try {
+          metrics = window.CSOSuperStore.getLiveMetrics();
+        } catch (_) {}
+      } else {
+        try {
+          const users = JSON.parse(localStorage.getItem('cso_super_users') || '[]');
+          const resources = JSON.parse(localStorage.getItem('cso_super_resources') || '[]');
+          const inquiries = JSON.parse(localStorage.getItem('cso_super_inquiries') || '[]');
+          const unreadInquiries = inquiries.filter(i => (i.status || '').toLowerCase() !== 'resolved').length;
+          let totalBytes = 0;
+          for (let key in localStorage) {
+            if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+              totalBytes += (localStorage[key].length + key.length) * 2;
+            }
+          }
+          metrics = {
+            userCount: users.length,
+            resourceCount: resources.length,
+            unreadInquiries: unreadInquiries,
+            totalInquiries: inquiries.length,
+            storageKb: (totalBytes / 1024).toFixed(2)
+          };
+        } catch (_) {}
+      }
+
       dom.moduleHeaderActions.innerHTML = `
         <button id="btnExportOverview" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -374,10 +409,10 @@ async function loadMasterNavigation() {
               </span>
             </div>
             <div class="flex items-baseline gap-2">
-              <span class="text-2xl font-extrabold text-white">12,480</span>
-              <span class="text-xs font-semibold text-brand-emerald">+184 today</span>
+              <span class="text-2xl font-extrabold text-white">${metrics.userCount.toLocaleString()}</span>
+              <span class="text-xs font-semibold text-brand-emerald font-mono">Live</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-2">Verified across 30 Odisha districts</p>
+            <p class="text-[11px] text-slate-400 mt-2">Active accounts registered in store</p>
           </div>
 
           <!-- Educational Resources -->
@@ -389,8 +424,8 @@ async function loadMasterNavigation() {
               </span>
             </div>
             <div class="flex items-baseline gap-2">
-              <span class="text-2xl font-extrabold text-white">3,790</span>
-              <span class="text-xs font-semibold text-brand-emerald">100% Online</span>
+              <span class="text-2xl font-extrabold text-white">${metrics.resourceCount.toLocaleString()}</span>
+              <span class="text-xs font-semibold text-brand-emerald font-mono">Indexed</span>
             </div>
             <p class="text-[11px] text-slate-400 mt-2">Syllabus, PYQs & Scheme documents</p>
           </div>
@@ -404,25 +439,25 @@ async function loadMasterNavigation() {
               </span>
             </div>
             <div class="flex items-baseline gap-2">
-              <span class="text-2xl font-extrabold text-white">18</span>
-              <span class="text-xs font-semibold text-amber-400">Needs Resolution</span>
+              <span class="text-2xl font-extrabold text-white">${metrics.unreadInquiries.toLocaleString()}</span>
+              <span class="text-xs font-semibold ${metrics.unreadInquiries > 0 ? 'text-amber-400' : 'text-brand-emerald'}">${metrics.unreadInquiries > 0 ? 'Pending' : 'All Clear'}</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-2">Avg response SLA: 2.4 hours</p>
+            <p class="text-[11px] text-slate-400 mt-2">Total received inquiries: ${metrics.totalInquiries}</p>
           </div>
 
-          <!-- Database & Edge Utilization -->
+          <!-- Database & Storage Footprint -->
           <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
             <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-medium uppercase tracking-wider">Cloudflare D1 Storage</span>
+              <span class="text-xs font-medium uppercase tracking-wider">Storage Footprint</span>
               <span class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
               </span>
             </div>
             <div class="flex items-baseline gap-2">
-              <span class="text-2xl font-extrabold text-white">14.2 MB</span>
-              <span class="text-xs font-semibold text-slate-400 font-mono">/ 500 MB</span>
+              <span class="text-2xl font-extrabold text-white">${metrics.storageKb} KB</span>
+              <span class="text-xs font-semibold text-cyan-400 font-mono">Synced</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-2">5 core tables &bull; 0 replication lags</p>
+            <p class="text-[11px] text-slate-400 mt-2">Calculated local platform storage</p>
           </div>
         </div>
 
@@ -647,13 +682,16 @@ async function loadMasterNavigation() {
         });
       }
 
-      document.getElementById('btnExportOverview').addEventListener('click', () => {
-        downloadSnapshotFile({
-          timestamp: new Date().toISOString(),
-          metrics: { users: 12480, resources: 3790, inquiries: 18, storage_mb: 14.2 },
-          broadcast: CSOState.broadcast
-        }, "cso-telemetry-snapshot.json");
-      });
+      const btnExport = document.getElementById('btnExportOverview');
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          downloadSnapshotFile({
+            timestamp: new Date().toISOString(),
+            metrics: metrics,
+            broadcast: CSOState.broadcast
+          }, "cso-telemetry-snapshot.json");
+        });
+      }
     }
 
     /**

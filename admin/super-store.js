@@ -30,10 +30,19 @@
     NOTIFICATIONS: 'cso_super_notifications',
     BROADCAST: 'cso_active_announcement',
     SUBMISSIONS: 'cso_admin_submissions_local',
-    INQUIRIES: 'cso_super_inquiries'
+    INQUIRIES: 'cso_super_inquiries',
+    RESOURCES: 'cso_super_resources'
   };
 
   // Seed Data Generators
+  const SEED_RESOURCES = [
+    { id: "RES-101", title: "OSSC CGL 2026 Detailed Syllabus & Scheme", category: "State Exams", format: "PDF (1.2 MB)", downloads: 8450, status: "Live" },
+    { id: "RES-102", title: "Odisha B.Ed Entrance Pedagogy Notes & PYQ", category: "Teaching", format: "PDF (3.8 MB)", downloads: 14200, status: "Live" },
+    { id: "RES-103", title: "Medhabruti Scholarship Application Checklist", category: "Scholarships", format: "Guide / Web", downloads: 5310, status: "Live" },
+    { id: "RES-104", title: "CHSE Odisha +2 Science Mathematics Solutions", category: "Higher Secondary", format: "PDF (5.4 MB)", downloads: 9120, status: "Live" },
+    { id: "RES-105", title: "OTET 2026 Paper I & II Exam Pattern", category: "Teacher Eligibility", format: "PDF (850 KB)", downloads: 3100, status: "Needs Review" }
+  ];
+
   const SEED_USERS = [
     {
       id: 'USR-8901',
@@ -648,6 +657,38 @@
       this.logAudit('BANNER_TAKEDOWN', 'HOMEPAGE_BROADCAST', 'Active homepage announcement removed.');
     },
 
+    // 12. Resources & Educational Matrix
+    getResources() {
+      return getOrSet(KEYS.RESOURCES, SEED_RESOURCES);
+    },
+    saveResources(res) {
+      save(KEYS.RESOURCES, res);
+    },
+
+    // Live Metrics Calculation Engine
+    getLiveMetrics() {
+      const users = JSON.parse(localStorage.getItem('cso_super_users') || '[]');
+      const resources = JSON.parse(localStorage.getItem('cso_super_resources') || '[]');
+      const inquiries = JSON.parse(localStorage.getItem('cso_super_inquiries') || '[]');
+      const unreadInquiries = inquiries.filter(i => (i.status || '').toLowerCase() !== 'resolved').length;
+
+      // Calculate actual storage footprint in KB from localStorage
+      let totalBytes = 0;
+      for (let key in localStorage) {
+        if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+          totalBytes += (localStorage[key].length + key.length) * 2;
+        }
+      }
+      const storageKb = (totalBytes / 1024).toFixed(2);
+
+      return {
+        userCount: users.length,
+        resourceCount: resources.length,
+        unreadInquiries: unreadInquiries,
+        totalInquiries: inquiries.length,
+        storageKb: storageKb
+      };
+    },
     // 11. Citizen Inquiries & Help Desk (cso_super_inquiries)
     getInquiries() {
       return getOrSet(KEYS.INQUIRIES, SEED_INQUIRIES);
