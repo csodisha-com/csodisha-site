@@ -299,6 +299,8 @@ async function loadMasterNavigation() {
         renderCreateNewPageWorkspace();
       } else if (moduleId === 'module-02-003') {
         renderVisualPageBuilderWorkspace();
+      } else if (moduleId === 'module-02-004') {
+        renderHomepageBuilderWorkspace();
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -2241,6 +2243,302 @@ async function loadMasterNavigation() {
         if (window.CSOSuperStore && typeof window.CSOSuperStore.downloadPageHtml === 'function') {
           window.CSOSuperStore.downloadPageHtml(page);
           showToast(`Downloaded standalone file: ${page.file}`, "success");
+        }
+      });
+    }
+
+    /**
+     * VIEW 2d: Dynamic Homepage Builder & Copy Customizer (module-02-004)
+     */
+    function renderHomepageBuilderWorkspace() {
+      // Header Breadcrumb
+      dom.breadcrumbFolder.textContent = "Website Pages & Builder";
+      dom.breadcrumbModule.textContent = "Homepage Builder (module-02-004)";
+
+      // Top Action Bar
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnSaveHomepageConfig" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Save & Publish to Homepage
+          </button>
+          <a href="/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-brand-border flex items-center gap-1.5 transition">
+            Preview Homepage &nearr;
+          </a>
+        </div>
+      `;
+
+      // Ingest live configuration
+      const config = (window.CSOSuperStore && typeof window.CSOSuperStore.getHomepageConfig === 'function')
+        ? window.CSOSuperStore.getHomepageConfig()
+        : {
+            hero: {
+              badge: "Odisha's Dedicated Academic & Recruitment Hub",
+              headline: "Empowering Aspirants Across All 30 Districts of Odisha",
+              subheadline: "Instant access to authentic syllabus breakdowns, previous year papers, and state recruitment updates.",
+              primaryCtaText: "Explore Syllabi & PYQs",
+              primaryCtaUrl: "/resources.html",
+              secondaryCtaText: "Contact Helpdesk",
+              secondaryCtaUrl: "/contact.html",
+              enabled: true
+            },
+            sections: [
+              { id: "sec-notice", name: "Emergency Live Broadcast Banner", enabled: true },
+              { id: "sec-badges", name: "Quick Examination Access Chips", enabled: true },
+              { id: "sec-cards", name: "Core Portal Cards (OSSC, OPSC, Teaching)", enabled: true },
+              { id: "sec-stats", name: "Platform Statistics Strip", enabled: true }
+            ],
+            stats: {
+              aspirants: "12,480+",
+              resources: "3,790+",
+              districts: "30 Districts",
+              enabled: true
+            },
+            lastUpdated: new Date().toISOString()
+          };
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6 font-sans">
+          <!-- Overview Card -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Homepage Live Layout & Dynamic Content Studio
+                <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-02-004</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Customize real-time hero headlines, call-to-action buttons, module visibility, and platform statistics displayed on csodisha.com.</p>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400 bg-[#081220] border border-brand-border px-3 py-1.5 rounded-lg">
+              Last Published: <span id="homepageLastUpdated" class="text-emerald-400 font-bold">${new Date(config.lastUpdated).toLocaleDateString()} ${new Date(config.lastUpdated).toLocaleTimeString()}</span>
+            </div>
+          </div>
+
+          <!-- 3 Feature Cards Grid Layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Left Column: Hero Section Customizer (7 cols) -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- Card 1: Hero Section Customizer -->
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                    <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                      1. Hero Section Headline & Calls to Action
+                    </h3>
+                  </div>
+                  <label class="flex items-center gap-2 cursor-pointer text-xs font-mono">
+                    <input type="checkbox" id="checkHeroEnabled" ${config.hero.enabled !== false ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-brand-emerald">
+                    <span class="text-slate-300">Section Active</span>
+                  </label>
+                </div>
+
+                <!-- Hero Badge -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Hero Pill / Badge Text</label>
+                  <input id="inputHeroBadge" type="text" value="${config.hero.badge || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <!-- Main Headline -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Primary Headline</label>
+                  <input id="inputHeroHeadline" type="text" value="${config.hero.headline || ''}" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald">
+                </div>
+
+                <!-- Subheadline -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">Subheadline & Mission Description</label>
+                  <textarea id="textareaHeroSubheadline" rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald leading-relaxed">${config.hero.subheadline || ''}</textarea>
+                </div>
+
+                <!-- CTA Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <!-- Primary CTA -->
+                  <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border space-y-2">
+                    <span class="text-[11px] font-mono text-emerald-400 font-bold block uppercase tracking-wider">Primary Button</span>
+                    <div>
+                      <label class="block text-[11px] text-slate-400 mb-0.5">Button Label</label>
+                      <input id="inputPrimaryCtaText" type="text" value="${config.hero.primaryCtaText || ''}" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-xs">
+                    </div>
+                    <div>
+                      <label class="block text-[11px] text-slate-400 mb-0.5">Target Route</label>
+                      <input id="inputPrimaryCtaUrl" type="text" value="${config.hero.primaryCtaUrl || ''}" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-xs font-mono">
+                    </div>
+                  </div>
+
+                  <!-- Secondary CTA -->
+                  <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border space-y-2">
+                    <span class="text-[11px] font-mono text-cyan-400 font-bold block uppercase tracking-wider">Secondary Button</span>
+                    <div>
+                      <label class="block text-[11px] text-slate-400 mb-0.5">Button Label</label>
+                      <input id="inputSecondaryCtaText" type="text" value="${config.hero.secondaryCtaText || ''}" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-xs">
+                    </div>
+                    <div>
+                      <label class="block text-[11px] text-slate-400 mb-0.5">Target Route</label>
+                      <input id="inputSecondaryCtaUrl" type="text" value="${config.hero.secondaryCtaUrl || ''}" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-xs font-mono">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Sections Ordering & Stats (5 cols) -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Card 2: Section Visibility & Ordering Matrix -->
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-brand-border">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                      2. Section Visibility Matrix
+                    </h3>
+                  </div>
+                  <span class="text-[10px] font-mono text-slate-500">Live Hierarchy</span>
+                </div>
+
+                <p class="text-[11px] text-slate-400">Toggle public visibility and shift ordering of core blocks on index.html:</p>
+
+                <div id="sectionsListContainer" class="space-y-2">
+                  <!-- Rendered via JavaScript -->
+                </div>
+              </div>
+
+              <!-- Card 3: Platform Statistics Strip -->
+              <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-brand-border">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <h3 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                      3. Platform Metrics & Counters
+                    </h3>
+                  </div>
+                  <label class="flex items-center gap-2 cursor-pointer text-xs font-mono">
+                    <input type="checkbox" id="checkStatsEnabled" ${config.stats?.enabled !== false ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-brand-emerald">
+                    <span class="text-slate-300">Visible</span>
+                  </label>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                  <div>
+                    <label class="block text-[11px] text-slate-400 mb-0.5 font-mono">Active Aspirants</label>
+                    <input id="inputStatsAspirants" type="text" value="${config.stats?.aspirants || '12,480+'}" class="w-full bg-[#081220] border border-brand-border rounded px-2.5 py-1.5 text-white text-xs font-bold font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] text-slate-400 mb-0.5 font-mono">Verified Files</label>
+                    <input id="inputStatsResources" type="text" value="${config.stats?.resources || '3,790+'}" class="w-full bg-[#081220] border border-brand-border rounded px-2.5 py-1.5 text-white text-xs font-bold font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] text-slate-400 mb-0.5 font-mono">Districts</label>
+                    <input id="inputStatsDistricts" type="text" value="${config.stats?.districts || '30 Districts'}" class="w-full bg-[#081220] border border-brand-border rounded px-2.5 py-1.5 text-white text-xs font-bold font-mono">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Render Section Reorder Matrix
+      const currentSections = (config.sections && Array.isArray(config.sections))
+        ? [...config.sections]
+        : [
+            { id: "sec-notice", name: "Emergency Live Broadcast Banner", enabled: true },
+            { id: "sec-badges", name: "Quick Examination Access Chips", enabled: true },
+            { id: "sec-cards", name: "Core Portal Cards (OSSC, OPSC, Teaching)", enabled: true },
+            { id: "sec-stats", name: "Platform Statistics Strip", enabled: true }
+          ];
+
+      function renderSections() {
+        const container = document.getElementById('sectionsListContainer');
+        if (!container) return;
+
+        container.innerHTML = currentSections.map((sec, idx) => {
+          return `
+            <div class="p-3 rounded-lg bg-[#081220] border border-brand-border flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-5 h-5 rounded bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono text-slate-400 font-bold">${idx + 1}</span>
+                <span class="text-xs font-semibold text-slate-200">${sec.name}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Move Up / Down -->
+                <button data-idx="${idx}" class="btn-sec-up p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Up">
+                  &uarr;
+                </button>
+                <button data-idx="${idx}" class="btn-sec-down p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition ${idx === currentSections.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Down">
+                  &darr;
+                </button>
+                <!-- Toggle Active -->
+                <label class="cursor-pointer ml-1">
+                  <input type="checkbox" data-idx="${idx}" class="sec-toggle-input rounded bg-slate-900 border-slate-700 text-brand-emerald focus:ring-brand-emerald" ${sec.enabled ? 'checked' : ''}>
+                </label>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Wire Up / Down / Toggle
+        container.querySelectorAll('.btn-sec-up').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const i = parseInt(e.currentTarget.getAttribute('data-idx'));
+            if (i > 0) {
+              const temp = currentSections[i];
+              currentSections[i] = currentSections[i - 1];
+              currentSections[i - 1] = temp;
+              renderSections();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-sec-down').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const i = parseInt(e.currentTarget.getAttribute('data-idx'));
+            if (i < currentSections.length - 1) {
+              const temp = currentSections[i];
+              currentSections[i] = currentSections[i + 1];
+              currentSections[i + 1] = temp;
+              renderSections();
+            }
+          });
+        });
+
+        container.querySelectorAll('.sec-toggle-input').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const i = parseInt(e.currentTarget.getAttribute('data-idx'));
+            currentSections[i].enabled = e.target.checked;
+          });
+        });
+      }
+
+      renderSections();
+
+      // Save & Publish Configuration
+      document.getElementById('btnSaveHomepageConfig')?.addEventListener('click', () => {
+        const payload = {
+          hero: {
+            badge: document.getElementById('inputHeroBadge')?.value.trim() || '',
+            headline: document.getElementById('inputHeroHeadline')?.value.trim() || '',
+            subheadline: document.getElementById('textareaHeroSubheadline')?.value.trim() || '',
+            primaryCtaText: document.getElementById('inputPrimaryCtaText')?.value.trim() || '',
+            primaryCtaUrl: document.getElementById('inputPrimaryCtaUrl')?.value.trim() || '',
+            secondaryCtaText: document.getElementById('inputSecondaryCtaText')?.value.trim() || '',
+            secondaryCtaUrl: document.getElementById('inputSecondaryCtaUrl')?.value.trim() || '',
+            enabled: document.getElementById('checkHeroEnabled')?.checked ?? true
+          },
+          sections: currentSections,
+          stats: {
+            aspirants: document.getElementById('inputStatsAspirants')?.value.trim() || '12,480+',
+            resources: document.getElementById('inputStatsResources')?.value.trim() || '3,790+',
+            districts: document.getElementById('inputStatsDistricts')?.value.trim() || '30 Districts',
+            enabled: document.getElementById('checkStatsEnabled')?.checked ?? true
+          }
+        };
+
+        if (window.CSOSuperStore && typeof window.CSOSuperStore.saveHomepageConfig === 'function') {
+          const saved = window.CSOSuperStore.saveHomepageConfig(payload);
+          const updateEl = document.getElementById('homepageLastUpdated');
+          if (updateEl && saved.lastUpdated) {
+            updateEl.textContent = `${new Date(saved.lastUpdated).toLocaleDateString()} ${new Date(saved.lastUpdated).toLocaleTimeString()}`;
+          }
+          showToast("Homepage layout & copy published successfully!", "success");
         }
       });
     }

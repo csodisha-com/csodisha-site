@@ -65,6 +65,65 @@
         mountLiveBanner();
       }
     });
+
+    // Hydrate dynamic homepage configuration
+    function hydrateHomepageConfig() {
+      try {
+        const raw = localStorage.getItem('cso_homepage_config');
+        if (!raw) return;
+        const config = JSON.parse(raw);
+        if (!config) return;
+
+        // Hydrate Hero Section
+        if (config.hero) {
+          const heroSec = document.getElementById('cso-hero');
+          if (heroSec && config.hero.enabled === false) {
+            heroSec.style.display = 'none';
+          } else if (heroSec) {
+            heroSec.style.display = '';
+          }
+
+          if (config.hero.tagline) {
+            const tagEl = document.querySelector('.cso-hero-tagline');
+            if (tagEl) tagEl.textContent = config.hero.tagline;
+          }
+          if (config.hero.subheadline) {
+            const subEl = document.querySelector('.cso-hero-subtagline');
+            if (subEl) subEl.textContent = config.hero.subheadline;
+          }
+        }
+
+        // Section Toggles
+        if (Array.isArray(config.sections)) {
+          config.sections.forEach(function(sec) {
+            if (sec.id === 'sec-badges') {
+              const chips = document.querySelector('.chips');
+              if (chips) chips.style.display = sec.enabled ? '' : 'none';
+            } else if (sec.id === 'sec-cards') {
+              const compass = document.getElementById('cso-opportunity-compass');
+              if (compass) compass.style.display = sec.enabled ? '' : 'none';
+            } else if (sec.id === 'sec-notice') {
+              const bannerMount = document.getElementById('csoPublicAnnouncementMount');
+              if (bannerMount && !sec.enabled) bannerMount.style.display = 'none';
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Homepage hydration error:', err);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hydrateHomepageConfig);
+    } else {
+      hydrateHomepageConfig();
+    }
+
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'cso_homepage_config') {
+        hydrateHomepageConfig();
+      }
+    });
   })();
 </script>
 <header class="top site-header__top" id="header-top" role="banner">

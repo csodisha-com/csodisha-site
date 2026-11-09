@@ -1370,6 +1370,57 @@
       return null;
     },
 
+    // 16. Homepage Builder & Live Config Engine (module-02-004)
+    getHomepageConfig() {
+      let config = null;
+      try {
+        const raw = localStorage.getItem('cso_homepage_config');
+        if (raw) config = JSON.parse(raw);
+      } catch (_) {}
+
+      if (!config || typeof config !== 'object') {
+        config = {
+          hero: {
+            badge: "Odisha's Dedicated Academic & Recruitment Hub",
+            headline: "Empowering Aspirants Across All 30 Districts of Odisha",
+            subheadline: "Instant access to authentic syllabus breakdowns, previous year papers, and state recruitment updates.",
+            primaryCtaText: "Explore Syllabi & PYQs",
+            primaryCtaUrl: "/resources.html",
+            secondaryCtaText: "Contact Helpdesk",
+            secondaryCtaUrl: "/contact.html",
+            enabled: true
+          },
+          sections: [
+            { id: "sec-notice", name: "Emergency Live Broadcast Banner", enabled: true },
+            { id: "sec-badges", name: "Quick Examination Access Chips", enabled: true },
+            { id: "sec-cards", name: "Core Portal Cards (OSSC, OPSC, Teaching)", enabled: true },
+            { id: "sec-stats", name: "Platform Statistics Strip", enabled: true }
+          ],
+          stats: {
+            aspirants: "12,480+",
+            resources: "3,790+",
+            districts: "30 Districts",
+            enabled: true
+          },
+          lastUpdated: new Date().toISOString()
+        };
+
+        try {
+          localStorage.setItem('cso_homepage_config', JSON.stringify(config));
+        } catch (_) {}
+      }
+
+      return config;
+    },
+
+    saveHomepageConfig(config) {
+      if (!config || typeof config !== 'object') return false;
+      config.lastUpdated = new Date().toISOString();
+      save('cso_homepage_config', config);
+      this.logAudit('HOMEPAGE_CONFIG_UPDATED', 'HOMEPAGE_BUILDER', `Homepage dynamic layout and copy configuration updated.`);
+      return config;
+    },
+
     // 14. Master Feature Registry Engine (module-01-008)
     getFeatureRegistryStats(schema) {
       const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
