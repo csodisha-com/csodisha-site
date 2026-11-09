@@ -423,6 +423,14 @@ async function loadMasterNavigation() {
         renderSyllabusExamPatternsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-05-011') {
         renderPyqWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-012') {
+        renderQuestionBankWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-013') {
+        renderQuizBuilderWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-014') {
+        renderMockTestsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-015') {
+        renderAnswerKeysExplanationsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -20942,6 +20950,1176 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Question Bank (module-05-012)
+     */
+    function renderQuestionBankWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getQuestionBankConfig();
+        const questions = config.questions || [];
+        const settings = config.bankSettings || {};
+
+        const activeCount = questions.filter(q => q.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    Question Bank & Item Repository
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    module-05-012
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage multi-choice questions, LaTeX formula tags, answer options, and step-by-step verified explanations.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-question" class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Question
+                </button>
+                <button id="btn-toggle-json-qb" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-qb" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-qb" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-qb" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Indexed Questions</span>
+                <div class="mt-1 text-2xl font-bold text-white">${questions.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Items</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Item Format</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${escapeHtml(settings.defaultLanguage || 'Bilingual')}</div>
+              </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Item Banking & Question Formatting Policies</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Instructional Language</label>
+                  <input type="text" id="qb-default-lang" value="${escapeHtml(settings.defaultLanguage || 'Bilingual (English/Odia)')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="qb-allow-latex" class="sr-only peer" ${settings.allowLatexFormulas ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Allow LaTeX Math Expressions</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="qb-auto-tag" class="sr-only peer" ${settings.autoTagCognitiveLevel ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Auto-Tag Cognitive Difficulty Level</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Questions Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Item Repository Records</h2>
+                <span class="text-xs text-slate-400">${questions.length} items</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Item ID</th>
+                      <th class="px-4 py-3">Question Prompt</th>
+                      <th class="px-4 py-3">Subject</th>
+                      <th class="px-4 py-3">Target Exam</th>
+                      <th class="px-4 py-3">Difficulty</th>
+                      <th class="px-4 py-3">Marks</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="qb-questions-body" class="divide-y divide-slate-800/60">
+                    ${questions.map((item, idx) => {
+                      const diffBadge = item.difficulty === 'Hard' ? 'bg-rose-950 text-rose-400 border-rose-800/50' : item.difficulty === 'Medium' ? 'bg-amber-950 text-amber-400 border-amber-800/50' : 'bg-emerald-950 text-emerald-400 border-emerald-800/50';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'Q-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.prompt)}">
+                            ${escapeHtml(item.prompt)}
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                              ${escapeHtml(item.subject || 'General')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            ${escapeHtml(item.examTarget || 'All Exams')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${diffBadge}">
+                              ${escapeHtml(item.difficulty || 'Medium')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-emerald-400">
+                            +${item.marks || 1}
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="qb-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="qb-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="qb-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${questions.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          Question bank is empty. Click "Add Question" to seed records.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="qb-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Question Bank Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_question_bank_config</span>
+              </div>
+              <textarea id="qb-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-emerald-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-qb" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Listeners
+        const qList = [...questions];
+
+        const saveChanges = () => {
+          config.bankSettings = {
+            defaultLanguage: root.querySelector('#qb-default-lang').value.trim() || 'Bilingual (English/Odia)',
+            allowLatexFormulas: root.querySelector('#qb-allow-latex').checked,
+            autoTagCognitiveLevel: root.querySelector('#qb-auto-tag').checked
+          };
+          config.questions = qList;
+          window.CSOSuperStore.saveQuestionBankConfig(config);
+          alert('Question bank configuration saved successfully!');
+          renderQuestionBankWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-qb').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-qb').addEventListener('click', () => {
+          window.CSOSuperStore.exportQuestionBankManifest();
+        });
+
+        root.querySelector('#btn-reset-qb').addEventListener('click', () => {
+          if (confirm('Restore question bank to defaults?')) {
+            window.CSOSuperStore.resetQuestionBankConfig();
+            alert('Question bank reset to defaults.');
+            renderQuestionBankWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#qb-json-drawer');
+        root.querySelector('#btn-toggle-json-qb').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-qb').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#qb-json-raw').value;
+            window.CSOSuperStore.importQuestionBankConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderQuestionBankWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.qb-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (qList[idx]) qList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.qb-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove question "' + qList[idx].prompt + '"?')) {
+              qList.splice(idx, 1);
+              config.questions = qList;
+              window.CSOSuperStore.saveQuestionBankConfig(config);
+              renderQuestionBankWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.qb-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = qList[idx];
+            const newPrompt = prompt('Question Prompt:', item.prompt);
+            if (newPrompt === null) return;
+            const newSubj = prompt('Subject:', item.subject || 'Indian Polity');
+            const newDiff = prompt('Difficulty (Easy / Medium / Hard):', item.difficulty || 'Medium');
+            const newMarks = prompt('Marks (+N):', String(item.marks || 2));
+
+            item.prompt = newPrompt.trim() || item.prompt;
+            if (newSubj !== null) item.subject = newSubj.trim();
+            if (newDiff !== null) item.difficulty = newDiff.trim();
+            if (newMarks !== null) item.marks = parseInt(newMarks, 10) || 1;
+
+            config.questions = qList;
+            window.CSOSuperStore.saveQuestionBankConfig(config);
+            renderQuestionBankWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-question').addEventListener('click', () => {
+          const promptText = prompt('Enter Question Prompt:');
+          if (!promptText || !promptText.trim()) return;
+          const subject = prompt('Subject (e.g. Indian Polity, Odisha History, Quant):', 'Indian Polity') || 'Indian Polity';
+          const exam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL):', 'OPSC OAS') || 'OPSC OAS';
+          const diff = prompt('Difficulty (Easy / Medium / Hard):', 'Medium') || 'Medium';
+
+          const newId = 'Q-' + (1000 + qList.length + 1);
+          qList.push({
+            id: newId,
+            prompt: promptText.trim(),
+            subject: subject.trim(),
+            examTarget: exam.trim(),
+            difficulty: diff.trim(),
+            type: 'MCQ',
+            marks: 2,
+            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+            correctOptionIndex: 0,
+            explanation: 'Verified solution reference.',
+            active: true
+          });
+          config.questions = qList;
+          window.CSOSuperStore.saveQuestionBankConfig(config);
+          renderQuestionBankWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-012 (Question Bank)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: MCQ & Quiz Builder (module-05-013)
+     */
+    function renderQuizBuilderWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getQuizBuilderConfig();
+        const quizzes = config.quizzes || [];
+        const settings = config.builderSettings || {};
+
+        const activeCount = quizzes.filter(q => q.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    MCQ & Timed Quiz Builder
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                    module-05-013
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Construct timed chapter assessments, speed test modules, dynamic option shuffling, and score cards.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-quiz" class="px-3.5 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Create Assessment Quiz
+                </button>
+                <button id="btn-toggle-json-quiz" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-quiz" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-quiz" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-quiz" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Configured Quizzes</span>
+                <div class="mt-1 text-2xl font-bold text-white">${quizzes.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Quizzes</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Per-Question Timer</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${settings.defaultTimerPerQuestionSec || 60}s</div>
+              </div>
+            </div>
+
+            <!-- Builder Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Quiz Engine Execution Policies</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Question Timer (Seconds)</label>
+                  <input type="number" id="quiz-timer" value="${settings.defaultTimerPerQuestionSec || 60}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="quiz-shuffle" class="sr-only peer" ${settings.shuffleOptions ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Shuffle Multiple-Choice Options</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="quiz-instant-exp" class="sr-only peer" ${settings.showInstantExplanation ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Show Instant Explanations Post-Answer</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quizzes Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Active Quiz Assessments</h2>
+                <span class="text-xs text-slate-400">${quizzes.length} assessments</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Quiz ID</th>
+                      <th class="px-4 py-3">Assessment Title</th>
+                      <th class="px-4 py-3">Exam Scope</th>
+                      <th class="px-4 py-3">Questions</th>
+                      <th class="px-4 py-3">Duration</th>
+                      <th class="px-4 py-3">Penalty / Error</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="quiz-items-body" class="divide-y divide-slate-800/60">
+                    ${quizzes.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(item.id || 'QUIZ-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                          ${escapeHtml(item.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-800 text-cyan-300 border border-cyan-800/40">
+                            ${escapeHtml(item.examCategory || 'General')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                          ${item.questionCount || 0} Qs
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-amber-300">
+                          ${item.durationMinutes || 15} mins
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-rose-300">
+                          -${item.negativeMarkPerQuestion || 0}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="quiz-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="quiz-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="quiz-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="quiz-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Quiz Builder Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_quiz_builder_config</span>
+              </div>
+              <textarea id="quiz-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-cyan-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-quiz" class="px-3 py-1.5 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const qzList = [...quizzes];
+
+        const saveChanges = () => {
+          config.builderSettings = {
+            defaultTimerPerQuestionSec: parseInt(root.querySelector('#quiz-timer').value, 10) || 60,
+            shuffleOptions: root.querySelector('#quiz-shuffle').checked,
+            showInstantExplanation: root.querySelector('#quiz-instant-exp').checked
+          };
+          config.quizzes = qzList;
+          window.CSOSuperStore.saveQuizBuilderConfig(config);
+          alert('Quiz builder configuration saved successfully!');
+          renderQuizBuilderWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-quiz').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-quiz').addEventListener('click', () => {
+          window.CSOSuperStore.exportQuizBuilderManifest();
+        });
+
+        root.querySelector('#btn-reset-quiz').addEventListener('click', () => {
+          if (confirm('Restore quizzes to default sets?')) {
+            window.CSOSuperStore.resetQuizBuilderConfig();
+            alert('Quizzes reset to defaults.');
+            renderQuizBuilderWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#quiz-json-drawer');
+        root.querySelector('#btn-toggle-json-quiz').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-quiz').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#quiz-json-raw').value;
+            window.CSOSuperStore.importQuizBuilderConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderQuizBuilderWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.quiz-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (qzList[idx]) qzList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.quiz-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove quiz "' + qzList[idx].title + '"?')) {
+              qzList.splice(idx, 1);
+              config.quizzes = qzList;
+              window.CSOSuperStore.saveQuizBuilderConfig(config);
+              renderQuizBuilderWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.quiz-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = qzList[idx];
+            const newTitle = prompt('Quiz Title:', item.title);
+            if (newTitle === null) return;
+            const newCat = prompt('Exam Category:', item.examCategory || 'OPSC OAS');
+            const newCount = prompt('Question Count:', String(item.questionCount || 15));
+            const newDur = prompt('Duration (Minutes):', String(item.durationMinutes || 20));
+
+            item.title = newTitle.trim() || item.title;
+            if (newCat !== null) item.examCategory = newCat.trim();
+            if (newCount !== null) item.questionCount = parseInt(newCount, 10) || 15;
+            if (newDur !== null) item.durationMinutes = parseInt(newDur, 10) || 20;
+
+            config.quizzes = qzList;
+            window.CSOSuperStore.saveQuizBuilderConfig(config);
+            renderQuizBuilderWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-quiz').addEventListener('click', () => {
+          const title = prompt('Enter Quiz Title:');
+          if (!title || !title.trim()) return;
+          const cat = prompt('Exam Category (e.g. OPSC OAS, OSSC CGL, OTET):', 'OPSC OAS') || 'OPSC OAS';
+          const qCount = prompt('Total Questions:', '15') || '15';
+          const dur = prompt('Duration in Minutes:', '20') || '20';
+
+          const newId = 'QUIZ-' + String(qzList.length + 1).padStart(2, '0');
+          qzList.push({
+            id: newId,
+            title: title.trim(),
+            questionCount: parseInt(qCount, 10) || 15,
+            durationMinutes: parseInt(dur, 10) || 20,
+            negativeMarkPerQuestion: 0.33,
+            examCategory: cat.trim(),
+            active: true
+          });
+          config.quizzes = qzList;
+          window.CSOSuperStore.saveQuizBuilderConfig(config);
+          renderQuizBuilderWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-013 (MCQ & Quiz Builder)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Mock Tests (module-05-014)
+     */
+    function renderMockTestsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getMockTestsConfig();
+        const tests = config.tests || [];
+        const settings = config.testEngineSettings || {};
+
+        const activeCount = tests.filter(t => t.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </span>
+                    Full-Length Mock Test Series
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    module-05-014
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Configure CBRE simulation tests, sectional timing barriers, maximum retake policies, and percentile rankings.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-mock-test" class="px-3.5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Full-Length Mock
+                </button>
+                <button id="btn-toggle-json-mock" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-mock" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-mock" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-mock" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Test Series Inventory</span>
+                <div class="mt-1 text-2xl font-bold text-white">${tests.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Live Simulation Exams</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">CBRE Engine Interface</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${settings.simulateLiveCbreInterface ? 'Enabled' : 'Classic Mode'}</div>
+              </div>
+            </div>
+
+            <!-- Engine Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">CBRE Simulation & Examination Rules</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Max Retakes Allowed</label>
+                  <input type="number" id="mock-retakes" value="${settings.allowRetakes || 3}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="mock-cbre-sim" class="sr-only peer" ${settings.simulateLiveCbreInterface ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Simulate Official CBRE UI</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="mock-sectional-timers" class="sr-only peer" ${settings.enforceSectionalTimers ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enforce Sectional Timers</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tests Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Full-Length Examination Series</h2>
+                <span class="text-xs text-slate-400">${tests.length} tests</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Mock ID</th>
+                      <th class="px-4 py-3">Test Title</th>
+                      <th class="px-4 py-3">Type</th>
+                      <th class="px-4 py-3">Questions</th>
+                      <th class="px-4 py-3">Max Score</th>
+                      <th class="px-4 py-3">Duration</th>
+                      <th class="px-4 py-3">Negative Ratio</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mock-tests-body" class="divide-y divide-slate-800/60">
+                    ${tests.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(item.id || 'MOCK-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                          ${escapeHtml(item.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-indigo-300 border border-indigo-800/40">
+                            ${escapeHtml(item.testType || 'Full-Length')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                          ${item.totalQuestions || 100} Qs
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-emerald-400">
+                          ${item.maxScore || 200}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-amber-300">
+                          ${item.timeLimitMinutes || 120} mins
+                        </td>
+                        <td class="px-4 py-3 text-xs text-rose-300/90 max-w-xs truncate" title="${escapeHtml(item.negativeMarkRatio)}">
+                          ${escapeHtml(item.negativeMarkRatio || '0.33')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="mock-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="mock-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="mock-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="mock-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Mock Tests Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_mock_tests_config</span>
+              </div>
+              <textarea id="mock-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-indigo-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-mock" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const tList = [...tests];
+
+        const saveChanges = () => {
+          config.testEngineSettings = {
+            allowRetakes: parseInt(root.querySelector('#mock-retakes').value, 10) || 3,
+            simulateLiveCbreInterface: root.querySelector('#mock-cbre-sim').checked,
+            enforceSectionalTimers: root.querySelector('#mock-sectional-timers').checked
+          };
+          config.tests = tList;
+          window.CSOSuperStore.saveMockTestsConfig(config);
+          alert('Mock tests series configuration saved successfully!');
+          renderMockTestsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-mock').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-mock').addEventListener('click', () => {
+          window.CSOSuperStore.exportMockTestsManifest();
+        });
+
+        root.querySelector('#btn-reset-mock').addEventListener('click', () => {
+          if (confirm('Restore mock tests series to defaults?')) {
+            window.CSOSuperStore.resetMockTestsConfig();
+            alert('Mock tests series reset to defaults.');
+            renderMockTestsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#mock-json-drawer');
+        root.querySelector('#btn-toggle-json-mock').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-mock').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#mock-json-raw').value;
+            window.CSOSuperStore.importMockTestsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderMockTestsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.mock-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (tList[idx]) tList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.mock-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove mock test "' + tList[idx].title + '"?')) {
+              tList.splice(idx, 1);
+              config.tests = tList;
+              window.CSOSuperStore.saveMockTestsConfig(config);
+              renderMockTestsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.mock-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = tList[idx];
+            const newTitle = prompt('Mock Test Title:', item.title);
+            if (newTitle === null) return;
+            const newQs = prompt('Total Questions:', String(item.totalQuestions || 100));
+            const newScore = prompt('Max Score:', String(item.maxScore || 200));
+            const newTime = prompt('Time Limit (Minutes):', String(item.timeLimitMinutes || 120));
+
+            item.title = newTitle.trim() || item.title;
+            if (newQs !== null) item.totalQuestions = parseInt(newQs, 10) || 100;
+            if (newScore !== null) item.maxScore = parseInt(newScore, 10) || 200;
+            if (newTime !== null) item.timeLimitMinutes = parseInt(newTime, 10) || 120;
+
+            config.tests = tList;
+            window.CSOSuperStore.saveMockTestsConfig(config);
+            renderMockTestsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-mock-test').addEventListener('click', () => {
+          const title = prompt('Enter Mock Test Title:');
+          if (!title || !title.trim()) return;
+          const qs = prompt('Total Questions:', '100') || '100';
+          const score = prompt('Max Score:', '200') || '200';
+          const time = prompt('Duration in Minutes:', '120') || '120';
+
+          const newId = 'MOCK-' + String(tList.length + 1).padStart(2, '0');
+          tList.push({
+            id: newId,
+            title: title.trim(),
+            totalQuestions: parseInt(qs, 10) || 100,
+            maxScore: parseInt(score, 10) || 200,
+            timeLimitMinutes: parseInt(time, 10) || 120,
+            negativeMarkRatio: '1/3rd (0.66 marks)',
+            testType: 'Full-Length Mock',
+            active: true
+          });
+          config.tests = tList;
+          window.CSOSuperStore.saveMockTestsConfig(config);
+          renderMockTestsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-014 (Mock Tests)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Answer Keys & Explanations (module-05-015)
+     */
+    function renderAnswerKeysExplanationsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getAnswerKeysExplanationsConfig();
+        const keys = config.keysRegistry || [];
+        const policy = config.resolutionPolicy || {};
+
+        const ratifiedCount = keys.filter(k => k.answerKeyStatus.includes('Final') && k.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    Official Answer Keys & Objections Resolver
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    module-05-015
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Track gazetted provisional answer keys, candidate objection redressal windows, revised mark allocations, and ratified finals.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-key-entry" class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Publish Answer Key
+                </button>
+                <button id="btn-toggle-json-keys" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-keys" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-keys" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-keys" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Indexed Answer Keys</span>
+                <div class="mt-1 text-2xl font-bold text-white">${keys.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Ratified Final Keys</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${ratifiedCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Objection Window</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${policy.objectionWindowDays || 7} Days</div>
+              </div>
+            </div>
+
+            <!-- Resolution Policy Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Objection Redressal & Ratification Governance</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Objection Window (Days)</label>
+                  <input type="number" id="key-window-days" value="${policy.objectionWindowDays || 7}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="key-allow-grievance" class="sr-only peer" ${policy.allowCandidateGrievance ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Open Public Grievance Portal</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="key-dual-gazette" class="sr-only peer" ${policy.requireDualGazetteRatification ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Require Dual Gazette Ratification</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Keys Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Answer Keys Register</h2>
+                <span class="text-xs text-slate-400">${keys.length} answer keys</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Key ID</th>
+                      <th class="px-4 py-3">Exam Name</th>
+                      <th class="px-4 py-3">Release Date</th>
+                      <th class="px-4 py-3">Key Status</th>
+                      <th class="px-4 py-3">Disputed Qs</th>
+                      <th class="px-4 py-3">Revised Marks</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="key-items-body" class="divide-y divide-slate-800/60">
+                    ${keys.map((item, idx) => {
+                      const statusBadge = item.answerKeyStatus.includes('Final') ? 'bg-emerald-950 text-emerald-400 border-emerald-800/50' : 'bg-amber-950 text-amber-400 border-amber-800/50';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'KEY-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.examName)}">
+                            ${escapeHtml(item.examName)}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
+                            ${escapeHtml(item.releaseDate || 'N/A')}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${statusBadge}">
+                              ${escapeHtml(item.answerKeyStatus || 'Provisional')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-rose-400">
+                            ${item.disputedQuestionsCount || 0} disputes
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            ${item.revisedMarksAwarded ? '<span class="text-emerald-400 font-semibold">Marks Awarded</span>' : '<span class="text-slate-500">No Adjustment</span>'}
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="key-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="key-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="key-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="key-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Answer Keys Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_answer_keys_config</span>
+              </div>
+              <textarea id="key-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-emerald-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-key" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const kList = [...keys];
+
+        const saveChanges = () => {
+          config.resolutionPolicy = {
+            objectionWindowDays: parseInt(root.querySelector('#key-window-days').value, 10) || 7,
+            allowCandidateGrievance: root.querySelector('#key-allow-grievance').checked,
+            requireDualGazetteRatification: root.querySelector('#key-dual-gazette').checked
+          };
+          config.keysRegistry = kList;
+          window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
+          alert('Answer keys configuration saved successfully!');
+          renderAnswerKeysExplanationsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-keys').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-keys').addEventListener('click', () => {
+          window.CSOSuperStore.exportAnswerKeysExplanationsManifest();
+        });
+
+        root.querySelector('#btn-reset-keys').addEventListener('click', () => {
+          if (confirm('Restore answer keys to defaults?')) {
+            window.CSOSuperStore.resetAnswerKeysExplanationsConfig();
+            alert('Answer keys reset to defaults.');
+            renderAnswerKeysExplanationsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#key-json-drawer');
+        root.querySelector('#btn-toggle-json-keys').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-key').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#key-json-raw').value;
+            window.CSOSuperStore.importAnswerKeysExplanationsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderAnswerKeysExplanationsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.key-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (kList[idx]) kList[idx].active = e.target.checked;
+          });
+        });
+
+        root.querySelectorAll('.key-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove answer key "' + kList[idx].examName + '"?')) {
+              kList.splice(idx, 1);
+              config.keysRegistry = kList;
+              window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
+              renderAnswerKeysExplanationsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.key-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = kList[idx];
+            const newName = prompt('Exam Name:', item.examName);
+            if (newName === null) return;
+            const newStatus = prompt('Key Status:', item.answerKeyStatus || 'Final Ratified');
+            const newDisp = prompt('Disputed Questions Count:', String(item.disputedQuestionsCount || 0));
+
+            item.examName = newName.trim() || item.examName;
+            if (newStatus !== null) item.answerKeyStatus = newStatus.trim();
+            if (newDisp !== null) item.disputedQuestionsCount = parseInt(newDisp, 10) || 0;
+
+            config.keysRegistry = kList;
+            window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
+            renderAnswerKeysExplanationsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-key-entry').addEventListener('click', () => {
+          const name = prompt('Enter Examination Name:');
+          if (!name || !name.trim()) return;
+          const status = prompt('Key Status (Provisional / Final Ratified / Official Gazette Final):', 'Provisional') || 'Provisional';
+
+          const newId = 'KEY-' + String(kList.length + 1).padStart(2, '0');
+          kList.push({
+            id: newId,
+            examName: name.trim(),
+            answerKeyStatus: status.trim(),
+            releaseDate: new Date().toISOString().split('T')[0],
+            disputedQuestionsCount: 0,
+            revisedMarksAwarded: false,
+            active: true
+          });
+          config.keysRegistry = kList;
+          window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
+          renderAnswerKeysExplanationsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-015 (Answer Keys & Explanations)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 

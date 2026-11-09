@@ -6882,6 +6882,334 @@
       this.logAudit("PYQ_MANIFEST_EXPORTED", "DATA_EXPORT", "PYQ archive manifest exported (" + filename + ").");
       return filename;
     },
+    // =========================================================================
+    // 59. Educational Resources Batch 4 (module-05-012 to module-05-015)
+    // =========================================================================
+
+    // 59.1 Question Bank Engine (module-05-012)
+    getQuestionBankConfig() {
+      const raw = localStorage.getItem("cso_question_bank_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_question_bank_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        bankSettings: { defaultLanguage: "Bilingual (English/Odia)", allowLatexFormulas: true, autoTagCognitiveLevel: true },
+        questions: [
+          { id: "Q-1001", prompt: "Under which article of the Constitution of India is the High Court of Orissa established?", subject: "Indian Polity", examTarget: "OPSC OAS", difficulty: "Medium", type: "MCQ", marks: 2, options: ["Article 214", "Article 217", "Article 226", "Article 231"], correctOptionIndex: 0, explanation: "Article 214 provides that there shall be a High Court for each State.", active: true },
+          { id: "Q-1002", prompt: "Who was the first dynamic ruler of the Somavamshi dynasty who unified Coastal and Western Odisha?", subject: "Odisha History", examTarget: "OPSC / OSSC", difficulty: "Hard", type: "MCQ", marks: 2, options: ["Janmejaya I", "Yayati I", "Dharmaratha", "Udyotakesari"], correctOptionIndex: 1, explanation: "Yayati I is credited with the integration of Dakshina Kosala and Utkala.", active: true },
+          { id: "Q-1003", prompt: "A train running at 72 km/hr crosses a platform 200m long in 25 seconds. What is the length of the train?", subject: "Quantitative Aptitude", examTarget: "OSSC CGL", difficulty: "Easy", type: "MCQ", marks: 1, options: ["250 m", "300 m", "200 m", "350 m"], correctOptionIndex: 1, explanation: "Speed = 72 * (5/18) = 20 m/s. Total distance = 20 * 25 = 500m. Train length = 500 - 200 = 300m.", active: true }
+        ]
+      };
+      localStorage.setItem("cso_question_bank_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveQuestionBankConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid question bank payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_question_bank_config", JSON.stringify(config));
+      this.logAudit("QUESTION_BANK_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Question bank questions and repository settings saved.");
+      return config;
+    },
+
+    importQuestionBankConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveQuestionBankConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import question bank: " + err.message);
+      }
+    },
+
+    resetQuestionBankConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        bankSettings: { defaultLanguage: "Bilingual (English/Odia)", allowLatexFormulas: true, autoTagCognitiveLevel: true },
+        questions: [
+          { id: "Q-1001", prompt: "Under which article of the Constitution of India is the High Court of Orissa established?", subject: "Indian Polity", examTarget: "OPSC OAS", difficulty: "Medium", type: "MCQ", marks: 2, options: ["Article 214", "Article 217", "Article 226", "Article 231"], correctOptionIndex: 0, explanation: "Article 214 provides that there shall be a High Court for each State.", active: true },
+          { id: "Q-1002", prompt: "Who was the first dynamic ruler of the Somavamshi dynasty who unified Coastal and Western Odisha?", subject: "Odisha History", examTarget: "OPSC / OSSC", difficulty: "Hard", type: "MCQ", marks: 2, options: ["Janmejaya I", "Yayati I", "Dharmaratha", "Udyotakesari"], correctOptionIndex: 1, explanation: "Yayati I is credited with the integration of Dakshina Kosala and Utkala.", active: true },
+          { id: "Q-1003", prompt: "A train running at 72 km/hr crosses a platform 200m long in 25 seconds. What is the length of the train?", subject: "Quantitative Aptitude", examTarget: "OSSC CGL", difficulty: "Easy", type: "MCQ", marks: 1, options: ["250 m", "300 m", "200 m", "350 m"], correctOptionIndex: 1, explanation: "Speed = 72 * (5/18) = 20 m/s. Total distance = 20 * 25 = 500m. Train length = 500 - 200 = 300m.", active: true }
+        ]
+      };
+      localStorage.setItem("cso_question_bank_config", JSON.stringify(initial));
+      this.logAudit("QUESTION_BANK_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Question bank restored to factory defaults.");
+      return initial;
+    },
+
+    exportQuestionBankManifest() {
+      const config = this.getQuestionBankConfig();
+      const timestamp = Date.now();
+      const filename = "cso-question-bank-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        questionBank: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("QUESTION_BANK_MANIFEST_EXPORTED", "DATA_EXPORT", "Question bank manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 59.2 MCQ & Quiz Builder Engine (module-05-013)
+    getQuizBuilderConfig() {
+      const raw = localStorage.getItem("cso_quiz_builder_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_quiz_builder_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        builderSettings: { defaultTimerPerQuestionSec: 60, shuffleOptions: true, showInstantExplanation: true },
+        quizzes: [
+          { id: "QUIZ-01", title: "OPSC OAS Prelims Daily Mini-Mock #12: Odisha Polity & GK", questionCount: 15, durationMinutes: 20, negativeMarkPerQuestion: 0.33, examCategory: "OPSC OAS", active: true },
+          { id: "QUIZ-02", title: "OSSC CGL Quantitative Aptitude Speed Test: Arithmetic & DI", questionCount: 20, durationMinutes: 25, negativeMarkPerQuestion: 0.25, examCategory: "OSSC CGL", active: true },
+          { id: "QUIZ-03", title: "OTET Child Development & Pedagogy Practice Assessment", questionCount: 30, durationMinutes: 30, negativeMarkPerQuestion: 0, examCategory: "OTET", active: true }
+        ]
+      };
+      localStorage.setItem("cso_quiz_builder_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveQuizBuilderConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid quiz builder payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_quiz_builder_config", JSON.stringify(config));
+      this.logAudit("QUIZ_BUILDER_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "MCQ & Quiz Builder assessments saved.");
+      return config;
+    },
+
+    importQuizBuilderConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveQuizBuilderConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import quiz builder config: " + err.message);
+      }
+    },
+
+    resetQuizBuilderConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        builderSettings: { defaultTimerPerQuestionSec: 60, shuffleOptions: true, showInstantExplanation: true },
+        quizzes: [
+          { id: "QUIZ-01", title: "OPSC OAS Prelims Daily Mini-Mock #12: Odisha Polity & GK", questionCount: 15, durationMinutes: 20, negativeMarkPerQuestion: 0.33, examCategory: "OPSC OAS", active: true },
+          { id: "QUIZ-02", title: "OSSC CGL Quantitative Aptitude Speed Test: Arithmetic & DI", questionCount: 20, durationMinutes: 25, negativeMarkPerQuestion: 0.25, examCategory: "OSSC CGL", active: true },
+          { id: "QUIZ-03", title: "OTET Child Development & Pedagogy Practice Assessment", questionCount: 30, durationMinutes: 30, negativeMarkPerQuestion: 0, examCategory: "OTET", active: true }
+        ]
+      };
+      localStorage.setItem("cso_quiz_builder_config", JSON.stringify(initial));
+      this.logAudit("QUIZ_BUILDER_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "MCQ & Quiz Builder restored to factory defaults.");
+      return initial;
+    },
+
+    exportQuizBuilderManifest() {
+      const config = this.getQuizBuilderConfig();
+      const timestamp = Date.now();
+      const filename = "cso-quiz-builder-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        quizBuilder: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("QUIZ_BUILDER_MANIFEST_EXPORTED", "DATA_EXPORT", "Quiz Builder manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 59.3 Mock Tests Engine (module-05-014)
+    getMockTestsConfig() {
+      const raw = localStorage.getItem("cso_mock_tests_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_mock_tests_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        testEngineSettings: { simulateLiveCbreInterface: true, enforceSectionalTimers: true, allowRetakes: 3 },
+        tests: [
+          { id: "MOCK-01", title: "OPSC OAS Prelims Full-Length Test Series - Exam 01 (General Studies)", totalQuestions: 100, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.66 marks)", testType: "Full-Length Mock", active: true },
+          { id: "MOCK-02", title: "OPSC OAS Prelims Paper-II (CSAT Qualifying) Full Mock", totalQuestions: 80, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.83 marks)", testType: "Qualifying Mock", active: true },
+          { id: "MOCK-03", title: "OSSC CGL Prelims All-Odisha Live Simulation Test 2026", totalQuestions: 150, maxScore: 150, timeLimitMinutes: 150, negativeMarkRatio: "0.25 marks per error", testType: "Live Ranking Test", active: true }
+        ]
+      };
+      localStorage.setItem("cso_mock_tests_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveMockTestsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid mock tests payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_mock_tests_config", JSON.stringify(config));
+      this.logAudit("MOCK_TESTS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Full-length mock tests series saved.");
+      return config;
+    },
+
+    importMockTestsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveMockTestsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import mock tests config: " + err.message);
+      }
+    },
+
+    resetMockTestsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        testEngineSettings: { simulateLiveCbreInterface: true, enforceSectionalTimers: true, allowRetakes: 3 },
+        tests: [
+          { id: "MOCK-01", title: "OPSC OAS Prelims Full-Length Test Series - Exam 01 (General Studies)", totalQuestions: 100, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.66 marks)", testType: "Full-Length Mock", active: true },
+          { id: "MOCK-02", title: "OPSC OAS Prelims Paper-II (CSAT Qualifying) Full Mock", totalQuestions: 80, maxScore: 200, timeLimitMinutes: 120, negativeMarkRatio: "1/3rd (0.83 marks)", testType: "Qualifying Mock", active: true },
+          { id: "MOCK-03", title: "OSSC CGL Prelims All-Odisha Live Simulation Test 2026", totalQuestions: 150, maxScore: 150, timeLimitMinutes: 150, negativeMarkRatio: "0.25 marks per error", testType: "Live Ranking Test", active: true }
+        ]
+      };
+      localStorage.setItem("cso_mock_tests_config", JSON.stringify(initial));
+      this.logAudit("MOCK_TESTS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Mock tests series restored to factory defaults.");
+      return initial;
+    },
+
+    exportMockTestsManifest() {
+      const config = this.getMockTestsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-mock-tests-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        mockTests: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("MOCK_TESTS_MANIFEST_EXPORTED", "DATA_EXPORT", "Mock tests manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 59.4 Answer Keys & Explanations Engine (module-05-015)
+    getAnswerKeysExplanationsConfig() {
+      const raw = localStorage.getItem("cso_answer_keys_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_answer_keys_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        resolutionPolicy: { allowCandidateGrievance: true, objectionWindowDays: 7, requireDualGazetteRatification: true },
+        keysRegistry: [
+          { id: "KEY-01", examName: "OPSC OAS Prelims 2026 - Paper 1 (General Studies)", answerKeyStatus: "Final Ratified", releaseDate: "2026-11-04", disputedQuestionsCount: 2, revisedMarksAwarded: true, active: true },
+          { id: "KEY-02", examName: "OSSC CGL 2026 Stage 1 CBRE", answerKeyStatus: "Provisional (Objections Open)", releaseDate: "2026-11-08", disputedQuestionsCount: 4, revisedMarksAwarded: false, active: true },
+          { id: "KEY-03", examName: "OSSSC Combined Recruitment Exam (RI/Amin)", answerKeyStatus: "Official Gazette Final", releaseDate: "2026-10-30", disputedQuestionsCount: 0, revisedMarksAwarded: false, active: true }
+        ]
+      };
+      localStorage.setItem("cso_answer_keys_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveAnswerKeysExplanationsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid answer keys payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_answer_keys_config", JSON.stringify(config));
+      this.logAudit("ANSWER_KEYS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Answer keys registry and candidate grievance policies saved.");
+      return config;
+    },
+
+    importAnswerKeysExplanationsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveAnswerKeysExplanationsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import answer keys config: " + err.message);
+      }
+    },
+
+    resetAnswerKeysExplanationsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        resolutionPolicy: { allowCandidateGrievance: true, objectionWindowDays: 7, requireDualGazetteRatification: true },
+        keysRegistry: [
+          { id: "KEY-01", examName: "OPSC OAS Prelims 2026 - Paper 1 (General Studies)", answerKeyStatus: "Final Ratified", releaseDate: "2026-11-04", disputedQuestionsCount: 2, revisedMarksAwarded: true, active: true },
+          { id: "KEY-02", examName: "OSSC CGL 2026 Stage 1 CBRE", answerKeyStatus: "Provisional (Objections Open)", releaseDate: "2026-11-08", disputedQuestionsCount: 4, revisedMarksAwarded: false, active: true },
+          { id: "KEY-03", examName: "OSSSC Combined Recruitment Exam (RI/Amin)", answerKeyStatus: "Official Gazette Final", releaseDate: "2026-10-30", disputedQuestionsCount: 0, revisedMarksAwarded: false, active: true }
+        ]
+      };
+      localStorage.setItem("cso_answer_keys_config", JSON.stringify(initial));
+      this.logAudit("ANSWER_KEYS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Answer keys registry restored to factory defaults.");
+      return initial;
+    },
+
+    exportAnswerKeysExplanationsManifest() {
+      const config = this.getAnswerKeysExplanationsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-answer-keys-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        answerKeysExplanations: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("ANSWER_KEYS_MANIFEST_EXPORTED", "DATA_EXPORT", "Answer keys manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
@@ -7238,6 +7566,10 @@
           admitCardsResults: this.getAdmitCardsResultsConfig(),
           syllabusExamPatterns: this.getSyllabusExamPatternsConfig(),
           previousYearQuestions: this.getPyqConfig(),
+          questionBank: this.getQuestionBankConfig(),
+          quizBuilder: this.getQuizBuilderConfig(),
+          mockTests: this.getMockTestsConfig(),
+          answerKeysExplanations: this.getAnswerKeysExplanationsConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),
