@@ -5518,6 +5518,249 @@
       this.logAudit("SCHEDULED_CONTENT_MANIFEST_EXPORTED", "DATA_EXPORT", "Scheduled content manifest exported (" + filename + ").");
       return filename;
     },
+    // 52. Content Archive Engine (module-04-012)
+    getContentArchiveConfig() {
+      const raw = localStorage.getItem("cso_content_archive_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_content_archive_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        retentionPolicy: { autoArchiveAfterDays: 180, allowPermanentDeletion: false, coldStorageMirror: true },
+        archivedItems: [
+          { id: "ARC-01", contentId: "CNT-084", title: "OPSC OAS 2024 Preliminary Examination Marks Distribution (Archived)", category: "Civil Services", archivedDate: "2026-06-15", reason: "Superseded by 2026 notification", originalUrl: "/exams/opsc-oas-2024.html", status: "Archived", active: true },
+          { id: "ARC-02", contentId: "CNT-052", title: "OSSC CTSRE 2025 Technical Corrigendum Series 1 (Superseded)", category: "Staff Selection", archivedDate: "2026-08-01", reason: "Outdated exam cycle", originalUrl: "/exams/ossc-ctsre-2025.html", status: "Archived", active: true },
+          { id: "ARC-03", contentId: "CNT-039", title: "OSSSC Combined Recruitment 2024 Provisional Merit List (Historical)", category: "Subordinate Services", archivedDate: "2026-09-10", reason: "Final appointments ratified", originalUrl: "/exams/osssc-2024-merit.html", status: "Archived", active: true }
+        ]
+      };
+      localStorage.setItem("cso_content_archive_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveContentArchiveConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid content archive payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_content_archive_config", JSON.stringify(config));
+      this.logAudit("CONTENT_ARCHIVE_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Content archive items and retention policy saved.");
+      return config;
+    },
+
+    importContentArchiveConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveContentArchiveConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import content archive: " + err.message);
+      }
+    },
+
+    resetContentArchiveConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        retentionPolicy: { autoArchiveAfterDays: 180, allowPermanentDeletion: false, coldStorageMirror: true },
+        archivedItems: [
+          { id: "ARC-01", contentId: "CNT-084", title: "OPSC OAS 2024 Preliminary Examination Marks Distribution (Archived)", category: "Civil Services", archivedDate: "2026-06-15", reason: "Superseded by 2026 notification", originalUrl: "/exams/opsc-oas-2024.html", status: "Archived", active: true },
+          { id: "ARC-02", contentId: "CNT-052", title: "OSSC CTSRE 2025 Technical Corrigendum Series 1 (Superseded)", category: "Staff Selection", archivedDate: "2026-08-01", reason: "Outdated exam cycle", originalUrl: "/exams/ossc-ctsre-2025.html", status: "Archived", active: true },
+          { id: "ARC-03", contentId: "CNT-039", title: "OSSSC Combined Recruitment 2024 Provisional Merit List (Historical)", category: "Subordinate Services", archivedDate: "2026-09-10", reason: "Final appointments ratified", originalUrl: "/exams/osssc-2024-merit.html", status: "Archived", active: true }
+        ]
+      };
+      localStorage.setItem("cso_content_archive_config", JSON.stringify(initial));
+      this.logAudit("CONTENT_ARCHIVE_CONFIG_RESET", "CONTENT_PUBLISHING", "Content archive restored to factory defaults.");
+      return initial;
+    },
+
+    exportContentArchiveManifest() {
+      const config = this.getContentArchiveConfig();
+      const timestamp = Date.now();
+      const filename = "cso-content-archive-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        contentArchive: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CONTENT_ARCHIVE_MANIFEST_EXPORTED", "DATA_EXPORT", "Content archive manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 53. Content Revisions Engine (module-04-013)
+    getContentRevisionsConfig() {
+      const raw = localStorage.getItem("cso_content_revisions_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_content_revisions_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        versioningPolicy: { maxRevisionsPerArticle: 20, autoSnapshotOnPublish: true, requireRollbackAuditNote: true },
+        revisions: [
+          { id: "REV-101", contentId: "CNT-001", revisionNumber: 3, title: "OPSC OAS 2026 Prelims Syllabus Breakdown & Cutoff Trends", author: "Dr. B. K. Jena", timestamp: "2026-11-08T18:40:00+05:30", changesSummary: "Reconciled CSAT qualifying marks criteria as per Gazette No. 1422", rollbackAvailable: true, active: true },
+          { id: "REV-102", contentId: "CNT-001", revisionNumber: 2, title: "OPSC OAS 2026 Prelims Syllabus Breakdown", author: "Editorial Cell", timestamp: "2026-11-05T14:15:00+05:30", changesSummary: "Added Paper-I Indian Polity and Odisha History subsections", rollbackAvailable: true, active: true },
+          { id: "REV-103", contentId: "CNT-002", revisionNumber: 4, title: "OSSC CGL Exam Pattern: Combined Graduate Level Examination", author: "M. Pattnaik", timestamp: "2026-11-07T11:20:00+05:30", changesSummary: "Corrected negative marking ratio (0.25 vs 0.33) in accordance with Commission notice", rollbackAvailable: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_content_revisions_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveContentRevisionsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid content revisions payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_content_revisions_config", JSON.stringify(config));
+      this.logAudit("CONTENT_REVISIONS_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Content revisions and audit log saved.");
+      return config;
+    },
+
+    importContentRevisionsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveContentRevisionsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import content revisions: " + err.message);
+      }
+    },
+
+    resetContentRevisionsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        versioningPolicy: { maxRevisionsPerArticle: 20, autoSnapshotOnPublish: true, requireRollbackAuditNote: true },
+        revisions: [
+          { id: "REV-101", contentId: "CNT-001", revisionNumber: 3, title: "OPSC OAS 2026 Prelims Syllabus Breakdown & Cutoff Trends", author: "Dr. B. K. Jena", timestamp: "2026-11-08T18:40:00+05:30", changesSummary: "Reconciled CSAT qualifying marks criteria as per Gazette No. 1422", rollbackAvailable: true, active: true },
+          { id: "REV-102", contentId: "CNT-001", revisionNumber: 2, title: "OPSC OAS 2026 Prelims Syllabus Breakdown", author: "Editorial Cell", timestamp: "2026-11-05T14:15:00+05:30", changesSummary: "Added Paper-I Indian Polity and Odisha History subsections", rollbackAvailable: true, active: true },
+          { id: "REV-103", contentId: "CNT-002", revisionNumber: 4, title: "OSSC CGL Exam Pattern: Combined Graduate Level Examination", author: "M. Pattnaik", timestamp: "2026-11-07T11:20:00+05:30", changesSummary: "Corrected negative marking ratio (0.25 vs 0.33) in accordance with Commission notice", rollbackAvailable: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_content_revisions_config", JSON.stringify(initial));
+      this.logAudit("CONTENT_REVISIONS_CONFIG_RESET", "CONTENT_PUBLISHING", "Content revisions restored to factory defaults.");
+      return initial;
+    },
+
+    exportContentRevisionsManifest() {
+      const config = this.getContentRevisionsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-content-revisions-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        contentRevisions: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("CONTENT_REVISIONS_MANIFEST_EXPORTED", "DATA_EXPORT", "Content revisions manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 54. Bulk Content Operations Engine (module-04-014)
+    getBulkContentOperationsConfig() {
+      const raw = localStorage.getItem("cso_bulk_content_ops_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_bulk_content_ops_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        executionRules: { allowBatchTagging: true, maxBatchSelection: 100, requireTwoFactorForMassDelete: true, defaultTargetCategory: "Civil Services" },
+        batchJobs: [
+          { id: "JOB-01", type: "Bulk Tagging", targetCount: 14, tagApplied: "gazette-corrigendum", runBy: "admin@csodisha.com", executedAt: "2026-11-08T16:00:00+05:30", status: "Completed", active: true },
+          { id: "JOB-02", type: "Mass Category Migration", targetCount: 8, fromCategory: "General Recruitment", toCategory: "Subordinate Services", runBy: "editor@csodisha.com", executedAt: "2026-11-07T12:30:00+05:30", status: "Completed", active: true },
+          { id: "JOB-03", type: "Bulk Archive", targetCount: 12, reason: "End of 2024 academic cycle", runBy: "admin@csodisha.com", executedAt: "2026-11-06T10:15:00+05:30", status: "Completed", active: true }
+        ]
+      };
+      localStorage.setItem("cso_bulk_content_ops_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveBulkContentOperationsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid bulk content operations payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_bulk_content_ops_config", JSON.stringify(config));
+      this.logAudit("BULK_OPS_CONFIG_UPDATED", "CONTENT_PUBLISHING", "Bulk content operations settings and job records saved.");
+      return config;
+    },
+
+    importBulkContentOperationsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveBulkContentOperationsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import bulk content operations: " + err.message);
+      }
+    },
+
+    resetBulkContentOperationsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        executionRules: { allowBatchTagging: true, maxBatchSelection: 100, requireTwoFactorForMassDelete: true, defaultTargetCategory: "Civil Services" },
+        batchJobs: [
+          { id: "JOB-01", type: "Bulk Tagging", targetCount: 14, tagApplied: "gazette-corrigendum", runBy: "admin@csodisha.com", executedAt: "2026-11-08T16:00:00+05:30", status: "Completed", active: true },
+          { id: "JOB-02", type: "Mass Category Migration", targetCount: 8, fromCategory: "General Recruitment", toCategory: "Subordinate Services", runBy: "editor@csodisha.com", executedAt: "2026-11-07T12:30:00+05:30", status: "Completed", active: true },
+          { id: "JOB-03", type: "Bulk Archive", targetCount: 12, reason: "End of 2024 academic cycle", runBy: "admin@csodisha.com", executedAt: "2026-11-06T10:15:00+05:30", status: "Completed", active: true }
+        ]
+      };
+      localStorage.setItem("cso_bulk_content_ops_config", JSON.stringify(initial));
+      this.logAudit("BULK_OPS_CONFIG_RESET", "CONTENT_PUBLISHING", "Bulk content operations restored to factory defaults.");
+      return initial;
+    },
+
+    exportBulkContentOperationsManifest() {
+      const config = this.getBulkContentOperationsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-bulk-content-ops-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        bulkContentOperations: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("BULK_OPS_MANIFEST_EXPORTED", "DATA_EXPORT", "Bulk content operations manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
     exportPrivacyManifest() {
@@ -5851,6 +6094,9 @@
           editorialCalendar: this.getEditorialCalendarConfig(),
           publishingWorkflow: this.getPublishingWorkflowConfig(),
           scheduledContent: this.getScheduledContentConfig(),
+          contentArchive: this.getContentArchiveConfig(),
+          contentRevisions: this.getContentRevisionsConfig(),
+          bulkContentOperations: this.getBulkContentOperationsConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

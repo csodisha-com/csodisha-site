@@ -385,6 +385,12 @@ async function loadMasterNavigation() {
         renderPublishingWorkflowWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-04-011') {
         renderScheduledContentWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-012') {
+        renderContentArchiveWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-013') {
+        renderContentRevisionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-04-014') {
+        renderBulkContentOperationsWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -16285,6 +16291,910 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Content Archive (module-04-012)
+     */
+    function renderContentArchiveWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getContentArchiveConfig();
+        const archivedItems = config.archivedItems || [];
+        const retentionPolicy = config.retentionPolicy || {};
+
+        const activeCount = archivedItems.filter(i => i.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                    </span>
+                    Content Archive & Cold Storage
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-400 border border-slate-500/30">
+                    module-04-012
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Secure immutable storage for superseded exam notifications, historical answer keys, and ratifications across Odisha.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-arc-item" class="px-3.5 py-2 text-xs font-medium text-white bg-slate-700 hover:bg-slate-600 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Archive Content
+                </button>
+                <button id="btn-toggle-json-arc" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-arc" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-arc" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-arc" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Archived Documents</span>
+                <div class="mt-1 text-2xl font-bold text-white">${archivedItems.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active in Cold Mirror</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Retention Window</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${retentionPolicy.autoArchiveAfterDays || 180} Days</div>
+              </div>
+            </div>
+
+            <!-- Retention Policy Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Retention & Cold-Storage Compliance Policy</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Auto-Archive Inactive Content (Days)</label>
+                  <input type="number" id="arc-retention-days" value="${retentionPolicy.autoArchiveAfterDays || 180}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-slate-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="arc-allow-del" class="sr-only peer" ${retentionPolicy.allowPermanentDeletion ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Allow Permanent Deletion (Purge)</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="arc-cold-storage" class="sr-only peer" ${retentionPolicy.coldStorageMirror ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enable Cloud Cold-Storage Mirror</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Archived Items Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Archived Academic Records</h2>
+                <span class="text-xs text-slate-400">${archivedItems.length} records</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Archive ID / Ref</th>
+                      <th class="px-4 py-3">Document Title</th>
+                      <th class="px-4 py-3">Category</th>
+                      <th class="px-4 py-3">Archived Date</th>
+                      <th class="px-4 py-3">Archive Reason</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="arc-items-body" class="divide-y divide-slate-800/60">
+                    ${archivedItems.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          <div>${escapeHtml(item.id || 'ARC-' + (idx+1))}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(item.contentId || 'N/A')}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                          ${escapeHtml(item.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                            ${escapeHtml(item.category || 'General')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
+                          ${escapeHtml(item.archivedDate || 'N/A')}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400 max-w-xs truncate" title="${escapeHtml(item.reason)}">
+                          ${escapeHtml(item.reason || 'Historical record')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="arc-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-slate-500 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="arc-restore-btn px-2 py-1 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Restore</button>
+                          <button class="arc-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="arc-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                    ${archivedItems.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                          Archive vault is empty. No documents currently retired.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="arc-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Content Archive Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_content_archive_config</span>
+              </div>
+              <textarea id="arc-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-slate-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-arc" class="px-3 py-1.5 text-xs font-medium text-white bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const itemsList = [...archivedItems];
+
+        const saveChanges = () => {
+          config.retentionPolicy = {
+            autoArchiveAfterDays: parseInt(root.querySelector('#arc-retention-days').value, 10) || 180,
+            allowPermanentDeletion: root.querySelector('#arc-allow-del').checked,
+            coldStorageMirror: root.querySelector('#arc-cold-storage').checked
+          };
+          config.archivedItems = itemsList;
+          window.CSOSuperStore.saveContentArchiveConfig(config);
+          alert('Content archive configuration saved successfully!');
+          renderContentArchiveWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-arc').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-arc').addEventListener('click', () => {
+          window.CSOSuperStore.exportContentArchiveManifest();
+        });
+
+        root.querySelector('#btn-reset-arc').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the content archive to default records?')) {
+            window.CSOSuperStore.resetContentArchiveConfig();
+            alert('Content archive reset to defaults.');
+            renderContentArchiveWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#arc-json-drawer');
+        root.querySelector('#btn-toggle-json-arc').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-arc').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#arc-json-raw').value;
+            window.CSOSuperStore.importContentArchiveConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderContentArchiveWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.arc-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (itemsList[idx]) {
+              itemsList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.arc-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Permanently purge archived record "' + itemsList[idx].title + '"?')) {
+              itemsList.splice(idx, 1);
+              config.archivedItems = itemsList;
+              window.CSOSuperStore.saveContentArchiveConfig(config);
+              renderContentArchiveWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.arc-restore-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = itemsList[idx];
+            if (confirm(`Un-archive and restore "${item.title}" back to active status?`)) {
+              item.status = 'Restored';
+              alert(`Record ${item.id} has been marked as Restored and flagged for publishing.`);
+              config.archivedItems = itemsList;
+              window.CSOSuperStore.saveContentArchiveConfig(config);
+              renderContentArchiveWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.arc-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = itemsList[idx];
+            const newTitle = prompt('Archived Document Title:', item.title);
+            if (newTitle === null) return;
+            const newCat = prompt('Category:', item.category || 'Civil Services');
+            const newReason = prompt('Archive Reason:', item.reason || 'Superseded');
+
+            item.title = newTitle.trim() || item.title;
+            if (newCat !== null) item.category = newCat.trim();
+            if (newReason !== null) item.reason = newReason.trim();
+
+            config.archivedItems = itemsList;
+            window.CSOSuperStore.saveContentArchiveConfig(config);
+            renderContentArchiveWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-arc-item').addEventListener('click', () => {
+          const title = prompt('Enter Document Title to Archive:');
+          if (!title || !title.trim()) return;
+          const contentId = prompt('Associated Content ID (e.g. CNT-099):', 'CNT-099') || 'CNT-099';
+          const category = prompt('Category:', 'Civil Services') || 'Civil Services';
+          const reason = prompt('Reason for Retirement:', 'Superseded by recent gazette update') || 'Superseded';
+
+          const newId = 'ARC-' + String(itemsList.length + 1).padStart(2, '0');
+          itemsList.push({
+            id: newId,
+            contentId: contentId.trim(),
+            title: title.trim(),
+            category: category.trim(),
+            archivedDate: new Date().toISOString().split('T')[0],
+            reason: reason.trim(),
+            status: 'Archived',
+            active: true
+          });
+          config.archivedItems = itemsList;
+          window.CSOSuperStore.saveContentArchiveConfig(config);
+          renderContentArchiveWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-012 (Content Archive)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Content Revisions (module-04-013)
+     */
+    function renderContentRevisionsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getContentRevisionsConfig();
+        const revisions = config.revisions || [];
+        const policy = config.versioningPolicy || {};
+
+        const rollbackCount = revisions.filter(r => r.rollbackAvailable && r.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </span>
+                    Content Revisions & Audit Log
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                    module-04-013
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Track revision history, gazette corrigendum reconciliations, author diffs, and instant rollback restore points.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-rev-item" class="px-3.5 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Create Snapshot
+                </button>
+                <button id="btn-toggle-json-rev" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-rev" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-rev" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-rev" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Recorded Revisions</span>
+                <div class="mt-1 text-2xl font-bold text-white">${revisions.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Available Rollbacks</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${rollbackCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">History Depth Limit</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${policy.maxRevisionsPerArticle || 20} Versions</div>
+              </div>
+            </div>
+
+            <!-- Versioning Policy Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Revision Retention & Snapshot Configuration</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Max Revisions per Article</label>
+                  <input type="number" id="rev-max-limit" value="${policy.maxRevisionsPerArticle || 20}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="rev-auto-snapshot" class="sr-only peer" ${policy.autoSnapshotOnPublish ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Auto-Snapshot on Publishing</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="rev-audit-note" class="sr-only peer" ${policy.requireRollbackAuditNote ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Mandate Rollback Audit Note</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Revisions Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Revision Changelog & Snapshot Register</h2>
+                <span class="text-xs text-slate-400">${revisions.length} total entries</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Rev ID / Ver</th>
+                      <th class="px-4 py-3">Content Title</th>
+                      <th class="px-4 py-3">Author</th>
+                      <th class="px-4 py-3">Timestamp</th>
+                      <th class="px-4 py-3">Summary of Changes</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rev-items-body" class="divide-y divide-slate-800/60">
+                    ${revisions.map((rev, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          <div>${escapeHtml(rev.id || 'REV-' + (idx+1))}</div>
+                          <span class="inline-block mt-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded bg-cyan-950 text-cyan-400 border border-cyan-800/50">
+                            v${escapeHtml(rev.revisionNumber || '1')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(rev.title)}">
+                          ${escapeHtml(rev.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          ${escapeHtml(rev.author || 'Editorial Desk')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
+                          ${escapeHtml(rev.timestamp || 'N/A')}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400 max-w-xs truncate" title="${escapeHtml(rev.changesSummary)}">
+                          ${escapeHtml(rev.changesSummary || 'General corrections')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="rev-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${rev.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="rev-rollback-btn px-2 py-1 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Rollback</button>
+                          <button class="rev-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="rev-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                    ${revisions.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                          No revision history records available.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="rev-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Content Revisions Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_content_revisions_config</span>
+              </div>
+              <textarea id="rev-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-cyan-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-rev" class="px-3 py-1.5 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const revList = [...revisions];
+
+        const saveChanges = () => {
+          config.versioningPolicy = {
+            maxRevisionsPerArticle: parseInt(root.querySelector('#rev-max-limit').value, 10) || 20,
+            autoSnapshotOnPublish: root.querySelector('#rev-auto-snapshot').checked,
+            requireRollbackAuditNote: root.querySelector('#rev-audit-note').checked
+          };
+          config.revisions = revList;
+          window.CSOSuperStore.saveContentRevisionsConfig(config);
+          alert('Content revisions configuration saved successfully!');
+          renderContentRevisionsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-rev').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-rev').addEventListener('click', () => {
+          window.CSOSuperStore.exportContentRevisionsManifest();
+        });
+
+        root.querySelector('#btn-reset-rev').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the revision registry to default initial revisions?')) {
+            window.CSOSuperStore.resetContentRevisionsConfig();
+            alert('Content revisions reset to defaults.');
+            renderContentRevisionsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#rev-json-drawer');
+        root.querySelector('#btn-toggle-json-rev').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-rev').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#rev-json-raw').value;
+            window.CSOSuperStore.importContentRevisionsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderContentRevisionsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.rev-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (revList[idx]) {
+              revList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.rev-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Delete revision snapshot "' + revList[idx].id + '"?')) {
+              revList.splice(idx, 1);
+              config.revisions = revList;
+              window.CSOSuperStore.saveContentRevisionsConfig(config);
+              renderContentRevisionsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.rev-rollback-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const rev = revList[idx];
+            const reason = prompt(`Confirm rollback to Version ${rev.revisionNumber} of "${rev.title}".\nEnter statutory reason:`, 'Gazette reconciliation rollback');
+            if (reason === null) return;
+            alert(`Successfully rolled back content to Revision ${rev.revisionNumber}. Audit log entry recorded: "${reason}".`);
+          });
+        });
+
+        root.querySelectorAll('.rev-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const rev = revList[idx];
+            const newTitle = prompt('Content Title:', rev.title);
+            if (newTitle === null) return;
+            const newAuthor = prompt('Author:', rev.author || 'Editorial Cell');
+            const newSummary = prompt('Summary of Changes:', rev.changesSummary || 'Updated references');
+
+            rev.title = newTitle.trim() || rev.title;
+            if (newAuthor !== null) rev.author = newAuthor.trim();
+            if (newSummary !== null) rev.changesSummary = newSummary.trim();
+
+            config.revisions = revList;
+            window.CSOSuperStore.saveContentRevisionsConfig(config);
+            renderContentRevisionsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-rev-item').addEventListener('click', () => {
+          const title = prompt('Enter Content Title for Snapshot:');
+          if (!title || !title.trim()) return;
+          const author = prompt('Author / Desk:', 'Editorial Desk') || 'Editorial Desk';
+          const summary = prompt('Summary of Modifications:', 'Manual snapshot captured prior to update') || 'Manual snapshot';
+
+          const newId = 'REV-' + (100 + revList.length + 1);
+          revList.unshift({
+            id: newId,
+            contentId: 'CNT-001',
+            revisionNumber: revList.length + 1,
+            title: title.trim(),
+            author: author.trim(),
+            timestamp: new Date().toISOString(),
+            changesSummary: summary.trim(),
+            rollbackAvailable: true,
+            active: true
+          });
+          config.revisions = revList;
+          window.CSOSuperStore.saveContentRevisionsConfig(config);
+          renderContentRevisionsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-013 (Content Revisions)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Bulk Content Operations (module-04-014)
+     */
+    function renderBulkContentOperationsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getBulkContentOperationsConfig();
+        const batchJobs = config.batchJobs || [];
+        const rules = config.executionRules || {};
+
+        const completedJobs = batchJobs.filter(j => j.status === 'Completed').length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </span>
+                    Bulk Content Operations
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/30">
+                    module-04-014
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Mass tagging, batch category migrations, bulk status updates, and multi-record actions across all 30 districts.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-execute-batch" class="px-3.5 py-2 text-xs font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  Execute Batch Job
+                </button>
+                <button id="btn-toggle-json-bulk" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-bulk" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-bulk" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-bulk" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Executed Batch Jobs</span>
+                <div class="mt-1 text-2xl font-bold text-white">${batchJobs.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Successful Completions</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${completedJobs}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Max Batch Limit</span>
+                <div class="mt-1 text-2xl font-bold text-violet-400">${rules.maxBatchSelection || 100} Items</div>
+              </div>
+            </div>
+
+            <!-- Execution Rules Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Bulk Execution Safeguards & Policy Constraints</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Max Batch Selection Threshold</label>
+                  <input type="number" id="bulk-max-items" value="${rules.maxBatchSelection || 100}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Fallback Category</label>
+                  <input type="text" id="bulk-default-cat" value="${escapeHtml(rules.defaultTargetCategory || 'Civil Services')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="bulk-allow-tagging" class="sr-only peer" ${rules.allowBatchTagging ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Allow Mass Tagging</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="bulk-require-2fa" class="sr-only peer" ${rules.requireTwoFactorForMassDelete ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Mandate 2FA for Mass Delete</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Batch Jobs Register Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Batch Operation Audit History</h2>
+                <span class="text-xs text-slate-400">${batchJobs.length} executed runs</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Job ID</th>
+                      <th class="px-4 py-3">Operation Type</th>
+                      <th class="px-4 py-3">Target Scope</th>
+                      <th class="px-4 py-3">Initiated By</th>
+                      <th class="px-4 py-3">Execution Time</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bulk-jobs-body" class="divide-y divide-slate-800/60">
+                    ${batchJobs.map((job, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(job.id || 'JOB-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-violet-950 text-violet-300 border border-violet-800/50">
+                            ${escapeHtml(job.type || 'Batch Job')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          ${job.targetCount} records ${job.tagApplied ? `(${escapeHtml(job.tagApplied)})` : job.toCategory ? `(${escapeHtml(job.toCategory)})` : ''}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(job.runBy || 'admin@csodisha.com')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
+                          ${escapeHtml(job.executedAt || 'N/A')}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            ${escapeHtml(job.status || 'Completed')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="bulk-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-violet-600 focus:ring-0" data-idx="${idx}" ${job.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="bulk-view-btn px-2 py-1 text-xs text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Details</button>
+                          <button class="bulk-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                    ${batchJobs.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          No bulk operations recorded.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="bulk-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Bulk Content Operations Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_bulk_content_ops_config</span>
+              </div>
+              <textarea id="bulk-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-violet-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-bulk" class="px-3 py-1.5 text-xs font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const jobsList = [...batchJobs];
+
+        const saveChanges = () => {
+          config.executionRules = {
+            maxBatchSelection: parseInt(root.querySelector('#bulk-max-items').value, 10) || 100,
+            defaultTargetCategory: root.querySelector('#bulk-default-cat').value.trim() || 'Civil Services',
+            allowBatchTagging: root.querySelector('#bulk-allow-tagging').checked,
+            requireTwoFactorForMassDelete: root.querySelector('#bulk-require-2fa').checked
+          };
+          config.batchJobs = jobsList;
+          window.CSOSuperStore.saveBulkContentOperationsConfig(config);
+          alert('Bulk content operations configuration saved successfully!');
+          renderBulkContentOperationsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-bulk').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-bulk').addEventListener('click', () => {
+          window.CSOSuperStore.exportBulkContentOperationsManifest();
+        });
+
+        root.querySelector('#btn-reset-bulk').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the bulk operations log to factory defaults?')) {
+            window.CSOSuperStore.resetBulkContentOperationsConfig();
+            alert('Bulk content operations reset to defaults.');
+            renderBulkContentOperationsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#bulk-json-drawer');
+        root.querySelector('#btn-toggle-json-bulk').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-bulk').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#bulk-json-raw').value;
+            window.CSOSuperStore.importBulkContentOperationsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderBulkContentOperationsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.bulk-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (jobsList[idx]) {
+              jobsList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.bulk-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Delete job record "' + jobsList[idx].id + '"?')) {
+              jobsList.splice(idx, 1);
+              config.batchJobs = jobsList;
+              window.CSOSuperStore.saveBulkContentOperationsConfig(config);
+              renderBulkContentOperationsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.bulk-view-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const job = jobsList[idx];
+            alert(`Job ID: ${job.id}\nOperation: ${job.type}\nTarget Records: ${job.targetCount}\nStatus: ${job.status}\nTimestamp: ${job.executedAt}\nInitiated By: ${job.runBy}`);
+          });
+        });
+
+        root.querySelector('#btn-execute-batch').addEventListener('click', () => {
+          const jobType = prompt('Select Operation Type (Bulk Tagging / Mass Category Migration / Bulk Archive / Bulk Status Update):', 'Bulk Tagging');
+          if (!jobType || !jobType.trim()) return;
+          const targetCountStr = prompt('Number of items affected:', '10');
+          const targetCount = parseInt(targetCountStr, 10) || 10;
+          const param = prompt('Operation Parameter (Tag Name / Target Category / Reason):', 'exam-rescheduled');
+
+          const newId = 'JOB-' + String(jobsList.length + 1).padStart(2, '0');
+          jobsList.unshift({
+            id: newId,
+            type: jobType.trim(),
+            targetCount: targetCount,
+            tagApplied: param ? param.trim() : undefined,
+            runBy: 'admin@csodisha.com',
+            executedAt: new Date().toISOString(),
+            status: 'Completed',
+            active: true
+          });
+          config.batchJobs = jobsList;
+          window.CSOSuperStore.saveBulkContentOperationsConfig(config);
+          alert(`Batch operation ${newId} executed successfully across ${targetCount} records.`);
+          renderBulkContentOperationsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-04-014 (Bulk Content Operations)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 

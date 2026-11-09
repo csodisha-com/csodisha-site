@@ -258,17 +258,17 @@
         {
           "id": "module-04-012",
           "title": "Content Archive",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-04-013",
           "title": "Content Revisions",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-04-014",
           "title": "Bulk Content Operations",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },
