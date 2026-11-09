@@ -291,6 +291,8 @@ async function loadMasterNavigation() {
         renderPendingApprovalsWorkspace();
       } else if (moduleId === 'module-01-007') {
         renderWebsiteAnalyticsWorkspace();
+      } else if (moduleId === 'module-01-008') {
+        renderMasterFeatureRegistryWorkspace();
       } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -878,6 +880,304 @@ async function loadMasterNavigation() {
 
       // Initial populate
       refreshApprovalsView();
+    }
+
+    /**
+     * VIEW 1h: Master Feature Registry (module-01-008)
+     */
+    function renderMasterFeatureRegistryWorkspace() {
+      // Ensure masterNavigationSchema is loaded
+      if (!masterNavigationSchema) {
+        dom.workspaceRoot.innerHTML = `
+          <div class="p-8 text-center text-slate-400 font-sans">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-emerald mb-3"></div>
+            <p class="text-sm">Loading Master Navigation Schema...</p>
+          </div>
+        `;
+        loadMasterNavigation().then(() => {
+          renderMasterFeatureRegistryWorkspace();
+        });
+        return;
+      }
+
+      // Breadcrumb updates
+      dom.breadcrumbFolder.textContent = "Dashboard & Command Centre";
+      dom.breadcrumbModule.textContent = "Master Feature Registry (module-01-008)";
+
+      // Header Actions: Export JSON and CSV
+      dom.moduleHeaderActions.innerHTML = `
+        <div class="flex items-center gap-2">
+          <button id="btnExportRegistryJson" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-brand-border flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export JSON
+          </button>
+          <button id="btnExportRegistryCsv" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-brand-emerald hover:bg-brand-emeraldHover text-white shadow flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Export CSV
+          </button>
+        </div>
+      `;
+
+      const stats = (window.CSOSuperStore && typeof window.CSOSuperStore.getFeatureRegistryStats === 'function')
+        ? window.CSOSuperStore.getFeatureRegistryStats(masterNavigationSchema)
+        : {
+            totalFolders: masterNavigationSchema.folders.length,
+            totalModules: 0,
+            activeCount: 0,
+            plannedCount: 0,
+            completionPercentage: 0,
+            modulesList: []
+          };
+
+      // State for filtering
+      let searchQuery = '';
+      let selectedFolder = 'ALL';
+      let selectedStatus = 'ALL';
+
+      // Generate Folder Dropdown Options
+      const folderOptionsHtml = masterNavigationSchema.folders.map(f => {
+        return `<option value="${f.id}">${f.id.toUpperCase()}: ${f.title}</option>`;
+      }).join('');
+
+      dom.workspaceRoot.innerHTML = `
+        <div class="space-y-6">
+          <!-- Executive KPI and Progress Banner -->
+          <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  System Architecture & Feature Registry
+                  <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">module-01-008</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Comprehensive real-time matrix of all 19 domain folders and 241+ governance modules across Common Sense Odisha.</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Registry Schema Synced
+                </span>
+              </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Total Mapped Modules</span>
+                <div class="text-xl font-bold font-mono text-white mt-1">${stats.totalModules}</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">${stats.activeCount} active &bull; ${stats.plannedCount} planned</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Active Implementation</span>
+                <div class="text-xl font-bold font-mono text-emerald-400 mt-1">${stats.completionPercentage}%</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">${stats.activeCount} modules operational</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Planned / In Pipeline</span>
+                <div class="text-xl font-bold font-mono text-amber-400 mt-1">${stats.plannedCount}</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">${100 - stats.completionPercentage}% roadmap backlog</div>
+              </div>
+              <div class="p-3.5 rounded-lg bg-[#081220] border border-brand-border">
+                <span class="text-xs text-slate-400 block">Domain Folders Mapped</span>
+                <div class="text-xl font-bold font-mono text-cyan-400 mt-1">${stats.totalFolders} Folders</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">100% hierarchy covered</div>
+              </div>
+            </div>
+
+            <!-- Implementation Progress Bar -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-slate-400">Platform Build Progress (Active / Total)</span>
+                <span class="text-emerald-400 font-bold">${stats.activeCount} / ${stats.totalModules} Modules (${stats.completionPercentage}%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                <div class="h-full bg-gradient-to-r from-teal-500 to-emerald-400 transition-all duration-500" style="width: ${stats.completionPercentage}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search & Multi-Filter Controls -->
+          <div class="p-4 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-6 relative">
+                <input id="registrySearchInput" type="text" placeholder="Search module name or ID (e.g. module-01-001 or Broadcast)..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+
+              <div class="sm:col-span-3">
+                <select id="registryFolderFilter" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                  <option value="ALL">All 19 Folders</option>
+                  ${folderOptionsHtml}
+                </select>
+              </div>
+
+              <div class="sm:col-span-3">
+                <select id="registryStatusFilter" class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-brand-emerald font-sans">
+                  <option value="ALL">All Statuses</option>
+                  <option value="ACTIVE">Active Only</option>
+                  <option value="PLANNED">Planned Only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Master Module Inventory Table -->
+          <div class="rounded-xl bg-brand-slate border border-brand-border shadow-md overflow-hidden">
+            <div class="px-5 py-3 border-b border-brand-border flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                Module Inventory Register
+                <span id="registryCountBadge" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">${stats.totalModules} modules</span>
+              </h3>
+              <span class="text-[11px] text-slate-400 font-mono">Live Ingestion from master-navigation.json</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-[#081220] text-slate-400 font-mono border-b border-brand-border">
+                    <th class="py-2.5 px-4 font-semibold">Module ID</th>
+                    <th class="py-2.5 px-4 font-semibold">Module Title</th>
+                    <th class="py-2.5 px-4 font-semibold">Parent Folder</th>
+                    <th class="py-2.5 px-4 font-semibold text-center">Status</th>
+                    <th class="py-2.5 px-4 font-semibold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="registryTableBody" class="divide-y divide-brand-border/40 font-sans">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      function renderTableRows() {
+        const tbody = document.getElementById('registryTableBody');
+        const countBadge = document.getElementById('registryCountBadge');
+        if (!tbody) return;
+
+        const sq = searchQuery.toLowerCase().trim();
+        const sf = selectedFolder;
+        const ss = selectedStatus;
+
+        const filtered = stats.modulesList.filter(item => {
+          // Folder filter
+          if (sf !== 'ALL' && item.folderId !== sf) return false;
+
+          // Status filter
+          if (ss !== 'ALL' && (item.status || '').toUpperCase() !== ss) return false;
+
+          // Search query
+          if (sq) {
+            const mId = (item.moduleId || '').toLowerCase();
+            const mTitle = (item.moduleTitle || '').toLowerCase();
+            const fName = (item.folderName || '').toLowerCase();
+            if (!mId.includes(sq) && !mTitle.includes(sq) && !fName.includes(sq)) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+
+        if (countBadge) {
+          countBadge.textContent = `${filtered.length} of ${stats.totalModules} modules`;
+        }
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="py-8 text-center text-slate-500 font-mono text-xs">
+                No matching modules found for the selected query and filters.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(item => {
+          const isActive = (item.status || '').toLowerCase() === 'active';
+          const statusBadge = isActive
+            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">ACTIVE</span>`
+            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">PLANNED</span>`;
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">${item.moduleId}</td>
+              <td class="py-2.5 px-4 font-bold text-white">${item.moduleTitle}</td>
+              <td class="py-2.5 px-4 text-slate-300 font-mono text-[11px] whitespace-nowrap">
+                <span class="px-1.5 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-slate-300 mr-1.5">${item.folderId}</span>
+                ${item.folderName}
+              </td>
+              <td class="py-2.5 px-4 text-center whitespace-nowrap">${statusBadge}</td>
+              <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                <button data-folder="${item.folderId}" data-module="${item.moduleId}" class="btn-navigate-module inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-cyan-300 font-mono text-[11px] font-semibold border border-brand-border transition">
+                  Open View &rarr;
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Wire Open View buttons
+        tbody.querySelectorAll('.btn-navigate-module').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const fId = e.currentTarget.getAttribute('data-folder');
+            const mId = e.currentTarget.getAttribute('data-module');
+            if (fId && mId) {
+              selectModule(fId, mId);
+            }
+          });
+        });
+      }
+
+      // Initial table render
+      renderTableRows();
+
+      // Search and Filter Listeners
+      const searchInput = document.getElementById('registrySearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchQuery = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      const folderFilter = document.getElementById('registryFolderFilter');
+      if (folderFilter) {
+        folderFilter.addEventListener('change', (e) => {
+          selectedFolder = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      const statusFilter = document.getElementById('registryStatusFilter');
+      if (statusFilter) {
+        statusFilter.addEventListener('change', (e) => {
+          selectedStatus = e.target.value;
+          renderTableRows();
+        });
+      }
+
+      // Export Buttons Listeners
+      const btnExportJson = document.getElementById('btnExportRegistryJson');
+      if (btnExportJson) {
+        btnExportJson.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportFeatureRegistry === 'function') {
+            const filename = window.CSOSuperStore.exportFeatureRegistry('json', stats.modulesList);
+            showToast(`Master Feature Registry exported: ${filename}`, "success");
+          }
+        });
+      }
+
+      const btnExportCsv = document.getElementById('btnExportRegistryCsv');
+      if (btnExportCsv) {
+        btnExportCsv.addEventListener('click', () => {
+          if (window.CSOSuperStore && typeof window.CSOSuperStore.exportFeatureRegistry === 'function') {
+            const filename = window.CSOSuperStore.exportFeatureRegistry('csv', stats.modulesList);
+            showToast(`Master Feature Registry CSV exported: ${filename}`, "success");
+          }
+        });
+      }
     }
 
     /**

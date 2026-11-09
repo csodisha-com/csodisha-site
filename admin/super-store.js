@@ -970,6 +970,119 @@
       return filename;
     },
 
+    // 14. Master Feature Registry Engine (module-01-008)
+    getFeatureRegistryStats(schema) {
+      const s = schema || (typeof window !== 'undefined' && window.masterNavigationSchema) || null;
+      if (!s || !Array.isArray(s.folders)) {
+        return {
+          totalFolders: 19,
+          totalModules: 241,
+          activeCount: 0,
+          plannedCount: 0,
+          completionPercentage: 0,
+          modulesList: []
+        };
+      }
+
+      let totalFolders = s.folders.length;
+      let totalModules = 0;
+      let activeCount = 0;
+      let plannedCount = 0;
+      const modulesList = [];
+
+      s.folders.forEach(folder => {
+        const folderId = folder.id || '';
+        const folderTitle = folder.title || '';
+        (folder.modules || []).forEach(m => {
+          totalModules++;
+          const status = (m.status || 'planned').toLowerCase();
+          if (status === 'active') {
+            activeCount++;
+          } else {
+            plannedCount++;
+          }
+          modulesList.push({
+            folderId: folderId,
+            folderName: folderTitle,
+            moduleId: m.id || '',
+            moduleTitle: m.title || '',
+            status: m.status || 'planned'
+          });
+        });
+      });
+
+      const completionPercentage = totalModules > 0 ? Math.round((activeCount / totalModules) * 100) : 0;
+
+      return {
+        totalFolders,
+        totalModules,
+        activeCount,
+        plannedCount,
+        completionPercentage,
+        modulesList
+      };
+    },
+
+    exportFeatureRegistry(format = 'json', modulesList = null) {
+      let list = modulesList;
+      if (!list || !Array.isArray(list)) {
+        const stats = this.getFeatureRegistryStats();
+        list = stats.modulesList || [];
+      }
+
+      const timestamp = Date.now();
+      let filename = '';
+
+      if (format === 'csv') {
+        filename = `cso-feature-registry-${timestamp}.csv`;
+        const headers = ['Folder ID', 'Folder Name', 'Module ID', 'Module Title', 'Status'];
+        const csvRows = [headers.join(',')];
+
+        list.forEach(item => {
+          const row = [
+            `"${(item.folderId || '').replace(/"/g, '""')}"`,
+            `"${(item.folderName || '').replace(/"/g, '""')}"`,
+            `"${(item.moduleId || '').replace(/"/g, '""')}"`,
+            `"${(item.moduleTitle || '').replace(/"/g, '""')}"`,
+            `"${(item.status || '').replace(/"/g, '""')}"`
+          ];
+          csvRows.push(row.join(','));
+        });
+
+        const csvContent = csvRows.join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } else {
+        filename = `cso-feature-registry-${timestamp}.json`;
+        const payload = {
+          registryVersion: '2026.11',
+          exportedAt: new Date(timestamp).toISOString(),
+          totalCount: list.length,
+          modules: list
+        };
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      this.logAudit('FEATURE_REGISTRY_EXPORTED', 'SCHEMA_GOVERNANCE', `Master Feature Registry exported (${format.toUpperCase()}: ${filename}, ${list.length} modules).`);
+      return filename;
+    },
+
     // 13. Submission Moderation & Pending Approvals Queue (module-01-006)
     getApprovals(type = 'ALL', status = 'PENDING') {
       let list = null;
