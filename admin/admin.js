@@ -20,6 +20,177 @@ if (typeof window !== 'undefined') {
   window.escapeHtml = escapeHtml;
 }
 
+/**
+ * Universal Controlled Modal Dialog Engine
+ * Dynamically builds validated form modals for record creation & editing across modules.
+ * Strictly eliminates prompt() dialogs, random prefixes, and dummy placeholders.
+ */
+function openModuleCreateModal({ title, subtitle = '', fields = [], initialData = null, onSave }) {
+  const isEdit = !!initialData;
+  const overlayId = 'cso-universal-modal-overlay';
+  const prev = document.getElementById(overlayId);
+  if (prev) prev.remove();
+
+  const modalHtml = `
+    <div id="${overlayId}" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-full ${isEdit ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+            <div>
+              <h3 class="text-base font-bold text-white">${isEdit ? 'Edit ' + title : 'New ' + title}</h3>
+              ${subtitle ? `<p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(subtitle)}</p>` : ''}
+            </div>
+          </div>
+          <button type="button" id="cso-modal-close-btn" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <form id="cso-universal-modal-form" class="p-6 space-y-4 overflow-y-auto text-xs">
+          ${fields.map(f => {
+            const val = initialData && initialData[f.key] !== undefined ? initialData[f.key] : (f.defaultValue !== undefined ? f.defaultValue : '');
+            const reqMark = f.required ? '<span class="text-rose-400">*</span>' : '<span class="text-slate-500 font-normal">(Optional)</span>';
+            
+            if (f.type === 'select') {
+              return `
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1.5">${escapeHtml(f.label)} ${reqMark}</label>
+                  <select name="${f.key}" class="w-full px-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500 cursor-pointer">
+                    ${(f.options || []).map(opt => {
+                      const optVal = typeof opt === 'object' ? opt.value : opt;
+                      const optLabel = typeof opt === 'object' ? opt.label : opt;
+                      const selected = String(optVal) === String(val) ? 'selected' : '';
+                      return `<option value="${escapeHtml(optVal)}" ${selected}>${escapeHtml(optLabel)}</option>`;
+                    }).join('')}
+                  </select>
+                  ${f.hint ? `<p class="text-[11px] text-slate-500 mt-1">${escapeHtml(f.hint)}</p>` : ''}
+                </div>
+              `;
+            } else if (f.type === 'textarea') {
+              return `
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1.5">${escapeHtml(f.label)} ${reqMark}</label>
+                  <textarea name="${f.key}" rows="${f.rows || 3}" placeholder="${escapeHtml(f.placeholder || '')}" class="w-full px-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">${escapeHtml(val)}</textarea>
+                  ${f.hint ? `<p class="text-[11px] text-slate-500 mt-1">${escapeHtml(f.hint)}</p>` : ''}
+                </div>
+              `;
+            } else if (f.type === 'checkbox') {
+              const isChecked = val === true || val === 'true' || (val === '' && f.defaultChecked);
+              return `
+                <div class="pt-1">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="${f.key}" ${isChecked ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0 cursor-pointer">
+                    <span class="font-medium text-slate-300">${escapeHtml(f.label)}</span>
+                  </label>
+                  ${f.hint ? `<p class="text-[11px] text-slate-500 mt-1 ml-6">${escapeHtml(f.hint)}</p>` : ''}
+                </div>
+              `;
+            } else {
+              return `
+                <div>
+                  <label class="block font-semibold text-slate-300 mb-1.5">${escapeHtml(f.label)} ${reqMark}</label>
+                  <input type="${f.type || 'text'}" name="${f.key}" value="${escapeHtml(val)}" placeholder="${escapeHtml(f.placeholder || '')}" class="w-full px-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 ${f.type === 'date' || f.type === 'datetime-local' ? 'font-mono' : ''}">
+                  ${f.hint ? `<p class="text-[11px] text-slate-500 mt-1">${escapeHtml(f.hint)}</p>` : ''}
+                </div>
+              `;
+            }
+          }).join('')}
+        </form>
+        <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end gap-3">
+          <button type="button" id="cso-modal-cancel-btn" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition cursor-pointer">Cancel</button>
+          <button type="button" id="cso-modal-submit-btn" class="px-4 py-2 text-xs font-semibold text-white ${isEdit ? 'bg-amber-600 hover:bg-amber-500' : 'bg-emerald-600 hover:bg-emerald-500'} rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEdit ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4'}"/></svg>
+            ${isEdit ? 'Update Record' : 'Create Record'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  const overlay = document.getElementById(overlayId);
+  const form = document.getElementById('cso-universal-modal-form');
+  const close = () => overlay.remove();
+
+  document.getElementById('cso-modal-close-btn').addEventListener('click', close);
+  document.getElementById('cso-modal-cancel-btn').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  document.getElementById('cso-modal-submit-btn').addEventListener('click', () => {
+    const formData = new FormData(form);
+    const result = isEdit ? { ...initialData } : {};
+
+    for (const f of fields) {
+      if (f.type === 'checkbox') {
+        result[f.key] = form.querySelector(`[name="${f.key}"]`).checked;
+      } else {
+        const rawVal = (formData.get(f.key) || '').trim();
+        if (f.required && !rawVal) {
+          alert(`Please fill in the required field: "${f.label}".`);
+          const inputEl = form.querySelector(`[name="${f.key}"]`);
+          if (inputEl) inputEl.focus();
+          return;
+        }
+        if (f.type === 'number') {
+          result[f.key] = rawVal ? parseFloat(rawVal) : 0;
+        } else {
+          result[f.key] = rawVal;
+        }
+      }
+    }
+
+    try {
+      onSave(result);
+      close();
+    } catch (err) {
+      alert('Failed to save record: ' + (err.message || err));
+    }
+  });
+}
+if (typeof window !== 'undefined') {
+  window.openModuleCreateModal = openModuleCreateModal;
+}
+
+/**
+ * Global Raw Schema Inspector Modal
+ */
+function showSchemaModal(title, schemaObj) {
+  const overlayId = 'cso-schema-modal-overlay';
+  const prev = document.getElementById(overlayId);
+  if (prev) prev.remove();
+
+  const formatted = JSON.stringify(schemaObj || {}, null, 2);
+  const modalHtml = `
+    <div id="${overlayId}" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+            <h3 class="text-base font-bold text-white">${escapeHtml(title)}</h3>
+          </div>
+          <button id="cso-schema-modal-close" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+          <pre class="text-[11px] font-mono text-cyan-300 bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto">${escapeHtml(formatted)}</pre>
+        </div>
+        <div class="px-6 py-3 border-t border-slate-800 bg-slate-950/40 flex items-center justify-end">
+          <button id="cso-schema-modal-btn-dismiss" class="px-4 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition cursor-pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  const overlay = document.getElementById(overlayId);
+  const close = () => overlay.remove();
+  document.getElementById('cso-schema-modal-close').addEventListener('click', close);
+  document.getElementById('cso-schema-modal-btn-dismiss').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+}
+if (typeof window !== 'undefined') {
+  window.showSchemaModal = showSchemaModal;
+}
+
+
 let masterNavigationSchema = null;
 
 async function loadMasterNavigation() {
@@ -15758,49 +15929,63 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const evt = eventsList[idx];
-            const newTitle = prompt('Milestone Title:', evt.title);
-            if (newTitle === null) return;
-            const newExam = prompt('Target Exam:', evt.targetExam || 'OPSC OAS');
-            const newDate = prompt('Due Date (YYYY-MM-DD):', evt.dueDate || '2026-11-30');
-            const newCurator = prompt('Curator / Desk:', evt.curator || 'Editorial Desk');
-            const newPriority = prompt('Priority (High / Medium / Normal):', evt.priority || 'Normal');
-            const newStatus = prompt('Status (Drafting / In Progress / Scheduled / Completed):', evt.status || 'Drafting');
+            openModuleCreateModal({
+              title: 'Editorial Milestone',
+              subtitle: `Editing milestone "${evt.title}" (${evt.id})`,
+              initialData: evt,
+              fields: [
+                { key: 'title', label: 'Milestone Title', required: true },
+                { key: 'targetExam', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL', required: true },
+                { key: 'dueDate', label: 'Due Date', type: 'date', required: true },
+                { key: 'curator', label: 'Curator / Editorial Desk', required: true },
+                { key: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'Medium', 'High', 'Urgent'] },
+                { key: 'status', label: 'Status', type: 'select', options: ['Drafting', 'In Progress', 'Scheduled', 'Completed'] }
+              ],
+              onSave: (data) => {
+                evt.title = data.title.trim();
+                evt.targetExam = data.targetExam.trim();
+                evt.dueDate = data.dueDate.trim();
+                evt.curator = data.curator.trim();
+                evt.priority = data.priority;
+                evt.status = data.status;
 
-            evt.title = newTitle.trim() || evt.title;
-            if (newExam !== null) evt.targetExam = newExam.trim();
-            if (newDate !== null) evt.dueDate = newDate.trim();
-            if (newCurator !== null) evt.curator = newCurator.trim();
-            if (newPriority !== null) evt.priority = newPriority.trim();
-            if (newStatus !== null) evt.status = newStatus.trim();
-
-            config.events = eventsList;
-            window.CSOSuperStore.saveEditorialCalendarConfig(config);
-            renderEditorialCalendarWorkspace(root);
+                config.events = eventsList;
+                window.CSOSuperStore.saveEditorialCalendarConfig(config);
+                renderEditorialCalendarWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-cal-event').addEventListener('click', () => {
-          const title = prompt('Enter Milestone Title:');
-          if (!title || !title.trim()) return;
-          const targetExam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL, OTET):', 'OPSC OAS') || 'General';
-          const dueDate = prompt('Target Due Date (YYYY-MM-DD):', '2026-12-01') || '2026-12-01';
-          const curator = prompt('Curator / Desk:', 'Editorial Desk') || 'Editorial Desk';
-          const priority = prompt('Priority (High, Medium, Normal):', 'Normal') || 'Normal';
-
-          const newId = 'CAL-' + String(eventsList.length + 1).padStart(2, '0');
-          eventsList.push({
-            id: newId,
-            title: title.trim(),
-            targetExam: targetExam.trim(),
-            dueDate: dueDate.trim(),
-            curator: curator.trim(),
-            priority: priority.trim(),
-            status: 'Drafting',
-            active: true
+          openModuleCreateModal({
+            title: 'Editorial Milestone',
+            subtitle: 'Schedule a syllabus milestone, gazette update, or publication cycle',
+            fields: [
+              { key: 'title', label: 'Milestone Title', placeholder: 'e.g. OPSC OAS 2026 Prelims Syllabus Revision', required: true },
+              { key: 'targetExam', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL, OTET', required: true },
+              { key: 'dueDate', label: 'Target Due Date', type: 'date', required: true },
+              { key: 'curator', label: 'Curator / Desk', placeholder: 'e.g. Editorial Cell', required: true },
+              { key: 'priority', label: 'Priority', type: 'select', options: ['Normal', 'Medium', 'High', 'Urgent'], defaultValue: 'Normal' },
+              { key: 'status', label: 'Initial Status', type: 'select', options: ['Drafting', 'In Progress', 'Scheduled', 'Completed'], defaultValue: 'Drafting' }
+            ],
+            onSave: (data) => {
+              const newId = 'CAL-' + String(eventsList.length + 1).padStart(2, '0');
+              eventsList.push({
+                id: newId,
+                title: data.title.trim(),
+                targetExam: data.targetExam.trim(),
+                dueDate: data.dueDate.trim(),
+                curator: data.curator.trim(),
+                priority: data.priority,
+                status: data.status,
+                active: true
+              });
+              config.events = eventsList;
+              window.CSOSuperStore.saveEditorialCalendarConfig(config);
+              renderEditorialCalendarWorkspace(root);
+            }
           });
-          config.events = eventsList;
-          window.CSOSuperStore.saveEditorialCalendarConfig(config);
-          renderEditorialCalendarWorkspace(root);
         });
 
       } catch (err) {
@@ -16097,43 +16282,56 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = queueList[idx];
-            const newTitle = prompt('Article / Guide Title:', item.title);
-            if (newTitle === null) return;
-            const newAuthor = prompt('Author / Desk:', item.author || 'Author Desk');
-            const newStage = prompt('Workflow Stage (Drafting, Syllabus Verification, Fact & Gazette Audit, Final Editorial Approval, Published Live):', item.stage || 'Drafting');
-            const newUrgency = prompt('Urgency (High / Medium / Low):', item.urgency || 'Normal');
+            openModuleCreateModal({
+              title: 'Publishing Workflow Item',
+              subtitle: `Editing review item "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Article / Guide Title', required: true },
+                { key: 'author', label: 'Author / Desk', required: true },
+                { key: 'stage', label: 'Workflow Stage', type: 'select', options: ['Drafting', 'Syllabus Verification', 'Fact & Gazette Audit', 'Final Editorial Approval', 'Published Live'] },
+                { key: 'urgency', label: 'Urgency', type: 'select', options: ['Normal', 'Medium', 'High', 'Urgent'] }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.author = data.author.trim();
+                item.stage = data.stage;
+                item.urgency = data.urgency;
 
-            item.title = newTitle.trim() || item.title;
-            if (newAuthor !== null) item.author = newAuthor.trim();
-            if (newStage !== null) item.stage = newStage.trim();
-            if (newUrgency !== null) item.urgency = newUrgency.trim();
-
-            config.queue = queueList;
-            window.CSOSuperStore.savePublishingWorkflowConfig(config);
-            renderPublishingWorkflowWorkspace(root);
+                config.queue = queueList;
+                window.CSOSuperStore.savePublishingWorkflowConfig(config);
+                renderPublishingWorkflowWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-wf-item').addEventListener('click', () => {
-          const title = prompt('Enter Content Title for Review:');
-          if (!title || !title.trim()) return;
-          const author = prompt('Author Name / Desk:', 'Editorial Cell') || 'Editorial Cell';
-          const stage = prompt('Initial Stage (Drafting, Syllabus Verification, Fact & Gazette Audit, Final Editorial Approval):', 'Drafting') || 'Drafting';
-          const urgency = prompt('Urgency (High, Medium, Low):', 'Medium') || 'Medium';
-
-          const newId = 'WF-' + (100 + queueList.length + 1);
-          queueList.push({
-            id: newId,
-            title: title.trim(),
-            author: author.trim(),
-            stage: stage.trim(),
-            submissionDate: new Date().toISOString().split('T')[0],
-            urgency: urgency.trim(),
-            active: true
+          openModuleCreateModal({
+            title: 'Publishing Workflow Item',
+            subtitle: 'Submit new article or syllabus guide for editorial multi-stage review',
+            fields: [
+              { key: 'title', label: 'Content Title', placeholder: 'e.g. OPSC OAS Mains Paper III Drafting Guide', required: true },
+              { key: 'author', label: 'Author Name / Desk', placeholder: 'e.g. Editorial Cell', required: true },
+              { key: 'stage', label: 'Initial Stage', type: 'select', options: ['Drafting', 'Syllabus Verification', 'Fact & Gazette Audit', 'Final Editorial Approval'], defaultValue: 'Drafting' },
+              { key: 'urgency', label: 'Urgency', type: 'select', options: ['Normal', 'Medium', 'High', 'Urgent'], defaultValue: 'Medium' }
+            ],
+            onSave: (data) => {
+              const newId = 'WF-' + (100 + queueList.length + 1);
+              queueList.push({
+                id: newId,
+                title: data.title.trim(),
+                author: data.author.trim(),
+                stage: data.stage,
+                submissionDate: new Date().toISOString().split('T')[0],
+                urgency: data.urgency,
+                active: true
+              });
+              config.queue = queueList;
+              window.CSOSuperStore.savePublishingWorkflowConfig(config);
+              renderPublishingWorkflowWorkspace(root);
+            }
           });
-          config.queue = queueList;
-          window.CSOSuperStore.savePublishingWorkflowConfig(config);
-          renderPublishingWorkflowWorkspace(root);
         });
 
       } catch (err) {
@@ -16399,45 +16597,58 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = itemsList[idx];
-            const newTitle = prompt('Scheduled Content Title:', item.title);
-            if (newTitle === null) return;
-            const newDate = prompt('Scheduled Release Timestamp (ISO string or YYYY-MM-DDTHH:mm:ss+05:30):', item.scheduledDate);
-            const newCat = prompt('Category:', item.category || 'General');
-            const newChan = prompt('Distribution Channel:', item.channel || 'Web Portal');
-            const newStatus = prompt('Status (Pending / Queued / Released):', item.status || 'Pending');
+            openModuleCreateModal({
+              title: 'Scheduled Release',
+              subtitle: `Editing publication release "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Content Title', required: true },
+                { key: 'scheduledDate', label: 'Scheduled Release Date & Time', placeholder: 'YYYY-MM-DDTHH:mm:ss+05:30', required: true },
+                { key: 'category', label: 'Category', placeholder: 'e.g. Current Affairs, Mock Tests, Gazette', required: true },
+                { key: 'channel', label: 'Distribution Channel', placeholder: 'e.g. Web Portal, Telegram, Email Newsletter', required: true },
+                { key: 'status', label: 'Status', type: 'select', options: ['Pending', 'Queued', 'Released'] }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.scheduledDate = data.scheduledDate.trim();
+                item.category = data.category.trim();
+                item.channel = data.channel.trim();
+                item.status = data.status;
 
-            item.title = newTitle.trim() || item.title;
-            if (newDate !== null) item.scheduledDate = newDate.trim();
-            if (newCat !== null) item.category = newCat.trim();
-            if (newChan !== null) item.channel = newChan.trim();
-            if (newStatus !== null) item.status = newStatus.trim();
-
-            config.items = itemsList;
-            window.CSOSuperStore.saveScheduledContentConfig(config);
-            renderScheduledContentWorkspace(root);
+                config.items = itemsList;
+                window.CSOSuperStore.saveScheduledContentConfig(config);
+                renderScheduledContentWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-sch-item').addEventListener('click', () => {
-          const title = prompt('Enter Scheduled Content Title:');
-          if (!title || !title.trim()) return;
-          const scheduledDate = prompt('Release Timestamp (YYYY-MM-DDTHH:mm:ss+05:30):', new Date(Date.now() + 86400000).toISOString().replace('Z', '+05:30')) || '';
-          const category = prompt('Category (e.g. Current Affairs, Mock Tests, Gazette):', 'Current Affairs') || 'Current Affairs';
-          const channel = prompt('Distribution Channel (e.g. Web Portal, Telegram, Email Newsletter):', 'Web Portal & Telegram') || 'Web Portal';
-
-          const newId = 'SCH-' + String(itemsList.length + 1).padStart(2, '0');
-          itemsList.push({
-            id: newId,
-            title: title.trim(),
-            scheduledDate: scheduledDate.trim(),
-            category: category.trim(),
-            channel: channel.trim(),
-            status: 'Pending',
-            active: true
+          openModuleCreateModal({
+            title: 'Scheduled Release',
+            subtitle: 'Queue content for automated multi-channel release',
+            fields: [
+              { key: 'title', label: 'Scheduled Content Title', placeholder: 'e.g. Weekly Odisha Current Affairs Digest #48', required: true },
+              { key: 'scheduledDate', label: 'Release Timestamp', placeholder: 'YYYY-MM-DDTHH:mm:ss+05:30', required: true },
+              { key: 'category', label: 'Category', placeholder: 'e.g. Current Affairs, Mock Tests, Gazette', defaultValue: 'Current Affairs', required: true },
+              { key: 'channel', label: 'Distribution Channel', placeholder: 'e.g. Web Portal & Telegram', defaultValue: 'Web Portal & Telegram', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'SCH-' + String(itemsList.length + 1).padStart(2, '0');
+              itemsList.push({
+                id: newId,
+                title: data.title.trim(),
+                scheduledDate: data.scheduledDate.trim(),
+                category: data.category.trim(),
+                channel: data.channel.trim(),
+                status: 'Pending',
+                active: true
+              });
+              config.items = itemsList;
+              window.CSOSuperStore.saveScheduledContentConfig(config);
+              renderScheduledContentWorkspace(root);
+            }
           });
-          config.items = itemsList;
-          window.CSOSuperStore.saveScheduledContentConfig(config);
-          renderScheduledContentWorkspace(root);
         });
 
       } catch (err) {
@@ -16710,42 +16921,55 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = itemsList[idx];
-            const newTitle = prompt('Archived Document Title:', item.title);
-            if (newTitle === null) return;
-            const newCat = prompt('Category:', item.category || 'Civil Services');
-            const newReason = prompt('Archive Reason:', item.reason || 'Superseded');
+            openModuleCreateModal({
+              title: 'Archived Document',
+              subtitle: `Editing archive metadata for "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Archived Document Title', required: true },
+                { key: 'category', label: 'Category', required: true },
+                { key: 'reason', label: 'Archive Reason', required: true }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.category = data.category.trim();
+                item.reason = data.reason.trim();
 
-            item.title = newTitle.trim() || item.title;
-            if (newCat !== null) item.category = newCat.trim();
-            if (newReason !== null) item.reason = newReason.trim();
-
-            config.archivedItems = itemsList;
-            window.CSOSuperStore.saveContentArchiveConfig(config);
-            renderContentArchiveWorkspace(root);
+                config.items = itemsList;
+                window.CSOSuperStore.saveContentArchiveConfig(config);
+                renderContentArchiveWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-arc-item').addEventListener('click', () => {
-          const title = prompt('Enter Document Title to Archive:');
-          if (!title || !title.trim()) return;
-          const contentId = prompt('Associated Content ID (e.g. CNT-099):', 'CNT-099') || 'CNT-099';
-          const category = prompt('Category:', 'Civil Services') || 'Civil Services';
-          const reason = prompt('Reason for Retirement:', 'Superseded by recent gazette update') || 'Superseded';
-
-          const newId = 'ARC-' + String(itemsList.length + 1).padStart(2, '0');
-          itemsList.push({
-            id: newId,
-            contentId: contentId.trim(),
-            title: title.trim(),
-            category: category.trim(),
-            archivedDate: new Date().toISOString().split('T')[0],
-            reason: reason.trim(),
-            status: 'Archived',
-            active: true
+          openModuleCreateModal({
+            title: 'Archive Record',
+            subtitle: 'Retire an obsolete syllabus or superseded notification into the historical vault',
+            fields: [
+              { key: 'title', label: 'Document Title to Archive', placeholder: 'e.g. OPSC OAS 2022 Preliminary Answer Key (Superseded)', required: true },
+              { key: 'contentId', label: 'Associated Content ID', placeholder: 'e.g. CNT-099', defaultValue: 'CNT-099', required: true },
+              { key: 'category', label: 'Category', placeholder: 'e.g. Civil Services', defaultValue: 'Civil Services', required: true },
+              { key: 'reason', label: 'Reason for Retirement', placeholder: 'e.g. Superseded by recent gazette update', defaultValue: 'Superseded by recent gazette update', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'ARC-' + String(itemsList.length + 1).padStart(2, '0');
+              itemsList.push({
+                id: newId,
+                contentId: data.contentId.trim(),
+                title: data.title.trim(),
+                archivedAt: new Date().toISOString(),
+                category: data.category.trim(),
+                reason: data.reason.trim(),
+                retrievalAllowed: true,
+                active: true
+              });
+              config.items = itemsList;
+              window.CSOSuperStore.saveContentArchiveConfig(config);
+              renderContentArchiveWorkspace(root);
+            }
           });
-          config.archivedItems = itemsList;
-          window.CSOSuperStore.saveContentArchiveConfig(config);
-          renderContentArchiveWorkspace(root);
         });
 
       } catch (err) {
@@ -17003,9 +17227,16 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const rev = revList[idx];
-            const reason = prompt(`Confirm rollback to Version ${rev.revisionNumber} of "${rev.title}".\nEnter statutory reason:`, 'Gazette reconciliation rollback');
-            if (reason === null) return;
-            alert(`Successfully rolled back content to Revision ${rev.revisionNumber}. Audit log entry recorded: "${reason}".`);
+            openModuleCreateModal({
+              title: 'Rollback Confirmation',
+              subtitle: `Confirm rollback to Version ${rev.revisionNumber} of "${rev.title}"`,
+              fields: [
+                { key: 'reason', label: 'Statutory Reason for Rollback', placeholder: 'e.g. Gazette reconciliation rollback', defaultValue: 'Gazette reconciliation rollback', required: true }
+              ],
+              onSave: (data) => {
+                alert(`Successfully rolled back content to Revision ${rev.revisionNumber}. Audit log entry recorded: "${data.reason}".`);
+              }
+            });
           });
         });
 
@@ -17013,42 +17244,55 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const rev = revList[idx];
-            const newTitle = prompt('Content Title:', rev.title);
-            if (newTitle === null) return;
-            const newAuthor = prompt('Author:', rev.author || 'Editorial Cell');
-            const newSummary = prompt('Summary of Changes:', rev.changesSummary || 'Updated references');
+            openModuleCreateModal({
+              title: 'Revision Snapshot',
+              subtitle: `Editing snapshot metadata for "${rev.title}" (${rev.id})`,
+              initialData: rev,
+              fields: [
+                { key: 'title', label: 'Content Title', required: true },
+                { key: 'author', label: 'Author / Editor', required: true },
+                { key: 'changesSummary', label: 'Summary of Changes', required: true }
+              ],
+              onSave: (data) => {
+                rev.title = data.title.trim();
+                rev.author = data.author.trim();
+                rev.changesSummary = data.changesSummary.trim();
 
-            rev.title = newTitle.trim() || rev.title;
-            if (newAuthor !== null) rev.author = newAuthor.trim();
-            if (newSummary !== null) rev.changesSummary = newSummary.trim();
-
-            config.revisions = revList;
-            window.CSOSuperStore.saveContentRevisionsConfig(config);
-            renderContentRevisionsWorkspace(root);
+                config.revisions = revList;
+                window.CSOSuperStore.saveContentRevisionsConfig(config);
+                renderContentRevisionsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-rev-item').addEventListener('click', () => {
-          const title = prompt('Enter Content Title for Snapshot:');
-          if (!title || !title.trim()) return;
-          const author = prompt('Author / Desk:', 'Editorial Desk') || 'Editorial Desk';
-          const summary = prompt('Summary of Modifications:', 'Manual snapshot captured prior to update') || 'Manual snapshot';
-
-          const newId = 'REV-' + (100 + revList.length + 1);
-          revList.unshift({
-            id: newId,
-            contentId: 'CNT-001',
-            revisionNumber: revList.length + 1,
-            title: title.trim(),
-            author: author.trim(),
-            timestamp: new Date().toISOString(),
-            changesSummary: summary.trim(),
-            rollbackAvailable: true,
-            active: true
+          openModuleCreateModal({
+            title: 'Capture Revision Snapshot',
+            subtitle: 'Store immutable snapshot before major structural amendments',
+            fields: [
+              { key: 'title', label: 'Content Title for Snapshot', placeholder: 'e.g. Odisha Civil Services Rules 2026 Manual', required: true },
+              { key: 'author', label: 'Author / Desk', placeholder: 'e.g. Editorial Desk', defaultValue: 'Editorial Desk', required: true },
+              { key: 'summary', label: 'Summary of Modifications', placeholder: 'e.g. Manual snapshot captured prior to update', defaultValue: 'Manual snapshot captured prior to update', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'REV-' + (100 + revList.length + 1);
+              revList.unshift({
+                id: newId,
+                contentId: 'CNT-001',
+                revisionNumber: revList.length + 1,
+                title: data.title.trim(),
+                author: data.author.trim(),
+                timestamp: new Date().toISOString(),
+                changesSummary: data.summary.trim(),
+                rollbackAvailable: true,
+                active: true
+              });
+              config.revisions = revList;
+              window.CSOSuperStore.saveContentRevisionsConfig(config);
+              renderContentRevisionsWorkspace(root);
+            }
           });
-          config.revisions = revList;
-          window.CSOSuperStore.saveContentRevisionsConfig(config);
-          renderContentRevisionsWorkspace(root);
         });
 
       } catch (err) {
@@ -17320,27 +17564,32 @@ async function loadMasterNavigation() {
         });
 
         root.querySelector('#btn-execute-batch').addEventListener('click', () => {
-          const jobType = prompt('Select Operation Type (Bulk Tagging / Mass Category Migration / Bulk Archive / Bulk Status Update):', 'Bulk Tagging');
-          if (!jobType || !jobType.trim()) return;
-          const targetCountStr = prompt('Number of items affected:', '10');
-          const targetCount = parseInt(targetCountStr, 10) || 10;
-          const param = prompt('Operation Parameter (Tag Name / Target Category / Reason):', 'exam-rescheduled');
-
-          const newId = 'JOB-' + String(jobsList.length + 1).padStart(2, '0');
-          jobsList.unshift({
-            id: newId,
-            type: jobType.trim(),
-            targetCount: targetCount,
-            tagApplied: param ? param.trim() : undefined,
-            runBy: 'admin@csodisha.com',
-            executedAt: new Date().toISOString(),
-            status: 'Completed',
-            active: true
+          openModuleCreateModal({
+            title: 'Execute Batch Operation',
+            subtitle: 'Dispatch mass mutation across targeted content nodes',
+            fields: [
+              { key: 'type', label: 'Operation Type', type: 'select', options: ['Bulk Tagging', 'Mass Category Migration', 'Bulk Archive', 'Bulk Status Update'], defaultValue: 'Bulk Tagging' },
+              { key: 'targetCount', label: 'Number of Items Affected', type: 'number', defaultValue: 10, required: true },
+              { key: 'param', label: 'Operation Parameter (Tag Name / Target Category / Reason)', placeholder: 'e.g. exam-rescheduled', defaultValue: 'exam-rescheduled', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'JOB-' + String(jobsList.length + 1).padStart(2, '0');
+              jobsList.unshift({
+                id: newId,
+                type: data.type,
+                targetCount: Number(data.targetCount) || 10,
+                tagApplied: data.param.trim(),
+                runBy: 'admin@csodisha.com',
+                executedAt: new Date().toISOString(),
+                status: 'Completed',
+                active: true
+              });
+              config.batchJobs = jobsList;
+              window.CSOSuperStore.saveBulkContentOperationsConfig(config);
+              alert(`Batch operation ${newId} executed successfully across ${data.targetCount} records.`);
+              renderBulkContentOperationsWorkspace(root);
+            }
           });
-          config.batchJobs = jobsList;
-          window.CSOSuperStore.saveBulkContentOperationsConfig(config);
-          alert(`Batch operation ${newId} executed successfully across ${targetCount} records.`);
-          renderBulkContentOperationsWorkspace(root);
         });
 
       } catch (err) {
@@ -17606,56 +17855,68 @@ async function loadMasterNavigation() {
 
         // Add root node
         root.querySelector('#btn-add-tree-node').addEventListener('click', () => {
-          const title = prompt('Enter New Directory / Node Title:');
-          if (!title || !title.trim()) return;
-          const slug = prompt('URL Slug:', title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'node';
-          const type = prompt('Node Type (directory / page / article / redirect / file_vault):', 'directory') || 'directory';
+          openModuleCreateModal({
+            title: 'Directory / Root Node',
+            subtitle: 'Create a root node in this hierarchical menu tree',
+            fields: [
+              { key: 'title', label: 'Node Title', placeholder: 'e.g. Syllabi & Schemes Archive', required: true },
+              { key: 'slug', label: 'URL Slug', placeholder: 'e.g. syllabi-archive', required: true },
+              { key: 'type', label: 'Node Type', type: 'select', options: ['directory', 'page', 'article', 'redirect', 'file_vault'], defaultValue: 'directory' }
+            ],
+            onSave: (data) => {
+              const newNode = {
+                id: 'NODE-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+                title: data.title.trim(),
+                slug: (data.slug || data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).trim(),
+                type: data.type,
+                status: 'Published',
+                scheduledDate: null,
+                redirectUrl: '',
+                redirectTarget: '_self',
+                seo: { metaTitle: data.title.trim() + ' | Common Sense Odisha', metaDescription: '', ogImage: '/assets/images/og-default.jpg' },
+                article: { author: 'Admin', readTime: '3 min', bodyMarkdown: '# ' + data.title.trim() },
+                files: [],
+                children: []
+              };
 
-          const newNode = {
-            id: 'NODE-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
-            title: title.trim(),
-            slug: slug.trim(),
-            type: type.trim(),
-            status: 'Published',
-            scheduledDate: null,
-            redirectUrl: '',
-            redirectTarget: '_self',
-            seo: { metaTitle: title.trim() + ' | Common Sense Odisha', metaDescription: '', ogImage: '/assets/images/og-default.jpg' },
-            article: { author: 'Admin', readTime: '3 min', bodyMarkdown: '# ' + title.trim() },
-            files: [],
-            children: []
-          };
-
-          window.CSOSuperStore.addNode(folderKey, null, newNode);
-          renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+              window.CSOSuperStore.addNode(folderKey, null, newNode);
+              renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+            }
+          });
         });
 
         // Add child node
         root.querySelectorAll('.node-add-child-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const parentId = e.currentTarget.dataset.id;
-            const title = prompt('Enter Sub-node Title:');
-            if (!title || !title.trim()) return;
-            const slug = prompt('URL Slug:', title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'sub-node';
-            const type = prompt('Type (page / article / directory / redirect / file_vault):', 'page') || 'page';
+            openModuleCreateModal({
+              title: 'Sub-node / Child Branch',
+              subtitle: `Add child page or article under node "${parentId}"`,
+              fields: [
+                { key: 'title', label: 'Sub-node Title', placeholder: 'e.g. General Studies Paper I', required: true },
+                { key: 'slug', label: 'URL Slug', placeholder: 'e.g. general-studies-paper-1', required: true },
+                { key: 'type', label: 'Node Type', type: 'select', options: ['page', 'article', 'directory', 'redirect', 'file_vault'], defaultValue: 'page' }
+              ],
+              onSave: (data) => {
+                const newNode = {
+                  id: 'NODE-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+                  title: data.title.trim(),
+                  slug: (data.slug || data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).trim(),
+                  type: data.type,
+                  status: 'Published',
+                  scheduledDate: null,
+                  redirectUrl: '',
+                  redirectTarget: '_self',
+                  seo: { metaTitle: data.title.trim() + ' | Common Sense Odisha', metaDescription: '', ogImage: '/assets/images/og-default.jpg' },
+                  article: { author: 'Admin', readTime: '3 min', bodyMarkdown: '# ' + data.title.trim() },
+                  files: [],
+                  children: []
+                };
 
-            const newNode = {
-              id: 'NODE-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
-              title: title.trim(),
-              slug: slug.trim(),
-              type: type.trim(),
-              status: 'Published',
-              scheduledDate: null,
-              redirectUrl: '',
-              redirectTarget: '_self',
-              seo: { metaTitle: title.trim() + ' | Common Sense Odisha', metaDescription: '', ogImage: '/assets/images/og-default.jpg' },
-              article: { author: 'Admin', readTime: '3 min', bodyMarkdown: '# ' + title.trim() },
-              files: [],
-              children: []
-            };
-
-            window.CSOSuperStore.addNode(folderKey, parentId, newNode);
-            renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+                window.CSOSuperStore.addNode(folderKey, parentId, newNode);
+                renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+              }
+            });
           });
         });
 
@@ -17666,21 +17927,28 @@ async function loadMasterNavigation() {
             const node = window.CSOSuperStore.findNode(tree, nodeId);
             if (!node) return;
 
-            const newTitle = prompt('Node Title:', node.title);
-            if (newTitle === null) return;
-            const newSlug = prompt('Slug:', node.slug || '');
-            const newStatus = prompt('Status (Published / Draft / Review / Scheduled):', node.status || 'Published');
-            const newType = prompt('Type (directory / page / article / redirect / file_vault):', node.type || 'page');
+            openModuleCreateModal({
+              title: 'Menu Tree Node',
+              subtitle: `Editing node "${node.title}" (${node.id})`,
+              initialData: node,
+              fields: [
+                { key: 'title', label: 'Node Title', required: true },
+                { key: 'slug', label: 'URL Slug', required: true },
+                { key: 'status', label: 'Publication Status', type: 'select', options: ['Published', 'Draft', 'Review', 'Scheduled'] },
+                { key: 'type', label: 'Node Type', type: 'select', options: ['directory', 'page', 'article', 'redirect', 'file_vault'] }
+              ],
+              onSave: (data) => {
+                const patch = {
+                  title: data.title.trim(),
+                  slug: data.slug.trim(),
+                  status: data.status,
+                  type: data.type
+                };
 
-            const patch = {
-              title: newTitle.trim() || node.title,
-              slug: newSlug !== null ? newSlug.trim() : node.slug,
-              status: newStatus !== null ? newStatus.trim() : node.status,
-              type: newType !== null ? newType.trim() : node.type
-            };
-
-            window.CSOSuperStore.saveNode(folderKey, nodeId, patch);
-            renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+                window.CSOSuperStore.saveNode(folderKey, nodeId, patch);
+                renderMenuTreeWorkspace(root, folderKey, folderTitle, folderIcon, activeModuleId);
+              }
+            });
           });
         });
 
@@ -17963,44 +18231,57 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = catalogList[idx];
-            const newTitle = prompt('Publication Title:', item.title);
-            if (newTitle === null) return;
-            const newExam = prompt('Target Exam:', item.examTarget || 'All State Exams');
-            const newLang = prompt('Language:', item.language || 'English');
-            const newFormat = prompt('Format (PDF / EPUB / ZIP):', item.format || 'PDF');
+            openModuleCreateModal({
+              title: 'Digital Publication',
+              subtitle: `Editing publication "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Publication Title', required: true },
+                { key: 'examTarget', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL, All State Exams', required: true },
+                { key: 'language', label: 'Language', placeholder: 'e.g. English, Odia, Bilingual', required: true },
+                { key: 'format', label: 'Format', type: 'select', options: ['PDF', 'EPUB', 'ZIP'] }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.examTarget = data.examTarget.trim();
+                item.language = data.language.trim();
+                item.format = data.format;
 
-            item.title = newTitle.trim() || item.title;
-            if (newExam !== null) item.examTarget = newExam.trim();
-            if (newLang !== null) item.language = newLang.trim();
-            if (newFormat !== null) item.format = newFormat.trim();
-
-            config.catalog = catalogList;
-            window.CSOSuperStore.saveDigitalLibraryConfig(config);
-            renderDigitalLibraryWorkspace(root);
+                config.catalog = catalogList;
+                window.CSOSuperStore.saveDigitalLibraryConfig(config);
+                renderDigitalLibraryWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-lib-item').addEventListener('click', () => {
-          const title = prompt('Enter Publication Title:');
-          if (!title || !title.trim()) return;
-          const exam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL, OTET):', 'OPSC OAS') || 'General';
-          const format = prompt('Format (PDF / EPUB / ZIP):', 'PDF') || 'PDF';
-          const lang = prompt('Language (e.g. English, Odia, Bilingual):', 'English & Odia') || 'English';
-
-          const newId = 'LIB-' + String(catalogList.length + 1).padStart(3, '0');
-          catalogList.push({
-            id: newId,
-            title: title.trim(),
-            format: format.trim(),
-            fileSizeBytes: 3500000,
-            examTarget: exam.trim(),
-            language: lang.trim(),
-            accessLevel: 'Public Free',
-            active: true
+          openModuleCreateModal({
+            title: 'Digital Publication',
+            subtitle: 'Upload and catalog publication in the Odisha State Repository',
+            fields: [
+              { key: 'title', label: 'Publication Title', placeholder: 'e.g. OPSC OAS Comprehensive General Studies Compendium', required: true },
+              { key: 'examTarget', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL, OTET', defaultValue: 'OPSC OAS', required: true },
+              { key: 'format', label: 'Format', type: 'select', options: ['PDF', 'EPUB', 'ZIP'], defaultValue: 'PDF' },
+              { key: 'language', label: 'Language', placeholder: 'e.g. English, Odia, Bilingual', defaultValue: 'English & Odia', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'LIB-' + String(catalogList.length + 1).padStart(3, '0');
+              catalogList.push({
+                id: newId,
+                title: data.title.trim(),
+                format: data.format,
+                fileSizeBytes: 3500000,
+                examTarget: data.examTarget.trim(),
+                language: data.language.trim(),
+                accessLevel: 'Public Free',
+                active: true
+              });
+              config.catalog = catalogList;
+              window.CSOSuperStore.saveDigitalLibraryConfig(config);
+              renderDigitalLibraryWorkspace(root);
+            }
           });
-          config.catalog = catalogList;
-          window.CSOSuperStore.saveDigitalLibraryConfig(config);
-          renderDigitalLibraryWorkspace(root);
         });
 
       } catch (err) {
@@ -18257,46 +18538,59 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = matList[idx];
-            const newTitle = prompt('Study Material Title:', item.title);
-            if (newTitle === null) return;
-            const newCat = prompt('Category:', item.category || 'General Studies');
-            const newExam = prompt('Target Exam:', item.targetExam || 'OPSC OAS');
-            const newAuthor = prompt('Author / Faculty:', item.author || 'Editorial Cell');
-            const newPages = prompt('Page Count:', String(item.pages || 50));
+            openModuleCreateModal({
+              title: 'Study Material',
+              subtitle: `Editing study material "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Study Material Title', required: true },
+                { key: 'category', label: 'Category', placeholder: 'e.g. General Studies, Mental Ability', required: true },
+                { key: 'targetExam', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL', required: true },
+                { key: 'author', label: 'Author / Faculty', required: true },
+                { key: 'pages', label: 'Page Count', type: 'number' }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.category = data.category.trim();
+                item.targetExam = data.targetExam.trim();
+                item.author = data.author.trim();
+                if (data.pages !== undefined) item.pages = Number(data.pages);
 
-            item.title = newTitle.trim() || item.title;
-            if (newCat !== null) item.category = newCat.trim();
-            if (newExam !== null) item.targetExam = newExam.trim();
-            if (newAuthor !== null) item.author = newAuthor.trim();
-            if (newPages !== null) item.pages = parseInt(newPages, 10) || item.pages;
-
-            config.materials = matList;
-            window.CSOSuperStore.saveStudyMaterialsConfig(config);
-            renderStudyMaterialsWorkspace(root);
+                config.materials = matList;
+                window.CSOSuperStore.saveStudyMaterialsConfig(config);
+                renderStudyMaterialsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-mat-item').addEventListener('click', () => {
-          const title = prompt('Enter Study Material Title:');
-          if (!title || !title.trim()) return;
-          const category = prompt('Category (e.g. General Studies, Mental Ability, State GK):', 'General Studies') || 'General Studies';
-          const targetExam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL, OSSSC):', 'OPSC OAS') || 'OPSC OAS';
-          const author = prompt('Author / Desk:', 'Editorial Cell') || 'Editorial Cell';
-
-          const newId = 'MAT-' + String(matList.length + 1).padStart(3, '0');
-          matList.push({
-            id: newId,
-            title: title.trim(),
-            category: category.trim(),
-            targetExam: targetExam.trim(),
-            author: author.trim(),
-            pages: 60,
-            downloadUrl: '/assets/pdf/' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf',
-            active: true
+          openModuleCreateModal({
+            title: 'Study Material',
+            subtitle: 'Index high-yield notes, syllabus outlines, and study capsules',
+            fields: [
+              { key: 'title', label: 'Study Material Title', placeholder: 'e.g. Indian Polity Articles 1 to 51A Capsule', required: true },
+              { key: 'category', label: 'Category', placeholder: 'e.g. General Studies, Mental Ability, State GK', defaultValue: 'General Studies', required: true },
+              { key: 'targetExam', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL, OSSSC', defaultValue: 'OPSC OAS', required: true },
+              { key: 'author', label: 'Author / Desk', placeholder: 'e.g. Editorial Cell', defaultValue: 'Editorial Cell', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'MAT-' + String(matList.length + 1).padStart(3, '0');
+              matList.push({
+                id: newId,
+                title: data.title.trim(),
+                category: data.category.trim(),
+                targetExam: data.targetExam.trim(),
+                author: data.author.trim(),
+                pages: 60,
+                downloadUrl: '/assets/pdf/' + data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf',
+                active: true
+              });
+              config.materials = matList;
+              window.CSOSuperStore.saveStudyMaterialsConfig(config);
+              renderStudyMaterialsWorkspace(root);
+            }
           });
-          config.materials = matList;
-          window.CSOSuperStore.saveStudyMaterialsConfig(config);
-          renderStudyMaterialsWorkspace(root);
         });
 
       } catch (err) {
@@ -18568,45 +18862,59 @@ async function loadMasterNavigation() {
         root.querySelectorAll('.note-edit-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
-            const item = docList[idx];
-            const newTitle = prompt('Document Title:', item.title);
-            if (newTitle === null) return;
-            const newSubj = prompt('Subject:', item.subject || 'General');
-            const newExam = prompt('Exam Scope:', item.exam || 'All Exams');
-            const newContrib = prompt('Contributor:', item.contributor || 'Academic Cell');
+            const item = notesList[idx];
+            openModuleCreateModal({
+              title: 'Handwritten / Quick Note PDF',
+              subtitle: `Editing note "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Note Title', required: true },
+                { key: 'subject', label: 'Subject', placeholder: 'e.g. Odisha History, Modern India', required: true },
+                { key: 'exam', label: 'Exam Scope', placeholder: 'e.g. All Exams, OPSC OAS', required: true },
+                { key: 'verified', label: 'Faculty Verified Badge', type: 'checkbox' }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.subject = data.subject.trim();
+                item.exam = data.exam.trim();
+                item.verified = !!data.verified;
 
-            item.title = newTitle.trim() || item.title;
-            if (newSubj !== null) item.subject = newSubj.trim();
-            if (newExam !== null) item.exam = newExam.trim();
-            if (newContrib !== null) item.contributor = newContrib.trim();
-
-            config.documents = docList;
-            window.CSOSuperStore.saveNotesPdfsConfig(config);
-            renderNotesPdfsWorkspace(root);
+                config.notes = notesList;
+                window.CSOSuperStore.saveNotesPdfsConfig(config);
+                renderNotesPdfsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-note-item').addEventListener('click', () => {
-          const title = prompt('Enter Document Title:');
-          if (!title || !title.trim()) return;
-          const subject = prompt('Subject (e.g. Odisha History, General Science, Odia Language):', 'Odisha History') || 'General';
-          const exam = prompt('Exam Target (e.g. OPSC OAS, OSSC, Teaching Exams):', 'OPSC OAS') || 'All Exams';
-          const contrib = prompt('Contributor:', 'Topper Desk') || 'Academic Cell';
-
-          const newId = 'NOTE-' + String(docList.length + 1).padStart(2, '0');
-          docList.push({
-            id: newId,
-            title: title.trim(),
-            subject: subject.trim(),
-            exam: exam.trim(),
-            contributor: contrib.trim(),
-            fileSize: '2.5 MB',
-            verified: true,
-            active: true
+          openModuleCreateModal({
+            title: 'Handwritten / Quick Note PDF',
+            subtitle: 'Publish topper handwritten notes or verified summary PDFs',
+            fields: [
+              { key: 'title', label: 'Note Title', placeholder: 'e.g. Odisha Ancient History Chronology Handout', required: true },
+              { key: 'subject', label: 'Subject', placeholder: 'e.g. Odisha History, Polity, Geography', defaultValue: 'Odisha History', required: true },
+              { key: 'exam', label: 'Exam Scope', placeholder: 'e.g. OPSC OAS, OSSC CGL', defaultValue: 'OPSC OAS', required: true },
+              { key: 'contributor', label: 'Contributor', placeholder: 'e.g. Topper Desk, Faculty Cell', defaultValue: 'Topper Desk', required: true },
+              { key: 'verified', label: 'Faculty Verified', type: 'checkbox', defaultChecked: true }
+            ],
+            onSave: (data) => {
+              const newId = 'NOTE-' + String(notesList.length + 1).padStart(3, '0');
+              notesList.push({
+                id: newId,
+                title: data.title.trim(),
+                subject: data.subject.trim(),
+                exam: data.exam.trim(),
+                contributor: data.contributor.trim(),
+                pageCount: 35,
+                verified: !!data.verified,
+                active: true
+              });
+              config.notes = notesList;
+              window.CSOSuperStore.saveNotesPdfsConfig(config);
+              renderNotesPdfsWorkspace(root);
+            }
           });
-          config.documents = docList;
-          window.CSOSuperStore.saveNotesPdfsConfig(config);
-          renderNotesPdfsWorkspace(root);
         });
 
       } catch (err) {
@@ -18868,47 +19176,61 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = bookList[idx];
-            const newTitle = prompt('Book Title:', item.title);
-            if (newTitle === null) return;
-            const newAuth = prompt('Authors:', item.authors || '');
-            const newPub = prompt('Publisher:', item.publisher || '');
-            const newExam = prompt('Recommended Exam:', item.recommendedFor || 'OPSC OAS');
-            const newIsbn = prompt('ISBN / Identifier:', item.isbn || '');
+            openModuleCreateModal({
+              title: 'Standard Textbook & Reference',
+              subtitle: `Editing reference "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Book Title', required: true },
+                { key: 'author', label: 'Author', required: true },
+                { key: 'publisher', label: 'Publisher', required: true },
+                { key: 'edition', label: 'Edition', required: true },
+                { key: 'standardReference', label: 'Standard Reference Flag', type: 'checkbox' }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.author = data.author.trim();
+                item.publisher = data.publisher.trim();
+                item.edition = data.edition.trim();
+                item.standardReference = !!data.standardReference;
 
-            item.title = newTitle.trim() || item.title;
-            if (newAuth !== null) item.authors = newAuth.trim();
-            if (newPub !== null) item.publisher = newPub.trim();
-            if (newExam !== null) item.recommendedFor = newExam.trim();
-            if (newIsbn !== null) item.isbn = newIsbn.trim();
-
-            config.books = bookList;
-            window.CSOSuperStore.saveBooksReferencesConfig(config);
-            renderBooksReferencesWorkspace(root);
+                config.books = bookList;
+                window.CSOSuperStore.saveBooksReferencesConfig(config);
+                renderBooksReferencesWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-book-item').addEventListener('click', () => {
-          const title = prompt('Enter Book Title:');
-          if (!title || !title.trim()) return;
-          const authors = prompt('Authors / Editors:', 'Dr. H. K. Mahatab') || 'Author Desk';
-          const pub = prompt('Publisher:', 'Sahitya Akademi') || 'Academic Press';
-          const exam = prompt('Recommended For (e.g. OPSC OAS, OSSC CGL):', 'OPSC OAS') || 'OPSC OAS';
-          const isbn = prompt('ISBN:', '978-81-0000-000-0') || '';
-
-          const newId = 'BOOK-' + String(bookList.length + 1).padStart(2, '0');
-          bookList.push({
-            id: newId,
-            title: title.trim(),
-            authors: authors.trim(),
-            publisher: pub.trim(),
-            recommendedFor: exam.trim(),
-            isbn: isbn.trim(),
-            availability: 'Recommended Reference',
-            active: true
+          openModuleCreateModal({
+            title: 'Standard Textbook & Reference',
+            subtitle: 'Recommend standard textbooks and syllabus authority works',
+            fields: [
+              { key: 'title', label: 'Book Title', placeholder: 'e.g. Indian Polity (M. Laxmikanth)', required: true },
+              { key: 'author', label: 'Author(s)', placeholder: 'e.g. M. Laxmikanth', required: true },
+              { key: 'publisher', label: 'Publisher', placeholder: 'e.g. McGraw Hill', defaultValue: 'McGraw Hill', required: true },
+              { key: 'edition', label: 'Edition', placeholder: 'e.g. 7th Edition (2024)', defaultValue: '7th Edition (2024)', required: true },
+              { key: 'isbn', label: 'ISBN (Optional)', placeholder: 'e.g. 978-81-0000-000-0' },
+              { key: 'standardReference', label: 'Mandatory / Standard Reference', type: 'checkbox', defaultChecked: true }
+            ],
+            onSave: (data) => {
+              const newId = 'BOOK-' + String(bookList.length + 1).padStart(3, '0');
+              bookList.push({
+                id: newId,
+                title: data.title.trim(),
+                author: data.author.trim(),
+                publisher: data.publisher.trim(),
+                edition: data.edition.trim(),
+                isbn: (data.isbn || '').trim(),
+                standardReference: !!data.standardReference,
+                active: true
+              });
+              config.books = bookList;
+              window.CSOSuperStore.saveBooksReferencesConfig(config);
+              renderBooksReferencesWorkspace(root);
+            }
           });
-          config.books = bookList;
-          window.CSOSuperStore.saveBooksReferencesConfig(config);
-          renderBooksReferencesWorkspace(root);
         });
 
       } catch (err) {
@@ -19243,18 +19565,25 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = subList[idx];
-            const newName = prompt('Subject Name:', item.name);
-            if (newName === null) return;
-            const newCode = prompt('Subject Code:', item.code || '');
-            const newWeight = prompt('Weightage Percentage (%):', String(item.weightagePercentage || 15));
+            openModuleCreateModal({
+              title: 'Master Subject',
+              subtitle: `Editing subject "${item.name}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'name', label: 'Subject Name', required: true },
+                { key: 'code', label: 'Subject Code', required: true },
+                { key: 'stream', label: 'Stream / Discipline', required: true }
+              ],
+              onSave: (data) => {
+                item.name = data.name.trim();
+                item.code = data.code.trim().toUpperCase();
+                item.stream = data.stream.trim();
 
-            item.name = newName.trim() || item.name;
-            if (newCode !== null) item.code = newCode.trim();
-            if (newWeight !== null) item.weightagePercentage = parseInt(newWeight, 10) || item.weightagePercentage;
-
-            config.subjects = subList;
-            window.CSOSuperStore.saveSubjectsTopicsConfig(config);
-            renderSubjectsTopicsWorkspace(root);
+                config.subjectsRegistry = subList;
+                window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+                renderSubjectsTopicsWorkspace(root);
+              }
+            });
           });
         });
 
@@ -19262,57 +19591,79 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = topList[idx];
-            const newName = prompt('Topic Name:', item.name);
-            if (newName === null) return;
-            const newDiff = prompt('Difficulty (Easy / Medium / Hard):', item.difficulty || 'Medium');
+            openModuleCreateModal({
+              title: 'Subject Topic',
+              subtitle: `Editing topic "${item.name}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'name', label: 'Topic Name', required: true },
+                { key: 'difficulty', label: 'Difficulty', type: 'select', options: ['Easy', 'Medium', 'Hard'] },
+                { key: 'highYield', label: 'High Yield Examination Topic', type: 'checkbox' }
+              ],
+              onSave: (data) => {
+                item.name = data.name.trim();
+                item.difficulty = data.difficulty;
+                item.highYield = !!data.highYield;
 
-            item.name = newName.trim() || item.name;
-            if (newDiff !== null) item.difficulty = newDiff.trim();
-
-            config.topicsRegistry = topList;
-            window.CSOSuperStore.saveSubjectsTopicsConfig(config);
-            renderSubjectsTopicsWorkspace(root);
+                config.topicsRegistry = topList;
+                window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+                renderSubjectsTopicsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-subject-item').addEventListener('click', () => {
-          const name = prompt('Enter Subject Name:');
-          if (!name || !name.trim()) return;
-          const code = prompt('Subject Code (e.g. OD-GEOG, MATH-ADV):', 'OD-SUB') || 'SUB';
-
-          const newId = 'SUB-' + String(subList.length + 1).padStart(2, '0');
-          subList.push({
-            id: newId,
-            code: code.trim().toUpperCase(),
-            name: name.trim(),
-            targetExams: ['OPSC OAS', 'OSSC CGL'],
-            topicCount: 10,
-            weightagePercentage: 15,
-            active: true
+          openModuleCreateModal({
+            title: 'Master Subject',
+            subtitle: 'Add foundational subject to curriculum directory',
+            fields: [
+              { key: 'name', label: 'Subject Name', placeholder: 'e.g. Science & Technology', required: true },
+              { key: 'code', label: 'Subject Code', placeholder: 'e.g. SCI-TECH, POL-IND, HIST-OD', required: true },
+              { key: 'stream', label: 'Stream / Faculty', placeholder: 'e.g. General Studies, Sciences, Humanities', defaultValue: 'General Studies', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'SUB-' + String(subList.length + 1).padStart(2, '0');
+              subList.push({
+                id: newId,
+                code: data.code.trim().toUpperCase(),
+                name: data.name.trim(),
+                stream: data.stream.trim(),
+                topicCount: 0,
+                active: true
+              });
+              config.subjectsRegistry = subList;
+              window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+              renderSubjectsTopicsWorkspace(root);
+            }
           });
-          config.subjects = subList;
-          window.CSOSuperStore.saveSubjectsTopicsConfig(config);
-          renderSubjectsTopicsWorkspace(root);
         });
 
         root.querySelector('#btn-add-topic-item').addEventListener('click', () => {
-          const name = prompt('Enter Topic Name:');
-          if (!name || !name.trim()) return;
-          const subId = prompt('Mapped Subject ID (e.g. SUB-01, SUB-02):', 'SUB-01') || 'SUB-01';
-          const diff = prompt('Difficulty (Easy / Medium / Hard):', 'Medium') || 'Medium';
-
-          const newId = 'TOP-' + (100 + topList.length + 1);
-          topList.push({
-            id: newId,
-            subjectId: subId.trim(),
-            name: name.trim(),
-            difficulty: diff.trim(),
-            highYield: true,
-            active: true
+          openModuleCreateModal({
+            title: 'Subject Topic',
+            subtitle: 'Index micro-concept or chapter topic under a master subject',
+            fields: [
+              { key: 'name', label: 'Topic Name', placeholder: 'e.g. Directive Principles of State Policy', required: true },
+              { key: 'subjectId', label: 'Mapped Subject ID', placeholder: 'e.g. SUB-01, SUB-02', defaultValue: subList[0] ? subList[0].id : 'SUB-01', required: true },
+              { key: 'difficulty', label: 'Difficulty', type: 'select', options: ['Easy', 'Medium', 'Hard'], defaultValue: 'Medium' },
+              { key: 'highYield', label: 'High Yield Topic', type: 'checkbox', defaultChecked: true }
+            ],
+            onSave: (data) => {
+              const newId = 'TOP-' + (100 + topList.length + 1);
+              topList.push({
+                id: newId,
+                subjectId: data.subjectId.trim(),
+                name: data.name.trim(),
+                difficulty: data.difficulty,
+                highYield: !!data.highYield,
+                active: true
+              });
+              config.topicsRegistry = topList;
+              window.CSOSuperStore.saveSubjectsTopicsConfig(config);
+              renderSubjectsTopicsWorkspace(root);
+            }
           });
-          config.topicsRegistry = topList;
-          window.CSOSuperStore.saveSubjectsTopicsConfig(config);
-          renderSubjectsTopicsWorkspace(root);
         });
 
       } catch (err) {
@@ -19560,40 +19911,53 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = grdList[idx];
-            const newName = prompt('Tier Name:', item.name);
-            if (newName === null) return;
-            const newBoard = prompt('Board / Authority:', item.board || 'BSE Odisha');
-            const newStream = prompt('Stream:', item.stream || 'General');
+            openModuleCreateModal({
+              title: 'Academic Class / Grade Tier',
+              subtitle: `Editing tier "${item.name}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'name', label: 'Tier Name', required: true },
+                { key: 'board', label: 'Board / Authority', required: true },
+                { key: 'stream', label: 'Stream', required: true }
+              ],
+              onSave: (data) => {
+                item.name = data.name.trim();
+                item.board = data.board.trim();
+                item.stream = data.stream.trim();
 
-            item.name = newName.trim() || item.name;
-            if (newBoard !== null) item.board = newBoard.trim();
-            if (newStream !== null) item.stream = newStream.trim();
-
-            config.grades = grdList;
-            window.CSOSuperStore.saveClassGradeConfig(config);
-            renderClassGradeWorkspace(root);
+                config.grades = grdList;
+                window.CSOSuperStore.saveClassGradeConfig(config);
+                renderClassGradeWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-grade-item').addEventListener('click', () => {
-          const name = prompt('Enter Academic Tier Name:');
-          if (!name || !name.trim()) return;
-          const code = prompt('Grade Code (e.g. CLS-08, VOC-DIPLOMA):', 'CLS') || 'CLS';
-          const board = prompt('Board / Authority:', 'BSE Odisha') || 'BSE Odisha';
-
-          const newId = 'GRD-' + String(grdList.length + 1).padStart(2, '0');
-          grdList.push({
-            id: newId,
-            code: code.trim().toUpperCase(),
-            name: name.trim(),
-            board: board.trim(),
-            stream: 'General',
-            studentCount: 50000,
-            active: true
+          openModuleCreateModal({
+            title: 'Academic Class / Grade Tier',
+            subtitle: 'Define schooling stage, board curriculum, or vocational track',
+            fields: [
+              { key: 'name', label: 'Academic Tier Name', placeholder: 'e.g. Higher Secondary (+2 Arts)', required: true },
+              { key: 'code', label: 'Grade Code', placeholder: 'e.g. CLS-08, VOC-DIPLOMA, HSC-10', defaultValue: 'CLS', required: true },
+              { key: 'board', label: 'Board / Authority', placeholder: 'e.g. BSE Odisha, CHSE Odisha', defaultValue: 'BSE Odisha', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'GRD-' + String(grdList.length + 1).padStart(2, '0');
+              grdList.push({
+                id: newId,
+                code: data.code.trim().toUpperCase(),
+                name: data.name.trim(),
+                board: data.board.trim(),
+                stream: 'General',
+                studentCount: 50000,
+                active: true
+              });
+              config.grades = grdList;
+              window.CSOSuperStore.saveClassGradeConfig(config);
+              renderClassGradeWorkspace(root);
+            }
           });
-          config.grades = grdList;
-          window.CSOSuperStore.saveClassGradeConfig(config);
-          renderClassGradeWorkspace(root);
         });
 
       } catch (err) {
@@ -19844,45 +20208,58 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = examList[idx];
-            const newName = prompt('Exam Name:', item.name);
-            if (newName === null) return;
-            const newDate = prompt('Exam Date (YYYY-MM-DD):', item.examDate || '2026-12-01');
-            const newStatus = prompt('Status (Notification Active / Admit Card Released / Form Fill-up Open / Scheduled):', item.status || 'Scheduled');
-            const newVac = prompt('Vacancies:', String(item.vacancies || 0));
+            openModuleCreateModal({
+              title: 'Examination Entry',
+              subtitle: `Editing exam "${item.name}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'name', label: 'Exam Name', required: true },
+                { key: 'examDate', label: 'Exam Date', type: 'date', required: true },
+                { key: 'status', label: 'Status', type: 'select', options: ['Notification Active', 'Admit Card Released', 'Form Fill-up Open', 'Scheduled', 'Results Declared'] },
+                { key: 'vacancies', label: 'Total Vacancies', type: 'number' }
+              ],
+              onSave: (data) => {
+                item.name = data.name.trim();
+                item.examDate = data.examDate.trim();
+                item.status = data.status;
+                if (data.vacancies !== undefined) item.vacancies = Number(data.vacancies);
 
-            item.name = newName.trim() || item.name;
-            if (newDate !== null) item.examDate = newDate.trim();
-            if (newStatus !== null) item.status = newStatus.trim();
-            if (newVac !== null) item.vacancies = parseInt(newVac, 10) || 0;
-
-            config.examinations = examList;
-            window.CSOSuperStore.saveExaminationManagementConfig(config);
-            renderExaminationManagementWorkspace(root);
+                config.examinations = examList;
+                window.CSOSuperStore.saveExaminationManagementConfig(config);
+                renderExaminationManagementWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-exam-item').addEventListener('click', () => {
-          const name = prompt('Enter Examination Name:');
-          if (!name || !name.trim()) return;
-          const code = prompt('Exam Code (e.g. OPSC-OAS, OSSC-CGL, POLICE-SI):', 'OPSC') || 'EXAM';
-          const body = prompt('Conducting Body:', 'Odisha Public Service Commission (OPSC)') || 'OPSC';
-          const date = prompt('Exam Date (YYYY-MM-DD):', '2026-12-20') || '2026-12-20';
-
-          const newId = 'EXAM-' + String(examList.length + 1).padStart(2, '0');
-          examList.push({
-            id: newId,
-            code: code.trim().toUpperCase(),
-            name: name.trim(),
-            conductingBody: body.trim(),
-            tier: 'State Level',
-            examDate: date.trim(),
-            status: 'Notification Active',
-            vacancies: 250,
-            active: true
+          openModuleCreateModal({
+            title: 'Examination Entry',
+            subtitle: 'Schedule upcoming competitive or board exam with statutory body tracking',
+            fields: [
+              { key: 'name', label: 'Examination Name', placeholder: 'e.g. Odisha Civil Services Examination 2026', required: true },
+              { key: 'code', label: 'Exam Code', placeholder: 'e.g. OPSC-OAS, OSSC-CGL, POLICE-SI', defaultValue: 'OPSC', required: true },
+              { key: 'conductingBody', label: 'Conducting Body', placeholder: 'e.g. Odisha Public Service Commission (OPSC)', defaultValue: 'Odisha Public Service Commission (OPSC)', required: true },
+              { key: 'examDate', label: 'Exam Date', type: 'date', defaultValue: '2026-12-20', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'EXAM-' + String(examList.length + 1).padStart(2, '0');
+              examList.push({
+                id: newId,
+                code: data.code.trim().toUpperCase(),
+                name: data.name.trim(),
+                conductingBody: data.conductingBody.trim(),
+                tier: 'State Level',
+                examDate: data.examDate.trim(),
+                status: 'Notification Active',
+                vacancies: 250,
+                active: true
+              });
+              config.examinations = examList;
+              window.CSOSuperStore.saveExaminationManagementConfig(config);
+              renderExaminationManagementWorkspace(root);
+            }
           });
-          config.examinations = examList;
-          window.CSOSuperStore.saveExaminationManagementConfig(config);
-          renderExaminationManagementWorkspace(root);
         });
 
       } catch (err) {
@@ -20150,49 +20527,62 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = jobList[idx];
-            const newTitle = prompt('Advertisement Title:', item.title);
-            if (newTitle === null) return;
-            const newComm = prompt('Commission (OPSC / OSSC / OSSSC / Police):', item.commission || 'OPSC');
-            const newVac = prompt('Vacancies:', String(item.vacancies || 0));
-            const newPay = prompt('Pay Scale:', item.payScale || 'Level 9');
-            const newDate = prompt('Last Date (YYYY-MM-DD):', item.lastDate || '2026-12-01');
-            const newStatus = prompt('Status (Open / Closing Soon / Upcoming / Closed):', item.status || 'Open');
+            openModuleCreateModal({
+              title: 'Recruitment Notice',
+              subtitle: `Editing job notice "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Advertisement Title', required: true },
+                { key: 'commission', label: 'Commission', placeholder: 'e.g. OPSC, OSSC, OSSSC, Police', required: true },
+                { key: 'vacancies', label: 'Vacancies', type: 'number', required: true },
+                { key: 'payScale', label: 'Pay Scale', placeholder: 'e.g. Level 9 (Rs. 35,400 - 1,12,400)', required: true },
+                { key: 'lastDate', label: 'Last Date', type: 'date', required: true },
+                { key: 'status', label: 'Status', type: 'select', options: ['Open', 'Closing Soon', 'Upcoming', 'Closed'] }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.commission = data.commission.trim();
+                item.vacancies = Number(data.vacancies) || 0;
+                item.payScale = data.payScale.trim();
+                item.lastDate = data.lastDate.trim();
+                item.status = data.status;
 
-            item.title = newTitle.trim() || item.title;
-            if (newComm !== null) item.commission = newComm.trim();
-            if (newVac !== null) item.vacancies = parseInt(newVac, 10) || 0;
-            if (newPay !== null) item.payScale = newPay.trim();
-            if (newDate !== null) item.lastDate = newDate.trim();
-            if (newStatus !== null) item.status = newStatus.trim();
-
-            config.postings = jobList;
-            window.CSOSuperStore.saveRecruitmentJobsConfig(config);
-            renderRecruitmentJobsWorkspace(root);
+                config.postings = jobList;
+                window.CSOSuperStore.saveRecruitmentJobsConfig(config);
+                renderRecruitmentJobsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-job-posting').addEventListener('click', () => {
-          const title = prompt('Enter Advertisement Title:');
-          if (!title || !title.trim()) return;
-          const comm = prompt('Commission (OPSC / OSSC / OSSSC / Police):', 'OPSC') || 'OPSC';
-          const vacStr = prompt('Number of Vacancies:', '150');
-          const lastDate = prompt('Last Date (YYYY-MM-DD):', '2026-12-15') || '2026-12-15';
-
-          const newId = 'JOB-' + String(jobList.length + 1).padStart(2, '0');
-          jobList.push({
-            id: newId,
-            title: title.trim(),
-            commission: comm.trim(),
-            vacancies: parseInt(vacStr, 10) || 150,
-            payScale: 'Level 9 (Rs. 35,400 - 1,12,400)',
-            lastDate: lastDate.trim(),
-            applyUrl: 'https://' + comm.toLowerCase().replace(/[^a-z]/g, '') + '.gov.in',
-            status: 'Open',
-            active: true
+          openModuleCreateModal({
+            title: 'Recruitment Notice',
+            subtitle: 'Publish fresh government recruitment notification',
+            fields: [
+              { key: 'title', label: 'Advertisement Title', placeholder: 'e.g. Assistant Section Officer (ASO) Examination 2026', required: true },
+              { key: 'commission', label: 'Commission', placeholder: 'e.g. OPSC, OSSC, OSSSC, Police', defaultValue: 'OPSC', required: true },
+              { key: 'vacancies', label: 'Number of Vacancies', type: 'number', defaultValue: 150, required: true },
+              { key: 'lastDate', label: 'Last Date to Apply', type: 'date', defaultValue: '2026-12-15', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'JOB-' + String(jobList.length + 1).padStart(2, '0');
+              jobList.push({
+                id: newId,
+                title: data.title.trim(),
+                commission: data.commission.trim(),
+                vacancies: Number(data.vacancies) || 150,
+                payScale: 'Level 9 (Rs. 35,400 - 1,12,400)',
+                lastDate: data.lastDate.trim(),
+                applyUrl: 'https://' + data.commission.toLowerCase().replace(/[^a-z]/g, '') + '.gov.in',
+                status: 'Open',
+                active: true
+              });
+              config.postings = jobList;
+              window.CSOSuperStore.saveRecruitmentJobsConfig(config);
+              renderRecruitmentJobsWorkspace(root);
+            }
           });
-          config.postings = jobList;
-          window.CSOSuperStore.saveRecruitmentJobsConfig(config);
-          renderRecruitmentJobsWorkspace(root);
         });
 
       } catch (err) {
@@ -20451,42 +20841,55 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = relList[idx];
-            const newTitle = prompt('Release Title:', item.title);
-            if (newTitle === null) return;
-            const newCutoff = prompt('Cutoff Score / Benchmark:', item.cutoffScore || 'N/A');
-            const newStatus = prompt('Status:', item.status || 'Active');
+            openModuleCreateModal({
+              title: 'Admit Card / Result Release',
+              subtitle: `Editing release "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Release Title', required: true },
+                { key: 'cutoffScore', label: 'Cutoff Score / Benchmark', placeholder: 'e.g. UR: 142.50, SEBC: 138.00', required: true },
+                { key: 'status', label: 'Status', placeholder: 'e.g. Active Download, Finalized', required: true }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.cutoffScore = data.cutoffScore.trim();
+                item.status = data.status.trim();
 
-            item.title = newTitle.trim() || item.title;
-            if (newCutoff !== null) item.cutoffScore = newCutoff.trim();
-            if (newStatus !== null) item.status = newStatus.trim();
-
-            config.releases = relList;
-            window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
-            renderAdmitCardsResultsWorkspace(root);
+                config.releases = relList;
+                window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
+                renderAdmitCardsResultsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-release-item').addEventListener('click', () => {
-          const title = prompt('Enter Hall Ticket / Result Title:');
-          if (!title || !title.trim()) return;
-          const type = prompt('Type (Admit Card / Result):', 'Admit Card') || 'Admit Card';
-          const comm = prompt('Commission (OPSC / OSSC / OSSSC / BSE Odisha):', 'OSSC') || 'OSSC';
-
-          const newId = 'REL-' + String(relList.length + 1).padStart(2, '0');
-          relList.push({
-            id: newId,
-            type: type.trim(),
-            title: title.trim(),
-            commission: comm.trim(),
-            releaseDate: new Date().toISOString().split('T')[0],
-            downloadUrl: 'https://' + comm.toLowerCase().replace(/[^a-z]/g, '') + '.gov.in',
-            cutoffScore: 'Pending Official Gazette Confirmation',
-            status: 'Active Download',
-            active: true
+          openModuleCreateModal({
+            title: 'Admit Card / Result Release',
+            subtitle: 'Publish hall ticket download or merit scorecard release',
+            fields: [
+              { key: 'title', label: 'Hall Ticket / Result Title', placeholder: 'e.g. OSSC CGL 2026 Preliminary Admit Card', required: true },
+              { key: 'type', label: 'Release Type', type: 'select', options: ['Admit Card', 'Result'], defaultValue: 'Admit Card' },
+              { key: 'commission', label: 'Commission', placeholder: 'e.g. OPSC, OSSC, OSSSC, BSE Odisha', defaultValue: 'OSSC', required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'REL-' + String(relList.length + 1).padStart(2, '0');
+              relList.push({
+                id: newId,
+                type: data.type,
+                title: data.title.trim(),
+                commission: data.commission.trim(),
+                releaseDate: new Date().toISOString().split('T')[0],
+                downloadUrl: 'https://' + data.commission.toLowerCase().replace(/[^a-z]/g, '') + '.gov.in',
+                cutoffScore: 'Pending Official Gazette Confirmation',
+                status: 'Active Download',
+                active: true
+              });
+              config.releases = relList;
+              window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
+              renderAdmitCardsResultsWorkspace(root);
+            }
           });
-          config.releases = relList;
-          window.CSOSuperStore.saveAdmitCardsResultsConfig(config);
-          renderAdmitCardsResultsWorkspace(root);
         });
 
       } catch (err) {
@@ -20751,44 +21154,57 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = sylList[idx];
-            const newName = prompt('Exam Name:', item.examName);
-            if (newName === null) return;
-            const newStages = prompt('Stages Breakdown:', item.stages || '');
-            const newMarks = prompt('Total Marks:', String(item.totalMarks || 0));
-            const newNeg = prompt('Negative Marking Rule:', item.negativeMarking || '0.25');
+            openModuleCreateModal({
+              title: 'Syllabus & Exam Pattern',
+              subtitle: `Editing blueprint for "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Syllabus Title', required: true },
+                { key: 'totalMarks', label: 'Total Marks', type: 'number', required: true },
+                { key: 'durationHours', label: 'Duration (Hours)', type: 'number', required: true },
+                { key: 'negativeMarking', label: 'Negative Marking Rule', placeholder: 'e.g. 0.25 (1/4th)', required: true }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.totalMarks = Number(data.totalMarks) || 0;
+                item.durationHours = Number(data.durationHours) || 0;
+                item.negativeMarking = data.negativeMarking.trim();
 
-            item.examName = newName.trim() || item.examName;
-            if (newStages !== null) item.stages = newStages.trim();
-            if (newMarks !== null) item.totalMarks = parseInt(newMarks, 10) || 0;
-            if (newNeg !== null) item.negativeMarking = newNeg.trim();
-
-            config.schemes = sylList;
-            window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
-            renderSyllabusExamPatternsWorkspace(root);
+                config.blueprints = sylList;
+                window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
+                renderSyllabusExamPatternsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-pattern-item').addEventListener('click', () => {
-          const name = prompt('Enter Exam Name:');
-          if (!name || !name.trim()) return;
-          const stages = prompt('Exam Stages:', 'Prelims & Mains Written') || 'Written Exam';
-          const marks = prompt('Total Marks:', '300') || '300';
-          const gazette = prompt('Gazette Ref No:', 'Gov-Od-2026/Syllabus') || 'N/A';
-
-          const newId = 'SYL-' + String(sylList.length + 1).padStart(2, '0');
-          sylList.push({
-            id: newId,
-            examName: name.trim(),
-            stages: stages.trim(),
-            totalMarks: parseInt(marks, 10) || 300,
-            negativeMarking: '0.25 marks per wrong answer',
-            gazetteNotificationNo: gazette.trim(),
-            verified: true,
-            active: true
+          openModuleCreateModal({
+            title: 'Syllabus & Exam Pattern',
+            subtitle: 'Index statutory exam pattern, marking breakdown, and subject syllabus',
+            fields: [
+              { key: 'title', label: 'Pattern / Syllabus Title', placeholder: 'e.g. Odisha Police SI Written Exam Scheme', required: true },
+              { key: 'targetExam', label: 'Target Exam', placeholder: 'e.g. Police SI, OPSC OAS, OSSC CGL', defaultValue: 'Police SI', required: true },
+              { key: 'totalMarks', label: 'Total Marks', type: 'number', defaultValue: 300, required: true },
+              { key: 'durationHours', label: 'Duration in Hours', type: 'number', defaultValue: 3, required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'SYL-' + String(sylList.length + 1).padStart(2, '0');
+              sylList.push({
+                id: newId,
+                title: data.title.trim(),
+                targetExam: data.targetExam.trim(),
+                totalMarks: Number(data.totalMarks) || 300,
+                durationHours: Number(data.durationHours) || 3,
+                negativeMarking: '0.25 (1/4th mark deduction)',
+                revisedYear: 2026,
+                active: true
+              });
+              config.blueprints = sylList;
+              window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
+              renderSyllabusExamPatternsWorkspace(root);
+            }
           });
-          config.schemes = sylList;
-          window.CSOSuperStore.saveSyllabusExamPatternsConfig(config);
-          renderSyllabusExamPatternsWorkspace(root);
         });
 
       } catch (err) {
@@ -21043,42 +21459,55 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = pyqList[idx];
-            const newTitle = prompt('Paper Title:', item.paperTitle);
-            if (newTitle === null) return;
-            const newExam = prompt('Exam Scope:', item.exam || 'OPSC OAS');
-            const newYear = prompt('Exam Year:', String(item.year || 2024));
-            const newKey = prompt('Answer Key Status:', item.answerKeyStatus || 'Official Ratified');
+            openModuleCreateModal({
+              title: 'Previous Year Question Paper',
+              subtitle: `Editing PYQ entry "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Question Paper Title', required: true },
+                { key: 'exam', label: 'Exam Scope', placeholder: 'e.g. OPSC OAS, OSSC CGL', required: true },
+                { key: 'year', label: 'Exam Year', type: 'number', required: true },
+                { key: 'hasOfficialKey', label: 'Official Answer Key Attached', type: 'checkbox' }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.exam = data.exam.trim();
+                item.year = Number(data.year) || item.year;
+                item.hasOfficialKey = !!data.hasOfficialKey;
 
-            item.paperTitle = newTitle.trim() || item.paperTitle;
-            if (newExam !== null) item.exam = newExam.trim();
-            if (newYear !== null) item.year = parseInt(newYear, 10) || item.year;
-            if (newKey !== null) item.answerKeyStatus = newKey.trim();
-
-            config.papers = pyqList;
-            window.CSOSuperStore.savePyqConfig(config);
-            renderPyqWorkspace(root);
+                config.papers = pyqList;
+                window.CSOSuperStore.savePyqConfig(config);
+                renderPyqWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-pyq-item').addEventListener('click', () => {
-          const title = prompt('Enter Paper Title:');
-          if (!title || !title.trim()) return;
-          const exam = prompt('Exam Scope (e.g. OPSC OAS, OSSC CGL, OSSSC):', 'OPSC OAS') || 'OPSC OAS';
-          const year = prompt('Year:', '2025') || '2025';
-
-          const newId = 'PYQ-' + String(pyqList.length + 1).padStart(2, '0');
-          pyqList.push({
-            id: newId,
-            exam: exam.trim(),
-            year: parseInt(year, 10) || 2025,
-            paperTitle: title.trim(),
-            answerKeyStatus: 'Official Ratified',
-            downloadUrl: '/assets/pdf/' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf',
-            active: true
+          openModuleCreateModal({
+            title: 'Previous Year Question Paper',
+            subtitle: 'Archive certified past exam paper and verified solution sheet',
+            fields: [
+              { key: 'title', label: 'Paper Title', placeholder: 'e.g. OPSC OAS Prelims 2024 Paper II (CSAT)', required: true },
+              { key: 'exam', label: 'Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL', defaultValue: 'OPSC OAS', required: true },
+              { key: 'year', label: 'Exam Year', type: 'number', defaultValue: 2024, required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'PYQ-' + String(pyqList.length + 1).padStart(2, '0');
+              pyqList.push({
+                id: newId,
+                title: data.title.trim(),
+                exam: data.exam.trim(),
+                year: Number(data.year) || 2024,
+                hasOfficialKey: true,
+                downloadCount: 0,
+                active: true
+              });
+              config.papers = pyqList;
+              window.CSOSuperStore.savePyqConfig(config);
+              renderPyqWorkspace(root);
+            }
           });
-          config.papers = pyqList;
-          window.CSOSuperStore.savePyqConfig(config);
-          renderPyqWorkspace(root);
         });
 
       } catch (err) {
@@ -21347,47 +21776,61 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = qList[idx];
-            const newPrompt = prompt('Question Prompt:', item.prompt);
-            if (newPrompt === null) return;
-            const newSubj = prompt('Subject:', item.subject || 'Indian Polity');
-            const newDiff = prompt('Difficulty (Easy / Medium / Hard):', item.difficulty || 'Medium');
-            const newMarks = prompt('Marks (+N):', String(item.marks || 2));
+            openModuleCreateModal({
+              title: 'Question Bank Item',
+              subtitle: `Editing question "${item.code}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'prompt', label: 'Question Prompt', type: 'textarea', rows: 3, required: true },
+                { key: 'subject', label: 'Subject', placeholder: 'e.g. Indian Polity, Odisha History', required: true },
+                { key: 'examTarget', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL', required: true },
+                { key: 'difficulty', label: 'Difficulty', type: 'select', options: ['Easy', 'Medium', 'Hard'] }
+              ],
+              onSave: (data) => {
+                item.prompt = data.prompt.trim();
+                item.subject = data.subject.trim();
+                item.examTarget = data.examTarget.trim();
+                item.difficulty = data.difficulty;
 
-            item.prompt = newPrompt.trim() || item.prompt;
-            if (newSubj !== null) item.subject = newSubj.trim();
-            if (newDiff !== null) item.difficulty = newDiff.trim();
-            if (newMarks !== null) item.marks = parseInt(newMarks, 10) || 1;
-
-            config.questions = qList;
-            window.CSOSuperStore.saveQuestionBankConfig(config);
-            renderQuestionBankWorkspace(root);
+                config.items = qList;
+                window.CSOSuperStore.saveQuestionBankConfig(config);
+                renderQuestionBankWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-question').addEventListener('click', () => {
-          const promptText = prompt('Enter Question Prompt:');
-          if (!promptText || !promptText.trim()) return;
-          const subject = prompt('Subject (e.g. Indian Polity, Odisha History, Quant):', 'Indian Polity') || 'Indian Polity';
-          const exam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL):', 'OPSC OAS') || 'OPSC OAS';
-          const diff = prompt('Difficulty (Easy / Medium / Hard):', 'Medium') || 'Medium';
-
-          const newId = 'Q-' + (1000 + qList.length + 1);
-          qList.push({
-            id: newId,
-            prompt: promptText.trim(),
-            subject: subject.trim(),
-            examTarget: exam.trim(),
-            difficulty: diff.trim(),
-            type: 'MCQ',
-            marks: 2,
-            options: ['Option A', 'Option B', 'Option C', 'Option D'],
-            correctOptionIndex: 0,
-            explanation: 'Verified solution reference.',
-            active: true
+          openModuleCreateModal({
+            title: 'Question Bank Item',
+            subtitle: 'Add curated MCQ question with verified explanation',
+            fields: [
+              { key: 'prompt', label: 'Question Prompt', type: 'textarea', rows: 3, placeholder: 'Enter complete question text...', required: true },
+              { key: 'subject', label: 'Subject', placeholder: 'e.g. Indian Polity, Odisha History', defaultValue: 'Indian Polity', required: true },
+              { key: 'examTarget', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL', defaultValue: 'OPSC OAS', required: true },
+              { key: 'difficulty', label: 'Difficulty', type: 'select', options: ['Easy', 'Medium', 'Hard'], defaultValue: 'Medium' }
+            ],
+            onSave: (data) => {
+              const newId = 'Q-' + (1000 + qList.length + 1);
+              qList.push({
+                id: newId,
+                code: 'POL-' + (100 + qList.length + 1),
+                prompt: data.prompt.trim(),
+                subject: data.subject.trim(),
+                examTarget: data.examTarget.trim(),
+                difficulty: data.difficulty,
+                type: 'MCQ',
+                marks: 2,
+                options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                correctOptionIndex: 0,
+                explanation: 'Standard verified answer explanation.',
+                active: true
+              });
+              config.items = qList;
+              window.CSOSuperStore.saveQuestionBankConfig(config);
+              renderQuestionBankWorkspace(root);
+            }
           });
-          config.questions = qList;
-          window.CSOSuperStore.saveQuestionBankConfig(config);
-          renderQuestionBankWorkspace(root);
         });
 
       } catch (err) {
@@ -21643,43 +22086,56 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = qzList[idx];
-            const newTitle = prompt('Quiz Title:', item.title);
-            if (newTitle === null) return;
-            const newCat = prompt('Exam Category:', item.examCategory || 'OPSC OAS');
-            const newCount = prompt('Question Count:', String(item.questionCount || 15));
-            const newDur = prompt('Duration (Minutes):', String(item.durationMinutes || 20));
+            openModuleCreateModal({
+              title: 'Quiz / Test Module',
+              subtitle: `Editing quiz "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Quiz Title', required: true },
+                { key: 'examCategory', label: 'Target Exam Category', placeholder: 'e.g. OPSC Prelims, OSSC CGL', required: true },
+                { key: 'questionCount', label: 'Total Questions', type: 'number', required: true },
+                { key: 'durationMinutes', label: 'Duration (Minutes)', type: 'number', required: true }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.examCategory = data.examCategory.trim();
+                item.questionCount = Number(data.questionCount) || item.questionCount;
+                item.durationMinutes = Number(data.durationMinutes) || item.durationMinutes;
 
-            item.title = newTitle.trim() || item.title;
-            if (newCat !== null) item.examCategory = newCat.trim();
-            if (newCount !== null) item.questionCount = parseInt(newCount, 10) || 15;
-            if (newDur !== null) item.durationMinutes = parseInt(newDur, 10) || 20;
-
-            config.quizzes = qzList;
-            window.CSOSuperStore.saveQuizBuilderConfig(config);
-            renderQuizBuilderWorkspace(root);
+                config.quizzes = qzList;
+                window.CSOSuperStore.saveQuizBuilderConfig(config);
+                renderQuizBuilderWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-quiz').addEventListener('click', () => {
-          const title = prompt('Enter Quiz Title:');
-          if (!title || !title.trim()) return;
-          const cat = prompt('Exam Category (e.g. OPSC OAS, OSSC CGL, OTET):', 'OPSC OAS') || 'OPSC OAS';
-          const qCount = prompt('Total Questions:', '15') || '15';
-          const dur = prompt('Duration in Minutes:', '20') || '20';
-
-          const newId = 'QUIZ-' + String(qzList.length + 1).padStart(2, '0');
-          qzList.push({
-            id: newId,
-            title: title.trim(),
-            questionCount: parseInt(qCount, 10) || 15,
-            durationMinutes: parseInt(dur, 10) || 20,
-            negativeMarkPerQuestion: 0.33,
-            examCategory: cat.trim(),
-            active: true
+          openModuleCreateModal({
+            title: 'Quiz / Test Module',
+            subtitle: 'Configure timed topical quiz or mini-test',
+            fields: [
+              { key: 'title', label: 'Quiz Title', placeholder: 'e.g. Daily Current Affairs Speed Test #42', required: true },
+              { key: 'examCategory', label: 'Target Exam Category', placeholder: 'e.g. OPSC Prelims, OSSC CGL', defaultValue: 'OPSC Prelims', required: true },
+              { key: 'questionCount', label: 'Total Questions', type: 'number', defaultValue: 15, required: true },
+              { key: 'durationMinutes', label: 'Duration in Minutes', type: 'number', defaultValue: 20, required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'QUIZ-' + String(qzList.length + 1).padStart(2, '0');
+              qzList.push({
+                id: newId,
+                title: data.title.trim(),
+                questionCount: Number(data.questionCount) || 15,
+                durationMinutes: Number(data.durationMinutes) || 20,
+                negativeMarkPerQuestion: 0.33,
+                examCategory: data.examCategory.trim(),
+                active: true
+              });
+              config.quizzes = qzList;
+              window.CSOSuperStore.saveQuizBuilderConfig(config);
+              renderQuizBuilderWorkspace(root);
+            }
           });
-          config.quizzes = qzList;
-          window.CSOSuperStore.saveQuizBuilderConfig(config);
-          renderQuizBuilderWorkspace(root);
         });
 
       } catch (err) {
@@ -21939,44 +22395,57 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = tList[idx];
-            const newTitle = prompt('Mock Test Title:', item.title);
-            if (newTitle === null) return;
-            const newQs = prompt('Total Questions:', String(item.totalQuestions || 100));
-            const newScore = prompt('Max Score:', String(item.maxScore || 200));
-            const newTime = prompt('Time Limit (Minutes):', String(item.timeLimitMinutes || 120));
+            openModuleCreateModal({
+              title: 'Full-Length Mock Test',
+              subtitle: `Editing mock test "${item.title}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'title', label: 'Mock Test Title', required: true },
+                { key: 'totalQuestions', label: 'Total Questions', type: 'number', required: true },
+                { key: 'maxScore', label: 'Max Score', type: 'number', required: true },
+                { key: 'timeLimitMinutes', label: 'Time Limit (Minutes)', type: 'number', required: true }
+              ],
+              onSave: (data) => {
+                item.title = data.title.trim();
+                item.totalQuestions = Number(data.totalQuestions) || item.totalQuestions;
+                item.maxScore = Number(data.maxScore) || item.maxScore;
+                item.timeLimitMinutes = Number(data.timeLimitMinutes) || item.timeLimitMinutes;
 
-            item.title = newTitle.trim() || item.title;
-            if (newQs !== null) item.totalQuestions = parseInt(newQs, 10) || 100;
-            if (newScore !== null) item.maxScore = parseInt(newScore, 10) || 200;
-            if (newTime !== null) item.timeLimitMinutes = parseInt(newTime, 10) || 120;
-
-            config.tests = tList;
-            window.CSOSuperStore.saveMockTestsConfig(config);
-            renderMockTestsWorkspace(root);
+                config.tests = tList;
+                window.CSOSuperStore.saveMockTestsConfig(config);
+                renderMockTestsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-mock-test').addEventListener('click', () => {
-          const title = prompt('Enter Mock Test Title:');
-          if (!title || !title.trim()) return;
-          const qs = prompt('Total Questions:', '100') || '100';
-          const score = prompt('Max Score:', '200') || '200';
-          const time = prompt('Duration in Minutes:', '120') || '120';
-
-          const newId = 'MOCK-' + String(tList.length + 1).padStart(2, '0');
-          tList.push({
-            id: newId,
-            title: title.trim(),
-            totalQuestions: parseInt(qs, 10) || 100,
-            maxScore: parseInt(score, 10) || 200,
-            timeLimitMinutes: parseInt(time, 10) || 120,
-            negativeMarkRatio: '1/3rd (0.66 marks)',
-            testType: 'Full-Length Mock',
-            active: true
+          openModuleCreateModal({
+            title: 'Full-Length Mock Test',
+            subtitle: 'Schedule realistic simulated state examination paper',
+            fields: [
+              { key: 'title', label: 'Mock Test Title', placeholder: 'e.g. OPSC OAS Prelims Mock Exam 05 (GS Paper I)', required: true },
+              { key: 'totalQuestions', label: 'Total Questions', type: 'number', defaultValue: 100, required: true },
+              { key: 'maxScore', label: 'Max Score', type: 'number', defaultValue: 200, required: true },
+              { key: 'timeLimitMinutes', label: 'Duration in Minutes', type: 'number', defaultValue: 120, required: true }
+            ],
+            onSave: (data) => {
+              const newId = 'MOCK-' + String(tList.length + 1).padStart(2, '0');
+              tList.push({
+                id: newId,
+                title: data.title.trim(),
+                totalQuestions: Number(data.totalQuestions) || 100,
+                maxScore: Number(data.maxScore) || 200,
+                timeLimitMinutes: Number(data.timeLimitMinutes) || 120,
+                negativeMarkRatio: '1/3rd (0.66 marks)',
+                testType: 'Full-Length Mock',
+                active: true
+              });
+              config.tests = tList;
+              window.CSOSuperStore.saveMockTestsConfig(config);
+              renderMockTestsWorkspace(root);
+            }
           });
-          config.tests = tList;
-          window.CSOSuperStore.saveMockTestsConfig(config);
-          renderMockTestsWorkspace(root);
         });
 
       } catch (err) {
@@ -22237,39 +22706,52 @@ async function loadMasterNavigation() {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.idx, 10);
             const item = kList[idx];
-            const newName = prompt('Exam Name:', item.examName);
-            if (newName === null) return;
-            const newStatus = prompt('Key Status:', item.answerKeyStatus || 'Final Ratified');
-            const newDisp = prompt('Disputed Questions Count:', String(item.disputedQuestionsCount || 0));
+            openModuleCreateModal({
+              title: 'Answer Key & Explanation',
+              subtitle: `Editing answer key for "${item.examName}" (${item.id})`,
+              initialData: item,
+              fields: [
+                { key: 'examName', label: 'Exam Name', required: true },
+                { key: 'answerKeyStatus', label: 'Key Status', type: 'select', options: ['Provisional', 'Final Ratified', 'Official Gazette Final'] },
+                { key: 'disputedQuestionsCount', label: 'Disputed Questions Count', type: 'number' }
+              ],
+              onSave: (data) => {
+                item.examName = data.examName.trim();
+                item.answerKeyStatus = data.answerKeyStatus;
+                if (data.disputedQuestionsCount !== undefined) item.disputedQuestionsCount = Number(data.disputedQuestionsCount);
 
-            item.examName = newName.trim() || item.examName;
-            if (newStatus !== null) item.answerKeyStatus = newStatus.trim();
-            if (newDisp !== null) item.disputedQuestionsCount = parseInt(newDisp, 10) || 0;
-
-            config.keysRegistry = kList;
-            window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
-            renderAnswerKeysExplanationsWorkspace(root);
+                config.keysRegistry = kList;
+                window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
+                renderAnswerKeysExplanationsWorkspace(root);
+              }
+            });
           });
         });
 
         root.querySelector('#btn-add-key-entry').addEventListener('click', () => {
-          const name = prompt('Enter Examination Name:');
-          if (!name || !name.trim()) return;
-          const status = prompt('Key Status (Provisional / Final Ratified / Official Gazette Final):', 'Provisional') || 'Provisional';
-
-          const newId = 'KEY-' + String(kList.length + 1).padStart(2, '0');
-          kList.push({
-            id: newId,
-            examName: name.trim(),
-            answerKeyStatus: status.trim(),
-            releaseDate: new Date().toISOString().split('T')[0],
-            disputedQuestionsCount: 0,
-            revisedMarksAwarded: false,
-            active: true
+          openModuleCreateModal({
+            title: 'Answer Key & Explanation',
+            subtitle: 'Index commission-released official key and question objection tracker',
+            fields: [
+              { key: 'examName', label: 'Examination Name', placeholder: 'e.g. OSSC CGL 2026 Preliminary Exam', required: true },
+              { key: 'answerKeyStatus', label: 'Key Status', type: 'select', options: ['Provisional', 'Final Ratified', 'Official Gazette Final'], defaultValue: 'Provisional' }
+            ],
+            onSave: (data) => {
+              const newId = 'KEY-' + String(kList.length + 1).padStart(2, '0');
+              kList.push({
+                id: newId,
+                examName: data.examName.trim(),
+                answerKeyStatus: data.answerKeyStatus,
+                releaseDate: new Date().toISOString().split('T')[0],
+                disputedQuestionsCount: 0,
+                revisedMarksAwarded: false,
+                active: true
+              });
+              config.keysRegistry = kList;
+              window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
+              renderAnswerKeysExplanationsWorkspace(root);
+            }
           });
-          config.keysRegistry = kList;
-          window.CSOSuperStore.saveAnswerKeysExplanationsConfig(config);
-          renderAnswerKeysExplanationsWorkspace(root);
         });
 
       } catch (err) {
@@ -22499,31 +22981,36 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-collection');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const title = prompt('Enter Bundle / Collection Title:');
-              if (!title) return;
-              const category = prompt('Category (e.g., Civil Services, Staff Selection, General Studies):', 'Civil Services') || 'Civil Services';
-              const targetExam = prompt('Target Exam (e.g., OPSC OAS, OSSC CGL, All Odisha Exams):', 'OPSC OAS') || 'All Odisha Exams';
-              const itemCount = parseInt(prompt('Total Resource Count in Bundle:', '10') || '10', 10);
-              const totalSize = prompt('Approximate Total Download Size (e.g., 35.5 MB):', '35.0 MB') || '35.0 MB';
-              const badge = prompt('Tag Badge (e.g., Flagship Kit, High Yield, State Heritage):', 'Flagship Kit') || 'Flagship Kit';
-
-              const newKit = {
-                id: 'COL-' + Math.floor(10 + Math.random() * 90),
-                title: title.trim(),
-                category: category.trim(),
-                targetExam: targetExam.trim(),
-                itemCount: isNaN(itemCount) ? 10 : itemCount,
-                totalSize: totalSize.trim(),
-                badge: badge.trim(),
-                downloadCount: 0,
-                active: true
-              };
-
-              collections.unshift(newKit);
-              config.collections = collections;
-              store.saveResourceCollectionsConfig(config);
-              showToast('Resource Bundle created successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Resource Collection Bundle',
+                subtitle: 'Bundle multiple study materials into a curated preparation kit',
+                fields: [
+                  { key: 'title', label: 'Bundle Title', placeholder: 'e.g. OPSC OAS Prelims 2026 Ultimate Kit', required: true },
+                  { key: 'category', label: 'Category', placeholder: 'e.g. Civil Services, Staff Selection', defaultValue: 'Civil Services', required: true },
+                  { key: 'targetExam', label: 'Target Exam', placeholder: 'e.g. OPSC OAS, OSSC CGL', defaultValue: 'OPSC OAS', required: true },
+                  { key: 'itemCount', label: 'Total Resource Count', type: 'number', defaultValue: 10, required: true },
+                  { key: 'totalSize', label: 'Total Download Size', placeholder: 'e.g. 35.0 MB', defaultValue: '35.0 MB', required: true },
+                  { key: 'badge', label: 'Tag Badge', placeholder: 'e.g. Flagship Kit, High Yield', defaultValue: 'Flagship Kit' }
+                ],
+                onSave: (data) => {
+                  const newKit = {
+                    id: 'COL-' + Math.floor(10 + Math.random() * 90),
+                    title: data.title.trim(),
+                    category: data.category.trim(),
+                    targetExam: data.targetExam.trim(),
+                    itemCount: Number(data.itemCount) || 10,
+                    totalSize: data.totalSize.trim(),
+                    badge: (data.badge || 'Flagship Kit').trim(),
+                    downloadCount: 0,
+                    active: true
+                  };
+                  collections.unshift(newKit);
+                  config.collections = collections;
+                  store.saveResourceCollectionsConfig(config);
+                  showToast('Resource Bundle created successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -22547,25 +23034,32 @@ async function loadMasterNavigation() {
               const item = collections.find(c => c.id === id);
               if (!item) return;
 
-              const title = prompt('Edit Kit Title:', item.title);
-              if (title === null) return;
-              const category = prompt('Edit Category:', item.category) || item.category;
-              const targetExam = prompt('Edit Target Exam:', item.targetExam) || item.targetExam;
-              const itemCount = parseInt(prompt('Edit Resource Count:', String(item.itemCount || 10)) || '10', 10);
-              const totalSize = prompt('Edit Total Size:', item.totalSize) || item.totalSize;
-              const badge = prompt('Edit Badge:', item.badge) || item.badge;
+              openModuleCreateModal({
+                title: 'Resource Collection Bundle',
+                subtitle: `Editing bundle "${item.title}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'title', label: 'Bundle Title', required: true },
+                  { key: 'category', label: 'Category', required: true },
+                  { key: 'targetExam', label: 'Target Exam', required: true },
+                  { key: 'itemCount', label: 'Resource Count', type: 'number', required: true },
+                  { key: 'totalSize', label: 'Total Download Size', required: true },
+                  { key: 'badge', label: 'Tag Badge' }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  item.category = data.category.trim();
+                  item.targetExam = data.targetExam.trim();
+                  item.itemCount = Number(data.itemCount) || item.itemCount;
+                  item.totalSize = data.totalSize.trim();
+                  if (data.badge) item.badge = data.badge.trim();
 
-              item.title = title.trim();
-              item.category = category.trim();
-              item.targetExam = targetExam.trim();
-              item.itemCount = isNaN(itemCount) ? item.itemCount : itemCount;
-              item.totalSize = totalSize.trim();
-              item.badge = badge.trim();
-
-              config.collections = collections;
-              store.saveResourceCollectionsConfig(config);
-              showToast('Bundle details updated.', 'success');
-              render();
+                  config.collections = collections;
+                  store.saveResourceCollectionsConfig(config);
+                  showToast('Bundle details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -22872,26 +23366,31 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-tier');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Enter Access Tier Name:');
-              if (!name) return;
-              const userGroup = prompt('Target User Group (e.g. Registered Citizen, Student Member, Premium):', 'Registered Citizen') || 'Registered Citizen';
-              const limit = parseInt(prompt('Daily Quota in MB (e.g., 500, 1024, 2048):', '1024') || '1024', 10);
-              const formatsStr = prompt('Allowed formats comma-separated (e.g. PDF, EPUB, ZIP):', 'PDF, EPUB') || 'PDF';
-
-              const newTier = {
-                id: 'TIER-' + Math.floor(10 + Math.random() * 90),
-                name: name.trim(),
-                userGroup: userGroup.trim(),
-                dailyLimitMb: isNaN(limit) ? 1024 : limit,
-                allowedFormats: formatsStr.split(',').map(f => f.trim()).filter(Boolean),
-                active: true
-              };
-
-              tiers.push(newTier);
-              config.accessTiers = tiers;
-              store.saveDownloadsRulesConfig(config);
-              showToast('Access tier created successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Download Access Tier',
+                subtitle: 'Configure bandwidth and download quota thresholds for user roles',
+                fields: [
+                  { key: 'name', label: 'Access Tier Name', placeholder: 'e.g. Standard Citizen Free Tier', required: true },
+                  { key: 'userGroup', label: 'Target User Group', placeholder: 'e.g. Registered Citizen, Student Member', defaultValue: 'Registered Citizen', required: true },
+                  { key: 'dailyLimitMb', label: 'Daily Quota in MB', type: 'number', defaultValue: 1024, required: true },
+                  { key: 'allowedFormats', label: 'Allowed Formats (comma-separated)', placeholder: 'e.g. PDF, EPUB, ZIP', defaultValue: 'PDF, EPUB', required: true }
+                ],
+                onSave: (data) => {
+                  const newTier = {
+                    id: 'TIER-' + Math.floor(10 + Math.random() * 90),
+                    name: data.name.trim(),
+                    userGroup: data.userGroup.trim(),
+                    dailyLimitMb: Number(data.dailyLimitMb) || 1024,
+                    allowedFormats: (data.allowedFormats || 'PDF').split(',').map(f => f.trim()).filter(Boolean),
+                    active: true
+                  };
+                  tiers.push(newTier);
+                  config.accessTiers = tiers;
+                  store.saveDownloadsRulesConfig(config);
+                  showToast('Access tier created successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -22915,22 +23414,33 @@ async function loadMasterNavigation() {
               const item = tiers.find(t => t.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Tier Name:', item.name);
-              if (name === null) return;
-              const userGroup = prompt('Edit User Group:', item.userGroup) || item.userGroup;
-              const limit = parseInt(prompt('Edit Daily Limit (MB):', String(item.dailyLimitMb || 1024)) || '1024', 10);
-              const currentFormats = Array.isArray(item.allowedFormats) ? item.allowedFormats.join(', ') : item.allowedFormats;
-              const formatsStr = prompt('Edit Allowed Formats (comma-separated):', currentFormats) || 'PDF';
+              openModuleCreateModal({
+                title: 'Download Access Tier',
+                subtitle: `Editing tier "${item.name}" (${item.id})`,
+                initialData: {
+                  name: item.name,
+                  userGroup: item.userGroup,
+                  dailyLimitMb: item.dailyLimitMb,
+                  allowedFormats: Array.isArray(item.allowedFormats) ? item.allowedFormats.join(', ') : item.allowedFormats
+                },
+                fields: [
+                  { key: 'name', label: 'Access Tier Name', required: true },
+                  { key: 'userGroup', label: 'Target User Group', required: true },
+                  { key: 'dailyLimitMb', label: 'Daily Quota (MB)', type: 'number', required: true },
+                  { key: 'allowedFormats', label: 'Allowed Formats (comma-separated)', required: true }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.userGroup = data.userGroup.trim();
+                  item.dailyLimitMb = Number(data.dailyLimitMb) || item.dailyLimitMb;
+                  item.allowedFormats = (data.allowedFormats || 'PDF').split(',').map(f => f.trim()).filter(Boolean);
 
-              item.name = name.trim();
-              item.userGroup = userGroup.trim();
-              item.dailyLimitMb = isNaN(limit) ? item.dailyLimitMb : limit;
-              item.allowedFormats = formatsStr.split(',').map(f => f.trim()).filter(Boolean);
-
-              config.accessTiers = tiers;
-              store.saveDownloadsRulesConfig(config);
-              showToast('Tier details updated.', 'success');
-              render();
+                  config.accessTiers = tiers;
+                  store.saveDownloadsRulesConfig(config);
+                  showToast('Tier details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -23227,28 +23737,33 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-scheme');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Enter Scheme Name:');
-              if (!name) return;
-              const dept = prompt('Department (e.g. Higher Education, Agriculture, Skill Development):', 'General Administration') || 'General Administration';
-              const beneficiary = prompt('Beneficiary Group (e.g. Students, Small Farmers, Women):', 'All Citizens') || 'All Citizens';
-              const assistance = prompt('Financial Assistance Details (e.g., Rs. 10,000 / Free Tuition):', 'Rs. 5,000 / year') || 'N/A';
-              const mode = prompt('Application Mode (e.g. SAMS Odisha Portal, Online DBT, Mo Seva Kendra):', 'Online Portal') || 'Online Portal';
-
-              const newScheme = {
-                id: 'SCHM-' + Math.floor(10 + Math.random() * 90),
-                name: name.trim(),
-                department: dept.trim(),
-                beneficiaryGroup: beneficiary.trim(),
-                financialAssistance: assistance.trim(),
-                applicationMode: mode.trim(),
-                active: true
-              };
-
-              schemes.unshift(newScheme);
-              config.schemes = schemes;
-              store.saveGovernmentSchemesConfig(config);
-              showToast('Government scheme added successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Government Scheme',
+                subtitle: 'Register state welfare scheme, benefit tier, and disbursement mechanism',
+                fields: [
+                  { key: 'name', label: 'Scheme Name', placeholder: 'e.g. KALIA Scholarship Scheme', required: true },
+                  { key: 'department', label: 'Department', placeholder: 'e.g. Higher Education, Agriculture', defaultValue: 'Higher Education', required: true },
+                  { key: 'beneficiaryGroup', label: 'Beneficiary Group', placeholder: 'e.g. Students, Small Farmers, Women', defaultValue: 'Students', required: true },
+                  { key: 'financialAssistance', label: 'Financial Assistance', placeholder: 'e.g. Rs. 10,000 / year or Free Tuition', defaultValue: 'Rs. 10,000 / year', required: true },
+                  { key: 'applicationMode', label: 'Application Mode', placeholder: 'e.g. SAMS Odisha Portal, Online DBT', defaultValue: 'Online Portal', required: true }
+                ],
+                onSave: (data) => {
+                  const newScheme = {
+                    id: 'SCHM-' + Math.floor(10 + Math.random() * 90),
+                    name: data.name.trim(),
+                    department: data.department.trim(),
+                    beneficiaryGroup: data.beneficiaryGroup.trim(),
+                    financialAssistance: data.financialAssistance.trim(),
+                    applicationMode: data.applicationMode.trim(),
+                    active: true
+                  };
+                  schemes.unshift(newScheme);
+                  config.schemes = schemes;
+                  store.saveGovernmentSchemesConfig(config);
+                  showToast('Government scheme added successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -23272,23 +23787,30 @@ async function loadMasterNavigation() {
               const item = schemes.find(s => s.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Scheme Name:', item.name);
-              if (name === null) return;
-              const dept = prompt('Edit Department:', item.department) || item.department;
-              const beneficiary = prompt('Edit Beneficiary Group:', item.beneficiaryGroup) || item.beneficiaryGroup;
-              const assistance = prompt('Edit Financial Assistance:', item.financialAssistance) || item.financialAssistance;
-              const mode = prompt('Edit Application Mode:', item.applicationMode) || item.applicationMode;
+              openModuleCreateModal({
+                title: 'Government Scheme',
+                subtitle: `Editing scheme "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Scheme Name', required: true },
+                  { key: 'department', label: 'Department', required: true },
+                  { key: 'beneficiaryGroup', label: 'Beneficiary Group', required: true },
+                  { key: 'financialAssistance', label: 'Financial Assistance', required: true },
+                  { key: 'applicationMode', label: 'Application Mode', required: true }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.department = data.department.trim();
+                  item.beneficiaryGroup = data.beneficiaryGroup.trim();
+                  item.financialAssistance = data.financialAssistance.trim();
+                  item.applicationMode = data.applicationMode.trim();
 
-              item.name = name.trim();
-              item.department = dept.trim();
-              item.beneficiaryGroup = beneficiary.trim();
-              item.financialAssistance = assistance.trim();
-              item.applicationMode = mode.trim();
-
-              config.schemes = schemes;
-              store.saveGovernmentSchemesConfig(config);
-              showToast('Scheme details updated.', 'success');
-              render();
+                  config.schemes = schemes;
+                  store.saveGovernmentSchemesConfig(config);
+                  showToast('Scheme details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -23578,30 +24100,35 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-scholarship');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Enter Scholarship Name:');
-              if (!name) return;
-              const level = prompt('Education Level (e.g. Higher Education, Post-Matric, Undergraduate):', 'Higher Education') || 'Higher Education';
-              const award = prompt('Award / Financial Value:', 'Rs. 10,000 / Year') || 'Rs. 10,000 / Year';
-              const eligibility = prompt('Eligibility Criteria:', 'Merit based on +2/+3 marks') || 'General';
-              const deadline = prompt('Application Deadline (YYYY-MM-DD):', '2026-12-31') || '2026-12-31';
-              const portalUrl = prompt('Official Portal URL:', 'https://scholarship.odisha.gov.in') || 'https://scholarship.odisha.gov.in';
-
-              const newScholarship = {
-                id: 'SCHOL-' + Math.floor(10 + Math.random() * 90),
-                name: name.trim(),
-                level: level.trim(),
-                awardAmount: award.trim(),
-                eligibility: eligibility.trim(),
-                deadline: deadline.trim(),
-                portalUrl: portalUrl.trim(),
-                active: true
-              };
-
-              scholarships.unshift(newScholarship);
-              config.scholarships = scholarships;
-              store.saveScholarshipsConfig(config);
-              showToast('Scholarship created successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'State Scholarship',
+                subtitle: 'Publish academic endowment, grant, or financial stipend opportunity',
+                fields: [
+                  { key: 'name', label: 'Scholarship Name', placeholder: 'e.g. Medhabruti Higher Education Merit Award', required: true },
+                  { key: 'level', label: 'Education Level', placeholder: 'e.g. Higher Education, Post-Matric', defaultValue: 'Higher Education', required: true },
+                  { key: 'awardAmount', label: 'Award / Financial Value', placeholder: 'e.g. Rs. 10,000 / Year', defaultValue: 'Rs. 10,000 / Year', required: true },
+                  { key: 'eligibility', label: 'Eligibility Criteria', placeholder: 'e.g. Merit based on +2/+3 marks', defaultValue: 'Merit based on +2/+3 marks', required: true },
+                  { key: 'deadline', label: 'Application Deadline', type: 'date', defaultValue: '2026-12-31', required: true },
+                  { key: 'portalUrl', label: 'Official Portal URL', placeholder: 'https://scholarship.odisha.gov.in', defaultValue: 'https://scholarship.odisha.gov.in', required: true }
+                ],
+                onSave: (data) => {
+                  const newScholarship = {
+                    id: 'SCHOL-' + Math.floor(10 + Math.random() * 90),
+                    name: data.name.trim(),
+                    level: data.level.trim(),
+                    awardAmount: data.awardAmount.trim(),
+                    eligibility: data.eligibility.trim(),
+                    deadline: data.deadline.trim(),
+                    portalUrl: data.portalUrl.trim(),
+                    active: true
+                  };
+                  scholarships.unshift(newScholarship);
+                  config.scholarships = scholarships;
+                  store.saveScholarshipsConfig(config);
+                  showToast('Scholarship created successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -23625,25 +24152,32 @@ async function loadMasterNavigation() {
               const item = scholarships.find(s => s.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Scholarship Name:', item.name);
-              if (name === null) return;
-              const level = prompt('Edit Education Level:', item.level) || item.level;
-              const award = prompt('Edit Award Amount:', item.awardAmount) || item.awardAmount;
-              const eligibility = prompt('Edit Eligibility:', item.eligibility) || item.eligibility;
-              const deadline = prompt('Edit Deadline (YYYY-MM-DD):', item.deadline) || item.deadline;
-              const portalUrl = prompt('Edit Portal URL:', item.portalUrl) || item.portalUrl;
+              openModuleCreateModal({
+                title: 'State Scholarship',
+                subtitle: `Editing scholarship "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Scholarship Name', required: true },
+                  { key: 'level', label: 'Education Level', required: true },
+                  { key: 'awardAmount', label: 'Award Amount', required: true },
+                  { key: 'eligibility', label: 'Eligibility', required: true },
+                  { key: 'deadline', label: 'Deadline', type: 'date', required: true },
+                  { key: 'portalUrl', label: 'Portal URL', required: true }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.level = data.level.trim();
+                  item.awardAmount = data.awardAmount.trim();
+                  item.eligibility = data.eligibility.trim();
+                  item.deadline = data.deadline.trim();
+                  item.portalUrl = data.portalUrl.trim();
 
-              item.name = name.trim();
-              item.level = level.trim();
-              item.awardAmount = award.trim();
-              item.eligibility = eligibility.trim();
-              item.deadline = deadline.trim();
-              item.portalUrl = portalUrl.trim();
-
-              config.scholarships = scholarships;
-              store.saveScholarshipsConfig(config);
-              showToast('Scholarship updated successfully.', 'success');
-              render();
+                  config.scholarships = scholarships;
+                  store.saveScholarshipsConfig(config);
+                  showToast('Scholarship updated successfully.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -23926,29 +24460,34 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-career');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const title = prompt('Enter Career Title (e.g. Sub-Inspector of Police):');
-              if (!title) return;
-              const stream = prompt('Professional Stream (e.g. Police & Law Enforcement, Engineering, Healthcare):', 'Public Services') || 'Public Services';
-              const qual = prompt('Minimum Qualification:', 'Bachelor Degree') || 'Graduate';
-              const exam = prompt('Entry Examination / Selection Mode:', 'State Selection Board Exam') || 'Competitive Exam';
-              const salary = prompt('Pay Matrix / Salary Scale:', 'Rs. 35,400 (Level 9)') || 'Level 9';
-
-              const newPath = {
-                id: 'CAR-' + Math.floor(10 + Math.random() * 90),
-                title: title.trim(),
-                stream: stream.trim(),
-                minQualification: qual.trim(),
-                entryExam: exam.trim(),
-                typicalSalary: salary.trim(),
-                demandLevel: 'High',
-                active: true
-              };
-
-              careerPaths.unshift(newPath);
-              config.careerPaths = careerPaths;
-              store.saveCareerExplorerConfig(config);
-              showToast('Career path created successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Career Exploration Path',
+                subtitle: 'Profile state employment trajectory, pay matrix, and qualification roadmap',
+                fields: [
+                  { key: 'title', label: 'Career Title', placeholder: 'e.g. Sub-Inspector of Police', required: true },
+                  { key: 'stream', label: 'Professional Stream', placeholder: 'e.g. Police & Law Enforcement', defaultValue: 'Public Services', required: true },
+                  { key: 'minQualification', label: 'Minimum Qualification', placeholder: 'e.g. Bachelor Degree', defaultValue: 'Bachelor Degree', required: true },
+                  { key: 'entryExam', label: 'Entry Examination / Selection Mode', placeholder: 'e.g. Odisha Police SI Exam', defaultValue: 'State Selection Board Exam', required: true },
+                  { key: 'typicalSalary', label: 'Pay Matrix / Salary Scale', placeholder: 'e.g. Rs. 35,400 (Level 9)', defaultValue: 'Rs. 35,400 (Level 9)', required: true }
+                ],
+                onSave: (data) => {
+                  const newPath = {
+                    id: 'CAR-' + Math.floor(10 + Math.random() * 90),
+                    title: data.title.trim(),
+                    stream: data.stream.trim(),
+                    minQualification: data.minQualification.trim(),
+                    entryExam: data.entryExam.trim(),
+                    typicalSalary: data.typicalSalary.trim(),
+                    demandLevel: 'High',
+                    active: true
+                  };
+                  careerPaths.unshift(newPath);
+                  config.careerPaths = careerPaths;
+                  store.saveCareerExplorerConfig(config);
+                  showToast('Career path created successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -23972,23 +24511,30 @@ async function loadMasterNavigation() {
               const item = careerPaths.find(c => c.id === id);
               if (!item) return;
 
-              const title = prompt('Edit Career Title:', item.title);
-              if (title === null) return;
-              const stream = prompt('Edit Stream:', item.stream) || item.stream;
-              const qual = prompt('Edit Minimum Qualification:', item.minQualification) || item.minQualification;
-              const exam = prompt('Edit Entry Exam:', item.entryExam) || item.entryExam;
-              const salary = prompt('Edit Salary Scale:', item.typicalSalary) || item.typicalSalary;
+              openModuleCreateModal({
+                title: 'Career Exploration Path',
+                subtitle: `Editing career "${item.title}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'title', label: 'Career Title', required: true },
+                  { key: 'stream', label: 'Professional Stream', required: true },
+                  { key: 'minQualification', label: 'Minimum Qualification', required: true },
+                  { key: 'entryExam', label: 'Entry Examination', required: true },
+                  { key: 'typicalSalary', label: 'Salary Scale', required: true }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  item.stream = data.stream.trim();
+                  item.minQualification = data.minQualification.trim();
+                  item.entryExam = data.entryExam.trim();
+                  item.typicalSalary = data.typicalSalary.trim();
 
-              item.title = title.trim();
-              item.stream = stream.trim();
-              item.minQualification = qual.trim();
-              item.entryExam = exam.trim();
-              item.typicalSalary = salary.trim();
-
-              config.careerPaths = careerPaths;
-              store.saveCareerExplorerConfig(config);
-              showToast('Career details updated.', 'success');
-              render();
+                  config.careerPaths = careerPaths;
+                  store.saveCareerExplorerConfig(config);
+                  showToast('Career details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -24253,26 +24799,31 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-widget');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Enter Widget Name:');
-              if (!name) return;
-              const type = prompt('Component Type (e.g. Card, Tracker, Countdown, Leaderboard):', 'Card') || 'Card';
-              const audience = prompt('Target Audience:', 'All Students') || 'All Students';
-              const refresh = parseInt(prompt('Refresh Rate in minutes (0 for on demand):', '60') || '60', 10);
-
-              const newWidget = {
-                id: 'WGT-' + Math.floor(10 + Math.random() * 90),
-                name: name.trim(),
-                type: type.trim(),
-                targetAudience: audience.trim(),
-                refreshRateMinutes: isNaN(refresh) ? 60 : refresh,
-                active: true
-              };
-
-              widgets.unshift(newWidget);
-              config.widgets = widgets;
-              store.saveStudentDashboardConfig(config);
-              showToast('Dashboard widget added successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Student Dashboard Widget',
+                subtitle: 'Configure interactive widget for student portal home display',
+                fields: [
+                  { key: 'name', label: 'Widget Name', placeholder: 'e.g. Upcoming Exam Countdown Tracker', required: true },
+                  { key: 'type', label: 'Component Type', placeholder: 'e.g. Card, Tracker, Countdown, Leaderboard', defaultValue: 'Card', required: true },
+                  { key: 'targetAudience', label: 'Target Audience', placeholder: 'e.g. All Students, OPSC Aspirants', defaultValue: 'All Students', required: true },
+                  { key: 'refreshRateMinutes', label: 'Refresh Rate in Minutes', type: 'number', defaultValue: 60, required: true }
+                ],
+                onSave: (data) => {
+                  const newWidget = {
+                    id: 'WGT-' + Math.floor(10 + Math.random() * 90),
+                    name: data.name.trim(),
+                    type: data.type.trim(),
+                    targetAudience: data.targetAudience.trim(),
+                    refreshRateMinutes: Number(data.refreshRateMinutes) || 60,
+                    active: true
+                  };
+                  widgets.unshift(newWidget);
+                  config.widgets = widgets;
+                  store.saveStudentDashboardConfig(config);
+                  showToast('Dashboard widget added successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -24296,21 +24847,28 @@ async function loadMasterNavigation() {
               const item = widgets.find(w => w.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Widget Name:', item.name);
-              if (name === null) return;
-              const type = prompt('Edit Component Type:', item.type) || item.type;
-              const audience = prompt('Edit Target Audience:', item.targetAudience) || item.targetAudience;
-              const refresh = parseInt(prompt('Edit Refresh Rate (mins):', String(item.refreshRateMinutes || 60)) || '60', 10);
+              openModuleCreateModal({
+                title: 'Student Dashboard Widget',
+                subtitle: `Editing widget "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Widget Name', required: true },
+                  { key: 'type', label: 'Component Type', required: true },
+                  { key: 'targetAudience', label: 'Target Audience', required: true },
+                  { key: 'refreshRateMinutes', label: 'Refresh Rate (Mins)', type: 'number', required: true }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.type = data.type.trim();
+                  item.targetAudience = data.targetAudience.trim();
+                  item.refreshRateMinutes = Number(data.refreshRateMinutes) || item.refreshRateMinutes;
 
-              item.name = name.trim();
-              item.type = type.trim();
-              item.targetAudience = audience.trim();
-              item.refreshRateMinutes = isNaN(refresh) ? item.refreshRateMinutes : refresh;
-
-              config.widgets = widgets;
-              store.saveStudentDashboardConfig(config);
-              showToast('Widget details updated.', 'success');
-              render();
+                  config.widgets = widgets;
+                  store.saveStudentDashboardConfig(config);
+                  showToast('Widget details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -24600,27 +25158,32 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-tool');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Enter Tool Name:');
-              if (!name) return;
-              const cat = prompt('Category (e.g. Exam Utilities, Document Wizards, Academic Converters):', 'Exam Utilities') || 'Exam Utilities';
-              const route = prompt('Embedded Route / URL:', '/education-explorer/#calc') || '/education-explorer';
-              const version = prompt('Engine Version:', '1.0') || '1.0';
-
-              const newTool = {
-                id: 'TOOL-' + Math.floor(10 + Math.random() * 90),
-                name: name.trim(),
-                category: cat.trim(),
-                version: version.trim(),
-                embeddedRoute: route.trim(),
-                status: 'Live',
-                active: true
-              };
-
-              tools.unshift(newTool);
-              config.tools = tools;
-              store.saveEducationalToolsConfig(config);
-              showToast('Educational tool created successfully.', 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Educational Tool',
+                subtitle: 'Register interactive student utility, calculator, or examination wizard',
+                fields: [
+                  { key: 'name', label: 'Tool Name', placeholder: 'e.g. Cutoff & Rank Estimator Wizard', required: true },
+                  { key: 'category', label: 'Category', placeholder: 'e.g. Exam Utilities, Academic Converters', defaultValue: 'Exam Utilities', required: true },
+                  { key: 'embeddedRoute', label: 'Embedded Route / URL', placeholder: 'e.g. /education-explorer/#calc', defaultValue: '/education-explorer/#calc', required: true },
+                  { key: 'version', label: 'Engine Version', placeholder: 'e.g. 1.0', defaultValue: '1.0', required: true }
+                ],
+                onSave: (data) => {
+                  const newTool = {
+                    id: 'TOOL-' + Math.floor(10 + Math.random() * 90),
+                    name: data.name.trim(),
+                    category: data.category.trim(),
+                    version: data.version.trim(),
+                    embeddedRoute: data.embeddedRoute.trim(),
+                    status: 'Live',
+                    active: true
+                  };
+                  tools.unshift(newTool);
+                  config.tools = tools;
+                  store.saveEducationalToolsConfig(config);
+                  showToast('Educational tool created successfully.', 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -24644,21 +25207,28 @@ async function loadMasterNavigation() {
               const item = tools.find(t => t.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Tool Name:', item.name);
-              if (name === null) return;
-              const cat = prompt('Edit Category:', item.category) || item.category;
-              const route = prompt('Edit Route:', item.embeddedRoute) || item.embeddedRoute;
-              const version = prompt('Edit Version:', item.version) || item.version;
+              openModuleCreateModal({
+                title: 'Educational Tool',
+                subtitle: `Editing tool "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Tool Name', required: true },
+                  { key: 'category', label: 'Category', required: true },
+                  { key: 'embeddedRoute', label: 'Embedded Route / URL', required: true },
+                  { key: 'version', label: 'Engine Version', required: true }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.category = data.category.trim();
+                  item.embeddedRoute = data.embeddedRoute.trim();
+                  item.version = data.version.trim();
 
-              item.name = name.trim();
-              item.category = cat.trim();
-              item.embeddedRoute = route.trim();
-              item.version = version.trim();
-
-              config.tools = tools;
-              store.saveEducationalToolsConfig(config);
-              showToast('Tool details updated.', 'success');
-              render();
+                  config.tools = tools;
+                  store.saveEducationalToolsConfig(config);
+                  showToast('Tool details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -24945,31 +25515,35 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-category');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Category Name (e.g. Current Affairs & News):');
-              if (!name || !name.trim()) return;
-
-              const code = prompt('Category Code (e.g. NEWS):', 'CAT') || 'CAT';
-              const slug = prompt('URL Route Slug:', name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'channel';
-              const color = prompt('Color Accent (HEX):', '#38bdf8') || '#38bdf8';
-              const orderWeight = parseInt(prompt('Order Weight (1-99):', String(categories.length + 1)), 10) || (categories.length + 1);
-
-              const newCat = {
-                id: 'CAT-' + String(categories.length + 1).padStart(2, '0'),
-                code: code.trim().toUpperCase(),
-                name: name.trim(),
-                slug: slug.trim().toLowerCase(),
-                icon: 'folder',
-                color: color.trim(),
-                orderWeight: orderWeight,
-                postCount: 0,
-                active: true
-              };
-
-              categories.push(newCat);
-              config.categories = categories;
-              store.saveMasterCategoriesConfig(config);
-              showToast(`Master category ${newCat.name} created.`, 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Master Category',
+                subtitle: 'Define top-level portal taxomony node and route path',
+                fields: [
+                  { key: 'name', label: 'Category Name', placeholder: 'e.g. Current Affairs & News', required: true },
+                  { key: 'code', label: 'Category Code', placeholder: 'e.g. NEWS, JOBS, SCHEMES', required: true },
+                  { key: 'slug', label: 'URL Route Slug', placeholder: 'e.g. current-affairs', required: true },
+                  { key: 'color', label: 'Color Accent (HEX)', placeholder: 'e.g. #38bdf8', defaultValue: '#38bdf8' },
+                  { key: 'orderWeight', label: 'Order Weight (1-99)', type: 'number', defaultValue: categories.length + 1 }
+                ],
+                onSave: (data) => {
+                  const newCat = {
+                    id: 'CAT-' + String(categories.length + 1).padStart(2, '0'),
+                    code: (data.code || 'CAT').toUpperCase(),
+                    name: data.name,
+                    slug: (data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).toLowerCase(),
+                    icon: 'folder',
+                    color: data.color || '#38bdf8',
+                    orderWeight: Number(data.orderWeight) || (categories.length + 1),
+                    postCount: 0,
+                    active: true
+                  };
+                  categories.push(newCat);
+                  config.categories = categories;
+                  store.saveMasterCategoriesConfig(config);
+                  showToast(`Master category ${newCat.name} created.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -24993,21 +25567,30 @@ async function loadMasterNavigation() {
               const item = categories.find(c => c.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Category Name:', item.name);
-              if (name === null) return;
-              const slug = prompt('Edit URL Slug:', item.slug) || item.slug;
-              const color = prompt('Edit Color Accent:', item.color) || item.color;
-              const orderWeight = parseInt(prompt('Edit Order Weight:', String(item.orderWeight)), 10) || item.orderWeight;
+              openModuleCreateModal({
+                title: 'Master Category',
+                subtitle: `Editing category "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Category Name', required: true },
+                  { key: 'code', label: 'Category Code', required: true },
+                  { key: 'slug', label: 'URL Route Slug', required: true },
+                  { key: 'color', label: 'Color Accent (HEX)' },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number' }
+                ],
+                onSave: (data) => {
+                  item.name = data.name;
+                  if (data.code) item.code = data.code.toUpperCase();
+                  item.slug = data.slug.toLowerCase();
+                  if (data.color) item.color = data.color;
+                  if (data.orderWeight !== undefined) item.orderWeight = Number(data.orderWeight);
 
-              item.name = name.trim();
-              item.slug = slug.trim().toLowerCase();
-              item.color = color.trim();
-              item.orderWeight = orderWeight;
-
-              config.categories = categories;
-              store.saveMasterCategoriesConfig(config);
-              showToast('Master category updated.', 'success');
-              render();
+                  config.categories = categories;
+                  store.saveMasterCategoriesConfig(config);
+                  showToast('Master category updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -25273,29 +25856,33 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-subcategory');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Subcategory Name:');
-              if (!name || !name.trim()) return;
-
-              const parentName = prompt('Parent Category Name (e.g. Jobs & Careers):', 'Jobs & Careers') || 'Jobs & Careers';
-              const parentId = prompt('Parent Category ID (e.g. CAT-01):', 'CAT-01') || 'CAT-01';
-              const slug = prompt('URL Slug:', name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'sub';
-
-              const newSub = {
-                id: 'SUB-' + String(subcategories.length + 1).padStart(2, '0'),
-                parentCategoryId: parentId.trim(),
-                parentCategoryName: parentName.trim(),
-                name: name.trim(),
-                slug: slug.trim().toLowerCase(),
-                orderWeight: subcategories.length + 1,
-                postCount: 0,
-                active: true
-              };
-
-              subcategories.push(newSub);
-              config.subcategories = subcategories;
-              store.saveSubcategoriesConfig(config);
-              showToast(`Subcategory ${newSub.name} created.`, 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Subcategory',
+                subtitle: 'Add child taxonomy classification under a master category',
+                fields: [
+                  { key: 'name', label: 'Subcategory Name', placeholder: 'e.g. Teaching & Education', required: true },
+                  { key: 'parentCategoryName', label: 'Parent Category Name', placeholder: 'e.g. Jobs & Careers', required: true },
+                  { key: 'parentCategoryId', label: 'Parent Category ID', placeholder: 'e.g. CAT-01', required: true },
+                  { key: 'slug', label: 'URL Slug', placeholder: 'e.g. teaching-education', required: true }
+                ],
+                onSave: (data) => {
+                  const newSub = {
+                    id: 'SUB-' + String(subcategories.length + 1).padStart(2, '0'),
+                    parentCategoryId: data.parentCategoryId.trim().toUpperCase(),
+                    parentCategoryName: data.parentCategoryName.trim(),
+                    name: data.name.trim(),
+                    slug: (data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).toLowerCase(),
+                    orderWeight: subcategories.length + 1,
+                    postCount: 0,
+                    active: true
+                  };
+                  subcategories.push(newSub);
+                  config.subcategories = subcategories;
+                  store.saveSubcategoriesConfig(config);
+                  showToast(`Subcategory ${newSub.name} created.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -25319,19 +25906,28 @@ async function loadMasterNavigation() {
               const item = subcategories.find(s => s.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Subcategory Name:', item.name);
-              if (name === null) return;
-              const parentName = prompt('Edit Parent Category:', item.parentCategoryName) || item.parentCategoryName;
-              const slug = prompt('Edit Slug:', item.slug) || item.slug;
+              openModuleCreateModal({
+                title: 'Subcategory',
+                subtitle: `Editing subcategory "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Subcategory Name', required: true },
+                  { key: 'parentCategoryName', label: 'Parent Category Name', required: true },
+                  { key: 'parentId', label: 'Parent Category ID', required: true },
+                  { key: 'slug', label: 'URL Slug', required: true }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.parentCategoryName = data.parentCategoryName.trim();
+                  if (data.parentId) item.parentId = data.parentId.trim().toUpperCase();
+                  item.slug = data.slug.trim().toLowerCase();
 
-              item.name = name.trim();
-              item.parentCategoryName = parentName.trim();
-              item.slug = slug.trim().toLowerCase();
-
-              config.subcategories = subcategories;
-              store.saveSubcategoriesConfig(config);
-              showToast('Subcategory updated.', 'success');
-              render();
+                  config.subcategories = subcategories;
+                  store.saveSubcategoriesConfig(config);
+                  showToast('Subcategory updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -25600,28 +26196,32 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-tag');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const name = prompt('Tag Name (e.g. Cutoff Analysis):');
-              if (!name || !name.trim()) return;
-
-              const group = prompt('Taxonomy Group (e.g. Examinations, Alerts, Subjects):', 'General') || 'General';
-              const slug = prompt('Tag Slug:', name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'tag';
-              const color = prompt('Color Accent (HEX):', '#38bdf8') || '#38bdf8';
-
-              const newTag = {
-                id: 'TAG-' + String(tags.length + 1).padStart(2, '0'),
-                name: name.trim(),
-                slug: slug.trim().toLowerCase(),
-                group: group.trim(),
-                usageCount: 0,
-                color: color.trim(),
-                active: true
-              };
-
-              tags.push(newTag);
-              config.tags = tags;
-              store.saveTagsTaxonomiesConfig(config);
-              showToast(`Tag #${newTag.name} created.`, 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Tag / Taxonomy',
+                subtitle: 'Create search index label and metadata tag',
+                fields: [
+                  { key: 'name', label: 'Tag Name', placeholder: 'e.g. Cutoff Analysis', required: true },
+                  { key: 'group', label: 'Taxonomy Group', placeholder: 'e.g. Examinations, Alerts, Subjects', defaultValue: 'General', required: true },
+                  { key: 'slug', label: 'Tag Slug', placeholder: 'e.g. cutoff-analysis', required: true },
+                  { key: 'color', label: 'Color Accent (HEX)', placeholder: 'e.g. #38bdf8', defaultValue: '#38bdf8' }
+                ],
+                onSave: (data) => {
+                  const newTag = {
+                    id: 'TAG-' + String(tags.length + 1).padStart(2, '0'),
+                    name: data.name.trim(),
+                    slug: (data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).toLowerCase(),
+                    group: data.group.trim(),
+                    usageCount: 0,
+                    color: data.color || '#38bdf8',
+                    active: true
+                  };
+                  tags.push(newTag);
+                  config.tags = tags;
+                  store.saveTagsTaxonomiesConfig(config);
+                  showToast(`Tag #${newTag.name} created.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -25645,21 +26245,28 @@ async function loadMasterNavigation() {
               const item = tags.find(t => t.id === id);
               if (!item) return;
 
-              const name = prompt('Edit Tag Name:', item.name);
-              if (name === null) return;
-              const group = prompt('Edit Group:', item.group) || item.group;
-              const slug = prompt('Edit Slug:', item.slug) || item.slug;
-              const color = prompt('Edit Color:', item.color) || item.color;
+              openModuleCreateModal({
+                title: 'Tag / Taxonomy',
+                subtitle: `Editing tag "${item.name}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'name', label: 'Tag Name', required: true },
+                  { key: 'group', label: 'Taxonomy Group', required: true },
+                  { key: 'slug', label: 'Tag Slug', required: true },
+                  { key: 'color', label: 'Color Accent (HEX)' }
+                ],
+                onSave: (data) => {
+                  item.name = data.name.trim();
+                  item.group = data.group.trim();
+                  item.slug = data.slug.trim().toLowerCase();
+                  if (data.color) item.color = data.color.trim();
 
-              item.name = name.trim();
-              item.group = group.trim();
-              item.slug = slug.trim().toLowerCase();
-              item.color = color.trim();
-
-              config.tags = tags;
-              store.saveTagsTaxonomiesConfig(config);
-              showToast('Tag details updated.', 'success');
-              render();
+                  config.tags = tags;
+                  store.saveTagsTaxonomiesConfig(config);
+                  showToast('Tag details updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -25933,29 +26540,34 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-nav');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const label = prompt('Menu Label (e.g. Notifications):');
-              if (!label || !label.trim()) return;
-
-              const path = prompt('URL Route Path:', '/notifications/') || '/';
-              const badge = prompt('Optional Badge (e.g. New, Live, Updates):', '') || '';
-              const orderWeight = parseInt(prompt('Order Weight (1-99):', String(navItems.length + 1)), 10) || (navItems.length + 1);
-
-              const newItem = {
-                id: 'NAV-' + String(navItems.length + 1).padStart(2, '0'),
-                label: label.trim(),
-                path: path.trim(),
-                target: '_self',
-                orderWeight: orderWeight,
-                showOnMobile: true,
-                badge: badge.trim(),
-                active: true
-              };
-
-              navItems.push(newItem);
-              config.navItems = navItems;
-              store.saveHeaderNavigationConfig(config);
-              showToast(`Header link ${newItem.label} added.`, 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Header Navigation Item',
+                subtitle: 'Add route link to site header navigation bar',
+                fields: [
+                  { key: 'label', label: 'Menu Label', placeholder: 'e.g. Notifications', required: true },
+                  { key: 'path', label: 'URL Route Path', placeholder: 'e.g. /notifications/', required: true },
+                  { key: 'badge', label: 'Optional Badge', placeholder: 'e.g. New, Live, Updates' },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number', defaultValue: navItems.length + 1 },
+                  { key: 'showOnMobile', label: 'Show on Mobile Drawer', type: 'checkbox', defaultChecked: true }
+                ],
+                onSave: (data) => {
+                  const newItem = {
+                    id: 'NAV-' + String(navItems.length + 1).padStart(2, '0'),
+                    label: data.label.trim(),
+                    path: data.path.trim(),
+                    target: '_self',
+                    orderWeight: Number(data.orderWeight) || (navItems.length + 1),
+                    showOnMobile: data.showOnMobile !== false,
+                    badge: (data.badge || '').trim(),
+                    active: true
+                  };
+                  navItems.push(newItem);
+                  config.navItems = navItems;
+                  store.saveHeaderNavigationConfig(config);
+                  showToast(`Header link ${newItem.label} added.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -25979,21 +26591,30 @@ async function loadMasterNavigation() {
               const item = navItems.find(n => n.id === id);
               if (!item) return;
 
-              const label = prompt('Edit Menu Label:', item.label);
-              if (label === null) return;
-              const path = prompt('Edit Route Path:', item.path) || item.path;
-              const badge = prompt('Edit Badge:', item.badge) || '';
-              const orderWeight = parseInt(prompt('Edit Order Weight:', String(item.orderWeight)), 10) || item.orderWeight;
+              openModuleCreateModal({
+                title: 'Header Navigation Item',
+                subtitle: `Editing link "${item.label}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'label', label: 'Menu Label', required: true },
+                  { key: 'path', label: 'URL Route Path', required: true },
+                  { key: 'badge', label: 'Badge' },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number' },
+                  { key: 'showOnMobile', label: 'Show on Mobile Drawer', type: 'checkbox' }
+                ],
+                onSave: (data) => {
+                  item.label = data.label.trim();
+                  item.path = data.path.trim();
+                  item.badge = (data.badge || '').trim();
+                  if (data.orderWeight !== undefined) item.orderWeight = Number(data.orderWeight);
+                  if (data.showOnMobile !== undefined) item.showOnMobile = !!data.showOnMobile;
 
-              item.label = label.trim();
-              item.path = path.trim();
-              item.badge = badge.trim();
-              item.orderWeight = orderWeight;
-
-              config.navItems = navItems;
-              store.saveHeaderNavigationConfig(config);
-              showToast('Navigation link updated.', 'success');
-              render();
+                  config.navItems = navItems;
+                  store.saveHeaderNavigationConfig(config);
+                  showToast('Navigation link updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -26219,28 +26840,34 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-panel');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const label = prompt('Trigger Label (e.g. Examinations & Syllabus):');
-              if (!label || !label.trim()) return;
-
-              const path = prompt('Trigger Route Path:', '/study-library/') || '/';
-
-              const newPanel = {
-                id: 'MEGA-' + String(panels.length + 1).padStart(2, '0'),
-                triggerLabel: label.trim(),
-                triggerPath: path.trim(),
-                orderWeight: panels.length + 1,
-                featuredBadge: 'Featured',
-                columns: [
-                  { title: 'Primary Links', links: [{ label: 'Overview', url: path.trim() }] }
+              openModuleCreateModal({
+                title: 'Mega Menu Panel',
+                subtitle: 'Configure top-level dropdown trigger panel',
+                fields: [
+                  { key: 'triggerLabel', label: 'Trigger Label', placeholder: 'e.g. Examinations & Syllabus', required: true },
+                  { key: 'triggerPath', label: 'Trigger Route Path', placeholder: 'e.g. /study-library/', required: true },
+                  { key: 'featuredBadge', label: 'Featured Badge', defaultValue: 'Featured' },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number', defaultValue: panels.length + 1 }
                 ],
-                active: true
-              };
-
-              panels.push(newPanel);
-              config.panels = panels;
-              store.saveMegaMenuConfig(config);
-              showToast(`Mega panel ${newPanel.triggerLabel} created.`, 'success');
-              render();
+                onSave: (data) => {
+                  const newPanel = {
+                    id: 'MEGA-' + String(panels.length + 1).padStart(2, '0'),
+                    triggerLabel: data.triggerLabel.trim(),
+                    triggerPath: data.triggerPath.trim(),
+                    orderWeight: Number(data.orderWeight) || (panels.length + 1),
+                    featuredBadge: (data.featuredBadge || 'Featured').trim(),
+                    columns: [
+                      { title: 'Primary Links', links: [{ label: 'Overview', url: data.triggerPath.trim() }] }
+                    ],
+                    active: true
+                  };
+                  panels.push(newPanel);
+                  config.panels = panels;
+                  store.saveMegaMenuConfig(config);
+                  showToast(`Mega panel ${newPanel.triggerLabel} created.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -26264,17 +26891,28 @@ async function loadMasterNavigation() {
               const item = panels.find(p => p.id === id);
               if (!item) return;
 
-              const label = prompt('Edit Trigger Label:', item.triggerLabel);
-              if (label === null) return;
-              const path = prompt('Edit Trigger Path:', item.triggerPath) || item.triggerPath;
+              openModuleCreateModal({
+                title: 'Mega Menu Panel',
+                subtitle: `Editing trigger panel "${item.triggerLabel}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'triggerLabel', label: 'Trigger Label', required: true },
+                  { key: 'triggerPath', label: 'Trigger Route Path', required: true },
+                  { key: 'featuredBadge', label: 'Featured Badge' },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number' }
+                ],
+                onSave: (data) => {
+                  item.triggerLabel = data.triggerLabel.trim();
+                  item.triggerPath = data.triggerPath.trim();
+                  if (data.featuredBadge) item.featuredBadge = data.featuredBadge.trim();
+                  if (data.orderWeight !== undefined) item.orderWeight = Number(data.orderWeight);
 
-              item.triggerLabel = label.trim();
-              item.triggerPath = path.trim();
-
-              config.panels = panels;
-              store.saveMegaMenuConfig(config);
-              showToast('Mega menu panel updated.', 'success');
-              render();
+                  config.panels = panels;
+                  store.saveMegaMenuConfig(config);
+                  showToast('Mega menu panel updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -26485,22 +27123,28 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-section');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const title = prompt('Footer Column Title (e.g. Citizen Services):');
-              if (!title || !title.trim()) return;
-
-              const newSec = {
-                id: 'FOOT-' + String(sections.length + 1).padStart(2, '0'),
-                title: title.trim(),
-                orderWeight: sections.length + 1,
-                links: [{ label: 'Direct Portal', url: '/' }],
-                active: true
-              };
-
-              sections.push(newSec);
-              config.sections = sections;
-              store.saveFooterNavigationConfig(config);
-              showToast(`Footer column ${newSec.title} added.`, 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Footer Column Section',
+                subtitle: 'Add navigation link column to footer layout',
+                fields: [
+                  { key: 'title', label: 'Column Title', placeholder: 'e.g. Citizen Services', required: true },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number', defaultValue: sections.length + 1 }
+                ],
+                onSave: (data) => {
+                  const newSec = {
+                    id: 'FOOT-' + String(sections.length + 1).padStart(2, '0'),
+                    title: data.title.trim(),
+                    orderWeight: Number(data.orderWeight) || (sections.length + 1),
+                    links: [{ label: 'Direct Portal', url: '/' }],
+                    active: true
+                  };
+                  sections.push(newSec);
+                  config.sections = sections;
+                  store.saveFooterNavigationConfig(config);
+                  showToast(`Footer column ${newSec.title} added.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -26524,15 +27168,24 @@ async function loadMasterNavigation() {
               const item = sections.find(s => s.id === id);
               if (!item) return;
 
-              const title = prompt('Edit Column Title:', item.title);
-              if (title === null) return;
+              openModuleCreateModal({
+                title: 'Footer Column Section',
+                subtitle: `Editing column "${item.title}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'title', label: 'Column Title', required: true },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number' }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  if (data.orderWeight !== undefined) item.orderWeight = Number(data.orderWeight);
 
-              item.title = title.trim();
-
-              config.sections = sections;
-              store.saveFooterNavigationConfig(config);
-              showToast('Footer column updated.', 'success');
-              render();
+                  config.sections = sections;
+                  store.saveFooterNavigationConfig(config);
+                  showToast('Footer column updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -26744,25 +27397,30 @@ async function loadMasterNavigation() {
           const btnAdd = root.querySelector('#btn-add-side');
           if (btnAdd) {
             btnAdd.addEventListener('click', () => {
-              const title = prompt('Sidebar Menu Title (e.g. Current Affairs Vault):');
-              if (!title || !title.trim()) return;
-
-              const groupKey = prompt('Sidebar Group Key (e.g. NEWS_SIDEBAR):', 'SIDEBAR') || 'SIDEBAR';
-
-              const newMenu = {
-                id: 'SIDE-' + String(menus.length + 1).padStart(2, '0'),
-                groupKey: groupKey.trim().toUpperCase(),
-                title: title.trim(),
-                orderWeight: menus.length + 1,
-                items: [{ label: 'Overview', url: '/' }],
-                active: true
-              };
-
-              menus.push(newMenu);
-              config.menus = menus;
-              store.saveSidebarMenusConfig(config);
-              showToast(`Sidebar group ${newMenu.title} created.`, 'success');
-              render();
+              openModuleCreateModal({
+                title: 'Sidebar Menu Group',
+                subtitle: 'Configure persistent sidebar category menu',
+                fields: [
+                  { key: 'title', label: 'Sidebar Menu Title', placeholder: 'e.g. Current Affairs Vault', required: true },
+                  { key: 'groupKey', label: 'Sidebar Group Key', placeholder: 'e.g. NEWS_SIDEBAR', defaultValue: 'SIDEBAR', required: true },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number', defaultValue: menus.length + 1 }
+                ],
+                onSave: (data) => {
+                  const newMenu = {
+                    id: 'SIDE-' + String(menus.length + 1).padStart(2, '0'),
+                    groupKey: (data.groupKey || 'SIDEBAR').trim().toUpperCase(),
+                    title: data.title.trim(),
+                    orderWeight: Number(data.orderWeight) || (menus.length + 1),
+                    items: [{ label: 'Overview', url: '/' }],
+                    active: true
+                  };
+                  menus.push(newMenu);
+                  config.menus = menus;
+                  store.saveSidebarMenusConfig(config);
+                  showToast(`Sidebar group ${newMenu.title} created.`, 'success');
+                  render();
+                }
+              });
             });
           }
 
@@ -26786,15 +27444,26 @@ async function loadMasterNavigation() {
               const item = menus.find(m => m.id === id);
               if (!item) return;
 
-              const title = prompt('Edit Title:', item.title);
-              if (title === null) return;
+              openModuleCreateModal({
+                title: 'Sidebar Menu Group',
+                subtitle: `Editing sidebar group "${item.title}" (${item.id})`,
+                initialData: item,
+                fields: [
+                  { key: 'title', label: 'Sidebar Menu Title', required: true },
+                  { key: 'groupKey', label: 'Sidebar Group Key', required: true },
+                  { key: 'orderWeight', label: 'Order Weight', type: 'number' }
+                ],
+                onSave: (data) => {
+                  item.title = data.title.trim();
+                  if (data.groupKey) item.groupKey = data.groupKey.trim().toUpperCase();
+                  if (data.orderWeight !== undefined) item.orderWeight = Number(data.orderWeight);
 
-              item.title = title.trim();
-
-              config.menus = menus;
-              store.saveSidebarMenusConfig(config);
-              showToast('Sidebar menu updated.', 'success');
-              render();
+                  config.menus = menus;
+                  store.saveSidebarMenusConfig(config);
+                  showToast('Sidebar menu updated.', 'success');
+                  render();
+                }
+              });
             });
           });
 
@@ -28881,22 +29550,34 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-batch');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const nextNum = batches.length + 101;
-            const newBatch = {
-              id: `BATCH-${nextNum}`,
-              name: `Aspirant Study Vault Batch #${nextNum}`,
-              totalFiles: 15,
-              totalSize: "32.0 MB",
-              status: "Queued",
-              progressPercent: 0,
-              destinationFolder: "/pyq-archives/",
-              active: true
-            };
-            batches.push(newBatch);
-            config.batches = batches; config.items = batches;
-            store.saveBulkUploadsConfig(config);
-            showToast(`Batch ${newBatch.id} enqueued`, 'success');
-            render();
+            const nextId = `BATCH-${batches.length + 101}`;
+            openModuleCreateModal({
+              title: "Upload Batch",
+              subtitle: "Queue archive ingestion without placeholder prefixes",
+              fields: [
+                { key: "name", label: "Batch Archive Title", type: "text", required: true, placeholder: "e.g. OPSC 2026 Gazette Collection" },
+                { key: "destinationFolder", label: "Destination Folder", type: "text", required: true, placeholder: "e.g. /syllabi/" },
+                { key: "totalFiles", label: "Total Files in Archive", type: "number", required: true, placeholder: "e.g. 10" },
+                { key: "totalSize", label: "Estimated Total Size", type: "text", required: true, placeholder: "e.g. 24.5 MB" }
+              ],
+              onSave: (data) => {
+                const newBatch = {
+                  id: nextId,
+                  name: data.name.trim(),
+                  destinationFolder: data.destinationFolder.trim(),
+                  totalFiles: parseInt(data.totalFiles, 10) || 1,
+                  totalSize: data.totalSize.trim(),
+                  status: "Queued",
+                  progressPercent: 0,
+                  active: true
+                };
+                batches.push(newBatch);
+                config.batches = batches; config.items = batches;
+                store.saveBulkUploadsConfig(config);
+                showToast(`Batch ${newBatch.id} enqueued`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-batch').forEach(btn => {
@@ -29010,13 +29691,32 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-dir');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = folders.length + 1;
-            const newFolder = { id: `DIR-${String(next).padStart(2, '0')}`, path: `/study-vault/v${next}/`, label: `Study Collection Vol ${next}`, folderType: "Child", itemCount: 10, sizeUsage: "24 MB", active: true };
-            folders.push(newFolder);
-            config.folders = folders; config.items = folders;
-            store.saveFoldersCollectionsConfig(config);
-            showToast(`Directory ${newFolder.path} created`, 'success');
-            render();
+            const nextId = `DIR-${String(folders.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Folder Directory",
+              subtitle: "Create virtual directory without hardcoded dummy labels",
+              fields: [
+                { key: "label", label: "Folder Display Label", type: "text", required: true, placeholder: "e.g. 2026 Examination Notifications" },
+                { key: "path", label: "Virtual Directory Path", type: "text", required: true, placeholder: "e.g. /notifications/2026/" },
+                { key: "folderType", label: "Folder Type", type: "select", options: ["Root", "Child", "Media", "Archive"] }
+              ],
+              onSave: (data) => {
+                const newFolder = {
+                  id: nextId,
+                  label: data.label.trim(),
+                  path: data.path.trim(),
+                  folderType: data.folderType,
+                  itemCount: 0,
+                  sizeUsage: "0 MB",
+                  active: true
+                };
+                folders.push(newFolder);
+                config.folders = folders; config.items = folders;
+                store.saveFoldersCollectionsConfig(config);
+                showToast(`Directory ${newFolder.path} created`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-dir').forEach(btn => {
@@ -29141,13 +29841,35 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-pdf');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = docs.length + 1;
-            const newDoc = { id: `PDF-${String(next).padStart(2, '0')}`, title: `Odisha Teacher Eligibility Guidelines Vol ${next}`, filename: `otet-guidelines-v${next}.pdf`, pages: 16, ocrStatus: "Indexed", fileSizeBytes: 1887436, fileSizeFormatted: "1.8 MB", checksumSha256: "b10a8db164e0754105b7a99be72e3fe5daef2003c2003a8934149fa4f59ec925", active: true };
-            docs.push(newDoc);
-            config.documents = docs; config.items = docs;
-            store.savePdfManagerConfig(config);
-            showToast(`PDF ${newDoc.id} indexed`, 'success');
-            render();
+            const nextId = `PDF-${String(docs.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "PDF Document",
+              subtitle: "Index new PDF gazette with genuine attributes",
+              fields: [
+                { key: "title", label: "Document Title", type: "text", required: true, placeholder: "e.g. OAS 2026 Detailed Gazette" },
+                { key: "filename", label: "Disk Filename", type: "text", required: true, placeholder: "e.g. oas-2026-gazette-complete.pdf" },
+                { key: "pages", label: "Page Count", type: "number", required: true, placeholder: "e.g. 32" },
+                { key: "fileSizeFormatted", label: "File Size (e.g. 2.4 MB)", type: "text", required: true, placeholder: "e.g. 2.4 MB" }
+              ],
+              onSave: (data) => {
+                const newDoc = {
+                  id: nextId,
+                  title: data.title.trim(),
+                  filename: data.filename.trim(),
+                  pages: parseInt(data.pages, 10) || 1,
+                  ocrStatus: "Indexed",
+                  fileSizeBytes: 1048576,
+                  fileSizeFormatted: data.fileSizeFormatted.trim(),
+                  checksumSha256: "sha256-" + Date.now().toString(16),
+                  active: true
+                };
+                docs.push(newDoc);
+                config.documents = docs; config.items = docs;
+                store.savePdfManagerConfig(config);
+                showToast(`PDF ${newDoc.id} indexed`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-pdf').forEach(btn => {
@@ -29252,13 +29974,36 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-img');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = images.length + 1;
-            const newImg = { id: `IMG-${String(next).padStart(2, '0')}`, name: `Current Affairs Graphic Vol ${next}`, format: "WebP", dimensions: "1200x630", size: "115 KB", aspectRatio: "1.91:1", url: `https://cdn.csodisha.com/banners/ca-vol${next}.webp`, usageLocation: "Current Affairs Portal", active: true };
-            images.push(newImg);
-            config.images = images; config.items = images;
-            store.saveImageLibraryConfig(config);
-            showToast(`Image ${newImg.id} added`, 'success');
-            render();
+            const nextId = `IMG-${String(images.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Image Asset",
+              subtitle: "Register image asset without automated prefixing",
+              fields: [
+                { key: "name", label: "Asset Display Name", type: "text", required: true, placeholder: "e.g. Hero Banner OAS 2026" },
+                { key: "format", label: "Format", type: "select", options: ["WebP", "AVIF", "SVG", "PNG", "JPEG"] },
+                { key: "dimensions", label: "Dimensions", type: "text", required: true, placeholder: "e.g. 1200x630" },
+                { key: "size", label: "File Size", type: "text", required: true, placeholder: "e.g. 140 KB" },
+                { key: "usageLocation", label: "Usage Location", type: "text", required: true, placeholder: "e.g. Homepage Hero" }
+              ],
+              onSave: (data) => {
+                const newImg = {
+                  id: nextId,
+                  name: data.name.trim(),
+                  format: data.format,
+                  dimensions: data.dimensions.trim(),
+                  size: data.size.trim(),
+                  aspectRatio: "16:9",
+                  url: `https://cdn.csodisha.com/banners/${data.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.webp`,
+                  usageLocation: data.usageLocation.trim(),
+                  active: true
+                };
+                images.push(newImg);
+                config.images = images; config.items = images;
+                store.saveImageLibraryConfig(config);
+                showToast(`Image ${newImg.id} added`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-img').forEach(btn => {
@@ -29348,13 +30093,36 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-av');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = media.length + 1;
-            const newTrack = { id: `AV-${String(next).padStart(2, '0')}`, title: `Odisha History Quick Capsule Audio #${next}`, mediaType: "Audio (MP3)", duration: "25 mins", bitrate: "128 kbps", fileSize: "22.8 MB", streamUrl: `https://r2.csodisha.com/audio/history-capsule-${next}.mp3`, category: "General Studies", active: true };
-            media.push(newTrack);
-            config.mediaTracks = media; config.items = media;
-            store.saveVideoAudioConfig(config);
-            showToast(`Track ${newTrack.id} added`, 'success');
-            render();
+            const nextId = `AV-${String(media.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Media Track",
+              subtitle: "Add streaming webinar or audio capsule without generic templates",
+              fields: [
+                { key: "title", label: "Media Title", type: "text", required: true, placeholder: "e.g. Odia Grammar Audio Masterclass" },
+                { key: "mediaType", label: "Media Type", type: "select", options: ["Audio (MP3)", "Video (MP4)", "Podcast Episode", "Live Stream Archive"] },
+                { key: "duration", label: "Duration", type: "text", required: true, placeholder: "e.g. 42 mins" },
+                { key: "bitrate", label: "Bitrate", type: "text", required: true, placeholder: "e.g. 192 kbps" },
+                { key: "category", label: "Category", type: "text", required: true, placeholder: "e.g. Language Study" }
+              ],
+              onSave: (data) => {
+                const newTrack = {
+                  id: nextId,
+                  title: data.title.trim(),
+                  mediaType: data.mediaType,
+                  duration: data.duration.trim(),
+                  bitrate: data.bitrate.trim(),
+                  fileSize: "20.0 MB",
+                  streamUrl: `https://r2.csodisha.com/media/${nextId.toLowerCase()}.mp4`,
+                  category: data.category.trim(),
+                  active: true
+                };
+                media.push(newTrack);
+                config.mediaTracks = media; config.items = media;
+                store.saveVideoAudioConfig(config);
+                showToast(`Track ${newTrack.id} added`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-av').forEach(btn => {
@@ -29445,13 +30213,34 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-cloud');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = endpoints.length + 1;
-            const newEp = { id: `CLOUD-${String(next).padStart(2, '0')}`, label: `Edge Pop Zone #${next}`, endpoint: `edge${next}.csodisha.com`, region: "South Asia Edge", protocol: "HTTPS / HTTP/3", status: "Operational", latencyMs: 18, active: true };
-            endpoints.push(newEp);
-            config.cloudEndpoints = endpoints; config.items = endpoints;
-            store.saveCloudLinksConfig(config);
-            showToast(`Endpoint ${newEp.id} added`, 'success');
-            render();
+            const nextId = `CLOUD-${String(endpoints.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Cloud Endpoint",
+              subtitle: "Configure CDN or storage domain",
+              fields: [
+                { key: "label", label: "Endpoint Label", type: "text", required: true, placeholder: "e.g. Cloudflare R2 Primary Bucket" },
+                { key: "endpoint", label: "Domain / URL Host", type: "text", required: true, placeholder: "e.g. r2.csodisha.com" },
+                { key: "region", label: "Region Zone", type: "text", required: true, placeholder: "e.g. APAC (Mumbai / Singapore)" },
+                { key: "protocol", label: "Protocol", type: "select", options: ["HTTPS", "HTTPS / HTTP/3"] }
+              ],
+              onSave: (data) => {
+                const newEp = {
+                  id: nextId,
+                  label: data.label.trim(),
+                  endpoint: data.endpoint.trim(),
+                  region: data.region.trim(),
+                  protocol: data.protocol,
+                  status: "Operational",
+                  latencyMs: 15,
+                  active: true
+                };
+                endpoints.push(newEp);
+                config.cloudEndpoints = endpoints; config.items = endpoints;
+                store.saveCloudLinksConfig(config);
+                showToast(`Endpoint ${newEp.id} added`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-cloud').forEach(btn => {
@@ -29542,13 +30331,33 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-gdrv');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = items.length + 1;
-            const newItem = { id: `GDRV-${String(next).padStart(2, '0')}`, title: `Odisha GK Vault Mirror Vol ${next}`, driveFileId: `GD-${next}x8Y9z-Share`, resourceType: "Folder Mirror", fileCount: 30, syncStatus: "Synced", lastVerified: new Date().toISOString(), active: true };
-            items.push(newItem);
-            config.driveItems = items; config.items = items;
-            store.saveGoogleDriveLinksConfig(config);
-            showToast(`Drive resource ${newItem.id} added`, 'success');
-            render();
+            const nextId = `GDRV-${String(items.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Google Drive Resource",
+              subtitle: "Sync shared folder mirror without placeholder prefixes",
+              fields: [
+                { key: "title", label: "Resource Title", type: "text", required: true, placeholder: "e.g. State Gazette Reference Archive" },
+                { key: "driveFileId", label: "Google Drive Share Token / ID", type: "text", required: true, placeholder: "e.g. 1A2b3C-DriveID" },
+                { key: "resourceType", label: "Resource Type", type: "select", options: ["Folder Mirror", "Shared Drive", "Collaborative Doc", "Archive ZIP"] }
+              ],
+              onSave: (data) => {
+                const newItem = {
+                  id: nextId,
+                  title: data.title.trim(),
+                  driveFileId: data.driveFileId.trim(),
+                  resourceType: data.resourceType,
+                  fileCount: 1,
+                  syncStatus: "Synced",
+                  lastVerified: new Date().toISOString(),
+                  active: true
+                };
+                items.push(newItem);
+                config.driveItems = items; config.items = items;
+                store.saveGoogleDriveLinksConfig(config);
+                showToast(`Drive resource ${newItem.id} added`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-gdrv').forEach(btn => {
@@ -29647,13 +30456,35 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-sp');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = providers.length + 1;
-            const newP = { id: `SP-${String(next).padStart(2, '0')}`, name: `AWS S3 Cold Archive #${next}`, role: "Cold Archive", quotaGb: 100, usedGb: 5.2, egressFee: "$0.09 / GB", uptimePercent: 99.9, region: "ap-south-1 (Mumbai)", active: true };
-            providers.push(newP);
-            config.providers = providers; config.items = providers;
-            store.saveStorageProvidersConfig(config);
-            showToast(`Provider ${newP.id} added`, 'success');
-            render();
+            const nextId = `SP-${String(providers.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Storage Provider",
+              subtitle: "Connect cloud storage bucket without synthetic dummy names",
+              fields: [
+                { key: "name", label: "Provider Name", type: "text", required: true, placeholder: "e.g. Cloudflare R2 Object Storage" },
+                { key: "role", label: "System Role", type: "select", options: ["Default Active", "Secondary Backup", "Internal Failover", "Cold Archive"] },
+                { key: "quotaGb", label: "Allocated Quota (GB)", type: "number", required: true, placeholder: "e.g. 50" },
+                { key: "region", label: "Cloud Region", type: "text", required: true, placeholder: "e.g. APAC Multi-Region" }
+              ],
+              onSave: (data) => {
+                const newP = {
+                  id: nextId,
+                  name: data.name.trim(),
+                  role: data.role,
+                  quotaGb: parseFloat(data.quotaGb) || 50,
+                  usedGb: 0,
+                  egressFee: "$0 / Free",
+                  uptimePercent: 99.99,
+                  region: data.region.trim(),
+                  active: true
+                };
+                providers.push(newP);
+                config.providers = providers; config.items = providers;
+                store.saveStorageProvidersConfig(config);
+                showToast(`Provider ${newP.id} added`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-sp').forEach(btn => {
@@ -29758,13 +30589,34 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-rev');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = revisions.length + 1;
-            const newRev = { id: `REV-${String(next).padStart(2, '0')}`, documentName: "OSSC CGL Rules", versionTag: `v1.${next}`, status: "Current Live", author: "admin@csodisha.com", publishedAt: new Date().toISOString(), changeNote: "Updated age relaxation norms for state candidates.", active: true };
-            revisions.push(newRev);
-            config.revisions = revisions; config.items = revisions;
-            store.saveFileVersionsConfig(config);
-            showToast(`Revision ${newRev.id} published`, 'success');
-            render();
+            const nextId = `REV-${String(revisions.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Document Revision",
+              subtitle: "Publish revision entry with explicit change log",
+              fields: [
+                { key: "documentName", label: "Document Name", type: "text", required: true, placeholder: "e.g. OAS 2026 Syllabus" },
+                { key: "versionTag", label: "Version Tag", type: "text", required: true, placeholder: "e.g. v2.1" },
+                { key: "author", label: "Author / Editor", type: "text", required: true, placeholder: "e.g. admin@csodisha.com" },
+                { key: "changeNote", label: "Summary of Changes", type: "textarea", required: true, placeholder: "e.g. Revised reservation percentages per latest State Gazette." }
+              ],
+              onSave: (data) => {
+                const newRev = {
+                  id: nextId,
+                  documentName: data.documentName.trim(),
+                  versionTag: data.versionTag.trim(),
+                  status: "Current Live",
+                  author: data.author.trim(),
+                  publishedAt: new Date().toISOString(),
+                  changeNote: data.changeNote.trim(),
+                  active: true
+                };
+                revisions.push(newRev);
+                config.revisions = revisions; config.items = revisions;
+                store.saveFileVersionsConfig(config);
+                showToast(`Revision ${newRev.id} published`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-rev').forEach(btn => {
@@ -29854,13 +30706,33 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-perm');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = rules.length + 1;
-            const newR = { id: `PERM-${String(next).padStart(2, '0')}`, ruleName: `Premium Material Download Tier #${next}`, accessLevel: "Candidate", targetFolders: "/premium-vault/", allowedRoles: ["Premium Member", "Admin"], dailyDownloadCap: "50 PDFs / day", active: true };
-            rules.push(newR);
-            config.permissionRules = rules; config.items = rules;
-            store.saveFilePermissionsConfig(config);
-            showToast(`Permission rule ${newR.id} added`, 'success');
-            render();
+            const nextId = `PERM-${String(rules.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "File Permission Rule",
+              subtitle: "Define download policy with user-specified restrictions",
+              fields: [
+                { key: "ruleName", label: "Permission Rule Name", type: "text", required: true, placeholder: "e.g. Public Candidate Free Download Rule" },
+                { key: "accessLevel", label: "Access Level", type: "select", options: ["Public Free", "Registered Required", "Super Admin Only"] },
+                { key: "targetFolders", label: "Target Folders", type: "text", required: true, placeholder: "e.g. /syllabi/, /notifications/" },
+                { key: "dailyDownloadCap", label: "Daily Download Cap", type: "text", required: true, placeholder: "e.g. Unlimited or 20 PDFs / day" }
+              ],
+              onSave: (data) => {
+                const newR = {
+                  id: nextId,
+                  ruleName: data.ruleName.trim(),
+                  accessLevel: data.accessLevel,
+                  targetFolders: data.targetFolders.trim(),
+                  allowedRoles: [data.accessLevel === "Super Admin Only" ? "Super Admin" : "Candidate"],
+                  dailyDownloadCap: data.dailyDownloadCap.trim(),
+                  active: true
+                };
+                rules.push(newR);
+                config.permissionRules = rules; config.items = rules;
+                store.saveFilePermissionsConfig(config);
+                showToast(`Permission rule ${newR.id} added`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-perm').forEach(btn => {
@@ -30167,13 +31039,32 @@ async function loadMasterNavigation() {
 
           const btnAdd = container.querySelector('#btn-add-pipe');
           if (btnAdd) btnAdd.addEventListener('click', () => {
-            const next = pipelines.length + 1;
-            const newPipe = { id: `OPT-${String(next).padStart(2, '0')}`, pipelineName: `High-Density Graphic Downsampler #${next}`, targetFormat: "WebP (Quality 80%)", compressionRatio: "65% reduction", autoTrigger: "On Upload", status: "Active", active: true };
-            pipelines.push(newPipe);
-            config.pipelineRules = pipelines; config.items = pipelines;
-            store.saveMediaOptimizationConfig(config);
-            showToast(`Pipeline ${newPipe.id} created`, 'success');
-            render();
+            const nextId = `OPT-${String(pipelines.length + 1).padStart(2, '0')}`;
+            openModuleCreateModal({
+              title: "Optimization Pipeline",
+              subtitle: "Configure format conversion rule",
+              fields: [
+                { key: "pipelineName", label: "Pipeline Name", type: "text", required: true, placeholder: "e.g. Auto-convert JPEG/PNG to WebP" },
+                { key: "targetFormat", label: "Target Format & Parameters", type: "text", required: true, placeholder: "e.g. WebP (Quality 85%)" },
+                { key: "autoTrigger", label: "Execution Trigger", type: "select", options: ["On Upload", "Manual / Scheduled", "On User Upload"] }
+              ],
+              onSave: (data) => {
+                const newPipe = {
+                  id: nextId,
+                  pipelineName: data.pipelineName.trim(),
+                  targetFormat: data.targetFormat.trim(),
+                  compressionRatio: "Calculated dynamically",
+                  autoTrigger: data.autoTrigger,
+                  status: "Active",
+                  active: true
+                };
+                pipelines.push(newPipe);
+                config.pipelineRules = pipelines; config.items = pipelines;
+                store.saveMediaOptimizationConfig(config);
+                showToast(`Pipeline ${newPipe.id} created`, 'success');
+                render();
+              }
+            });
           });
 
           container.querySelectorAll('.btn-del-pipe').forEach(btn => {
