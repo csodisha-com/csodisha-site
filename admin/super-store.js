@@ -665,6 +665,55 @@
       save(KEYS.RESOURCES, res);
     },
 
+    // Multi-Endpoint Diagnostic Probing Engine (module-01-002)
+    async runSystemHealthCheck() {
+      const routes = [
+        { name: "Public Homepage", path: "/" },
+        { name: "Academic Resources", path: "/resources.html" },
+        { name: "Contact Desk", path: "/contact.html" },
+        { name: "Admin Security Gate", path: "/admin/login.html" },
+        { name: "Navigation Schema", path: "/admin/data/master-navigation.json" }
+      ];
+
+      const results = [];
+      for (const route of routes) {
+        const start = performance.now();
+        try {
+          const res = await fetch(route.path + '?diag=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+          const rtt = Math.round(performance.now() - start);
+          results.push({
+            name: route.name,
+            path: route.path,
+            status: res.status,
+            statusText: res.statusText || 'OK',
+            rttMs: rtt,
+            healthy: res.ok,
+            cfRay: res.headers.get('cf-ray') || 'Direct/Local',
+            checkedAt: new Date().toLocaleTimeString()
+          });
+        } catch (err) {
+          results.push({
+            name: route.name,
+            path: route.path,
+            status: 0,
+            statusText: 'Unreachable / Network Error',
+            rttMs: Math.round(performance.now() - start),
+            healthy: false,
+            cfRay: 'N/A',
+            checkedAt: new Date().toLocaleTimeString()
+          });
+        }
+      }
+
+      const totalRtt = results.reduce((acc, r) => acc + r.rttMs, 0);
+      const avgRtt = results.length ? Math.round(totalRtt / results.length) : 0;
+      const healthyCount = results.filter(r => r.healthy).length;
+
+      // Log audit event
+      this.logAudit('HEALTH_CHECK_COMPLETED', 'EDGE_DIAGNOSTICS', `System diagnostic completed: ${healthyCount}/${results.length} routes healthy, Avg Latency: ${avgRtt}ms.`);
+
+      return results;
+    },
     // Live Metrics Calculation Engine
     getLiveMetrics() {
       const users = JSON.parse(localStorage.getItem('cso_super_users') || '[]');

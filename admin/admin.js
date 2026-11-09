@@ -279,6 +279,8 @@ async function loadMasterNavigation() {
       // Route to specialized views
       if (moduleId === 'module-01-001') {
         renderOverviewWorkspace();
+      } else if (moduleId === 'module-01-002') {
+        renderLiveSiteStatusWorkspace();
       } else if (folderId === 'folder-02' || moduleId === 'module-02-001' || moduleId === 'module-02-002') {
         renderCMSStudioWorkspace();
       } else if (folderId === 'folder-05') {
@@ -300,6 +302,213 @@ async function loadMasterNavigation() {
       } else {
         renderStandardModuleInspector(folderId, moduleId);
       }
+    }
+
+    /**
+     * VIEW 1b: Live Site Status & Diagnostic Probe (module-01-002)
+     */
+    async function executeDiagnosticsProbe() {
+      const btn = document.getElementById('btnRunDiagnostics');
+      const tableBody = document.getElementById('diagnosticTableBody');
+      const edgeStatusPill = document.getElementById('diagEdgeStatusPill');
+      const edgeAvgLatency = document.getElementById('diagAvgLatency');
+      const edgeLastCheck = document.getElementById('diagLastCheck');
+      const edgeStatusDot = document.getElementById('diagStatusDot');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          Probing Endpoints...
+        `;
+      }
+
+      let results = [];
+      if (window.CSOSuperStore && typeof window.CSOSuperStore.runSystemHealthCheck === 'function') {
+        try {
+          results = await window.CSOSuperStore.runSystemHealthCheck();
+        } catch (_) {}
+      }
+
+      if (!results || !results.length) {
+        // Fallback probe execution if store instance is unavailable
+        const endpoints = [
+          { name: "Public Homepage", path: "/" },
+          { name: "Academic Resources", path: "/resources.html" },
+          { name: "Contact Desk", path: "/contact.html" },
+          { name: "Admin Security Gate", path: "/admin/login.html" },
+          { name: "Navigation Schema", path: "/admin/data/master-navigation.json" }
+        ];
+        for (const ep of endpoints) {
+          const t0 = performance.now();
+          try {
+            const resp = await fetch(ep.path + '?diag=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+            results.push({
+              name: ep.name,
+              path: ep.path,
+              status: resp.status,
+              statusText: resp.statusText || 'OK',
+              rttMs: Math.round(performance.now() - t0),
+              healthy: resp.ok,
+              cfRay: resp.headers.get('cf-ray') || 'Direct/Local',
+              checkedAt: new Date().toLocaleTimeString()
+            });
+          } catch (_) {
+            results.push({
+              name: ep.name,
+              path: ep.path,
+              status: 0,
+              statusText: 'Unreachable / Network Error',
+              rttMs: Math.round(performance.now() - t0),
+              healthy: false,
+              cfRay: 'N/A',
+              checkedAt: new Date().toLocaleTimeString()
+            });
+          }
+        }
+      }
+
+      // Calculations
+      const allHealthy = results.every(r => r.healthy);
+      const totalRtt = results.reduce((sum, r) => sum + r.rttMs, 0);
+      const avgRtt = results.length ? Math.round(totalRtt / results.length) : 0;
+      const lastCheckTime = new Date().toLocaleTimeString();
+
+      // Update Summary Bar
+      if (edgeStatusPill && edgeStatusDot) {
+        if (allHealthy) {
+          edgeStatusPill.className = "px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-emerald-500/20 text-brand-emerald border border-brand-emerald/40";
+          edgeStatusPill.textContent = "ALL SYSTEMS OPERATIONAL";
+          edgeStatusDot.className = "w-3 h-3 rounded-full bg-brand-emerald animate-pulse";
+        } else {
+          edgeStatusPill.className = "px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40";
+          edgeStatusPill.textContent = "SERVICE DEGRADED";
+          edgeStatusDot.className = "w-3 h-3 rounded-full bg-amber-400 animate-pulse";
+        }
+      }
+      if (edgeAvgLatency) edgeAvgLatency.textContent = `${avgRtt} ms`;
+      if (edgeLastCheck) edgeLastCheck.textContent = lastCheckTime;
+
+      // Populate Table
+      if (tableBody) {
+        tableBody.innerHTML = results.map(r => `
+          <tr class="hover:bg-brand-card/40 transition">
+            <td class="py-3 px-4 font-semibold text-white">
+              ${r.name}
+              <div class="text-[10px] text-slate-500 font-mono sm:hidden">${r.path}</div>
+            </td>
+            <td class="py-3 px-4 font-mono text-cyan-400 hidden sm:table-cell">${r.path}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold ${r.healthy ? 'bg-emerald-500/10 text-brand-emerald border border-brand-emerald/30' : 'bg-red-500/10 text-brand-crimson border border-red-500/30'}">
+                ${r.status ? r.status + ' ' + r.statusText : 'FAILED'}
+              </span>
+            </td>
+            <td class="py-3 px-4 font-mono font-semibold ${r.rttMs < 50 ? 'text-brand-emerald' : (r.rttMs < 200 ? 'text-amber-400' : 'text-brand-crimson')}">
+              ${r.rttMs} ms
+            </td>
+            <td class="py-3 px-4 font-mono text-slate-400 text-[11px] hidden md:table-cell">
+              ${r.cfRay}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold ${r.healthy ? 'bg-brand-emerald/20 text-brand-emerald' : 'bg-brand-crimson/20 text-brand-crimson'}">
+                <span class="w-1.5 h-1.5 rounded-full ${r.healthy ? 'bg-brand-emerald' : 'bg-brand-crimson'}"></span>
+                ${r.healthy ? 'Operational' : 'Failing'}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Run Diagnostics Now
+        `;
+      }
+    }
+
+    function renderLiveSiteStatusWorkspace() {
+      dom.moduleHeaderActions.innerHTML = `
+        <button id="btnRunDiagnostics" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-emerald text-white hover:bg-brand-emeraldHover transition shadow flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Run Diagnostics Now
+        </button>
+      `;
+
+      dom.workspaceRoot.innerHTML = `
+        <!-- Edge & Health Summary Bar -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span id="diagStatusDot" class="w-3 h-3 rounded-full bg-brand-emerald animate-pulse"></span>
+              <div>
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                  Cloudflare Edge Telemetry
+                  <span class="text-xs font-mono font-normal text-slate-400">(SIN - Singapore PoP)</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Live latency and round-trip time probes across public routes</p>
+              </div>
+            </div>
+            <span id="diagEdgeStatusPill" class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-emerald-500/20 text-brand-emerald border border-brand-emerald/40">
+              PROBING SYSTEM...
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-brand-border/60 font-mono text-xs">
+            <div class="p-3 rounded-lg bg-[#081220] border border-brand-border">
+              <span class="text-slate-400 block text-[11px] font-sans">Edge PoP Location</span>
+              <strong class="text-white text-sm">SIN &bull; Singapore</strong>
+            </div>
+            <div class="p-3 rounded-lg bg-[#081220] border border-brand-border">
+              <span class="text-slate-400 block text-[11px] font-sans">Average Round-Trip Latency</span>
+              <strong id="diagAvgLatency" class="text-brand-emerald text-sm">-- ms</strong>
+            </div>
+            <div class="p-3 rounded-lg bg-[#081220] border border-brand-border">
+              <span class="text-slate-400 block text-[11px] font-sans">Last Diagnostic Probe</span>
+              <strong id="diagLastCheck" class="text-slate-200 text-sm">Checking...</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Probed Endpoints Table -->
+        <div class="p-5 rounded-xl bg-brand-slate border border-brand-border shadow-md">
+          <h3 class="font-bold text-white text-sm mb-4">Core Endpoint Route Health Diagnostics</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-[#081220] uppercase font-mono text-[10px] text-slate-400 border-b border-brand-border">
+                <tr>
+                  <th class="py-2.5 px-4">Endpoint Name</th>
+                  <th class="py-2.5 px-4 hidden sm:table-cell">Route Path</th>
+                  <th class="py-2.5 px-4">HTTP Response</th>
+                  <th class="py-2.5 px-4">Latency (RTT)</th>
+                  <th class="py-2.5 px-4 hidden md:table-cell">Cloudflare Ray</th>
+                  <th class="py-2.5 px-4 text-right">Health Status</th>
+                </tr>
+              </thead>
+              <tbody id="diagnosticTableBody" class="divide-y divide-brand-border/60">
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-slate-400">
+                    <svg class="animate-spin w-5 h-5 text-brand-emerald mx-auto mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                    Dispatching multi-endpoint HTTP HEAD probes...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      // Wire button action
+      const btnProbe = document.getElementById('btnRunDiagnostics');
+      if (btnProbe) {
+        btnProbe.addEventListener('click', () => {
+          executeDiagnosticsProbe();
+        });
+      }
+
+      // Execute probe automatically on view mount
+      executeDiagnosticsProbe();
     }
 
     /**
