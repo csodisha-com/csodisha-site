@@ -5960,6 +5960,334 @@
       this.logAudit("MENU_TREE_RESET", "NAVIGATION_ENGINE", "Menu tree " + folderKey + " restored to initial directory defaults.");
       return restored;
     },
+    // =========================================================================
+    // 56. Educational Resources Batch 1 (module-05-001 to module-05-004)
+    // =========================================================================
+
+    // 56.1 Digital Library Engine (module-05-001)
+    getDigitalLibraryConfig() {
+      const raw = localStorage.getItem("cso_digital_library_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_digital_library_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        librarySettings: { totalVolumes: 1420, bandwidthCapPerUserMb: 500, enableOfflineSync: true },
+        catalog: [
+          { id: "LIB-001", title: "Complete Odisha History & Heritage Compendium", format: "PDF", fileSizeBytes: 4820000, examTarget: "OPSC OAS", language: "English & Odia", accessLevel: "Public Free", active: true },
+          { id: "LIB-002", title: "Quantitative Aptitude Shortcut Formula Handbook", format: "EPUB", fileSizeBytes: 2150000, examTarget: "OSSC CGL", language: "English", accessLevel: "Public Free", active: true },
+          { id: "LIB-003", title: "Odisha Geography, River Basins & Mineral Map Atlas", format: "PDF", fileSizeBytes: 8900000, examTarget: "All State Exams", language: "Odia", accessLevel: "Public Free", active: true }
+        ]
+      };
+      localStorage.setItem("cso_digital_library_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveDigitalLibraryConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid digital library payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_digital_library_config", JSON.stringify(config));
+      this.logAudit("DIGITAL_LIBRARY_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Digital library catalog and volume settings saved.");
+      return config;
+    },
+
+    importDigitalLibraryConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveDigitalLibraryConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import digital library: " + err.message);
+      }
+    },
+
+    resetDigitalLibraryConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        librarySettings: { totalVolumes: 1420, bandwidthCapPerUserMb: 500, enableOfflineSync: true },
+        catalog: [
+          { id: "LIB-001", title: "Complete Odisha History & Heritage Compendium", format: "PDF", fileSizeBytes: 4820000, examTarget: "OPSC OAS", language: "English & Odia", accessLevel: "Public Free", active: true },
+          { id: "LIB-002", title: "Quantitative Aptitude Shortcut Formula Handbook", format: "EPUB", fileSizeBytes: 2150000, examTarget: "OSSC CGL", language: "English", accessLevel: "Public Free", active: true },
+          { id: "LIB-003", title: "Odisha Geography, River Basins & Mineral Map Atlas", format: "PDF", fileSizeBytes: 8900000, examTarget: "All State Exams", language: "Odia", accessLevel: "Public Free", active: true }
+        ]
+      };
+      localStorage.setItem("cso_digital_library_config", JSON.stringify(initial));
+      this.logAudit("DIGITAL_LIBRARY_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Digital library restored to factory defaults.");
+      return initial;
+    },
+
+    exportDigitalLibraryManifest() {
+      const config = this.getDigitalLibraryConfig();
+      const timestamp = Date.now();
+      const filename = "cso-digital-library-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        digitalLibrary: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("DIGITAL_LIBRARY_MANIFEST_EXPORTED", "DATA_EXPORT", "Digital library manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 56.2 Study Materials Engine (module-05-002)
+    getStudyMaterialsConfig() {
+      const raw = localStorage.getItem("cso_study_materials_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_study_materials_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        curriculumSettings: { academicYear: "2026-27", defaultLanguage: "Bilingual (Odia/English)", enforceVerifiedWatermark: true },
+        materials: [
+          { id: "MAT-001", title: "Odisha Civil Services Paper-I Indian Polity Master Capsule", category: "General Studies", targetExam: "OPSC OAS", author: "Dr. B. K. Jena", pages: 124, downloadUrl: "/assets/pdf/polity-master-capsule.pdf", active: true },
+          { id: "MAT-002", title: "Reasoning & Mental Ability Shortcuts for OSSC CGL & CHSL", category: "Mental Ability", targetExam: "OSSC CGL", author: "M. Pattnaik", pages: 88, downloadUrl: "/assets/pdf/reasoning-shortcuts.pdf", active: true },
+          { id: "MAT-003", title: "Odisha District-Wise General Knowledge & Statistical Handout", category: "State GK", targetExam: "OSSSC Combined", author: "Editorial Cell", pages: 64, downloadUrl: "/assets/pdf/district-gk-handout.pdf", active: true }
+        ]
+      };
+      localStorage.setItem("cso_study_materials_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveStudyMaterialsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid study materials payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_study_materials_config", JSON.stringify(config));
+      this.logAudit("STUDY_MATERIALS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Study materials curriculum and items saved.");
+      return config;
+    },
+
+    importStudyMaterialsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveStudyMaterialsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import study materials: " + err.message);
+      }
+    },
+
+    resetStudyMaterialsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        curriculumSettings: { academicYear: "2026-27", defaultLanguage: "Bilingual (Odia/English)", enforceVerifiedWatermark: true },
+        materials: [
+          { id: "MAT-001", title: "Odisha Civil Services Paper-I Indian Polity Master Capsule", category: "General Studies", targetExam: "OPSC OAS", author: "Dr. B. K. Jena", pages: 124, downloadUrl: "/assets/pdf/polity-master-capsule.pdf", active: true },
+          { id: "MAT-002", title: "Reasoning & Mental Ability Shortcuts for OSSC CGL & CHSL", category: "Mental Ability", targetExam: "OSSC CGL", author: "M. Pattnaik", pages: 88, downloadUrl: "/assets/pdf/reasoning-shortcuts.pdf", active: true },
+          { id: "MAT-003", title: "Odisha District-Wise General Knowledge & Statistical Handout", category: "State GK", targetExam: "OSSSC Combined", author: "Editorial Cell", pages: 64, downloadUrl: "/assets/pdf/district-gk-handout.pdf", active: true }
+        ]
+      };
+      localStorage.setItem("cso_study_materials_config", JSON.stringify(initial));
+      this.logAudit("STUDY_MATERIALS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Study materials restored to factory defaults.");
+      return initial;
+    },
+
+    exportStudyMaterialsManifest() {
+      const config = this.getStudyMaterialsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-study-materials-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        studyMaterials: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("STUDY_MATERIALS_MANIFEST_EXPORTED", "DATA_EXPORT", "Study materials manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 56.3 Notes & PDFs Engine (module-05-003)
+    getNotesPdfsConfig() {
+      const raw = localStorage.getItem("cso_notes_pdfs_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_notes_pdfs_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        viewerSettings: { allowDirectDownload: true, embedPdfViewer: true, watermarkText: "Common Sense Odisha - csodisha.com" },
+        documents: [
+          { id: "NOTE-01", title: "Odisha Modern History & Freedom Movement Handwritten Summary Notes", subject: "Odisha History", exam: "OPSC OAS", contributor: "Rank 14 Topper Desk", fileSize: "3.4 MB", verified: true, active: true },
+          { id: "NOTE-02", title: "General Science Physics & Chemistry Rapid Revision Formula Sheet", subject: "General Science", exam: "OSSC CGL / Railway", contributor: "Science Faculty", fileSize: "1.8 MB", verified: true, active: true },
+          { id: "NOTE-03", title: "Odia Grammar & Vyakarana High-Yield Rules for Teaching Exams", subject: "Odia Language", exam: "OTET / OSSTET", contributor: "Linguistics Cell", fileSize: "2.6 MB", verified: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_notes_pdfs_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveNotesPdfsConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid notes & pdfs payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_notes_pdfs_config", JSON.stringify(config));
+      this.logAudit("NOTES_PDFS_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Notes & PDFs documents and viewer settings saved.");
+      return config;
+    },
+
+    importNotesPdfsConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveNotesPdfsConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import notes & pdfs: " + err.message);
+      }
+    },
+
+    resetNotesPdfsConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        viewerSettings: { allowDirectDownload: true, embedPdfViewer: true, watermarkText: "Common Sense Odisha - csodisha.com" },
+        documents: [
+          { id: "NOTE-01", title: "Odisha Modern History & Freedom Movement Handwritten Summary Notes", subject: "Odisha History", exam: "OPSC OAS", contributor: "Rank 14 Topper Desk", fileSize: "3.4 MB", verified: true, active: true },
+          { id: "NOTE-02", title: "General Science Physics & Chemistry Rapid Revision Formula Sheet", subject: "General Science", exam: "OSSC CGL / Railway", contributor: "Science Faculty", fileSize: "1.8 MB", verified: true, active: true },
+          { id: "NOTE-03", title: "Odia Grammar & Vyakarana High-Yield Rules for Teaching Exams", subject: "Odia Language", exam: "OTET / OSSTET", contributor: "Linguistics Cell", fileSize: "2.6 MB", verified: true, active: true }
+        ]
+      };
+      localStorage.setItem("cso_notes_pdfs_config", JSON.stringify(initial));
+      this.logAudit("NOTES_PDFS_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Notes & PDFs documents restored to factory defaults.");
+      return initial;
+    },
+
+    exportNotesPdfsManifest() {
+      const config = this.getNotesPdfsConfig();
+      const timestamp = Date.now();
+      const filename = "cso-notes-pdfs-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        notesPdfs: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("NOTES_PDFS_MANIFEST_EXPORTED", "DATA_EXPORT", "Notes & PDFs manifest exported (" + filename + ").");
+      return filename;
+    },
+
+    // 56.4 Books & References Engine (module-05-004)
+    getBooksReferencesConfig() {
+      const raw = localStorage.getItem("cso_books_references_config");
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse cso_books_references_config", e);
+        }
+      }
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        curationSettings: { defaultSort: "Popularity", includeIsbn: true, affiliateDisclaimer: "100% Non-commercial public education initiative" },
+        books: [
+          { id: "BOOK-01", title: "History of Odisha (From Ancient Era to Post-Independence)", authors: "Dr. H. K. Mahatab", publisher: "Odisha Sahitya Akademi", recommendedFor: "OPSC OAS Prelims & Mains", isbn: "978-81-7400-012-3", availability: "Public Domain / Library Copy", active: true },
+          { id: "BOOK-02", title: "Comprehensive English Grammar & Composition for Competitive Exams", authors: "Wren & Martin", publisher: "S. Chand Publishing", recommendedFor: "OSSC CGL & Bank Exams", isbn: "978-93-5283-789-0", availability: "Recommended Reference", active: true },
+          { id: "BOOK-03", title: "Odisha State Gazette & Administrative Laws Manual", authors: "Law Department, Govt. of Odisha", publisher: "Odisha Government Press", recommendedFor: "Legal & Administrative Services", isbn: "GOV-OD-2026-LAW", availability: "Official Gazette Release", active: true }
+        ]
+      };
+      localStorage.setItem("cso_books_references_config", JSON.stringify(initial));
+      return initial;
+    },
+
+    saveBooksReferencesConfig(config) {
+      if (!config || typeof config !== "object") throw new Error("Invalid books & references payload");
+      config.meta = config.meta || {};
+      config.meta.updatedAt = new Date().toISOString();
+      config.meta.lastEditedBy = "admin@csodisha.com";
+      localStorage.setItem("cso_books_references_config", JSON.stringify(config));
+      this.logAudit("BOOKS_REFERENCES_CONFIG_UPDATED", "EDUCATIONAL_RESOURCES", "Books & References catalog and curation settings saved.");
+      return config;
+    },
+
+    importBooksReferencesConfig(jsonString) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        if (!parsed || typeof parsed !== "object") throw new Error("Parsed JSON must be an object");
+        return this.saveBooksReferencesConfig(parsed);
+      } catch (err) {
+        throw new Error("Failed to import books & references: " + err.message);
+      }
+    },
+
+    resetBooksReferencesConfig() {
+      const initial = {
+        meta: { version: "1.0", lastEditedBy: "admin@csodisha.com", updatedAt: new Date().toISOString() },
+        curationSettings: { defaultSort: "Popularity", includeIsbn: true, affiliateDisclaimer: "100% Non-commercial public education initiative" },
+        books: [
+          { id: "BOOK-01", title: "History of Odisha (From Ancient Era to Post-Independence)", authors: "Dr. H. K. Mahatab", publisher: "Odisha Sahitya Akademi", recommendedFor: "OPSC OAS Prelims & Mains", isbn: "978-81-7400-012-3", availability: "Public Domain / Library Copy", active: true },
+          { id: "BOOK-02", title: "Comprehensive English Grammar & Composition for Competitive Exams", authors: "Wren & Martin", publisher: "S. Chand Publishing", recommendedFor: "OSSC CGL & Bank Exams", isbn: "978-93-5283-789-0", availability: "Recommended Reference", active: true },
+          { id: "BOOK-03", title: "Odisha State Gazette & Administrative Laws Manual", authors: "Law Department, Govt. of Odisha", publisher: "Odisha Government Press", recommendedFor: "Legal & Administrative Services", isbn: "GOV-OD-2026-LAW", availability: "Official Gazette Release", active: true }
+        ]
+      };
+      localStorage.setItem("cso_books_references_config", JSON.stringify(initial));
+      this.logAudit("BOOKS_REFERENCES_CONFIG_RESET", "EDUCATIONAL_RESOURCES", "Books & References restored to factory defaults.");
+      return initial;
+    },
+
+    exportBooksReferencesManifest() {
+      const config = this.getBooksReferencesConfig();
+      const timestamp = Date.now();
+      const filename = "cso-books-references-config-" + timestamp + ".json";
+      const bundle = {
+        manifestVersion: "2026.11",
+        exportedAt: new Date(timestamp).toISOString(),
+        booksReferences: config
+      };
+      const jsonStr = JSON.stringify(bundle, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.logAudit("BOOKS_REFERENCES_MANIFEST_EXPORTED", "DATA_EXPORT", "Books & References manifest exported (" + filename + ").");
+      return filename;
+    },
+
 
 
 
@@ -6302,6 +6630,10 @@
           schemesBenefitsTree: this.getMenuTree("cso_schemes_benefits_tree"),
           studyLibraryTree: this.getMenuTree("cso_study_library_tree"),
           communityTree: this.getMenuTree("cso_community_tree"),
+          digitalLibrary: this.getDigitalLibraryConfig(),
+          studyMaterials: this.getStudyMaterialsConfig(),
+          notesPdfs: this.getNotesPdfsConfig(),
+          booksReferences: this.getBooksReferencesConfig(),
           broadcast: this.getActiveBroadcast(),
           system: this.getSystem(),
           security: this.getSecurity(),

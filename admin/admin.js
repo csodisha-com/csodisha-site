@@ -401,6 +401,14 @@ async function loadMasterNavigation() {
         renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_community_tree', 'Community Directory', '👥', moduleId);
       } else if (folderId === 'folder-02') {
         renderCMSStudioWorkspace();
+      } else if (moduleId === 'module-05-001') {
+        renderDigitalLibraryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-002') {
+        renderStudyMaterialsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-003') {
+        renderNotesPdfsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-05-004') {
+        renderBooksReferencesWorkspace(dom.workspaceRoot);
       } else if (folderId === 'folder-05') {
         renderEducationalResourcesWorkspace();
       } else if (folderId === 'folder-08') {
@@ -17556,6 +17564,1221 @@ async function loadMasterNavigation() {
         </div>`;
       }
     }
+
+
+    /**
+     * VIEW: Digital Library (module-05-001)
+     */
+    function renderDigitalLibraryWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getDigitalLibraryConfig();
+        const catalog = config.catalog || [];
+        const settings = config.librarySettings || {};
+
+        const publicCount = catalog.filter(c => c.active && c.accessLevel === 'Public Free').length;
+        const totalSizeMb = (catalog.reduce((acc, c) => acc + (c.fileSizeBytes || 0), 0) / (1024 * 1024)).toFixed(1);
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </span>
+                    Digital Library Vault
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    module-05-001
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage digital compendiums, e-books, high-resolution atlases, and educational downloads across Odisha.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-lib-item" class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Catalog Volume
+                </button>
+                <button id="btn-toggle-json-lib" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-lib" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-lib" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-lib" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Catalog Volumes</span>
+                <div class="mt-1 text-2xl font-bold text-white">${catalog.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Free Access Materials</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${publicCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Storage Footprint</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${totalSizeMb} MB</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Bandwidth Quota</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${settings.bandwidthCapPerUserMb || 500} MB/user</div>
+              </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Digital Library Engine Policies</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Total Licensed Volumes</label>
+                  <input type="number" id="lib-total-volumes" value="${settings.totalVolumes || 1420}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">User Daily Bandwidth Cap (MB)</label>
+                  <input type="number" id="lib-bw-cap" value="${settings.bandwidthCapPerUserMb || 500}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="lib-offline-sync" class="sr-only peer" ${settings.enableOfflineSync ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enable PWA Offline Sync</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Catalog Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Indexed Library Volumes</h2>
+                <span class="text-xs text-slate-400">${catalog.length} publications</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Catalog ID</th>
+                      <th class="px-4 py-3">Publication Title</th>
+                      <th class="px-4 py-3">Format</th>
+                      <th class="px-4 py-3">Target Exam</th>
+                      <th class="px-4 py-3">Language</th>
+                      <th class="px-4 py-3">Size (MB)</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="lib-catalog-body" class="divide-y divide-slate-800/60">
+                    ${catalog.map((item, idx) => {
+                      const sizeMb = ((item.fileSizeBytes || 0) / (1024 * 1024)).toFixed(2);
+                      const formatBadge = item.format === 'PDF' ? 'bg-rose-950 text-rose-400 border-rose-800/50' : 'bg-cyan-950 text-cyan-400 border-cyan-800/50';
+                      return `
+                        <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                          <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                            ${escapeHtml(item.id || 'LIB-' + (idx+1))}
+                          </td>
+                          <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                            ${escapeHtml(item.title)}
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${formatBadge}">
+                              ${escapeHtml(item.format || 'PDF')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-300">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                              ${escapeHtml(item.examTarget || 'General')}
+                            </span>
+                          </td>
+                          <td class="px-4 py-3 text-xs text-slate-400">
+                            ${escapeHtml(item.language || 'English')}
+                          </td>
+                          <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                            ${sizeMb} MB
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <input type="checkbox" class="lib-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-emerald-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <button class="lib-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                            <button class="lib-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                    ${catalog.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          Digital library catalog is empty. Click "Add Catalog Volume" to index materials.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="lib-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Digital Library Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_digital_library_config</span>
+              </div>
+              <textarea id="lib-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-emerald-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-lib" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Listeners
+        const catalogList = [...catalog];
+
+        const saveChanges = () => {
+          config.librarySettings = {
+            totalVolumes: parseInt(root.querySelector('#lib-total-volumes').value, 10) || 1420,
+            bandwidthCapPerUserMb: parseInt(root.querySelector('#lib-bw-cap').value, 10) || 500,
+            enableOfflineSync: root.querySelector('#lib-offline-sync').checked
+          };
+          config.catalog = catalogList;
+          window.CSOSuperStore.saveDigitalLibraryConfig(config);
+          alert('Digital library configuration saved successfully!');
+          renderDigitalLibraryWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-lib').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-lib').addEventListener('click', () => {
+          window.CSOSuperStore.exportDigitalLibraryManifest();
+        });
+
+        root.querySelector('#btn-reset-lib').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the digital library to default catalog items?')) {
+            window.CSOSuperStore.resetDigitalLibraryConfig();
+            alert('Digital library reset to defaults.');
+            renderDigitalLibraryWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#lib-json-drawer');
+        root.querySelector('#btn-toggle-json-lib').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-lib').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#lib-json-raw').value;
+            window.CSOSuperStore.importDigitalLibraryConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderDigitalLibraryWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.lib-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (catalogList[idx]) {
+              catalogList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.lib-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove publication "' + catalogList[idx].title + '"?')) {
+              catalogList.splice(idx, 1);
+              config.catalog = catalogList;
+              window.CSOSuperStore.saveDigitalLibraryConfig(config);
+              renderDigitalLibraryWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.lib-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = catalogList[idx];
+            const newTitle = prompt('Publication Title:', item.title);
+            if (newTitle === null) return;
+            const newExam = prompt('Target Exam:', item.examTarget || 'All State Exams');
+            const newLang = prompt('Language:', item.language || 'English');
+            const newFormat = prompt('Format (PDF / EPUB / ZIP):', item.format || 'PDF');
+
+            item.title = newTitle.trim() || item.title;
+            if (newExam !== null) item.examTarget = newExam.trim();
+            if (newLang !== null) item.language = newLang.trim();
+            if (newFormat !== null) item.format = newFormat.trim();
+
+            config.catalog = catalogList;
+            window.CSOSuperStore.saveDigitalLibraryConfig(config);
+            renderDigitalLibraryWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-lib-item').addEventListener('click', () => {
+          const title = prompt('Enter Publication Title:');
+          if (!title || !title.trim()) return;
+          const exam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL, OTET):', 'OPSC OAS') || 'General';
+          const format = prompt('Format (PDF / EPUB / ZIP):', 'PDF') || 'PDF';
+          const lang = prompt('Language (e.g. English, Odia, Bilingual):', 'English & Odia') || 'English';
+
+          const newId = 'LIB-' + String(catalogList.length + 1).padStart(3, '0');
+          catalogList.push({
+            id: newId,
+            title: title.trim(),
+            format: format.trim(),
+            fileSizeBytes: 3500000,
+            examTarget: exam.trim(),
+            language: lang.trim(),
+            accessLevel: 'Public Free',
+            active: true
+          });
+          config.catalog = catalogList;
+          window.CSOSuperStore.saveDigitalLibraryConfig(config);
+          renderDigitalLibraryWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-001 (Digital Library)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Study Materials (module-05-002)
+     */
+    function renderStudyMaterialsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getStudyMaterialsConfig();
+        const materials = config.materials || [];
+        const settings = config.curriculumSettings || {};
+
+        const activeCount = materials.filter(m => m.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </span>
+                    Curriculum & Study Materials
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    module-05-002
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage syllabus-aligned study modules, topic capsules, subject breakdowns, and master student handouts.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-mat-item" class="px-3.5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Study Material
+                </button>
+                <button id="btn-toggle-json-mat" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-mat" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-mat" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-mat" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Curated Capsules</span>
+                <div class="mt-1 text-2xl font-bold text-white">${materials.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active in Repository</span>
+                <div class="mt-1 text-2xl font-bold text-emerald-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Current Academic Cycle</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${settings.academicYear || '2026-27'}</div>
+              </div>
+            </div>
+
+            <!-- Curriculum Policies Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Curriculum & Release Governance</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Academic Year</label>
+                  <input type="text" id="mat-academic-year" value="${escapeHtml(settings.academicYear || '2026-27')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Default Instructional Language</label>
+                  <input type="text" id="mat-default-lang" value="${escapeHtml(settings.defaultLanguage || 'Bilingual (Odia/English)')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="mat-watermark" class="sr-only peer" ${settings.enforceVerifiedWatermark ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Enforce Verified Academic Watermark</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Materials Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Subject Capsules & Modules</h2>
+                <span class="text-xs text-slate-400">${materials.length} resources</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Material ID</th>
+                      <th class="px-4 py-3">Module Title</th>
+                      <th class="px-4 py-3">Category</th>
+                      <th class="px-4 py-3">Exam Target</th>
+                      <th class="px-4 py-3">Author</th>
+                      <th class="px-4 py-3">Pages</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mat-items-body" class="divide-y divide-slate-800/60">
+                    ${materials.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(item.id || 'MAT-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                          ${escapeHtml(item.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-cyan-300 border border-cyan-800/40">
+                            ${escapeHtml(item.category || 'General Studies')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          ${escapeHtml(item.targetExam || 'General')}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(item.author || 'Editorial Cell')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                          ${item.pages || 'N/A'} pgs
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="mat-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="mat-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="mat-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                    ${materials.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          No study materials cataloged. Click "Add Study Material" to create one.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="mat-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Study Materials Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_study_materials_config</span>
+              </div>
+              <textarea id="mat-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-indigo-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-mat" class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const matList = [...materials];
+
+        const saveChanges = () => {
+          config.curriculumSettings = {
+            academicYear: root.querySelector('#mat-academic-year').value.trim() || '2026-27',
+            defaultLanguage: root.querySelector('#mat-default-lang').value.trim() || 'Bilingual (Odia/English)',
+            enforceVerifiedWatermark: root.querySelector('#mat-watermark').checked
+          };
+          config.materials = matList;
+          window.CSOSuperStore.saveStudyMaterialsConfig(config);
+          alert('Study materials configuration saved successfully!');
+          renderStudyMaterialsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-mat').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-mat').addEventListener('click', () => {
+          window.CSOSuperStore.exportStudyMaterialsManifest();
+        });
+
+        root.querySelector('#btn-reset-mat').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore the study materials to default factory items?')) {
+            window.CSOSuperStore.resetStudyMaterialsConfig();
+            alert('Study materials reset to defaults.');
+            renderStudyMaterialsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#mat-json-drawer');
+        root.querySelector('#btn-toggle-json-mat').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-mat').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#mat-json-raw').value;
+            window.CSOSuperStore.importStudyMaterialsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderStudyMaterialsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.mat-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (matList[idx]) {
+              matList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.mat-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove study material "' + matList[idx].title + '"?')) {
+              matList.splice(idx, 1);
+              config.materials = matList;
+              window.CSOSuperStore.saveStudyMaterialsConfig(config);
+              renderStudyMaterialsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.mat-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = matList[idx];
+            const newTitle = prompt('Study Material Title:', item.title);
+            if (newTitle === null) return;
+            const newCat = prompt('Category:', item.category || 'General Studies');
+            const newExam = prompt('Target Exam:', item.targetExam || 'OPSC OAS');
+            const newAuthor = prompt('Author / Faculty:', item.author || 'Editorial Cell');
+            const newPages = prompt('Page Count:', String(item.pages || 50));
+
+            item.title = newTitle.trim() || item.title;
+            if (newCat !== null) item.category = newCat.trim();
+            if (newExam !== null) item.targetExam = newExam.trim();
+            if (newAuthor !== null) item.author = newAuthor.trim();
+            if (newPages !== null) item.pages = parseInt(newPages, 10) || item.pages;
+
+            config.materials = matList;
+            window.CSOSuperStore.saveStudyMaterialsConfig(config);
+            renderStudyMaterialsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-mat-item').addEventListener('click', () => {
+          const title = prompt('Enter Study Material Title:');
+          if (!title || !title.trim()) return;
+          const category = prompt('Category (e.g. General Studies, Mental Ability, State GK):', 'General Studies') || 'General Studies';
+          const targetExam = prompt('Target Exam (e.g. OPSC OAS, OSSC CGL, OSSSC):', 'OPSC OAS') || 'OPSC OAS';
+          const author = prompt('Author / Desk:', 'Editorial Cell') || 'Editorial Cell';
+
+          const newId = 'MAT-' + String(matList.length + 1).padStart(3, '0');
+          matList.push({
+            id: newId,
+            title: title.trim(),
+            category: category.trim(),
+            targetExam: targetExam.trim(),
+            author: author.trim(),
+            pages: 60,
+            downloadUrl: '/assets/pdf/' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf',
+            active: true
+          });
+          config.materials = matList;
+          window.CSOSuperStore.saveStudyMaterialsConfig(config);
+          renderStudyMaterialsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-002 (Study Materials)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Notes & PDFs (module-05-003)
+     */
+    function renderNotesPdfsWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getNotesPdfsConfig();
+        const documents = config.documents || [];
+        const settings = config.viewerSettings || {};
+
+        const verifiedCount = documents.filter(d => d.verified && d.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </span>
+                    Handwritten Notes & PDF Documents
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                    module-05-003
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Manage verified topper notes, quick reference formula sheets, and watermarked examination PDF handouts.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-note-item" class="px-3.5 py-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Upload Note PDF
+                </button>
+                <button id="btn-toggle-json-note" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-note" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-note" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-note" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Documents</span>
+                <div class="mt-1 text-2xl font-bold text-white">${documents.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Faculty Verified Notes</span>
+                <div class="mt-1 text-2xl font-bold text-cyan-400">${verifiedCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Viewer Mode</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${settings.embedPdfViewer ? 'Embedded Reader' : 'Direct Link'}</div>
+              </div>
+            </div>
+
+            <!-- Viewer Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">PDF Viewer & Distribution Safeguards</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Watermark Identifier</label>
+                  <input type="text" id="note-watermark-text" value="${escapeHtml(settings.watermarkText || 'Common Sense Odisha - csodisha.com')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="note-embed-viewer" class="sr-only peer" ${settings.embedPdfViewer ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Embed In-Browser PDF Viewer</span>
+                  </label>
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="note-allow-dl" class="sr-only peer" ${settings.allowDirectDownload ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Allow Direct One-Click Download</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Indexed PDF Notes & Capsules</h2>
+                <span class="text-xs text-slate-400">${documents.length} files</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Note ID</th>
+                      <th class="px-4 py-3">Document Title</th>
+                      <th class="px-4 py-3">Subject</th>
+                      <th class="px-4 py-3">Exam Scope</th>
+                      <th class="px-4 py-3">Contributor</th>
+                      <th class="px-4 py-3">Size</th>
+                      <th class="px-4 py-3 text-center">Verified</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="note-items-body" class="divide-y divide-slate-800/60">
+                    ${documents.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          ${escapeHtml(item.id || 'NOTE-' + (idx+1))}
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                          ${escapeHtml(item.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                            ${escapeHtml(item.subject || 'General')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          ${escapeHtml(item.exam || 'All Exams')}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(item.contributor || 'Academic Cell')}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                          ${escapeHtml(item.fileSize || '2 MB')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="note-toggle-verified cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${item.verified ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="note-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="note-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="note-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                    ${documents.length === 0 ? `
+                      <tr>
+                        <td colspan="9" class="px-4 py-8 text-center text-slate-500">
+                          No notes uploaded. Click "Upload Note PDF" to add reference material.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="note-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Notes & PDFs Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_notes_pdfs_config</span>
+              </div>
+              <textarea id="note-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-cyan-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-note" class="px-3 py-1.5 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const docList = [...documents];
+
+        const saveChanges = () => {
+          config.viewerSettings = {
+            watermarkText: root.querySelector('#note-watermark-text').value.trim() || 'Common Sense Odisha - csodisha.com',
+            embedPdfViewer: root.querySelector('#note-embed-viewer').checked,
+            allowDirectDownload: root.querySelector('#note-allow-dl').checked
+          };
+          config.documents = docList;
+          window.CSOSuperStore.saveNotesPdfsConfig(config);
+          alert('Notes & PDFs configuration saved successfully!');
+          renderNotesPdfsWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-note').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-note').addEventListener('click', () => {
+          window.CSOSuperStore.exportNotesPdfsManifest();
+        });
+
+        root.querySelector('#btn-reset-note').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore notes & PDFs to default records?')) {
+            window.CSOSuperStore.resetNotesPdfsConfig();
+            alert('Notes & PDFs reset to defaults.');
+            renderNotesPdfsWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#note-json-drawer');
+        root.querySelector('#btn-toggle-json-note').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-note').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#note-json-raw').value;
+            window.CSOSuperStore.importNotesPdfsConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderNotesPdfsWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.note-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (docList[idx]) {
+              docList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.note-toggle-verified').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (docList[idx]) {
+              docList[idx].verified = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.note-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Delete document "' + docList[idx].title + '"?')) {
+              docList.splice(idx, 1);
+              config.documents = docList;
+              window.CSOSuperStore.saveNotesPdfsConfig(config);
+              renderNotesPdfsWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.note-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = docList[idx];
+            const newTitle = prompt('Document Title:', item.title);
+            if (newTitle === null) return;
+            const newSubj = prompt('Subject:', item.subject || 'General');
+            const newExam = prompt('Exam Scope:', item.exam || 'All Exams');
+            const newContrib = prompt('Contributor:', item.contributor || 'Academic Cell');
+
+            item.title = newTitle.trim() || item.title;
+            if (newSubj !== null) item.subject = newSubj.trim();
+            if (newExam !== null) item.exam = newExam.trim();
+            if (newContrib !== null) item.contributor = newContrib.trim();
+
+            config.documents = docList;
+            window.CSOSuperStore.saveNotesPdfsConfig(config);
+            renderNotesPdfsWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-note-item').addEventListener('click', () => {
+          const title = prompt('Enter Document Title:');
+          if (!title || !title.trim()) return;
+          const subject = prompt('Subject (e.g. Odisha History, General Science, Odia Language):', 'Odisha History') || 'General';
+          const exam = prompt('Exam Target (e.g. OPSC OAS, OSSC, Teaching Exams):', 'OPSC OAS') || 'All Exams';
+          const contrib = prompt('Contributor:', 'Topper Desk') || 'Academic Cell';
+
+          const newId = 'NOTE-' + String(docList.length + 1).padStart(2, '0');
+          docList.push({
+            id: newId,
+            title: title.trim(),
+            subject: subject.trim(),
+            exam: exam.trim(),
+            contributor: contrib.trim(),
+            fileSize: '2.5 MB',
+            verified: true,
+            active: true
+          });
+          config.documents = docList;
+          window.CSOSuperStore.saveNotesPdfsConfig(config);
+          renderNotesPdfsWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-003 (Notes & PDFs)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
+    /**
+     * VIEW: Books & References (module-05-004)
+     */
+    function renderBooksReferencesWorkspace(container) {
+      const root = container || dom.workspaceRoot;
+      if (!root) return;
+      root.style.cssText = 'display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; width: 100% !important; min-height: 100% !important;';
+      root.classList.remove('hidden');
+
+      try {
+        const config = window.CSOSuperStore.getBooksReferencesConfig();
+        const books = config.books || [];
+        const settings = config.curationSettings || {};
+
+        const activeCount = books.filter(b => b.active).length;
+
+        root.innerHTML = `
+          <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <!-- Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-700/60 gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </span>
+                    Books & Reference Catalog
+                  </h1>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    module-05-004
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-400">
+                  Curate recommended textbooks, standard reference manuals, Odisha state gazette compilations, and ISBN registries.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btn-add-book-item" class="px-3.5 py-2 text-xs font-medium text-white bg-amber-600 hover:bg-amber-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Reference Book
+                </button>
+                <button id="btn-toggle-json-book" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                  Inspect JSON
+                </button>
+                <button id="btn-export-book" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Export JSON
+                </button>
+                <button id="btn-reset-book" class="px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Reset Defaults
+                </button>
+                <button id="btn-save-book" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Indexed References</span>
+                <div class="mt-1 text-2xl font-bold text-white">${books.length}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Standard Texts</span>
+                <div class="mt-1 text-2xl font-bold text-amber-400">${activeCount}</div>
+              </div>
+              <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Curation Sort</span>
+                <div class="mt-1 text-2xl font-bold text-indigo-400">${escapeHtml(settings.defaultSort || 'Popularity')}</div>
+              </div>
+            </div>
+
+            <!-- Curation Settings Card -->
+            <div class="p-5 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+              <h2 class="text-base font-semibold text-white">Reference Curation & Statutory Disclaimers</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Catalog Sort Order</label>
+                  <select id="book-sort-order" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                    <option value="Popularity" ${settings.defaultSort === 'Popularity' ? 'selected' : ''}>By Popularity / Topper Recommended</option>
+                    <option value="Title" ${settings.defaultSort === 'Title' ? 'selected' : ''}>Alphabetical by Title</option>
+                    <option value="Exam" ${settings.defaultSort === 'Exam' ? 'selected' : ''}>By Exam Applicability</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Statutory Non-Affiliation Disclaimer</label>
+                  <input type="text" id="book-disclaimer" value="${escapeHtml(settings.affiliateDisclaimer || '100% Non-commercial public education initiative')}" class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="book-include-isbn" class="sr-only peer" ${settings.includeIsbn ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    <span class="ml-3 text-xs font-medium text-slate-300">Display ISBN Identifiers</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Books Table -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-white">Standard Reference Works</h2>
+                <span class="text-xs text-slate-400">${books.length} publications</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                  <thead class="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Book ID / ISBN</th>
+                      <th class="px-4 py-3">Book Title</th>
+                      <th class="px-4 py-3">Authors / Contributors</th>
+                      <th class="px-4 py-3">Publisher</th>
+                      <th class="px-4 py-3">Recommended Exam</th>
+                      <th class="px-4 py-3">Availability</th>
+                      <th class="px-4 py-3 text-center">Active</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="book-items-body" class="divide-y divide-slate-800/60">
+                    ${books.map((item, idx) => `
+                      <tr class="hover:bg-slate-800/40 transition-colors" data-idx="${idx}">
+                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-400">
+                          <div>${escapeHtml(item.id || 'BOOK-' + (idx+1))}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(item.isbn || '')}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-white max-w-xs truncate" title="${escapeHtml(item.title)}">
+                          ${escapeHtml(item.title)}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          ${escapeHtml(item.authors || 'Various')}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(item.publisher || 'Sahitya Akademi')}
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-300">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-amber-300 border border-amber-800/40">
+                            ${escapeHtml(item.recommendedFor || 'All Exams')}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">
+                          ${escapeHtml(item.availability || 'Reference')}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <input type="checkbox" class="book-toggle-active cursor-pointer rounded bg-slate-800 border-slate-700 text-amber-600 focus:ring-0" data-idx="${idx}" ${item.active ? 'checked' : ''}>
+                        </td>
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                          <button class="book-edit-btn px-2 py-1 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Edit</button>
+                          <button class="book-del-btn px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded cursor-pointer transition-colors" data-idx="${idx}">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                    ${books.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                          No reference books cataloged. Click "Add Reference Book" to create one.
+                        </td>
+                      </tr>
+                    ` : ''}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- JSON Drawer -->
+            <div id="book-json-drawer" class="hidden p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Books & References Configuration JSON</h3>
+                <span class="text-xs text-slate-400">cso_books_references_config</span>
+              </div>
+              <textarea id="book-json-raw" rows="12" class="w-full font-mono text-xs p-3 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none focus:border-amber-500">${escapeHtml(JSON.stringify(config, null, 2))}</textarea>
+              <div class="flex justify-end gap-2">
+                <button id="btn-apply-json-book" class="px-3 py-1.5 text-xs font-medium text-white bg-amber-600 hover:bg-amber-500 rounded-lg cursor-pointer transition-all">Apply Raw JSON</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Event Handlers
+        const bookList = [...books];
+
+        const saveChanges = () => {
+          config.curationSettings = {
+            defaultSort: root.querySelector('#book-sort-order').value,
+            affiliateDisclaimer: root.querySelector('#book-disclaimer').value.trim() || '100% Non-commercial public education initiative',
+            includeIsbn: root.querySelector('#book-include-isbn').checked
+          };
+          config.books = bookList;
+          window.CSOSuperStore.saveBooksReferencesConfig(config);
+          alert('Books & references configuration saved successfully!');
+          renderBooksReferencesWorkspace(root);
+        };
+
+        root.querySelector('#btn-save-book').addEventListener('click', saveChanges);
+
+        root.querySelector('#btn-export-book').addEventListener('click', () => {
+          window.CSOSuperStore.exportBooksReferencesManifest();
+        });
+
+        root.querySelector('#btn-reset-book').addEventListener('click', () => {
+          if (confirm('Are you sure you want to restore books & references to default catalog entries?')) {
+            window.CSOSuperStore.resetBooksReferencesConfig();
+            alert('Books & references reset to defaults.');
+            renderBooksReferencesWorkspace(root);
+          }
+        });
+
+        const drawer = root.querySelector('#book-json-drawer');
+        root.querySelector('#btn-toggle-json-book').addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+
+        root.querySelector('#btn-apply-json-book').addEventListener('click', () => {
+          try {
+            const raw = root.querySelector('#book-json-raw').value;
+            window.CSOSuperStore.importBooksReferencesConfig(raw);
+            alert('Raw JSON applied and saved successfully!');
+            renderBooksReferencesWorkspace(root);
+          } catch (err) {
+            alert('Failed to parse JSON: ' + err.message);
+          }
+        });
+
+        root.querySelectorAll('.book-toggle-active').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (bookList[idx]) {
+              bookList[idx].active = e.target.checked;
+            }
+          });
+        });
+
+        root.querySelectorAll('.book-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            if (confirm('Remove book "' + bookList[idx].title + '"?')) {
+              bookList.splice(idx, 1);
+              config.books = bookList;
+              window.CSOSuperStore.saveBooksReferencesConfig(config);
+              renderBooksReferencesWorkspace(root);
+            }
+          });
+        });
+
+        root.querySelectorAll('.book-edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.idx, 10);
+            const item = bookList[idx];
+            const newTitle = prompt('Book Title:', item.title);
+            if (newTitle === null) return;
+            const newAuth = prompt('Authors:', item.authors || '');
+            const newPub = prompt('Publisher:', item.publisher || '');
+            const newExam = prompt('Recommended Exam:', item.recommendedFor || 'OPSC OAS');
+            const newIsbn = prompt('ISBN / Identifier:', item.isbn || '');
+
+            item.title = newTitle.trim() || item.title;
+            if (newAuth !== null) item.authors = newAuth.trim();
+            if (newPub !== null) item.publisher = newPub.trim();
+            if (newExam !== null) item.recommendedFor = newExam.trim();
+            if (newIsbn !== null) item.isbn = newIsbn.trim();
+
+            config.books = bookList;
+            window.CSOSuperStore.saveBooksReferencesConfig(config);
+            renderBooksReferencesWorkspace(root);
+          });
+        });
+
+        root.querySelector('#btn-add-book-item').addEventListener('click', () => {
+          const title = prompt('Enter Book Title:');
+          if (!title || !title.trim()) return;
+          const authors = prompt('Authors / Editors:', 'Dr. H. K. Mahatab') || 'Author Desk';
+          const pub = prompt('Publisher:', 'Sahitya Akademi') || 'Academic Press';
+          const exam = prompt('Recommended For (e.g. OPSC OAS, OSSC CGL):', 'OPSC OAS') || 'OPSC OAS';
+          const isbn = prompt('ISBN:', '978-81-0000-000-0') || '';
+
+          const newId = 'BOOK-' + String(bookList.length + 1).padStart(2, '0');
+          bookList.push({
+            id: newId,
+            title: title.trim(),
+            authors: authors.trim(),
+            publisher: pub.trim(),
+            recommendedFor: exam.trim(),
+            isbn: isbn.trim(),
+            availability: 'Recommended Reference',
+            active: true
+          });
+          config.books = bookList;
+          window.CSOSuperStore.saveBooksReferencesConfig(config);
+          renderBooksReferencesWorkspace(root);
+        });
+
+      } catch (err) {
+        root.innerHTML = `<div class="p-6 m-4 bg-red-950/80 border border-red-500 text-red-200 rounded-xl">
+          <h3 class="text-lg font-bold text-red-400">Render Error in module-05-004 (Books & References)</h3>
+          <pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre>
+        </div>`;
+      }
+    }
+
 
 
 
