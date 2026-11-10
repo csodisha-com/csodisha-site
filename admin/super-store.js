@@ -13026,7 +13026,8 @@
           internationalOpportunities: this.getInternationalOpportunitiesConfig ? this.getInternationalOpportunitiesConfig() : null,
           careerDevelopment: this.getCareerDevelopmentConfig ? this.getCareerDevelopmentConfig() : null,
           institutionsVerification: this.getInstitutionsVerificationConfig ? this.getInstitutionsVerificationConfig() : null,
-          jobsDirectoryTree: this.getJobsDirectoryTreeConfig ? this.getJobsDirectoryTreeConfig() : null
+          jobsDirectoryTree: this.getJobsDirectoryTreeConfig ? this.getJobsDirectoryTreeConfig() : null,
+          schemesDirectoryTree: this.getSchemesDirectoryTreeConfig ? this.getSchemesDirectoryTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -26717,6 +26718,334 @@
   SuperStore.saveInstitutionsVerificationConfig = function(cfg) { return this.saveJobsDirectoryTreeConfig(cfg); };
   SuperStore.resetInstitutionsVerificationConfig = function() { return this.resetJobsDirectoryTreeConfig(); };
   SuperStore.exportInstitutionsVerificationManifest = function() { return this.exportJobsDirectoryTreeManifest(); };
+
+  // =========================================================================
+  // SCHEMES & BENEFITS MASTER SELECTION DIRECTORY ENGINE
+  // =========================================================================
+  const DEFAULT_SCHEMES_DIRECTORY_TREE = {
+    meta: { version: "2.0", updatedAt: new Date().toISOString() },
+    activeCategoryId: "cat-sb-01",
+    selectedNodeId: "node-sb-01-01",
+    categories: [
+      {
+        id: "cat-sb-01",
+        moduleId: "module-sb-001",
+        code: "01",
+        title: "Government & Public Welfare",
+        titleOdia: "ସରକାରୀ ଏବଂ ଜନକଲ୍ୟାଣ ଯୋଜନା",
+        description: "Direct benefit transfer, citizen safety nets, and public welfare entitlements",
+        nodes: [
+          {
+            id: "node-sb-01-01",
+            title: "Subhadra Yojana (Women Financial Support)",
+            titleOdia: "ସୁଭଦ୍ରା ଯୋଜନା (ମହିଳା ସଶକ୍ତୀକରଣ ସହାୟତା)",
+            department: "Women & Child Development Department",
+            officialUrl: "https://subhadra.odisha.gov.in",
+            mirrorUrl: "/media/guidelines/subhadra-yojana-sop.pdf",
+            targetBeneficiary: "Women aged 21 to 60 years",
+            incomeCeiling: "Family income under ₹ 2,50,000 / Non-Taxpayer",
+            benefitAmount: "₹ 10,000 / Year (₹ 50,000 over 5 years via DBT)",
+            requiredDocs: "Aadhaar Card, Active DBT Bank Account, Ration Card (NFSA/SFSS)",
+            applicationMode: "Online & Mo Seva Kendra / Anganwadi",
+            articleTitle: "Subhadra Yojana Guidelines: Eligibility, Installments & Verification Process",
+            contentBody: "Comprehensive operational guidelines for Odisha Subhadra Yojana. Financial assistance of ₹50,000 will be credited directly to beneficiary Aadhaar-seeded single accounts across 5 equal installments on Rakhi Purnima and International Women's Day.",
+            tags: ["Subhadra", "DBT", "Women Welfare", "W&CD"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-10"
+          },
+          {
+            id: "node-sb-01-02",
+            title: "Madhu Babu Pension Yojana (MBPY)",
+            titleOdia: "ମଧୁବାବୁ ପେନସନ ଯୋଜନା (ବୃଦ୍ଧ, ବିଧବା ଓ ଭିନ୍ନକ୍ଷମ ସହାୟତା)",
+            department: "Social Security & Empowerment of Persons with Disabilities (SSEPD)",
+            officialUrl: "https://ssepd.odisha.gov.in",
+            mirrorUrl: "/media/guidelines/mbpy-revised-rates.pdf",
+            targetBeneficiary: "Elderly (60+), Widows, PwD, Transgender Persons",
+            incomeCeiling: "Annual income not exceeding ₹ 24,000",
+            benefitAmount: "₹ 1,000 to ₹ 1,200 per month (Revised)",
+            requiredDocs: "Aadhaar Card, Disability Certificate (for PwD), Age Proof, Income Certificate",
+            applicationMode: "Block Development Office (BDO) / Mo Seva Kendra",
+            articleTitle: "Madhu Babu Pension Yojana: Eligibility Slabs & Application Procedure",
+            contentBody: "Detailed procedure for applying for state social security pensions under MBPY. Covers elderly pension, widow assistance, disability coverage, and Aadhaar linkage requirements.",
+            tags: ["MBPY", "Social Security", "Pension", "Elderly Care"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-09"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-02",
+        moduleId: "module-sb-002",
+        code: "02",
+        title: "Education, Employment & Talent",
+        titleOdia: "ଶିକ୍ଷା, ନିଯୁକ୍ତି ଏବଂ ମେଧାବୃତ୍ତି",
+        description: "Scholarships, skill certifications, free coaching, and youth empowerment aids",
+        nodes: [
+          {
+            id: "node-sb-02-01",
+            title: "State Free Coaching Scheme for Civil Services & Competitive Exams",
+            titleOdia: "ସିଭିଲ ସର୍ଭିସ ପରୀକ୍ଷା ପାଇଁ ମାଗଣା କୋଚିଂ ଯୋଜନା",
+            department: "Higher Education Department, Odisha",
+            officialUrl: "https://dhe.odisha.gov.in",
+            mirrorUrl: "/media/guidelines/free-coaching-scheme.pdf",
+            targetBeneficiary: "Meritorious UPSC / OPSC Aspirants of Odisha",
+            incomeCeiling: "Family income under ₹ 6,00,000",
+            benefitAmount: "100% Free Coaching, Fooding & Hostel Allowance",
+            requiredDocs: "Graduation Certificate, Nativity Certificate, Entrance Test Score",
+            applicationMode: "State Selection Entrance Test",
+            articleTitle: "Odisha Free UPSC Coaching Scheme: Admission Criteria, Centers & Stipends",
+            contentBody: "State government initiative providing institutional coaching and accommodation in Bhubaneswar for shortlisted aspirants preparing for Union and State Civil Services.",
+            tags: ["Free Coaching", "UPSC", "OPSC", "Higher Education"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-08"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-03",
+        moduleId: "module-sb-003",
+        code: "03",
+        title: "Agriculture, Business & Livelihoods",
+        titleOdia: "କୃଷି, ବ୍ୟବସାୟ ଏବଂ ଜୀବିକା",
+        description: "Farmer assistance, input subsidies, farm mechanization, and SHG enterprise capital",
+        nodes: [
+          {
+            id: "node-sb-03-01",
+            title: "KALIA Scheme (Krushak Assistance for Livelihood and Income Augmentation)",
+            titleOdia: "କାଳିଆ ଯୋଜନା (କୃଷକ ଏବଂ ଭୂମିହୀନ ଶ୍ରମିକ ସହାୟତା)",
+            department: "Department of Agriculture & Farmers' Empowerment",
+            officialUrl: "https://kalia.odisha.gov.in",
+            mirrorUrl: "/media/guidelines/kalia-guidelines.pdf",
+            targetBeneficiary: "Small & Marginal Farmers, Landless Agricultural Households",
+            incomeCeiling: "Non-Income Tax Assessee",
+            benefitAmount: "₹ 4,000 / Year (₹ 2,000 Kharif + ₹ 2,000 Rabi)",
+            requiredDocs: "Krushak ID, Aadhaar Card, Seeded Bank Passbook",
+            applicationMode: "Krushak Odisha Portal / Gram Panchayat Desk",
+            articleTitle: "KALIA Scheme: Beneficiary Status Check, e-KYC & Landless Assistance",
+            contentBody: "Comprehensive assistance structure under KALIA covering financial aid for cultivation, livelihood support for landless households, and life insurance security.",
+            tags: ["KALIA", "Farmers", "Agriculture", "Direct Benefit"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-07"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-04",
+        moduleId: "module-sb-004",
+        code: "04",
+        title: "Health, Housing & Financial Protection",
+        titleOdia: "ସ୍ୱାସ୍ଥ୍ୟ, ଆବାସ ଓ ଆର୍ଥିକ ସୁରକ୍ଷା",
+        description: "Statewide universal healthcare insurance, rural/urban housing, and emergency medical funds",
+        nodes: [
+          {
+            id: "node-sb-04-01",
+            title: "Nabin Odisha Magic Card & Universal Health Coverage",
+            titleOdia: "ସାର୍ବଜନୀନ ସ୍ୱାସ୍ଥ୍ୟ ବୀମା ଏବଂ ନବୀନ ଓଡ଼ିଶା କାର୍ଡ",
+            department: "Health & Family Welfare Department",
+            officialUrl: "https://health.odisha.gov.in",
+            mirrorUrl: "/media/guidelines/health-coverage-manual.pdf",
+            targetBeneficiary: "All Resident Families of Odisha",
+            incomeCeiling: "Universal Coverage with Cashless Tie-ups",
+            benefitAmount: "Up to ₹ 5 Lakh (₹ 10 Lakh for Women members)",
+            requiredDocs: "Aadhaar Card, Health Card, Residence Proof",
+            applicationMode: "Empanelled Hospitals / Mo Seva Kendra",
+            articleTitle: "Statewide Health Insurance: Empanelled Hospital Network & Cashless Treatments",
+            contentBody: "Guide to secondary and tertiary medical treatments, cashless hospitalization across Odisha and premier national network hospitals without paper billing.",
+            tags: ["Health", "Cashless Hospitalization", "Insurance"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-06"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-05",
+        moduleId: "module-sb-005",
+        code: "05",
+        title: "Communities & Special Beneficiaries",
+        titleOdia: "ସାମାଜିକ ସୁରକ୍ଷା ଓ ସ୍ୱତନ୍ତ୍ର ହିତାଧିକାରୀ",
+        description: "Tribal welfare (ITDA/SDC), artisan tools, weaver security, and backward class quotas",
+        nodes: [
+          {
+            id: "node-sb-05-01",
+            title: "Mukhyamantri Karigar Sahayata Yojana",
+            titleOdia: "ମୁଖ୍ୟମନ୍ତ୍ରୀ କାରିଗର ସହାୟତା ଯୋଜନା (ଶିଳ୍ପୀ ଓ ହସ୍ତତନ୍ତ ସହାୟତା)",
+            department: "Handlooms, Textiles & Handicrafts Department",
+            officialUrl: "https://handloom.odisha.gov.in",
+            mirrorUrl: "/media/guidelines/karigar-sahayata.pdf",
+            targetBeneficiary: "Traditional Artisans & Craftsmen with 10+ Years Experience",
+            incomeCeiling: "Annual income under ₹ 1,00,000",
+            benefitAmount: "₹ 1,200 to ₹ 2,000 per month pension allowance",
+            requiredDocs: "Artisan Identity Card (Pehchan), Aadhaar, Bank Passbook",
+            applicationMode: "District Industries Centre (DIC) / Directorate of Handicrafts",
+            articleTitle: "Mukhyamantri Karigar Sahayata: Monthly Allowance Rules for Master Artisans",
+            contentBody: "Monthly financial support recognizing veteran artisans and master craftsmen across silver filigree, stone carving, patachitra, and handloom sectors.",
+            tags: ["Artisans", "Handloom", "Karigar", "Culture"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-05"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-06",
+        moduleId: "module-sb-006",
+        code: "06",
+        title: "Private, Global & Innovation Support",
+        titleOdia: "ଷ୍ଟାର୍ଟଅପ୍ ଏବଂ ଉଦ୍ୟୋଗୀ ସହାୟତା",
+        description: "Startup Odisha seed capital, industrial subsidies, and patent support",
+        nodes: [
+          {
+            id: "node-sb-06-01",
+            title: "Startup Odisha Monthly Allowance & Seed Capital Grant",
+            titleOdia: "ଷ୍ଟାର୍ଟଅପ୍ ଓଡ଼ିଶା ମାସିକ ଭତ୍ତା ଏବଂ ସିଡ୍ ପୁଞ୍ଜି ଅନୁଦାନ",
+            department: "MSME Department, Government of Odisha",
+            officialUrl: "https://startupodisha.gov.in",
+            mirrorUrl: "/media/guidelines/startup-policy-gazette.pdf",
+            targetBeneficiary: "DPIIT & Startup Odisha Recognized Entities",
+            incomeCeiling: "Entity Turnover < ₹ 100 Crore",
+            benefitAmount: "₹ 20,000 / Month Allowance + Up to ₹ 15 Lakh Seed Grant",
+            requiredDocs: "Startup Odisha Certificate, Pitch Deck, GSTIN, Company PAN",
+            applicationMode: "Online Startup Odisha Portal",
+            articleTitle: "How to Apply for Startup Odisha Grants: Seed Funding, Matching & Subsidies",
+            contentBody: "Comprehensive manual on availing founder monthly stipends, product development assistance, and co-working subsidies under the Odisha Startup Policy.",
+            tags: ["Startup Odisha", "MSME", "Innovation", "Seed Capital"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-07"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-07",
+        moduleId: "module-sb-007",
+        code: "07",
+        title: "Find Schemes & Check Eligibility",
+        titleOdia: "ଯୋଗ୍ୟତା ଯାଞ୍ଚ ଓ ପରାମର୍ଶ ଇଞ୍ଜିନ୍",
+        description: "State eligibility calculator across income, age, gender, and district criteria",
+        nodes: [
+          {
+            id: "node-sb-07-01",
+            title: "Universal DBT & Citizen Eligibility Calculation Engine",
+            titleOdia: "ସାର୍ବଜନୀନ ଡି.ବି.ଟି ଓ ଯୋଜନା ଯୋଗ୍ୟତା ଯାଞ୍ଚ ଇଞ୍ଜିନ୍",
+            department: "General Administration & Public Grievance",
+            officialUrl: "https://odisha.gov.in",
+            mirrorUrl: "/media/guidelines/dbt-rules.pdf",
+            targetBeneficiary: "General Citizenry of Odisha",
+            incomeCeiling: "Multi-tier Dynamic Calculator",
+            benefitAmount: "Interactive Calculation Matrix",
+            requiredDocs: "Aadhaar, Ration Card, Land Records, Caste/Income certificates",
+            applicationMode: "Interactive Web Engine",
+            articleTitle: "Citizen Eligibility Check: Income Ceilings, Aadhaar NPCI Mapping & Exclusion Rules",
+            contentBody: "Guidelines for assessing eligibility across multiple welfare schemes simultaneously, understanding exclusion criteria, and resolving bank account DBT linkage issues.",
+            tags: ["Eligibility", "DBT Check", "Income Slabs", "Citizen Tools"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-08"
+          }
+        ]
+      },
+      {
+        id: "cat-sb-08",
+        moduleId: "module-sb-008",
+        code: "08",
+        title: "Citizen Services & Verification",
+        titleOdia: "ମୋ ସେବା କେନ୍ଦ୍ର ଓ ଜନସେବା ପୋର୍ଟାଲ୍",
+        description: "Official service delivery portals, Mo Seva Kendra locator, and certificate verification",
+        nodes: [
+          {
+            id: "node-sb-08-01",
+            title: "Odisha One & Mo Seva Kendra Unified Service Delivery",
+            titleOdia: "ଓଡ଼ିଶା ୱାନ ଏବଂ ମୋ ସେବା କେନ୍ଦ୍ର ନାଗରିକ ସେବା ପୋର୍ଟାଲ୍",
+            department: "Electronics & Information Technology Department",
+            officialUrl: "https://odishaone.gov.in",
+            mirrorUrl: "/media/guidelines/odisha-one-services.pdf",
+            targetBeneficiary: "All Citizens & Businesses in Odisha",
+            incomeCeiling: "Open Citizen Public Services",
+            benefitAmount: "Single Window Clearance for 400+ Government Services",
+            requiredDocs: "Aadhaar Card, Mobile Number for OTP",
+            applicationMode: "Online (odishaone.gov.in) & 7,000+ Mo Seva Kendras",
+            articleTitle: "Odisha One Portal Guide: Applying for Income, Residence & Caste Certificates",
+            contentBody: "Unified access manual for e-District certificates, utility bill payments, land revenue payments (e-Pauti), and government service verification.",
+            tags: ["Odisha One", "Mo Seva Kendra", "Citizen Services", "e-District"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-10"
+          }
+        ]
+      }
+    ]
+  };
+
+  SuperStore.getSchemesDirectoryTreeConfig = function() {
+    return _hydrateConfig('cso_schemes_master_tree_config_v2', 'categories', () => DEFAULT_SCHEMES_DIRECTORY_TREE);
+  };
+  SuperStore.saveSchemesDirectoryTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_schemes_master_tree_config_v2', JSON.stringify(cfg));
+    this.logAudit('SCHEMES_TREE_MUTATION', 'SCHEMES_BENEFITS', `Saved schemes directory and content updates (${cfg.categories.length} categories).`);
+    return true;
+  };
+  SuperStore.resetSchemesDirectoryTreeConfig = function() {
+    localStorage.setItem('cso_schemes_master_tree_config_v2', JSON.stringify(DEFAULT_SCHEMES_DIRECTORY_TREE));
+    this.logAudit('SCHEMES_TREE_RESET', 'SCHEMES_BENEFITS', 'Schemes master directory tree reset to defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_SCHEMES_DIRECTORY_TREE));
+  };
+  SuperStore.exportSchemesDirectoryTreeManifest = function() {
+    const config = this.getSchemesDirectoryTreeConfig();
+    const filename = "schemes_directory_tree_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SCHEMES_TREE_EXPORTED", "DATA_EXPORT", `Schemes master directory tree manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // Forwarding accessors for all 8 discrete schemes module routes:
+  SuperStore.getGovtWelfareConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveGovtWelfareConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetGovtWelfareConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportGovtWelfareManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getEducationTalentConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveEducationTalentConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetEducationTalentConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportEducationTalentManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getAgriBusinessConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveAgriBusinessConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetAgriBusinessConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportAgriBusinessManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getHealthHousingConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveHealthHousingConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetHealthHousingConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportHealthHousingManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getCommunitiesBeneficiariesConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveCommunitiesBeneficiariesConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetCommunitiesBeneficiariesConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportCommunitiesBeneficiariesManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getPrivateInnovationConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.savePrivateInnovationConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetPrivateInnovationConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportPrivateInnovationManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getEligibilityEngineConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveEligibilityEngineConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetEligibilityEngineConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportEligibilityEngineManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
+  SuperStore.getCitizenServicesConfig = function() { return this.getSchemesDirectoryTreeConfig(); };
+  SuperStore.saveCitizenServicesConfig = function(cfg) { return this.saveSchemesDirectoryTreeConfig(cfg); };
+  SuperStore.resetCitizenServicesConfig = function() { return this.resetSchemesDirectoryTreeConfig(); };
+  SuperStore.exportCitizenServicesManifest = function() { return this.exportSchemesDirectoryTreeManifest(); };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -27168,6 +27497,42 @@
     window.CSOSuperStore.saveInstitutionsVerificationConfig = SuperStore.saveInstitutionsVerificationConfig;
     window.CSOSuperStore.resetInstitutionsVerificationConfig = SuperStore.resetInstitutionsVerificationConfig;
     window.CSOSuperStore.exportInstitutionsVerificationManifest = SuperStore.exportInstitutionsVerificationManifest;
+    window.CSOSuperStore.getSchemesDirectoryTreeConfig = SuperStore.getSchemesDirectoryTreeConfig;
+    window.CSOSuperStore.saveSchemesDirectoryTreeConfig = SuperStore.saveSchemesDirectoryTreeConfig;
+    window.CSOSuperStore.resetSchemesDirectoryTreeConfig = SuperStore.resetSchemesDirectoryTreeConfig;
+    window.CSOSuperStore.exportSchemesDirectoryTreeManifest = SuperStore.exportSchemesDirectoryTreeManifest;
+    window.CSOSuperStore.getGovtWelfareConfig = SuperStore.getGovtWelfareConfig;
+    window.CSOSuperStore.saveGovtWelfareConfig = SuperStore.saveGovtWelfareConfig;
+    window.CSOSuperStore.resetGovtWelfareConfig = SuperStore.resetGovtWelfareConfig;
+    window.CSOSuperStore.exportGovtWelfareManifest = SuperStore.exportGovtWelfareManifest;
+    window.CSOSuperStore.getEducationTalentConfig = SuperStore.getEducationTalentConfig;
+    window.CSOSuperStore.saveEducationTalentConfig = SuperStore.saveEducationTalentConfig;
+    window.CSOSuperStore.resetEducationTalentConfig = SuperStore.resetEducationTalentConfig;
+    window.CSOSuperStore.exportEducationTalentManifest = SuperStore.exportEducationTalentManifest;
+    window.CSOSuperStore.getAgriBusinessConfig = SuperStore.getAgriBusinessConfig;
+    window.CSOSuperStore.saveAgriBusinessConfig = SuperStore.saveAgriBusinessConfig;
+    window.CSOSuperStore.resetAgriBusinessConfig = SuperStore.resetAgriBusinessConfig;
+    window.CSOSuperStore.exportAgriBusinessManifest = SuperStore.exportAgriBusinessManifest;
+    window.CSOSuperStore.getHealthHousingConfig = SuperStore.getHealthHousingConfig;
+    window.CSOSuperStore.saveHealthHousingConfig = SuperStore.saveHealthHousingConfig;
+    window.CSOSuperStore.resetHealthHousingConfig = SuperStore.resetHealthHousingConfig;
+    window.CSOSuperStore.exportHealthHousingManifest = SuperStore.exportHealthHousingManifest;
+    window.CSOSuperStore.getCommunitiesBeneficiariesConfig = SuperStore.getCommunitiesBeneficiariesConfig;
+    window.CSOSuperStore.saveCommunitiesBeneficiariesConfig = SuperStore.saveCommunitiesBeneficiariesConfig;
+    window.CSOSuperStore.resetCommunitiesBeneficiariesConfig = SuperStore.resetCommunitiesBeneficiariesConfig;
+    window.CSOSuperStore.exportCommunitiesBeneficiariesManifest = SuperStore.exportCommunitiesBeneficiariesManifest;
+    window.CSOSuperStore.getPrivateInnovationConfig = SuperStore.getPrivateInnovationConfig;
+    window.CSOSuperStore.savePrivateInnovationConfig = SuperStore.savePrivateInnovationConfig;
+    window.CSOSuperStore.resetPrivateInnovationConfig = SuperStore.resetPrivateInnovationConfig;
+    window.CSOSuperStore.exportPrivateInnovationManifest = SuperStore.exportPrivateInnovationManifest;
+    window.CSOSuperStore.getEligibilityEngineConfig = SuperStore.getEligibilityEngineConfig;
+    window.CSOSuperStore.saveEligibilityEngineConfig = SuperStore.saveEligibilityEngineConfig;
+    window.CSOSuperStore.resetEligibilityEngineConfig = SuperStore.resetEligibilityEngineConfig;
+    window.CSOSuperStore.exportEligibilityEngineManifest = SuperStore.exportEligibilityEngineManifest;
+    window.CSOSuperStore.getCitizenServicesConfig = SuperStore.getCitizenServicesConfig;
+    window.CSOSuperStore.saveCitizenServicesConfig = SuperStore.saveCitizenServicesConfig;
+    window.CSOSuperStore.resetCitizenServicesConfig = SuperStore.resetCitizenServicesConfig;
+    window.CSOSuperStore.exportCitizenServicesManifest = SuperStore.exportCitizenServicesManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
