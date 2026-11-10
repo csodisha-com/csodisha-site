@@ -1,9 +1,10 @@
 /**
- * Common Sense Odisha (CSO) — Service Worker v2
+ * Common Sense Odisha (CSO) — Service Worker v3
  * Provides offline caching for core platform shells, style assets, and candidate portal.
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v2';
+const CACHE_NAME = 'cso-candidate-cache-v3';
+const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
   '/',
@@ -43,7 +44,8 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((name) => {
-          if (name !== CACHE_NAME) {
+          if (!EXPECTED_CACHES.includes(name)) {
+            console.log('Deleting outdated cache:', name);
             return caches.delete(name);
           }
         })

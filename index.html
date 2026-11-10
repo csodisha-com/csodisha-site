@@ -68,7 +68,7 @@
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       overflow-x: hidden;
     }
-    .bento-card {
+    .bento-card, .bento-tile {
       background: linear-gradient(180deg, rgba(19, 29, 51, 0.8) 0%, rgba(13, 22, 40, 0.95) 100%);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 1.25rem;
@@ -78,7 +78,7 @@
       position: relative;
       overflow: hidden;
     }
-    .bento-card:hover {
+    .bento-card:hover, .bento-tile:hover {
       border-color: rgba(56, 189, 248, 0.35);
       box-shadow: 0 14px 35px -8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(13, 148, 136, 0.15);
       transform: translateY(-2px);
@@ -303,10 +303,10 @@
     <!-- ======================================================================
          SECTION 1: HERO BENTO GRID (Col 7 / Col 5)
          ====================================================================== -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch" aria-label="Hero Search and Live Feed">
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5" id="hero" aria-label="Hero Search and Live Feed">
       
       <!-- Hero Left Card: Col 7 / 12 with Konark Silhouette SVG -->
-      <div class="lg:col-span-7 bento-card p-6 sm:p-8 flex flex-col justify-between relative">
+      <div class="lg:col-span-7 rounded-2xl bento-tile bento-card p-6 sm:p-8 flex flex-col justify-between relative">
         
         <!-- Konark Temple Subtle Vector Backdrop -->
         <div class="absolute right-0 bottom-0 pointer-events-none opacity-[0.07] w-64 sm:w-80 h-64 sm:h-80 -mr-8 -mb-8 overflow-hidden" aria-hidden="true">
@@ -377,7 +377,7 @@
       </div>
 
       <!-- Hero Right Card: Col 5 / 12 Notifications Feed with Filter Tabs -->
-      <div class="lg:col-span-5 bento-card p-6 flex flex-col justify-between">
+      <div class="lg:col-span-5 rounded-2xl bento-tile bento-card p-6 flex flex-col justify-between">
         
         <div>
           <!-- Header and Tabs -->
