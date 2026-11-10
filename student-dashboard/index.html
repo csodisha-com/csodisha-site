@@ -3,148 +3,524 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#edf4ff">
+  <meta name="theme-color" content="#090d16">
   <title>Student Portal & Candidate Dashboard | Common Sense Odisha</title>
-  <meta name="description" content="Personalized student preparation dashboard, live exam countdowns, saved syllabi, PYQ question shelf, and welfare scholarships for Odisha aspirants.">
+  <meta name="description" content="Modern personalized student preparation dashboard, target exam progress cards, next lessons, PYQ question shelf, and welfare scholarships for Odisha aspirants.">
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
-  <!-- CSO Theme Sync -->
-  <script>
-    (function () {
-      function syncTheme() {
-        var settings = {};
-        try { settings = JSON.parse(localStorage.getItem('cso') || '{}') || {}; } catch (e) {}
-        var themes = ['light', 'dark', 'system', 'reading', 'sepia'];
-        var theme = themes.includes(settings.theme) ? settings.theme : 'system';
-        document.documentElement.setAttribute('data-theme', theme);
-      }
-      syncTheme();
-      window.addEventListener('storage', function(e) { if (e.key === 'cso') syncTheme(); });
-    })();
-  </script>
 </head>
 <body class="cso-student-dashboard-page">
 
-<!-- Header will be dynamically hydrated by shared-header.js -->
-<header class="top">
-  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
-    <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
-  </a>
-  <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
-  <div class="cso-header-actions">
-    <div id="cso-auth" class="auth"></div>
-  </div>
-</header>
+<div class="bp-app-layout">
 
-<nav id="navw" class="cso-nav-wrapper"></nav>
-
-<main class="cso-dashboard-container" style="max-width:1200px;margin:24px auto;padding:0 16px;">
-
-  <!-- Candidate Welcome & Profile Bar -->
-  <div id="candidate-profile-hero" class="card" style="margin-bottom:24px;background:linear-gradient(135deg, rgba(13,148,136,0.12), rgba(15,23,42,0.6));border:1px solid rgba(13,148,136,0.3);border-radius:16px;padding:24px;">
-    <!-- Rendered by student-dashboard.js -->
-    <div style="display:flex;align-items:center;justify-content:center;padding:32px;">
-      <p class="mut">Loading candidate portal...</p>
-    </div>
-  </div>
-
-  <!-- Dashboard 2-Column Grid -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:24px;">
-
-    <!-- Left Column: Active Milestones & Preparation Tracker -->
-    <div style="display:flex;flex-direction:column;gap:24px;">
-
-      <!-- Active Milestones & Countdown -->
-      <section class="card" style="border-radius:14px;padding:20px;border:1px solid var(--border, #334155);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--border, #334155);padding-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">⏱️</span>
-            <h2 style="font-size:16px;font-weight:700;margin:0;">Target Exam Countdown & Milestones</h2>
-          </div>
-          <a href="/jobs-careers/" style="font-size:11px;color:#0d9488;text-decoration:none;font-weight:600;">View Calendar →</a>
+  <!-- ========================================================================
+       1. Sticky Collapsible Glass Sidebar Navigation
+       ======================================================================== -->
+  <aside id="bp-sidebar" class="bp-sidebar" aria-label="Student Portal Navigation">
+    
+    <!-- Sidebar Header -->
+    <div class="bp-sidebar-header">
+      <a href="/" class="bp-sidebar-brand" aria-label="CSO Home">
+        <div class="bp-brand-icon">🏛️</div>
+        <div class="bp-logo-text">
+          <span style="display:block;font-size:14px;font-weight:800;letter-spacing:-0.01em;">CS Odisha</span>
+          <span style="display:block;font-size:10px;color:#94a3b8;font-weight:600;">Student Hub</span>
         </div>
-        <div id="candidate-milestones-list" style="display:flex;flex-direction:column;gap:12px;">
-          <p class="mut" style="font-size:12px;">Loading upcoming milestone timelines from Events Suite...</p>
-        </div>
-      </section>
-
-      <!-- Preparation Checklist Tracker -->
-      <section class="card" style="border-radius:14px;padding:20px;border:1px solid var(--border, #334155);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--border, #334155);padding-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">✅</span>
-            <h2 style="font-size:16px;font-weight:700;margin:0;">Preparation Milestones Checklist</h2>
-          </div>
-          <span id="tracker-completion-badge" style="font-size:11px;background:#0d9488;color:#fff;padding:2px 8px;border-radius:12px;font-weight:700;">0% Completed</span>
-        </div>
-        <p style="font-size:12px;color:var(--text-muted, #94a3b8);margin-top:0;margin-bottom:12px;">Track your core preparation stages. Checkmarks are saved automatically to your device.</p>
-        <div id="candidate-tracker-list" style="display:flex;flex-direction:column;gap:8px;">
-          <!-- Rendered by JS -->
-        </div>
-      </section>
-
-      <!-- Bookmarked Jobs & Recruitment Notifications -->
-      <section class="card" style="border-radius:14px;padding:20px;border:1px solid var(--border, #334155);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--border, #334155);padding-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">💼</span>
-            <h2 style="font-size:16px;font-weight:700;margin:0;">Bookmarked Jobs &amp; Opportunities</h2>
-          </div>
-          <a href="/jobs-careers/" style="font-size:11px;color:#0d9488;text-decoration:none;font-weight:600;">Browse All Jobs →</a>
-        </div>
-        <p style="font-size:12px;color:var(--text-muted, #94a3b8);margin-top:0;margin-bottom:12px;">Saved state recruitment entries, vacancies, and syllabus alerts.</p>
-        <div id="candidate-jobs-shelf" style="display:flex;flex-direction:column;gap:10px;">
-          <p class="mut" style="font-size:12px;">Checking bookmarked positions...</p>
-        </div>
-      </section>
-
+      </a>
+      <button type="button" id="bp-sidebar-toggle" class="bp-sidebar-toggle-btn" aria-label="Toggle compact sidebar" title="Collapse / Expand Sidebar">
+        <span class="bp-toggle-icon">◀</span>
+      </button>
     </div>
 
-    <!-- Right Column: Saved PYQs & Eligible Welfare Schemes -->
-    <div style="display:flex;flex-direction:column;gap:24px;">
+    <!-- Navigation Menu Body -->
+    <nav class="bp-sidebar-nav">
+      
+      <!-- Section 1: Main Menu -->
+      <div class="bp-nav-group">
+        <div class="bp-nav-section-title">Main Menu</div>
+        <ul class="bp-nav-list">
+          <li>
+            <a href="#tab-overview" class="bp-nav-item active" data-tab="tab-overview">
+              <span class="bp-nav-icon">📊</span>
+              <span class="bp-nav-label">Overview</span>
+            </a>
+          </li>
+          <li>
+            <a href="/study-library/" class="bp-nav-item" data-tab="tab-study-library">
+              <span class="bp-nav-icon">📖</span>
+              <span class="bp-nav-label">Study Library</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tab-my-learning" class="bp-nav-item" data-tab="tab-my-learning">
+              <span class="bp-nav-icon">🎯</span>
+              <span class="bp-nav-label">My Learning</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tab-bookmarks" class="bp-nav-item" data-tab="tab-bookmarks">
+              <span class="bp-nav-icon">★</span>
+              <span class="bp-nav-label">My Bookmarks</span>
+            </a>
+          </li>
+          <li>
+            <a href="/community/" class="bp-nav-item" data-tab="tab-ask-cso">
+              <span class="bp-nav-icon">💬</span>
+              <span class="bp-nav-label">Ask CSO</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tab-achievements" class="bp-nav-item" data-tab="tab-achievements">
+              <span class="bp-nav-icon">🏆</span>
+              <span class="bp-nav-label">Achievements</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tab-profile-settings" class="bp-nav-item" id="sidebar-nav-profile" data-tab="tab-profile-settings">
+              <span class="bp-nav-icon">⚙️</span>
+              <span class="bp-nav-label">Profile &amp; Settings</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-      <!-- Saved Syllabi & PYQ Shelf -->
-      <section class="card" style="border-radius:14px;padding:20px;border:1px solid var(--border, #334155);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--border, #334155);padding-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">📚</span>
-            <h2 style="font-size:16px;font-weight:700;margin:0;">PYQ & Study Material Shelf</h2>
-          </div>
-          <a href="/study-library/" style="font-size:11px;color:#0d9488;text-decoration:none;font-weight:600;">Browse Library →</a>
-        </div>
-        <p style="font-size:12px;color:var(--text-muted, #94a3b8);margin-top:0;margin-bottom:12px;">Direct Cloudflare R2 mirrors for previous year question papers and official syllabi.</p>
-        <div id="candidate-pyq-shelf" style="display:flex;flex-direction:column;gap:10px;">
-          <p class="mut" style="font-size:12px;">Hydrating educational resources...</p>
-        </div>
-      </section>
+      <!-- Section 2: Learning Tools -->
+      <div class="bp-nav-group">
+        <div class="bp-nav-section-title">Learning Tools</div>
+        <ul class="bp-nav-list">
+          <li>
+            <a href="#tool-search" class="bp-nav-item" id="tool-search-btn">
+              <span class="bp-nav-icon">🔍</span>
+              <span class="bp-nav-label">Universal Search</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-recent" class="bp-nav-item" data-tab="tool-recent">
+              <span class="bp-nav-icon">🕒</span>
+              <span class="bp-nav-label">Recently Viewed</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-downloads" class="bp-nav-item" data-tab="tool-downloads">
+              <span class="bp-nav-icon">⬇</span>
+              <span class="bp-nav-label">Download History</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-reading" class="bp-nav-item" data-tab="tool-reading">
+              <span class="bp-nav-icon">📚</span>
+              <span class="bp-nav-label">Reading History</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-calendar" class="bp-nav-item" data-tab="tool-calendar">
+              <span class="bp-nav-icon">📅</span>
+              <span class="bp-nav-label">Exam Calendar</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-locker" class="bp-nav-item" data-tab="tool-locker">
+              <span class="bp-nav-icon">🗂️</span>
+              <span class="bp-nav-label">Document Locker</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-recommendations" class="bp-nav-item" data-tab="tool-recommendations">
+              <span class="bp-nav-icon">💡</span>
+              <span class="bp-nav-label">Recommendations</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-      <!-- Eligible Scholarships & Schemes -->
-      <section class="card" style="border-radius:14px;padding:20px;border:1px solid var(--border, #334155);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--border, #334155);padding-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">🤲</span>
-            <h2 style="font-size:16px;font-weight:700;margin:0;">Eligible Scholarships & Student Schemes</h2>
-          </div>
-          <a href="/schemes-benefits/" style="font-size:11px;color:#0d9488;text-decoration:none;font-weight:600;">All Schemes →</a>
-        </div>
-        <p style="font-size:12px;color:var(--text-muted, #94a3b8);margin-top:0;margin-bottom:12px;">Verified direct benefit programs for students and women aspirants in Odisha.</p>
-        <div id="candidate-schemes-list" style="display:flex;flex-direction:column;gap:10px;">
-          <p class="mut" style="font-size:12px;">Finding eligible welfare programs...</p>
-        </div>
-      </section>
+    </nav>
 
+    <!-- Sidebar Bottom Profile Badge -->
+    <div class="bp-sidebar-footer">
+      <div id="bp-sidebar-user-pill" class="bp-user-pill-side" title="Edit Profile &amp; Preferences">
+        <div class="bp-user-avatar" id="bp-side-avatar">A</div>
+        <div class="bp-user-meta bp-user-badge">
+          <span class="bp-user-name" id="bp-side-name">Aspirant</span>
+          <span class="bp-user-district" id="bp-side-district">Odisha</span>
+        </div>
+      </div>
     </div>
+
+  </aside>
+
+  <!-- ========================================================================
+       2. Main Content Canvas
+       ======================================================================== -->
+  <div class="bp-main-canvas">
+
+    <!-- Top Bar -->
+    <header class="bp-topbar">
+      
+      <div class="bp-topbar-left">
+        <button type="button" id="bp-mobile-menu-trigger" class="bp-mobile-menu-btn" aria-label="Open mobile menu">
+          ☰
+        </button>
+        <div class="bp-page-title-box">
+          <h1 id="bp-view-title">Dashboard Overview</h1>
+          <p id="bp-view-subtitle">Live exam preparation, syllabus milestones &amp; downloads</p>
+        </div>
+      </div>
+
+      <!-- Central Search Pill -->
+      <div class="bp-search-pill" id="bp-topbar-search-trigger">
+        <span class="bp-search-icon">🔍</span>
+        <input type="text" class="bp-search-input" readonly placeholder="Universal Search across Jobs, Schemes &amp; Study Materials..." />
+        <span class="bp-search-shortcut">Ctrl + K</span>
+      </div>
+
+      <!-- Right Action Cluster -->
+      <div class="bp-topbar-right">
+        
+        <!-- Notification Bell -->
+        <button type="button" class="bp-icon-action-btn" id="bp-notif-btn" aria-label="Notifications" title="Commission Notifications">
+          <span>🔔</span>
+          <span class="bp-unread-badge"></span>
+        </button>
+
+        <!-- Candidate Profile Pill -->
+        <div class="bp-user-pill-top" id="bp-topbar-user-pill" title="Click to edit profile &amp; preferences">
+          <div class="bp-user-avatar" id="bp-top-avatar">A</div>
+          <div class="bp-user-meta">
+            <span class="bp-user-name" id="bp-top-name">Candidate Aspirant</span>
+            <span class="bp-user-district" id="bp-top-district">Balasore (Baleswar)</span>
+          </div>
+        </div>
+
+      </div>
+
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="bp-content-body">
+
+      <!-- ====================================================================
+           TAB VIEW: OVERVIEW (Default)
+           ==================================================================== -->
+      <div id="tab-overview" class="bp-tab-view active">
+        
+        <!-- Filter Row & Header -->
+        <div class="bp-filter-row">
+          <div>
+            <h2 style="font-size:18px;font-weight:800;color:#f8fafc;margin:0 0 4px;">My Target Examinations</h2>
+            <p style="font-size:12px;color:#94a3b8;margin:0;">Active state recruitment streams and milestone status</p>
+          </div>
+          <div class="bp-chips-group" id="bp-exam-filter-chips">
+            <button type="button" class="bp-chip active" data-filter="all">All Exams</button>
+            <button type="button" class="bp-chip" data-filter="opsc">OPSC OCS</button>
+            <button type="button" class="bp-chip" data-filter="ossc">OSSC CGL</button>
+            <button type="button" class="bp-chip" data-filter="teaching">Odisha B.Ed</button>
+            <button type="button" class="bp-chip" data-filter="police">Police SI</button>
+          </div>
+        </div>
+
+        <!-- Hero Row: 3 High-Contrast Rounded Cards (BrightPath Style) -->
+        <div class="bp-exam-cards-grid" id="bp-hero-cards-mount">
+          
+          <!-- Card 1: Cobalt Blue (OPSC OCS) -->
+          <div class="bp-exam-card card-cobalt" data-exam-card="opsc">
+            <div class="bp-card-top">
+              <span class="bp-card-badge">OPSC • Class I &amp; II</span>
+              <button type="button" class="bp-card-star-btn bookmarked" title="Target Exam Bookmarked">★</button>
+            </div>
+            <div class="bp-card-mid">
+              <h3 class="bp-card-title">OPSC Civil Services (OCS)</h3>
+              <p class="bp-card-sub" id="card-opsc-stage-sub">Stage I Prelims &amp; Stage II Mains</p>
+            </div>
+            <div class="bp-card-bottom">
+              <div class="bp-card-progress-box">
+                <div class="bp-card-progress-info">
+                  <span id="card-opsc-pct-label">48% Completed</span>
+                  <span id="card-opsc-count-label">12/25 Topics</span>
+                </div>
+                <div class="bp-card-progress-bar">
+                  <div class="bp-card-progress-fill" id="card-opsc-bar" style="width: 48%; background: #38bdf8;"></div>
+                </div>
+              </div>
+              <button type="button" class="bp-card-action-btn btn-lime bp-btn-jump-checklist" data-exam="opsc">
+                Continue Checklist →
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Sunset Coral / Orange (OSSC CGL) -->
+          <div class="bp-exam-card card-coral" data-exam-card="ossc">
+            <div class="bp-card-top">
+              <span class="bp-card-badge">OSSC • Group-B / C</span>
+              <button type="button" class="bp-card-star-btn bookmarked" title="Target Exam Bookmarked">★</button>
+            </div>
+            <div class="bp-card-mid">
+              <h3 class="bp-card-title">OSSC CGL Specialist</h3>
+              <p class="bp-card-sub" id="card-ossc-stage-sub">CBRE Prelims &amp; Mains Descriptive</p>
+            </div>
+            <div class="bp-card-bottom">
+              <div class="bp-card-progress-box">
+                <div class="bp-card-progress-info">
+                  <span id="card-ossc-pct-label">35% Completed</span>
+                  <span id="card-ossc-count-label">4/11 Topics</span>
+                </div>
+                <div class="bp-card-progress-bar">
+                  <div class="bp-card-progress-fill" id="card-ossc-bar" style="width: 35%; background: #fdba74;"></div>
+                </div>
+              </div>
+              <button type="button" class="bp-card-action-btn btn-coral-white bp-btn-jump-checklist" data-exam="ossc">
+                Continue Checklist →
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: Modern Ink Slate / Charcoal (Teaching / Police) -->
+          <div class="bp-exam-card card-charcoal" data-exam-card="teaching">
+            <div class="bp-card-top">
+              <span class="bp-card-badge">SAMS • Education</span>
+              <button type="button" class="bp-card-star-btn" title="Target Exam Bookmarked">★</button>
+            </div>
+            <div class="bp-card-mid">
+              <h3 class="bp-card-title">Odisha B.Ed Entrance</h3>
+              <p class="bp-card-sub" id="card-teach-stage-sub">Paper-I General &amp; Paper-II Arts/Science</p>
+            </div>
+            <div class="bp-card-bottom">
+              <div class="bp-card-progress-box">
+                <div class="bp-card-progress-info">
+                  <span id="card-teach-pct-label">60% Completed</span>
+                  <span id="card-teach-count-label">6/10 Topics</span>
+                </div>
+                <div class="bp-card-progress-bar">
+                  <div class="bp-card-progress-fill" id="card-teach-bar" style="width: 60%; background: #94a3b8;"></div>
+                </div>
+              </div>
+              <button type="button" class="bp-card-action-btn btn-charcoal-white bp-btn-jump-checklist" data-exam="teaching">
+                Continue Checklist →
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Lower Split-Grid (70% - 30% BrightPath Layout) -->
+        <div class="bp-split-grid">
+          
+          <!-- Left Panel (70%): Upcoming Study Targets & Next Lessons -->
+          <div class="bp-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title">
+                <span>⏱️</span>
+                <span>Upcoming Study Targets &amp; Next Lessons</span>
+              </div>
+              <a href="#tab-my-learning" class="bp-panel-link bp-nav-switch" data-tab="tab-my-learning">View Full Syllabus →</a>
+            </div>
+
+            <!-- Lessons / Tasks List -->
+            <div class="bp-lesson-list" id="bp-upcoming-lessons-list">
+              <!-- Dynamically hydrated by student-dashboard.js -->
+            </div>
+          </div>
+
+          <!-- Right Panel (30%): Neon Lime / Emerald Recommendation Card -->
+          <div class="bp-rec-card">
+            <div>
+              <div class="bp-rec-header">
+                <span class="bp-rec-tag">Recommended For You</span>
+                <span style="font-size:18px;">🔥</span>
+              </div>
+              <h4 class="bp-rec-title">OPSC OCS General Studies Paper I — 5-Year PYQ Compendium</h4>
+              <p class="bp-rec-desc">Curated official question paper compilation with verified answers and Odisha History key references.</p>
+            </div>
+            <div>
+              <a href="https://assets.csodisha.org/pdf/pyq/2025/opsc-ocs-prelims-gs1-solved.pdf" target="_blank" rel="noopener noreferrer" class="bp-rec-btn">
+                <span>Download PDF Mirror</span>
+                <span>⬇</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Secondary Shelves (Saved Jobs & Schemes) -->
+        <div class="bp-shelves-grid">
+          
+          <!-- Bookmarked Jobs -->
+          <section class="bp-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title">
+                <span>💼</span>
+                <span>Bookmarked Jobs &amp; Opportunities</span>
+              </div>
+              <a href="/jobs-careers/" class="bp-panel-link">Browse Jobs →</a>
+            </div>
+            <div id="candidate-jobs-shelf" style="display:flex;flex-direction:column;gap:10px;">
+              <p class="mut" style="font-size:12px;">Loading bookmarked positions...</p>
+            </div>
+          </section>
+
+          <!-- Eligible Welfare Schemes -->
+          <section class="bp-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title">
+                <span>🤲</span>
+                <span>Eligible Scholarships &amp; Schemes</span>
+              </div>
+              <a href="/schemes-benefits/" class="bp-panel-link">All Schemes →</a>
+            </div>
+            <div id="candidate-schemes-list" style="display:flex;flex-direction:column;gap:10px;">
+              <p class="mut" style="font-size:12px;">Finding eligible welfare programs...</p>
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: MY LEARNING (Full Checklists)
+           ==================================================================== -->
+      <div id="tab-my-learning" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title">
+              <span>🎯</span>
+              <span>Comprehensive Multi-Stage Syllabus Checklists</span>
+            </div>
+            <span id="tracker-completion-badge" style="font-size:11px;background:#0d9488;color:#fff;padding:4px 10px;border-radius:12px;font-weight:700;">0% Completed</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin-top:0;margin-bottom:14px;">Select an examination to monitor syllabus progress, paper-wise requirements, and practical skill test readiness.</p>
+          <div id="candidate-tracker-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: MY BOOKMARKS
+           ==================================================================== -->
+      <div id="tab-bookmarks" class="bp-tab-view">
+        <div class="bp-shelves-grid">
+          <div class="bp-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title"><span>📚</span><span>Saved Study Materials &amp; PYQs</span></div>
+              <a href="/study-library/" class="bp-panel-link">Library →</a>
+            </div>
+            <div id="candidate-pyq-shelf" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
+          <div class="bp-panel">
+            <div class="bp-panel-header">
+              <div class="bp-panel-title"><span>💼</span><span>Saved Job Postings</span></div>
+              <a href="/jobs-careers/" class="bp-panel-link">Jobs →</a>
+            </div>
+            <div id="bookmarks-tab-jobs-shelf" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: ACHIEVEMENTS
+           ==================================================================== -->
+      <div id="tab-achievements" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>🏆</span><span>Milestone Badges &amp; Preparation Streaks</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;padding:12px 0;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;">
+              <span style="font-size:36px;display:block;margin-bottom:8px;">🔥</span>
+              <h4 style="font-size:14px;font-weight:700;color:#f8fafc;margin:0 0 4px;">7-Day Study Streak</h4>
+              <p style="font-size:11px;color:#94a3b8;margin:0;">Active candidate revision cadence maintained</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;">
+              <span style="font-size:36px;display:block;margin-bottom:8px;">🥇</span>
+              <h4 style="font-size:14px;font-weight:700;color:#f8fafc;margin:0 0 4px;">Syllabus Explorer</h4>
+              <p style="font-size:11px;color:#94a3b8;margin:0;">10+ core topics verified and marked</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;">
+              <span style="font-size:36px;display:block;margin-bottom:8px;">🛡️</span>
+              <h4 style="font-size:14px;font-weight:700;color:#f8fafc;margin:0 0 4px;">Verified Aspirant</h4>
+              <p style="font-size:11px;color:#94a3b8;margin:0;">Profile seeded and authenticated locally</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: EXAM CALENDAR
+           ==================================================================== -->
+      <div id="tool-calendar" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>📅</span><span>Target Examination Calendar &amp; Countdown</span></div>
+            <a href="/jobs-careers/" class="bp-panel-link">All Recruitment Notices →</a>
+          </div>
+          <div id="candidate-milestones-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: DOCUMENT LOCKER
+           ==================================================================== -->
+      <div id="tool-locker" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>🗂️</span><span>Candidate KYC &amp; Verification Document Locker</span></div>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Keep track of required identity, educational certificates, and category verifications for state admissions.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
+              <input type="checkbox" checked style="accent-color:#0d9488;width:18px;height:18px;" />
+              <div style="flex:1;">
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Aadhaar Card (Linked with Mobile &amp; Bank DBT)</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Mandatory for Subhadra, Medhabruti, and OPSC online portal registration</p>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
+              <input type="checkbox" checked style="accent-color:#0d9488;width:18px;height:18px;" />
+              <div style="flex:1;">
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Resident / Domicile Certificate (Odisha)</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Issued by Tahasildar via e-District Odisha portal</p>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
+              <input type="checkbox" style="accent-color:#0d9488;width:18px;height:18px;" />
+              <div style="flex:1;">
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Caste Certificate (ST / SC / SEBC) &amp; Income Certificate</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Required for reservation and fee exemption benefits</p>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
+              <input type="checkbox" style="accent-color:#0d9488;width:18px;height:18px;" />
+              <div style="flex:1;">
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">10th / +2 / Graduation Final Marksheets &amp; Odia Pass Certificate</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Verified for ME School standard Odia language criteria</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </main>
 
   </div>
 
-</main>
+</div>
 
-<footer class="footer" style="margin-top:60px;padding:32px 16px;border-top:1px solid var(--border, #334155);text-align:center;">
-  <p style="font-size:12px;color:var(--text-muted, #94a3b8);">© 2026 Common Sense Odisha (CSO) — Independent Open Access Public Knowledge Platform.</p>
-</footer>
+<!-- ========================================================================
+     Universal Search Overlay Modal
+     ======================================================================== -->
+<div id="bp-search-overlay" class="bp-search-overlay" aria-hidden="true">
+  <div class="bp-search-modal">
+    <div class="bp-search-modal-header">
+      <span style="font-size:18px;color:#94a3b8;">🔍</span>
+      <input type="text" id="bp-search-modal-input" class="bp-search-modal-input" placeholder="Search syllabus, exams, jobs, and PYQ PDFs..." autofocus />
+      <button type="button" id="bp-search-modal-close" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div class="bp-search-modal-results" id="bp-search-modal-results">
+      <div style="padding:16px;text-align:center;color:#64748b;font-size:13px;">Type to search across OPSC, OSSC, B.Ed and Odisha study materials...</div>
+    </div>
+  </div>
+</div>
 
-<script src="/assets/shared-header.js" defer></script>
 <script src="/assets/js/bookmark-manager.js" defer></script>
 <script src="/assets/js/pwa-install.js" defer></script>
 <script src="/assets/js/auth-modal.js" defer></script>
