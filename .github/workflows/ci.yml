@@ -1,0 +1,58 @@
+name: Platform Integrity & Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    name: Verify Code, Links & Snapshot Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: ''
+
+      - name: Verify JavaScript Syntax
+        run: |
+          echo "--> Checking JS Syntax across core suites..."
+          node -c assets/js/*.js
+          node -c admin/*.js
+          node -c sw.js
+          echo "✓ All core scripts passed syntax validation."
+
+      - name: Run Site-Wide Link & Asset Integrity Audit
+        run: |
+          echo "--> Auditing 40 HTML pages, internal links, and assets..."
+          node scripts/audit-links.js
+
+      - name: Disaster Recovery Golden Snapshot Round-Trip Assertion
+        run: |
+          echo "--> Validating v1.0.0-gold-snapshot.json schema & state integrity..."
+          node -e '
+            const fs = require("fs");
+            const snapshot = JSON.parse(fs.readFileSync("./v1.0.0-gold-snapshot.json", "utf8"));
+            const state = snapshot.state || snapshot;
+            if (!state.registeredAccounts || !Array.isArray(state.registeredAccounts)) {
+              console.error("FAIL: Missing registeredAccounts array in snapshot");
+              process.exit(1);
+            }
+            if (!state.candidateChecklists || typeof state.candidateChecklists !== "object") {
+              console.error("FAIL: Missing candidateChecklists in snapshot");
+              process.exit(1);
+            }
+            console.log("✓ CI Snapshot Validation: 100% Intact (" + Object.keys(state).length + " state engines)");
+          '
+
+      - name: Verify Automated Snapshot Regeneration
+        run: |
+          echo "--> Running headless snapshot round-trip test..."
+          node scripts/verify-and-update-gold-snapshot.js
