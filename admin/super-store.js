@@ -12981,7 +12981,11 @@
           storageMonitoring: this.getStorageMonitoringConfig ? this.getStorageMonitoringConfig() : null,
           backupCentre: this.getBackupCentreConfig ? this.getBackupCentreConfig() : null,
           restoreCentre: this.getRestoreCentreConfig ? this.getRestoreCentreConfig() : null,
-          revisionRollback: this.getRevisionRollbackConfig ? this.getRevisionRollbackConfig() : null
+          revisionRollback: this.getRevisionRollbackConfig ? this.getRevisionRollbackConfig() : null,
+          errorLogs: this.getErrorLogsConfig ? this.getErrorLogsConfig() : null,
+          scheduledJobs: this.getScheduledJobsConfig ? this.getScheduledJobsConfig() : null,
+          automationRules: this.getAutomationRulesConfig ? this.getAutomationRulesConfig() : null,
+          maintenanceMode: this.getMaintenanceModeConfig ? this.getMaintenanceModeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15377,6 +15381,150 @@
     return filename;
   };
 
+
+  // --- MODULE 17-009: Error Logs ---
+  const DEFAULT_ERROR_LOGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalErrorsLogged24h: 18, criticalErrors: 0, warningCount: 4, averageResolutionTime: "12m" },
+    items: [
+      { id: "ERR-01", timestamp: "2026-11-10 09:20:14", errorLevel: "Warning", sourceComponent: "Search Index Loader", errorMessage: "Failed to preload secondary synonym cache; fallback dictionary active", stackTraceSnippet: "Error: SynonymDictionaryLoadTimeout at flexsearch.worker.js:84", occurrences24h: 3, status: "Mitigated", active: true },
+      { id: "ERR-02", timestamp: "2026-11-10 08:44:02", errorLevel: "Error", sourceComponent: "Payment Webhook Dispatcher", errorMessage: "Razorpay webhook signature verification delayed (340ms)", stackTraceSnippet: "WebhookVerificationDelay: signature clock skew < 1s at webhooks.js:112", occurrences24h: 1, status: "Resolved", active: true },
+      { id: "ERR-03", timestamp: "2026-11-09 23:10:45", errorLevel: "Warning", sourceComponent: "Client Asset Prefetch", errorMessage: "404 on prefetching legacy icon /assets/icons/favicon-old.ico", stackTraceSnippet: "ResourceFetchError: 404 Not Found at sw.js:42", occurrences24h: 14, status: "Under Review", active: true }
+    ]
+  };
+  SuperStore.getErrorLogsConfig = function() {
+    return _hydrateConfig('cso_error_logs_config', 'errorEntries', () => DEFAULT_ERROR_LOGS);
+  };
+  SuperStore.saveErrorLogsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.errorEntries = cfg.items || cfg.errorEntries || []; cfg.items = cfg.errorEntries;
+    localStorage.setItem('cso_error_logs_config', JSON.stringify(cfg));
+    this.logAudit('ERROR_LOGS_UPDATED', 'OPERATIONS', `Error logs updated (${cfg.items.length} entries).`);
+    return true;
+  };
+  SuperStore.resetErrorLogsConfig = function() {
+    localStorage.setItem('cso_error_logs_config', JSON.stringify(DEFAULT_ERROR_LOGS));
+    this.logAudit('ERROR_LOGS_RESET', 'OPERATIONS', 'Error logs reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_ERROR_LOGS));
+  };
+  SuperStore.exportErrorLogsManifest = function() {
+    const config = this.getErrorLogsConfig();
+    const filename = "error_logs_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ERROR_LOGS_EXPORTED", "DATA_EXPORT", `Error logs manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-010: Scheduled Jobs ---
+  const DEFAULT_SCHEDULED_JOBS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalConfiguredJobs: 5, activeCronsCount: 5, failedExecutions24h: 0, nextScheduledJob: "2026-11-10 12:00 (Hourly Ingestion)" },
+    items: [
+      { id: "CRON-01", jobName: "Gazette Circular Ingestion & Digest", cronExpression: "0 * * * * (Hourly)", handlerPath: "/workers/cron/gazette-sync.js", lastRunTime: "2026-11-10 09:00", nextRunTime: "2026-11-10 10:00", durationSeconds: 4.2, status: "Success", active: true },
+      { id: "CRON-02", jobName: "Automated Platform Snapshot Backup", cronExpression: "0 2 * * * (Daily at 02:00 IST)", handlerPath: "/workers/cron/backup-snapshot.js", lastRunTime: "2026-11-10 02:00", nextRunTime: "2026-11-11 02:00", durationSeconds: 28.5, status: "Success", active: true },
+      { id: "CRON-03", jobName: "XML Sitemap Regeneration & Ping", cronExpression: "0 4 * * * (Daily at 04:00 IST)", handlerPath: "/workers/cron/sitemap-generator.js", lastRunTime: "2026-11-10 04:00", nextRunTime: "2026-11-11 04:00", durationSeconds: 12.1, status: "Success", active: true },
+      { id: "CRON-04", jobName: "Expired Candidate Session Token Cleanup", cronExpression: "*/30 * * * * (Every 30m)", handlerPath: "/workers/cron/session-cleaner.js", lastRunTime: "2026-11-10 09:30", nextRunTime: "2026-11-10 10:00", durationSeconds: 1.8, status: "Success", active: true }
+    ]
+  };
+  SuperStore.getScheduledJobsConfig = function() {
+    return _hydrateConfig('cso_scheduled_jobs_config', 'jobs', () => DEFAULT_SCHEDULED_JOBS);
+  };
+  SuperStore.saveScheduledJobsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.jobs = cfg.items || cfg.jobs || []; cfg.items = cfg.jobs;
+    localStorage.setItem('cso_scheduled_jobs_config', JSON.stringify(cfg));
+    this.logAudit('SCHEDULED_JOBS_UPDATED', 'OPERATIONS', `Scheduled jobs updated (${cfg.items.length} jobs).`);
+    return true;
+  };
+  SuperStore.resetScheduledJobsConfig = function() {
+    localStorage.setItem('cso_scheduled_jobs_config', JSON.stringify(DEFAULT_SCHEDULED_JOBS));
+    this.logAudit('SCHEDULED_JOBS_RESET', 'OPERATIONS', 'Scheduled jobs reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_SCHEDULED_JOBS));
+  };
+  SuperStore.exportScheduledJobsManifest = function() {
+    const config = this.getScheduledJobsConfig();
+    const filename = "scheduled_jobs_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SCHEDULED_JOBS_EXPORTED", "DATA_EXPORT", `Scheduled jobs manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-011: Automation Rules ---
+  const DEFAULT_AUTOMATION_RULES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeRulesCount: 4, automatedTriggers24h: 38, systemIntegrityCheck: "Enforced" },
+    items: [
+      { id: "RUL-01", ruleTitle: "Auto-Purge Cloudflare Cache on Gazette Release", triggerEvent: "ON_PUBLISH_GAZETTE", actionPayload: "PURGE_ZONE_CACHE(/jobs-careers/)", executionMode: "Synchronous Edge Call", lastTriggered: "2026-11-09 18:22", status: "Active", active: true },
+      { id: "RUL-02", ruleTitle: "Instant Telegram Broadcast for OAS Notification", triggerEvent: "ON_TAG_OPSC_OAS_CONFIRMED", actionPayload: "DISPATCH_TG_CHANNEL(alerts_cso)", executionMode: "Asynchronous Queue", lastTriggered: "2026-11-09 18:25", status: "Active", active: true },
+      { id: "RUL-03", ruleTitle: "Auto-Revoke Session on Password Reset", triggerEvent: "ON_ADMIN_PASSWORD_CHANGE", actionPayload: "REVOKE_ALL_SESSIONS_EXCEPT_CURRENT", executionMode: "Immediate Security Hook", lastTriggered: "2026-11-08 14:10", status: "Active", active: true },
+      { id: "RUL-04", ruleTitle: "Auto-Archive Expired Recruitment Applications", triggerEvent: "ON_APPLICATION_WINDOW_CLOSE", actionPayload: "MARK_LEGACY_AND_HIDE_APPLY_BTN", executionMode: "Nightly Cron Check", lastTriggered: "2026-11-10 00:01", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getAutomationRulesConfig = function() {
+    return _hydrateConfig('cso_automation_rules_config', 'rules', () => DEFAULT_AUTOMATION_RULES);
+  };
+  SuperStore.saveAutomationRulesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.rules = cfg.items || cfg.rules || []; cfg.items = cfg.rules;
+    localStorage.setItem('cso_automation_rules_config', JSON.stringify(cfg));
+    this.logAudit('AUTOMATION_RULES_UPDATED', 'OPERATIONS', `Automation rules updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetAutomationRulesConfig = function() {
+    localStorage.setItem('cso_automation_rules_config', JSON.stringify(DEFAULT_AUTOMATION_RULES));
+    this.logAudit('AUTOMATION_RULES_RESET', 'OPERATIONS', 'Automation rules reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_AUTOMATION_RULES));
+  };
+  SuperStore.exportAutomationRulesManifest = function() {
+    const config = this.getAutomationRulesConfig();
+    const filename = "automation_rules_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("AUTOMATION_RULES_EXPORTED", "DATA_EXPORT", `Automation rules manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-012: Maintenance Mode ---
+  const DEFAULT_MAINTENANCE_MODE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    state: { isMaintenanceActive: false, allowAdminBypass: true, bypassToken: "cso_admin_bypass_key_2026", estimatedWindowMinutes: 0, scheduledActivation: null },
+    settings: {
+      headingText: "Common Sense Odisha Scheduled Portal Upgrade",
+      subtextMessage: "Our engineering team is currently optimizing examination gazette databases and statewide mock testing servers. The portal will resume normal operational status shortly.",
+      contactSupportEmail: "admin@csodisha.com",
+      retryAfterSeconds: 300
+    },
+    items: [
+      { id: "MNT-CFG-01", targetScope: "Public Portal Routes (/jobs, /schemes, /study)", bypassRole: "Authenticated Super Admin Only", enforcementMethod: "Cloudflare Edge Worker HTTP 503", active: true },
+      { id: "MNT-CFG-02", targetScope: "Super Admin Command Suite (/admin/)", bypassRole: "Whitelisted Developer IPs", enforcementMethod: "Direct Pass-Through", active: true }
+    ]
+  };
+  SuperStore.getMaintenanceModeConfig = function() {
+    return _hydrateConfig('cso_maintenance_mode_config', 'maintenanceRules', () => DEFAULT_MAINTENANCE_MODE);
+  };
+  SuperStore.saveMaintenanceModeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.maintenanceRules = cfg.items || cfg.maintenanceRules || []; cfg.items = cfg.maintenanceRules;
+    localStorage.setItem('cso_maintenance_mode_config', JSON.stringify(cfg));
+    this.logAudit('MAINTENANCE_MODE_UPDATED', 'OPERATIONS', `Maintenance mode settings updated (Active: ${cfg.state && cfg.state.isMaintenanceActive}).`);
+    return true;
+  };
+  SuperStore.resetMaintenanceModeConfig = function() {
+    localStorage.setItem('cso_maintenance_mode_config', JSON.stringify(DEFAULT_MAINTENANCE_MODE));
+    this.logAudit('MAINTENANCE_MODE_RESET', 'OPERATIONS', 'Maintenance mode reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_MAINTENANCE_MODE));
+  };
+  SuperStore.exportMaintenanceModeManifest = function() {
+    const config = this.getMaintenanceModeConfig();
+    const filename = "maintenance_mode_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("MAINTENANCE_MODE_EXPORTED", "DATA_EXPORT", `Maintenance mode manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -15648,6 +15796,22 @@
     window.CSOSuperStore.saveRevisionRollbackConfig = SuperStore.saveRevisionRollbackConfig;
     window.CSOSuperStore.resetRevisionRollbackConfig = SuperStore.resetRevisionRollbackConfig;
     window.CSOSuperStore.exportRevisionRollbackManifest = SuperStore.exportRevisionRollbackManifest;
+    window.CSOSuperStore.getErrorLogsConfig = SuperStore.getErrorLogsConfig;
+    window.CSOSuperStore.saveErrorLogsConfig = SuperStore.saveErrorLogsConfig;
+    window.CSOSuperStore.resetErrorLogsConfig = SuperStore.resetErrorLogsConfig;
+    window.CSOSuperStore.exportErrorLogsManifest = SuperStore.exportErrorLogsManifest;
+    window.CSOSuperStore.getScheduledJobsConfig = SuperStore.getScheduledJobsConfig;
+    window.CSOSuperStore.saveScheduledJobsConfig = SuperStore.saveScheduledJobsConfig;
+    window.CSOSuperStore.resetScheduledJobsConfig = SuperStore.resetScheduledJobsConfig;
+    window.CSOSuperStore.exportScheduledJobsManifest = SuperStore.exportScheduledJobsManifest;
+    window.CSOSuperStore.getAutomationRulesConfig = SuperStore.getAutomationRulesConfig;
+    window.CSOSuperStore.saveAutomationRulesConfig = SuperStore.saveAutomationRulesConfig;
+    window.CSOSuperStore.resetAutomationRulesConfig = SuperStore.resetAutomationRulesConfig;
+    window.CSOSuperStore.exportAutomationRulesManifest = SuperStore.exportAutomationRulesManifest;
+    window.CSOSuperStore.getMaintenanceModeConfig = SuperStore.getMaintenanceModeConfig;
+    window.CSOSuperStore.saveMaintenanceModeConfig = SuperStore.saveMaintenanceModeConfig;
+    window.CSOSuperStore.resetMaintenanceModeConfig = SuperStore.resetMaintenanceModeConfig;
+    window.CSOSuperStore.exportMaintenanceModeManifest = SuperStore.exportMaintenanceModeManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

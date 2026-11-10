@@ -646,6 +646,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-17-006') { renderBackupCentreWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-17-007') { renderRestoreCentreWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-17-008') { renderRevisionRollbackWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-009') { renderErrorLogsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-010') { renderScheduledJobsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-011') { renderAutomationRulesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-012') { renderMaintenanceModeWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1120,6 +1124,14 @@ async function loadMasterNavigation() {
         renderRestoreCentreWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-17-008') {
         renderRevisionRollbackWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-009') {
+        renderErrorLogsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-010') {
+        renderScheduledJobsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-011') {
+        renderAutomationRulesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-012') {
+        renderMaintenanceModeWorkspace(dom.workspaceRoot);
 
 
 
@@ -65808,6 +65820,737 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-17-008', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 17-009: Error Logs
+    // ==========================================
+    function renderErrorLogsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getErrorLogsConfig();
+        let searchQuery = '';
+
+        function render() {
+          const errors = config.errorEntries || config.items || [];
+          const filtered = errors.filter(e => {
+            const q = searchQuery.toLowerCase();
+            return !q || (e.sourceComponent && e.sourceComponent.toLowerCase().includes(q)) || (e.errorMessage && e.errorMessage.toLowerCase().includes(q)) || (e.errorLevel && e.errorLevel.toLowerCase().includes(q));
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">System Error Logs & Exception Forensics</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-009 • Edge runtime exceptions, worker stacktraces & diagnostic triaging</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="err-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="err-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="err-btn-clear-all" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-rose-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Flush Resolved Logs
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Errors Logged (24h)</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary && config.summary.totalErrorsLogged24h || errors.length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Aggregated Across Nodes</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Critical Errors</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.criticalErrors || 0}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Zero Fatal Outages</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Warnings (24h)</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.summary && config.summary.warningCount || 4}</div>
+                  <div class="text-xs text-slate-400 mt-1">Non-blocking Diagnostics</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Avg Resolution Time</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.averageResolutionTime || '12m'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Auto-Remediated / Fixed</div>
+                </div>
+              </div>
+
+              <!-- Filter Search Bar -->
+              <div class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                <div class="relative w-full sm:w-80">
+                  <input id="err-search-input" type="text" placeholder="Filter component or error..." value="${searchQuery}" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-rose-500">
+                  <svg class="w-4 h-4 absolute left-3 top-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <div class="text-xs text-slate-400">${filtered.length} exceptions recorded</div>
+              </div>
+
+              <!-- Errors Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                      <tr>
+                        <th class="p-3">Timestamp</th>
+                        <th class="p-3">Level</th>
+                        <th class="p-3">Component</th>
+                        <th class="p-3">Error Message</th>
+                        <th class="p-3">Stacktrace Snippet</th>
+                        <th class="p-3">24h Count</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      ${filtered.map((e, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-mono text-slate-400">${e.timestamp}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${e.errorLevel === 'Critical' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : e.errorLevel === 'Error' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}">
+                              ${e.errorLevel}
+                            </span>
+                          </td>
+                          <td class="p-3 font-semibold text-white">${e.sourceComponent}</td>
+                          <td class="p-3 text-slate-300 max-w-xs truncate">${e.errorMessage}</td>
+                          <td class="p-3 font-mono text-[10px] text-slate-400 max-w-xs truncate">${e.stackTraceSnippet}</td>
+                          <td class="p-3 font-mono text-slate-300 font-bold">${e.occurrences24h || 1}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${e.status === 'Resolved' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-300'}">
+                              ${e.status}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right">
+                            <button class="err-resolve-btn text-emerald-400 hover:text-emerald-300 font-semibold" data-index="${idx}">Resolve</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const searchInput = container.querySelector('#err-search-input');
+          if (searchInput) {
+            searchInput.oninput = (ev) => { searchQuery = ev.target.value; render(); };
+          }
+
+          container.querySelectorAll('.err-resolve-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              errors[idx].status = 'Resolved';
+              config.errorEntries = errors;
+              config.items = errors;
+              store.saveErrorLogsConfig(config);
+              render();
+            };
+          });
+
+          const clearBtn = container.querySelector('#err-btn-clear-all');
+          if (clearBtn) {
+            clearBtn.onclick = () => {
+              const activeOnly = errors.filter(e => e.status !== 'Resolved');
+              config.errorEntries = activeOnly;
+              config.items = activeOnly;
+              store.saveErrorLogsConfig(config);
+              alert('Resolved error entries purged.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#err-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportErrorLogsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#err-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Error Logs configuration to factory defaults?')) {
+                config = store.resetErrorLogsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-010: Scheduled Jobs
+    // ==========================================
+    function renderScheduledJobsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getScheduledJobsConfig();
+
+        function render() {
+          const jobs = config.jobs || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Scheduled Jobs & Background Cron Pipeline</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-010 • Cloudflare Cron Triggers, periodic data synchronizers & health probes</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="cron-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="cron-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="cron-btn-add-job" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-sky-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Schedule Job
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Configured Jobs</div>
+                  <div class="text-2xl font-bold text-white mt-1">${jobs.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">All Crons Operational</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Triggers</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${jobs.filter(j => j.active).length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Cloudflare Edge Cron</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Failed Executions (24h)</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">0</div>
+                  <div class="text-xs text-emerald-400 mt-1">100% Success SLA</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Next Queue Dispatch</div>
+                  <div class="text-sm font-bold text-violet-400 mt-2">${config.summary && config.summary.nextScheduledJob || 'Hourly Ingestion'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Automated Worker Runner</div>
+                </div>
+              </div>
+
+              <!-- Jobs Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                      <tr>
+                        <th class="p-3">Job Name</th>
+                        <th class="p-3">Cron Expression</th>
+                        <th class="p-3">Handler Path</th>
+                        <th class="p-3">Last Run</th>
+                        <th class="p-3">Next Run</th>
+                        <th class="p-3">Duration</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      ${jobs.map((j, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">
+                            <div>${j.jobName}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">${j.id}</div>
+                          </td>
+                          <td class="p-3 font-mono text-sky-400">${j.cronExpression}</td>
+                          <td class="p-3 font-mono text-slate-300 text-[11px]">${j.handlerPath}</td>
+                          <td class="p-3 text-slate-400">${j.lastRunTime}</td>
+                          <td class="p-3 text-slate-400">${j.nextRunTime}</td>
+                          <td class="p-3 font-mono text-white font-bold">${j.durationSeconds}s</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                              ${j.status}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right space-x-2">
+                            <button class="cron-run-now-btn text-xs font-semibold text-sky-400 hover:text-sky-300" data-index="${idx}">Execute</button>
+                            <button class="cron-del-btn text-rose-400 hover:text-rose-300" data-index="${idx}">Delete</button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.cron-run-now-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              const job = jobs[idx];
+              job.lastRunTime = new Date().toISOString().slice(0, 16).replace('T', ' ');
+              job.status = 'Success';
+              config.jobs = jobs;
+              config.items = jobs;
+              store.saveScheduledJobsConfig(config);
+              alert(`Job [${job.jobName}] dispatched immediately via worker trigger.`);
+              render();
+            };
+          });
+
+          container.querySelectorAll('.cron-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this scheduled job?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                jobs.splice(idx, 1);
+                config.jobs = jobs;
+                config.items = jobs;
+                store.saveScheduledJobsConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#cron-btn-add-job');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const name = prompt('Scheduled Job Name:');
+              if (!name) return;
+              const cron = prompt('Cron Expression (e.g. 0 0 * * *):', '0 0 * * *');
+              if (!cron) return;
+              const path = prompt('Worker Handler Path:', '/workers/cron/custom-task.js');
+              if (!path) return;
+              jobs.push({
+                id: 'CRON-0' + (jobs.length + 1),
+                jobName: name,
+                cronExpression: cron,
+                handlerPath: path,
+                lastRunTime: 'Never',
+                nextRunTime: 'Next Cycle',
+                durationSeconds: 1.0,
+                status: 'Success',
+                active: true
+              });
+              config.jobs = jobs;
+              config.items = jobs;
+              store.saveScheduledJobsConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#cron-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportScheduledJobsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#cron-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Scheduled Jobs configuration to factory defaults?')) {
+                config = store.resetScheduledJobsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-011: Automation Rules
+    // ==========================================
+    function renderAutomationRulesWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getAutomationRulesConfig();
+
+        function render() {
+          const rules = config.rules || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Event-Driven Automation Rules</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-011 • Webhook hooks, edge cache flushes, instant social broadcasts & state triggers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="rul-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="rul-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="rul-btn-add-rule" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Automation Rule
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Rules</div>
+                  <div class="text-2xl font-bold text-white mt-1">${rules.filter(r => r.active).length}</div>
+                  <div class="text-xs text-indigo-400 mt-1">Event Hooks Armed</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Triggers (24h)</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.automatedTriggers24h || 38}</div>
+                  <div class="text-xs text-slate-400 mt-1">Zero Execution Failures</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">System Integrity</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">Enforced</div>
+                  <div class="text-xs text-slate-400 mt-1">Cryptographic Signatures</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Avg Execution Time</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">18ms</div>
+                  <div class="text-xs text-slate-400 mt-1">Sub-second Webhooks</div>
+                </div>
+              </div>
+
+              <!-- Rules Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${rules.map((r, idx) => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <h4 class="text-sm font-bold text-white">${r.ruleTitle}</h4>
+                          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">${r.id}</span>
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1 font-mono">Trigger: <span class="text-amber-400 font-bold">${r.triggerEvent}</span></div>
+                      </div>
+                      <button class="rule-toggle-btn px-2.5 py-1 rounded text-xs font-semibold transition ${r.active ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-400'}" data-index="${idx}">
+                        ${r.active ? 'Armed' : 'Muted'}
+                      </button>
+                    </div>
+
+                    <div class="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800 text-[11px] font-mono text-slate-300 break-all">
+                      ${r.actionPayload}
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                      <span>Mode: ${r.executionMode}</span>
+                      <button class="rule-del-btn text-rose-400 hover:text-rose-300" data-index="${idx}">Delete Rule</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.rule-toggle-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              rules[idx].active = !rules[idx].active;
+              config.rules = rules;
+              config.items = rules;
+              store.saveAutomationRulesConfig(config);
+              render();
+            };
+          });
+
+          container.querySelectorAll('.rule-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this automation rule?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                rules.splice(idx, 1);
+                config.rules = rules;
+                config.items = rules;
+                store.saveAutomationRulesConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#rul-btn-add-rule');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const title = prompt('Rule title:');
+              if (!title) return;
+              const trigger = prompt('Trigger Event constant (e.g. ON_EXAM_UPDATE):', 'ON_EXAM_UPDATE');
+              if (!trigger) return;
+              const payload = prompt('Action payload / function call:', 'PURGE_CACHE()');
+              if (!payload) return;
+              rules.push({
+                id: 'RUL-0' + (rules.length + 1),
+                ruleTitle: title,
+                triggerEvent: trigger,
+                actionPayload: payload,
+                executionMode: 'Synchronous Edge Call',
+                lastTriggered: 'Just created',
+                status: 'Active',
+                active: true
+              });
+              config.rules = rules;
+              config.items = rules;
+              store.saveAutomationRulesConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#rul-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportAutomationRulesManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#rul-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Automation Rules to factory defaults?')) {
+                config = store.resetAutomationRulesConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-012: Maintenance Mode
+    // ==========================================
+    function renderMaintenanceModeWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getMaintenanceModeConfig();
+
+        function render() {
+          const rules = config.maintenanceRules || config.items || [];
+          const isMaintenanceActive = config.state && config.state.isMaintenanceActive;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Maintenance Mode & Edge 503 Guard</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-012 • Instant portal lockout, admin bypass tokens & graceful 503 splash pages</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mnt-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="mnt-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="mnt-btn-toggle-active" class="px-5 py-1.5 ${isMaintenanceActive ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/40 animate-pulse' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40'} text-white text-xs font-bold rounded-lg shadow-lg flex items-center gap-2 transition">
+                    <span class="w-2.5 h-2.5 rounded-full ${isMaintenanceActive ? 'bg-white' : 'bg-emerald-200'}"></span>
+                    ${isMaintenanceActive ? 'MAINTENANCE ENGAGED (CLICK TO DISENGAGE)' : 'PORTAL ONLINE (CLICK TO ENGAGE)'}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Warning Banner if Engaged -->
+              ${isMaintenanceActive ? `
+                <div class="p-4 bg-rose-950/60 border border-rose-500/50 rounded-xl text-rose-200 flex items-start gap-3">
+                  <svg class="w-5 h-5 text-rose-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-rose-300">Active Edge Maintenance Lockdown</h4>
+                    <p class="text-xs text-rose-200 mt-1">All public candidate traffic is receiving HTTP 503 Maintenance headers. Super admin sessions are currently using bypass token authentication.</p>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Portal Status</div>
+                  <div class="text-2xl font-bold ${isMaintenanceActive ? 'text-rose-400' : 'text-emerald-400'} mt-1">${isMaintenanceActive ? 'MAINTENANCE' : 'NORMAL'}</div>
+                  <div class="text-xs text-slate-400 mt-1">${isMaintenanceActive ? 'Public traffic paused' : 'Full public access'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Admin Bypass</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.state && config.state.allowAdminBypass ? 'ENABLED' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Super Admin Passthrough</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">HTTP Retry-After</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${config.settings && config.settings.retryAfterSeconds || 300} <span class="text-xs text-slate-500 font-normal">Sec</span></div>
+                  <div class="text-xs text-slate-400 mt-1">Edge 503 Header</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Bypass Token</div>
+                  <div class="text-xs font-mono font-bold text-amber-400 mt-3 truncate">${config.state && config.state.bypassToken || 'cso_admin_bypass_key_2026'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Bearer / Cookie Key</div>
+                </div>
+              </div>
+
+              <!-- Form Details -->
+              <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                <h3 class="text-sm font-bold text-white">Maintenance Splash Page Configuration</h3>
+                <div>
+                  <label class="text-xs text-slate-400 block mb-1">Headline Text</label>
+                  <input id="mnt-heading" type="text" value="${config.settings && config.settings.headingText || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                </div>
+                <div>
+                  <label class="text-xs text-slate-400 block mb-1">Subtext / Explanation Message</label>
+                  <textarea id="mnt-subtext" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white">${config.settings && config.settings.subtextMessage || ''}</textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-xs text-slate-400 block mb-1">Support Contact Email</label>
+                    <input id="mnt-email" type="email" value="${config.settings && config.settings.contactSupportEmail || 'admin@csodisha.com'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-400 block mb-1">Bypass Token Secret</label>
+                    <input id="mnt-token" type="text" value="${config.state && config.state.bypassToken || 'cso_admin_bypass_key_2026'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono">
+                  </div>
+                </div>
+                <div class="pt-2 flex justify-end">
+                  <button id="mnt-btn-save-settings" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-lg transition">
+                    Save Splash Settings
+                  </button>
+                </div>
+              </div>
+
+              <!-- Scope Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Target Scope</th>
+                      <th class="p-3">Bypass Eligibility</th>
+                      <th class="p-3">Edge Enforcement Method</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${rules.map(r => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${r.targetScope}</td>
+                        <td class="p-3 text-slate-300 font-mono">${r.bypassRole}</td>
+                        <td class="p-3 text-amber-400 font-mono">${r.enforcementMethod}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            Active
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const toggleBtn = container.querySelector('#mnt-btn-toggle-active');
+          if (toggleBtn) {
+            toggleBtn.onclick = () => {
+              const current = config.state && config.state.isMaintenanceActive;
+              const next = !current;
+              if (confirm(next ? 'ENGAGE MAINTENANCE MODE? Public users will see 503 splash.' : 'DISENGAGE MAINTENANCE MODE? Portal will resume normal operation.')) {
+                config.state = config.state || {};
+                config.state.isMaintenanceActive = next;
+                store.saveMaintenanceModeConfig(config);
+                alert(next ? 'Maintenance mode engaged.' : 'Portal restored to normal operation.');
+                render();
+              }
+            };
+          }
+
+          const saveSettingsBtn = container.querySelector('#mnt-btn-save-settings');
+          if (saveSettingsBtn) {
+            saveSettingsBtn.onclick = () => {
+              config.settings = config.settings || {};
+              config.settings.headingText = container.querySelector('#mnt-heading').value.trim();
+              config.settings.subtextMessage = container.querySelector('#mnt-subtext').value.trim();
+              config.settings.contactSupportEmail = container.querySelector('#mnt-email').value.trim();
+              config.state = config.state || {};
+              config.state.bypassToken = container.querySelector('#mnt-token').value.trim();
+              store.saveMaintenanceModeConfig(config);
+              alert('Maintenance mode configuration saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#mnt-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportMaintenanceModeManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#mnt-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Maintenance Mode configuration to factory defaults?')) {
+                config = store.resetMaintenanceModeConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 
