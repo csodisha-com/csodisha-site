@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Candidate Registration | Common Sense Odisha</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    body {
+      background: #090e18;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .auth-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 2.25rem 2rem;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .auth-logo {
+      display: inline-block;
+      margin-bottom: 0.75rem;
+    }
+    .auth-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin: 0 0 0.25rem 0;
+    }
+    .auth-subtitle {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+    .form-group {
+      margin-bottom: 1.15rem;
+      text-align: left;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.35rem;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input {
+      width: 100%;
+      height: 42px;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 0 1rem;
+      color: #f8fafc;
+      font-size: 0.95rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: #0d9488;
+    }
+    .btn-toggle-pw {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-toggle-pw:hover, .btn-toggle-pw:focus-visible {
+      color: #f8fafc;
+      background: rgba(13, 148, 136, 0.2);
+      border-color: #0d9488;
+    }
+    .form-hint {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.35rem;
+      display: block;
+    }
+    .error-box {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.825rem;
+      margin-bottom: 1.15rem;
+      display: none;
+    }
+    .btn-submit {
+      width: 100%;
+      height: 46px;
+      background: #0d9488;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: #0f766e;
+    }
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .auth-footer a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="/" class="auth-logo" title="Common Sense Odisha">
+        <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="110" height="38">
+      </a>
+      <h1 class="auth-title">Create Candidate Account</h1>
+      <p class="auth-subtitle">Independent candidate workspace & syllabus tracker</p>
+    </div>
+
+    <form id="candidate-signup-form" novalidate>
+      <div class="error-box" id="auth-error-msg" role="alert" aria-live="assertive"></div>
+
+      <div class="form-group">
+        <label for="signup-fullname" class="form-label">Full Name *</label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="signup-fullname"
+            name="fullName"
+            class="form-input"
+            placeholder="Subham Mohanty"
+            autocomplete="name"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-email" class="form-label">Email Address *</label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="signup-email"
+            name="email"
+            class="form-input"
+            placeholder="subham@example.com"
+            autocomplete="email"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-district" class="form-label">Home District *</label>
+        <div class="input-wrapper">
+          <select id="signup-district" name="district" class="form-input" style="cursor: pointer;">
+            <option value="Balasore">Balasore</option>
+            <option value="Bhadrak">Bhadrak</option>
+            <option value="Cuttack">Cuttack</option>
+            <option value="Khordha (Bhubaneswar)">Khordha (Bhubaneswar)</option>
+            <option value="Ganjam">Ganjam</option>
+            <option value="Puri">Puri</option>
+            <option value="Sambalpur">Sambalpur</option>
+            <option value="Sundargarh">Sundargarh</option>
+            <option value="Mayurbhanj">Mayurbhanj</option>
+            <option value="Angul">Angul</option>
+            <option value="Dhenkanal">Dhenkanal</option>
+            <option value="Kendrapara">Kendrapara</option>
+            <option value="Jagatsinghpur">Jagatsinghpur</option>
+            <option value="Jajpur">Jajpur</option>
+            <option value="Bargarh">Bargarh</option>
+            <option value="Balangir">Balangir</option>
+            <option value="Kalahandi">Kalahandi</option>
+            <option value="Koraput">Koraput</option>
+            <option value="Rayagada">Rayagada</option>
+            <option value="Keonjhar">Keonjhar</option>
+            <option value="Jharsuguda">Jharsuguda</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-password" class="form-label">Password *</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="signup-password"
+            name="password"
+            class="form-input"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            required
+          >
+          <button
+            type="button"
+            class="btn-toggle-pw"
+            id="btn-toggle-pw"
+            aria-label="Show password"
+            aria-pressed="false"
+          >Show</button>
+        </div>
+        <span class="form-hint">Must be between 8 and 64 characters in length.</span>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit-auth">
+        Create Candidate Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="/login.html">Sign In</a>
+    </div>
+  </div>
+
+  <script src="/assets/cso-auth-client.js"></script>
+  <script>
+    (function() {
+      const form = document.getElementById('candidate-signup-form');
+      const nameInput = document.getElementById('signup-fullname');
+      const emailInput = document.getElementById('signup-email');
+      const districtInput = document.getElementById('signup-district');
+      const pwInput = document.getElementById('signup-password');
+      const togglePwBtn = document.getElementById('btn-toggle-pw');
+      const errorBox = document.getElementById('auth-error-msg');
+      const submitBtn = document.getElementById('btn-submit-auth');
+
+      // Password toggle
+      togglePwBtn.addEventListener('click', function() {
+        const isPw = pwInput.type === 'password';
+        pwInput.type = isPw ? 'text' : 'password';
+        this.textContent = isPw ? 'Hide' : 'Show';
+        this.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+        this.setAttribute('aria-pressed', isPw ? 'true' : 'false');
+      });
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+      }
+
+      function clearError() {
+        errorBox.textContent = '';
+        errorBox.style.display = 'none';
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearError();
+
+        const fullName = nameInput.value.trim();
+        const email = emailInput.value.trim().toLowerCase();
+        const district = districtInput.value;
+        const password = pwInput.value;
+
+        if (!fullName) {
+          showError('Please enter your full name.');
+          nameInput.focus();
+          return;
+        }
+
+        if (!email || !email.includes('@')) {
+          showError('Please enter a valid candidate email address.');
+          emailInput.focus();
+          return;
+        }
+
+        if (!password || password.length < 8 || password.length > 64) {
+          showError('Password must be between 8 and 64 characters.');
+          pwInput.focus();
+          return;
+        }
+
+        // Prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account...';
+
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fullName,
+              email,
+              district,
+              password,
+              targetStreams: ['opsc', 'ossc']
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.success) {
+            submitBtn.textContent = 'Account created! Redirecting...';
+            if (data.candidate) {
+              localStorage.setItem('cso_candidate_session_v1', JSON.stringify({
+                ...data.candidate,
+                isAuthenticated: true
+              }));
+            }
+            window.location.href = '/student-dashboard/';
+          } else {
+            showError(data.error || 'Failed to create candidate account. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Candidate Account';
+          }
+        } catch (err) {
+          showError('Unable to reach registration server. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Candidate Account';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

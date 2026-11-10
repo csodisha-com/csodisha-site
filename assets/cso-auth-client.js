@@ -90,13 +90,11 @@
       !validCredentials(data) ||
       typeof data.fullName !== "string" ||
       data.password.length < 8 ||
-      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]*[@#][A-Za-z0-9]*$/.test(data.password) ||
-      typeof data.dateOfBirth !== "string" ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(data.dateOfBirth)
+      data.password.length > 64
     ) {
       return {
         ok: false,
-        error: "Invalid registration information."
+        error: "Invalid registration information. Password must be between 8 and 64 characters."
       };
     }
 

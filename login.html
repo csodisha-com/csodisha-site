@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Candidate Sign In | Common Sense Odisha</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    body {
+      background: #090e18;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .auth-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 2.25rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .auth-logo {
+      display: inline-block;
+      margin-bottom: 0.75rem;
+    }
+    .auth-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin: 0 0 0.25rem 0;
+    }
+    .auth-subtitle {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.4rem;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input {
+      width: 100%;
+      height: 44px;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 0 1rem;
+      color: #f8fafc;
+      font-size: 0.95rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: #0d9488;
+    }
+    .btn-toggle-pw {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-toggle-pw:hover, .btn-toggle-pw:focus-visible {
+      color: #f8fafc;
+      background: rgba(13, 148, 136, 0.2);
+      border-color: #0d9488;
+    }
+    .error-box {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.825rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+    .btn-submit {
+      width: 100%;
+      height: 46px;
+      background: #0d9488;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: #0f766e;
+    }
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .auth-footer a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="/" class="auth-logo" title="Common Sense Odisha">
+        <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="110" height="38">
+      </a>
+      <h1 class="auth-title">Candidate Sign In</h1>
+      <p class="auth-subtitle">Access your verified syllabus checklists and study desk</p>
+    </div>
+
+    <form id="candidate-login-form" novalidate>
+      <div class="error-box" id="auth-error-msg" role="alert" aria-live="assertive"></div>
+
+      <div class="form-group">
+        <label for="login-email" class="form-label">Email Address *</label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="login-email"
+            name="email"
+            class="form-input"
+            placeholder="aspirant@example.com"
+            autocomplete="email"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="login-password" class="form-label">Password *</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="login-password"
+            name="password"
+            class="form-input"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          >
+          <button
+            type="button"
+            class="btn-toggle-pw"
+            id="btn-toggle-pw"
+            aria-label="Show password"
+            aria-pressed="false"
+          >Show</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit-auth">
+        Sign In to Portal
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/signup.html">Create Account</a>
+    </div>
+  </div>
+
+  <script src="/assets/cso-auth-client.js"></script>
+  <script>
+    (function() {
+      const form = document.getElementById('candidate-login-form');
+      const emailInput = document.getElementById('login-email');
+      const pwInput = document.getElementById('login-password');
+      const togglePwBtn = document.getElementById('btn-toggle-pw');
+      const errorBox = document.getElementById('auth-error-msg');
+      const submitBtn = document.getElementById('btn-submit-auth');
+
+      // Password toggle
+      togglePwBtn.addEventListener('click', function() {
+        const isPw = pwInput.type === 'password';
+        pwInput.type = isPw ? 'text' : 'password';
+        this.textContent = isPw ? 'Hide' : 'Show';
+        this.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+        this.setAttribute('aria-pressed', isPw ? 'true' : 'false');
+      });
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+      }
+
+      function clearError() {
+        errorBox.textContent = '';
+        errorBox.style.display = 'none';
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearError();
+
+        const email = emailInput.value.trim().toLowerCase();
+        const password = pwInput.value;
+
+        if (!email || !email.includes('@')) {
+          showError('Please enter a valid candidate email address.');
+          emailInput.focus();
+          return;
+        }
+
+        if (!password) {
+          showError('Please enter your password.');
+          pwInput.focus();
+          return;
+        }
+
+        // Prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying credentials...';
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.success) {
+            submitBtn.textContent = 'Access granted! Redirecting...';
+            if (data.candidate) {
+              localStorage.setItem('cso_candidate_session_v1', JSON.stringify({
+                ...data.candidate,
+                isAuthenticated: true
+              }));
+            }
+            window.location.href = '/student-dashboard/';
+          } else {
+            showError(data.error || 'Invalid email or password');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In to Portal';
+          }
+        } catch (err) {
+          showError('Unable to reach authentication server. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In to Portal';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -2,7 +2,19 @@
 -- Common Sense Odisha (CSO) — Edge Database Schema (Cloudflare D1 / SQLite)
 -- Candidate Workspace, Identity Vault, Checklists, Document Locker & Telemetry
 
--- 1. Candidates & Authentication
+-- 1. Users & Authentication
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  failed_attempts INTEGER DEFAULT 0,
+  lockout_until INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- 1b. Candidates & Profile Workspace (compat)
 CREATE TABLE IF NOT EXISTS candidates (
   id TEXT PRIMARY KEY,
   full_name TEXT NOT NULL,
@@ -10,6 +22,8 @@ CREATE TABLE IF NOT EXISTS candidates (
   district TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   salt TEXT NOT NULL,
+  failed_attempts INTEGER DEFAULT 0,
+  lockout_until INTEGER DEFAULT 0,
   target_streams TEXT NOT NULL, -- JSON array (e.g. ["opsc", "ossc"])
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_login_at DATETIME
@@ -55,6 +69,7 @@ CREATE TABLE IF NOT EXISTS candidate_mock_scores (
 );
 
 -- Indexes for optimal lookup performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email);
 CREATE INDEX IF NOT EXISTS idx_candidate_checklists_cid ON candidate_checklists(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_candidate_mock_scores_cid ON candidate_mock_scores(candidate_id);

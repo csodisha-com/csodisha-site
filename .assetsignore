@@ -1,0 +1,5 @@
+.git
+.github
+.aider*
+node_modules
+*.log

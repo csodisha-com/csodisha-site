@@ -269,14 +269,17 @@
           </div>
 
           <div>
-            <label id="auth-identifier-label" style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">${isSignUp ? 'Email Address *' : 'Email Address or Mobile Number *'}</label>
-            <input type="text" id="auth-identifier" placeholder="subham@example.com or 9876543210" required style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
+            <label for="auth-identifier" id="auth-identifier-label" style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">${isSignUp ? 'Email Address *' : 'Email Address or Mobile Number *'}</label>
+            <input type="text" id="auth-identifier" autocomplete="${isSignUp ? 'email' : 'username'}" placeholder="subham@example.com or 9876543210" required style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
           </div>
 
           <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Password *</label>
-            <input type="password" id="auth-password" placeholder="••••••••" required style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
-            <span style="display:block;font-size:10px;color:#64748b;margin-top:3px;">Must contain at least 8 characters, a letter, a number, and @ or #.</span>
+            <label for="auth-password" style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Password *</label>
+            <div style="position:relative;display:flex;align-items:center;">
+              <input type="password" id="auth-password" autocomplete="${isSignUp ? 'new-password' : 'current-password'}" placeholder="••••••••" required style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 50px 9px 12px;color:#ffffff;font-size:13px;outline:none;" />
+              <button type="button" id="cso-modal-toggle-pw" aria-label="Show password" aria-pressed="false" style="position:absolute;right:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">Show</button>
+            </div>
+            <span style="display:block;font-size:10px;color:#64748b;margin-top:3px;">Must contain at least 8 characters.</span>
           </div>
 
           <div id="cso-auth-error" style="display:none;background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.3);color:#fda4af;padding:8px 12px;border-radius:6px;font-size:12px;line-height:1.4;"></div>
@@ -332,6 +335,12 @@
         errBox.textContent = msg;
         errBox.style.display = 'block';
       }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = signupFields && signupFields.style.display !== 'none'
+          ? 'Create Candidate Account'
+          : 'Sign In to Portal';
+      }
     }
 
     function clearError() {
@@ -369,6 +378,19 @@
       };
     }
 
+    const togglePwModalBtn = document.getElementById('cso-modal-toggle-pw');
+    if (togglePwModalBtn) {
+      togglePwModalBtn.onclick = function() {
+        const pwField = document.getElementById('auth-password');
+        if (!pwField) return;
+        const isPw = pwField.type === 'password';
+        pwField.type = isPw ? 'text' : 'password';
+        this.textContent = isPw ? 'Hide' : 'Show';
+        this.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+        this.setAttribute('aria-pressed', isPw ? 'true' : 'false');
+      };
+    }
+
     // Form submission
     const form = document.getElementById('cso-auth-form');
 
@@ -377,7 +399,11 @@
         e.preventDefault();
         clearError();
 
+        // Prevent double submission
         const isSignUpMode = signupFields.style.display !== 'none';
+        submitBtn.disabled = true;
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.textContent = 'Processing...';
         const identifier = document.getElementById('auth-identifier')?.value.trim() || '';
         const passwordVal = document.getElementById('auth-password')?.value || '';
 
