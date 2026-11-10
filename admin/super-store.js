@@ -12967,7 +12967,13 @@
           rolesAccessPolicies: this.getRolesAccessPoliciesConfig ? this.getRolesAccessPoliciesConfig() : null,
           loginHistory: this.getLoginHistoryConfig ? this.getLoginHistoryConfig() : null,
           securityAlerts: this.getSecurityAlertsConfig ? this.getSecurityAlertsConfig() : null,
-          rateLimits: this.getRateLimitsConfig ? this.getRateLimitsConfig() : null
+          rateLimits: this.getRateLimitsConfig ? this.getRateLimitsConfig() : null,
+          uploadSecurity: this.getUploadSecurityConfig ? this.getUploadSecurityConfig() : null,
+          privacyConsent: this.getPrivacyConsentConfig ? this.getPrivacyConsentConfig() : null,
+          dataRetention: this.getDataRetentionConfig ? this.getDataRetentionConfig() : null,
+          accountDeletion: this.getAccountDeletionConfig ? this.getAccountDeletionConfig() : null,
+          securityAuditLogs: this.getSecurityAuditLogsConfig ? this.getSecurityAuditLogsConfig() : null,
+          incidentResponse: this.getIncidentResponseConfig ? this.getIncidentResponseConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -14874,6 +14880,212 @@
     return filename;
   };
 
+  // --- MODULE 16-008: Upload Security ---
+  const DEFAULT_UPLOAD_SECURITY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { scanWithClamAV: true, stripExifData: true, enforceMagicBytes: true, quarantineUnknownMime: true, maxFileSizeMB: 15 },
+    items: [
+      { id: "UPL-01", fileCategory: "Official Gazette & Circular PDFs", allowedExtensions: ".pdf", maxSizeBytes: "15 MB", mimeTypeCheck: "application/pdf (Magic: %PDF-)", autoSanitize: true, status: "Strict Enforced", active: true },
+      { id: "UPL-02", fileCategory: "Aspirant Profile Photographs", allowedExtensions: ".jpg, .jpeg, .png, .webp", maxSizeBytes: "2 MB", mimeTypeCheck: "image/jpeg, image/png, image/webp", autoSanitize: true, status: "Strict Enforced", active: true },
+      { id: "UPL-03", fileCategory: "Study Notes & Model Solutions", allowedExtensions: ".pdf, .epub", maxSizeBytes: "25 MB", mimeTypeCheck: "application/pdf, application/epub+zip", autoSanitize: true, status: "Strict Enforced", active: true },
+      { id: "UPL-04", fileCategory: "Executable & Script Blacklist", allowedExtensions: ".exe, .sh, .bat, .js, .php, .py", maxSizeBytes: "0 MB", mimeTypeCheck: "All Executables Blocked", autoSanitize: false, status: "Hard Blocked", active: true }
+    ]
+  };
+  SuperStore.getUploadSecurityConfig = function() {
+    return _hydrateConfig('cso_upload_security_config', 'rules', () => DEFAULT_UPLOAD_SECURITY);
+  };
+  SuperStore.saveUploadSecurityConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.rules = cfg.items || cfg.rules || []; cfg.items = cfg.rules;
+    localStorage.setItem('cso_upload_security_config', JSON.stringify(cfg));
+    this.logAudit('UPLOAD_SECURITY_UPDATED', 'SECURITY', `Upload security rules updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetUploadSecurityConfig = function() {
+    localStorage.setItem('cso_upload_security_config', JSON.stringify(DEFAULT_UPLOAD_SECURITY));
+    this.logAudit('UPLOAD_SECURITY_RESET', 'SECURITY', 'Upload security reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_UPLOAD_SECURITY));
+  };
+  SuperStore.exportUploadSecurityManifest = function() {
+    const config = this.getUploadSecurityConfig();
+    const filename = "upload_security_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("UPLOAD_SECURITY_EXPORTED", "DATA_EXPORT", `Upload security manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-009: Privacy & Consent ---
+  const DEFAULT_PRIVACY_CONSENT = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { dpdpComplianceStatus: "Enforced (DPDP Act 2023)", totalConsentRecords: 14820, optInRate: "98.4%", dpoContact: "privacy@csodisha.com" },
+    items: [
+      { id: "CST-01", purposeCode: "EXAM_NOTIFICATION_ALERTS", purposeTitle: "Exam & Gazette Notification Alerts", legalBasis: "Explicit Aspirant Consent", consentType: "Granular Opt-In", retentionMonths: 24, status: "Active", active: true },
+      { id: "CST-02", purposeCode: "MOCK_RANK_BENCHMARKING", purposeTitle: "Statewide Mock Test Leaderboards", legalBasis: "Explicit Aspirant Consent", consentType: "Granular Opt-In", retentionMonths: 12, status: "Active", active: true },
+      { id: "CST-03", purposeCode: "DISTRICT_STUDY_FORUM", purposeTitle: "District Community Group Participation", legalBasis: "Community Terms of Use", consentType: "Mandatory for Posting", retentionMonths: 36, status: "Active", active: true },
+      { id: "CST-04", purposeCode: "TELEMETRY_ANALYTICS", purposeTitle: "Platform Performance & Crash Analytics", legalBasis: "Legitimate Interest (Anonymized)", consentType: "Cookie-less / Opt-Out Available", retentionMonths: 6, status: "Active", active: true }
+    ]
+  };
+  SuperStore.getPrivacyConsentConfig = function() {
+    return _hydrateConfig('cso_privacy_consent_config', 'purposes', () => DEFAULT_PRIVACY_CONSENT);
+  };
+  SuperStore.savePrivacyConsentConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.purposes = cfg.items || cfg.purposes || []; cfg.items = cfg.purposes;
+    localStorage.setItem('cso_privacy_consent_config', JSON.stringify(cfg));
+    this.logAudit('PRIVACY_CONSENT_UPDATED', 'PRIVACY', `Privacy consent purposes updated (${cfg.items.length} purposes).`);
+    return true;
+  };
+  SuperStore.resetPrivacyConsentConfig = function() {
+    localStorage.setItem('cso_privacy_consent_config', JSON.stringify(DEFAULT_PRIVACY_CONSENT));
+    this.logAudit('PRIVACY_CONSENT_RESET', 'PRIVACY', 'Privacy consent reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_PRIVACY_CONSENT));
+  };
+  SuperStore.exportPrivacyConsentManifest = function() {
+    const config = this.getPrivacyConsentConfig();
+    const filename = "privacy_consent_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PRIVACY_CONSENT_EXPORTED", "DATA_EXPORT", `Privacy consent manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-010: Data Retention ---
+  const DEFAULT_DATA_RETENTION = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalPolicies: 4, automatedPurgeActive: true, nextScheduledPurge: "2026-11-15 02:00" },
+    items: [
+      { id: "RET-01", dataCategory: "Financial Transactions & Invoices", statutoryRequirement: "Companies Act & GST Rules (7 Years)", retentionPeriodMonths: 84, purgeAction: "Cryptographic Archive", status: "Active Policy", active: true },
+      { id: "RET-02", dataCategory: "Inactive Aspirant Profiles (>3 Years)", statutoryRequirement: "DPDP Purpose Limitation (3 Years)", retentionPeriodMonths: 36, purgeAction: "Soft Delete + Anonymize PII", status: "Active Policy", active: true },
+      { id: "RET-03", dataCategory: "Raw Access & Audit Logs", statutoryRequirement: "CERT-In Cyber Guidelines (180 Days)", retentionPeriodMonths: 6, purgeAction: "Cold Storage Archive", status: "Active Policy", active: true },
+      { id: "RET-04", dataCategory: "Temporary Session Tokens & Captchas", statutoryRequirement: "Security Best Practice", retentionPeriodMonths: 1, purgeAction: "Hard Permanent Purge", status: "Active Policy", active: true }
+    ]
+  };
+  SuperStore.getDataRetentionConfig = function() {
+    return _hydrateConfig('cso_data_retention_config', 'retentionPolicies', () => DEFAULT_DATA_RETENTION);
+  };
+  SuperStore.saveDataRetentionConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.retentionPolicies = cfg.items || cfg.retentionPolicies || []; cfg.items = cfg.retentionPolicies;
+    localStorage.setItem('cso_data_retention_config', JSON.stringify(cfg));
+    this.logAudit('DATA_RETENTION_UPDATED', 'PRIVACY', `Data retention policies updated (${cfg.items.length} policies).`);
+    return true;
+  };
+  SuperStore.resetDataRetentionConfig = function() {
+    localStorage.setItem('cso_data_retention_config', JSON.stringify(DEFAULT_DATA_RETENTION));
+    this.logAudit('DATA_RETENTION_RESET', 'PRIVACY', 'Data retention reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_DATA_RETENTION));
+  };
+  SuperStore.exportDataRetentionManifest = function() {
+    const config = this.getDataRetentionConfig();
+    const filename = "data_retention_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DATA_RETENTION_EXPORTED", "DATA_EXPORT", `Data retention manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-011: Account Deletion Requests ---
+  const DEFAULT_ACCOUNT_DELETION = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { pendingRequests: 2, completedLast30Days: 14, gracePeriodDays: 30 },
+    items: [
+      { id: "DEL-01", requestDate: "2026-11-02", candidateEmail: "chinmay.jena@gmail.com", district: "Bhadrak", reason: "Cleared OPSC OAS 2025; Leaving Examination Prep", gracePeriodRemainingDays: 22, verificationStatus: "Identity Verified (OTP)", deletionStage: "In Grace Period", active: true },
+      { id: "DEL-02", requestDate: "2026-11-06", candidateEmail: "alok.mohapatra@yahoo.com", district: "Khordha", reason: "Account Consolidation", gracePeriodRemainingDays: 26, verificationStatus: "Identity Verified (OTP)", deletionStage: "In Grace Period", active: true },
+      { id: "DEL-03", requestDate: "2026-10-08", candidateEmail: "sangeeta.rout@outlook.com", district: "Cuttack", reason: "User Preference", gracePeriodRemainingDays: 0, verificationStatus: "Fully Verified", deletionStage: "Completed & Anonymized", active: true }
+    ]
+  };
+  SuperStore.getAccountDeletionConfig = function() {
+    return _hydrateConfig('cso_account_deletion_config', 'deletionRequests', () => DEFAULT_ACCOUNT_DELETION);
+  };
+  SuperStore.saveAccountDeletionConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.deletionRequests = cfg.items || cfg.deletionRequests || []; cfg.items = cfg.deletionRequests;
+    localStorage.setItem('cso_account_deletion_config', JSON.stringify(cfg));
+    this.logAudit('ACCOUNT_DELETION_UPDATED', 'PRIVACY', `Account deletion requests updated (${cfg.items.length} requests).`);
+    return true;
+  };
+  SuperStore.resetAccountDeletionConfig = function() {
+    localStorage.setItem('cso_account_deletion_config', JSON.stringify(DEFAULT_ACCOUNT_DELETION));
+    this.logAudit('ACCOUNT_DELETION_RESET', 'PRIVACY', 'Account deletion requests reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ACCOUNT_DELETION));
+  };
+  SuperStore.exportAccountDeletionManifest = function() {
+    const config = this.getAccountDeletionConfig();
+    const filename = "account_deletion_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ACCOUNT_DELETION_EXPORTED", "DATA_EXPORT", `Account deletion manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-012: Security Audit Logs ---
+  const DEFAULT_SECURITY_AUDIT_LOGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalAuditEntries: 1840, tamperEvidentHashChain: "Verified Valid (SHA-256)", lastIntegrityCheck: "2026-11-10 08:00" },
+    items: [
+      { id: "AUD-01", timestamp: "2026-11-10 08:35:10", actor: "Super Admin (Root)", eventType: "AUTH_POLICY_UPDATE", targetEntity: "cso_authentication_config", ipAddress: "103.14.77.21", hashSignature: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", active: true },
+      { id: "AUD-02", timestamp: "2026-11-10 07:44:12", actor: "Edge WAF System", eventType: "IP_BLOCKED_BRUTEFORCE", targetEntity: "185.220.101.4", ipAddress: "Edge Cloudflare Proxy", hashSignature: "872983acbe1441a778b4562145e69e7102d918341a99bf8812c4091aefbc2041", active: true },
+      { id: "AUD-03", timestamp: "2026-11-09 21:10:05", actor: "Lead Editor (Debabrata)", eventType: "PUBLISH_GAZETTE_CIRCULAR", targetEntity: "CIRCULAR_OPSC_OAS_2026", ipAddress: "115.240.112.44", hashSignature: "9a21b8f102c44812a4501982bfe881c120491823abce8812041289fe12041289", active: true }
+    ]
+  };
+  SuperStore.getSecurityAuditLogsConfig = function() {
+    return _hydrateConfig('cso_security_audit_logs_config', 'auditEntries', () => DEFAULT_SECURITY_AUDIT_LOGS);
+  };
+  SuperStore.saveSecurityAuditLogsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.auditEntries = cfg.items || cfg.auditEntries || []; cfg.items = cfg.auditEntries;
+    localStorage.setItem('cso_security_audit_logs_config', JSON.stringify(cfg));
+    this.logAudit('SECURITY_AUDIT_LOGS_UPDATED', 'AUDIT', `Security audit logs updated (${cfg.items.length} entries).`);
+    return true;
+  };
+  SuperStore.resetSecurityAuditLogsConfig = function() {
+    localStorage.setItem('cso_security_audit_logs_config', JSON.stringify(DEFAULT_SECURITY_AUDIT_LOGS));
+    this.logAudit('SECURITY_AUDIT_LOGS_RESET', 'AUDIT', 'Security audit logs reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SECURITY_AUDIT_LOGS));
+  };
+  SuperStore.exportSecurityAuditLogsManifest = function() {
+    const config = this.getSecurityAuditLogsConfig();
+    const filename = "security_audit_logs_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SECURITY_AUDIT_LOGS_EXPORTED", "DATA_EXPORT", `Security audit logs manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-013: Incident Response ---
+  const DEFAULT_INCIDENT_RESPONSE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeIncidents: 0, certInSlaHours: 6, lastDrillDate: "2026-10-15" },
+    items: [
+      { id: "INC-01", incidentTitle: "Simulated DDoS Traffic Spike on Search Endpoints", severity: "P2 - Moderate", category: "Edge Availability Drill", leadResponder: "DevOps & Cloudflare Lead", status: "Resolved (Drill Completed)", resolutionSummary: "Edge rate limiting activated; zero candidate impact observed.", active: true },
+      { id: "INC-02", incidentTitle: "Automated Credential Stuffing Attempt on Login API", severity: "P3 - Minor", category: "Auth Perimeter", leadResponder: "Security Auditor", status: "Resolved", resolutionSummary: "Brute-force lockout and IP jail engaged; all attacker IPs blocked.", active: true }
+    ]
+  };
+  SuperStore.getIncidentResponseConfig = function() {
+    return _hydrateConfig('cso_incident_response_config', 'incidents', () => DEFAULT_INCIDENT_RESPONSE);
+  };
+  SuperStore.saveIncidentResponseConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.incidents = cfg.items || cfg.incidents || []; cfg.items = cfg.incidents;
+    localStorage.setItem('cso_incident_response_config', JSON.stringify(cfg));
+    this.logAudit('INCIDENT_RESPONSE_UPDATED', 'SECURITY', `Incident response logs updated (${cfg.items.length} incidents).`);
+    return true;
+  };
+  SuperStore.resetIncidentResponseConfig = function() {
+    localStorage.setItem('cso_incident_response_config', JSON.stringify(DEFAULT_INCIDENT_RESPONSE));
+    this.logAudit('INCIDENT_RESPONSE_RESET', 'SECURITY', 'Incident response reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_INCIDENT_RESPONSE));
+  };
+  SuperStore.exportIncidentResponseManifest = function() {
+    const config = this.getIncidentResponseConfig();
+    const filename = "incident_response_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("INCIDENT_RESPONSE_EXPORTED", "DATA_EXPORT", `Incident response manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -15089,6 +15301,30 @@
     window.CSOSuperStore.saveRateLimitsConfig = SuperStore.saveRateLimitsConfig;
     window.CSOSuperStore.resetRateLimitsConfig = SuperStore.resetRateLimitsConfig;
     window.CSOSuperStore.exportRateLimitsManifest = SuperStore.exportRateLimitsManifest;
+    window.CSOSuperStore.getUploadSecurityConfig = SuperStore.getUploadSecurityConfig;
+    window.CSOSuperStore.saveUploadSecurityConfig = SuperStore.saveUploadSecurityConfig;
+    window.CSOSuperStore.resetUploadSecurityConfig = SuperStore.resetUploadSecurityConfig;
+    window.CSOSuperStore.exportUploadSecurityManifest = SuperStore.exportUploadSecurityManifest;
+    window.CSOSuperStore.getPrivacyConsentConfig = SuperStore.getPrivacyConsentConfig;
+    window.CSOSuperStore.savePrivacyConsentConfig = SuperStore.savePrivacyConsentConfig;
+    window.CSOSuperStore.resetPrivacyConsentConfig = SuperStore.resetPrivacyConsentConfig;
+    window.CSOSuperStore.exportPrivacyConsentManifest = SuperStore.exportPrivacyConsentManifest;
+    window.CSOSuperStore.getDataRetentionConfig = SuperStore.getDataRetentionConfig;
+    window.CSOSuperStore.saveDataRetentionConfig = SuperStore.saveDataRetentionConfig;
+    window.CSOSuperStore.resetDataRetentionConfig = SuperStore.resetDataRetentionConfig;
+    window.CSOSuperStore.exportDataRetentionManifest = SuperStore.exportDataRetentionManifest;
+    window.CSOSuperStore.getAccountDeletionConfig = SuperStore.getAccountDeletionConfig;
+    window.CSOSuperStore.saveAccountDeletionConfig = SuperStore.saveAccountDeletionConfig;
+    window.CSOSuperStore.resetAccountDeletionConfig = SuperStore.resetAccountDeletionConfig;
+    window.CSOSuperStore.exportAccountDeletionManifest = SuperStore.exportAccountDeletionManifest;
+    window.CSOSuperStore.getSecurityAuditLogsConfig = SuperStore.getSecurityAuditLogsConfig;
+    window.CSOSuperStore.saveSecurityAuditLogsConfig = SuperStore.saveSecurityAuditLogsConfig;
+    window.CSOSuperStore.resetSecurityAuditLogsConfig = SuperStore.resetSecurityAuditLogsConfig;
+    window.CSOSuperStore.exportSecurityAuditLogsManifest = SuperStore.exportSecurityAuditLogsManifest;
+    window.CSOSuperStore.getIncidentResponseConfig = SuperStore.getIncidentResponseConfig;
+    window.CSOSuperStore.saveIncidentResponseConfig = SuperStore.saveIncidentResponseConfig;
+    window.CSOSuperStore.resetIncidentResponseConfig = SuperStore.resetIncidentResponseConfig;
+    window.CSOSuperStore.exportIncidentResponseManifest = SuperStore.exportIncidentResponseManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

@@ -632,6 +632,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-16-005') { renderLoginHistoryWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-16-006') { renderSecurityAlertsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-16-007') { renderRateLimitsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-008') { renderUploadSecurityWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-009') { renderPrivacyConsentWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-010') { renderDataRetentionWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-011') { renderAccountDeletionWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-012') { renderSecurityAuditLogsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-013') { renderIncidentResponseWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1078,6 +1084,18 @@ async function loadMasterNavigation() {
         renderSecurityAlertsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-16-007') {
         renderRateLimitsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-008') {
+        renderUploadSecurityWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-009') {
+        renderPrivacyConsentWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-010') {
+        renderDataRetentionWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-011') {
+        renderAccountDeletionWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-012') {
+        renderSecurityAuditLogsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-013') {
+        renderIncidentResponseWorkspace(dom.workspaceRoot);
 
 
 
@@ -63026,7 +63044,1356 @@ async function loadMasterNavigation() {
 
 
 
-    function renderAdministrativeNotificationsWorkspace() {
+
+    // ==========================================
+    // MODULE 16-008: Upload Security
+    // ==========================================
+    function renderUploadSecurityWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getUploadSecurityConfig();
+        let activeTab = 'rules';
+        let searchQuery = '';
+
+        function render() {
+          const rules = config.rules || config.items || [];
+          const filteredRules = rules.filter(r => {
+            const q = searchQuery.toLowerCase();
+            return !q || (r.name && r.name.toLowerCase().includes(q)) || (r.extension && r.extension.toLowerCase().includes(q)) || (r.mimeType && r.mimeType.toLowerCase().includes(q));
+          });
+
+          const activeCount = rules.filter(r => r.enabled).length;
+          const blockedMimes = rules.filter(r => !r.allowDirectExecution).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Upload Security & Antivirus Sanitizer</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-16-008 • MIME sanitization, magic-byte inspection & malware scanning</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="sec-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="sec-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="sec-btn-save-all" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-emerald-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active File Types</div>
+                  <div class="text-2xl font-bold text-white mt-1">${activeCount} <span class="text-xs text-slate-500 font-normal">/ ${rules.length}</span></div>
+                  <div class="text-xs text-emerald-400 mt-1 flex items-center gap-1">Whitelisted & Monitored</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Virus Scanner</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings && config.settings.clamAvScanning ? 'ACTIVE' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">ClamAV Clustered Daemon</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Max Upload Limit</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${(config.settings && config.settings.maxPayloadBytes ? (config.settings.maxPayloadBytes / (1024*1024)).toFixed(0) : '25')} MB</div>
+                  <div class="text-xs text-slate-400 mt-1">Per Single Payload</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Strict Magic Bytes</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${config.settings && config.settings.enforceMagicByteValidation ? 'ENFORCED' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Header Signature Verification</div>
+                </div>
+              </div>
+
+              <!-- Tabs -->
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'rules' ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-white'}" data-tab="rules">MIME & Extension Rules (${rules.length})</button>
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'settings' ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-white'}" data-tab="settings">Sanitization Engines</button>
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'quarantine' ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-white'}" data-tab="quarantine">Quarantine & Storage</button>
+              </div>
+
+              <!-- Tab Content -->
+              <div id="tab-content">
+                ${activeTab === 'rules' ? `
+                  <div class="space-y-4">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                      <div class="relative w-full sm:w-80">
+                        <input id="sec-search-input" type="text" placeholder="Filter extension or MIME..." value="${searchQuery}" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500">
+                        <svg class="w-4 h-4 absolute left-3 top-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                      </div>
+                      <button id="sec-btn-add-rule" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add Rule
+                      </button>
+                    </div>
+
+                    <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                      <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                          <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                            <tr>
+                              <th class="p-3">File Type</th>
+                              <th class="p-3">Extension</th>
+                              <th class="p-3">Primary MIME</th>
+                              <th class="p-3">Max Size</th>
+                              <th class="p-3">Status</th>
+                              <th class="p-3 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody class="divide-y divide-slate-800">
+                            ${filteredRules.map((r, idx) => `
+                              <tr class="hover:bg-slate-800/30 transition">
+                                <td class="p-3 font-semibold text-white">${r.name || 'Unnamed Rule'}</td>
+                                <td class="p-3 font-mono text-emerald-400">${r.extension}</td>
+                                <td class="p-3 font-mono text-slate-300">${r.mimeType}</td>
+                                <td class="p-3 text-slate-300">${(r.maxBytes / (1024*1024)).toFixed(0)} MB</td>
+                                <td class="p-3">
+                                  <button class="rule-toggle-btn px-2 py-0.5 rounded text-[11px] font-semibold transition ${r.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-400 border border-slate-600'}" data-index="${idx}">
+                                    ${r.enabled ? 'Allowed' : 'Blocked'}
+                                  </button>
+                                </td>
+                                <td class="p-3 text-right">
+                                  <button class="rule-delete-btn text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 transition" data-index="${idx}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                  </button>
+                                </td>
+                              </tr>
+                            `).join('')}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                ` : activeTab === 'settings' ? `
+                  <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-5">
+                    <h3 class="text-sm font-bold text-white">Sanitization Engine Flags</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label class="flex items-start gap-3 p-3 bg-slate-800/40 rounded-lg border border-slate-700/60 cursor-pointer">
+                        <input id="setting-clamav" type="checkbox" ${config.settings && config.settings.clamAvScanning ? 'checked' : ''} class="mt-1 rounded bg-slate-700 border-slate-600 text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                          <div class="text-xs font-semibold text-white">ClamAV Scanning Daemon</div>
+                          <div class="text-[11px] text-slate-400 mt-0.5">Stream incoming payloads into anti-malware signatures before persistent storage.</div>
+                        </div>
+                      </label>
+                      <label class="flex items-start gap-3 p-3 bg-slate-800/40 rounded-lg border border-slate-700/60 cursor-pointer">
+                        <input id="setting-magic-bytes" type="checkbox" ${config.settings && config.settings.enforceMagicByteValidation ? 'checked' : ''} class="mt-1 rounded bg-slate-700 border-slate-600 text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                          <div class="text-xs font-semibold text-white">Enforce Magic Byte Inspection</div>
+                          <div class="text-[11px] text-slate-400 mt-0.5">Reject files whose binary magic bytes disagree with HTTP content-type or filename suffix.</div>
+                        </div>
+                      </label>
+                      <label class="flex items-start gap-3 p-3 bg-slate-800/40 rounded-lg border border-slate-700/60 cursor-pointer">
+                        <input id="setting-strip-exif" type="checkbox" ${config.settings && config.settings.stripExifMetadata ? 'checked' : ''} class="mt-1 rounded bg-slate-700 border-slate-600 text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                          <div class="text-xs font-semibold text-white">Strip EXIF / Geo Metadata</div>
+                          <div class="text-[11px] text-slate-400 mt-0.5">Scrub GPS locations, device serials, and camera EXIF markers from uploaded image files.</div>
+                        </div>
+                      </label>
+                      <label class="flex items-start gap-3 p-3 bg-slate-800/40 rounded-lg border border-slate-700/60 cursor-pointer">
+                        <input id="setting-quarantine-infected" type="checkbox" ${config.settings && config.settings.quarantineInfectedFiles ? 'checked' : ''} class="mt-1 rounded bg-slate-700 border-slate-600 text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                          <div class="text-xs font-semibold text-white">Auto-Quarantine Suspicious Payloads</div>
+                          <div class="text-[11px] text-slate-400 mt-0.5">Move flagged objects to an isolated quarantine bucket for security engineer review.</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                ` : `
+                  <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-white">Quarantine Bucket & Retention Settings</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-xs text-slate-400 block mb-1">Quarantine Bucket Name</label>
+                        <input id="setting-quarantine-bucket" type="text" value="${config.settings && config.settings.quarantineBucketName || 'cso-quarantine-vault'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                      </div>
+                      <div>
+                        <label class="text-xs text-slate-400 block mb-1">Auto-Purge Quarantined Files After (Days)</label>
+                        <input id="setting-quarantine-purge-days" type="number" value="${config.settings && config.settings.quarantinePurgeDays || 30}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                      </div>
+                    </div>
+                  </div>
+                `}
+              </div>
+            </div>
+          `;
+
+          // Event bindings
+          container.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => { activeTab = btn.dataset.tab; render(); };
+          });
+
+          const searchInput = container.querySelector('#sec-search-input');
+          if (searchInput) {
+            searchInput.oninput = (e) => { searchQuery = e.target.value; render(); };
+          }
+
+          container.querySelectorAll('.rule-toggle-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              rules[idx].enabled = !rules[idx].enabled;
+              config.rules = rules;
+              config.items = rules;
+              render();
+            };
+          });
+
+          container.querySelectorAll('.rule-delete-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this upload security rule?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                rules.splice(idx, 1);
+                config.rules = rules;
+                config.items = rules;
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#sec-btn-add-rule');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const name = prompt('File type label (e.g. SVG Vectors):');
+              if (!name) return;
+              const ext = prompt('Extension with dot (e.g. .svg):', '.svg');
+              if (!ext) return;
+              const mime = prompt('MIME Type (e.g. image/svg+xml):', 'image/svg+xml');
+              if (!mime) return;
+              rules.push({ id: 'rule-' + Date.now(), name, extension: ext, mimeType: mime, maxBytes: 5242880, enabled: true, allowDirectExecution: false });
+              config.rules = rules;
+              config.items = rules;
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#sec-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              const manifest = store.exportUploadSecurityManifest();
+              const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cso_upload_security_manifest_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          const resetBtn = container.querySelector('#sec-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Upload Security to initial factory defaults?')) {
+                config = store.resetUploadSecurityConfig();
+                render();
+              }
+            };
+          }
+
+          const saveBtn = container.querySelector('#sec-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              if (container.querySelector('#setting-clamav')) {
+                config.settings = config.settings || {};
+                config.settings.clamAvScanning = container.querySelector('#setting-clamav').checked;
+                config.settings.enforceMagicByteValidation = container.querySelector('#setting-magic-bytes').checked;
+                config.settings.stripExifMetadata = container.querySelector('#setting-strip-exif').checked;
+                config.settings.quarantineInfectedFiles = container.querySelector('#setting-quarantine-infected').checked;
+              }
+              if (container.querySelector('#setting-quarantine-bucket')) {
+                config.settings = config.settings || {};
+                config.settings.quarantineBucketName = container.querySelector('#setting-quarantine-bucket').value.trim();
+                config.settings.quarantinePurgeDays = parseInt(container.querySelector('#setting-quarantine-purge-days').value, 10) || 30;
+              }
+              config.meta = config.meta || {};
+              config.meta.updatedAt = new Date().toISOString();
+              store.saveUploadSecurityConfig(config);
+              alert('Upload Security configuration persisted successfully!');
+              render();
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 16-009: Privacy & Consent
+    // ==========================================
+    function renderPrivacyConsentWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getPrivacyConsentConfig();
+        let activeTab = 'purposes';
+
+        function render() {
+          const purposes = config.purposes || config.items || [];
+          const activePurposes = purposes.filter(p => p.enabled).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Privacy Policy, Cookie Banner & Consent Hub</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-16-009 • DPDPA 2023 / GDPR compliance, granular consent toggles & opt-in records</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="priv-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="priv-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="priv-btn-save-all" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Consent Categories</div>
+                  <div class="text-2xl font-bold text-white mt-1">${purposes.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">${activePurposes} Enabled for Users</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Banner Status</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1">${config.settings && config.settings.showConsentBanner ? 'VISIBLE' : 'HIDDEN'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Modal / Bottom Drawer</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Consent Expiry</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.settings && config.settings.consentValidityDays || 180} <span class="text-xs text-slate-500 font-normal">Days</span></div>
+                  <div class="text-xs text-slate-400 mt-1">Periodic Re-consent</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Regulatory Standard</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.settings && config.settings.privacyRegulation || 'DPDPA 2023'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Data Protection Act</div>
+                </div>
+              </div>
+
+              <!-- Tabs -->
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'purposes' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-400 hover:text-white'}" data-tab="purposes">Consent Purposes (${purposes.length})</button>
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'banner' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-400 hover:text-white'}" data-tab="banner">Banner Presentation</button>
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'dpo' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-400 hover:text-white'}" data-tab="dpo">Data Protection Officer</button>
+              </div>
+
+              <!-- Tab Content -->
+              <div id="tab-content">
+                ${activeTab === 'purposes' ? `
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                      <div class="text-xs text-slate-400">Manage user consent categories, descriptions, and mandatory flags.</div>
+                      <button id="priv-btn-add-purpose" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add Category
+                      </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      ${purposes.map((p, idx) => `
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3">
+                          <div class="flex items-start justify-between">
+                            <div>
+                              <div class="flex items-center gap-2">
+                                <h4 class="text-sm font-bold text-white">${p.name}</h4>
+                                ${p.required ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/30">Strictly Necessary</span>' : ''}
+                              </div>
+                              <p class="text-xs text-slate-400 mt-1">${p.description || 'No description provided.'}</p>
+                            </div>
+                            <button class="purpose-toggle-btn px-2 py-1 rounded text-xs font-semibold transition ${p.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-400 border border-slate-600'}" data-index="${idx}">
+                              ${p.enabled ? 'Active' : 'Disabled'}
+                            </button>
+                          </div>
+                          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500 font-mono">
+                            <span>Key: ${p.key || p.id}</span>
+                            ${!p.required ? `
+                              <button class="purpose-del-btn text-rose-400 hover:text-rose-300 text-xs transition" data-index="${idx}">Remove</button>
+                            ` : ''}
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : activeTab === 'banner' ? `
+                  <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-white">Cookie & Privacy Consent Banner Content</h3>
+                    <div>
+                      <label class="text-xs text-slate-400 block mb-1">Banner Headline</label>
+                      <input id="banner-title" type="text" value="${config.settings && config.settings.bannerHeadline || 'We value your privacy'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-400 block mb-1">Banner Body Message</label>
+                      <textarea id="banner-desc" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white">${config.settings && config.settings.bannerNotice || 'CSO uses cookies and telemetry to improve your navigation experience, monitor platform security, and deliver exam notices.'}</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                      <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input id="banner-enable" type="checkbox" ${config.settings && config.settings.showConsentBanner ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        Display Consent Modal to First-Time Visitors
+                      </label>
+                      <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input id="banner-log-telemetry" type="checkbox" ${config.settings && config.settings.auditConsentChoices ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        Audit & Store Opt-in Timestamps in Supabase
+                      </label>
+                    </div>
+                  </div>
+                ` : `
+                  <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-white">Data Protection Officer (DPO) Contact Info</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-xs text-slate-400 block mb-1">DPO Name / Office</label>
+                        <input id="dpo-name" type="text" value="${config.settings && config.settings.dpoContactName || 'CSO Privacy & Compliance Cell'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                      </div>
+                      <div>
+                        <label class="text-xs text-slate-400 block mb-1">DPO Email</label>
+                        <input id="dpo-email" type="email" value="${config.settings && config.settings.dpoContactEmail || 'dpo@csodisha.org'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                      </div>
+                    </div>
+                  </div>
+                `}
+              </div>
+            </div>
+          `;
+
+          // Bind events
+          container.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => { activeTab = btn.dataset.tab; render(); };
+          });
+
+          container.querySelectorAll('.purpose-toggle-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              purposes[idx].enabled = !purposes[idx].enabled;
+              config.purposes = purposes;
+              config.items = purposes;
+              render();
+            };
+          });
+
+          container.querySelectorAll('.purpose-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this consent purpose?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                purposes.splice(idx, 1);
+                config.purposes = purposes;
+                config.items = purposes;
+                render();
+              }
+            };
+          });
+
+          const addPurposeBtn = container.querySelector('#priv-btn-add-purpose');
+          if (addPurposeBtn) {
+            addPurposeBtn.onclick = () => {
+              const name = prompt('Consent category name:');
+              if (!name) return;
+              const desc = prompt('Description for users:', 'Used to measure platform analytics and user patterns.');
+              purposes.push({ id: 'purp-' + Date.now(), key: name.toLowerCase().replace(/[^a-z0-9]/g, '_'), name, description: desc, required: false, enabled: true });
+              config.purposes = purposes;
+              config.items = purposes;
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#priv-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              const manifest = store.exportPrivacyConsentManifest();
+              const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cso_privacy_consent_manifest_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          const resetBtn = container.querySelector('#priv-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Privacy & Consent configuration to factory defaults?')) {
+                config = store.resetPrivacyConsentConfig();
+                render();
+              }
+            };
+          }
+
+          const saveBtn = container.querySelector('#priv-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              config.settings = config.settings || {};
+              if (container.querySelector('#banner-title')) {
+                config.settings.bannerHeadline = container.querySelector('#banner-title').value.trim();
+                config.settings.bannerNotice = container.querySelector('#banner-desc').value.trim();
+                config.settings.showConsentBanner = container.querySelector('#banner-enable').checked;
+                config.settings.auditConsentChoices = container.querySelector('#banner-log-telemetry').checked;
+              }
+              if (container.querySelector('#dpo-name')) {
+                config.settings.dpoContactName = container.querySelector('#dpo-name').value.trim();
+                config.settings.dpoContactEmail = container.querySelector('#dpo-email').value.trim();
+              }
+              config.meta = config.meta || {};
+              config.meta.updatedAt = new Date().toISOString();
+              store.savePrivacyConsentConfig(config);
+              alert('Privacy & Consent configuration saved!');
+              render();
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 16-010: Data Retention
+    // ==========================================
+    function renderDataRetentionWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDataRetentionConfig();
+        let activeTab = 'policies';
+
+        function render() {
+          const policies = config.retentionPolicies || config.items || [];
+          const activePolicies = policies.filter(p => p.enabled).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Data Retention & Scheduled Purge Policies</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-16-010 • Table-level retention limits, cold archive pipelines & automated cleanup</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="ret-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="ret-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="ret-btn-save-all" class="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-cyan-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Policies</div>
+                  <div class="text-2xl font-bold text-white mt-1">${activePolicies} <span class="text-xs text-slate-500 font-normal">/ ${policies.length}</span></div>
+                  <div class="text-xs text-cyan-400 mt-1">Scheduled Nightly</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Cold Storage Vault</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${config.settings && config.settings.archiveBeforePurge ? 'ENABLED' : 'HARD PURGE'}</div>
+                  <div class="text-xs text-slate-400 mt-1">S3 Glacier Deep Archive</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Purge Schedule</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.settings && config.settings.purgeScheduleCron || '0 3 * * *'}</div>
+                  <div class="text-xs text-slate-400 mt-1">UTC 03:00 Automated Cron</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Dry Run Safety</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings && config.settings.dryRunMode ? 'SIMULATE' : 'LIVE PURGE'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Impact Preview Mode</div>
+                </div>
+              </div>
+
+              <!-- Tabs -->
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'policies' ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/30' : 'text-slate-400 hover:text-white'}" data-tab="policies">Table Policies (${policies.length})</button>
+                <button class="tab-btn px-4 py-2 text-xs font-semibold rounded-lg transition ${activeTab === 'archive' ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/30' : 'text-slate-400 hover:text-white'}" data-tab="archive">Archive Pipeline</button>
+              </div>
+
+              <!-- Tab Content -->
+              <div id="tab-content">
+                ${activeTab === 'policies' ? `
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                      <div class="text-xs text-slate-400">Configure days before expired records are purged or archived.</div>
+                      <button id="ret-btn-add-policy" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add Policy
+                      </button>
+                    </div>
+
+                    <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                      <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                          <tr>
+                            <th class="p-3">Data Category</th>
+                            <th class="p-3">Target Table</th>
+                            <th class="p-3">Retention Period</th>
+                            <th class="p-3">Action On Expiry</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                          ${policies.map((p, idx) => `
+                            <tr class="hover:bg-slate-800/30 transition">
+                              <td class="p-3 font-semibold text-white">${p.name}</td>
+                              <td class="p-3 font-mono text-cyan-400">${p.targetTable}</td>
+                              <td class="p-3 text-slate-300 font-bold">${p.retentionDays} Days</td>
+                              <td class="p-3">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-mono ${p.action === 'archive_and_purge' ? 'bg-sky-500/10 text-sky-300 border border-sky-500/30' : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'}">
+                                  ${p.action}
+                                </span>
+                              </td>
+                              <td class="p-3">
+                                <button class="policy-toggle-btn px-2 py-0.5 rounded text-[11px] font-semibold transition ${p.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-400 border border-slate-600'}" data-index="${idx}">
+                                  ${p.enabled ? 'Active' : 'Paused'}
+                                </button>
+                              </td>
+                              <td class="p-3 text-right">
+                                <button class="policy-del-btn text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 transition" data-index="${idx}">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                              </td>
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ` : `
+                  <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-white">Cold Storage Archive Pipeline</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label class="text-xs text-slate-400 block mb-1">Archive S3 / Storage Bucket</label>
+                        <input id="ret-archive-bucket" type="text" value="${config.settings && config.settings.archiveBucket || 'cso-glacier-vault'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+                      </div>
+                      <div>
+                        <label class="text-xs text-slate-400 block mb-1">Purge Cron Schedule</label>
+                        <input id="ret-cron" type="text" value="${config.settings && config.settings.purgeScheduleCron || '0 3 * * *'}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono">
+                      </div>
+                    </div>
+                    <div class="pt-2 flex flex-col gap-2">
+                      <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input id="ret-archive-before-purge" type="checkbox" ${config.settings && config.settings.archiveBeforePurge ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-cyan-500">
+                        Dump encrypted JSON parquet into cold bucket before deletion
+                      </label>
+                      <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input id="ret-dry-run" type="checkbox" ${config.settings && config.settings.dryRunMode ? 'checked' : ''} class="rounded bg-slate-800 border-slate-700 text-cyan-600 focus:ring-cyan-500">
+                        Dry Run Mode (simulate deletion and log impact without dropping rows)
+                      </label>
+                    </div>
+                  </div>
+                `}
+              </div>
+            </div>
+          `;
+
+          // Events
+          container.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => { activeTab = btn.dataset.tab; render(); };
+          });
+
+          container.querySelectorAll('.policy-toggle-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              policies[idx].enabled = !policies[idx].enabled;
+              config.retentionPolicies = policies;
+              config.items = policies;
+              render();
+            };
+          });
+
+          container.querySelectorAll('.policy-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this retention policy?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                policies.splice(idx, 1);
+                config.retentionPolicies = policies;
+                config.items = policies;
+                render();
+              }
+            };
+          });
+
+          const addPolicyBtn = container.querySelector('#ret-btn-add-policy');
+          if (addPolicyBtn) {
+            addPolicyBtn.onclick = () => {
+              const name = prompt('Policy description:');
+              if (!name) return;
+              const table = prompt('Target DB table name (e.g. audit_logs):');
+              if (!table) return;
+              const days = parseInt(prompt('Retention period in days:', '90'), 10) || 90;
+              policies.push({ id: 'ret-' + Date.now(), name, targetTable: table, retentionDays: days, action: 'archive_and_purge', enabled: true });
+              config.retentionPolicies = policies;
+              config.items = policies;
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#ret-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              const manifest = store.exportDataRetentionManifest();
+              const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cso_data_retention_manifest_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          const resetBtn = container.querySelector('#ret-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Data Retention rules to factory defaults?')) {
+                config = store.resetDataRetentionConfig();
+                render();
+              }
+            };
+          }
+
+          const saveBtn = container.querySelector('#ret-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              if (container.querySelector('#ret-archive-bucket')) {
+                config.settings = config.settings || {};
+                config.settings.archiveBucket = container.querySelector('#ret-archive-bucket').value.trim();
+                config.settings.purgeScheduleCron = container.querySelector('#ret-cron').value.trim();
+                config.settings.archiveBeforePurge = container.querySelector('#ret-archive-before-purge').checked;
+                config.settings.dryRunMode = container.querySelector('#ret-dry-run').checked;
+              }
+              config.meta = config.meta || {};
+              config.meta.updatedAt = new Date().toISOString();
+              store.saveDataRetentionConfig(config);
+              alert('Data Retention policies saved successfully!');
+              render();
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 16-011: Account Deletion Requests
+    // ==========================================
+    function renderAccountDeletionWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getAccountDeletionConfig();
+        let statusFilter = 'ALL';
+
+        function render() {
+          const requests = config.deletionRequests || config.items || [];
+          const filtered = requests.filter(r => statusFilter === 'ALL' || r.status === statusFilter);
+
+          const pendingCount = requests.filter(r => r.status === 'PENDING').length;
+          const completedCount = requests.filter(r => r.status === 'COMPLETED').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Account Deletion & Right to be Forgotten</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-16-011 • DPDPA / GDPR RTBF ticket workflow, verification grace period & cryptographic erasure</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="del-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="del-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="del-btn-new-ticket" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-rose-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Record Manual Request
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Pending Requests</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${pendingCount}</div>
+                  <div class="text-xs text-slate-400 mt-1">Awaiting 30-Day Window</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Completed Erasures</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${completedCount}</div>
+                  <div class="text-xs text-slate-400 mt-1">Cryptographically Purged</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Cooling Grace Period</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.settings && config.settings.gracePeriodDays || 30} <span class="text-xs text-slate-500 font-normal">Days</span></div>
+                  <div class="text-xs text-slate-400 mt-1">User Reversal Window</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Audit Certificate</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">SHA-256</div>
+                  <div class="text-xs text-slate-400 mt-1">Signed Erasure Receipt</div>
+                </div>
+              </div>
+
+              <!-- Filter Pills -->
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <button class="filter-pill px-3 py-1 text-xs font-semibold rounded-lg transition ${statusFilter === 'ALL' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}" data-status="ALL">All Requests (${requests.length})</button>
+                <button class="filter-pill px-3 py-1 text-xs font-semibold rounded-lg transition ${statusFilter === 'PENDING' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-slate-400 hover:text-white'}" data-status="PENDING">Pending (${pendingCount})</button>
+                <button class="filter-pill px-3 py-1 text-xs font-semibold rounded-lg transition ${statusFilter === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-white'}" data-status="COMPLETED">Completed (${completedCount})</button>
+              </div>
+
+              <!-- Requests Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                      <tr>
+                        <th class="p-3">User Email</th>
+                        <th class="p-3">Role</th>
+                        <th class="p-3">Requested At</th>
+                        <th class="p-3">Reason</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      ${filtered.map((r, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">${r.userEmail}</td>
+                          <td class="p-3 text-slate-300 font-mono">${r.userRole || 'CANDIDATE'}</td>
+                          <td class="p-3 text-slate-400">${r.requestedAt ? new Date(r.requestedAt).toLocaleDateString() : 'N/A'}</td>
+                          <td class="p-3 text-slate-300 max-w-xs truncate">${r.reason || 'Not specified'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${r.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30' : r.status === 'PENDING' ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30' : 'bg-slate-700 text-slate-300'}">
+                              ${r.status}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right space-x-2">
+                            ${r.status === 'PENDING' ? `
+                              <button class="approve-del-btn text-emerald-400 hover:text-emerald-300 font-semibold" data-id="${r.id}">Execute Purge</button>
+                              <button class="cancel-del-btn text-slate-400 hover:text-slate-200" data-id="${r.id}">Cancel</button>
+                            ` : `
+                              <span class="text-slate-500 font-mono text-[10px]">Purged & Logged</span>
+                            `}
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bindings
+          container.querySelectorAll('.filter-pill').forEach(btn => {
+            btn.onclick = () => { statusFilter = btn.dataset.status; render(); };
+          });
+
+          container.querySelectorAll('.approve-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Permanently purge this candidate data and all relational records? This cannot be undone.')) {
+                const id = btn.dataset.id;
+                const req = requests.find(r => r.id === id);
+                if (req) {
+                  req.status = 'COMPLETED';
+                  req.completedAt = new Date().toISOString();
+                  config.deletionRequests = requests;
+                  config.items = requests;
+                  store.saveAccountDeletionConfig(config);
+                  render();
+                }
+              }
+            };
+          });
+
+          container.querySelectorAll('.cancel-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              const id = btn.dataset.id;
+              const req = requests.find(r => r.id === id);
+              if (req) {
+                req.status = 'CANCELLED';
+                config.deletionRequests = requests;
+                config.items = requests;
+                store.saveAccountDeletionConfig(config);
+                render();
+              }
+            };
+          });
+
+          const newBtn = container.querySelector('#del-btn-new-ticket');
+          if (newBtn) {
+            newBtn.onclick = () => {
+              const email = prompt('Candidate or User Email for deletion:');
+              if (!email) return;
+              const reason = prompt('Reason for deletion / ticket reference:', 'Right to be forgotten request via email');
+              requests.unshift({
+                id: 'del-' + Date.now(),
+                userEmail: email,
+                userRole: 'CANDIDATE',
+                requestedAt: new Date().toISOString(),
+                status: 'PENDING',
+                reason: reason || 'Candidate request'
+              });
+              config.deletionRequests = requests;
+              config.items = requests;
+              store.saveAccountDeletionConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#del-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              const manifest = store.exportAccountDeletionManifest();
+              const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cso_account_deletion_manifest_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          const resetBtn = container.querySelector('#del-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset deletion requests to initial seeds?')) {
+                config = store.resetAccountDeletionConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 16-012: Security Audit Logs
+    // ==========================================
+    function renderSecurityAuditLogsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getSecurityAuditLogsConfig();
+        let searchQuery = '';
+        let severityFilter = 'ALL';
+
+        function render() {
+          const logs = config.auditEntries || config.items || [];
+          const filtered = logs.filter(l => {
+            const matchesSev = severityFilter === 'ALL' || l.severity === severityFilter;
+            const q = searchQuery.toLowerCase();
+            const matchesQ = !q || (l.action && l.action.toLowerCase().includes(q)) || (l.actor && l.actor.toLowerCase().includes(q)) || (l.ipAddress && l.ipAddress.toLowerCase().includes(q));
+            return matchesSev && matchesQ;
+          });
+
+          const totalEvents = logs.length;
+          const warningCount = logs.filter(l => l.severity === 'WARNING' || l.severity === 'CRITICAL').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Immutable Security Audit Trail & Forensics</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-16-012 • Tamper-evident ledger, administrative action tracking & compliance records</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="aud-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Log
+                  </button>
+                  <button id="aud-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Logged Events</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalEvents}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Live Audit Feed</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Elevated / Warnings</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${warningCount}</div>
+                  <div class="text-xs text-slate-400 mt-1">Flagged For Review</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Ledger Hashing</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">SHA-256</div>
+                  <div class="text-xs text-slate-400 mt-1">Chained Hash Integrity</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Retention Life</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">365 <span class="text-xs text-slate-500 font-normal">Days</span></div>
+                  <div class="text-xs text-slate-400 mt-1">DPDPA Standard</div>
+                </div>
+              </div>
+
+              <!-- Search and Filter Bar -->
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                <div class="relative w-full sm:w-80">
+                  <input id="aud-search-input" type="text" placeholder="Search actor, action or IP..." value="${searchQuery}" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-teal-500">
+                  <svg class="w-4 h-4 absolute left-3 top-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <div class="flex items-center gap-1 text-xs">
+                  <button class="aud-filter-btn px-2.5 py-1 rounded transition ${severityFilter === 'ALL' ? 'bg-slate-700 text-white' : 'text-slate-400'}" data-sev="ALL">All</button>
+                  <button class="aud-filter-btn px-2.5 py-1 rounded transition ${severityFilter === 'INFO' ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400'}" data-sev="INFO">Info</button>
+                  <button class="aud-filter-btn px-2.5 py-1 rounded transition ${severityFilter === 'WARNING' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}" data-sev="WARNING">Warning</button>
+                  <button class="aud-filter-btn px-2.5 py-1 rounded transition ${severityFilter === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300' : 'text-slate-400'}" data-sev="CRITICAL">Critical</button>
+                </div>
+              </div>
+
+              <!-- Logs Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                      <tr>
+                        <th class="p-3">Timestamp</th>
+                        <th class="p-3">Severity</th>
+                        <th class="p-3">Action</th>
+                        <th class="p-3">Actor</th>
+                        <th class="p-3">IP Address</th>
+                        <th class="p-3">Details / Target</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      ${filtered.map(l => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 text-slate-400 font-mono">${l.timestamp ? new Date(l.timestamp).toLocaleString() : 'N/A'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : l.severity === 'WARNING' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/10 text-sky-300 border border-sky-500/20'}">
+                              ${l.severity}
+                            </span>
+                          </td>
+                          <td class="p-3 font-semibold text-white font-mono">${l.action}</td>
+                          <td class="p-3 text-slate-300">${l.actor}</td>
+                          <td class="p-3 text-slate-400 font-mono">${l.ipAddress || '127.0.0.1'}</td>
+                          <td class="p-3 text-slate-400 max-w-xs truncate">${l.details || l.target || '-'}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event handlers
+          const searchEl = container.querySelector('#aud-search-input');
+          if (searchEl) {
+            searchEl.oninput = (e) => { searchQuery = e.target.value; render(); };
+          }
+
+          container.querySelectorAll('.aud-filter-btn').forEach(btn => {
+            btn.onclick = () => { severityFilter = btn.dataset.sev; render(); };
+          });
+
+          const exportBtn = container.querySelector('#aud-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              const manifest = store.exportSecurityAuditLogsManifest();
+              const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cso_security_audit_logs_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          const resetBtn = container.querySelector('#aud-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset security audit log entries to initial state?')) {
+                config = store.resetSecurityAuditLogsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 16-013: Incident Response
+    // ==========================================
+    function renderIncidentResponseWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getIncidentResponseConfig();
+        let statusFilter = 'ALL';
+
+        function render() {
+          const incidents = config.incidents || config.items || [];
+          const filtered = incidents.filter(i => statusFilter === 'ALL' || i.status === statusFilter);
+
+          const activeCount = incidents.filter(i => i.status === 'ACTIVE' || i.status === 'INVESTIGATING').length;
+          const resolvedCount = incidents.filter(i => i.status === 'RESOLVED').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Security Incident Response & CERT Playbooks</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-16-013 • CERT-In 6-hour reporting adherence, active triage & automated lockdown runbooks</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="inc-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="inc-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="inc-btn-new-incident" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-rose-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Declare Incident
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Incidents</div>
+                  <div class="text-2xl font-bold ${activeCount > 0 ? 'text-rose-400 animate-pulse' : 'text-white'} mt-1">${activeCount}</div>
+                  <div class="text-xs text-rose-400 mt-1">Requires SOC Attention</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Resolved Incidents</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${resolvedCount}</div>
+                  <div class="text-xs text-slate-400 mt-1">Post-Mortem Completed</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">CERT-In SLA</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">6 Hours</div>
+                  <div class="text-xs text-slate-400 mt-1">Mandatory Notification</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Global Lockdown</div>
+                  <div class="text-2xl font-bold text-slate-300 mt-1">${config.settings && config.settings.emergencyLockdownEnabled ? 'TRIGGERED' : 'STANDBY'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Zero-Trust Killswitch</div>
+                </div>
+              </div>
+
+              <!-- Filters -->
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <button class="inc-filter-btn px-3 py-1 text-xs font-semibold rounded-lg transition ${statusFilter === 'ALL' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}" data-status="ALL">All Incidents (${incidents.length})</button>
+                <button class="inc-filter-btn px-3 py-1 text-xs font-semibold rounded-lg transition ${statusFilter === 'ACTIVE' || statusFilter === 'INVESTIGATING' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'text-slate-400 hover:text-white'}" data-status="ACTIVE">Active Triage (${activeCount})</button>
+                <button class="inc-filter-btn px-3 py-1 text-xs font-semibold rounded-lg transition ${statusFilter === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-white'}" data-status="RESOLVED">Resolved (${resolvedCount})</button>
+              </div>
+
+              <!-- Incidents Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                      <tr>
+                        <th class="p-3">Incident Title</th>
+                        <th class="p-3">Severity</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3">Declared</th>
+                        <th class="p-3">Lead Handler</th>
+                        <th class="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      ${filtered.map(i => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">
+                            <div>${i.title}</div>
+                            <div class="text-[11px] text-slate-400 font-normal mt-0.5">${i.summary || ''}</div>
+                          </td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${i.severity === 'SEV-1' || i.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}">
+                              ${i.severity}
+                            </span>
+                          </td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${i.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-300 border border-rose-500/30 animate-pulse'}">
+                              ${i.status}
+                            </span>
+                          </td>
+                          <td class="p-3 text-slate-400">${i.declaredAt ? new Date(i.declaredAt).toLocaleDateString() : 'N/A'}</td>
+                          <td class="p-3 text-slate-300">${i.leadHandler || 'SOC Team'}</td>
+                          <td class="p-3 text-right space-x-2">
+                            ${i.status !== 'RESOLVED' ? `
+                              <button class="resolve-inc-btn text-emerald-400 hover:text-emerald-300 font-semibold" data-id="${i.id}">Mark Resolved</button>
+                            ` : `
+                              <span class="text-slate-500 font-mono text-[10px]">Archived</span>
+                            `}
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event handlers
+          container.querySelectorAll('.inc-filter-btn').forEach(btn => {
+            btn.onclick = () => { statusFilter = btn.dataset.status; render(); };
+          });
+
+          container.querySelectorAll('.resolve-inc-btn').forEach(btn => {
+            btn.onclick = () => {
+              const id = btn.dataset.id;
+              const inc = incidents.find(item => item.id === id);
+              if (inc) {
+                inc.status = 'RESOLVED';
+                inc.resolvedAt = new Date().toISOString();
+                config.incidents = incidents;
+                config.items = incidents;
+                store.saveIncidentResponseConfig(config);
+                render();
+              }
+            };
+          });
+
+          const newBtn = container.querySelector('#inc-btn-new-incident');
+          if (newBtn) {
+            newBtn.onclick = () => {
+              const title = prompt('Incident Summary / Description:');
+              if (!title) return;
+              const sev = prompt('Severity Level (SEV-1, SEV-2, SEV-3):', 'SEV-2');
+              incidents.unshift({
+                id: 'inc-' + Date.now(),
+                title,
+                severity: sev || 'SEV-2',
+                status: 'INVESTIGATING',
+                declaredAt: new Date().toISOString(),
+                summary: 'Manually logged security incident for triage',
+                leadHandler: 'SOC Engineer'
+              });
+              config.incidents = incidents;
+              config.items = incidents;
+              store.saveIncidentResponseConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#inc-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              const manifest = store.exportIncidentResponseManifest();
+              const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cso_incident_response_manifest_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          const resetBtn = container.querySelector('#inc-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset incidents list to factory defaults?')) {
+                config = store.resetIncidentResponseConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+        function renderAdministrativeNotificationsWorkspace() {
       let activeFilter = 'ALL';
 
       dom.moduleHeaderActions.innerHTML = `
