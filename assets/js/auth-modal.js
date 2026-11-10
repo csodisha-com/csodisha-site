@@ -403,30 +403,32 @@
         const isSignUpMode = signupFields.style.display !== 'none';
         submitBtn.disabled = true;
         const originalBtnText = submitBtn.textContent;
-        submitBtn.textContent = 'Processing...';
+        submitBtn.textContent = isSignUpMode ? 'Creating account...' : 'Verifying credentials...';
         const identifier = document.getElementById('auth-identifier')?.value.trim() || '';
         const passwordVal = document.getElementById('auth-password')?.value || '';
 
         // Validation 1: Password rules
         if (!passwordVal) {
           showError('Please enter your password.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
           return;
         }
 
         if (isSignUpMode) {
-          if (passwordVal.length < 8) {
-            showError('Password must contain at least 8 characters.');
+          if (passwordVal.length < 8 || passwordVal.length > 64) {
+            showError('Password must contain between 8 and 64 characters.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
             return;
           }
           if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]*[@#][A-Za-z0-9]*$/.test(passwordVal)) {
             showError('Password must use letters, numbers and exactly one @ or # special symbol.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
             return;
           }
-        }
 
-        const accounts = getRegisteredAccounts();
-
-        if (isSignUpMode) {
           // Sign Up Path
           const nameInput = document.getElementById('auth-name');
           const mobileInput = document.getElementById('auth-mobile');
@@ -442,187 +444,130 @@
 
           if (!nameVal) {
             showError('Please enter your full name.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
             return;
           }
 
           if (!emailVal || !emailVal.includes('@') || emailVal.length > 254) {
             showError('Please enter a valid candidate email address.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
             return;
           }
 
           if (!/^[6-9][0-9]{9}$/.test(mobileVal)) {
             showError('Please enter a valid 10-digit Indian mobile number starting with 6-9.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
             return;
           }
 
-          // Duplicate checks
-          const emailExists = accounts.some(acc => (acc.email || '').toLowerCase() === emailVal);
-          if (emailExists) {
-            showError(`An account with email "${emailVal}" is already registered. Please Sign In.`);
-            return;
-          }
-
-          const mobileExists = accounts.some(acc => (acc.mobile || '').replace(/\D/g, '') === mobileVal.replace(/\D/g, ''));
-          if (mobileExists) {
-            showError(`An account with mobile number "${mobileVal}" is already registered. Please Sign In.`);
-            return;
-          }
-
-          // Optional remote auth attempt
-          if (window.CSOAuth && typeof window.CSOAuth.register === 'function') {
-            try {
-              await window.CSOAuth.register({
-                email: emailVal,
+          try {
+            const res = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
                 fullName: nameVal,
+                email: emailVal,
                 password: passwordVal,
                 phone: mobileVal,
                 dateOfBirth: dobVal,
                 state: 'Odisha',
-                district: districtVal
-              });
-            } catch (err) {
-              console.warn('Backend service offline, proceeding with verified local vault account');
+                district: districtVal,
+                targetStreams: checkedExams.length > 0 ? checkedExams : ['opsc', 'ossc']
+              })
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || !data.success) {
+              showError(data.error || 'Registration failed. Please check your details and try again.');
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+              return;
             }
+
+            // Strictly persist only upon verified server registration response
+            const targetExamsList = checkedExams.length > 0
+              ? checkedExams.map(id => TARGET_EXAMS.find(x => x.id === id)?.label || id)
+              : ['OPSC OCS', 'OSSC CGL'];
+
+            const candidateData = data.candidate || {
+              fullName: nameVal,
+              email: emailVal,
+              phone: mobileVal,
+              district: districtVal
+            };
+
+            setCandidateSession({
+              ...candidateData,
+              name: candidateData.fullName || nameVal,
+              phone: candidateData.phone || mobileVal,
+              state: 'Odisha',
+              district: candidateData.district || districtVal,
+              targetExams: targetExamsList,
+              isAuthenticated: true,
+              sessionType: 'server_verified'
+            });
+
+            closeModal();
+            window.location.href = '/student-dashboard/';
+          } catch (err) {
+            showError('Unable to connect to the authentication server. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
           }
-
-          // Create new Vault Account
-          const targetExamsList = checkedExams.length > 0
-            ? checkedExams.map(id => TARGET_EXAMS.find(x => x.id === id)?.label || id)
-            : ['OPSC OCS', 'OSSC CGL'];
-
-          const newAccount = {
-            id: generateAccountId(),
-            fullName: nameVal,
-            email: emailVal,
-            mobile: mobileVal,
-            passwordHash: hashPassword(passwordVal),
-            dob: dobVal,
-            state: 'Odisha',
-            district: districtVal,
-            targetExams: targetExamsList,
-            registeredAt: new Date().toISOString(),
-            lastLoginAt: new Date().toISOString(),
-            failedLoginAttempts: 0,
-            lockoutUntil: null
-          };
-
-          accounts.push(newAccount);
-          saveRegisteredAccounts(accounts);
-
-          // Establish candidate session
-          setCandidateSession({
-            ...newAccount,
-            name: newAccount.fullName,
-            phone: newAccount.mobile,
-            isAuthenticated: true,
-            sessionType: 'local_verified'
-          });
-
-          closeModal();
-          window.location.href = '/student-dashboard/';
 
         } else {
           // Login Path
-          if (!identifier) {
-            showError('Please enter your email or mobile number.');
+          if (!identifier || !identifier.includes('@')) {
+            showError('Please enter a valid candidate email address.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
             return;
           }
 
-          const searchKey = identifier.toLowerCase();
-          const isPhone = !searchKey.includes('@');
-          const cleanPhone = searchKey.replace(/\D/g, '');
-
-          let account = accounts.find(acc => {
-            if (isPhone && cleanPhone.length >= 10) {
-              return (acc.mobile || '').replace(/\D/g, '').endsWith(cleanPhone);
-            }
-            return (acc.email || '').toLowerCase() === searchKey;
-          });
-
-          const now = Date.now();
-
-          // Check account lockout
-          if (account && account.lockoutUntil && account.lockoutUntil > now) {
-            const minutesLeft = Math.ceil((account.lockoutUntil - now) / 60000);
-            showError(`Account is temporarily locked due to multiple failed login attempts. Please try again in ${minutesLeft} minute(s).`);
-            return;
-          }
-
-          // Optional remote auth attempt
-          let remoteLoginOk = false;
-          if (window.CSOAuth && typeof window.CSOAuth.login === 'function') {
-            try {
-              const res = await window.CSOAuth.login({
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
                 email: identifier,
                 password: passwordVal
-              });
-              if (res && res.ok) remoteLoginOk = true;
-            } catch (err) {
-              console.warn('Backend service offline, proceeding with local vault verification');
-            }
-          }
+              })
+            });
 
-          // Verify credentials in Vault
-          const computedHash = hashPassword(passwordVal);
+            const data = await res.json().catch(() => ({}));
 
-          if (!account) {
-            // If account is not in vault yet, allow graceful fallback for legacy sessions or create verified record
-            const legacySession = getCandidateSession();
-            if (legacySession && (legacySession.email === identifier || legacySession.mobile === identifier)) {
-              account = {
-                id: generateAccountId(),
-                fullName: legacySession.fullName || legacySession.name || 'Candidate Aspirant',
-                email: legacySession.email || identifier,
-                mobile: legacySession.mobile || legacySession.phone || '',
-                passwordHash: computedHash,
-                dob: legacySession.dob || '15-08-2000',
-                state: legacySession.state || 'Odisha',
-                district: legacySession.district || 'Balasore (Baleswar)',
-                targetExams: legacySession.targetExams || ['OPSC OCS', 'OSSC CGL'],
-                registeredAt: legacySession.registeredAt || new Date().toISOString(),
-                lastLoginAt: new Date().toISOString(),
-                failedLoginAttempts: 0,
-                lockoutUntil: null
-              };
-              accounts.push(account);
-              saveRegisteredAccounts(accounts);
-            } else {
-              showError('No account found with this email or mobile number. Please check your credentials or click "Create Account".');
+            if (!res.ok || !data.success) {
+              showError(data.error || 'Invalid email or password');
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
               return;
             }
+
+            // Server verified login successfully
+            const candidateData = data.candidate || {
+              email: identifier.toLowerCase()
+            };
+
+            setCandidateSession({
+              ...candidateData,
+              name: candidateData.fullName || identifier.split('@')[0],
+              email: candidateData.email || identifier.toLowerCase(),
+              isAuthenticated: true,
+              sessionType: 'server_verified',
+              lastLoginAt: new Date().toISOString()
+            });
+
+            closeModal();
+            window.location.href = '/student-dashboard/';
+          } catch (err) {
+            showError('Unable to connect to the authentication server. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
           }
-
-          // Credential Check
-          if (account.passwordHash && account.passwordHash !== computedHash && !remoteLoginOk) {
-            account.failedLoginAttempts = (account.failedLoginAttempts || 0) + 1;
-            if (account.failedLoginAttempts >= 5) {
-              account.lockoutUntil = now + (15 * 60 * 1000); // 15-minute lockout
-              saveRegisteredAccounts(accounts);
-              showError('Too many incorrect login attempts. Your account is temporarily locked for 15 minutes.');
-              return;
-            }
-            saveRegisteredAccounts(accounts);
-            const remaining = 5 - account.failedLoginAttempts;
-            showError(`Incorrect password. You have ${remaining} attempt(s) remaining before account lockout.`);
-            return;
-          }
-
-          // Successful Authentication
-          account.failedLoginAttempts = 0;
-          account.lockoutUntil = null;
-          account.lastLoginAt = new Date().toISOString();
-          saveRegisteredAccounts(accounts);
-
-          setCandidateSession({
-            ...account,
-            name: account.fullName,
-            phone: account.mobile,
-            isAuthenticated: true,
-            sessionType: 'local_verified'
-          });
-
-          closeModal();
-          window.location.href = '/student-dashboard/';
         }
       };
     }

@@ -761,74 +761,10 @@ function authForm(mode) {
           result = { ok: false, error: 'Account service request failed.' };
         }
 
-        // If backend auth endpoint is unavailable, offline, or returns an error, create client-side session fallback
         if (!result || !result.ok) {
-          const fullNameVal = (v.name || '').trim() || (v.email || '').trim().split('@')[0] || 'Aspirant';
-          const emailVal = (v.email || '').trim();
-          const mobileVal = (v.phone || '').trim();
-          const stateVal = v.state || 'Odisha';
-          const districtVal = v.district || 'Balasore (Baleswar)';
-          const dobVal = v.dob || '';
-
-          // Add to registered accounts vault
-          let passwordHash = '';
-          if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.hashPassword === 'function') {
-            passwordHash = window.CSOCandidateAuth.hashPassword(v.pw || '');
-          }
-
-          const newVaultAcc = {
-            id: 'cso_usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7),
-            fullName: fullNameVal,
-            email: emailVal,
-            mobile: mobileVal,
-            passwordHash: passwordHash,
-            dob: dobVal,
-            state: stateVal,
-            district: districtVal,
-            targetExams: ['OPSC OCS', 'OSSC CGL', 'Odisha B.Ed'],
-            registeredAt: new Date().toISOString(),
-            lastLoginAt: new Date().toISOString(),
-            failedLoginAttempts: 0,
-            lockoutUntil: null
-          };
-
-          vault.push(newVaultAcc);
-          try {
-            localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault));
-          } catch(e) {}
-
-          const candidateSession = {
-            fullName: fullNameVal,
-            name: fullNameVal,
-            email: emailVal,
-            mobile: mobileVal,
-            phone: mobileVal,
-            state: stateVal,
-            district: districtVal,
-            dob: dobVal,
-            isAuthenticated: true,
-            sessionType: 'local_verified',
-            registeredAt: new Date().toISOString(),
-            lastLoginAt: new Date().toISOString(),
-            targetExams: ['OPSC OCS', 'OSSC CGL', 'Odisha B.Ed']
-          };
-
-          localStorage.setItem('cso_candidate_session_v1', JSON.stringify(candidateSession));
-
-          if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.updateHeader === 'function') {
-            window.CSOCandidateAuth.updateHeader();
-          }
-
-          csoAuthUser = {
-            fullName: fullNameVal,
-            email: emailVal,
-            district: districtVal
-          };
-
-          m.close();
-          authUI();
-          toast('Account verified! Welcome to Common Sense Odisha.');
-          window.location.href = '/student-dashboard/';
+          errorBox.textContent = result?.error || 'Registration failed. Please check your details.';
+          submit.disabled = false;
+          submit.textContent = originalLabel;
           return;
         }
 
@@ -953,112 +889,45 @@ function authForm(mode) {
       }
 
       if (!loginResult || !loginResult.ok) {
-        // Fallback to client-side session authentication with Vault verification & lockout checks
-        let vault = [];
-        try {
-          const rawVault = localStorage.getItem('cso_registered_accounts_v1');
-          if (rawVault) vault = JSON.parse(rawVault) || [];
-        } catch (e) {}
-
-        const identifier = (v.email || '').trim().toLowerCase();
-        const cleanMobile = identifier.replace(/\D/g, '');
-        const isPhone = !identifier.includes('@');
-
-        let account = vault.find(acc => {
-          if (isPhone && cleanMobile.length >= 10) {
-            return (acc.mobile || '').replace(/\D/g, '').endsWith(cleanMobile);
-          }
-          return (acc.email || '').toLowerCase() === identifier;
-        });
-
-        const now = Date.now();
-        if (account && account.lockoutUntil && account.lockoutUntil > now) {
-          const mins = Math.ceil((account.lockoutUntil - now) / 60000);
-          errorBox.textContent = 'Account is temporarily locked. Please try again in ' + mins + ' minute(s).';
-          submit.disabled = false;
-          submit.textContent = originalLabel;
-          return;
-        }
-
-        // Verify password hash if account exists in vault
-        let passwordHash = '';
-        if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.hashPassword === 'function') {
-          passwordHash = window.CSOCandidateAuth.hashPassword(v.pw || '');
-        }
-
-        if (account && account.passwordHash && passwordHash && account.passwordHash !== passwordHash) {
-          account.failedLoginAttempts = (account.failedLoginAttempts || 0) + 1;
-          if (account.failedLoginAttempts >= 5) {
-            account.lockoutUntil = now + (15 * 60 * 1000);
-            try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault)); } catch (e) {}
-            errorBox.textContent = 'Too many incorrect login attempts. Your account is temporarily locked for 15 minutes.';
-            submit.disabled = false;
-            submit.textContent = originalLabel;
-            return;
-          }
-          try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault)); } catch (e) {}
-          const remaining = 5 - account.failedLoginAttempts;
-          errorBox.textContent = 'Incorrect password. You have ' + remaining + ' attempt(s) remaining before account lockout.';
-          submit.disabled = false;
-          submit.textContent = originalLabel;
-          return;
-        }
-
-        if (account) {
-          account.failedLoginAttempts = 0;
-          account.lockoutUntil = null;
-          account.lastLoginAt = new Date().toISOString();
-          try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault)); } catch (e) {}
-        }
-
-        let existingSession = null;
-        try {
-          const raw = localStorage.getItem('cso_candidate_session_v1');
-          if (raw) existingSession = JSON.parse(raw);
-        } catch (e) {}
-
-        const candidateEmail = (account && account.email) || (v.email ? v.email.trim() : "candidate@csodisha.gov.in");
-        const candidateName = (account && account.fullName)
-          ? account.fullName
-          : ((existingSession && (existingSession.fullName || existingSession.name))
-              ? (existingSession.fullName || existingSession.name)
-              : candidateEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
-
-        const sessionPayload = {
-          fullName: candidateName,
-          name: candidateName,
-          email: candidateEmail,
-          mobile: (account && account.mobile) || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
-          phone: (account && account.mobile) || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
-          state: (account && account.state) || (existingSession && existingSession.state) || "Odisha",
-          district: (account && account.district) || (existingSession && existingSession.district) || "Balasore (Baleswar)",
-          dob: (account && account.dob) || (existingSession && existingSession.dob) || "15-08-2000",
-          isAuthenticated: true,
-          sessionType: "local_verified",
-          lastLoginAt: new Date().toISOString(),
-          registeredAt: (account && account.registeredAt) || (existingSession && existingSession.registeredAt) || new Date().toISOString(),
-          targetExams: (account && account.targetExams) || (existingSession && existingSession.targetExams) || ["OPSC OCS", "OSSC CGL", "Odisha B.Ed"]
-        };
-
-        localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
-
-        if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.updateHeader === 'function') {
-          window.CSOCandidateAuth.updateHeader();
-        }
-
-        csoAuthUser = {
-          fullName: candidateName,
-          email: candidateEmail,
-          district: sessionPayload.district
-        };
-
-        m.close();
-        authUI();
-        go('student-dashboard');
-        toast('Welcome back, ' + candidateName);
-        window.location.href = '/student-dashboard/';
+        errorBox.textContent = loginResult?.error || 'Invalid email or password';
+        submit.disabled = false;
+        submit.textContent = originalLabel;
         return;
       }
+
+      const candidateData = loginResult.candidate || {
+        email: v.email.trim().toLowerCase()
+      };
+
+      const candidateName = candidateData.fullName || candidateData.email.split('@')[0];
+      const sessionPayload = {
+        fullName: candidateName,
+        name: candidateName,
+        email: candidateData.email,
+        district: candidateData.district || 'Khordha (Bhubaneswar)',
+        isAuthenticated: true,
+        sessionType: 'server_verified',
+        lastLoginAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
+
+      if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.updateHeader === 'function') {
+        window.CSOCandidateAuth.updateHeader();
+      }
+
+      csoAuthUser = {
+        fullName: candidateName,
+        email: candidateData.email,
+        district: sessionPayload.district
+      };
+
+      m.close();
+      authUI();
+      go('student-dashboard');
+      toast('Welcome back, ' + candidateName);
+      window.location.href = '/student-dashboard/';
+      return;
 
       const session = await window.CSOAuth.getCurrentUser();
 
