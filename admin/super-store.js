@@ -66106,18 +66106,18 @@
 };
 
   SuperStore.getSchemesDirectoryTreeConfig = function() {
-    return _hydrateConfig('cso_schemes_master_tree_config_v2', 'categories', () => DEFAULT_SCHEMES_DIRECTORY_TREE);
+    return _hydrateConfig('cso_schemes_recursive_tree_v1', 'categories', () => DEFAULT_SCHEMES_DIRECTORY_TREE);
   };
   SuperStore.saveSchemesDirectoryTreeConfig = function(cfg) {
     if (!cfg) return false;
     cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
     cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
-    localStorage.setItem('cso_schemes_master_tree_config_v2', JSON.stringify(cfg));
+    localStorage.setItem('cso_schemes_recursive_tree_v1', JSON.stringify(cfg));
     this.logAudit('SCHEMES_TREE_MUTATION', 'SCHEMES_BENEFITS', `Saved schemes directory and content updates (${cfg.categories.length} categories).`);
     return true;
   };
   SuperStore.resetSchemesDirectoryTreeConfig = function() {
-    localStorage.setItem('cso_schemes_master_tree_config_v2', JSON.stringify(DEFAULT_SCHEMES_DIRECTORY_TREE));
+    localStorage.setItem('cso_schemes_recursive_tree_v1', JSON.stringify(DEFAULT_SCHEMES_DIRECTORY_TREE));
     this.logAudit('SCHEMES_TREE_RESET', 'SCHEMES_BENEFITS', 'Schemes master directory tree reset to authentic frontend defaults.');
     return JSON.parse(JSON.stringify(DEFAULT_SCHEMES_DIRECTORY_TREE));
   };

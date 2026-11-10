@@ -18157,7 +18157,7 @@ async function loadMasterNavigation() {
         let activeCatId = config.activeCategoryId || 'cat-sb-01';
         let searchTerm = '';
 
-        // Helper to flatten node tree with depth
+        // Helper to flatten node tree with depth for hierarchical tree display
         function flattenTree(nodes, depth = 0, parentTitle = 'Root') {
           let list = [];
           for (const n of nodes) {
@@ -18214,8 +18214,11 @@ async function loadMasterNavigation() {
             ? flatNodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm) || (n.department || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
             : flatNodes;
 
-          let totalSchemes = 0;
-          categories.forEach(c => { totalSchemes += flattenTree(c.nodes || []).length; });
+          // Compute total statistics
+          let totalAllNodes = 0;
+          categories.forEach(c => {
+            totalAllNodes += flattenTree(c.nodes || []).length;
+          });
 
           container.innerHTML = `
             <div class="space-y-6">
@@ -18226,9 +18229,9 @@ async function loadMasterNavigation() {
                     <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     </span>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Schemes & Benefits Directory Studio</h2>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Schemes & Benefits Complete Directory Studio</h2>
                   </div>
-                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-schemes-benefits • 8 Welfare Pillars • ${totalSchemes} Verified Government Schemes & Direct Benefits Catalog</p>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-schemes-benefits • 8 Welfare Pillars • ${totalAllNodes} Multi-tier Hierarchical Nodes</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <button id="sb-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
@@ -18246,11 +18249,11 @@ async function loadMasterNavigation() {
                 </div>
               </div>
 
-              <!-- Top Category Navigation Pills (All 8 Welfare Pillars) -->
+              <!-- Top Category Navigation Pills (All 8 Directories) -->
               <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
                 ${categories.map(cat => {
                   const isActive = cat.id === activeCatId;
-                  const catCount = flattenTree(cat.nodes || []).length;
+                  const catNodeCount = flattenTree(cat.nodes || []).length;
                   return `
                     <button class="sb-cat-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-2 ${
                       isActive
@@ -18259,16 +18262,16 @@ async function loadMasterNavigation() {
                     }" data-cat-id="${cat.id}">
                       <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-700'}">${cat.code || ''}</span>
                       <span>${cat.title}</span>
-                      <span class="text-[10px] opacity-75 font-mono">(${catCount})</span>
+                      <span class="text-[10px] opacity-75 font-mono">(${catNodeCount})</span>
                     </button>
                   `;
                 }).join('')}
               </div>
 
-              <!-- Main Two-Column Layout -->
+              <!-- Main Two-Column Studio Layout -->
               <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                <!-- Left Column: Schemes Directory List (5 Cols) -->
+                <!-- Left Column: Category Hierarchy & Node Tree (5 Cols) -->
                 <div class="lg:col-span-5 space-y-4">
                   <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
                     <div class="flex items-center justify-between gap-2 mb-3">
@@ -18278,16 +18281,16 @@ async function loadMasterNavigation() {
                       </div>
                       <button id="sb-btn-add-node" class="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        + Add Scheme
+                        + Root Node
                       </button>
                     </div>
 
                     <!-- Search Input -->
                     <div class="mb-3">
-                      <input type="text" id="sb-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} schemes by name, dept or ID..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                      <input type="text" id="sb-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} nodes by title or ID..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
                     </div>
 
-                    <!-- Scheme Cards List (Hierarchical Indentation) -->
+                    <!-- Node List (Hierarchical Indentation) -->
                     <div class="space-y-1.5 max-h-[620px] overflow-y-auto pr-1">
                       ${displayedNodes.map(node => {
                         const isSelected = node.id === selectedNodeId;
@@ -18309,30 +18312,30 @@ async function loadMasterNavigation() {
                             </div>
                             ${node.titleOdia ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate font-serif">${node.titleOdia}</p>` : ''}
                             <div class="mt-1.5 flex items-center justify-between text-[9px] text-slate-500">
-                              <span class="truncate max-w-[170px]">${node.department || 'Government of Odisha'}</span>
-                              <span class="font-bold text-teal-400 truncate max-w-[100px]">${node.benefitAmount ? node.benefitAmount.split('(')[0].trim() : 'DBT'}</span>
+                              <span class="font-mono">${node.id}</span>
+                              <span>${(node.children && node.children.length > 0) ? `${node.children.length} sub-nodes` : (node.stage || 'Leaf')}</span>
                             </div>
                           </div>
                         `;
                       }).join('')}
-                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No schemes found matching search criteria.</div>' : ''}
+                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No matching nodes found.</div>' : ''}
                     </div>
                   </div>
                 </div>
 
-                <!-- Right Column: Authoring & Scheme Configuration Studio (7 Cols) -->
+                <!-- Right Column: Authoring & Publishing Studio (7 Cols) -->
                 <div class="lg:col-span-7">
                   ${selectedNode ? `
                     <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-4">
                       <!-- Studio Top Bar -->
                       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
                         <div>
-                          <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">Scheme Authoring & Entitlements</span>
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">Authoring & Content Studio</span>
                           <h3 class="text-base font-bold text-white mt-0.5">${selectedNode.title}</h3>
                         </div>
                         <div class="flex items-center gap-2">
-                          <button id="sb-btn-add-subscheme" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
-                            + Sub-scheme
+                          <button id="sb-btn-add-subnode" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
+                            + Sub-node
                           </button>
                           <button id="sb-btn-delete-node" class="px-2.5 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition">
                             Delete
@@ -18345,20 +18348,35 @@ async function loadMasterNavigation() {
                             ${selectedNode.status === 'Published' ? 'Unpublish' : 'Publish Live'}
                           </button>
                           <button id="sb-btn-save-node" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
-                            Save Scheme
+                            Save Node
                           </button>
                         </div>
                       </div>
 
-                      <!-- Scheme Bilingual Titles -->
+                      <!-- Form Fields Grid -->
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Scheme Title (English)</label>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Title (English)</label>
                           <input type="text" id="sb-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
                         </div>
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Scheme Title (Odia)</label>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Title (Odia)</label>
                           <input type="text" id="sb-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Type / Stage</label>
+                          <input type="text" id="sb-form-stage" value="${selectedNode.stage || selectedNode.type || ''}" placeholder="e.g. Directory / Scheme" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Deadline / Date</label>
+                          <input type="text" id="sb-form-deadline" value="${selectedNode.applyDeadline || ''}" placeholder="YYYY-MM-DD or Ongoing" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Vacancies / Benefit Amount</label>
+                          <input type="text" id="sb-form-amount" value="${selectedNode.benefitAmount || ''}" placeholder="₹ 10,000 / Year DBT" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono text-teal-300 font-semibold" />
                         </div>
                       </div>
 
@@ -18374,27 +18392,11 @@ async function loadMasterNavigation() {
                         </div>
                       </div>
 
-                      <!-- Benefit Slabs & Income Limits -->
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Benefit Amount / Rate</label>
-                          <input type="text" id="sb-form-amount" value="${selectedNode.benefitAmount || ''}" placeholder="₹ 10,000 / Year via DBT" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold text-teal-300" />
-                        </div>
-                        <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Income Ceiling / Criterion</label>
-                          <input type="text" id="sb-form-income" value="${selectedNode.incomeCeiling || ''}" placeholder="Family income < ₹ 2,50,000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
-                        </div>
-                        <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Application Mode</label>
-                          <input type="text" id="sb-form-mode" value="${selectedNode.applicationMode || ''}" placeholder="Mo Seva Kendra / Online" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
-                        </div>
-                      </div>
-
                       <!-- URLs -->
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Official Portal URL</label>
-                          <input type="text" id="sb-form-official-url" value="${selectedNode.officialUrl || ''}" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Official Portal / Route URL</label>
+                          <input type="text" id="sb-form-official-url" value="${selectedNode.officialUrl || ''}" placeholder="https://... or /schemes-benefits/?..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
                         </div>
                         <div>
                           <label class="block text-xs font-semibold text-slate-300 mb-1">Guidelines PDF / R2 Mirror URL</label>
@@ -18408,19 +18410,19 @@ async function loadMasterNavigation() {
                         <input type="text" id="sb-form-docs" value="${selectedNode.requiredDocs || ''}" placeholder="Aadhaar Card, Active DBT Bank Account, Ration Card" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
                       </div>
 
-                      <!-- Article Title -->
+                      <!-- Publishing Article Headline -->
                       <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Editorial / Guidance Headline</label>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Article / Editorial Headline</label>
                         <input type="text" id="sb-form-article-title" value="${selectedNode.articleTitle || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
                       </div>
 
-                      <!-- Content Body -->
+                      <!-- Rich Article Content Body -->
                       <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1">Detailed Scheme Guidelines & SOP (Markdown)</label>
-                        <textarea id="sb-form-content-body" rows="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.contentBody || ''}</textarea>
+                        <textarea id="sb-form-content-body" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.contentBody || ''}</textarea>
                       </div>
 
-                      <!-- Tags & Status -->
+                      <!-- Metadata & Tags -->
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <label class="block text-xs font-semibold text-slate-300 mb-1">Tags (Comma separated)</label>
@@ -18440,7 +18442,7 @@ async function loadMasterNavigation() {
                     </div>
                   ` : `
                     <div class="p-12 text-center rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
-                      Select a scheme on the left to edit or click "+ Add Scheme".
+                      Select a node from the tree on the left to start editing.
                     </div>
                   `}
                 </div>
@@ -18477,27 +18479,30 @@ async function loadMasterNavigation() {
             });
           }
 
-          // Add Root Scheme Button
+          // Add Root Node Button
           document.getElementById('sb-btn-add-node')?.addEventListener('click', () => {
-            const newNodeId = `node-sb-${currentCat.code}-${Date.now().toString().slice(-4)}`;
+            const newNodeId = `SB-NODE-${Date.now().toString().slice(-4)}`;
             const newNode = {
               id: newNodeId,
               title: "New Public Welfare Scheme",
               titleOdia: "ନୂତନ ସରକାରୀ ଯୋଜନା",
+              slug: "new-welfare-scheme",
+              categoryCode: currentCat.code,
+              type: "directory",
               department: "Government of Odisha",
               officialUrl: "",
               mirrorUrl: "",
-              targetBeneficiary: "Eligible Citizens",
-              incomeCeiling: "Under specified limits",
+              applyDeadline: "Ongoing",
+              vacancies: 0,
               benefitAmount: "Direct Benefit Transfer",
+              targetBeneficiary: "Eligible Citizens",
               requiredDocs: "Aadhaar, Ration Card, Bank Passbook",
-              applicationMode: "Online / Mo Seva Kendra",
+              stage: "Drafting",
               articleTitle: "Scheme Operational Guidelines & Beneficiary SOP",
-              contentBody: "Comprehensive guidelines and eligibility rules.",
+              contentBody: "Provide comprehensive information, eligibility criteria, and official application procedures.",
               tags: [currentCat.title],
               status: "Draft",
               active: true,
-              depth: 1,
               children: [],
               lastUpdated: new Date().toISOString().slice(0, 10)
             };
@@ -18506,31 +18511,34 @@ async function loadMasterNavigation() {
             config.selectedNodeId = newNodeId;
             store.saveSchemesDirectoryTreeConfig(config);
             render();
-            store.showToast?.('New scheme added to category!', 'success');
+            store.showToast?.('New root node created in category!', 'success');
           });
 
-          // Add Sub-scheme Button
-          document.getElementById('sb-btn-add-subscheme')?.addEventListener('click', () => {
+          // Add Sub-node Button
+          document.getElementById('sb-btn-add-subnode')?.addEventListener('click', () => {
             if (!selectedNode) return;
-            const subNodeId = `node-sb-${currentCat.code}-${Date.now().toString().slice(-4)}`;
+            const subNodeId = `SB-NODE-${Date.now().toString().slice(-4)}`;
             const subNode = {
               id: subNodeId,
-              title: "New Sub-Scheme Component",
+              title: "New Sub-Section / Component",
               titleOdia: "",
+              slug: "new-sub-section",
+              categoryCode: currentCat.code,
+              type: "directory",
               department: selectedNode.department || "Government of Odisha",
               officialUrl: "",
               mirrorUrl: "",
-              targetBeneficiary: selectedNode.targetBeneficiary || "Eligible Beneficiaries",
-              incomeCeiling: selectedNode.incomeCeiling || "Under limits",
+              applyDeadline: "Ongoing",
+              vacancies: 0,
               benefitAmount: "Component Assistance",
+              targetBeneficiary: selectedNode.targetBeneficiary || "Eligible Beneficiaries",
               requiredDocs: "Aadhaar, Bank Passbook",
-              applicationMode: "Mo Seva Kendra",
-              articleTitle: "Sub-Scheme Component Guidelines",
-              contentBody: "Detailed component instructions.",
+              stage: "Sub-Directory",
+              articleTitle: "Sub-Section Information",
+              contentBody: "Detailed sub-section content.",
               tags: [selectedNode.title],
               status: "Draft",
               active: true,
-              depth: (selectedNode.depth || 1) + 1,
               children: [],
               lastUpdated: new Date().toISOString().slice(0, 10)
             };
@@ -18539,10 +18547,10 @@ async function loadMasterNavigation() {
             config.selectedNodeId = subNodeId;
             store.saveSchemesDirectoryTreeConfig(config);
             render();
-            store.showToast?.('Sub-scheme added!', 'success');
+            store.showToast?.('Sub-node added!', 'success');
           });
 
-          // Delete Scheme Button
+          // Delete Node Button
           document.getElementById('sb-btn-delete-node')?.addEventListener('click', () => {
             if (confirm(`Delete "${selectedNode.title}" from this directory?`)) {
               deleteNodeDeep(currentCat.nodes || [], selectedNode.id);
@@ -18550,7 +18558,7 @@ async function loadMasterNavigation() {
               config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
               store.saveSchemesDirectoryTreeConfig(config);
               render();
-              store.showToast?.('Scheme deleted.', 'info');
+              store.showToast?.('Node deleted.', 'info');
             }
           });
 
@@ -18560,19 +18568,19 @@ async function loadMasterNavigation() {
             selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
             store.saveSchemesDirectoryTreeConfig(config);
             render();
-            store.showToast?.(`Scheme is now ${selectedNode.status}`, 'success');
+            store.showToast?.(`Node is now ${selectedNode.status}`, 'success');
           });
 
-          // Save Scheme Function
+          // Save Node Function
           function saveCurrentNode() {
             if (!selectedNode) return;
             selectedNode.title = document.getElementById('sb-form-title')?.value || selectedNode.title;
             selectedNode.titleOdia = document.getElementById('sb-form-title-odia')?.value || '';
+            selectedNode.stage = document.getElementById('sb-form-stage')?.value || '';
+            selectedNode.applyDeadline = document.getElementById('sb-form-deadline')?.value || '';
+            selectedNode.benefitAmount = document.getElementById('sb-form-amount')?.value || '';
             selectedNode.department = document.getElementById('sb-form-department')?.value || '';
             selectedNode.targetBeneficiary = document.getElementById('sb-form-beneficiary')?.value || '';
-            selectedNode.benefitAmount = document.getElementById('sb-form-amount')?.value || '';
-            selectedNode.incomeCeiling = document.getElementById('sb-form-income')?.value || '';
-            selectedNode.applicationMode = document.getElementById('sb-form-mode')?.value || '';
             selectedNode.officialUrl = document.getElementById('sb-form-official-url')?.value || '';
             selectedNode.mirrorUrl = document.getElementById('sb-form-mirror-url')?.value || '';
             selectedNode.requiredDocs = document.getElementById('sb-form-docs')?.value || '';
@@ -18584,7 +18592,7 @@ async function loadMasterNavigation() {
             selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
 
             store.saveSchemesDirectoryTreeConfig(config);
-            store.showToast?.('Scheme details saved!', 'success');
+            store.showToast?.('Studio node changes saved!', 'success');
           }
 
           document.getElementById('sb-btn-save-node')?.addEventListener('click', () => {
@@ -18596,7 +18604,7 @@ async function loadMasterNavigation() {
             saveCurrentNode();
             store.saveSchemesDirectoryTreeConfig(config);
             render();
-            store.showToast?.('All schemes changes saved!', 'success');
+            store.showToast?.('All directory and studio changes saved!', 'success');
           });
 
           // Export Manifest
@@ -18607,11 +18615,11 @@ async function loadMasterNavigation() {
 
           // Reset Factory
           document.getElementById('sb-btn-reset')?.addEventListener('click', () => {
-            if (confirm('Reset Schemes & Benefits Directory to exhaustive factory defaults?')) {
+            if (confirm('Reset Schemes & Benefits Directory to authentic factory defaults?')) {
               config = store.resetSchemesDirectoryTreeConfig();
               activeCatId = config.activeCategoryId;
               render();
-              store.showToast?.('Schemes directory reset to exhaustive defaults.', 'info');
+              store.showToast?.('Schemes directory tree reset to authentic defaults.', 'info');
             }
           });
         }
