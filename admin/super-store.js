@@ -13032,7 +13032,8 @@
           communityDirectoryTree: this.getCommunityDirectoryTreeConfig ? this.getCommunityDirectoryTreeConfig() : null,
           eventsScheduleTree: this.getEventsScheduleConfig ? this.getEventsScheduleConfig() : null,
           seoDiscoveryTree: this.getSeoDiscoveryTreeConfig ? this.getSeoDiscoveryTreeConfig() : null,
-          securityRbacTree: this.getSecurityRbacTreeConfig ? this.getSecurityRbacTreeConfig() : null
+          securityRbacTree: this.getSecurityRbacTreeConfig ? this.getSecurityRbacTreeConfig() : null,
+          integrationsEdgeTree: this.getIntegrationsEdgeTreeConfig ? this.getIntegrationsEdgeTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -111612,6 +111613,560 @@
   SuperStore.getIncidentResponseConfig = function() { return this.getSecurityRbacTreeConfig(); };
   SuperStore.saveIncidentResponseConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
 
+
+  // =========================================================================
+  // INTEGRATIONS, WEBHOOKS & CLOUDFLARE EDGE SUITE: Master Engine
+  // Cache Key: cso_integrations_edge_tree_v1 (All 11 Modules)
+  // =========================================================================
+  const DEFAULT_INTEGRATIONS_DIRECTORY_TREE = {
+    meta: {
+      version: "2026.11",
+      updatedAt: new Date().toISOString(),
+      author: "Common Sense Odisha (CSO) Edge & DevOps Infrastructure",
+      suite: "Integrations, Webhooks & Cloudflare Edge Suite",
+      folderId: "folder-integrations-apis"
+    },
+    activeCategoryId: "cat-int-01",
+    selectedNodeId: "INT-NODE-01-01",
+    categories: [
+      {
+        id: "cat-int-01",
+        moduleId: "module-int-001",
+        code: "01",
+        title: "Cloudflare R2 Bucket Asset Mirroring & Storage Sync",
+        titleOdia: "କ୍ଲାଉଡଫ୍ଲେୟାର R2 ବକେଟ୍ ସମ୍ପତ୍ତି ମିରରିଂ ଓ ସିଙ୍କ୍",
+        description: "Multi-region asset mirroring, PDF gazettes, exam notices, and study vault sync with zero egress costs",
+        nodes: [
+          {
+            id: "INT-NODE-01-01",
+            title: "Official Gazettes & Syllabus R2 Primary Vault",
+            titleOdia: "ସରକାରୀ ବିଜ୍ଞପ୍ତି ଓ ପାଠ୍ୟକ୍ରମ R2 ଭଲ୍ଟ",
+            slug: "r2-gazettes-syllabus-vault",
+            categoryCode: "01",
+            connectorType: "Cloudflare R2 Storage",
+            targetHost: "https://assets.csodisha.com",
+            environment: "Production",
+            bucketName: "cso-media-vault",
+            customDomain: "assets.csodisha.com",
+            cacheTtlSeconds: 2592000,
+            syncPath: "/assets/pdf/*",
+            status: "Active / Connected",
+            enabled: true,
+            description: "High-performance object storage mirror for official state gazettes, exam notifications, and PYQs with immutable cache headers and global edge distribution.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-01-01-SUB-1",
+                title: "PYQ & Question Bank PDF Sub-bucket",
+                titleOdia: "ପ୍ରଶ୍ନୋତ୍ତର ପିଡିଏଫ୍ ସବ୍-ବକେଟ୍",
+                slug: "r2-pyq-subbucket",
+                categoryCode: "01",
+                connectorType: "R2 Subfolder Sync",
+                targetHost: "https://assets.csodisha.com/pyq",
+                environment: "Production",
+                bucketName: "cso-media-vault",
+                syncPath: "/assets/pyq/*",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Dedicated high-bandwidth mirror for past year competitive examination question papers.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-02",
+        moduleId: "module-int-002",
+        code: "02",
+        title: "Cloudflare Edge Cache Purging & Zone Invalidation",
+        titleOdia: "କ୍ଲାଉଡଫ୍ଲେୟାର ଏଜ୍ କ୍ୟାଚ୍ ପର୍ଜ୍ ଓ ଇନଭାଲିଡେସନ୍",
+        description: "Instant edge cache invalidation by Tag, Prefix, or Host upon live portal publishing events",
+        nodes: [
+          {
+            id: "INT-NODE-02-01",
+            title: "Global Portal Edge Cache Tag Invalidation Engine",
+            titleOdia: "ସର୍ବସାଧାରଣ ପୋର୍ଟାଲ କ୍ୟାଚ୍ ଟ୍ୟାଗ୍ ଇନଭାଲିଡେଟର",
+            slug: "edge-cache-tag-purger",
+            categoryCode: "02",
+            connectorType: "Cloudflare API v4",
+            targetHost: "https://api.cloudflare.com/client/v4/zones",
+            environment: "Production",
+            zoneId: "023e105f4ecef8ad9ca31a8372d0c353",
+            cacheTags: ["jobs-cache", "schemes-cache", "study-cache", "community-cache", "events-cache", "seo-cache"],
+            purgeMode: "Tag-Based Smart Purge",
+            status: "Active / Connected",
+            enabled: true,
+            description: "Automated hook purging Cloudflare Edge PoPs globally in under 150ms whenever an editor clicks 'Publish Live' in any of the 6 platform suites.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-02-01-SUB-1",
+                title: "Emergency Full Zone Instant Purge Trigger",
+                titleOdia: "ଜରୁରୀକାଳୀନ ସମ୍ପୂର୍ଣ୍ଣ ଜୋନ୍ ପର୍ଜ୍",
+                slug: "emergency-full-zone-purge",
+                categoryCode: "02",
+                connectorType: "Cloudflare Zone Purge",
+                targetHost: "https://api.cloudflare.com/client/v4/zones/purge_everything",
+                environment: "Production",
+                purgeMode: "Purge Everything",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Safety switch forcing complete edge recache across all 300+ global Cloudflare data centers.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-03",
+        moduleId: "module-int-003",
+        code: "03",
+        title: "Outbound Webhook Dispatcher & Event Subscriptions",
+        titleOdia: "ଆଉଟବାଉଣ୍ଡ ୱେବହୁକ୍ ଡିସପାଚର୍ ଓ ଇଭେଣ୍ଟ ଗ୍ରାହକ",
+        description: "Cryptographically signed (HMAC-SHA256) real-time event webhooks dispatched on state mutations",
+        nodes: [
+          {
+            id: "INT-NODE-03-01",
+            title: "Primary Government Notifications Outbound Webhook",
+            titleOdia: "ମୁଖ୍ୟ ବିଜ୍ଞପ୍ତି ୱେବହୁକ୍ ଡିସପାଚର୍",
+            slug: "primary-outbound-webhook",
+            categoryCode: "03",
+            connectorType: "HMAC Signed Webhook",
+            targetHost: "https://hooks.csodisha.com/events/notifications",
+            environment: "Production",
+            httpMethod: "POST",
+            hmacHeader: "X-CSO-Signature",
+            subscribedEvents: ["NODE_PUBLISHED", "EXAM_DATE_UPDATED", "SCHEME_MODIFIED", "EMERGENCY_LOCKDOWN"],
+            retryAttempts: 3,
+            status: "Active / Connected",
+            enabled: true,
+            description: "Dispatches JSON events with payload timestamp and SHA-256 HMAC signature. Downstream microservices consume alerts for mobile push and indexing.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-03-01-SUB-1",
+                title: "Search Index Real-Time Ingestion Webhook",
+                titleOdia: "ସର୍ଚ୍ଚ ଇଣ୍ଡେକ୍ସ ରିଅଲ-ଟାଇମ ଇନଜେସନ ହୁକ୍",
+                slug: "search-index-ingestion-hook",
+                categoryCode: "03",
+                connectorType: "JSON Event Pipeline",
+                targetHost: "https://search-indexer.csodisha.com/v1/ingest",
+                environment: "Production",
+                httpMethod: "POST",
+                subscribedEvents: ["NODE_PUBLISHED", "NODE_DELETED"],
+                status: "Active / Connected",
+                enabled: true,
+                description: "Notifies internal Meilisearch/Typesense cluster to index new jobs or schemes immediately.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-04",
+        moduleId: "module-int-004",
+        code: "04",
+        title: "Telegram Broadcast Bot & Channel Alert Automation",
+        titleOdia: "ଟେଲିଗ୍ରାମ ବ୍ରଡକାଷ୍ଟ ବଟ୍ ଓ ଚ୍ୟାନେଲ ସୂଚନା ସ୍ୱତଃ ପ୍ରେରଣ",
+        description: "Automated broadcast alerts dispatched to verified CSO Odisha Telegram channels and groups",
+        nodes: [
+          {
+            id: "INT-NODE-04-01",
+            title: "CS Odisha Official Telegram Broadcast Bot",
+            titleOdia: "କମନ ସେନ୍ସ ଓଡ଼ିଶା ଅଫିସିଆଲ ଟେଲିଗ୍ରାମ ବଟ୍",
+            slug: "telegram-official-broadcast-bot",
+            categoryCode: "04",
+            connectorType: "Telegram Bot API",
+            targetHost: "https://api.telegram.org/bot[BOT_TOKEN]/sendMessage",
+            environment: "Production",
+            targetChannels: ["@CSOdishaOfficial", "@CSOdishaAlerts", "@OdishaJobsArchive"],
+            parseMode: "HTML",
+            messageTemplate: "<b>🚨 [CATEGORY] Alert: [TITLE]</b>\n\n[DESCRIPTION]\n\n🗓️ <b>Date:</b> [DATE]\n🔗 <b>Verify & Apply:</b> [URL]\n\n<i>Common Sense Odisha — Verified Citizen Intelligence</i>",
+            status: "Active / Connected",
+            enabled: true,
+            description: "Instant push notification dispatcher forwarding published jobs, admit cards, and welfare notifications directly to 50,000+ Odisha aspirants.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-04-01-SUB-1",
+                title: "Telegram Odia Language Channel Mirror",
+                titleOdia: "ଟେଲିଗ୍ରାମ ଓଡ଼ିଆ ଭାଷା ଚ୍ୟାନେଲ ମିରର୍",
+                slug: "telegram-odia-channel-mirror",
+                categoryCode: "04",
+                connectorType: "Telegram Bot API (Odia)",
+                targetHost: "https://api.telegram.org/bot[BOT_TOKEN]/sendMessage",
+                environment: "Production",
+                targetChannels: ["@CSOdishaOdia"],
+                parseMode: "HTML",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Dispatches native Odia script headlines and deadlines to regional community channels.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-05",
+        moduleId: "module-int-005",
+        code: "05",
+        title: "WhatsApp Business API & Template Notifications",
+        titleOdia: "ହ୍ୱାଟସଆପ୍ ବିଜନେସ ଏପିଆଇ ଓ ଟେମ୍ପଲେଟ୍ ସୂଚନା",
+        description: "Meta Cloud API integration delivering opt-in deadline alerts and citizen inquiry responses",
+        nodes: [
+          {
+            id: "INT-NODE-05-01",
+            title: "Meta WhatsApp Cloud API Notification Service",
+            titleOdia: "ମେଟା ହ୍ୱାଟସଆପ୍ କ୍ଲାଉଡ୍ ଏପିଆଇ ସେବା",
+            slug: "whatsapp-cloud-api-service",
+            categoryCode: "05",
+            connectorType: "Meta Graph API v21.0",
+            targetHost: "https://graph.facebook.com/v21.0/[PHONE_NUMBER_ID]/messages",
+            environment: "Production",
+            wabaAccountId: "109847291823749",
+            phoneNumberId: "104928172938472",
+            templateName: "cso_exam_deadline_alert_v2",
+            templateLanguage: "en_US",
+            status: "Active / Connected",
+            enabled: true,
+            description: "Delivers pre-approved high-priority exam deadline reminders and admit card download notices to verified opted-in candidates.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-05-01-SUB-1",
+                title: "WhatsApp Opt-In Consent Verification Handler",
+                titleOdia: "ହ୍ୱାଟସଆପ୍ ସମ୍ମତି ଯାଞ୍ଚ ହ୍ୟାଣ୍ଡଲର୍",
+                slug: "whatsapp-opt-in-handler",
+                categoryCode: "05",
+                connectorType: "WhatsApp Opt-in Sync",
+                targetHost: "https://csodisha.com/api/whatsapp/opt-in",
+                environment: "Production",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Automated webhook handling DPDP-compliant WhatsApp opt-ins and STOP/UNSUBSCRIBE commands.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-06",
+        moduleId: "module-int-006",
+        code: "06",
+        title: "Public API Gateway & Token Rate Limiting",
+        titleOdia: "ପବ୍ଲିକ ଏପିଆଇ ଗେଟୱେ ଓ ଟୋକନ ରେଟ୍ ଲିମିଟିଂ",
+        description: "Multi-tiered API access control, OpenAPI specification endpoints, and IP throttling",
+        nodes: [
+          {
+            id: "INT-NODE-06-01",
+            title: "CSO Open Data Public API Gateway",
+            titleOdia: "ସିଏସଓ ଓପନ ଡାଟା ପବ୍ଲିକ ଏପିଆଇ ଗେଟୱେ",
+            slug: "public-api-gateway",
+            categoryCode: "06",
+            connectorType: "Cloudflare Workers Gateway",
+            targetHost: "https://csodisha.com/api/v1",
+            environment: "Production",
+            allowedEndpoints: ["/api/v1/jobs", "/api/v1/schemes", "/api/v1/study", "/api/v1/events"],
+            tiers: {
+              anonymous: { rateLimitPerMin: 60, burst: 10 },
+              standard: { rateLimitPerMin: 600, burst: 50 },
+              internal: { rateLimitPerMin: 5000, burst: 500 }
+            },
+            corsOrigins: ["https://csodisha.com", "https://admin.csodisha.com"],
+            status: "Active / Connected",
+            enabled: true,
+            description: "Standardized RESTful JSON gateway allowing research institutions, colleges, and civic organizations to consume verified public dataset feeds.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-06-01-SUB-1",
+                title: "OpenAPI 3.1 Swagger Specification Documentation",
+                titleOdia: "ଓପନଏପିଆଇ ଡକ୍ୟୁମେଣ୍ଟେସନ ସ୍ପେସିଫିକେସନ",
+                slug: "openapi-spec-docs",
+                categoryCode: "06",
+                connectorType: "OpenAPI Endpoint",
+                targetHost: "https://csodisha.com/api/docs",
+                environment: "Production",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Interactive Swagger UI documentation defining data contracts for all open portal endpoints.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-07",
+        moduleId: "module-int-007",
+        code: "07",
+        title: "Inbound Webhook Receivers & Signature Verification",
+        titleOdia: "ଇନବାଉଣ୍ଡ ୱେବହୁକ୍ ରିସିଭର୍ ଓ ସ୍ୱାକ୍ଷର ଯାଞ୍ଚ (HMAC)",
+        description: "Secure ingress listeners capturing external commission alerts and payment confirmations",
+        nodes: [
+          {
+            id: "INT-NODE-07-01",
+            title: "External Portal Ingress & RSS Feed Poller",
+            titleOdia: "ବାହ୍ୟ ପୋର୍ଟାଲ ଇନଗ୍ରେସ ଓ ଆରଏସଏସ ସିଙ୍କ୍",
+            slug: "inbound-portal-ingress",
+            categoryCode: "07",
+            connectorType: "Inbound Webhook Receiver",
+            targetHost: "https://csodisha.com/api/webhooks/inbound",
+            environment: "Production",
+            hmacVerification: "SHA-256 Verification Enforced",
+            allowedSenders: ["gov-portal-feed", "opsc-scraper-worker", "ossc-sync-daemon"],
+            status: "Active / Connected",
+            enabled: true,
+            description: "Validates incoming webhook payloads against preshared cryptographic secrets before queuing notifications for editorial review.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-07-01-SUB-1",
+                title: "OPSC Scraper Feeder Signature Validator",
+                titleOdia: "ଓପିଏସସି ସ୍କ୍ରାପର ସ୍ୱାକ୍ଷର ଯାଞ୍ଚକାରୀ",
+                slug: "opsc-scraper-signature-validator",
+                categoryCode: "07",
+                connectorType: "HMAC Validator",
+                targetHost: "https://csodisha.com/api/webhooks/inbound/opsc",
+                environment: "Production",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Dedicated validation pipeline authenticating raw gazette data scraped from official state examination portals.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-08",
+        moduleId: "module-int-008",
+        code: "08",
+        title: "Cloudflare D1 Database Sync & State Replication",
+        titleOdia: "କ୍ଲାଉଡଫ୍ଲେୟାର D1 ଡାଟାବେସ ସିଙ୍କ୍ ଓ ଷ୍ଟେଟ୍ ରେପ୍ଲିକେସନ୍",
+        description: "Distributed SQL database replica at the edge for sub-millisecond query execution",
+        nodes: [
+          {
+            id: "INT-NODE-08-01",
+            title: "D1 Edge SQLite Replica Synchronization",
+            titleOdia: "D1 ଏଜ୍ SQLite ରେପ୍ଲିକା ସମକାଳୀନତା",
+            slug: "d1-edge-sqlite-sync",
+            categoryCode: "08",
+            connectorType: "Cloudflare D1 Database",
+            targetHost: "cloudflare:d1:cso-edge-replica",
+            environment: "Production",
+            d1Binding: "DB_CSO_PROD",
+            tables: ["schemes_cache", "jobs_cache", "study_materials", "events_calendar"],
+            replicationMode: "Incremental Dual-Write",
+            status: "Active / Connected",
+            enabled: true,
+            description: "Replicates all 6 directory trees into distributed Cloudflare D1 SQL edge instances, delivering instantaneous responses to queries worldwide.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-08-01-SUB-1",
+                title: "D1 Automated Schema Migration Engine",
+                titleOdia: "D1 ସ୍କିମା ମାଇଗ୍ରେସନ୍ କଣ୍ଟ୍ରୋଲର୍",
+                slug: "d1-schema-migration-engine",
+                categoryCode: "08",
+                connectorType: "D1 Migration Manager",
+                targetHost: "cloudflare:d1:migrations",
+                environment: "Production",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Tracks applied database schema versions and executes transactional DDL updates across edge clusters.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-09",
+        moduleId: "module-int-009",
+        code: "09",
+        title: "SMS Gateway Integration & OTP Dispatch Engine",
+        titleOdia: "ଏସଏମଏସ ଗେଟୱେ ଓ ଓଟିପି ପ୍ରେରଣ ଇଞ୍ଜିନ",
+        description: "TRAI DLT compliant telecom route for two-factor authentication and urgent admission alerts",
+        nodes: [
+          {
+            id: "INT-NODE-09-01",
+            title: "National DLT Compliant SMS Route",
+            titleOdia: "ଜାତୀୟ DLT ଅନୁମୋଦିତ ଏସଏମଏସ ରୁଟ୍",
+            slug: "dlt-sms-gateway",
+            categoryCode: "09",
+            connectorType: "Telecom SMS Gateway",
+            targetHost: "https://api.sms-gateway.in/v2/send",
+            environment: "Production",
+            senderId: "CSODIS",
+            dltTemplateId: "1707161829304918273",
+            routeType: "Transactional / OTP",
+            status: "Active / Connected",
+            enabled: true,
+            description: "Dispatches 6-digit cryptographic authentication OTP codes and time-critical hall ticket notifications with < 5s delivery guarantee.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-int-010",
+        moduleId: "module-int-010",
+        code: "10",
+        title: "Third-Party Service Health Monitors & Heartbeats",
+        titleOdia: "ତୃତୀୟ-ପକ୍ଷ ସେବା ସ୍ୱାସ୍ଥ୍ୟ ନିରୀକ୍ଷକ ଓ ହାର୍ଟବିଟ୍",
+        description: "Automated 60-second ping telemetry checking Supabase, Cloudflare, Meta APIs, and CDN edge PoPs",
+        nodes: [
+          {
+            id: "INT-NODE-010-01",
+            title: "Synthetic End-to-End Heartbeat & Uptime Probe",
+            titleOdia: "ସ୍ୱୟଂକ୍ରିୟ ସର୍ଭିସ ଅପଟାଇମ୍ ଓ ହାର୍ଟବିଟ୍ ଯାଞ୍ଚ",
+            slug: "service-uptime-heartbeat-probe",
+            categoryCode: "10",
+            connectorType: "Synthetic Health Probe",
+            targetHost: "https://status.csodisha.com/probe",
+            environment: "Production",
+            pingIntervalSeconds: 60,
+            probeTargets: [
+              { name: "Supabase Database Engine", endpoint: "https://csodisha.supabase.co/rest/v1/", expectedStatus: 200 },
+              { name: "Cloudflare Edge CDN", endpoint: "https://csodisha.com/cdn-cgi/trace", expectedStatus: 200 },
+              { name: "Cloudflare R2 Media Vault", endpoint: "https://assets.csodisha.com/health.txt", expectedStatus: 200 }
+            ],
+            status: "Active / Connected",
+            enabled: true,
+            description: "Monitors availability of all critical backend services and updates status indicators on the public site and admin workspace in real time.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-010-01-SUB-1",
+                title: "Edge DNS & SSL Certificate Expiry Monitor",
+                titleOdia: "ଏଜ୍ DNS ଓ SSL ପ୍ରମାଣପତ୍ର ନିରୀକ୍ଷକ",
+                slug: "dns-ssl-expiry-monitor",
+                categoryCode: "10",
+                connectorType: "Certificate Sentinel",
+                targetHost: "https://csodisha.com",
+                environment: "Production",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Tracks TLS certificate lifespans and alerts operations team 30 days before potential expiration.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-int-011",
+        moduleId: "module-int-011",
+        code: "11",
+        title: "Integration Logs, Payloads & Dead-Letter Queue",
+        titleOdia: "ଇଣ୍ଟିଗ୍ରେସନ ଲଗ୍, ପେଲୋଡ୍ ଓ ଡେଡ୍-ଲେଟର କ୍ୟୁ (DLQ)",
+        description: "Audit trail of all HTTP calls, webhook payloads, failed retries, and quarantine message queues",
+        nodes: [
+          {
+            id: "INT-NODE-011-01",
+            title: "Webhook Telemetry & Dead-Letter Quarantine Queue",
+            titleOdia: "ୱେବହୁକ୍ ଟେଲିମେଟ୍ରି ଓ ଅସଫଳ ବାର୍ତ୍ତା କ୍ୱାରାଣ୍ଟାଇନ୍",
+            slug: "dlq-webhook-telemetry-queue",
+            categoryCode: "11",
+            connectorType: "DLQ & Message Buffer",
+            targetHost: "internal:dlq:dead-letter-vault",
+            environment: "Production",
+            maxRetryCount: 5,
+            quarantineTtlDays: 14,
+            retentionPolicy: "30 Days Full Payload Audit",
+            status: "Active / Connected",
+            enabled: true,
+            description: "Captures failed webhook dispatches, records error stack traces, and provides single-click redelivery replay controls for platform operators.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "INT-NODE-011-01-SUB-1",
+                title: "Failed Webhook Replay Dispatch Controller",
+                titleOdia: "ଅସଫଳ ୱେବହୁକ୍ ପୁନଃ ପ୍ରେରଣ ନିୟନ୍ତ୍ରକ",
+                slug: "failed-webhook-replay-controller",
+                categoryCode: "11",
+                connectorType: "Manual Replay Engine",
+                targetHost: "internal:dlq:replay",
+                environment: "Production",
+                status: "Active / Connected",
+                enabled: true,
+                description: "Allows administrators to inspect corrupt payloads and trigger transactional replay dispatches.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  SuperStore.getIntegrationsEdgeTreeConfig = function() {
+    return _hydrateConfig('cso_integrations_edge_tree_v1', 'categories', () => DEFAULT_INTEGRATIONS_DIRECTORY_TREE);
+  };
+
+  SuperStore.saveIntegrationsEdgeTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_integrations_edge_tree_v1', JSON.stringify(cfg));
+    this.logAudit('INTEGRATIONS_EDGE_MUTATION', 'INTEGRATIONS_EDGE', 'Saved Integrations & Cloudflare Edge Suite updates (' + cfg.categories.length + ' modules).');
+    return true;
+  };
+
+  SuperStore.resetIntegrationsEdgeTreeConfig = function() {
+    localStorage.setItem('cso_integrations_edge_tree_v1', JSON.stringify(DEFAULT_INTEGRATIONS_DIRECTORY_TREE));
+    this.logAudit('INTEGRATIONS_EDGE_RESET', 'INTEGRATIONS_EDGE', 'Integrations & Cloudflare Edge Suite reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_INTEGRATIONS_DIRECTORY_TREE));
+  };
+
+  SuperStore.exportIntegrationsEdgeManifest = function() {
+    const config = this.getIntegrationsEdgeTreeConfig();
+    const filename = "integrations_edge_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("INTEGRATIONS_EDGE_EXPORTED", "DATA_EXPORT", "Integrations and edge manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  // Forwarding accessors for individual integration modules:
+  SuperStore.getR2AssetMirroringConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveR2AssetMirroringConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getEdgeCachePurgingConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveEdgeCachePurgingConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getOutboundWebhooksConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveOutboundWebhooksConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getTelegramBotConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveTelegramBotConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getWhatsAppApiConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveWhatsAppApiConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getPublicApiGatewayConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.savePublicApiGatewayConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getInboundWebhooksConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveInboundWebhooksConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getD1DatabaseSyncConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveD1DatabaseSyncConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getSmsGatewayConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveSmsGatewayConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getHealthMonitorsConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveHealthMonitorsConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+  SuperStore.getIntegrationLogsDlqConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
+  SuperStore.saveIntegrationLogsDlqConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -111849,6 +112404,32 @@
     window.CSOSuperStore.exportSecurityAuditLogsManifest = SuperStore.exportSecurityAuditLogsManifest;
     window.CSOSuperStore.getIncidentResponseConfig = SuperStore.getIncidentResponseConfig;
     window.CSOSuperStore.saveIncidentResponseConfig = SuperStore.saveIncidentResponseConfig;
+    window.CSOSuperStore.getIntegrationsEdgeTreeConfig = SuperStore.getIntegrationsEdgeTreeConfig;
+    window.CSOSuperStore.saveIntegrationsEdgeTreeConfig = SuperStore.saveIntegrationsEdgeTreeConfig;
+    window.CSOSuperStore.resetIntegrationsEdgeTreeConfig = SuperStore.resetIntegrationsEdgeTreeConfig;
+    window.CSOSuperStore.exportIntegrationsEdgeManifest = SuperStore.exportIntegrationsEdgeManifest;
+    window.CSOSuperStore.getR2AssetMirroringConfig = SuperStore.getR2AssetMirroringConfig;
+    window.CSOSuperStore.saveR2AssetMirroringConfig = SuperStore.saveR2AssetMirroringConfig;
+    window.CSOSuperStore.getEdgeCachePurgingConfig = SuperStore.getEdgeCachePurgingConfig;
+    window.CSOSuperStore.saveEdgeCachePurgingConfig = SuperStore.saveEdgeCachePurgingConfig;
+    window.CSOSuperStore.getOutboundWebhooksConfig = SuperStore.getOutboundWebhooksConfig;
+    window.CSOSuperStore.saveOutboundWebhooksConfig = SuperStore.saveOutboundWebhooksConfig;
+    window.CSOSuperStore.getTelegramBotConfig = SuperStore.getTelegramBotConfig;
+    window.CSOSuperStore.saveTelegramBotConfig = SuperStore.saveTelegramBotConfig;
+    window.CSOSuperStore.getWhatsAppApiConfig = SuperStore.getWhatsAppApiConfig;
+    window.CSOSuperStore.saveWhatsAppApiConfig = SuperStore.saveWhatsAppApiConfig;
+    window.CSOSuperStore.getPublicApiGatewayConfig = SuperStore.getPublicApiGatewayConfig;
+    window.CSOSuperStore.savePublicApiGatewayConfig = SuperStore.savePublicApiGatewayConfig;
+    window.CSOSuperStore.getInboundWebhooksConfig = SuperStore.getInboundWebhooksConfig;
+    window.CSOSuperStore.saveInboundWebhooksConfig = SuperStore.saveInboundWebhooksConfig;
+    window.CSOSuperStore.getD1DatabaseSyncConfig = SuperStore.getD1DatabaseSyncConfig;
+    window.CSOSuperStore.saveD1DatabaseSyncConfig = SuperStore.saveD1DatabaseSyncConfig;
+    window.CSOSuperStore.getSmsGatewayConfig = SuperStore.getSmsGatewayConfig;
+    window.CSOSuperStore.saveSmsGatewayConfig = SuperStore.saveSmsGatewayConfig;
+    window.CSOSuperStore.getHealthMonitorsConfig = SuperStore.getHealthMonitorsConfig;
+    window.CSOSuperStore.saveHealthMonitorsConfig = SuperStore.saveHealthMonitorsConfig;
+    window.CSOSuperStore.getIntegrationLogsDlqConfig = SuperStore.getIntegrationLogsDlqConfig;
+    window.CSOSuperStore.saveIntegrationLogsDlqConfig = SuperStore.saveIntegrationLogsDlqConfig;
     window.CSOSuperStore.resetIncidentResponseConfig = SuperStore.resetIncidentResponseConfig;
     window.CSOSuperStore.exportIncidentResponseManifest = SuperStore.exportIncidentResponseManifest;
     window.CSOSuperStore.getSystemHealthConfig = SuperStore.getSystemHealthConfig;

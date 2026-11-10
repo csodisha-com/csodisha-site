@@ -1076,64 +1076,65 @@
     },
     {
       "id": "folder-15",
-      "title": "Integrations & APIs",
+      "title": "Integrations, Webhooks & Cloudflare Edge Suite",
       "modules": [
         {
-          "id": "module-15-001",
-          "title": "Integration Directory",
+          "id": "module-int-001",
+          "title": "Cloudflare R2 Bucket Asset Mirroring & Storage Sync",
           "status": "active"
         },
         {
-          "id": "module-15-002",
-          "title": "Supabase Connection Status",
+          "id": "module-int-002",
+          "title": "Cloudflare Edge Cache Purging & Zone Invalidation",
           "status": "active"
         },
         {
-          "id": "module-15-003",
-          "title": "Cloudflare Integration",
+          "id": "module-int-003",
+          "title": "Outbound Webhook Dispatcher & Event Subscriptions",
           "status": "active"
         },
         {
-          "id": "module-15-004",
-          "title": "Payment Integrations",
+          "id": "module-int-004",
+          "title": "Telegram Broadcast Bot & Channel Alert Automation",
           "status": "active"
         },
         {
-          "id": "module-15-005",
-          "title": "Email Provider",
+          "id": "module-int-005",
+          "title": "WhatsApp Business API & Template Notifications",
           "status": "active"
         },
         {
-          "id": "module-15-006",
-          "title": "Cloud Storage Integrations",
+          "id": "module-int-006",
+          "title": "Public API Gateway & Token Rate Limiting (IP/Token Tiering)",
           "status": "active"
         },
         {
-          "id": "module-15-007",
-          "title": "Analytics Integrations",
+          "id": "module-int-007",
+          "title": "Inbound Webhook Receivers & Signature Verification (HMAC)",
           "status": "active"
         },
         {
-          "id": "module-15-008",
-          "title": "API Configuration",
+          "id": "module-int-008",
+          "title": "Cloudflare D1 Database Sync & State Replication",
           "status": "active"
         },
         {
-          "id": "module-15-009",
-          "title": "Webhook Management",
+          "id": "module-int-009",
+          "title": "SMS Gateway Integration & OTP Dispatch Engine",
           "status": "active"
         },
         {
-          "id": "module-15-010",
-          "title": "Integration Logs",
+          "id": "module-int-010",
+          "title": "Third-Party Service Health Monitors & Ping Heartbeats",
           "status": "active"
         },
         {
-          "id": "module-15-011",
-          "title": "Integration Health",
+          "id": "module-int-011",
+          "title": "Integration Logs, Webhook Payloads & Dead-Letter Queue (DLQ)",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-16",
