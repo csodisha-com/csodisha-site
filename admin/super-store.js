@@ -12994,7 +12994,11 @@
           websiteIdentity: this.getWebsiteIdentityConfig ? this.getWebsiteIdentityConfig() : null,
           contactInformation: this.getContactInformationConfig ? this.getContactInformationConfig() : null,
           localization: this.getLocalizationConfig ? this.getLocalizationConfig() : null,
-          languages: this.getLanguagesConfig ? this.getLanguagesConfig() : null
+          languages: this.getLanguagesConfig ? this.getLanguagesConfig() : null,
+          timeZone: this.getTimeZoneConfig ? this.getTimeZoneConfig() : null,
+          dateNumberFormats: this.getDateNumberFormatsConfig ? this.getDateNumberFormatsConfig() : null,
+          homepageSettings: this.getHomepageSettingsConfig ? this.getHomepageSettingsConfig() : null,
+          featureToggles: this.getFeatureTogglesConfig ? this.getFeatureTogglesConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15851,6 +15855,146 @@
     return filename;
   };
 
+
+  // --- MODULE 18-006: Time Zone ---
+  const DEFAULT_TIME_ZONE_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { primaryTimezone: "Asia/Kolkata (IST)", utcOffset: "+05:30", ntpSyncStatus: "Synchronized", driftSeconds: 0.04 },
+    items: [
+      { id: "TZ-01", zoneName: "Asia/Kolkata", displayName: "Indian Standard Time (IST)", offsetString: "UTC +05:30", isDefault: true, daylightSavings: false, active: true },
+      { id: "TZ-02", zoneName: "UTC", displayName: "Coordinated Universal Time (UTC)", offsetString: "UTC +00:00", isDefault: false, daylightSavings: false, active: true }
+    ]
+  };
+  SuperStore.getTimeZoneConfig = function() {
+    return _hydrateConfig('cso_time_zone_config', 'timezones', () => DEFAULT_TIME_ZONE_SETTINGS);
+  };
+  SuperStore.saveTimeZoneConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.timezones = cfg.items || cfg.timezones || []; cfg.items = cfg.timezones;
+    localStorage.setItem('cso_time_zone_config', JSON.stringify(cfg));
+    this.logAudit('TIME_ZONE_UPDATED', 'SETTINGS', `Timezone configuration updated (${cfg.items.length} zones).`);
+    return true;
+  };
+  SuperStore.resetTimeZoneConfig = function() {
+    localStorage.setItem('cso_time_zone_config', JSON.stringify(DEFAULT_TIME_ZONE_SETTINGS));
+    this.logAudit('TIME_ZONE_RESET', 'SETTINGS', 'Timezone config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_TIME_ZONE_SETTINGS));
+  };
+  SuperStore.exportTimeZoneManifest = function() {
+    const config = this.getTimeZoneConfig();
+    const filename = "timezone_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("TIME_ZONE_EXPORTED", "DATA_EXPORT", `Timezone manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-007: Date & Number Formats ---
+  const DEFAULT_DATE_NUMBER_FORMATS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { currencySymbol: "₹", currencyCode: "INR", numberingSystem: "Indian (Lakhs & Crores)", defaultDateFormat: "DD/MM/YYYY" },
+    items: [
+      { id: "FMT-01", formatDomain: "Public Calendar & Exam Deadlines", formatPattern: "DD/MM/YYYY (e.g., 20/12/2026)", sampleOutput: "20/12/2026", scope: "Exam Dates & Closing Windows", active: true },
+      { id: "FMT-02", formatDomain: "Editorial Article Publishing Date", formatPattern: "DD MMM YYYY (e.g., 10 Nov 2026)", sampleOutput: "10 Nov 2026", scope: "Gazette Circulars & PYQs", active: true },
+      { id: "FMT-03", formatDomain: "Currency & Fee Notation", formatPattern: "₹ #,##,###.## (Indian Commas)", sampleOutput: "₹ 1,50,000", scope: "Scholarship & Salary Scales", active: true },
+      { id: "FMT-04", formatDomain: "Numerical Volume & View Counts", formatPattern: "Compact Indian (K / L / Cr)", sampleOutput: "2.4L Aspirants", scope: "Leaderboards & Search Counters", active: true }
+    ]
+  };
+  SuperStore.getDateNumberFormatsConfig = function() {
+    return _hydrateConfig('cso_date_number_formats_config', 'formatRules', () => DEFAULT_DATE_NUMBER_FORMATS);
+  };
+  SuperStore.saveDateNumberFormatsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.formatRules = cfg.items || cfg.formatRules || []; cfg.items = cfg.formatRules;
+    localStorage.setItem('cso_date_number_formats_config', JSON.stringify(cfg));
+    this.logAudit('DATE_NUMBER_FORMATS_UPDATED', 'SETTINGS', `Date and number formats updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetDateNumberFormatsConfig = function() {
+    localStorage.setItem('cso_date_number_formats_config', JSON.stringify(DEFAULT_DATE_NUMBER_FORMATS));
+    this.logAudit('DATE_NUMBER_FORMATS_RESET', 'SETTINGS', 'Date and number formats reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_DATE_NUMBER_FORMATS));
+  };
+  SuperStore.exportDateNumberFormatsManifest = function() {
+    const config = this.getDateNumberFormatsConfig();
+    const filename = "date_number_formats_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DATE_NUMBER_FORMATS_EXPORTED", "DATA_EXPORT", `Date and number formats manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-008: Homepage Settings ---
+  const DEFAULT_HOMEPAGE_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    layout: { heroLayout: "Spotlight Grid (3 Column)", showLiveTicker: true, tickerSpeed: "Medium (18s)", showDistrictQuickFilter: true },
+    items: [
+      { id: "HP-01", sectionName: "Breaking Gazette Notification Ticker", sectionType: "Marquee Ribbon", sortOrder: 1, isVisible: true, maxItemsDisplayed: 6, active: true },
+      { id: "HP-02", sectionName: "Urgent Application Deadline Cards", sectionType: "Card Grid", sortOrder: 2, isVisible: true, maxItemsDisplayed: 4, active: true },
+      { id: "HP-03", sectionName: "Popular Odisha Welfare Schemes Matrix", sectionType: "Horizontal Carousel", sortOrder: 3, isVisible: true, maxItemsDisplayed: 6, active: true },
+      { id: "HP-04", sectionName: "Free Study Library & Previous Year Questions", sectionType: "List with PDF Download", sortOrder: 4, isVisible: true, maxItemsDisplayed: 8, active: true }
+    ]
+  };
+  SuperStore.getHomepageSettingsConfig = function() {
+    return _hydrateConfig('cso_homepage_settings_config', 'sections', () => DEFAULT_HOMEPAGE_SETTINGS);
+  };
+  SuperStore.saveHomepageSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.sections = cfg.items || cfg.sections || []; cfg.items = cfg.sections;
+    localStorage.setItem('cso_homepage_settings_config', JSON.stringify(cfg));
+    this.logAudit('HOMEPAGE_SETTINGS_UPDATED', 'SETTINGS', `Homepage layout settings updated (${cfg.items.length} sections).`);
+    return true;
+  };
+  SuperStore.resetHomepageSettingsConfig = function() {
+    localStorage.setItem('cso_homepage_settings_config', JSON.stringify(DEFAULT_HOMEPAGE_SETTINGS));
+    this.logAudit('HOMEPAGE_SETTINGS_RESET', 'SETTINGS', 'Homepage settings reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_HOMEPAGE_SETTINGS));
+  };
+  SuperStore.exportHomepageSettingsManifest = function() {
+    const config = this.getHomepageSettingsConfig();
+    const filename = "homepage_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("HOMEPAGE_SETTINGS_EXPORTED", "DATA_EXPORT", `Homepage settings manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-009: Feature Toggles ---
+  const DEFAULT_FEATURE_TOGGLES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalFlags: 5, activeFlagsCount: 4, rolloutStrategy: "Global Instant Switch" },
+    items: [
+      { id: "TOG-01", flagKey: "ENABLE_MOCK_LEADERBOARDS", flagName: "Statewide Mock Exam Leaderboards", category: "Examinations", description: "Displays district-wise percentile ranks for completed tests", isEnabled: true, active: true },
+      { id: "TOG-02", flagKey: "ENABLE_ASPIRANT_COMMENTS", flagName: "Public Community Discussion Threads", category: "Community", description: "Enables aspirant commenting and doubt clearance under gazettes", isEnabled: true, active: true },
+      { id: "TOG-03", flagKey: "ENABLE_TELEGRAM_NOTIFY_BOT", flagName: "Telegram Realtime Notification Bot", category: "Alerts", description: "Dispatches instant alerts to Odisha Telegram channels", isEnabled: true, active: true },
+      { id: "TOG-04", flagKey: "ENABLE_DARK_MODE_THEME", flagName: "OLED Dark Theme Switcher", category: "UI/UX", description: "Allows night-time dark mode toggle on all public routes", isEnabled: true, active: true },
+      { id: "TOG-05", flagKey: "ENABLE_BETA_ODIA_OCR", flagName: "AI Odia Gazette Question Parser", category: "Experimental", description: "Experimental optical character reader for Odia gazettes", isEnabled: false, active: true }
+    ]
+  };
+  SuperStore.getFeatureTogglesConfig = function() {
+    return _hydrateConfig('cso_feature_toggles_config', 'flags', () => DEFAULT_FEATURE_TOGGLES);
+  };
+  SuperStore.saveFeatureTogglesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.flags = cfg.items || cfg.flags || []; cfg.items = cfg.flags;
+    localStorage.setItem('cso_feature_toggles_config', JSON.stringify(cfg));
+    this.logAudit('FEATURE_TOGGLES_UPDATED', 'SETTINGS', `Feature toggles updated (${cfg.items.length} flags).`);
+    return true;
+  };
+  SuperStore.resetFeatureTogglesConfig = function() {
+    localStorage.setItem('cso_feature_toggles_config', JSON.stringify(DEFAULT_FEATURE_TOGGLES));
+    this.logAudit('FEATURE_TOGGLES_RESET', 'SETTINGS', 'Feature toggles reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_FEATURE_TOGGLES));
+  };
+  SuperStore.exportFeatureTogglesManifest = function() {
+    const config = this.getFeatureTogglesConfig();
+    const filename = "feature_toggles_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("FEATURE_TOGGLES_EXPORTED", "DATA_EXPORT", `Feature toggles manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -16174,6 +16318,22 @@
     window.CSOSuperStore.saveLanguagesConfig = SuperStore.saveLanguagesConfig;
     window.CSOSuperStore.resetLanguagesConfig = SuperStore.resetLanguagesConfig;
     window.CSOSuperStore.exportLanguagesManifest = SuperStore.exportLanguagesManifest;
+    window.CSOSuperStore.getTimeZoneConfig = SuperStore.getTimeZoneConfig;
+    window.CSOSuperStore.saveTimeZoneConfig = SuperStore.saveTimeZoneConfig;
+    window.CSOSuperStore.resetTimeZoneConfig = SuperStore.resetTimeZoneConfig;
+    window.CSOSuperStore.exportTimeZoneManifest = SuperStore.exportTimeZoneManifest;
+    window.CSOSuperStore.getDateNumberFormatsConfig = SuperStore.getDateNumberFormatsConfig;
+    window.CSOSuperStore.saveDateNumberFormatsConfig = SuperStore.saveDateNumberFormatsConfig;
+    window.CSOSuperStore.resetDateNumberFormatsConfig = SuperStore.resetDateNumberFormatsConfig;
+    window.CSOSuperStore.exportDateNumberFormatsManifest = SuperStore.exportDateNumberFormatsManifest;
+    window.CSOSuperStore.getHomepageSettingsConfig = SuperStore.getHomepageSettingsConfig;
+    window.CSOSuperStore.saveHomepageSettingsConfig = SuperStore.saveHomepageSettingsConfig;
+    window.CSOSuperStore.resetHomepageSettingsConfig = SuperStore.resetHomepageSettingsConfig;
+    window.CSOSuperStore.exportHomepageSettingsManifest = SuperStore.exportHomepageSettingsManifest;
+    window.CSOSuperStore.getFeatureTogglesConfig = SuperStore.getFeatureTogglesConfig;
+    window.CSOSuperStore.saveFeatureTogglesConfig = SuperStore.saveFeatureTogglesConfig;
+    window.CSOSuperStore.resetFeatureTogglesConfig = SuperStore.resetFeatureTogglesConfig;
+    window.CSOSuperStore.exportFeatureTogglesManifest = SuperStore.exportFeatureTogglesManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

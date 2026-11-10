@@ -659,6 +659,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-18-003') { renderContactInformationWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-004') { renderLocalizationWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-005') { renderLanguagesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-006') { renderTimeZoneWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-007') { renderDateNumberFormatsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-008') { renderHomepageSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-009') { renderFeatureTogglesWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1159,6 +1163,14 @@ async function loadMasterNavigation() {
         renderLocalizationWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-18-005') {
         renderLanguagesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-006') {
+        renderTimeZoneWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-007') {
+        renderDateNumberFormatsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-008') {
+        renderHomepageSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-009') {
+        renderFeatureTogglesWorkspace(dom.workspaceRoot);
 
 
 
@@ -67943,6 +67955,578 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-18-005', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 18-006: Time Zone
+    // ==========================================
+    function renderTimeZoneWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getTimeZoneConfig();
+
+        function render() {
+          const timezones = config.timezones || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Time Zone & NTP Clock Synchronization</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-006 • Indian Standard Time (IST) UTC+05:30 baseline, NTP drift & exam countdowns</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="tz-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="tz-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Primary Timezone</div>
+                  <div class="text-lg font-bold text-teal-400 mt-1">${config.summary && config.summary.primaryTimezone || 'Asia/Kolkata (IST)'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Official Odisha Time</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">UTC Offset</div>
+                  <div class="text-2xl font-bold text-white font-mono mt-1">${config.summary && config.summary.utcOffset || '+05:30'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Standard Offset</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">NTP Clock Sync</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.ntpSyncStatus || 'Synchronized'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Drift: ${config.summary && config.summary.driftSeconds || 0.04}s</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Daylight Savings (DST)</div>
+                  <div class="text-2xl font-bold text-slate-300 mt-1">DISABLED</div>
+                  <div class="text-xs text-slate-400 mt-1">Not Applicable in India</div>
+                </div>
+              </div>
+
+              <!-- Timezones Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Zone Identifier</th>
+                      <th class="p-3">Display Name</th>
+                      <th class="p-3">Offset</th>
+                      <th class="p-3">Default Primary</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${timezones.map((tz, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-mono text-teal-400 font-bold">${tz.zoneName}</td>
+                        <td class="p-3 font-semibold text-white">${tz.displayName}</td>
+                        <td class="p-3 font-mono text-slate-300 font-bold">${tz.offsetString}</td>
+                        <td class="p-3">
+                          <button class="tz-set-default-btn px-2.5 py-0.5 rounded text-[11px] font-semibold transition ${tz.isDefault ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40' : 'bg-slate-800 text-slate-400 hover:text-white'}" data-index="${idx}">
+                            ${tz.isDefault ? 'Default Primary' : 'Set As Default'}
+                          </button>
+                        </td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            Active
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.tz-set-default-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              timezones.forEach((t, i) => { t.isDefault = (i === idx); });
+              config.timezones = timezones;
+              config.items = timezones;
+              config.summary = config.summary || {};
+              config.summary.primaryTimezone = timezones[idx].displayName;
+              config.summary.utcOffset = timezones[idx].offsetString.replace('UTC ', '');
+              store.saveTimeZoneConfig(config);
+              render();
+            };
+          });
+
+          const exportBtn = container.querySelector('#tz-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportTimeZoneManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#tz-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Time Zone settings to factory defaults?')) {
+                config = store.resetTimeZoneConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-007: Date & Number Formats
+    // ==========================================
+    function renderDateNumberFormatsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDateNumberFormatsConfig();
+
+        function render() {
+          const rules = config.formatRules || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Date, Time, Currency & Numerical Notation</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-007 • Indian numbering system (Lakhs & Crores), INR (₹) notation & date patterns</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="fmt-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="fmt-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="fmt-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Formats
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Currency Symbol</div>
+                  <div class="text-3xl font-bold text-teal-400 mt-1">${config.summary && config.summary.currencySymbol || '₹'}</div>
+                  <div class="text-xs text-slate-400 mt-1">ISO: INR (Indian Rupee)</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Numbering Standard</div>
+                  <div class="text-sm font-bold text-white mt-2 truncate">${config.summary && config.summary.numberingSystem || 'Indian (Lakhs & Crores)'}</div>
+                  <div class="text-xs text-teal-400 mt-1">2,2,3 Comma Grouping</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default Date Format</div>
+                  <div class="text-lg font-bold text-sky-400 font-mono mt-1">${config.summary && config.summary.defaultDateFormat || 'DD/MM/YYYY'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Standard Official Format</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Rule Sets</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${rules.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Enforced Globally</div>
+                </div>
+              </div>
+
+              <!-- Format Rules Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Formatting Domain</th>
+                      <th class="p-3">Pattern Format</th>
+                      <th class="p-3">Sample Live Output</th>
+                      <th class="p-3">Application Scope</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${rules.map((r, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${r.formatDomain}</td>
+                        <td class="p-3 font-mono text-teal-400">
+                          <input type="text" value="${r.formatPattern}" class="fmt-pattern-input w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 font-mono text-amber-300 font-bold">${r.sampleOutput}</td>
+                        <td class="p-3 text-slate-400">${r.scope}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#fmt-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.fmt-pattern-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                rules[idx].formatPattern = input.value.trim();
+              });
+              config.formatRules = rules;
+              config.items = rules;
+              store.saveDateNumberFormatsConfig(config);
+              alert('Date and number format rules saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#fmt-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportDateNumberFormatsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#fmt-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Date and Number formats to factory defaults?')) {
+                config = store.resetDateNumberFormatsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-008: Homepage Settings
+    // ==========================================
+    function renderHomepageSettingsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getHomepageSettingsConfig();
+
+        function render() {
+          const sections = config.sections || config.items || [];
+          const layout = config.layout || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Homepage Layout & Featured Section Studio</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-008 • Section sort ordering, live breaking news ticker, spotlight hero & grid controls</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="hp-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="hp-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="hp-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Layout
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Hero Layout</div>
+                  <div class="text-sm font-bold text-teal-400 mt-2 truncate">${layout.heroLayout || 'Spotlight Grid'}</div>
+                  <div class="text-xs text-slate-400 mt-1">3-Column Aspirant Hub</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Live Gazette Ticker</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${layout.showLiveTicker ? 'ACTIVE' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Speed: ${layout.tickerSpeed || 'Medium'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">District Quick Filter</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${layout.showDistrictQuickFilter ? 'ENABLED' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">30 Odisha Districts</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Configured Sections</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${sections.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">All Sections Visible</div>
+                </div>
+              </div>
+
+              <!-- Sections Manager -->
+              <div class="space-y-4">
+                ${sections.map((s, idx) => `
+                  <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                      <span class="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-300 font-bold flex items-center justify-center text-xs">${s.sortOrder}</span>
+                      <div>
+                        <h4 class="text-sm font-bold text-white">${s.sectionName}</h4>
+                        <div class="text-xs text-slate-400 mt-0.5 font-mono">Type: ${s.sectionType} • Max items: ${s.maxItemsDisplayed}</div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <button class="hp-toggle-vis-btn px-2.5 py-1 rounded text-xs font-semibold transition ${s.isVisible ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}" data-index="${idx}">
+                        ${s.isVisible ? 'Visible' : 'Hidden'}
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.hp-toggle-vis-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              sections[idx].isVisible = !sections[idx].isVisible;
+              config.sections = sections;
+              config.items = sections;
+              store.saveHomepageSettingsConfig(config);
+              render();
+            };
+          });
+
+          const saveBtn = container.querySelector('#hp-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              store.saveHomepageSettingsConfig(config);
+              alert('Homepage layout settings saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#hp-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportHomepageSettingsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#hp-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Homepage settings to factory defaults?')) {
+                config = store.resetHomepageSettingsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-009: Feature Toggles
+    // ==========================================
+    function renderFeatureTogglesWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getFeatureTogglesConfig();
+
+        function render() {
+          const flags = config.flags || config.items || [];
+          const activeCount = flags.filter(f => f.isEnabled).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Feature Toggles & Runtime Killswitches</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-009 • Global instant switches, beta flags, dark mode theme & mock exam leaderboards</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="tog-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="tog-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="tog-btn-add-flag" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Feature Flag
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Features</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${activeCount} <span class="text-xs text-slate-500 font-normal">/ ${flags.length}</span></div>
+                  <div class="text-xs text-teal-400 mt-1">Live in Production</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Rollout Strategy</div>
+                  <div class="text-sm font-bold text-white mt-2 truncate">${config.summary && config.summary.rolloutStrategy || 'Global Instant'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Zero-downtime Propagation</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Beta / Experimental</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${flags.filter(f => f.category === 'Experimental').length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Restricted Access</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Killswitch Latency</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">&lt; 1s</div>
+                  <div class="text-xs text-emerald-400 mt-1">Edge State Invalidation</div>
+                </div>
+              </div>
+
+              <!-- Flags Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${flags.map((f, idx) => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <h4 class="text-sm font-bold text-white">${f.flagName}</h4>
+                          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono ${f.category === 'Experimental' ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-800 text-slate-400'}">${f.category}</span>
+                        </div>
+                        <div class="text-xs text-teal-400 font-mono mt-0.5">${f.flagKey}</div>
+                        <p class="text-xs text-slate-400 mt-1">${f.description}</p>
+                      </div>
+                      <button class="flag-toggle-btn px-3 py-1 rounded text-xs font-bold transition ${f.isEnabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 border border-slate-700'}" data-index="${idx}">
+                        ${f.isEnabled ? 'ENABLED' : 'DISABLED'}
+                      </button>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                      <span>Scope: Global</span>
+                      <button class="flag-del-btn text-rose-400 hover:text-rose-300" data-index="${idx}">Delete Flag</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.flag-toggle-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              flags[idx].isEnabled = !flags[idx].isEnabled;
+              config.flags = flags;
+              config.items = flags;
+              config.summary = config.summary || {};
+              config.summary.activeFlagsCount = flags.filter(f => f.isEnabled).length;
+              store.saveFeatureTogglesConfig(config);
+              render();
+            };
+          });
+
+          container.querySelectorAll('.flag-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this feature toggle?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                flags.splice(idx, 1);
+                config.flags = flags;
+                config.items = flags;
+                store.saveFeatureTogglesConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#tog-btn-add-flag');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const key = prompt('Flag Key (e.g. ENABLE_NEW_GAZETTE_CARDS):');
+              if (!key) return;
+              const name = prompt('Display Name:');
+              if (!name) return;
+              flags.push({
+                id: 'TOG-0' + (flags.length + 1),
+                flagKey: key,
+                flagName: name,
+                category: 'General',
+                description: 'Custom platform feature flag',
+                isEnabled: true,
+                active: true
+              });
+              config.flags = flags;
+              config.items = flags;
+              store.saveFeatureTogglesConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#tog-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportFeatureTogglesManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#tog-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Feature Toggles to factory defaults?')) {
+                config = store.resetFeatureTogglesConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 
