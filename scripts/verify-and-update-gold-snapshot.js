@@ -4,7 +4,8 @@
  * 1. Candidate Profile Settings & Preferences Editor
  * 2. Multi-Stage Stream-Specific Exam Preparation Checklists
  * 3. Seeded Accounts Vault & State Synchronization
- * 4. Regenerates v1.0.0-gold-snapshot.json with registeredAccounts and candidateChecklists
+ * 4. Candidate Document Locker, Revision Notes, and Mock Test Scores
+ * 5. Regenerates v1.0.0-gold-snapshot.json with all candidate workspace keys
  */
 const fs = require('fs');
 const path = require('path');
@@ -77,6 +78,18 @@ const sampleChecklists = {
 };
 mockLocalStorage.setItem('cso_candidate_checklist_v1', JSON.stringify(sampleChecklists));
 
+// Seed sample candidate locker, notes, and mock scores
+const sampleLocker = { "0": true, "1": true, "2": true, "4": true };
+const sampleNotes = "Paika Rebellion: 1817 under Bakshi Jagabandhu.\nUtkal Sammilani founded in 1903 by Madhusudan Das.\nSeparate Odisha Province formed on 1 April 1936.";
+const sampleMockScores = [
+  { id: "mock-1", date: "2026-11-04", exam: "OPSC OCS Prelims", paper: "General Studies Paper I", score: 142, max: 200, accuracy: "71%" },
+  { id: "mock-2", date: "2026-11-07", exam: "OSSC CGL CBRE", paper: "Arithmetic & Reasoning Speed Test", score: 118, max: 150, accuracy: "78.6%" }
+];
+
+mockLocalStorage.setItem('cso_candidate_locker_v1', JSON.stringify(sampleLocker));
+mockLocalStorage.setItem('cso_candidate_notes_v1', sampleNotes);
+mockLocalStorage.setItem('cso_candidate_mock_scores_v1', JSON.stringify(sampleMockScores));
+
 // Load super-store.js in mock sandbox
 console.log('--> Step 2: Hydrating super-store.js...');
 const sandbox = {
@@ -109,7 +122,7 @@ if (!store) {
 console.log('✓ CSOSuperStore instantiated successfully.');
 
 // Test createPlatformSnapshot
-console.log('--> Step 3: Generating Platform Snapshot with Identity Vault & Checklists...');
+console.log('--> Step 3: Generating Platform Snapshot with Identity Vault, Checklists & Candidate Workspace...');
 const snapshot = store.createPlatformSnapshot();
 
 if (!snapshot || !snapshot.state) {
@@ -129,6 +142,24 @@ if (!snapshot.state.candidateChecklists || typeof snapshot.state.candidateCheckl
 }
 console.log(`✓ candidateChecklists captured in snapshot for exams: ${Object.keys(snapshot.state.candidateChecklists).join(', ')}`);
 
+if (!snapshot.state.candidateLocker || typeof snapshot.state.candidateLocker !== 'object') {
+  console.error('FAIL: snapshot.state.candidateLocker is missing.');
+  process.exit(1);
+}
+console.log('✓ candidateLocker captured in snapshot.');
+
+if (typeof snapshot.state.candidateNotes !== 'string' || !snapshot.state.candidateNotes.includes('Paika Rebellion')) {
+  console.error('FAIL: snapshot.state.candidateNotes is missing or corrupted.');
+  process.exit(1);
+}
+console.log('✓ candidateNotes captured in snapshot.');
+
+if (!Array.isArray(snapshot.state.candidateMockScores) || snapshot.state.candidateMockScores.length === 0) {
+  console.error('FAIL: snapshot.state.candidateMockScores is missing.');
+  process.exit(1);
+}
+console.log(`✓ candidateMockScores captured in snapshot: ${snapshot.state.candidateMockScores.length} test records`);
+
 // Test restoreFromSnapshot
 console.log('--> Step 4: Testing restoreFromSnapshot() round-trip...');
 mockLocalStorage.clear();
@@ -140,6 +171,9 @@ if (mockLocalStorage.getItem('cso_registered_accounts_v1') !== null) {
 store.restoreFromSnapshot(snapshot);
 const restoredAccounts = JSON.parse(mockLocalStorage.getItem('cso_registered_accounts_v1') || '[]');
 const restoredChecklists = JSON.parse(mockLocalStorage.getItem('cso_candidate_checklist_v1') || '{}');
+const restoredLocker = JSON.parse(mockLocalStorage.getItem('cso_candidate_locker_v1') || '{}');
+const restoredNotes = mockLocalStorage.getItem('cso_candidate_notes_v1') || '';
+const restoredMockScores = JSON.parse(mockLocalStorage.getItem('cso_candidate_mock_scores_v1') || '[]');
 
 if (restoredAccounts.length !== 1 || restoredAccounts[0].fullName !== "Chandan Dash") {
   console.error('FAIL: Restored accounts do not match original payload.');
@@ -153,6 +187,24 @@ if (!restoredChecklists.opsc || !restoredChecklists.opsc['opsc-prelims'] || !res
 }
 console.log('✓ candidate checklists successfully restored from snapshot payload.');
 
+if (!restoredLocker["0"] || !restoredLocker["1"]) {
+  console.error('FAIL: Restored candidate locker does not match original payload.');
+  process.exit(1);
+}
+console.log('✓ candidate locker successfully restored from snapshot payload.');
+
+if (!restoredNotes.includes('Paika Rebellion')) {
+  console.error('FAIL: Restored candidate notes do not match original payload.');
+  process.exit(1);
+}
+console.log('✓ candidate notes successfully restored from snapshot payload.');
+
+if (restoredMockScores.length !== 2) {
+  console.error('FAIL: Restored candidate mock scores do not match original payload.');
+  process.exit(1);
+}
+console.log('✓ candidate mock scores successfully restored from snapshot payload.');
+
 // Write out updated v1.0.0-gold-snapshot.json
 console.log('--> Step 5: Updating v1.0.0-gold-snapshot.json on disk...');
 const existingSnapshotRaw = fs.readFileSync(path.join(siteRoot, 'v1.0.0-gold-snapshot.json'), 'utf8');
@@ -162,6 +214,9 @@ const existingSnapshot = JSON.parse(existingSnapshotRaw);
 existingSnapshot.createdAt = new Date().toISOString();
 existingSnapshot.state.registeredAccounts = snapshot.state.registeredAccounts;
 existingSnapshot.state.candidateChecklists = snapshot.state.candidateChecklists;
+existingSnapshot.state.candidateLocker = snapshot.state.candidateLocker;
+existingSnapshot.state.candidateNotes = snapshot.state.candidateNotes;
+existingSnapshot.state.candidateMockScores = snapshot.state.candidateMockScores;
 
 fs.writeFileSync(
   path.join(siteRoot, 'v1.0.0-gold-snapshot.json'),

@@ -275,6 +275,12 @@
     if (sideAvatar) sideAvatar.textContent = initial;
     if (sideName) sideName.textContent = candidateName;
     if (sideDistrict) sideDistrict.textContent = candidateDistrict;
+
+    // Profile & Settings Tab
+    const tabSettingsName = document.getElementById('tab-settings-name');
+    const tabSettingsDistrict = document.getElementById('tab-settings-district');
+    if (tabSettingsName) tabSettingsName.textContent = candidateName;
+    if (tabSettingsDistrict) tabSettingsDistrict.textContent = candidateDistrict;
   }
 
   // Handle Logout
@@ -821,7 +827,8 @@
       'tool-calendar': ['Exam Calendar & Timeline', 'Official countdowns for upcoming OPSC, OSSC, and B.Ed exams'],
       'tool-locker': ['Document Locker', 'KYC certificates, domicile proofs, and examination marksheets'],
       'tool-notes': ['Revision Scratchpad & Daily Notes', 'Aspirant notepad for historical milestones and formulas'],
-      'tool-analytics': ['Mock Score Tracker & Diagnostics', 'Test series analytics, accuracy ratios, and mark logger']
+      'tool-analytics': ['Mock Score Tracker & Diagnostics', 'Test series analytics, accuracy ratios, and mark logger'],
+      'tab-profile-settings': ['Profile & Account Settings', 'Manage personal preferences, target exams, and export data backup']
     };
 
     if (titles[tabId]) {
@@ -1139,6 +1146,64 @@
     });
   }
 
+  // Candidate Data Portability Export Handler
+  function initDataPortability() {
+    const exportBtn = document.getElementById('btn-export-candidate-data');
+    exportBtn?.addEventListener('click', () => {
+      const session = getSession() || {};
+      const candidateName = session.fullName || session.name || 'Candidate';
+
+      let bookmarks = [];
+      try {
+        const rawBm = localStorage.getItem('cso_candidate_bookmarks_v1');
+        if (rawBm) bookmarks = JSON.parse(rawBm);
+      } catch(e) {}
+
+      let locker = {};
+      try {
+        const rawLocker = localStorage.getItem(LOCKER_KEY);
+        if (rawLocker) locker = JSON.parse(rawLocker);
+      } catch(e) {}
+
+      const candidateData = {
+        version: '1.0.0',
+        exportedAt: new Date().toISOString(),
+        candidate: session,
+        checklist: getSavedChecklists(),
+        bookmarks: bookmarks,
+        documentLocker: locker,
+        revisionNotes: localStorage.getItem(NOTES_KEY) || '',
+        mockScores: getMockScores()
+      };
+
+      try {
+        const jsonStr = JSON.stringify(candidateData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+        const cleanName = candidateName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const filename = `CSO_Study_Data_${cleanName}_${dateStr}.json`;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('Study data archive downloaded successfully.');
+      } catch(err) {
+        console.error('Failed to export study data', err);
+        showToast('Failed to export study data archive.', 'error');
+      }
+    });
+
+    document.getElementById('btn-open-profile-editor-tab')?.addEventListener('click', () => {
+      openProfileEditorModal(getSession());
+    });
+  }
+
   // Initialization
   function init() {
     const session = getSession();
@@ -1155,6 +1220,7 @@
     initScratchpad();
     initMockScoreLogger();
     initDocumentLocker();
+    initDataPortability();
 
     // Listen for bookmark updates
     window.addEventListener('cso:bookmarks-updated', () => {

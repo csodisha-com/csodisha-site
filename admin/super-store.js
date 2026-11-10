@@ -13048,6 +13048,23 @@
               const raw = localStorage.getItem('cso_candidate_checklist_v1');
               return raw ? JSON.parse(raw) : {};
             } catch(e) { return {}; }
+          })(),
+          candidateLocker: (function() {
+            try {
+              const raw = localStorage.getItem('cso_candidate_locker_v1');
+              return raw ? JSON.parse(raw) : {};
+            } catch(e) { return {}; }
+          })(),
+          candidateNotes: (function() {
+            try {
+              return localStorage.getItem('cso_candidate_notes_v1') || '';
+            } catch(e) { return ''; }
+          })(),
+          candidateMockScores: (function() {
+            try {
+              const raw = localStorage.getItem('cso_candidate_mock_scores_v1');
+              return raw ? JSON.parse(raw) : [];
+            } catch(e) { return []; }
           })()
         }
       };
@@ -13058,7 +13075,7 @@
       if (!snapshot || !snapshot.state) {
         throw new Error('Invalid snapshot schema: Missing state payload');
       }
-      const { users, roles, pages, system, security, audit, broadcast, inquiries, registeredAccounts, candidateChecklists } = snapshot.state;
+      const { users, roles, pages, system, security, audit, broadcast, inquiries, registeredAccounts, candidateChecklists, candidateLocker, candidateNotes, candidateMockScores } = (snapshot.state || snapshot);
       if (users) this.saveUsers(users);
       if (roles) this.saveRoles(roles);
       if (pages) this.savePages(pages);
@@ -13072,6 +13089,15 @@
       }
       if (candidateChecklists && typeof candidateChecklists === 'object') {
         try { localStorage.setItem('cso_candidate_checklist_v1', JSON.stringify(candidateChecklists)); } catch(e) {}
+      }
+      if (candidateLocker) {
+        try { localStorage.setItem('cso_candidate_locker_v1', JSON.stringify(candidateLocker)); } catch(e) {}
+      }
+      if (candidateNotes !== undefined && candidateNotes !== null) {
+        try { localStorage.setItem('cso_candidate_notes_v1', typeof candidateNotes === 'string' ? candidateNotes : JSON.stringify(candidateNotes)); } catch(e) {}
+      }
+      if (candidateMockScores) {
+        try { localStorage.setItem('cso_candidate_mock_scores_v1', JSON.stringify(candidateMockScores)); } catch(e) {}
       }
 
       this.logAudit('DISASTER_RECOVERY_RESTORE', 'ALL_MODULES', `Restored from snapshot created at ${snapshot.createdAt}`);

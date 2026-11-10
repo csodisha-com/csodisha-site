@@ -1,6 +1,6 @@
 {
   "version": "CSO-SUPER-2026.11",
-  "createdAt": "2026-11-10T12:24:06.944Z",
+  "createdAt": "2026-11-10T13:38:18.897Z",
   "exportedBy": "admin@csodisha.com",
   "state": {
     "users": [
@@ -371848,8 +371848,8 @@
           "ossc",
           "teaching"
         ],
-        "registeredAt": "2026-11-10T12:24:06.387Z",
-        "lastLoginAt": "2026-11-10T12:24:06.399Z",
+        "registeredAt": "2026-11-10T13:38:18.375Z",
+        "lastLoginAt": "2026-11-10T13:38:18.375Z",
         "failedLoginAttempts": 0,
         "lockoutUntil": null
       }
@@ -371881,6 +371881,33 @@
           "bed-p1-aptitude": true
         }
       }
-    }
+    },
+    "candidateLocker": {
+      "0": true,
+      "1": true,
+      "2": true,
+      "4": true
+    },
+    "candidateNotes": "Paika Rebellion: 1817 under Bakshi Jagabandhu.\nUtkal Sammilani founded in 1903 by Madhusudan Das.\nSeparate Odisha Province formed on 1 April 1936.",
+    "candidateMockScores": [
+      {
+        "id": "mock-1",
+        "date": "2026-11-04",
+        "exam": "OPSC OCS Prelims",
+        "paper": "General Studies Paper I",
+        "score": 142,
+        "max": 200,
+        "accuracy": "71%"
+      },
+      {
+        "id": "mock-2",
+        "date": "2026-11-07",
+        "exam": "OSSC CGL CBRE",
+        "paper": "Arithmetic & Reasoning Speed Test",
+        "score": 118,
+        "max": 150,
+        "accuracy": "78.6%"
+      }
+    ]
   }
 }

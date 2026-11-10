@@ -547,6 +547,43 @@
         </div>
       </div>
 
+      <!-- ====================================================================
+           TAB VIEW: PROFILE & SETTINGS (Data Portability & Account Preferences)
+           ==================================================================== -->
+      <div id="tab-profile-settings" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>⚙️</span><span>Aspirant Profile &amp; Account Settings</span></div>
+            <button type="button" id="btn-open-profile-editor-tab" style="background:#0d9488;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;">✏️ Edit Profile</button>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 20px;">Manage personal details, registered district, examination preferences, and export study backups.</p>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;">
+              <h5 style="margin:0 0 10px;font-size:13px;color:#f8fafc;display:flex;align-items:center;gap:6px;"><span>👤</span><span>Personal Information</span></h5>
+              <p style="margin:4px 0;font-size:12px;color:#94a3b8;">Full Name: <strong style="color:#f8fafc;" id="tab-settings-name">RAMESH BISWAL</strong></p>
+              <p style="margin:4px 0;font-size:12px;color:#94a3b8;">Home District: <strong style="color:#f8fafc;" id="tab-settings-district">Balasore (Baleswar)</strong></p>
+              <p style="margin:4px 0;font-size:12px;color:#94a3b8;">Status: <span style="background:rgba(16,185,129,0.15);color:#34d399;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px;">Verified Session</span></p>
+            </div>
+
+            <!-- Candidate Data Portability Card -->
+            <div class="bp-settings-card" style="background:rgba(13,148,136,0.06);border:1px solid rgba(13,148,136,0.3);border-radius:14px;padding:18px;">
+              <div class="bp-settings-card-header">
+                <h4 style="margin:0 0 6px;font-size:14px;font-weight:800;color:#2dd4bf;display:flex;align-items:center;gap:6px;">
+                  <span>💾</span><span>Data Portability &amp; Personal Backup</span>
+                </h4>
+                <p style="margin:0 0 14px;font-size:11px;color:#94a3b8;line-height:1.4;">Download a complete local JSON archive of your syllabus progress, saved notes, mock test history, and document checklist.</p>
+              </div>
+              <div class="bp-settings-actions">
+                <button id="btn-export-candidate-data" class="bp-btn bp-btn-primary" style="background:#0d9488;color:#ffffff;border:none;border-radius:10px;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(13,148,136,0.3);transition:all 0.2s;">
+                  <span>📥</span><span>Export My Study Data (.json)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
 
   </div>

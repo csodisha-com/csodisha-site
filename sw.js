@@ -1,9 +1,9 @@
 /**
- * Common Sense Odisha (CSO) — Service Worker v1
+ * Common Sense Odisha (CSO) — Service Worker v2
  * Provides offline caching for core platform shells, style assets, and candidate portal.
  */
 
-const CACHE_NAME = 'cso-cache-v1';
+const CACHE_NAME = 'cso-candidate-cache-v2';
 
 const PRECACHE_URLS = [
   '/',
@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
   '/community/',
   '/community/index.html',
   '/assets/style.css',
+  '/assets/css/student-dashboard-bp.css',
   '/assets/favicon.svg',
   '/assets/shared-header.js',
   '/assets/js/bookmark-manager.js',
