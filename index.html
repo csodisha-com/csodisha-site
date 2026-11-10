@@ -1,1291 +1,402 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090e18">
-  <meta name="description" content="Common Sense Odisha - Modern Civic Bento Portal. Explore jobs, public schemes, exam syllabi, and local browser-sandboxed civic tools for Odisha citizens and aspirants.">
-
-  <!-- OpenGraph Metadata -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Common Sense Odisha">
-  <meta property="og:title" content="Common Sense Odisha — Civic Bento Portal">
-  <meta property="og:description" content="Access verified Odisha government recruitment, welfare schemes, free study library, and sandboxed civic utility tools.">
-  <meta property="og:image" content="https://assets.csodisha.org/img/cso-dashboard-og-preview.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="en_IN">
-
-  <!-- Twitter / X Cards -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Common Sense Odisha — Civic Bento Portal">
-  <meta name="twitter:description" content="Odisha public notifications, schemes, syllabus trackers, and browser-sandboxed civic tools.">
-  <meta name="twitter:image" content="https://assets.csodisha.org/img/cso-dashboard-og-preview.png">
-
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/style.css?v=20261110_mobile_v4">
-  <title>Common Sense Odisha — Civic Bento Portal</title>
-
-  <!-- Google Fonts: Plus Jakarta Sans & Space Grotesk -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-            mono: ['"Space Grotesk"', 'monospace']
-          },
-          colors: {
-            bento: {
-              base: '#090e18',
-              surface: '#0f172a',
-              card: '#131d33',
-              border: '#1e293b',
-              accent: '#0d9488',
-              glow: '#38bdf8'
-            }
-          }
-        }
-      }
-    };
-  </script>
-
-  <!-- Font Awesome 6.5.1 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  <style>
-    /* Custom Bento & Glass Utilities */
-    body {
-      background-color: #090e18;
-      color: #f1f5f9;
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      overflow-x: hidden;
-    }
-    .bento-card, .bento-tile {
-      background: linear-gradient(180deg, rgba(19, 29, 51, 0.8) 0%, rgba(13, 22, 40, 0.95) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 1.25rem;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .bento-card:hover, .bento-tile:hover {
-      border-color: rgba(56, 189, 248, 0.35);
-      box-shadow: 0 14px 35px -8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(13, 148, 136, 0.15);
-      transform: translateY(-2px);
-    }
-    .glow-tag {
-      background: rgba(13, 148, 136, 0.15);
-      border: 1px solid rgba(45, 212, 191, 0.3);
-      color: #2dd4bf;
-    }
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #090e18;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #334155;
-    }
-    /* Animated Ticker Track */
-    @keyframes ticker {
-      0% { transform: translateY(0); }
-      20% { transform: translateY(0); }
-      25% { transform: translateY(-100%); }
-      45% { transform: translateY(-100%); }
-      50% { transform: translateY(-200%); }
-      70% { transform: translateY(-200%); }
-      75% { transform: translateY(-300%); }
-      95% { transform: translateY(-300%); }
-      100% { transform: translateY(0); }
-    }
-    .ticker-viewport {
-      height: 24px;
-      overflow: hidden;
-    }
-    .ticker-content {
-      animation: ticker 14s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-    }
-    .ticker-content:hover {
-      animation-play-state: paused;
-    }
-  </style>
-
-<style id="mobile-force-stack-fix">
-  @media screen and (max-width: 900px) {
-    .g1,
-    main .g1,
-    body .g1 {
-      display: flex !important;
-      flex-direction: column !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      grid-template-columns: 1fr !important;
-      gap: 1.5rem !important;
-      box-sizing: border-box !important;
-    }
-    .g1 > .hero,
-    .g1 > #cso-hero,
-    .g1 > section.hero {
-      order: 1 !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      flex: 1 1 auto !important;
-      box-sizing: border-box !important;
-    }
-    .g1 > .lu,
-    .g1 > aside.lu,
-    .g1 > .card.lu {
-      order: 2 !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      flex: 1 1 auto !important;
-      box-sizing: border-box !important;
-    }
-    .card.lu .it,
-    .lu .it {
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      width: 100% !important;
-      white-space: normal !important;
-      word-break: break-word !important;
-      overflow-wrap: break-word !important;
-    }
-    .card.lu .it > div,
-    .lu .it > div {
-      width: 100% !important;
-      white-space: normal !important;
-    }
-  }
-</style>
-</head>
-<body class="min-h-screen flex flex-col selection:bg-teal-500 selection:text-white">
-
-  <!-- Mount point for persistent administrative broadcasts -->
-  <div id="csoPublicAnnouncementMount"></div>
-
-  <!-- Announcement Banner Hydration Script -->
-  <script>
-    (function() {
-      function mountLiveBanner() {
-        try {
-          const raw = localStorage.getItem('cso_active_announcement');
-          const mount = document.getElementById('csoPublicAnnouncementMount');
-          if (!mount) return;
-
-          if (!raw) {
-            mount.innerHTML = '';
-            return;
-          }
-          const data = JSON.parse(raw);
-          if (!data || !data.active || !data.headline) {
-            mount.innerHTML = '';
-            return;
-          }
-          if (sessionStorage.getItem('cso_dismissed_announcement_' + data.updatedAt)) {
-            mount.innerHTML = '';
-            return;
-          }
-
-          mount.innerHTML = `
-            <div id="csoLiveBanner" class="bg-gradient-to-r from-emerald-950 to-teal-900 border-b border-emerald-500/30 text-emerald-100 px-4 py-2.5 text-xs flex items-center justify-between gap-3 relative z-50">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="bg-emerald-500 text-emerald-950 font-extrabold text-[10px] px-2 py-0.5 rounded tracking-wider uppercase">NOTICE</span>
-                <strong class="text-white">${data.headline}</strong>
-                <span class="text-emerald-200/80">${data.context || ''}</span>
-                ${data.ctaText && data.ctaUrl ? '<a id="csoLiveBannerCta" class="bg-emerald-500 text-emerald-950 px-2.5 py-0.5 rounded font-bold text-[11px] ml-1.5 hover:bg-emerald-400 transition-colors">' + data.ctaText + ' &rarr;</a>' : ''}
-              </div>
-              <button id="btnCloseLiveBanner" class="text-emerald-300 hover:text-white text-base px-1" title="Dismiss">&times;</button>
-            </div>
-          `;
-
-          const ctaBtn = document.getElementById('csoLiveBannerCta');
-          if (ctaBtn && data.ctaUrl) {
-            ctaBtn.setAttribute('href', data.ctaUrl);
-          }
-
-          document.getElementById('btnCloseLiveBanner')?.addEventListener('click', function() {
-            document.getElementById('csoLiveBanner')?.remove();
-            sessionStorage.setItem('cso_dismissed_announcement_' + data.updatedAt, 'true');
-          });
-        } catch (e) {
-          console.warn('Banner mount error:', e);
-        }
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', mountLiveBanner);
-      } else {
-        mountLiveBanner();
-      }
-
-      window.addEventListener('storage', function(e) {
-        if (e.key === 'cso_active_announcement') {
-          mountLiveBanner();
-        }
-      });
-    })();
-  </script>
-
-  <!-- ========================================================================
-       1. Top Utility Header Bar (Glass & Gradient)
-       ======================================================================== -->
-  <header class="sticky top-0 z-40 bg-[#090e18]/85 backdrop-blur-md border-b border-slate-800/80 transition-all">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-      
-      <!-- Logo & Brand Badge -->
-      <a href="/" class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-teal-500 rounded-lg p-1">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 via-amber-400 to-emerald-600 p-[1.5px] shadow-lg shadow-orange-500/10 group-hover:scale-105 transition-transform">
-          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-            <span class="font-extrabold text-base tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-yellow-200 to-emerald-400">CSO</span>
-          </div>
-        </div>
-        <div>
-          <span class="block text-sm font-bold tracking-tight text-white group-hover:text-teal-300 transition-colors">Common Sense Odisha</span>
-          <span class="block text-[10px] text-slate-400 font-medium tracking-wide">Civic Knowledge &amp; Exam Portal</span>
-        </div>
-      </a>
-
-      <!-- Desktop Navigation Links -->
-      <nav class="hidden md:flex items-center gap-1 text-xs font-semibold text-slate-300">
-        <a href="/" class="px-3 py-2 rounded-lg bg-slate-800/60 text-teal-400 border border-slate-700/50">Home</a>
-        <a href="jobs-careers/" class="px-3 py-2 rounded-lg hover:bg-slate-800/40 hover:text-white transition-colors">Jobs &amp; Careers</a>
-        <a href="schemes-benefits/" class="px-3 py-2 rounded-lg hover:bg-slate-800/40 hover:text-white transition-colors">Schemes &amp; Aid</a>
-        <a href="study-library/" class="px-3 py-2 rounded-lg hover:bg-slate-800/40 hover:text-white transition-colors">Study Library</a>
-        <a href="#cso-tools" class="px-3 py-2 rounded-lg hover:bg-slate-800/40 hover:text-white transition-colors">Civic Tools</a>
-      </nav>
-
-      <!-- Utility Cluster: Admin, Font Zoom, Language, Auth -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        
-        <!-- Admin Portal Badge -->
-        <a href="admin/" class="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-rose-300 bg-rose-950/40 border border-rose-800/50 rounded-lg hover:bg-rose-900/40 transition-colors">
-          <i class="fa-solid fa-shield-halved text-[10px]"></i>
-          <span>Admin</span>
-        </a>
-
-        <!-- Font Size Scaler -->
-        <div class="hidden sm:flex items-center bg-slate-900/80 border border-slate-800 rounded-lg p-0.5 text-xs text-slate-400">
-          <button type="button" id="btn-font-sub" class="px-2 py-0.5 hover:text-white hover:bg-slate-800 rounded text-[11px]" title="Decrease font size">A-</button>
-          <button type="button" id="btn-font-reset" class="px-2 py-0.5 hover:text-white hover:bg-slate-800 rounded text-[11px] font-bold" title="Reset font size">A</button>
-          <button type="button" id="btn-font-add" class="px-2 py-0.5 hover:text-white hover:bg-slate-800 rounded text-[11px]" title="Increase font size">A+</button>
-        </div>
-
-        <!-- Language Switcher Dropdown -->
-        <div class="relative">
-          <select id="cso-lang-select" class="bg-slate-900/90 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer">
-            <option value="en" selected>English</option>
-            <option value="or">ଓଡ଼ିଆ (Odia)</option>
-            <option value="hi">हिन्दी (Hindi)</option>
-          </select>
-        </div>
-
-        <!-- Candidate Auth Action / Profile Trigger -->
-        <div id="cso-header-auth-mount" class="flex items-center">
-          <a href="#login" id="btn-header-login" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 border border-teal-500 rounded-lg shadow-sm shadow-teal-500/20 transition-all cursor-pointer">
-            <i class="fa-solid fa-user-circle text-xs"></i>
-            <span>Candidate Sign In</span>
-          </a>
-        </div>
-
-      </div>
-
-    </div>
-  </header>
-
-  <!-- ========================================================================
-       2. Ticker Banner: Auto-Rotating Live Bulletins
-       ======================================================================== -->
-  <aside class="bg-slate-950/70 border-b border-slate-800/60 py-2 px-4 text-xs" aria-label="Live Recruitment & Scholarship Bulletins">
-    <div class="max-w-7xl mx-auto flex items-center gap-3">
-      <div class="flex items-center gap-2 text-rose-400 font-bold uppercase tracking-wider text-[10px] shrink-0">
-        <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-        <span class="hidden sm:inline">LIVE UPDATES:</span>
-        <span class="sm:hidden">ALERTS:</span>
-      </div>
-      
-      <div class="ticker-viewport flex-1 text-slate-300">
-        <div class="ticker-content flex flex-col">
-          <div class="h-6 flex items-center justify-between gap-4 truncate">
-            <span class="truncate"><strong class="text-white">OPSC OCS 2026:</strong> Preliminary syllabus and schedule verification window open.</span>
-            <a href="jobs-careers/" class="text-teal-400 hover:underline shrink-0 text-[11px]">View &rarr;</a>
-          </div>
-          <div class="h-6 flex items-center justify-between gap-4 truncate">
-            <span class="truncate"><strong class="text-white">Medhabruti Scholarship:</strong> Higher Education Department renewal verification active.</span>
-            <a href="schemes-benefits/" class="text-teal-400 hover:underline shrink-0 text-[11px]">View &rarr;</a>
-          </div>
-          <div class="h-6 flex items-center justify-between gap-4 truncate">
-            <span class="truncate"><strong class="text-white">OSSC CGL Exam:</strong> Previous year question papers and model answers mirrored in Study Library.</span>
-            <a href="study-library/" class="text-teal-400 hover:underline shrink-0 text-[11px]">View &rarr;</a>
-          </div>
-          <div class="h-6 flex items-center justify-between gap-4 truncate">
-            <span class="truncate"><strong class="text-white">Odisha B.Ed Entrance:</strong> Section-wise pedagogy syllabus checklist ready on Candidate Hub.</span>
-            <a href="student-dashboard/" class="text-teal-400 hover:underline shrink-0 text-[11px]">View &rarr;</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ========================================================================
-       MAIN BENTO CANVAS
-       ======================================================================== -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-    <!-- ======================================================================
-         SECTION 1: HERO BENTO GRID (Col 7 / Col 5)
-         ====================================================================== -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5" id="hero" aria-label="Hero Search and Live Feed">
-      
-      <!-- Hero Left Card: Col 7 / 12 with Konark Silhouette SVG -->
-      <div class="lg:col-span-7 rounded-2xl bento-tile bento-card p-6 sm:p-8 flex flex-col justify-between relative">
-        
-        <!-- Konark Temple Subtle Vector Backdrop -->
-        <div class="absolute right-0 bottom-0 pointer-events-none opacity-[0.07] w-64 sm:w-80 h-64 sm:h-80 -mr-8 -mb-8 overflow-hidden" aria-hidden="true">
-          <svg viewBox="0 0 100 140" class="w-full h-full fill-current text-teal-300">
-            <path d="M55 10C62 32 72 58 74 112H34C36 58 48 32 55 10Z"/>
-            <circle cx="55" cy="7" r="4"/>
-            <rect x="0" y="112" width="100" height="16"/>
-          </svg>
-        </div>
-
-        <div class="relative z-10 space-y-4">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glow-tag text-[11px] font-semibold">
-            <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
-            <span>Odisha's Independent Open-Access Gateway</span>
-          </div>
-
-          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-            Be Self-Reliant.<br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-200 to-emerald-400">
-              Build a Better Tomorrow.
-            </span>
-          </h1>
-
-          <p class="text-sm text-slate-300 max-w-xl leading-relaxed">
-            Instant search across state recruitment notices, departmental welfare schemes, PYQ archives, and local sandboxed civic utility tools.
-          </p>
-
-          <!-- Interactive Search Bar with Keyboard Shortcut Pill -->
-          <div class="relative pt-2">
-            <form id="hero-search-form" class="relative flex items-center" onsubmit="event.preventDefault(); window.location.href='study-library/?q=' + encodeURIComponent(document.getElementById('hero-search-input').value);">
-              <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-sm"></i>
-              <input 
-                type="search" 
-                id="hero-search-input" 
-                placeholder="Search jobs, schemes, exams, syllabi (e.g., OPSC, B.Ed, KALIA)..." 
-                class="w-full pl-11 pr-24 py-3.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-inner"
-                autocomplete="off"
-              >
-              <div class="absolute right-3 flex items-center gap-1.5 pointer-events-none">
-                <kbd class="hidden sm:inline-block px-2 py-1 text-[10px] font-mono font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded shadow">Ctrl+K</kbd>
-                <button type="submit" class="pointer-events-auto bg-teal-600 hover:bg-teal-500 text-white p-2 rounded-lg text-xs" aria-label="Search">
-                  <i class="fa-solid fa-arrow-right"></i>
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Quick Search Chips -->
-          <div class="pt-1 flex items-center gap-2 flex-wrap text-xs">
-            <span class="text-slate-400 text-[11px] font-medium">Trending:</span>
-            <a href="study-library/?q=OSSTET" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-teal-950/60 hover:text-teal-300 border border-slate-700/60 text-slate-300 transition-colors">OSSTET</a>
-            <a href="study-library/?q=OTET" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-teal-950/60 hover:text-teal-300 border border-slate-700/60 text-slate-300 transition-colors">OTET</a>
-            <a href="study-library/?q=OPSC" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-teal-950/60 hover:text-teal-300 border border-slate-700/60 text-slate-300 transition-colors">OPSC</a>
-            <a href="schemes-benefits/?q=Medhabruti" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-teal-950/60 hover:text-teal-300 border border-slate-700/60 text-slate-300 transition-colors">Medhabruti</a>
-            <a href="jobs-careers/?q=Police" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-teal-950/60 hover:text-teal-300 border border-slate-700/60 text-slate-300 transition-colors">Police SI</a>
-          </div>
-        </div>
-
-        <!-- Bottom Stat Footnote -->
-        <div class="relative z-10 pt-6 mt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-shield-check text-emerald-400"></i>
-            <span>Verified Gazette &amp; Departmental Data</span>
-          </div>
-          <a href="student-dashboard/" class="text-teal-400 font-semibold hover:underline">Candidate Workspace &rarr;</a>
-        </div>
-
-      </div>
-
-      <!-- Hero Right Card: Col 5 / 12 Notifications Feed with Filter Tabs -->
-      <div class="lg:col-span-5 rounded-2xl bento-tile bento-card p-6 flex flex-col justify-between">
-        
-        <div>
-          <!-- Header and Tabs -->
-          <div class="flex items-center justify-between gap-2 pb-4 border-b border-slate-800">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-bell text-amber-400"></i>
-              <h2 class="text-sm font-bold text-white uppercase tracking-wider">Latest Bulletins</h2>
-            </div>
-            <a href="jobs-careers/" class="text-xs text-slate-400 hover:text-teal-300">View All &rarr;</a>
-          </div>
-
-          <!-- Filter Pills -->
-          <div class="flex items-center gap-1.5 py-3 overflow-x-auto text-[11px] font-semibold" id="bento-feed-tabs">
-            <button type="button" class="feed-tab active px-2.5 py-1 rounded-md bg-teal-600 text-white" data-feed="all">All</button>
-            <button type="button" class="feed-tab px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-400 hover:text-slate-200" data-feed="jobs">Jobs</button>
-            <button type="button" class="feed-tab px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-400 hover:text-slate-200" data-feed="schemes">Schemes</button>
-            <button type="button" class="feed-tab px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-400 hover:text-slate-200" data-feed="education">Education</button>
-          </div>
-
-          <!-- Feed Items Container -->
-          <div class="space-y-3 pt-1" id="bento-feed-items">
-            
-            <div class="feed-item p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-colors" data-cat="education">
-              <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                <span class="px-2 py-0.5 rounded font-bold uppercase tracking-wide bg-purple-950/60 text-purple-300 border border-purple-800/40">Education</span>
-                <span>Oct 28, 2026</span>
-              </div>
-              <h4 class="text-xs font-semibold text-slate-100 leading-snug">Ravenshaw University ITEP Admissions 2026</h4>
-              <p class="text-[11px] text-slate-400 mt-1">Four-year Integrated Teacher Education Programme entrance circular.</p>
-            </div>
-
-            <div class="feed-item p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-colors" data-cat="schemes">
-              <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                <span class="px-2 py-0.5 rounded font-bold uppercase tracking-wide bg-emerald-950/60 text-emerald-300 border border-emerald-800/40">Scheme</span>
-                <span>Oct 27, 2026</span>
-              </div>
-              <h4 class="text-xs font-semibold text-slate-100 leading-snug">Odisha Post-Matric Scholarship 2025-26</h4>
-              <p class="text-[11px] text-slate-400 mt-1">Higher Education Dept. renewal and fresh registrations active on state scholarship portal.</p>
-            </div>
-
-            <div class="feed-item p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-colors" data-cat="jobs">
-              <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                <span class="px-2 py-0.5 rounded font-bold uppercase tracking-wide bg-blue-950/60 text-blue-300 border border-blue-800/40">Job</span>
-                <span>Oct 26, 2026</span>
-              </div>
-              <h4 class="text-xs font-semibold text-slate-100 leading-snug">OSSC Combined Graduate Level (CGL) Group B/C</h4>
-              <p class="text-[11px] text-slate-400 mt-1">Preliminary exam mock syllabus and test series updated on platform.</p>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="pt-4 border-t border-slate-800/80 text-center">
-          <a href="jobs-careers/" class="text-xs font-semibold text-teal-400 hover:text-teal-300">Browse Full Notification Directory &rarr;</a>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ======================================================================
-         SECTION 2: OPPORTUNITY COMPASS (4 Interactive Bento Sub-Tiles)
-         ====================================================================== -->
-    <section class="space-y-4" aria-label="CSO Opportunity Compass">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-compass text-teal-400"></i>
-            <span>Opportunity Compass</span>
-          </h2>
-          <p class="text-xs text-slate-400">Navigate curated pathways tailored for Odisha youth, jobseekers, and students</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- Tile 1: Job Opportunities -->
-        <a href="jobs-careers/" class="bento-card p-5 group flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-briefcase"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">Job Opportunities</h3>
-              <p class="text-xs text-slate-400 mt-1 leading-relaxed">OPSC, OSSC, OSSSC, Police SI, banking, and contractual state empanelment.</p>
-            </div>
-          </div>
-          <div class="pt-4 flex items-center justify-between text-xs text-blue-400 font-semibold">
-            <span>Explore Jobs</span>
-            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </div>
-        </a>
-
-        <!-- Tile 2: Admissions & Study -->
-        <a href="study-library/" class="bento-card p-5 group flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-graduation-cap"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Admissions &amp; Study</h3>
-              <p class="text-xs text-slate-400 mt-1 leading-relaxed">Odisha B.Ed, CHSE, Universities, ITI, Diploma &amp; verified subject notes.</p>
-            </div>
-          </div>
-          <div class="pt-4 flex items-center justify-between text-xs text-emerald-400 font-semibold">
-            <span>Open Library</span>
-            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </div>
-        </a>
-
-        <!-- Tile 3: Schemes & Aid -->
-        <a href="schemes-benefits/" class="bento-card p-5 group flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-hand-holding-dollar"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">Schemes &amp; Aid</h3>
-              <p class="text-xs text-slate-400 mt-1 leading-relaxed">Subhadra Yojana, KALIA, Medhabruti, post-matric stipends &amp; citizen DBT.</p>
-            </div>
-          </div>
-          <div class="pt-4 flex items-center justify-between text-xs text-amber-400 font-semibold">
-            <span>Check Eligibility</span>
-            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </div>
-        </a>
-
-        <!-- Tile 4: Career Guidance -->
-        <a href="career-guidance/" class="bento-card p-5 group flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-user-tie"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">Career Guidance</h3>
-              <p class="text-xs text-slate-400 mt-1 leading-relaxed">Interview tips, resume standards, skill roadmaps, and career counseling.</p>
-            </div>
-          </div>
-          <div class="pt-4 flex items-center justify-between text-xs text-purple-400 font-semibold">
-            <span>View Roadmaps</span>
-            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </div>
-        </a>
-
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 3: TRENDING TOPICS (6 High-Visibility Glowing Bento Cards)
-         ====================================================================== -->
-    <section class="space-y-4" aria-label="Trending and Popular Topics">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-fire text-orange-400"></i>
-            <span>Trending Topics</span>
-          </h2>
-          <p class="text-xs text-slate-400">High-demand public sectors and active state recruitment initiatives</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        
-        <a href="jobs-careers/?section=0" class="bento-card p-4 text-center group">
-          <div class="text-2xl mb-2 text-teal-400 group-hover:scale-110 transition-transform">👮</div>
-          <h4 class="text-xs font-bold text-slate-100 group-hover:text-teal-300">Police SI &amp; Constable</h4>
-          <span class="text-[10px] text-slate-400 block mt-1">Physical &amp; CBRE</span>
-        </a>
-
-        <a href="study-library/?section=3&path=1" class="bento-card p-4 text-center group">
-          <div class="text-2xl mb-2 text-teal-400 group-hover:scale-110 transition-transform">📚</div>
-          <h4 class="text-xs font-bold text-slate-100 group-hover:text-teal-300">Odisha B.Ed 2026</h4>
-          <span class="text-[10px] text-slate-400 block mt-1">SAMS Odisha</span>
-        </a>
-
-        <a href="schemes-benefits/?section=1&path=0.1" class="bento-card p-4 text-center group">
-          <div class="text-2xl mb-2 text-teal-400 group-hover:scale-110 transition-transform">🌾</div>
-          <h4 class="text-xs font-bold text-slate-100 group-hover:text-teal-300">KALIA Agriculture</h4>
-          <span class="text-[10px] text-slate-400 block mt-1">Farmer DBT Aid</span>
-        </a>
-
-        <a href="study-library/?section=5&path=1" class="bento-card p-4 text-center group">
-          <div class="text-2xl mb-2 text-teal-400 group-hover:scale-110 transition-transform">🏛️</div>
-          <h4 class="text-xs font-bold text-slate-100 group-hover:text-teal-300">OPSC OCS Civil</h4>
-          <span class="text-[10px] text-slate-400 block mt-1">Prelims &amp; Mains</span>
-        </a>
-
-        <a href="jobs-careers/?section=6&path=0" class="bento-card p-4 text-center group">
-          <div class="text-2xl mb-2 text-teal-400 group-hover:scale-110 transition-transform">🏥</div>
-          <h4 class="text-xs font-bold text-slate-100 group-hover:text-teal-300">OSSSC Nursing</h4>
-          <span class="text-[10px] text-slate-400 block mt-1">Health Staff</span>
-        </a>
-
-        <a href="schemes-benefits/?section=0&path=2" class="bento-card p-4 text-center group">
-          <div class="text-2xl mb-2 text-teal-400 group-hover:scale-110 transition-transform">👩</div>
-          <h4 class="text-xs font-bold text-slate-100 group-hover:text-teal-300">Subhadra Yojana</h4>
-          <span class="text-[10px] text-slate-400 block mt-1">Women Empowerment</span>
-        </a>
-
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 4: CIVIC TOOLS (Interactive Browser-Sandboxed Calculators)
-         ====================================================================== -->
-    <section id="cso-tools" class="space-y-4" aria-label="CSO Civic and Application Utility Tools">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-wrench text-teal-400"></i>
-            <span>Civic &amp; Candidate Tools</span>
-          </h2>
-          <p class="text-xs text-slate-400">Browser-sandboxed utilities ensuring 100% privacy with zero data transmission</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        
-        <!-- Tool 1: Age & Eligibility Calculator -->
-        <div class="bento-card p-6 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-cake-candles"></i>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Cutoff Verifier</span>
-            </div>
-            <h3 class="text-sm font-bold text-white">Age &amp; Eligibility Date Calculator</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Verify your exact chronological age on official notice cutoff dates (e.g., 01-01-2026) with standard category relaxation rules.
-            </p>
-          </div>
-          <div class="pt-5 mt-4 border-t border-slate-800/80">
-            <button type="button" onclick="CSOCivicTools.openModal('age-calc')" class="w-full py-2 px-3 rounded-lg bg-teal-600/80 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-calculator"></i>
-              <span>Open Age Calculator</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tool 2: Marks & CGPA Converter -->
-        <div class="bento-card p-6 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-calculator"></i>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">University Formulas</span>
-            </div>
-            <h3 class="text-sm font-bold text-white">Marks &amp; CGPA Converter</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Convert semester CGPA to exact percentages based on Utkal (9.5 factor), Sambalpur, and CBSE board official calculation standards.
-            </p>
-          </div>
-          <div class="pt-5 mt-4 border-t border-slate-800/80">
-            <button type="button" onclick="CSOCivicTools.openModal('cgpa-calc')" class="w-full py-2 px-3 rounded-lg bg-teal-600/80 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-percent"></i>
-              <span>Open Marks Converter</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tool 3: Document Verification Checklist -->
-        <div class="bento-card p-6 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-clipboard-check"></i>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">e-District KYC</span>
-            </div>
-            <h3 class="text-sm font-bold text-white">Application Document Checklist</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Verify HSC certificate, Tahasildar residence, SEBC non-creamy layer, and photo dimensions with one-click clipboard copying.
-            </p>
-          </div>
-          <div class="pt-5 mt-4 border-t border-slate-800/80">
-            <button type="button" onclick="CSOCivicTools.openModal('doc-checklist')" class="w-full py-2 px-3 rounded-lg bg-teal-600/80 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-list-check"></i>
-              <span>Open Document Checklist</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tool 4: Exam Countdown & Study Planner -->
-        <div class="bento-card p-6 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-hourglass-half"></i>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Live Timer</span>
-            </div>
-            <h3 class="text-sm font-bold text-white">Exam Countdown &amp; Study Planner</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Set customized countdown timers for upcoming examination dates and partition remaining days into revision stages.
-            </p>
-          </div>
-          <div class="pt-5 mt-4 border-t border-slate-800/80">
-            <button type="button" onclick="CSOCivicTools.openModal('exam-planner')" class="w-full py-2 px-3 rounded-lg bg-teal-600/80 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-calendar-days"></i>
-              <span>Open Countdown Planner</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tool 5: Resume & Biodata Builder -->
-        <div class="bento-card p-6 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-file-lines"></i>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Local Export</span>
-            </div>
-            <h3 class="text-sm font-bold text-white">Resume &amp; Biodata Builder</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Format clean, standardized 1-page curriculum vitae or government contractual bio-data printable directly to PDF.
-            </p>
-          </div>
-          <div class="pt-5 mt-4 border-t border-slate-800/80">
-            <button type="button" onclick="CSOCivicTools.openModal('resume-builder')" class="w-full py-2 px-3 rounded-lg bg-teal-600/80 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-file-pdf"></i>
-              <span>Open Resume Builder</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tool 6: Flashcard & Self-Quiz Engine -->
-        <div class="bento-card p-6 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-brain"></i>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Spaced Recall</span>
-            </div>
-            <h3 class="text-sm font-bold text-white">Flashcard &amp; Self-Quiz Engine</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Create and practice Odisha GK, constitutional amendments, and Paika Rebellion dates with interactive flip-card quizzes.
-            </p>
-          </div>
-          <div class="pt-5 mt-4 border-t border-slate-800/80">
-            <button type="button" onclick="CSOCivicTools.openModal('flashcard-quiz')" class="w-full py-2 px-3 rounded-lg bg-teal-600/80 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-layer-group"></i>
-              <span>Open Flashcards</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 5: BOTTOM ACTION HUB (Community, Study Library, Live Alerts)
-         ====================================================================== -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2" aria-label="Community and Knowledge Hub">
-      
-      <!-- Hub 1: Community Forum -->
-      <div class="bento-card p-6 flex flex-col justify-between border-t-2 border-t-blue-500">
-        <div class="space-y-2">
-          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg mb-2">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">CSO Community Forum</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Ask questions, share syllabus notes, and exchange exam preparation strategies with fellow aspirants across Odisha.
-          </p>
-        </div>
-        <div class="pt-5">
-          <a href="community/" class="inline-flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300">
-            <span>Join Community Discussion</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
-      <!-- Hub 2: Free Study Library -->
-      <div class="bento-card p-6 flex flex-col justify-between border-t-2 border-t-emerald-500">
-        <div class="space-y-2">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg mb-2">
-            <i class="fa-solid fa-book-open"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">Free Study Library</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Instant offline access to verified question archives, official syllabi, and curated study materials hosted on Cloudflare R2.
-          </p>
-        </div>
-        <div class="pt-5">
-          <a href="study-library/" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300">
-            <span>Explore Library Shelf</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
-      <!-- Hub 3: Instant Notice Alerts -->
-      <div class="bento-card p-6 flex flex-col justify-between border-t-2 border-t-amber-500">
-        <div class="space-y-2">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg mb-2">
-            <i class="fa-solid fa-bullhorn"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">Instant Notice Alerts</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Real-time verified departmental circulars, recruitment openings, and admission notifications delivered immediately.
-          </p>
-        </div>
-        <div class="pt-5">
-          <a href="jobs-careers/" class="inline-flex items-center gap-2 text-xs font-bold text-amber-400 hover:text-amber-300">
-            <span>View Commission Feeds</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- ========================================================================
-       FOOTER: 4-Column Layout with Odisha Outline Map & Localization
-       ======================================================================== -->
-  <footer class="mt-16 bg-slate-950 border-t border-slate-800 text-slate-400 text-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        
-        <!-- Col 1: Brand & Vector Outline -->
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-teal-600/20 border border-teal-500/40 flex items-center justify-center">
-              <span class="font-extrabold text-sm text-teal-400">CSO</span>
-            </div>
-            <span class="font-bold text-white text-sm">Common Sense Odisha</span>
-          </div>
-          <p class="text-slate-400 leading-relaxed text-xs">
-            Open-access public knowledge architecture providing Odisha aspirants and citizens with access to verified government recruitments, welfare benefits, and educational archives.
-          </p>
-          <div class="w-24 h-24 opacity-30">
-            <img src="assets/odisha-footer-map.svg" alt="Odisha map outline" class="w-full h-full object-contain filter invert" loading="lazy">
-          </div>
-          <p class="text-[11px] text-slate-500">&copy; 2026 Common Sense Odisha. All rights reserved.</p>
-        </div>
-
-        <!-- Col 2: Public Directories -->
-        <div class="space-y-3">
-          <h4 class="text-white font-bold text-xs uppercase tracking-wider">Public Directories</h4>
-          <ul class="space-y-2">
-            <li><a href="jobs-careers/" class="hover:text-teal-300 transition-colors">Jobs &amp; Recruitment</a></li>
-            <li><a href="schemes-benefits/" class="hover:text-teal-300 transition-colors">Welfare Schemes &amp; Aid</a></li>
-            <li><a href="study-library/" class="hover:text-teal-300 transition-colors">Open Study Library</a></li>
-            <li><a href="career-guidance/" class="hover:text-teal-300 transition-colors">Career Pathways</a></li>
-            <li><a href="student-dashboard/" class="hover:text-teal-300 transition-colors">Candidate Workspace</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 3: Support & Policies -->
-        <div class="space-y-3">
-          <h4 class="text-white font-bold text-xs uppercase tracking-wider">Support &amp; Standards</h4>
-          <ul class="space-y-2">
-            <li><a href="about/" class="hover:text-teal-300 transition-colors">About the Project</a></li>
-            <li><a href="community-guidelines.html" class="hover:text-teal-300 transition-colors">Community Guidelines</a></li>
-            <li><a href="disclaimer.html" class="hover:text-teal-300 transition-colors">Editorial Disclaimer</a></li>
-            <li><a href="privacy.html" class="hover:text-teal-300 transition-colors">Privacy &amp; Data Vault</a></li>
-            <li><a href="terms.html" class="hover:text-teal-300 transition-colors">Terms of Service</a></li>
-            <li><a href="accessibility.html" class="hover:text-teal-300 transition-colors">Accessibility Standards</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 4: Localization & Civic Motto -->
-        <div class="space-y-4">
-          <h4 class="text-white font-bold text-xs uppercase tracking-wider">State Motto &amp; Language</h4>
-          <p class="italic text-teal-300 text-xs font-serif">
-            "Be Self-Reliant · Build a Better Tomorrow"
-          </p>
-          <p class="text-slate-400 text-xs">
-            Bilingual state resource accessible across English, Odia, and Hindi.
-          </p>
-          <div class="flex items-center gap-2 pt-2">
-            <span class="px-2 py-1 bg-slate-900 border border-slate-800 rounded text-[11px] text-slate-300">English</span>
-            <span class="px-2 py-1 bg-slate-900 border border-slate-800 rounded text-[11px] text-slate-300">ଓଡ଼ିଆ</span>
-            <span class="px-2 py-1 bg-slate-900 border border-slate-800 rounded text-[11px] text-slate-300">हिन्दी</span>
-          </div>
-          <div class="pt-2">
-            <a href="admin/" class="text-[11px] text-slate-400 hover:text-white flex items-center gap-1.5">
-              <i class="fa-solid fa-lock text-[10px]"></i>
-              <span>Authorized Admin Portal</span>
-            </a>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </footer>
-
-  <!-- ========================================================================
-       MODAL MANAGER: Sandboxed Interactive Civic Calculators & Tools
-       ======================================================================== -->
-  <div id="cso-modal-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-      
-      <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-        <h3 id="cso-modal-title" class="text-sm font-bold text-white flex items-center gap-2">Tool</h3>
-        <button type="button" onclick="CSOCivicTools.closeModal()" class="text-slate-400 hover:text-white p-1" aria-label="Close modal">
-          <i class="fa-solid fa-xmark text-base"></i>
-        </button>
-      </div>
-
-      <!-- Modal Body (Injected dynamically) -->
-      <div id="cso-modal-content" class="p-6 max-h-[80vh] overflow-y-auto text-xs text-slate-300">
-        <!-- Content injected dynamically by CSOCivicTools -->
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Client-Side Civic Tools Engine -->
-  <script>
-    const CSOCivicTools = {
-      openModal: function(toolId) {
-        const overlay = document.getElementById('cso-modal-overlay');
-        const titleEl = document.getElementById('cso-modal-title');
-        const contentEl = document.getElementById('cso-modal-content');
-        if (!overlay || !contentEl) return;
-
-        overlay.classList.remove('hidden');
-
-        if (toolId === 'age-calc') {
-          titleEl.innerHTML = '<i class="fa-solid fa-cake-candles text-pink-400"></i> Age &amp; Cutoff Calculator';
-          contentEl.innerHTML = `
-            <div class="space-y-4">
-              <p class="text-slate-400">Calculate your exact age on the recruitment notification cutoff date.</p>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">Date of Birth:</label>
-                <input type="date" id="tool-dob" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-              </div>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">Cutoff / As-on Date:</label>
-                <input type="date" id="tool-asof" value="2026-01-01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-              </div>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">Reservation Category:</label>
-                <select id="tool-category" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-                  <option value="UR">General / UR (Standard Limits)</option>
-                  <option value="SEBC">SEBC (+3 Years Relaxation)</option>
-                  <option value="SC_ST">SC / ST (+5 Years Relaxation)</option>
-                  <option value="PWD">PwD (+10 Years Relaxation)</option>
-                  <option value="WOMEN">Women Candidates (+5 Years)</option>
-                </select>
-              </div>
-              <button type="button" onclick="CSOCivicTools.computeAge()" class="w-full py-2.5 bg-teal-600 hover:bg-teal-500 font-bold text-white rounded-lg">Calculate Age</button>
-              <div id="tool-age-result" class="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-teal-300 font-mono hidden"></div>
-            </div>
-          `;
-        } else if (toolId === 'cgpa-calc') {
-          titleEl.innerHTML = '<i class="fa-solid fa-calculator text-purple-400"></i> Marks &amp; CGPA Converter';
-          contentEl.innerHTML = `
-            <div class="space-y-4">
-              <p class="text-slate-400">Convert your university grade point average into official percentage.</p>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">University / Board Formula:</label>
-                <select id="tool-cgpa-formula" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white" onchange="document.getElementById('tool-multiplier').value = this.value">
-                  <option value="9.5">Utkal University / CBSE Standard (CGPA &times; 9.5)</option>
-                  <option value="10.0">Sambalpur University / Direct Scale (CGPA &times; 10.0)</option>
-                  <option value="9.0">Berhampur University Factor (CGPA &times; 9.0)</option>
-                </select>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block mb-1 text-slate-300 font-semibold">Obtained CGPA:</label>
-                  <input type="number" step="0.01" id="tool-cgpa-val" placeholder="e.g. 8.45" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-                </div>
-                <div>
-                  <label class="block mb-1 text-slate-300 font-semibold">Formula Multiplier:</label>
-                  <input type="number" step="0.1" id="tool-multiplier" value="9.5" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-                </div>
-              </div>
-              <button type="button" onclick="CSOCivicTools.computeCGPA()" class="w-full py-2.5 bg-teal-600 hover:bg-teal-500 font-bold text-white rounded-lg">Compute Percentage</button>
-              <div id="tool-cgpa-result" class="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-purple-300 font-mono hidden"></div>
-            </div>
-          `;
-        } else if (toolId === 'doc-checklist') {
-          titleEl.innerHTML = '<i class="fa-solid fa-clipboard-check text-emerald-400"></i> Document Verification Checklist';
-          contentEl.innerHTML = `
-            <div class="space-y-3">
-              <p class="text-slate-400">Verify mandatory certificates required for Odisha government recruitments (OPSC/OSSC):</p>
-              <div class="space-y-2">
-                <label class="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer">
-                  <input type="checkbox" checked class="rounded text-teal-600 focus:ring-0">
-                  <span>HSC / 10th Board Certificate (Proof of Age &amp; Odia Pass)</span>
-                </label>
-                <label class="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer">
-                  <input type="checkbox" checked class="rounded text-teal-600 focus:ring-0">
-                  <span>Graduation Degree Certificate &amp; Consolidated Marksheet</span>
-                </label>
-                <label class="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer">
-                  <input type="checkbox" class="rounded text-teal-600 focus:ring-0">
-                  <span>Resident / Domicile Certificate (Issued via e-District Odisha)</span>
-                </label>
-                <label class="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer">
-                  <input type="checkbox" class="rounded text-teal-600 focus:ring-0">
-                  <span>Category Certificate (SEBC Non-Creamy Layer / SC / ST)</span>
-                </label>
-                <label class="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer">
-                  <input type="checkbox" checked class="rounded text-teal-600 focus:ring-0">
-                  <span>Aadhaar Card Linked to Active Mobile Number for OTP</span>
-                </label>
-              </div>
-              <button type="button" onclick="CSOCivicTools.copyChecklist()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 font-bold text-white rounded-lg flex items-center justify-center gap-2">
-                <i class="fa-regular fa-copy"></i>
-                <span id="btn-copy-text">Copy Checklist to Clipboard</span>
-              </button>
-            </div>
-          `;
-        } else if (toolId === 'exam-planner') {
-          titleEl.innerHTML = '<i class="fa-solid fa-hourglass-half text-amber-400"></i> Exam Countdown Planner';
-          contentEl.innerHTML = `
-            <div class="space-y-4">
-              <p class="text-slate-400">Track remaining days and revision milestones for your target exam:</p>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">Select Examination:</label>
-                <select id="tool-exam-choice" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white" onchange="document.getElementById('tool-exam-date').value = this.value">
-                  <option value="2026-11-20">OPSC OCS Preliminary Examination 2026</option>
-                  <option value="2026-12-15">OSSC CGL Specialist Recruitment</option>
-                  <option value="2027-02-10">Odisha B.Ed Entrance Examination 2027</option>
-                </select>
-              </div>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">Target Date:</label>
-                <input type="date" id="tool-exam-date" value="2026-11-20" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
-              </div>
-              <button type="button" onclick="CSOCivicTools.computeCountdown()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 font-bold text-white rounded-lg">Check Remaining Timeline</button>
-              <div id="tool-countdown-result" class="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-amber-300 font-mono hidden"></div>
-            </div>
-          `;
-        } else if (toolId === 'resume-builder') {
-          titleEl.innerHTML = '<i class="fa-solid fa-file-lines text-blue-400"></i> Resume &amp; Biodata Builder';
-          contentEl.innerHTML = `
-            <div class="space-y-4">
-              <p class="text-slate-400">Generate a formatted single-page government bio-data printable locally:</p>
-              <div>
-                <label class="block mb-1 text-slate-300 font-semibold">Full Name:</label>
-                <input type="text" id="tool-cv-name" placeholder="Candidate Name" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block mb-1 text-slate-300 font-semibold">Home District:</label>
-                  <input type="text" id="tool-cv-dist" placeholder="e.g. Balasore" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
-                </div>
-                <div>
-                  <label class="block mb-1 text-slate-300 font-semibold">Highest Degree:</label>
-                  <input type="text" id="tool-cv-qual" placeholder="e.g. B.Sc, B.Ed" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
-                </div>
-              </div>
-              <button type="button" onclick="window.print()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 font-bold text-white rounded-lg flex items-center justify-center gap-2">
-                <i class="fa-solid fa-print"></i>
-                <span>Print Bio-Data Page</span>
-              </button>
-            </div>
-          `;
-        } else if (toolId === 'flashcard-quiz') {
-          titleEl.innerHTML = '<i class="fa-solid fa-brain text-cyan-400"></i> Flashcard &amp; Self-Quiz Engine';
-          contentEl.innerHTML = `
-            <div class="space-y-4">
-              <p class="text-slate-400">Rapid spaced recall quiz for Odisha General Studies:</p>
-              <div id="flashcard-card" class="p-6 bg-slate-950 border border-slate-800 rounded-xl text-center min-h-[140px] flex flex-col justify-center cursor-pointer hover:border-cyan-500 transition-colors" onclick="CSOCivicTools.flipCard()">
-                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block mb-2" id="flash-state">QUESTION (Click to flip)</span>
-                <div class="text-sm font-semibold text-white" id="flash-text">In which year did the historic Paika Rebellion take place in Odisha?</div>
-              </div>
-              <div class="flex gap-2">
-                <button type="button" onclick="CSOCivicTools.nextCard()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 font-bold text-slate-200 rounded-lg">Next Flashcard &rarr;</button>
-              </div>
-            </div>
-          `;
-        }
-      },
-
-      closeModal: function() {
-        document.getElementById('cso-modal-overlay')?.classList.add('hidden');
-      },
-
-      computeAge: function() {
-        const dobVal = document.getElementById('tool-dob')?.value;
-        const asofVal = document.getElementById('tool-asof')?.value;
-        const resEl = document.getElementById('tool-age-result');
-        if (!dobVal || !asofVal || !resEl) return;
-
-        const dob = new Date(dobVal);
-        const asof = new Date(asofVal);
-        let years = asof.getFullYear() - dob.getFullYear();
-        let months = asof.getMonth() - dob.getMonth();
-        let days = asof.getDate() - dob.getDate();
-
-        if (days < 0) {
-          months--;
-          days += new Date(asof.getFullYear(), asof.getMonth(), 0).getDate();
-        }
-        if (months < 0) {
-          years--;
-          months += 12;
-        }
-
-        resEl.classList.remove('hidden');
-        resEl.innerHTML = `<strong>Result:</strong> ${years} years, ${months} months, and ${days} days old on cutoff.`;
-      },
-
-      computeCGPA: function() {
-        const cgpa = parseFloat(document.getElementById('tool-cgpa-val')?.value);
-        const mult = parseFloat(document.getElementById('tool-multiplier')?.value);
-        const resEl = document.getElementById('tool-cgpa-result');
-        if (isNaN(cgpa) || isNaN(mult) || !resEl) return;
-
-        const pct = (cgpa * mult).toFixed(2);
-        resEl.classList.remove('hidden');
-        resEl.innerHTML = `<strong>Calculated Percentage:</strong> ${pct}% (Grade Point: ${cgpa} &times; ${mult})`;
-      },
-
-      copyChecklist: function() {
-        const text = `Odisha Recruitment Document Checklist:\n[✓] 10th Board Certificate (Proof of Age & Odia Pass)\n[✓] Graduation Degree Certificate & Marksheets\n[✓] Resident Certificate (e-District Odisha)\n[✓] Category Certificate (SEBC/SC/ST)\n[✓] Aadhaar Card linked to Mobile`;
-        navigator.clipboard.writeText(text).then(() => {
-          const btnText = document.getElementById('btn-copy-text');
-          if (btnText) btnText.textContent = "Copied Successfully!";
-          setTimeout(() => { if (btnText) btnText.textContent = "Copy Checklist to Clipboard"; }, 2500);
-        });
-      },
-
-      computeCountdown: function() {
-        const dateVal = document.getElementById('tool-exam-date')?.value;
-        const resEl = document.getElementById('tool-countdown-result');
-        if (!dateVal || !resEl) return;
-
-        const target = new Date(dateVal).getTime();
-        const now = new Date().getTime();
-        const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
-
-        resEl.classList.remove('hidden');
-        resEl.innerHTML = diff >= 0 
-          ? `<strong>Countdown:</strong> Exactly ${diff} days remaining until examination date.`
-          : `<strong>Status:</strong> The scheduled date has passed by ${Math.abs(diff)} days.`;
-      },
-
-      cards: [
-        { q: "In which year did the historic Paika Rebellion take place in Odisha?", a: "1817 (under the leadership of Bakshi Jagabandhu)" },
-        { q: "Which river is widely referred to as the 'Lifeline of Odisha'?", a: "Mahanadi River (originates in Sihawa, Chhattisgarh)" },
-        { q: "On which date was the separate province of Odisha officially created?", a: "1st April 1936 (celebrated as Utkala Dibasa)" },
-        { q: "Where is the famous Bhitarkanika National Park situated?", a: "Kendrapara District (renowned for saltwater crocodiles & mangroves)" }
-      ],
-      cardIndex: 0,
-      isFlipped: false,
-
-      flipCard: function() {
-        this.isFlipped = !this.isFlipped;
-        const stateEl = document.getElementById('flash-state');
-        const textEl = document.getElementById('flash-text');
-        const curr = this.cards[this.cardIndex];
-        if (stateEl && textEl) {
-          stateEl.textContent = this.isFlipped ? "ANSWER" : "QUESTION (Click to flip)";
-          textEl.textContent = this.isFlipped ? curr.a : curr.q;
-        }
-      },
-
-      nextCard: function() {
-        this.cardIndex = (this.cardIndex + 1) % this.cards.length;
-        this.isFlipped = false;
-        const stateEl = document.getElementById('flash-state');
-        const textEl = document.getElementById('flash-text');
-        const curr = this.cards[this.cardIndex];
-        if (stateEl && textEl) {
-          stateEl.textContent = "QUESTION (Click to flip)";
-          textEl.textContent = curr.q;
-        }
-      }
-    };
-
-    // Keyboard shortcut (Ctrl + K) for quick search focus
-    document.addEventListener('keydown', function(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('hero-search-input')?.focus();
-      }
-    });
-
-    // Feed tab filtering
-    document.querySelectorAll('.feed-tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.feed-tab').forEach(t => {
-          t.classList.remove('active', 'bg-teal-600', 'text-white');
-          t.classList.add('bg-slate-800/80', 'text-slate-400');
-        });
-        this.classList.add('active', 'bg-teal-600', 'text-white');
-        this.classList.remove('bg-slate-800/80', 'text-slate-400');
-
-        const cat = this.dataset.feed;
-        document.querySelectorAll('.feed-item').forEach(item => {
-          if (cat === 'all' || item.dataset.cat === cat) {
-            item.style.display = '';
-          } else {
-            item.style.display = 'none';
-          }
-        });
-      });
-    });
-
-    // Font Resizing Utility
-    (function() {
-      let currentZoom = 1;
-      const htmlEl = document.documentElement;
-
-      document.getElementById('btn-font-sub')?.addEventListener('click', () => {
-        currentZoom = Math.max(0.85, currentZoom - 0.05);
-        htmlEl.style.fontSize = (currentZoom * 100) + '%';
-      });
-      document.getElementById('btn-font-reset')?.addEventListener('click', () => {
-        currentZoom = 1;
-        htmlEl.style.fontSize = '100%';
-      });
-      document.getElementById('btn-font-add')?.addEventListener('click', () => {
-        currentZoom = Math.min(1.25, currentZoom + 0.05);
-        htmlEl.style.fontSize = (currentZoom * 100) + '%';
-      });
-    })();
-
-    // Close modal on click outside
-    document.getElementById('cso-modal-overlay')?.addEventListener('click', function(e) {
-      if (e.target === this) {
-        CSOCivicTools.closeModal();
-      }
-    });
-
-    // Sync candidate session badge in header
-    function updateCandidateHeader() {
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#093824">
+<meta name="description" content="Common Sense Odisha - Jobs, schemes, study library, and independent candidate preparation workspace for Odisha competitive exams.">
+
+<!-- OpenGraph Metadata -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Common Sense Odisha">
+<meta property="og:title" content="Common Sense Odisha — Jobs, Schemes &amp; Exam Preparation Portal">
+<meta property="og:description" content="Find verified Odisha government notifications, scholarships, schemes, syllabus trackers, and study library for aspirants across Odisha.">
+<meta property="og:image" content="https://assets.csodisha.org/img/cso-dashboard-og-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_IN">
+
+<!-- Twitter / X Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Common Sense Odisha — Public Information &amp; Study Portal">
+<meta name="twitter:description" content="Odisha government notifications, schemes, syllabus trackers, and study library for aspirants.">
+<meta name="twitter:image" content="https://assets.csodisha.org/img/cso-dashboard-og-preview.png">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><title>Common Sense Odisha</title>
+<link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/cso-tools-v2.css">
+</head><body>
+<div id="csoPublicAnnouncementMount"></div>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="lg" viewBox="0 0 120 56"><text x="0" y="40" font-size="46" font-weight="900" font-family="Arial" letter-spacing="-3"><tspan fill="#f2a31b">C</tspan><tspan fill="#2c8f3e">S</tspan><tspan fill="#1d4ed8">O</tspan></text><path d="M96 17l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#f26a1b"/><path d="M2 50Q45 40 118 48" stroke="#f26a1b" stroke-width="3" fill="none"/></symbol><symbol id="temple" viewBox="0 0 100 140"><path d="M55 10C62 32 72 58 74 112H34C36 58 48 32 55 10Z" fill="currentColor"/><circle cx="55" cy="7" r="4" fill="currentColor"/><ellipse cx="55" cy="34" rx="13" ry="4" fill="#0002"/><path d="M2 112L6 92H30L26 112ZM6 92L10 80H26L30 92ZM10 80L14 70H22L26 80Z" fill="currentColor"/><path d="M74 112L78 92H98L98 112Z" fill="currentColor"/><rect x="0" y="112" width="100" height="16" fill="currentColor"/><path d="M48 112v-14h14v14z" fill="#0003"/></symbol><symbol id="palm" viewBox="0 0 60 120"><path d="M30 118Q35 70 28 30" stroke="#6b4423" stroke-width="4" fill="none"/><g stroke="#2f7a3a" stroke-width="3" fill="none" stroke-linecap="round"><path d="M28 30Q10 18 0 36"/><path d="M28 30Q12 8 2 14"/><path d="M28 30Q28 6 40 2"/><path d="M28 30Q46 14 58 28"/><path d="M28 30Q48 30 56 46"/><path d="M28 30Q8 34 4 50"/></g></symbol></defs></svg>
+<script>
+  (function() {
+    function mountLiveBanner() {
       try {
-        const raw = localStorage.getItem('cso_candidate_session_v1');
-        const mount = document.getElementById('cso-header-auth-mount');
+        const raw = localStorage.getItem('cso_active_announcement');
+        const mount = document.getElementById('csoPublicAnnouncementMount');
         if (!mount) return;
 
-        if (raw) {
-          const sess = JSON.parse(raw);
-          const name = sess.fullName || sess.name || 'Candidate';
-          mount.innerHTML = `
-            <a href="student-dashboard/" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-teal-500/40 rounded-lg">
-              <span class="w-5 h-5 rounded-full bg-teal-600 flex items-center justify-center text-[10px] font-extrabold uppercase">${name.charAt(0)}</span>
-              <span class="max-w-[100px] truncate">${name}</span>
-            </a>
-          `;
+        if (!raw) {
+          mount.innerHTML = '';
+          return;
         }
-      } catch (e) {}
+        const data = JSON.parse(raw);
+        if (!data || !data.active || !data.headline) {
+          mount.innerHTML = '';
+          return;
+        }
+        if (sessionStorage.getItem('cso_dismissed_announcement_' + data.updatedAt)) {
+          mount.innerHTML = '';
+          return;
+        }
+
+        mount.innerHTML = `
+          <div id="csoLiveBanner" style="background: linear-gradient(90deg, #064e3b 0%, #065f46 100%); border-bottom: 1px solid #10b981; color: #ecfdf5; padding: 10px 16px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 9999; position: relative;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="background: #10b981; color: #064e3b; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">NOTICE</span>
+              <strong style="color: #ffffff;">${data.headline}</strong>
+              <span style="color: #a7f3d0;">${data.context || ''}</span>
+              ${data.ctaText && data.ctaUrl ? `<a id="csoLiveBannerCta" style="background: #10b981; color: #064e3b; padding: 3px 10px; border-radius: 4px; font-weight: 700; text-decoration: none; font-size: 11px; margin-left: 6px; cursor: pointer;">${data.ctaText} &rarr;</a>` : ''}
+            </div>
+            <button id="btnCloseLiveBanner" style="background: none; border: none; color: #a7f3d0; font-size: 16px; cursor: pointer; padding: 0 4px;" title="Dismiss">&times;</button>
+          </div>
+        `;
+
+        const ctaBtn = document.getElementById('csoLiveBannerCta');
+        if (ctaBtn && data.ctaUrl) {
+          ctaBtn.setAttribute('href', data.ctaUrl);
+        }
+
+        document.getElementById('btnCloseLiveBanner')?.addEventListener('click', function() {
+          document.getElementById('csoLiveBanner')?.remove();
+          sessionStorage.setItem('cso_dismissed_announcement_' + data.updatedAt, 'true');
+        });
+      } catch (e) {
+        console.warn('Banner mount error:', e);
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', updateCandidateHeader);
-  </script>
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', mountLiveBanner);
+    } else {
+      mountLiveBanner();
+    }
 
-  <!-- Service Worker, PWA & Candidate Synchronization Engines -->
-  <script src="assets/js/pwa-install.js" defer></script>
-  <script src="assets/js/candidate-sync.js" defer></script>
-  <script src="assets/js/auth-modal.js" defer></script>
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'cso_active_announcement') {
+        mountLiveBanner();
+      }
+    });
 
-</body>
-</html>
+    // Hydrate dynamic homepage configuration
+    function hydrateHomepageConfig() {
+      try {
+        const raw = localStorage.getItem('cso_homepage_config');
+        if (!raw) return;
+        const config = JSON.parse(raw);
+        if (!config) return;
+
+        // Hydrate Hero Section
+        if (config.hero) {
+          const heroSec = document.getElementById('cso-hero');
+          if (heroSec && config.hero.enabled === false) {
+            heroSec.style.display = 'none';
+          } else if (heroSec) {
+            heroSec.style.display = '';
+          }
+
+          if (config.hero.tagline) {
+            const tagEl = document.querySelector('.cso-hero-tagline');
+            if (tagEl) tagEl.textContent = config.hero.tagline;
+          }
+          if (config.hero.subheadline) {
+            const subEl = document.querySelector('.cso-hero-subtagline');
+            if (subEl) subEl.textContent = config.hero.subheadline;
+          }
+        }
+
+        // Section Toggles
+        if (Array.isArray(config.sections)) {
+          config.sections.forEach(function(sec) {
+            if (sec.id === 'sec-badges') {
+              const chips = document.querySelector('.chips');
+              if (chips) chips.style.display = sec.enabled ? '' : 'none';
+            } else if (sec.id === 'sec-cards') {
+              const compass = document.getElementById('cso-opportunity-compass');
+              if (compass) compass.style.display = sec.enabled ? '' : 'none';
+            } else if (sec.id === 'sec-notice') {
+              const bannerMount = document.getElementById('csoPublicAnnouncementMount');
+              if (bannerMount && !sec.enabled) bannerMount.style.display = 'none';
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Homepage hydration error:', err);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hydrateHomepageConfig);
+    } else {
+      hydrateHomepageConfig();
+    }
+
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'cso_homepage_config') {
+        hydrateHomepageConfig();
+      }
+    });
+  })();
+</script>
+<header class="top site-header__top" id="header-top" role="banner">
+<a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+  <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
+</a>
+<a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+<span id="ctl" style="display:contents"></span>
+<span class="sp"></span>
+<div class="acct">
+  <span style="font-size:26px" aria-hidden="true" class="cso-desktop-auth-icon">👤</span>
+  <span id="auth" style="display:contents"></span>
+</div>
+</header>
+<nav class="main-nav site-header__nav" id="cso-main-navbar" aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
+<main class="w">
+<div class="g1">
+<section class="hero" id="cso-hero"><div class="cso-hero-bg-overlay" aria-hidden="true"></div><div class="cso-hero-content"><h1 class="hero-brand-title" aria-label="Common Sense Odisha">
+  <span class="hero-word hero-word--saffron">COMMON</span>
+  <span class="hero-word hero-word--white">SENSE</span>
+  <span class="hero-word hero-word--green">ODISHA</span>
+</h1>
+<p class="cso-hero-tagline"><b class="cso-tagline-highlight">Be Self-Reliant</b> | Build a Better Tomorrow</p><p class="cso-hero-subtagline">Explore opportunities | Gain knowledge | Grow with confidence</p>
+<form class="sr" id="sf" role="search"><span class="sr-icon" aria-hidden="true">🔍</span> <input type="search" id="cso-ask-input" class="cso-search-input" placeholder="Search jobs, schemes, study materials, articles and more..." aria-label="Search" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cso-search-autocomplete" aria-haspopup="listbox"><kbd class="cso-search-kbd" id="cso-search-kbd" aria-hidden="true" title="Shortcut: Press / or Ctrl+K to search"><span class="cso-kbd-key">Ctrl</span><span class="cso-kbd-plus">+</span><span class="cso-kbd-key">K</span></kbd><button type="button" class="mic" id="smic" aria-label="Voice search" title="Voice search">🎙</button><button type="submit" class="sb" aria-label="Submit search"><span aria-hidden="true">🔍</span></button><div id="cso-search-autocomplete" class="cso-autocomplete-dropdown" role="listbox" aria-label="Search suggestions" aria-live="polite" hidden></div></form>
+<div class="chips" role="group" aria-labelledby="chips-label"><span class="chips-label" id="chips-label">Popular Searches:</span><button type="button" class="search-chip">OSSTET</button><button type="button" class="search-chip">OTET</button><button type="button" class="search-chip">UGC NET</button><button type="button" class="search-chip">Scholarship</button><button type="button" class="search-chip">Odisha Jobs</button><button type="button" class="search-chip">CTET</button><button type="button" class="search-chip">OPSC</button><button type="button" class="search-chip">OAVS</button><button type="button" class="search-chip">B.Ed</button><button type="button" class="search-chip">Admit Card</button><button type="button" class="search-chip">Result</button></div></div></section>
+<aside class="card lu"><h3><span aria-hidden="true">🔔</span> Latest Updates <a href="#" data-route="view-all" data-h="latest-updates">View All →</a></h3>
+<div class="tabs" role="group" aria-label="Filter latest updates"><button type="button" class="a" aria-pressed="true">All</button><button type="button" aria-pressed="false">Jobs</button><button type="button" aria-pressed="false">Schemes</button><button type="button" aria-pressed="false">Education</button><button type="button" aria-pressed="false">Odisha</button><button type="button" aria-pressed="false">National</button></div>
+<div class="it"><div class="tg">JOB</div><div>Ravenshaw University ITEP Admissions 2026<small>Ravenshaw University</small></div><div class="d">Oct 28, 2026<br><span class="bd">⊙ Official</span><span class="bd r">⊗ New</span></div></div>
+<div class="it"><div class="tg" style="background:#e8f6ee;border-color:#2c8f3e">SCHEME</div><div>Odisha Post-Matric Scholarship 2025-26<small>Higher Education Dept., Govt. of Odisha</small></div><div class="d">Oct 27, 2026<br><span class="bd">⊙ Official</span></div></div>
+<div class="it"><div class="tg" style="background:#eee8fb;border-color:#6d28d9">EDUCATION</div><div>CTET Dec 2025 Notification Out<small>CBSE</small></div><div class="d">Oct 27, 2026<br><span class="bd">⊙ Official</span></div></div>
+<div class="it"><div class="tg">ODISHA</div><div>Cyclone Arnab: Cancelled Trains List<small>Indian Railways</small></div><div class="d">Oct 26, 2026<br><span class="bd">⊙ Official</span><span class="bd r">⊗ Update</span></div></div>
+<div class="it"><div class="tg" style="background:#e6efff;border-color:#1d4ed8">GUIDE</div><div>How to apply for OPSC Group B posts<small>CSO Guide</small></div><div class="d">Oct 26, 2026<br><span class="bd" style="color:#1d4ed8;background:#e6efff;border-color:#c5d6fb">⊙ Guide</span></div></div>
+</aside></div>
+
+     <section class="cso-compass-section w" id="cso-opportunity-compass" aria-label="CSO Opportunity Compass">
+       <div class="cso-compass-header">
+         <div class="cso-compass-header__title-wrap">
+           <div class="cso-compass-badge" aria-hidden="true">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+           </div>
+           <div>
+             <h2 class="cso-compass-title">CSO Opportunity Compass</h2>
+             <p class="cso-compass-sub">Personalised pathways for jobs, higher education, exams, and welfare schemes</p>
+           </div>
+         </div>
+         <a href="/opportunity-compass/" class="cso-compass-cta">Explore Pathways &rarr;</a>
+       </div>
+
+       <div class="cso-compass-grid">
+         <!-- 1. Jobs -->
+         <a href="/jobs-careers#jobs" class="cso-compass-card cso-compass-card--jobs">
+           <div class="cso-compass-card__icon" aria-hidden="true">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+           </div>
+           <div class="cso-compass-card__info">
+             <h3 class="cso-compass-card__heading">Job Opportunities <span class="arrow">&rarr;</span></h3>
+             <p class="cso-compass-card__desc">Latest vacancies, state notifications &amp; eligibilities</p>
+           </div>
+         </a>
+
+         <!-- 2. Study -->
+         <a href="/study-library/" class="cso-compass-card cso-compass-card--study">
+           <div class="cso-compass-card__icon" aria-hidden="true">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+           </div>
+           <div class="cso-compass-card__info">
+             <h3 class="cso-compass-card__heading">Admissions &amp; Study <span class="arrow">&rarr;</span></h3>
+             <p class="cso-compass-card__desc">Free study notes, syllabus, PYQs &amp; entrance guides</p>
+           </div>
+         </a>
+
+         <!-- 3. Schemes -->
+         <a href="/schemes-benefits/" class="cso-compass-card cso-compass-card--schemes">
+           <div class="cso-compass-card__icon" aria-hidden="true">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+           </div>
+           <div class="cso-compass-card__info">
+             <h3 class="cso-compass-card__heading">Schemes &amp; Aid <span class="arrow">&rarr;</span></h3>
+             <p class="cso-compass-card__desc">State welfare, student scholarships &amp; portal links</p>
+           </div>
+         </a>
+
+         <!-- 4. Career Guidance -->
+         <a href="/jobs-careers#guidance" class="cso-compass-card cso-compass-card--guidance">
+           <div class="cso-compass-card__icon" aria-hidden="true">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+           </div>
+           <div class="cso-compass-card__info">
+             <h3 class="cso-compass-card__heading">Career Guidance <span class="arrow">&rarr;</span></h3>
+             <p class="cso-compass-card__desc">Skill roadmaps, exam strategies &amp; career growth</p>
+           </div>
+         </a>
+       </div>
+     </section>
+
+<section class="card sec cso-trending-topics-sec" id="cso-trending-topics"><h2><span style="color:var(--or)">🔥</span><span style="color:var(--bl)">Trending &amp; Popular Topics</span><small>Explore education, careers, schemes and public services</small><a href="#" data-route="view-all-topics" data-h="popular-topics" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Topics →</a></h2>
+<div class="row c6 topics-grid trending-grid">
+     <!-- 1. Jobs & Recruitment -->
+     <a href="/jobs-careers#jobs" class="cso-topic-card cso-topic-card--jobs">
+       <div class="cso-topic-card__badge" aria-hidden="true">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+       </div>
+       <div class="cso-topic-card__text">
+         <h3 class="cso-topic-card__title">Jobs &amp; Recruitment <span class="arrow">&rarr;</span></h3>
+         <p class="cso-topic-card__desc">Latest vacancies, state exams, notifications</p>
+       </div>
+     </a>
+
+     <!-- 2. Exams & Preparation -->
+     <a href="/jobs-careers#exams" class="cso-topic-card cso-topic-card--exams">
+       <div class="cso-topic-card__badge" aria-hidden="true">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+       </div>
+       <div class="cso-topic-card__text">
+         <h3 class="cso-topic-card__title">Exams &amp; Prep <span class="arrow">&rarr;</span></h3>
+         <p class="cso-topic-card__desc">OTET, OSSTET, UGC NET, OPSC syllabus</p>
+       </div>
+     </a>
+
+     <!-- 3. Scholarships & Schemes -->
+     <a href="/schemes-benefits/" class="cso-topic-card cso-topic-card--schemes">
+       <div class="cso-topic-card__badge" aria-hidden="true">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+       </div>
+       <div class="cso-topic-card__text">
+         <h3 class="cso-topic-card__title">Scholarships <span class="arrow">&rarr;</span></h3>
+         <p class="cso-topic-card__desc">State stipends, financial aid, portals</p>
+       </div>
+     </a>
+
+     <!-- 4. Study Materials -->
+     <a href="/study-library/" class="cso-topic-card cso-topic-card--study">
+       <div class="cso-topic-card__badge" aria-hidden="true">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+       </div>
+       <div class="cso-topic-card__text">
+         <h3 class="cso-topic-card__title">Study Materials <span class="arrow">&rarr;</span></h3>
+         <p class="cso-topic-card__desc">Notes, PDFs, previous papers, MCQs</p>
+       </div>
+     </a>
+
+     <!-- 5. Career Guidance -->
+     <a href="/jobs-careers#guidance" class="cso-topic-card cso-topic-card--career">
+       <div class="cso-topic-card__badge" aria-hidden="true">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+       </div>
+       <div class="cso-topic-card__text">
+         <h3 class="cso-topic-card__title">Career Paths <span class="arrow">&rarr;</span></h3>
+         <p class="cso-topic-card__desc">Courses, eligibility, professional growth</p>
+       </div>
+     </a>
+
+     <!-- 6. Odisha Special -->
+     <a href="/#cso-trending-topics" class="cso-topic-card cso-topic-card--odisha">
+       <div class="cso-topic-card__badge" aria-hidden="true">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+       </div>
+       <div class="cso-topic-card__text">
+         <h3 class="cso-topic-card__title">Odisha Special <span class="arrow">&rarr;</span></h3>
+         <p class="cso-topic-card__desc">State heritage, culture, public updates</p>
+       </div>
+     </a>
+</div></section>
+
+<section class="card sec cso-tools-sec" id="cso-tools"><h2><span style="color:var(--bl)">🔧</span><span style="color:var(--bl)">Important Tools</span><small>Six practical, interactive tools for applications, study and careers</small><a href="#" data-route="view-all-tools" data-h="important-tools" style="margin-left:auto;font-size:13px;color:var(--bl)">View All Tools →</a></h2>
+<div class="row c6 tools-grid" id="cso-tools-grid">
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#fde4ec">📅</span><span><b>Age &amp; Eligibility Date Calculator</b><small>Calculate your age on an exam or application cutoff date</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#e8e0ff">🧮</span><span><b>Marks, Percentage &amp; CGPA Calculator</b><small>Calculate marks, percentage and institution-based CGPA</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#dff3e8">📋</span><span><b>Application Document Checklist</b><small>Create and track your application document list</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#ffe9d3">⏳</span><span><b>Exam Countdown &amp; Study Planner</b><small>Count down to exams and plan revision sessions</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#e1ecff">📄</span><span><b>Resume &amp; Biodata Builder</b><small>Build and print a resume or biodata locally</small></span></div>
+<div class="card tl tool-card"><span class="ic" style="border-radius:8px;background:#dff3ff">🧠</span><span><b>Flashcard &amp; Self-Quiz Maker</b><small>Make flashcards, import Q&amp;A and test yourself</small></span></div></div></section>
+
+     <section class="cso-action-hub-section" aria-label="CSO Community and Resources">
+       <div class="cso-action-hub-grid">
+         
+         <!-- Card 1: Community -->
+         <div class="cso-hub-card cso-hub-card--community">
+           <div class="cso-hub-card__icon" aria-hidden="true">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+           </div>
+           <div class="cso-hub-card__content">
+             <h3 class="cso-hub-card__title">CSO Community Forum</h3>
+             <p class="cso-hub-card__desc">Ask questions, share exam prep tips, and connect with learners across Odisha.</p>
+             <a href="community/" class="cso-hub-card__btn cso-hub-card__btn--blue">Join Community &rarr;</a>
+           </div>
+         </div>
+
+         <!-- Card 2: Study Library -->
+         <div class="cso-hub-card cso-hub-card--library">
+           <div class="cso-hub-card__icon" aria-hidden="true">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+           </div>
+           <div class="cso-hub-card__content">
+             <h3 class="cso-hub-card__title">Free Study Library</h3>
+             <p class="cso-hub-card__desc">Instant access to verified notes, PYQs, syllabi, and practice MCQs.</p>
+             <a href="study-library/" class="cso-hub-card__btn cso-hub-card__btn--green">Browse Library &rarr;</a>
+           </div>
+         </div>
+
+         <!-- Card 3: Live Alerts (Replaces dead placeholder) -->
+         <div class="cso-hub-card cso-hub-card--alerts">
+           <div class="cso-hub-card__icon" aria-hidden="true">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+           </div>
+           <div class="cso-hub-card__content">
+             <h3 class="cso-hub-card__title">Instant Notice Alerts</h3>
+             <p class="cso-hub-card__desc">Get real-time exam notifications, results, and recruitment circulars directly.</p>
+             <a href="#" data-route="view-all" data-h="latest-updates" class="cso-hub-card__btn cso-hub-card__btn--amber">View Live Feeds &rarr;</a>
+           </div>
+         </div>
+
+       </div>
+     </section>
+</main>
+
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-footer-logo" width="96" height="34">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="jobs-careers/">Jobs &amp; Careers</a>
+      <a href="schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="study-library/">Study Library</a>
+      <a href="community/">Community</a>
+      <a href="about/">About CSO</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="support/#faqs">Help &amp; FAQs</a>
+      <a href="support/#report-error">Report an Error</a>
+      <a href="support/#suggest-resource">Suggest Resource</a>
+      <a href="privacy-policy/">Privacy Policy</a>
+      <a href="terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+    <div class="cso-footer-lang-pills">
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+    </div>
+  </div>
+</div></footer>
+<script src="assets/odia.js"></script><script src="assets/hindi.js"></script><script src="assets/india-districts.js"></script><script src="assets/cso-tools-v2.js"></script><script src="assets/cso-auth-client.js"></script><script src="assets/js/pwa-install.js" defer></script><script src="assets/app.js"></script>
+</body></html>
