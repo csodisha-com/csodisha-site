@@ -940,86 +940,87 @@
       "title": "SEO, Search & Discovery",
       "modules": [
         {
-          "id": "module-13-001",
-          "title": "SEO Overview",
+          "id": "module-seo-001",
+          "title": "Meta Tags, OpenGraph & Twitter Cards",
           "status": "active"
         },
         {
-          "id": "module-13-002",
-          "title": "Page Metadata",
+          "id": "module-seo-002",
+          "title": "Dynamic JSON-LD Structured Data Schema Engine",
           "status": "active"
         },
         {
-          "id": "module-13-003",
-          "title": "Canonical URLs",
+          "id": "module-seo-003",
+          "title": "XML Sitemap Generator & Multi-Index Feeds",
           "status": "active"
         },
         {
-          "id": "module-13-004",
-          "title": "Open Graph Previews",
+          "id": "module-seo-004",
+          "title": "RSS, Atom & News Syndication Hub",
           "status": "active"
         },
         {
-          "id": "module-13-005",
-          "title": "Structured Data",
+          "id": "module-seo-005",
+          "title": "Canonical URL Rules & Redirect Manager (301/302)",
           "status": "active"
         },
         {
-          "id": "module-13-006",
-          "title": "XML Sitemap",
+          "id": "module-seo-006",
+          "title": "Robots.txt & Crawler Directives Studio",
           "status": "active"
         },
         {
-          "id": "module-13-007",
-          "title": "Robots Settings",
+          "id": "module-seo-007",
+          "title": "Bilingual Search Index & Odia Tokenizer Settings",
           "status": "active"
         },
         {
-          "id": "module-13-008",
-          "title": "Search Console Integration",
+          "id": "module-seo-008",
+          "title": "Keyword Boosting & Synonyms (OCS, CGL, RI, ARI, Amin)",
           "status": "active"
         },
         {
-          "id": "module-13-009",
-          "title": "Internal Search Manager",
+          "id": "module-seo-009",
+          "title": "Search Autocomplete & Typo-Tolerance Rules",
           "status": "active"
         },
         {
-          "id": "module-13-010",
-          "title": "Search Index",
+          "id": "module-seo-010",
+          "title": "Zero-Result Queries & Fallback Search Fallbacks",
           "status": "active"
         },
         {
-          "id": "module-13-011",
-          "title": "Search Filters",
+          "id": "module-seo-011",
+          "title": "Google Search Console, Bing & Yandex IndexNow Engine",
           "status": "active"
         },
         {
-          "id": "module-13-012",
-          "title": "Popular Searches",
+          "id": "module-seo-012",
+          "title": "Core Web Vitals, Edge Cache & Pre-rendering Hints",
           "status": "active"
         },
         {
-          "id": "module-13-013",
-          "title": "Zero-Result Searches",
+          "id": "module-seo-013",
+          "title": "Rich Snippet Previewer (Google SERP, WhatsApp, Telegram, X)",
           "status": "active"
         },
         {
-          "id": "module-13-014",
-          "title": "URL Redirects",
+          "id": "module-seo-014",
+          "title": "Internal Linking Graph & Orphan Node Detector",
           "status": "active"
         },
         {
-          "id": "module-13-015",
-          "title": "Broken Links",
+          "id": "module-seo-015",
+          "title": "URL Slug Normalizer & Cyrillic/Odia Transliteration",
           "status": "active"
         },
         {
-          "id": "module-13-016",
-          "title": "404 Reports",
+          "id": "module-seo-016",
+          "title": "Platform Search Analytics & Intent Tracking",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-14",

@@ -702,6 +702,10 @@ async function loadMasterNavigation() {
         renderEventsCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
         return;
       }
+      if (moduleId.startsWith('module-seo-') || moduleId.startsWith('module-13-') || folderId === 'folder-13' || folderId === 'folder-seo-discovery') {
+        renderSeoCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
+        return;
+      }
 
 
 
@@ -1258,6 +1262,8 @@ async function loadMasterNavigation() {
         renderCommunityCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
       } else if (moduleId.startsWith('module-es-') || moduleId.startsWith('module-14-') || folderId === 'folder-14' || folderId === 'folder-events-scheduling') {
         renderEventsCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
+      } else if (moduleId.startsWith('module-seo-') || moduleId.startsWith('module-13-') || folderId === 'folder-13' || folderId === 'folder-seo-discovery') {
+        renderSeoCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
 
 
 
@@ -20109,6 +20115,545 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in Events & Scheduling Suite Studio', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in Events & Scheduling Suite Studio</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // SEO, SEARCH & META DISCOVERY SUITE: Category Tree & Publishing Studio
+    // =========================================================================
+    function renderSeoCategoryTreeStudioWorkspace(container, targetModuleId) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getSeoDiscoveryTreeConfig();
+
+        // Map targetModuleId to category if provided (supporting both module-seo-* and legacy module-13-*)
+        const modToCat = {
+          'module-seo-001': 'cat-seo-01', 'module-13-001': 'cat-seo-01', 'module-seo-01': 'cat-seo-01',
+          'module-seo-002': 'cat-seo-02', 'module-13-002': 'cat-seo-02', 'module-seo-02': 'cat-seo-02',
+          'module-seo-003': 'cat-seo-03', 'module-13-003': 'cat-seo-03', 'module-seo-03': 'cat-seo-03',
+          'module-seo-004': 'cat-seo-04', 'module-13-004': 'cat-seo-04', 'module-seo-04': 'cat-seo-04',
+          'module-seo-005': 'cat-seo-05', 'module-13-005': 'cat-seo-05', 'module-seo-05': 'cat-seo-05',
+          'module-seo-006': 'cat-seo-06', 'module-13-006': 'cat-seo-06', 'module-seo-06': 'cat-seo-06',
+          'module-seo-007': 'cat-seo-07', 'module-13-007': 'cat-seo-07', 'module-seo-07': 'cat-seo-07',
+          'module-seo-008': 'cat-seo-08', 'module-13-008': 'cat-seo-08', 'module-seo-08': 'cat-seo-08',
+          'module-seo-009': 'cat-seo-09', 'module-13-009': 'cat-seo-09', 'module-seo-09': 'cat-seo-09',
+          'module-seo-010': 'cat-seo-10', 'module-13-010': 'cat-seo-10', 'module-seo-10': 'cat-seo-10',
+          'module-seo-011': 'cat-seo-11', 'module-13-011': 'cat-seo-11', 'module-seo-011': 'cat-seo-11',
+          'module-seo-012': 'cat-seo-12', 'module-13-012': 'cat-seo-12', 'module-seo-012': 'cat-seo-12',
+          'module-seo-013': 'cat-seo-13', 'module-13-013': 'cat-seo-13', 'module-seo-013': 'cat-seo-13',
+          'module-seo-014': 'cat-seo-14', 'module-13-014': 'cat-seo-14', 'module-seo-014': 'cat-seo-14',
+          'module-seo-015': 'cat-seo-15', 'module-13-015': 'cat-seo-15', 'module-seo-015': 'cat-seo-15',
+          'module-seo-016': 'cat-seo-16', 'module-13-016': 'cat-seo-16', 'module-seo-016': 'cat-seo-16'
+        };
+
+        if (targetModuleId && modToCat[targetModuleId]) {
+          config.activeCategoryId = modToCat[targetModuleId];
+        }
+
+        let activeCatId = config.activeCategoryId || 'cat-seo-01';
+        let searchTerm = '';
+
+        // Helper to flatten node tree with depth for hierarchical tree display
+        function flattenTree(nodes, depth = 0, parentTitle = 'Root') {
+          let list = [];
+          for (const n of nodes) {
+            list.push({ ...n, depth, parentTitle });
+            if (n.children && n.children.length > 0) {
+              list = list.concat(flattenTree(n.children, depth + 1, n.title));
+            }
+          }
+          return list;
+        }
+
+        // Helper to find node recursively by ID
+        function findNodeDeep(nodes, id) {
+          for (const n of nodes) {
+            if (n.id === id) return n;
+            if (n.children && n.children.length > 0) {
+              const found = findNodeDeep(n.children, id);
+              if (found) return found;
+            }
+          }
+          return null;
+        }
+
+        // Helper to delete node recursively
+        function deleteNodeDeep(nodes, id) {
+          const idx = nodes.findIndex(n => n.id === id);
+          if (idx !== -1) {
+            nodes.splice(idx, 1);
+            return true;
+          }
+          for (const n of nodes) {
+            if (n.children && n.children.length > 0) {
+              if (deleteNodeDeep(n.children, id)) return true;
+            }
+          }
+          return false;
+        }
+
+        function render() {
+          const categories = config.categories || [];
+          const currentCat = categories.find(c => c.id === activeCatId) || categories[0] || { nodes: [] };
+          const flatNodes = flattenTree(currentCat.nodes || []);
+
+          let selectedNodeId = config.selectedNodeId;
+          let selectedNode = selectedNodeId ? findNodeDeep(currentCat.nodes || [], selectedNodeId) : null;
+          if (!selectedNode && flatNodes.length > 0) {
+            selectedNode = flatNodes[0];
+            selectedNodeId = selectedNode.id;
+            config.selectedNodeId = selectedNodeId;
+          }
+
+          // Filter nodes if search term present
+          const displayedNodes = searchTerm
+            ? flatNodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm) || (n.routePattern || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.entityType || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
+            : flatNodes;
+
+          // Compute total statistics
+          let totalAllNodes = 0;
+          categories.forEach(c => {
+            totalAllNodes += flattenTree(c.nodes || []).length;
+          });
+
+          const metaDescLen = (selectedNode && selectedNode.metaDescription) ? selectedNode.metaDescription.length : 0;
+          const metaTitleLen = (selectedNode && selectedNode.metaTitleEn) ? selectedNode.metaTitleEn.length : 0;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">SEO, Search & Meta Discovery Suite</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-seo-discovery • 16 Search & Indexing Modules • Comprehensive Crawler Controls • ${totalAllNodes} Rules & Schemas</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="seo-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="seo-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="seo-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Top Category Navigation Pills (All 16 Modules) -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+                ${categories.map(cat => {
+                  const isActive = cat.id === activeCatId;
+                  const catNodeCount = flattenTree(cat.nodes || []).length;
+                  return `
+                    <button class="seo-cat-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                        : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60'
+                    }" data-cat-id="${cat.id}">
+                      <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-700'}">${cat.code || ''}</span>
+                      <span>${cat.title}</span>
+                      <span class="text-[10px] opacity-75 font-mono">(${catNodeCount})</span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Main Two-Column Studio Layout -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left Column: Category Hierarchy & Node Tree (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                  <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                      <div>
+                        <h3 class="text-sm font-bold text-white">${currentCat.title}</h3>
+                        <p class="text-xs text-slate-400">${currentCat.titleOdia || currentCat.description || ''}</p>
+                      </div>
+                      <button id="seo-btn-add-node" class="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Root Rule
+                      </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                      <input type="text" id="seo-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} SEO rules or nodes..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                    </div>
+
+                    <!-- Node List (Hierarchical Indentation) -->
+                    <div class="space-y-1.5 max-h-[620px] overflow-y-auto pr-1">
+                      ${displayedNodes.map(node => {
+                        const isSelected = node.id === selectedNodeId;
+                        const indentPx = Math.min((node.depth || 0) * 16, 64);
+                        return `
+                          <div class="seo-node-card p-2.5 rounded-lg border cursor-pointer transition ${
+                            isSelected
+                              ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
+                              : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                            <div class="flex items-start justify-between gap-2">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '🔍' : (node.depth === 1 ? '└' : '└ └')}</span>
+                                <h4 class="text-xs font-semibold ${isSelected ? 'text-teal-300' : 'text-white'} truncate">${node.title}</h4>
+                              </div>
+                              <span class="px-1.5 py-0.5 rounded text-[9px] font-mono whitespace-nowrap ${node.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                ${node.status || 'Draft'}
+                              </span>
+                            </div>
+                            <div class="mt-1 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                              <span class="truncate max-w-[180px] text-cyan-300">${node.routePattern || '/*'}</span>
+                              <span class="text-teal-400 font-semibold">${node.entityType || 'WebPage'}</span>
+                            </div>
+                            ${node.titleOdia ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate font-serif">${node.titleOdia}</p>` : ''}
+                            <div class="mt-1.5 flex items-center justify-between text-[9px] text-slate-500">
+                              <span class="font-mono">${node.id}</span>
+                              <span>${(node.children && node.children.length > 0) ? `${node.children.length} sub-rules` : (node.stage || 'Production')}</span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No matching SEO rules found.</div>' : ''}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Authoring & Publishing Studio (7 Cols) -->
+                <div class="lg:col-span-7">
+                  ${selectedNode ? `
+                    <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-4">
+                      <!-- Studio Top Bar -->
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
+                        <div>
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">SEO & Search Directive Studio</span>
+                          <h3 class="text-base font-bold text-white mt-0.5">${selectedNode.title}</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button id="seo-btn-add-subnode" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
+                            + Sub-rule
+                          </button>
+                          <button id="seo-btn-delete-node" class="px-2.5 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition">
+                            Delete
+                          </button>
+                          <button id="seo-btn-toggle-publish" class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition ${
+                            selectedNode.status === 'Published'
+                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                          }">
+                            ${selectedNode.status === 'Published' ? 'Unpublish' : 'Publish Live'}
+                          </button>
+                          <button id="seo-btn-save-node" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
+                            Save Rule
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Form Fields Grid -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Rule / Directive Title</label>
+                          <input type="text" id="seo-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Title (Odia)</label>
+                          <input type="text" id="seo-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Route Pattern</label>
+                          <input type="text" id="seo-form-route" value="${selectedNode.routePattern || '/*'}" placeholder="e.g. /jobs-careers/*" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-cyan-300 focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Entity / Schema Type</label>
+                          <input type="text" id="seo-form-entity" value="${selectedNode.entityType || 'WebPage'}" placeholder="WebPage, Article, JobPosting" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-teal-300 focus:outline-none focus:border-teal-500 font-semibold" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Search Priority (0.1 - 1.0)</label>
+                          <input type="number" step="0.1" min="0.1" max="1.0" id="seo-form-priority" value="${selectedNode.searchPriority !== undefined ? selectedNode.searchPriority : 0.8}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                      </div>
+
+                      <!-- Meta Title & Odia Title -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold text-slate-300">Meta Title (English)</label>
+                            <span class="text-[10px] text-slate-400 font-mono">${metaTitleLen} / 60 chars</span>
+                          </div>
+                          <input type="text" id="seo-form-meta-title-en" value="${selectedNode.metaTitleEn || ''}" placeholder="Page Meta Title..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Meta Title (Odia)</label>
+                          <input type="text" id="seo-form-meta-title-or" value="${selectedNode.metaTitleOr || ''}" placeholder="ଓଡ଼ିଆ ମେଟା ଟାଇଟଲ୍..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                        </div>
+                      </div>
+
+                      <!-- Meta Description -->
+                      <div>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="text-xs font-semibold text-slate-300">Meta Description & SERP Snippet</label>
+                          <span class="text-[10px] ${metaDescLen > 160 ? 'text-amber-400' : 'text-slate-400'} font-mono">${metaDescLen} / 160 chars</span>
+                        </div>
+                        <textarea id="seo-form-meta-description" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 leading-relaxed">${selectedNode.metaDescription || ''}</textarea>
+                      </div>
+
+                      <!-- Canonical & Directives -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Canonical Strategy / Target URL</label>
+                          <input type="text" id="seo-form-canonical" value="${selectedNode.canonicalStrategy || ''}" placeholder="e.g. Strict Canonical (https://csodisha.com + path)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Robots Directives</label>
+                          <input type="text" id="seo-form-robots" value="${selectedNode.robotsDirective || 'index, follow'}" placeholder="index, follow, max-image-preview:large" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                      </div>
+
+                      <!-- OpenGraph Image & Keywords -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Social Preview / OG Image URL</label>
+                          <input type="text" id="seo-form-og-image" value="${selectedNode.ogImageUrl || ''}" placeholder="/assets/images/og-default.jpg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Search Keywords & Synonyms</label>
+                          <input type="text" id="seo-form-keywords" value="${selectedNode.searchKeywords || ''}" placeholder="Odisha, OPSC, OSSC, Jobs, Results" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                      </div>
+
+                      <!-- JSON-LD Structured Data Schema -->
+                      <div>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="text-xs font-semibold text-slate-300">Dynamic JSON-LD Structured Data Schema Template</label>
+                          <span class="text-[10px] text-teal-400 font-mono">Schema.org JSON-LD</span>
+                        </div>
+                        <textarea id="seo-form-schema" rows="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-300 focus:outline-none focus:border-teal-500 font-mono leading-relaxed">${selectedNode.schemaTemplate || ''}</textarea>
+                      </div>
+
+                      <!-- Live SERP Preview Box -->
+                      <div class="p-3.5 rounded-lg bg-slate-900/90 border border-slate-700/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Google SERP Live Snippet Preview</span>
+                          <span class="text-[10px] text-emerald-400 font-mono">https://csodisha.com${selectedNode.routePattern && selectedNode.routePattern !== '/*' ? selectedNode.routePattern.replace('/*', '') : ''}</span>
+                        </div>
+                        <div class="text-sm font-medium text-blue-400 hover:underline cursor-pointer truncate">
+                          ${selectedNode.metaTitleEn || selectedNode.title || 'Common Sense Odisha (CSO)'}
+                        </div>
+                        <div class="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                          ${selectedNode.metaDescription || 'Verify Odisha government schemes, jobs, exams, and educational resources.'}
+                        </div>
+                      </div>
+
+                      <!-- Visibility & Audit -->
+                      <div class="flex items-center justify-between pt-2 border-t border-slate-700/60">
+                        <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                          <input type="checkbox" id="seo-form-active" ${selectedNode.active ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" />
+                          Active in Search Index & Discovery Engine
+                        </label>
+                        <span class="text-xs text-slate-500 font-mono">Updated: ${selectedNode.lastUpdated || 'Today'}</span>
+                      </div>
+                    </div>
+                  ` : `
+                    <div class="p-12 text-center rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
+                      Select an SEO rule or schema node from the tree on the left to start editing.
+                    </div>
+                  `}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Category Pill switching
+          container.querySelectorAll('.seo-cat-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              activeCatId = e.currentTarget.dataset.catId;
+              config.activeCategoryId = activeCatId;
+              const cat = categories.find(c => c.id === activeCatId);
+              const fl = flattenTree(cat ? cat.nodes || [] : []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              render();
+            });
+          });
+
+          // Node Card selection
+          container.querySelectorAll('.seo-node-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+              const treeScrollContainer = container.querySelector('.max-h-\\[620px\\]') || container.querySelector('.overflow-y-auto');
+              const scrollTop = treeScrollContainer ? treeScrollContainer.scrollTop : 0;
+              config.selectedNodeId = e.currentTarget.dataset.nodeId;
+              render();
+              const newTreeScrollContainer = container.querySelector('.max-h-\\[620px\\]') || container.querySelector('.overflow-y-auto');
+              if (newTreeScrollContainer) newTreeScrollContainer.scrollTop = scrollTop;
+            });
+          });
+
+          // Search input
+          const searchInput = document.getElementById('seo-tree-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          // Add Root Node Button
+          document.getElementById('seo-btn-add-node')?.addEventListener('click', () => {
+            const newNodeId = `SEO-NODE-${Date.now().toString().slice(-4)}`;
+            const newNode = {
+              id: newNodeId,
+              title: "New SEO Route & Search Directive",
+              titleOdia: "ନୂତନ ଏସଇଓ ନିର୍ଦ୍ଦେଶାବଳୀ",
+              slug: "new-seo-directive",
+              categoryCode: currentCat.code || "01",
+              routePattern: "/*",
+              entityType: "WebPage",
+              metaTitleEn: "Common Sense Odisha — Dynamic Meta Title",
+              metaTitleOr: "କମନ ସେନ୍ସ ଓଡ଼ିଶା — ମେଟା ଶୀର୍ଷକ",
+              metaDescription: "Detailed metadata, schema, and search indexing rules for this route.",
+              canonicalStrategy: "Strict Canonical (https://csodisha.com + path)",
+              robotsDirective: "index, follow",
+              schemaTemplate: "{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"WebPage\"\n}",
+              ogImageUrl: "/assets/images/og-default.jpg",
+              searchKeywords: "Odisha, Government, Information",
+              searchPriority: 0.8,
+              stage: "Production Active",
+              status: "Draft",
+              active: true,
+              lastUpdated: new Date().toISOString().slice(0, 10),
+              children: []
+            };
+
+            currentCat.nodes = currentCat.nodes || [];
+            currentCat.nodes.unshift(newNode);
+            config.selectedNodeId = newNodeId;
+            store.saveSeoDiscoveryTreeConfig(config);
+            render();
+            store.showToast?.('New SEO rule created!', 'success');
+          });
+
+          // Add Sub-node Button
+          document.getElementById('seo-btn-add-subnode')?.addEventListener('click', () => {
+            if (!selectedNode) return;
+            const subNodeId = `${selectedNode.id}-SUB-${Date.now().toString().slice(-3)}`;
+            const subNode = {
+              id: subNodeId,
+              title: `Sub-rule for ${selectedNode.title}`,
+              titleOdia: "ଉପ-ନିୟମ",
+              slug: `${selectedNode.slug || 'rule'}-sub`,
+              categoryCode: currentCat.code || "01",
+              routePattern: `${selectedNode.routePattern || '/*'}/sub`,
+              entityType: selectedNode.entityType || "WebPage",
+              metaTitleEn: `${selectedNode.metaTitleEn || selectedNode.title} — Sub-path`,
+              metaTitleOr: selectedNode.metaTitleOr || "",
+              metaDescription: selectedNode.metaDescription || "",
+              canonicalStrategy: selectedNode.canonicalStrategy || "",
+              robotsDirective: selectedNode.robotsDirective || "index, follow",
+              schemaTemplate: selectedNode.schemaTemplate || "{\n  \"@context\": \"https://schema.org\"\n}",
+              ogImageUrl: selectedNode.ogImageUrl || "/assets/images/og-default.jpg",
+              searchKeywords: selectedNode.searchKeywords || "",
+              searchPriority: selectedNode.searchPriority || 0.7,
+              stage: "Sub-rule Active",
+              status: "Draft",
+              active: true,
+              lastUpdated: new Date().toISOString().slice(0, 10),
+              children: []
+            };
+
+            selectedNode.children = selectedNode.children || [];
+            selectedNode.children.unshift(subNode);
+            config.selectedNodeId = subNodeId;
+            store.saveSeoDiscoveryTreeConfig(config);
+            render();
+            store.showToast?.('Sub-rule added!', 'success');
+          });
+
+          // Delete Node Button
+          document.getElementById('seo-btn-delete-node')?.addEventListener('click', () => {
+            if (confirm(`Delete SEO rule "${selectedNode.title}" from this directory?`)) {
+              deleteNodeDeep(currentCat.nodes || [], selectedNode.id);
+              const fl = flattenTree(currentCat.nodes || []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              store.saveSeoDiscoveryTreeConfig(config);
+              render();
+              store.showToast?.('SEO rule deleted.', 'info');
+            }
+          });
+
+          // Toggle Publish
+          document.getElementById('seo-btn-toggle-publish')?.addEventListener('click', () => {
+            selectedNode.status = selectedNode.status === 'Published' ? 'Draft' : 'Published';
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+            store.saveSeoDiscoveryTreeConfig(config);
+            render();
+            store.showToast?.(`SEO Rule is now ${selectedNode.status}`, 'success');
+          });
+
+          // Save Node Function
+          function saveCurrentNode() {
+            if (!selectedNode) return;
+            selectedNode.title = document.getElementById('seo-form-title')?.value || selectedNode.title;
+            selectedNode.titleOdia = document.getElementById('seo-form-title-odia')?.value || '';
+            selectedNode.routePattern = document.getElementById('seo-form-route')?.value || '';
+            selectedNode.entityType = document.getElementById('seo-form-entity')?.value || '';
+            selectedNode.searchPriority = parseFloat(document.getElementById('seo-form-priority')?.value) || 0.8;
+            selectedNode.metaTitleEn = document.getElementById('seo-form-meta-title-en')?.value || '';
+            selectedNode.metaTitleOr = document.getElementById('seo-form-meta-title-or')?.value || '';
+            selectedNode.metaDescription = document.getElementById('seo-form-meta-description')?.value || '';
+            selectedNode.canonicalStrategy = document.getElementById('seo-form-canonical')?.value || '';
+            selectedNode.robotsDirective = document.getElementById('seo-form-robots')?.value || '';
+            selectedNode.ogImageUrl = document.getElementById('seo-form-og-image')?.value || '';
+            selectedNode.searchKeywords = document.getElementById('seo-form-keywords')?.value || '';
+            selectedNode.schemaTemplate = document.getElementById('seo-form-schema')?.value || '';
+            selectedNode.active = !!document.getElementById('seo-form-active')?.checked;
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+
+            store.saveSeoDiscoveryTreeConfig(config);
+            store.showToast?.('SEO directive saved!', 'success');
+          }
+
+          document.getElementById('seo-btn-save-node')?.addEventListener('click', () => {
+            saveCurrentNode();
+            render();
+          });
+
+          document.getElementById('seo-btn-save-all')?.addEventListener('click', () => {
+            saveCurrentNode();
+            store.saveSeoDiscoveryTreeConfig(config);
+            render();
+            store.showToast?.('All SEO suite directives saved successfully!', 'success');
+          });
+
+          // Export Manifest
+          document.getElementById('seo-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportSeoDiscoveryTreeManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          // Reset Factory
+          document.getElementById('seo-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset SEO, Search & Meta Discovery Suite to authentic factory defaults?')) {
+              config = store.resetSeoDiscoveryTreeConfig();
+              activeCatId = config.activeCategoryId;
+              render();
+              store.showToast?.('SEO suite reset to authentic defaults.', 'info');
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in SEO & Search Suite Studio', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in SEO & Search Suite Studio</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

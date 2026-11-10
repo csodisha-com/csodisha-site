@@ -13030,7 +13030,8 @@
           schemesDirectoryTree: this.getSchemesDirectoryTreeConfig ? this.getSchemesDirectoryTreeConfig() : null,
           studyDirectoryTree: this.getStudyDirectoryTreeConfig ? this.getStudyDirectoryTreeConfig() : null,
           communityDirectoryTree: this.getCommunityDirectoryTreeConfig ? this.getCommunityDirectoryTreeConfig() : null,
-          eventsScheduleTree: this.getEventsScheduleConfig ? this.getEventsScheduleConfig() : null
+          eventsScheduleTree: this.getEventsScheduleConfig ? this.getEventsScheduleConfig() : null,
+          seoDiscoveryTree: this.getSeoDiscoveryTreeConfig ? this.getSeoDiscoveryTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -110341,6 +110342,626 @@
   SuperStore.saveCalendarSyncFeedsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
   SuperStore.resetCalendarSyncFeedsConfig = function() { return this.resetEventsScheduleConfig(); };
   SuperStore.exportCalendarSyncFeedsManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  // =========================================================================
+  // SEO, SEARCH & META DISCOVERY SUITE ENGINE
+  // =========================================================================
+  const DEFAULT_SEO_DIRECTORY_TREE = {
+  "meta": {
+    "version": "2.0",
+    "updatedAt": "2026-11-10T10:23:44.308Z"
+  },
+  "activeCategoryId": "cat-seo-01",
+  "selectedNodeId": "SEO-NODE-01-01",
+  "categories": [
+    {
+      "id": "cat-seo-01",
+      "moduleId": "module-seo-001",
+      "code": "01",
+      "title": "Meta Tags, OpenGraph & Twitter Cards",
+      "titleOdia": "ମେଟା ଟ୍ୟାଗ୍, ଓପନଗ୍ରାଫ୍ ଏବଂ ଟ୍ୱିଟର କାର୍ଡ",
+      "description": "Automated OG titles, multilingual meta tags, image fallback cards, and responsive social previews",
+      "nodes": [
+        {
+          "id": "SEO-NODE-01-01",
+          "title": "Default Global OpenGraph & Social Cards Strategy",
+          "titleOdia": "ସର୍ବସାଧାରଣ ସାମାଜିକ ପ୍ରିଭ୍ୟୁ କାର୍ଡ ନିୟମ",
+          "slug": "global-opengraph-cards",
+          "categoryCode": "01",
+          "routePattern": "/*",
+          "entityType": "WebPage",
+          "metaTitleEn": "Common Sense Odisha (CSO) — Verified Knowledge, Portals & Public Services",
+          "metaTitleOr": "କମନ ସେନ୍ସ ଓଡ଼ିଶା — ନିର୍ଭୁଲ ତଥ୍ୟ, ନିଯୁକ୍ତି ଏବଂ ଯୋଜନା ପୋର୍ଟାଲ",
+          "metaDescription": "Independent, open-access public knowledge repository, competitive examinations calendar, welfare schemes finder, and student library for Odisha citizens.",
+          "canonicalStrategy": "Strict Canonical (https://csodisha.com + path)",
+          "robotsDirective": "index, follow, max-image-preview:large, max-snippet:-1",
+          "schemaTemplate": "{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"WebSite\",\n  \"name\": \"Common Sense Odisha\",\n  \"url\": \"https://csodisha.com/\",\n  \"potentialAction\": {\n    \"@type\": \"SearchAction\",\n    \"target\": \"https://csodisha.com/search/?q={search_term_string}\",\n    \"query-input\": \"required name=search_term_string\"\n  }\n}",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Odisha, Government, Jobs, Schemes, Study, Results, Notifications",
+          "searchPriority": 1,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-02",
+      "moduleId": "module-seo-002",
+      "code": "02",
+      "title": "Dynamic JSON-LD Structured Data Schema Engine",
+      "titleOdia": "ଗଠନମୂଳକ ଡାଟା ସ୍କିମା ଇଞ୍ଜିନ (JSON-LD)",
+      "description": "Automated Google Rich Result schemas for JobPosting, GovernmentService, Course, Event, and FAQPage",
+      "nodes": [
+        {
+          "id": "SEO-NODE-02-01",
+          "title": "GovernmentService & Public Welfare Entitlement Schema",
+          "titleOdia": "ସରକାରୀ ଯୋଜନା ସ୍କିମା ଟେମ୍ପଲେଟ୍",
+          "slug": "governmentservice-schema",
+          "categoryCode": "02",
+          "routePattern": "/schemes-benefits/*",
+          "entityType": "GovernmentService",
+          "metaTitleEn": "Odisha Welfare Schemes & Direct Benefits | CSO Schema",
+          "metaTitleOr": "ଓଡ଼ିଶା କଲ୍ୟାଣ ଯୋଜନା ସ୍କିମା",
+          "metaDescription": "Structured metadata markup generating rich snippets for Odisha citizen DBT schemes including Subhadra Yojana, MBPY, and BSKY.",
+          "canonicalStrategy": "Self-Referencing Canonical",
+          "robotsDirective": "index, follow",
+          "schemaTemplate": "{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"GovernmentService\",\n  \"name\": \"{{scheme_title}}\",\n  \"serviceType\": \"Public Welfare Entitlement\",\n  \"provider\": {\n    \"@type\": \"GovernmentOrganization\",\n    \"name\": \"Government of Odisha\"\n  },\n  \"areaServed\": {\n    \"@type\": \"State\",\n    \"name\": \"Odisha\"\n  }\n}",
+          "ogImageUrl": "/assets/images/og-schemes.jpg",
+          "searchKeywords": "GovernmentService, Schema.org, Rich Results, Subhadra, MBPY",
+          "searchPriority": 0.9,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        },
+        {
+          "id": "SEO-NODE-02-02",
+          "title": "JobPosting Structured Data Schema for State Recruitment",
+          "titleOdia": "ଚାକିରି ବିଜ୍ଞପ୍ତି ସ୍କିମା ଟେମ୍ପଲେଟ୍",
+          "slug": "jobposting-schema",
+          "categoryCode": "02",
+          "routePattern": "/jobs-careers/*",
+          "entityType": "JobPosting",
+          "metaTitleEn": "Odisha Govt Recruitment & Civil Services Jobs Schema",
+          "metaTitleOr": "ଚାକିରି ନିଯୁକ୍ତି ସ୍କିମା",
+          "metaDescription": "Schema.org/JobPosting schema producing Google Jobs carousel integration for OPSC, OSSC, OSSSC, Police and Banking openings.",
+          "canonicalStrategy": "Self-Referencing Canonical",
+          "robotsDirective": "index, follow",
+          "schemaTemplate": "{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"JobPosting\",\n  \"title\": \"{{job_title}}\",\n  \"description\": \"{{job_description}}\",\n  \"datePosted\": \"{{published_date}}\",\n  \"validThrough\": \"{{apply_deadline}}\",\n  \"employmentType\": \"FULL_TIME\",\n  \"hiringOrganization\": {\n    \"@type\": \"Organization\",\n    \"name\": \"{{hiring_commission}}\"\n  },\n  \"jobLocation\": {\n    \"@type\": \"Place\",\n    \"address\": {\n      \"@type\": \"PostalAddress\",\n      \"addressRegion\": \"Odisha\",\n      \"addressCountry\": \"IN\"\n    }\n  }\n}",
+          "ogImageUrl": "/assets/images/og-jobs.jpg",
+          "searchKeywords": "JobPosting, Google Jobs, OPSC, OSSC, Recruitment",
+          "searchPriority": 0.9,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-03",
+      "moduleId": "module-seo-003",
+      "code": "03",
+      "title": "XML Sitemap Generator & Multi-Index Feeds",
+      "titleOdia": "ଏକ୍ସଏମଏଲ୍ ସାଇଟମ୍ୟାପ୍ ଜେନେରେଟର",
+      "description": "Segmented sitemap indexes for jobs, schemes, study curricula, and regional communities",
+      "nodes": [
+        {
+          "id": "SEO-NODE-03-01",
+          "title": "Multi-Index Sitemap Protocol (/sitemap.xml)",
+          "titleOdia": "ସର୍ବମୋଟ ସାଇଟମ୍ୟାପ୍ ଇଣ୍ଡେକ୍ସ",
+          "slug": "multi-index-sitemap",
+          "categoryCode": "03",
+          "routePattern": "/sitemap.xml",
+          "entityType": "SitemapIndex",
+          "metaTitleEn": "XML Sitemap Index | Common Sense Odisha",
+          "metaTitleOr": "ଏକ୍ସଏମଏଲ୍ ସାଇଟମ୍ୟାପ୍ ଇଣ୍ଡେକ୍ସ",
+          "metaDescription": "Master sitemap index aggregating /sitemap-jobs.xml, /sitemap-schemes.xml, /sitemap-study.xml, and /sitemap-community.xml.",
+          "canonicalStrategy": "Static Sitemap Route",
+          "robotsDirective": "index, follow",
+          "schemaTemplate": "<!-- Master Sitemap Index referencing 4 sub-indexes -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Sitemap, XML, Search Indexing",
+          "searchPriority": 0.8,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-04",
+      "moduleId": "module-seo-004",
+      "code": "04",
+      "title": "RSS, Atom & News Syndication Hub",
+      "titleOdia": "ଆରଏସଏସ ଏବଂ ନ୍ୟୁଜ୍ ଫିଡ୍",
+      "description": "Automated RSS 2.0 and Atom feeds for Google News and newsreader distribution",
+      "nodes": [
+        {
+          "id": "SEO-NODE-04-01",
+          "title": "Public Recruitment & Welfare Milestones RSS Feed",
+          "titleOdia": "ଆରଏସଏସ ୨.୦ ଫିଡ୍ ବିଜ୍ଞପ୍ତି",
+          "slug": "cso-rss-feed",
+          "categoryCode": "04",
+          "routePattern": "/feed.xml",
+          "entityType": "RSSFeed",
+          "metaTitleEn": "CSO Public Milestones RSS Feed",
+          "metaTitleOr": "ଆରଏସଏସ ଫିଡ୍",
+          "metaDescription": "Real-time syndicated RSS notification feed for freshly published exam dates, guidelines, and admit card drops.",
+          "canonicalStrategy": "Direct Feed",
+          "robotsDirective": "index, follow",
+          "schemaTemplate": "<!-- RSS 2.0 Feed Spec -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "RSS, Atom, Syndication, Feeds",
+          "searchPriority": 0.7,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-05",
+      "moduleId": "module-seo-005",
+      "code": "05",
+      "title": "Canonical URL Rules & Redirect Manager (301/302)",
+      "titleOdia": "କାନୋନିକାଲ୍ ନିୟମ ଏବଂ ରିଡାଇରେକ୍ଟ ମ୍ୟାନେଜର",
+      "description": "Permanent 301 route migrations, trailing slash normalization, and URL de-duplication",
+      "nodes": [
+        {
+          "id": "SEO-NODE-05-01",
+          "title": "Trailing Slash Normalization & HTTPS Enforcement Rule",
+          "titleOdia": "ୟୁଆରଏଲ୍ ନର୍ମାଲାଇଜେସନ୍ ନିୟମ",
+          "slug": "trailing-slash-rules",
+          "categoryCode": "05",
+          "routePattern": "/*",
+          "entityType": "RedirectRule",
+          "metaTitleEn": "Canonicalization Standards",
+          "metaTitleOr": "କାନୋନିକାଲ୍ ମାନକ",
+          "metaDescription": "Automatic 301 permanent redirect ensuring all directory endpoints enforce trailing slash and strict HTTPS.",
+          "canonicalStrategy": "Enforce HTTPS + Trailing Slash",
+          "robotsDirective": "index, follow",
+          "schemaTemplate": "<!-- Cloudflare Page Rule 301 Redirect -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "301, Redirect, Canonical, HTTPS",
+          "searchPriority": 0.8,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-06",
+      "moduleId": "module-seo-006",
+      "code": "06",
+      "title": "Robots.txt & Crawler Directives Studio",
+      "titleOdia": "ରୋବୋଟ୍ସ ନିର୍ଦ୍ଦେଶାବଳୀ ଷ୍ଟୁଡିଓ (robots.txt)",
+      "description": "Search bot access controls, Disallow paths, crawl delay limits, and search engine permissions",
+      "nodes": [
+        {
+          "id": "SEO-NODE-06-01",
+          "title": "Global Robots.txt Directives",
+          "titleOdia": "ସର୍ବସାଧାରଣ ରୋବୋଟ୍ସ ନିୟମ",
+          "slug": "global-robots-txt",
+          "categoryCode": "06",
+          "routePattern": "/robots.txt",
+          "entityType": "RobotsDirectives",
+          "metaTitleEn": "Robots.txt Crawler Directives",
+          "metaTitleOr": "ରୋବୋଟ୍ସ ଟେକ୍ସଟ",
+          "metaDescription": "Permits Googlebot, Bingbot, and Slurp across all public content hubs while blocking /admin/ and private APIs.",
+          "canonicalStrategy": "Direct Text File",
+          "robotsDirective": "all",
+          "schemaTemplate": "User-agent: *\nDisallow: /admin/\nDisallow: /api/\nAllow: /\nSitemap: https://csodisha.com/sitemap.xml",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "robots.txt, crawler, Googlebot, Bingbot",
+          "searchPriority": 0.9,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-07",
+      "moduleId": "module-seo-007",
+      "code": "07",
+      "title": "Bilingual Search Index & Odia Tokenizer Settings",
+      "titleOdia": "ଦ୍ୱିଭାଷୀ ସନ୍ଧାନ ସୂଚୀ ଏବଂ ଓଡ଼ିଆ ଟୋକେନାଇଜର",
+      "description": "Unicode normalization for Odia characters, stemmer weights, and phonetic matching",
+      "nodes": [
+        {
+          "id": "SEO-NODE-07-01",
+          "title": "Odia Script Tokenizer & Unicode Normalizer",
+          "titleOdia": "ଓଡ଼ିଆ ଅକ୍ଷର ସନ୍ଧାନ ଇଞ୍ଜିନ",
+          "slug": "odia-tokenizer-engine",
+          "categoryCode": "07",
+          "routePattern": "/search/*",
+          "entityType": "SearchTokenizer",
+          "metaTitleEn": "Bilingual Search & Odia Tokenization Engine",
+          "metaTitleOr": "ଦ୍ୱିଭାଷୀ ସନ୍ଧାନ ଇଞ୍ଜିନ",
+          "metaDescription": "Provides accurate keyword matching across English and Odia scripts without transliteration dropouts.",
+          "canonicalStrategy": "Dynamic Search Filter",
+          "robotsDirective": "noindex, follow",
+          "schemaTemplate": "<!-- Odia Unicode Tokenizer Configuration -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Odia Tokenizer, Unicode, Search Index, Bilingual",
+          "searchPriority": 0.8,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-08",
+      "moduleId": "module-seo-008",
+      "code": "08",
+      "title": "Keyword Boosting & Synonyms (OCS, CGL, RI, ARI, Amin)",
+      "titleOdia": "କୀ-ୱାର୍ଡ ବୁଷ୍ଟିଂ ଏବଂ ସମାର୍ଥକ ଶବ୍ଦ ମ୍ୟାପିଂ",
+      "description": "Synonym dictionaries matching popular Odia exam acronyms to official recruitment circulars",
+      "nodes": [
+        {
+          "id": "SEO-NODE-08-01",
+          "title": "State Exam Acronym & Synonym Dictionary",
+          "titleOdia": "ପରୀକ୍ଷା ସଂକ୍ଷିପ୍ତ ଶବ୍ଦ କୋଷ",
+          "slug": "exam-synonyms-dict",
+          "categoryCode": "08",
+          "routePattern": "/*",
+          "entityType": "SynonymMap",
+          "metaTitleEn": "Odisha Recruitment Acronyms & Synonyms Booster",
+          "metaTitleOr": "ନିଯୁକ୍ତି ସମାର୍ଥକ ଶବ୍ଦ",
+          "metaDescription": "Expands search queries like OAS to Odisha Administrative Service, OPSC OCS, and ସରକାରୀ ଚାକିରି.",
+          "canonicalStrategy": "Internal Search Engine",
+          "robotsDirective": "index, follow",
+          "schemaTemplate": "<!-- Synonyms Map: OAS <=> OCS <=> Civil Services -->",
+          "ogImageUrl": "/assets/images/og-jobs.jpg",
+          "searchKeywords": "OAS, OCS, OPSC, OSSC, CGL, RI, ARI, Amin, B.Ed",
+          "searchPriority": 0.9,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-09",
+      "moduleId": "module-seo-009",
+      "code": "09",
+      "title": "Search Autocomplete & Typo-Tolerance Rules",
+      "titleOdia": "ଅଟୋ-କମ୍ପ୍ଲିଟ୍ ଏବଂ ଟାଇପୋ ସହନଶୀଳତା",
+      "description": "Levenshtein distance matching, instant keyword suggestions, and prefix autocomplete trees",
+      "nodes": [
+        {
+          "id": "SEO-NODE-09-01",
+          "title": "Fuzzy Autocomplete & Levenshtein Distance Rules",
+          "titleOdia": "ସ୍ୱୟଂଚାଳିତ ଶବ୍ଦ ପରାମର୍ଶ ନିୟମ",
+          "slug": "fuzzy-autocomplete-rules",
+          "categoryCode": "09",
+          "routePattern": "/search/?autocomplete=1",
+          "entityType": "AutocompleteEngine",
+          "metaTitleEn": "Search Autocomplete Rules",
+          "metaTitleOr": "ଅଟୋକମ୍ପ୍ଲିଟ୍ ନିୟମ",
+          "metaDescription": "Instant search dropdown suggestions with 2-character Levenshtein error tolerance for common misspelling patterns.",
+          "canonicalStrategy": "API Endpoint",
+          "robotsDirective": "noindex",
+          "schemaTemplate": "<!-- Fuzzy Autocomplete Engine Config -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Autocomplete, Typo-tolerance, Fuzzy Match",
+          "searchPriority": 0.7,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-010",
+      "moduleId": "module-seo-010",
+      "code": "10",
+      "title": "Zero-Result Queries & Fallback Search Fallbacks",
+      "titleOdia": "ଶୂନ୍ୟ-ଫଳାଫଳ ଅନୁସନ୍ଧାନ ଏବଂ ବିକଳ୍ପ ସନ୍ଧାନ",
+      "description": "Did-you-mean recommendations, popular topic routing, and zero-result search analytics logging",
+      "nodes": [
+        {
+          "id": "SEO-NODE-10-01",
+          "title": "Zero-Result 'Did You Mean' Fallback Strategy",
+          "titleOdia": "ବିକଳ୍ପ ପରାମର୍ଶ ଫଲବ୍ୟାକ୍",
+          "slug": "zero-result-fallbacks",
+          "categoryCode": "10",
+          "routePattern": "/search/?q=*",
+          "entityType": "SearchFallback",
+          "metaTitleEn": "Search Fallback Protocols",
+          "metaTitleOr": "ବିକଳ୍ପ ସନ୍ଧାନ ନିୟମ",
+          "metaDescription": "Re-routes dead-end queries to the closest top-level directory and presents curated trending portals.",
+          "canonicalStrategy": "Search Handler",
+          "robotsDirective": "noindex, follow",
+          "schemaTemplate": "<!-- Fallback Recommendation Handlers -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Zero Results, Fallback, Did You Mean",
+          "searchPriority": 0.6,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-011",
+      "moduleId": "module-seo-011",
+      "code": "11",
+      "title": "Google Search Console, Bing & Yandex IndexNow Engine",
+      "titleOdia": "ଇଣ୍ଡେକ୍ସନାଓ ଏବଂ ସର୍ଚ୍ଚ କନସୋଲ୍ ସିଙ୍କ୍",
+      "description": "Real-time IndexNow push notifications to Bing/Yandex and Search Console URL inspection integration",
+      "nodes": [
+        {
+          "id": "SEO-NODE-011-01",
+          "title": "IndexNow Automated Push Protocol for Instant Crawling",
+          "titleOdia": "ତୁରନ୍ତ ଇଣ୍ଡେକ୍ସିଂ ସିଙ୍କ୍ (IndexNow)",
+          "slug": "indexnow-instant-push",
+          "categoryCode": "11",
+          "routePattern": "/api/indexnow",
+          "entityType": "IndexNowGateway",
+          "metaTitleEn": "IndexNow Real-Time Crawler Push Gateway",
+          "metaTitleOr": "ଇଣ୍ଡେକ୍ସନାଓ ଗେଟୱେ",
+          "metaDescription": "Dispatches HTTP POST pings to Bing and Yandex within 60 seconds of any admin publishing event.",
+          "canonicalStrategy": "API Push Service",
+          "robotsDirective": "noindex",
+          "schemaTemplate": "<!-- IndexNow JSON Payload Spec -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "IndexNow, Bing, Google Search Console, Yandex",
+          "searchPriority": 0.8,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-012",
+      "moduleId": "module-seo-012",
+      "code": "12",
+      "title": "Core Web Vitals, Edge Cache & Pre-rendering Hints",
+      "titleOdia": "ୱେବ୍ ଭାଇଟାଲ୍ସ ଏବଂ ଏଜ୍ କ୍ୟାଚ୍ ଅପ୍ଟିମାଇଜେସନ୍",
+      "description": "LCP, FID/INP, CLS benchmarks, preconnect headers, and DNS prefetch hints for Cloudflare Edge",
+      "nodes": [
+        {
+          "id": "SEO-NODE-012-01",
+          "title": "Cloudflare Edge Pre-rendering & Resource Hints Configuration",
+          "titleOdia": "ଏଜ୍ କ୍ୟାଚ୍ ଏବଂ ରିସୋର୍ସ ହିଣ୍ଟ୍ସ",
+          "slug": "edge-cache-resource-hints",
+          "categoryCode": "12",
+          "routePattern": "/*",
+          "entityType": "PerformanceRules",
+          "metaTitleEn": "Core Web Vitals Optimization Rules",
+          "metaTitleOr": "ୱେବ୍ ଭାଇଟାଲ୍ସ ମାନକ",
+          "metaDescription": "Preconnect headers to unpkg.com, cdnjs, and fonts with Brotli compression and cache-control headers.",
+          "canonicalStrategy": "HTTP Header Strategy",
+          "robotsDirective": "all",
+          "schemaTemplate": "<!-- Link preconnect & dns-prefetch tags -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Core Web Vitals, LCP, INP, CLS, Edge Cache",
+          "searchPriority": 0.9,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-013",
+      "moduleId": "module-seo-013",
+      "code": "13",
+      "title": "Rich Snippet Previewer (Google SERP, WhatsApp, Telegram, X)",
+      "titleOdia": "ରିଚ୍ ସ୍ନିପେଟ୍ ପ୍ରିଭ୍ୟୁଅର୍",
+      "description": "Live visual simulator rendering desktop/mobile Google search results, WhatsApp cards, and X summary cards",
+      "nodes": [
+        {
+          "id": "SEO-NODE-013-01",
+          "title": "Multi-Platform Social & SERP Card Emulator",
+          "titleOdia": "ମଲ୍ଟି-ପ୍ଲାଟଫର୍ମ କାର୍ଡ ପ୍ରିଭ୍ୟୁ",
+          "slug": "serp-social-emulator",
+          "categoryCode": "13",
+          "routePattern": "/*",
+          "entityType": "PreviewEmulator",
+          "metaTitleEn": "Rich Snippet & Social Card Previewer",
+          "metaTitleOr": "ପ୍ରିଭ୍ୟୁ ସିମ୍ୟୁଲେଟର",
+          "metaDescription": "Emulates high-fidelity previews across Google SERP, WhatsApp, Telegram, Facebook, and X timeline shares.",
+          "canonicalStrategy": "Studio Tool",
+          "robotsDirective": "noindex",
+          "schemaTemplate": "<!-- Social Card Preview Configurations -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "SERP Preview, WhatsApp Cards, Twitter Summary",
+          "searchPriority": 0.7,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-014",
+      "moduleId": "module-seo-014",
+      "code": "14",
+      "title": "Internal Linking Graph & Orphan Node Detector",
+      "titleOdia": "ଇଣ୍ଟରନାଲ୍ ଲିଙ୍କିଙ୍ଗ୍ ଗ୍ରାଫ୍ ଏବଂ ଅନାଥ ନୋଡ୍ ଚିହ୍ନଟକାରୀ",
+      "description": "Site-wide internal link topology analyzer ensuring all 3,465+ records maintain bidirectional link paths",
+      "nodes": [
+        {
+          "id": "SEO-NODE-014-01",
+          "title": "Zero-Orphan Link Graph Verification Engine",
+          "titleOdia": "ଲିଙ୍କ୍ ଗ୍ରାଫ୍ ପରୀକ୍ଷଣ ଇଞ୍ଜିନ",
+          "slug": "internal-link-graph",
+          "categoryCode": "14",
+          "routePattern": "/*",
+          "entityType": "LinkGraph",
+          "metaTitleEn": "Internal Linking Integrity Graph",
+          "metaTitleOr": "ଲିଙ୍କ୍ ଗ୍ରାଫ୍ ଇଣ୍ଟିଗ୍ରିଟି",
+          "metaDescription": "Continuously audits cross-module link references to guarantee no orphan leaf records exist across all 4 directories.",
+          "canonicalStrategy": "Internal Audit Service",
+          "robotsDirective": "all",
+          "schemaTemplate": "<!-- DAG Link Topology Analyzer -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Link Graph, Orphan Pages, Internal Links, Crawl Depth",
+          "searchPriority": 0.8,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-015",
+      "moduleId": "module-seo-015",
+      "code": "15",
+      "title": "URL Slug Normalizer & Cyrillic/Odia Transliteration",
+      "titleOdia": "ୟୁଆରଏଲ୍ ସ୍ଲଗ୍ ନର୍ମାଲାଇଜେସନ୍ ଏବଂ ଲିପ୍ୟନ୍ତରଣ",
+      "description": "Clean ASCII slug generation for multilingual Odia titles, eliminating special punctuation and URL encoding issues",
+      "nodes": [
+        {
+          "id": "SEO-NODE-015-01",
+          "title": "Automated Odia-to-ASCII Friendly Slug Generation Rule",
+          "titleOdia": "ସ୍ଲଗ୍ ନର୍ମାଲାଇଜେସନ୍ ନିୟମ",
+          "slug": "slug-normalizer-rules",
+          "categoryCode": "15",
+          "routePattern": "/*",
+          "entityType": "SlugGenerator",
+          "metaTitleEn": "SEO Slug Generation Standards",
+          "metaTitleOr": "ସ୍ଲଗ୍ ମାନକ",
+          "metaDescription": "Converts Odia headlines into readable lowercase hyphenated permalinks (e.g. subhadra-yojana-apply-guide).",
+          "canonicalStrategy": "Permalink Standard",
+          "robotsDirective": "all",
+          "schemaTemplate": "<!-- Slug Transliteration Algorithm -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Slug, Permalinks, Transliteration, Clean URLs",
+          "searchPriority": 0.7,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-seo-016",
+      "moduleId": "module-seo-016",
+      "code": "16",
+      "title": "Platform Search Analytics & Intent Tracking",
+      "titleOdia": "ପ୍ଲାଟଫର୍ମ ସନ୍ଧାନ ଆନାଲିଟିକ୍ସ ଏବଂ ଉଦ୍ଦେଶ୍ୟ ଟ୍ରାକିଂ",
+      "description": "Aggregates citizen query velocity, high-converting discovery keywords, and seasonal examination trends",
+      "nodes": [
+        {
+          "id": "SEO-NODE-016-01",
+          "title": "Citizen Search Queries & Seasonal Examination Trends Monitor",
+          "titleOdia": "ସନ୍ଧାନ ଆନାଲିଟିକ୍ସ ମନିଟରିଂ",
+          "slug": "search-analytics-monitor",
+          "categoryCode": "16",
+          "routePattern": "/analytics/search",
+          "entityType": "SearchAnalytics",
+          "metaTitleEn": "Platform Search Analytics & Intent Dashboard",
+          "metaTitleOr": "ସନ୍ଧାନ ଆନାଲିଟିକ୍ସ",
+          "metaDescription": "Real-time dashboard tracking daily volume for OPSC, Subhadra Yojana, BSKY card renewal, and syllabus downloads.",
+          "canonicalStrategy": "Admin Metric Service",
+          "robotsDirective": "noindex",
+          "schemaTemplate": "<!-- Search Analytics Aggregator Schema -->",
+          "ogImageUrl": "/assets/images/og-default.jpg",
+          "searchKeywords": "Search Analytics, Trends, Queries, Velocity",
+          "searchPriority": 0.8,
+          "stage": "Production Active",
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    }
+  ]
+};
+
+  SuperStore.getSeoDiscoveryTreeConfig = function() {
+    return _hydrateConfig('cso_seo_discovery_tree_v1', 'categories', () => DEFAULT_SEO_DIRECTORY_TREE);
+  };
+  SuperStore.saveSeoDiscoveryTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_seo_discovery_tree_v1', JSON.stringify(cfg));
+    this.logAudit('SEO_TREE_MUTATION', 'SEO_DISCOVERY', 'Saved SEO discovery rules updates (' + cfg.categories.length + ' modules).');
+    return true;
+  };
+  SuperStore.resetSeoDiscoveryTreeConfig = function() {
+    localStorage.setItem('cso_seo_discovery_tree_v1', JSON.stringify(DEFAULT_SEO_DIRECTORY_TREE));
+    this.logAudit('SEO_TREE_RESET', 'SEO_DISCOVERY', 'SEO and Meta Discovery suite reset to authentic defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_SEO_DIRECTORY_TREE));
+  };
+  SuperStore.exportSeoDiscoveryTreeManifest = function() {
+    const config = this.getSeoDiscoveryTreeConfig();
+    const filename = "seo_discovery_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SEO_TREE_EXPORTED", "DATA_EXPORT", "SEO discovery manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  // Forwarding accessors for discrete SEO module routes:
+  SuperStore.getMetaTagsConfig = function() { return this.getSeoDiscoveryTreeConfig(); };
+  SuperStore.saveMetaTagsConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
+  SuperStore.resetMetaTagsConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
+  SuperStore.exportMetaTagsManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
+
+  SuperStore.getStructuredDataSchemaConfig = function() { return this.getSeoDiscoveryTreeConfig(); };
+  SuperStore.saveStructuredDataSchemaConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
+  SuperStore.resetStructuredDataSchemaConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
+  SuperStore.exportStructuredDataSchemaManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
+
+  SuperStore.getXmlSitemapGeneratorConfig = function() { return this.getSeoDiscoveryTreeConfig(); };
+  SuperStore.saveXmlSitemapGeneratorConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
+  SuperStore.resetXmlSitemapGeneratorConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
+  SuperStore.exportXmlSitemapGeneratorManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
+
+  SuperStore.getRobotsDirectivesConfig = function() { return this.getSeoDiscoveryTreeConfig(); };
+  SuperStore.saveRobotsDirectivesConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
+  SuperStore.resetRobotsDirectivesConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
+  SuperStore.exportRobotsDirectivesManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
+
+  SuperStore.getSearchTokenizerConfig = function() { return this.getSeoDiscoveryTreeConfig(); };
+  SuperStore.saveSearchTokenizerConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
+  SuperStore.resetSearchTokenizerConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
+  SuperStore.exportSearchTokenizerManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
+
+  SuperStore.getKeywordBoostingConfig = function() { return this.getSeoDiscoveryTreeConfig(); };
+  SuperStore.saveKeywordBoostingConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
+  SuperStore.resetKeywordBoostingConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
+  SuperStore.exportKeywordBoostingManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -110956,6 +111577,34 @@
     window.CSOSuperStore.saveCalendarSyncFeedsConfig = SuperStore.saveCalendarSyncFeedsConfig;
     window.CSOSuperStore.resetCalendarSyncFeedsConfig = SuperStore.resetCalendarSyncFeedsConfig;
     window.CSOSuperStore.exportCalendarSyncFeedsManifest = SuperStore.exportCalendarSyncFeedsManifest;
+    window.CSOSuperStore.getSeoDiscoveryTreeConfig = SuperStore.getSeoDiscoveryTreeConfig;
+    window.CSOSuperStore.saveSeoDiscoveryTreeConfig = SuperStore.saveSeoDiscoveryTreeConfig;
+    window.CSOSuperStore.resetSeoDiscoveryTreeConfig = SuperStore.resetSeoDiscoveryTreeConfig;
+    window.CSOSuperStore.exportSeoDiscoveryTreeManifest = SuperStore.exportSeoDiscoveryTreeManifest;
+    window.CSOSuperStore.getMetaTagsConfig = SuperStore.getMetaTagsConfig;
+    window.CSOSuperStore.saveMetaTagsConfig = SuperStore.saveMetaTagsConfig;
+    window.CSOSuperStore.resetMetaTagsConfig = SuperStore.resetMetaTagsConfig;
+    window.CSOSuperStore.exportMetaTagsManifest = SuperStore.exportMetaTagsManifest;
+    window.CSOSuperStore.getStructuredDataSchemaConfig = SuperStore.getStructuredDataSchemaConfig;
+    window.CSOSuperStore.saveStructuredDataSchemaConfig = SuperStore.saveStructuredDataSchemaConfig;
+    window.CSOSuperStore.resetStructuredDataSchemaConfig = SuperStore.resetStructuredDataSchemaConfig;
+    window.CSOSuperStore.exportStructuredDataSchemaManifest = SuperStore.exportStructuredDataSchemaManifest;
+    window.CSOSuperStore.getXmlSitemapGeneratorConfig = SuperStore.getXmlSitemapGeneratorConfig;
+    window.CSOSuperStore.saveXmlSitemapGeneratorConfig = SuperStore.saveXmlSitemapGeneratorConfig;
+    window.CSOSuperStore.resetXmlSitemapGeneratorConfig = SuperStore.resetXmlSitemapGeneratorConfig;
+    window.CSOSuperStore.exportXmlSitemapGeneratorManifest = SuperStore.exportXmlSitemapGeneratorManifest;
+    window.CSOSuperStore.getRobotsDirectivesConfig = SuperStore.getRobotsDirectivesConfig;
+    window.CSOSuperStore.saveRobotsDirectivesConfig = SuperStore.saveRobotsDirectivesConfig;
+    window.CSOSuperStore.resetRobotsDirectivesConfig = SuperStore.resetRobotsDirectivesConfig;
+    window.CSOSuperStore.exportRobotsDirectivesManifest = SuperStore.exportRobotsDirectivesManifest;
+    window.CSOSuperStore.getSearchTokenizerConfig = SuperStore.getSearchTokenizerConfig;
+    window.CSOSuperStore.saveSearchTokenizerConfig = SuperStore.saveSearchTokenizerConfig;
+    window.CSOSuperStore.resetSearchTokenizerConfig = SuperStore.resetSearchTokenizerConfig;
+    window.CSOSuperStore.exportSearchTokenizerManifest = SuperStore.exportSearchTokenizerManifest;
+    window.CSOSuperStore.getKeywordBoostingConfig = SuperStore.getKeywordBoostingConfig;
+    window.CSOSuperStore.saveKeywordBoostingConfig = SuperStore.saveKeywordBoostingConfig;
+    window.CSOSuperStore.resetKeywordBoostingConfig = SuperStore.resetKeywordBoostingConfig;
+    window.CSOSuperStore.exportKeywordBoostingManifest = SuperStore.exportKeywordBoostingManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
