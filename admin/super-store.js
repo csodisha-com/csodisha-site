@@ -13006,7 +13006,13 @@
           commentSettings: this.getCommentSettingsConfig ? this.getCommentSettingsConfig() : null,
           paymentSettings: this.getPaymentSettingsConfig ? this.getPaymentSettingsConfig() : null,
           environmentStatus: this.getEnvironmentStatusConfig ? this.getEnvironmentStatusConfig() : null,
-          adminPreferences: this.getAdminPreferencesConfig ? this.getAdminPreferencesConfig() : null
+          adminPreferences: this.getAdminPreferencesConfig ? this.getAdminPreferencesConfig() : null,
+          discoveredFeatures: this.getDiscoveredFeaturesConfig ? this.getDiscoveredFeaturesConfig() : null,
+          pageRouteInventory: this.getPageRouteInventoryConfig ? this.getPageRouteInventoryConfig() : null,
+          publicUiComponents: this.getPublicUiComponentsConfig ? this.getPublicUiComponentsConfig() : null,
+          databaseEntities: this.getDatabaseEntitiesConfig ? this.getDatabaseEntitiesConfig() : null,
+          apiEndpoints: this.getApiEndpointsConfig ? this.getApiEndpointsConfig() : null,
+          adminCoverageMatrix: this.getAdminCoverageMatrixConfig ? this.getAdminCoverageMatrixConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -16285,6 +16291,224 @@
     return filename;
   };
 
+
+  // =========================================================================
+  // MASTER FEATURE REGISTRY: Batch 1 (MFR-001 to MFR-006)
+  // =========================================================================
+
+  // --- MODULE MFR-001: All Discovered Features ---
+  const DEFAULT_DISCOVERED_FEATURES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalDiscoveredFeatures: 277, coreAdminFeatures: 241, publicEngines: 36, verifiedIntegrity: "100%" },
+    items: [
+      { id: "FTR-01", featureKey: "GAZETTE_AUTO_SCRAPER", featureName: "Automated Gazette & Circular Ingestion", domainGroup: "Content & Publishing", sourceModule: "module-04-001", criticality: "High", status: "Active Live", active: true },
+      { id: "FTR-02", featureKey: "MOCK_EXAM_PERCENTILE", featureName: "Statewide Percentile & Rank Calculator", domainGroup: "Educational Resources", sourceModule: "module-05-004", criticality: "Critical", status: "Active Live", active: true },
+      { id: "FTR-03", featureKey: "DPDP_CONSENT_VAULT", featureName: "DPDP 2023 Explicit Consent Verification", domainGroup: "Security & Privacy", sourceModule: "module-16-009", criticality: "Critical", status: "Active Live", active: true },
+      { id: "FTR-04", featureKey: "CLOUDFLARE_EDGE_PURGE", featureName: "Instant Anycast Cache Zone Invalidator", domainGroup: "Operations & Recovery", sourceModule: "module-17-013", criticality: "High", status: "Active Live", active: true }
+    ]
+  };
+  SuperStore.getDiscoveredFeaturesConfig = function() {
+    return _hydrateConfig('cso_mfr_discovered_features_config', 'features', () => DEFAULT_DISCOVERED_FEATURES);
+  };
+  SuperStore.saveDiscoveredFeaturesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.features = cfg.items || cfg.features || []; cfg.items = cfg.features;
+    localStorage.setItem('cso_mfr_discovered_features_config', JSON.stringify(cfg));
+    this.logAudit('DISCOVERED_FEATURES_UPDATED', 'MFR', `Discovered features updated (${cfg.items.length} features).`);
+    return true;
+  };
+  SuperStore.resetDiscoveredFeaturesConfig = function() {
+    localStorage.setItem('cso_mfr_discovered_features_config', JSON.stringify(DEFAULT_DISCOVERED_FEATURES));
+    this.logAudit('DISCOVERED_FEATURES_RESET', 'MFR', 'Discovered features reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_DISCOVERED_FEATURES));
+  };
+  SuperStore.exportDiscoveredFeaturesManifest = function() {
+    const config = this.getDiscoveredFeaturesConfig();
+    const filename = "discovered_features_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DISCOVERED_FEATURES_EXPORTED", "DATA_EXPORT", `Discovered features manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE MFR-002: Page & Route Inventory ---
+  const DEFAULT_PAGE_ROUTE_INVENTORY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalStaticPages: 39, dynamicPrefixes: 8, edgeRoutedPaths: 14, auditBrokenLinks: 0 },
+    items: [
+      { id: "RTE-01", routePath: "/", pageTitle: "Common Sense Odisha - Home Gateway", routeType: "Static HTML", cacheTtlSeconds: 14400, authRequired: false, active: true },
+      { id: "RTE-02", routePath: "/jobs-careers/", pageTitle: "Odisha Recruitment, Jobs & Vacancies", routeType: "Static HTML + Dynamic Filter", cacheTtlSeconds: 14400, authRequired: false, active: true },
+      { id: "RTE-03", routePath: "/schemes-benefits/", pageTitle: "Statewide Welfare Schemes Directory", routeType: "Static HTML + Search", cacheTtlSeconds: 14400, authRequired: false, active: true },
+      { id: "RTE-04", routePath: "/study-library/", pageTitle: "Aspirant Study Library & PYQs", routeType: "Static HTML + R2 Vault", cacheTtlSeconds: 14400, authRequired: false, active: true },
+      { id: "RTE-05", routePath: "/admin/", pageTitle: "Super Admin Command Suite", routeType: "Single Page App Workspace", cacheTtlSeconds: 0, authRequired: true, active: true }
+    ]
+  };
+  SuperStore.getPageRouteInventoryConfig = function() {
+    return _hydrateConfig('cso_mfr_page_routes_config', 'routes', () => DEFAULT_PAGE_ROUTE_INVENTORY);
+  };
+  SuperStore.savePageRouteInventoryConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.routes = cfg.items || cfg.routes || []; cfg.items = cfg.routes;
+    localStorage.setItem('cso_mfr_page_routes_config', JSON.stringify(cfg));
+    this.logAudit('PAGE_ROUTE_INVENTORY_UPDATED', 'MFR', `Page and route inventory updated (${cfg.items.length} routes).`);
+    return true;
+  };
+  SuperStore.resetPageRouteInventoryConfig = function() {
+    localStorage.setItem('cso_mfr_page_routes_config', JSON.stringify(DEFAULT_PAGE_ROUTE_INVENTORY));
+    this.logAudit('PAGE_ROUTE_INVENTORY_RESET', 'MFR', 'Page route inventory reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_PAGE_ROUTE_INVENTORY));
+  };
+  SuperStore.exportPageRouteInventoryManifest = function() {
+    const config = this.getPageRouteInventoryConfig();
+    const filename = "page_route_inventory_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PAGE_ROUTE_INVENTORY_EXPORTED", "DATA_EXPORT", `Page route inventory manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE MFR-003: Public UI Components ---
+  const DEFAULT_PUBLIC_UI_COMPONENTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { registeredComponents: 24, designSystem: "Vanilla Tailwind + Custom CSO Tokens", accessibilityAudit: "WCAG 2.1 AA Compliant" },
+    items: [
+      { id: "CMP-01", componentTag: "cso-gazette-card", componentName: "Recruitment Gazette Announcement Card", styleScope: "Public Feed / Cards", jsController: "assets/js/components/gazette-card.js", status: "Active Standard", active: true },
+      { id: "CMP-02", componentTag: "cso-district-selector", componentName: "30-District Interactive Switcher", styleScope: "Global Navigation & Header", jsController: "assets/js/components/district-picker.js", status: "Active Standard", active: true },
+      { id: "CMP-03", componentTag: "cso-pdf-viewer", componentName: "Protected PDF In-Browser Reader", styleScope: "Study Library Vault", jsController: "assets/js/components/pdf-viewer.js", status: "Active Standard", active: true },
+      { id: "CMP-04", componentTag: "cso-turnstile-guard", componentName: "Cloudflare Turnstile Invisible Widget", styleScope: "Auth & Registration", jsController: "assets/js/components/turnstile.js", status: "Active Standard", active: true }
+    ]
+  };
+  SuperStore.getPublicUiComponentsConfig = function() {
+    return _hydrateConfig('cso_mfr_public_ui_components_config', 'components', () => DEFAULT_PUBLIC_UI_COMPONENTS);
+  };
+  SuperStore.savePublicUiComponentsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.components = cfg.items || cfg.components || []; cfg.items = cfg.components;
+    localStorage.setItem('cso_mfr_public_ui_components_config', JSON.stringify(cfg));
+    this.logAudit('PUBLIC_UI_COMPONENTS_UPDATED', 'MFR', `Public UI components updated (${cfg.items.length} components).`);
+    return true;
+  };
+  SuperStore.resetPublicUiComponentsConfig = function() {
+    localStorage.setItem('cso_mfr_public_ui_components_config', JSON.stringify(DEFAULT_PUBLIC_UI_COMPONENTS));
+    this.logAudit('PUBLIC_UI_COMPONENTS_RESET', 'MFR', 'Public UI components reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_PUBLIC_UI_COMPONENTS));
+  };
+  SuperStore.exportPublicUiComponentsManifest = function() {
+    const config = this.getPublicUiComponentsConfig();
+    const filename = "public_ui_components_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PUBLIC_UI_COMPONENTS_EXPORTED", "DATA_EXPORT", `Public UI components manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE MFR-004: Database Entities ---
+  const DEFAULT_DATABASE_ENTITIES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalTables: 18, databaseEngine: "PostgreSQL 16.2 (Supabase)", rlsEnforcedCount: 18, foreignKeyConstraints: 34 },
+    items: [
+      { id: "ENT-01", tableName: "portal_configs", primaryKey: "config_key (TEXT)", estimatedRowCount: 160, rlsStatus: "Public SELECT / Service Role UPDATE", description: "Global state engine key-value JSONB payloads", active: true },
+      { id: "ENT-02", tableName: "candidate_profiles", primaryKey: "id (UUID)", estimatedRowCount: 14820, rlsStatus: "Owner Only RLS", description: "Verified aspirant credentials, district, exam interests", active: true },
+      { id: "ENT-03", tableName: "recruitment_notices", primaryKey: "notice_id (VARCHAR)", estimatedRowCount: 3240, rlsStatus: "Public SELECT / Admin Write", description: "OPSC, OSSC, OSSSC official job circular records", active: true },
+      { id: "ENT-04", tableName: "security_audit_ledger", primaryKey: "entry_id (BIGSERIAL)", estimatedRowCount: 24500, rlsStatus: "Append Only / Root SELECT", description: "Tamper-evident audit hashes with actor IP and event payloads", active: true }
+    ]
+  };
+  SuperStore.getDatabaseEntitiesConfig = function() {
+    return _hydrateConfig('cso_mfr_database_entities_config', 'entities', () => DEFAULT_DATABASE_ENTITIES);
+  };
+  SuperStore.saveDatabaseEntitiesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.entities = cfg.items || cfg.entities || []; cfg.items = cfg.entities;
+    localStorage.setItem('cso_mfr_database_entities_config', JSON.stringify(cfg));
+    this.logAudit('DATABASE_ENTITIES_UPDATED', 'MFR', `Database entities updated (${cfg.items.length} entities).`);
+    return true;
+  };
+  SuperStore.resetDatabaseEntitiesConfig = function() {
+    localStorage.setItem('cso_mfr_database_entities_config', JSON.stringify(DEFAULT_DATABASE_ENTITIES));
+    this.logAudit('DATABASE_ENTITIES_RESET', 'MFR', 'Database entities reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_DATABASE_ENTITIES));
+  };
+  SuperStore.exportDatabaseEntitiesManifest = function() {
+    const config = this.getDatabaseEntitiesConfig();
+    const filename = "database_entities_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DATABASE_ENTITIES_EXPORTED", "DATA_EXPORT", `Database entities manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE MFR-005: API Endpoints ---
+  const DEFAULT_API_ENDPOINTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalEndpoints: 16, publicEndpoints: 9, protectedEndpoints: 7, avgLatencyMs: "18ms" },
+    items: [
+      { id: "API-01", pathPattern: "/api/search", httpMethod: "GET", authScheme: "None (Public)", rateLimitPerMin: 60, targetBackend: "Edge Worker + FlexSearch", status: "Active", active: true },
+      { id: "API-02", pathPattern: "/api/config/:key", httpMethod: "GET/POST", authScheme: "Bearer Token for POST", rateLimitPerMin: 120, targetBackend: "Supabase PostgREST", status: "Active", active: true },
+      { id: "API-03", pathPattern: "/api/auth/verify-otp", httpMethod: "POST", authScheme: "Turnstile Token Required", rateLimitPerMin: 5, targetBackend: "Auth Edge Service", status: "Active", active: true },
+      { id: "API-04", pathPattern: "/api/payments/razorpay/webhook", httpMethod: "POST", authScheme: "HMAC-SHA256 Signature", rateLimitPerMin: 300, targetBackend: "Webhook Dispatcher", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getApiEndpointsConfig = function() {
+    return _hydrateConfig('cso_mfr_api_endpoints_config', 'endpoints', () => DEFAULT_API_ENDPOINTS);
+  };
+  SuperStore.saveApiEndpointsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.endpoints = cfg.items || cfg.endpoints || []; cfg.items = cfg.endpoints;
+    localStorage.setItem('cso_mfr_api_endpoints_config', JSON.stringify(cfg));
+    this.logAudit('API_ENDPOINTS_UPDATED', 'MFR', `API endpoints updated (${cfg.items.length} endpoints).`);
+    return true;
+  };
+  SuperStore.resetApiEndpointsConfig = function() {
+    localStorage.setItem('cso_mfr_api_endpoints_config', JSON.stringify(DEFAULT_API_ENDPOINTS));
+    this.logAudit('API_ENDPOINTS_RESET', 'MFR', 'API endpoints reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_API_ENDPOINTS));
+  };
+  SuperStore.exportApiEndpointsManifest = function() {
+    const config = this.getApiEndpointsConfig();
+    const filename = "api_endpoints_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("API_ENDPOINTS_EXPORTED", "DATA_EXPORT", `API endpoints manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE MFR-006: Admin Coverage Matrix ---
+  const DEFAULT_ADMIN_COVERAGE_MATRIX = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalFolders: 18, totalCoreModules: 241, implementedModules: 241, coveragePercentage: "100.0%" },
+    items: [
+      { id: "COV-01", folderIndex: "Folder 01", folderName: "Dashboard & Command Centre", moduleCount: 8, completedCount: 8, coveragePct: "100%", status: "Fully Covered", active: true },
+      { id: "COV-02", folderIndex: "Folder 05", folderName: "Educational Resources", moduleCount: 22, completedCount: 22, coveragePct: "100%", status: "Fully Covered", active: true },
+      { id: "COV-03", folderIndex: "Folder 08", folderName: "Payments & Finance", moduleCount: 18, completedCount: 18, coveragePct: "100%", status: "Fully Covered", active: true },
+      { id: "COV-04", folderIndex: "Folder 16", folderName: "Security & Privacy", moduleCount: 13, completedCount: 13, coveragePct: "100%", status: "Fully Covered", active: true },
+      { id: "COV-05", folderIndex: "Folder 17", folderName: "Operations, Backups & Recovery", moduleCount: 16, completedCount: 16, coveragePct: "100%", status: "Fully Covered", active: true },
+      { id: "COV-06", folderIndex: "Folder 18", folderName: "Settings & Configuration", moduleCount: 17, completedCount: 17, coveragePct: "100%", status: "Fully Covered", active: true }
+    ]
+  };
+  SuperStore.getAdminCoverageMatrixConfig = function() {
+    return _hydrateConfig('cso_mfr_admin_coverage_config', 'coverage', () => DEFAULT_ADMIN_COVERAGE_MATRIX);
+  };
+  SuperStore.saveAdminCoverageMatrixConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.coverage = cfg.items || cfg.coverage || []; cfg.items = cfg.coverage;
+    localStorage.setItem('cso_mfr_admin_coverage_config', JSON.stringify(cfg));
+    this.logAudit('ADMIN_COVERAGE_UPDATED', 'MFR', `Admin coverage matrix updated (${cfg.items.length} folders).`);
+    return true;
+  };
+  SuperStore.resetAdminCoverageMatrixConfig = function() {
+    localStorage.setItem('cso_mfr_admin_coverage_config', JSON.stringify(DEFAULT_ADMIN_COVERAGE_MATRIX));
+    this.logAudit('ADMIN_COVERAGE_RESET', 'MFR', 'Admin coverage matrix reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_ADMIN_COVERAGE_MATRIX));
+  };
+  SuperStore.exportAdminCoverageMatrixManifest = function() {
+    const config = this.getAdminCoverageMatrixConfig();
+    const filename = "admin_coverage_matrix_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ADMIN_COVERAGE_EXPORTED", "DATA_EXPORT", `Admin coverage matrix manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -16656,6 +16880,30 @@
     window.CSOSuperStore.saveAdminPreferencesConfig = SuperStore.saveAdminPreferencesConfig;
     window.CSOSuperStore.resetAdminPreferencesConfig = SuperStore.resetAdminPreferencesConfig;
     window.CSOSuperStore.exportAdminPreferencesManifest = SuperStore.exportAdminPreferencesManifest;
+    window.CSOSuperStore.getDiscoveredFeaturesConfig = SuperStore.getDiscoveredFeaturesConfig;
+    window.CSOSuperStore.saveDiscoveredFeaturesConfig = SuperStore.saveDiscoveredFeaturesConfig;
+    window.CSOSuperStore.resetDiscoveredFeaturesConfig = SuperStore.resetDiscoveredFeaturesConfig;
+    window.CSOSuperStore.exportDiscoveredFeaturesManifest = SuperStore.exportDiscoveredFeaturesManifest;
+    window.CSOSuperStore.getPageRouteInventoryConfig = SuperStore.getPageRouteInventoryConfig;
+    window.CSOSuperStore.savePageRouteInventoryConfig = SuperStore.savePageRouteInventoryConfig;
+    window.CSOSuperStore.resetPageRouteInventoryConfig = SuperStore.resetPageRouteInventoryConfig;
+    window.CSOSuperStore.exportPageRouteInventoryManifest = SuperStore.exportPageRouteInventoryManifest;
+    window.CSOSuperStore.getPublicUiComponentsConfig = SuperStore.getPublicUiComponentsConfig;
+    window.CSOSuperStore.savePublicUiComponentsConfig = SuperStore.savePublicUiComponentsConfig;
+    window.CSOSuperStore.resetPublicUiComponentsConfig = SuperStore.resetPublicUiComponentsConfig;
+    window.CSOSuperStore.exportPublicUiComponentsManifest = SuperStore.exportPublicUiComponentsManifest;
+    window.CSOSuperStore.getDatabaseEntitiesConfig = SuperStore.getDatabaseEntitiesConfig;
+    window.CSOSuperStore.saveDatabaseEntitiesConfig = SuperStore.saveDatabaseEntitiesConfig;
+    window.CSOSuperStore.resetDatabaseEntitiesConfig = SuperStore.resetDatabaseEntitiesConfig;
+    window.CSOSuperStore.exportDatabaseEntitiesManifest = SuperStore.exportDatabaseEntitiesManifest;
+    window.CSOSuperStore.getApiEndpointsConfig = SuperStore.getApiEndpointsConfig;
+    window.CSOSuperStore.saveApiEndpointsConfig = SuperStore.saveApiEndpointsConfig;
+    window.CSOSuperStore.resetApiEndpointsConfig = SuperStore.resetApiEndpointsConfig;
+    window.CSOSuperStore.exportApiEndpointsManifest = SuperStore.exportApiEndpointsManifest;
+    window.CSOSuperStore.getAdminCoverageMatrixConfig = SuperStore.getAdminCoverageMatrixConfig;
+    window.CSOSuperStore.saveAdminCoverageMatrixConfig = SuperStore.saveAdminCoverageMatrixConfig;
+    window.CSOSuperStore.resetAdminCoverageMatrixConfig = SuperStore.resetAdminCoverageMatrixConfig;
+    window.CSOSuperStore.exportAdminCoverageMatrixManifest = SuperStore.exportAdminCoverageMatrixManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

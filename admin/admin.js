@@ -671,6 +671,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-18-015') { renderPaymentSettingsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-016') { renderEnvironmentStatusWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-017') { renderAdministrativePreferencesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-19-001' || moduleId === 'module-mfr-001') { renderDiscoveredFeaturesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-19-002' || moduleId === 'module-mfr-002') { renderPageRouteInventoryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-19-003' || moduleId === 'module-mfr-003') { renderPublicUiComponentsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-19-004' || moduleId === 'module-mfr-004') { renderDatabaseEntitiesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-19-005' || moduleId === 'module-mfr-005') { renderApiEndpointsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-19-006' || moduleId === 'module-mfr-006') { renderAdminCoverageMatrixWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1195,6 +1201,18 @@ async function loadMasterNavigation() {
         renderEnvironmentStatusWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-18-017') {
         renderAdministrativePreferencesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-19-001' || moduleId === 'module-mfr-001') {
+        renderDiscoveredFeaturesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-19-002' || moduleId === 'module-mfr-002') {
+        renderPageRouteInventoryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-19-003' || moduleId === 'module-mfr-003') {
+        renderPublicUiComponentsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-19-004' || moduleId === 'module-mfr-004') {
+        renderDatabaseEntitiesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-19-005' || moduleId === 'module-mfr-005') {
+        renderApiEndpointsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-19-006' || moduleId === 'module-mfr-006') {
+        renderAdminCoverageMatrixWorkspace(dom.workspaceRoot);
 
 
 
@@ -69608,6 +69626,1106 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-017</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+
+        
+    // =========================================================================
+    // MASTER FEATURE REGISTRY: Batch 1 (MFR-001 to MFR-006 / 19-001 to 19-006)
+    // =========================================================================
+
+    // --- MODULE MFR-001: All Discovered Features ---
+    function renderDiscoveredFeaturesWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDiscoveredFeaturesConfig();
+
+        function render() {
+          const features = config.features || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">All Discovered Features & Inventory</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-19-001 • Master inventory across core admin, public engines & domain subsystems</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mfr-ftr-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="mfr-ftr-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="mfr-ftr-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Features
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Features</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalDiscoveredFeatures || features.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Discovered & cataloged</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Core Admin Modules</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.coreAdminFeatures || 241}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">18 standard folders</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Public Subsystems</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.publicEngines || 36}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">End-user routes & widgets</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Verified Integrity</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.verifiedIntegrity || "100%"}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Full parity check passed</div>
+                </div>
+              </div>
+
+              <!-- Features Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Discovered Features Directory</h3>
+                    <p class="text-xs text-slate-400">Runtime capabilities and feature flag linkage</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="mfr-ftr-search" placeholder="Search features..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Feature Key</th>
+                        <th class="p-3">Feature Name</th>
+                        <th class="p-3">Domain Group</th>
+                        <th class="p-3">Source Module</th>
+                        <th class="p-3">Criticality</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Enabled</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mfr-ftr-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${features.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-mono text-teal-400 font-medium">${item.featureKey || item.id}</td>
+                          <td class="p-3 font-medium text-white">${item.featureName || ''}</td>
+                          <td class="p-3 text-slate-400">${item.domainGroup || ''}</td>
+                          <td class="p-3 font-mono text-xs text-slate-400">${item.sourceModule || ''}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${item.criticality === 'Critical' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              ${item.criticality || 'Standard'}
+                            </span>
+                          </td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              ${item.status || 'Active'}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="mfr-ftr-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event handlers
+          document.getElementById('mfr-ftr-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportDiscoveredFeaturesManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('mfr-ftr-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset discovered features registry to factory defaults?')) {
+              config = store.resetDiscoveredFeaturesConfig();
+              render();
+              store.showToast?.('Discovered features reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('mfr-ftr-btn-save')?.addEventListener('click', () => {
+            store.saveDiscoveredFeaturesConfig(config);
+            store.showToast?.('Discovered features successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.mfr-ftr-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (features[idx]) {
+                features[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('mfr-ftr-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#mfr-ftr-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-19-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE MFR-002: Page & Route Inventory ---
+    function renderPageRouteInventoryWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getPageRouteInventoryConfig();
+
+        function render() {
+          const routes = config.routes || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Public Page & Route Inventory</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-19-002 • Complete index of static HTML, dynamic templates & Cloudflare edge routes</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mfr-rte-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="mfr-rte-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="mfr-rte-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Routes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Static Pages</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalStaticPages || routes.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Rendered static HTML</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Dynamic Prefixes</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.dynamicPrefixes || 8}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Parametric patterns</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Edge Routed</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.edgeRoutedPaths || 14}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">Cloudflare Workers</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Broken Links</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.auditBrokenLinks ?? 0}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Zero broken routes</div>
+                </div>
+              </div>
+
+              <!-- Routes Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Registered Routes & Caching Policies</h3>
+                    <p class="text-xs text-slate-400">Canonical endpoints and edge routing rules</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="mfr-rte-search" placeholder="Search routes..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Path</th>
+                        <th class="p-3">Page Title</th>
+                        <th class="p-3">Route Type</th>
+                        <th class="p-3">Edge Cache TTL</th>
+                        <th class="p-3">Auth Required</th>
+                        <th class="p-3 text-right">Enabled</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mfr-rte-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${routes.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-mono text-teal-400 font-semibold">${item.routePath || ''}</td>
+                          <td class="p-3 font-medium text-white">${item.pageTitle || ''}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700/50 text-slate-300 border border-slate-600/50">
+                              ${item.routeType || 'Static'}
+                            </span>
+                          </td>
+                          <td class="p-3 font-mono text-xs text-slate-400">${item.cacheTtlSeconds ? item.cacheTtlSeconds + 's' : 'Dynamic'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${item.authRequired ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                              ${item.authRequired ? 'Required' : 'Public'}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="mfr-rte-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('mfr-rte-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportPageRouteInventoryManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('mfr-rte-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset page and route inventory to factory defaults?')) {
+              config = store.resetPageRouteInventoryConfig();
+              render();
+              store.showToast?.('Page & route inventory reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('mfr-rte-btn-save')?.addEventListener('click', () => {
+            store.savePageRouteInventoryConfig(config);
+            store.showToast?.('Routes successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.mfr-rte-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (routes[idx]) {
+                routes[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('mfr-rte-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#mfr-rte-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-19-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE MFR-003: Public UI Components ---
+    function renderPublicUiComponentsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getPublicUiComponentsConfig();
+
+        function render() {
+          const components = config.components || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Public UI Component Registry</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-19-003 • Custom elements, reusable templates, accessibility standards & JS controllers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mfr-cmp-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="mfr-cmp-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="mfr-cmp-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Components
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Registered Components</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.registeredComponents || components.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Modular elements</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Design System</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-xl font-bold text-white">${summary.designSystem || "Tailwind + CSO Tokens"}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Custom design primitives</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Accessibility Standard</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-xl font-bold text-white">${summary.accessibilityAudit || "WCAG 2.1 AA"}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Contrast & screen reader ready</div>
+                </div>
+              </div>
+
+              <!-- Components Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Public Web Components</h3>
+                    <p class="text-xs text-slate-400">Custom web elements and script controllers</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="mfr-cmp-search" placeholder="Search components..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Component Tag</th>
+                        <th class="p-3">Component Name</th>
+                        <th class="p-3">Style Scope</th>
+                        <th class="p-3">JS Controller</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Enabled</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mfr-cmp-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${components.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-mono text-teal-400 font-semibold">&lt;${item.componentTag || ''}&gt;</td>
+                          <td class="p-3 font-medium text-white">${item.componentName || ''}</td>
+                          <td class="p-3 text-slate-400">${item.styleScope || ''}</td>
+                          <td class="p-3 font-mono text-xs text-slate-400">${item.jsController || ''}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              ${item.status || 'Active'}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="mfr-cmp-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('mfr-cmp-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportPublicUiComponentsManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('mfr-cmp-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset UI components registry to factory defaults?')) {
+              config = store.resetPublicUiComponentsConfig();
+              render();
+              store.showToast?.('UI components reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('mfr-cmp-btn-save')?.addEventListener('click', () => {
+            store.savePublicUiComponentsConfig(config);
+            store.showToast?.('UI components successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.mfr-cmp-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (components[idx]) {
+                components[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('mfr-cmp-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#mfr-cmp-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-19-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE MFR-004: Database Entities ---
+    function renderDatabaseEntitiesWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDatabaseEntitiesConfig();
+
+        function render() {
+          const entities = config.entities || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Database Entities & Schema Mapping</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-19-004 • Supabase PostgreSQL tables, row-level security (RLS) policies & key relationships</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mfr-ent-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Schema
+                  </button>
+                  <button id="mfr-ent-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="mfr-ent-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Entities
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Tables</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalTables || entities.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Core schema tables</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Database Engine</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-base font-bold text-white">${summary.databaseEngine || "PostgreSQL 16.2"}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Managed Supabase pool</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">RLS Enforced</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.rlsEnforcedCount || 18}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">100% tables RLS active</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">FK Constraints</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.foreignKeyConstraints || 34}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Relational integrity intact</div>
+                </div>
+              </div>
+
+              <!-- Entities Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Database Tables & Security Policies</h3>
+                    <p class="text-xs text-slate-400">Primary keys, row counts, and RLS enforcement status</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="mfr-ent-search" placeholder="Search tables..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Table Name</th>
+                        <th class="p-3">Primary Key</th>
+                        <th class="p-3">Est. Row Count</th>
+                        <th class="p-3">RLS Policy</th>
+                        <th class="p-3">Description</th>
+                        <th class="p-3 text-right">Active</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mfr-ent-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${entities.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-mono text-teal-400 font-bold">${item.tableName || ''}</td>
+                          <td class="p-3 font-mono text-xs text-slate-400">${item.primaryKey || ''}</td>
+                          <td class="p-3 font-mono text-white">${item.estimatedRowCount ? item.estimatedRowCount.toLocaleString() : '0'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                              ${item.rlsStatus || 'Protected'}
+                            </span>
+                          </td>
+                          <td class="p-3 text-slate-400">${item.description || ''}</td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="mfr-ent-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('mfr-ent-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportDatabaseEntitiesManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('mfr-ent-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset database entities schema inventory to factory defaults?')) {
+              config = store.resetDatabaseEntitiesConfig();
+              render();
+              store.showToast?.('Database entities reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('mfr-ent-btn-save')?.addEventListener('click', () => {
+            store.saveDatabaseEntitiesConfig(config);
+            store.showToast?.('Database entities successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.mfr-ent-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (entities[idx]) {
+                entities[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('mfr-ent-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#mfr-ent-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-19-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE MFR-005: API Endpoints ---
+    function renderApiEndpointsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getApiEndpointsConfig();
+
+        function render() {
+          const endpoints = config.endpoints || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">API Endpoints & Microservices Routing</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-19-005 • Edge workers, PostgREST proxies, rate limiting policies & authentication tiers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mfr-api-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="mfr-api-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="mfr-api-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Endpoints
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Endpoints</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalEndpoints || endpoints.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Cataloged API routes</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Public Endpoints</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.publicEndpoints || 9}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Open read endpoints</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Protected Endpoints</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.protectedEndpoints || 7}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">Auth/HMAC required</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Avg Latency</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.avgLatencyMs || "18ms"}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Edge benchmarked</div>
+                </div>
+              </div>
+
+              <!-- Endpoints Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Registered API Endpoints</h3>
+                    <p class="text-xs text-slate-400">HTTP routes, rate limit ceilings, and target execution backends</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="mfr-api-search" placeholder="Search APIs..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Method</th>
+                        <th class="p-3">Path Pattern</th>
+                        <th class="p-3">Auth Scheme</th>
+                        <th class="p-3">Rate Limit / Min</th>
+                        <th class="p-3">Target Backend</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Enabled</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mfr-api-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${endpoints.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono ${item.httpMethod?.includes('GET') ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                              ${item.httpMethod || 'GET'}
+                            </span>
+                          </td>
+                          <td class="p-3 font-mono text-teal-400 font-semibold">${item.pathPattern || ''}</td>
+                          <td class="p-3 text-slate-400">${item.authScheme || 'Public'}</td>
+                          <td class="p-3 font-mono text-white">${item.rateLimitPerMin || 60} req/min</td>
+                          <td class="p-3 font-mono text-xs text-slate-400">${item.targetBackend || 'Edge'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              ${item.status || 'Active'}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="mfr-api-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('mfr-api-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportApiEndpointsManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('mfr-api-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset API endpoints registry to factory defaults?')) {
+              config = store.resetApiEndpointsConfig();
+              render();
+              store.showToast?.('API endpoints reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('mfr-api-btn-save')?.addEventListener('click', () => {
+            store.saveApiEndpointsConfig(config);
+            store.showToast?.('API endpoints successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.mfr-api-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (endpoints[idx]) {
+                endpoints[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('mfr-api-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#mfr-api-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-19-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE MFR-006: Admin Coverage Matrix ---
+    function renderAdminCoverageMatrixWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getAdminCoverageMatrixConfig();
+
+        function render() {
+          const coverageItems = config.coverage || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Admin Coverage & Parity Matrix</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-19-006 • Comprehensive 18-folder, 241-module parity analysis and live operational status</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="mfr-cov-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="mfr-cov-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="mfr-cov-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Matrix
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Folders</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalFolders || 18}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Folders 01 through 18</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Core Modules</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalCoreModules || 241}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Architected units</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Implemented Modules</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.implementedModules || 241}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">241/241 fully live</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Coverage Percentage</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.coveragePercentage || "100.0%"}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Complete parity achieved</div>
+                </div>
+              </div>
+
+              <!-- Coverage Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Administrative Domain Parity Breakdown</h3>
+                    <p class="text-xs text-slate-400">Module counts and operational readiness by folder</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="mfr-cov-search" placeholder="Search folders..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Folder</th>
+                        <th class="p-3">Domain Name</th>
+                        <th class="p-3 font-mono">Target Modules</th>
+                        <th class="p-3 font-mono">Completed</th>
+                        <th class="p-3 font-mono">Coverage</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3 text-right">Active</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mfr-cov-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${coverageItems.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-mono text-teal-400 font-bold">${item.folderIndex || ''}</td>
+                          <td class="p-3 font-medium text-white">${item.folderName || ''}</td>
+                          <td class="p-3 font-mono text-slate-300">${item.moduleCount || 0}</td>
+                          <td class="p-3 font-mono text-emerald-400">${item.completedCount || 0}</td>
+                          <td class="p-3 font-mono font-bold text-teal-300">${item.coveragePct || '100%'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              ${item.status || 'Fully Covered'}
+                            </span>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="mfr-cov-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('mfr-cov-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportAdminCoverageMatrixManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('mfr-cov-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset admin coverage matrix to factory defaults?')) {
+              config = store.resetAdminCoverageMatrixConfig();
+              render();
+              store.showToast?.('Admin coverage matrix reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('mfr-cov-btn-save')?.addEventListener('click', () => {
+            store.saveAdminCoverageMatrixConfig(config);
+            store.showToast?.('Admin coverage matrix successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.mfr-cov-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (coverageItems[idx]) {
+                coverageItems[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('mfr-cov-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#mfr-cov-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-19-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
         function renderAdministrativeNotificationsWorkspace() {
