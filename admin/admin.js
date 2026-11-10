@@ -682,6 +682,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-19-009' || moduleId === 'module-mfr-009') { renderImplementationStatusWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-19-010' || moduleId === 'module-mfr-010') { renderRegressionTestCoverageWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-19-011' || moduleId === 'module-mfr-011') { renderFeatureDocumentationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-jc-001' || moduleId === 'module-nav-jobs-01') { renderJobsRecruitmentWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-jc-002' || moduleId === 'module-nav-jobs-02') { renderCareerExplorerWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-jc-003' || moduleId === 'module-nav-jobs-03') { renderEligibilityExplorerWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-jc-004' || moduleId === 'module-nav-jobs-04') { renderCoursesEntranceWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1228,6 +1232,14 @@ async function loadMasterNavigation() {
         renderRegressionTestCoverageWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-19-011' || moduleId === 'module-mfr-011') {
         renderFeatureDocumentationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-jc-001' || moduleId === 'module-nav-jobs-01') {
+        renderJobsRecruitmentWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-jc-002' || moduleId === 'module-nav-jobs-02') {
+        renderCareerExplorerWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-jc-003' || moduleId === 'module-nav-jobs-03') {
+        renderEligibilityExplorerWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-jc-004' || moduleId === 'module-nav-jobs-04') {
+        renderCoursesEntranceWorkspace(dom.workspaceRoot);
 
 
 
@@ -71663,6 +71675,729 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-19-011', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-19-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+        
+    // =========================================================================
+    // JOBS & CAREERS DIRECTORY: Batch 1 (NAV-JOBS-01 to NAV-JOBS-04 / JC-001 to JC-004)
+    // =========================================================================
+
+    // --- MODULE NAV-JOBS-01: Jobs & Recruitment ---
+    function renderJobsRecruitmentWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getJobsRecruitmentConfig();
+
+        function render() {
+          const list = config.recruitmentList || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Jobs & Recruitment Directory</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-nav-jobs-01 • State civil services, staff selection, district cadre openings & official gazettes</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="job-rec-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="job-rec-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="job-rec-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Postings
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Active Openings</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalActiveJobs || list.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Live recruitment drives</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Closing Soon (&le;7d)</span>
+                    <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.closingWithin7Days || 4}</div>
+                  <div class="mt-1 text-xs text-amber-400 font-mono">Urgent deadlines</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Vacancies</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalVacancies ? summary.totalVacancies.toLocaleString() : '6,840'}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Advertised positions</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Cadres Tracked</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.primaryCadresTracked || 6}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">Commission boards</div>
+                </div>
+              </div>
+
+              <!-- Postings Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Active Recruitment Notices & Notifications</h3>
+                    <p class="text-xs text-slate-400">Exam cycles, vacancy counts, application deadlines & R2 mirror gazettes</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="job-rec-search" placeholder="Search recruitment..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Recruitment Title</th>
+                        <th class="p-3">Commission</th>
+                        <th class="p-3">Cadre Level</th>
+                        <th class="p-3 font-mono">Vacancies</th>
+                        <th class="p-3">Deadline</th>
+                        <th class="p-3">Stage</th>
+                        <th class="p-3">Official Link</th>
+                        <th class="p-3 text-right">Active</th>
+                      </tr>
+                    </thead>
+                    <tbody id="job-rec-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${list.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-medium text-white">${item.jobTitle || ''}</td>
+                          <td class="p-3 font-mono text-teal-400 font-bold">${item.commissionName || ''}</td>
+                          <td class="p-3 text-slate-300">${item.cadreLevel || ''}</td>
+                          <td class="p-3 font-mono font-bold text-teal-300">${item.totalVacancies ? item.totalVacancies.toLocaleString() : '0'}</td>
+                          <td class="p-3 font-mono text-xs text-amber-300">${item.applicationDeadline || ''}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              ${item.currentStage || 'Live'}
+                            </span>
+                          </td>
+                          <td class="p-3">
+                            <a href="${item.officialUrl || '#'}" target="_blank" rel="noopener noreferrer" class="text-teal-400 hover:underline flex items-center gap-1">
+                              Portal
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="job-rec-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('job-rec-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportJobsRecruitmentManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('job-rec-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset jobs & recruitment directory to factory defaults?')) {
+              config = store.resetJobsRecruitmentConfig();
+              render();
+              store.showToast?.('Jobs & recruitment reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('job-rec-btn-save')?.addEventListener('click', () => {
+            store.saveJobsRecruitmentConfig(config);
+            store.showToast?.('Recruitment postings successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.job-rec-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (list[idx]) {
+                list[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('job-rec-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#job-rec-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-nav-jobs-01', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-nav-jobs-01</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE NAV-JOBS-02: Career Explorer ---
+    function renderCareerExplorerWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getCareerExplorerConfig();
+
+        function render() {
+          const profiles = config.careerProfiles || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Career & Cadre Explorer</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-nav-jobs-02 • 7th Central Pay Commission (CPC) salary matrix, hierarchy models & promotion ceilings</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="car-exp-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="car-exp-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="car-exp-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Profiles
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Careers Mapped</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalCareersMapped || profiles.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Government job paths</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Pay Scale Model</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-lg font-bold text-white">${summary.salaryMatrixEngine || "7th CPC Levels"}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">ORSP Rules 2017</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Cadre Streams</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-sm font-bold text-white truncate">${summary.careerPathModels || "Civil, Police, Engineering"}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Multi-track branches</div>
+                </div>
+              </div>
+
+              <!-- Profiles Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Public Sector Career Progression Architecture</h3>
+                    <p class="text-xs text-slate-400">Basic pay scales, gross monthly packages, promotion ceilings & duty environments</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="car-exp-search" placeholder="Search careers..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Designation / Role</th>
+                        <th class="p-3">Recruiting Body</th>
+                        <th class="p-3">Pay Matrix Level</th>
+                        <th class="p-3">Starting Basic</th>
+                        <th class="p-3">Gross Monthly (Est)</th>
+                        <th class="p-3">Promotion Ceiling</th>
+                        <th class="p-3">Posting Nature</th>
+                        <th class="p-3 text-right">Active</th>
+                      </tr>
+                    </thead>
+                    <tbody id="car-exp-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${profiles.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">${item.careerName || ''}</td>
+                          <td class="p-3 font-mono text-teal-400 font-bold">${item.entryCommission || ''}</td>
+                          <td class="p-3 text-slate-300">${item.payMatrixLevel || ''}</td>
+                          <td class="p-3 font-mono font-bold text-teal-300">${item.startingBasicPay || ''}</td>
+                          <td class="p-3 font-mono text-emerald-400 font-bold">${item.grossMonthlyEstimate || ''}</td>
+                          <td class="p-3 text-slate-400">${item.promotionCeiling || ''}</td>
+                          <td class="p-3 text-slate-400">${item.postingNature || ''}</td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="car-exp-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('car-exp-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportCareerExplorerManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('car-exp-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset career explorer to factory defaults?')) {
+              config = store.resetCareerExplorerConfig();
+              render();
+              store.showToast?.('Career explorer reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('car-exp-btn-save')?.addEventListener('click', () => {
+            store.saveCareerExplorerConfig(config);
+            store.showToast?.('Career profiles successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.car-exp-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (profiles[idx]) {
+                profiles[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('car-exp-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#car-exp-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-nav-jobs-02', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-nav-jobs-02</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE NAV-JOBS-03: Eligibility & Qualification Explorer ---
+    function renderEligibilityExplorerWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getEligibilityExplorerConfig();
+
+        function render() {
+          const rules = config.eligibilityRules || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Eligibility & Qualification Rule Engine</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-nav-jobs-03 • Age calculator baselines, Odia ME pass criteria, reservation relaxations & physical standards</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="elg-exp-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="elg-exp-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="elg-exp-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Rules
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Rule Sets</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalRuleSets || rules.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Exam qualifications</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Cutoff Date</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-base font-bold text-white font-mono">${summary.ageCalculatorCutoffDate || "2026-01-01"}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Official age anchor</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Odia Requirement</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-sm font-bold text-white">${summary.odiaLanguageRequirement || "ME Standard"}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Odisha Official Lang Act</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Category Rules</span>
+                    <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-xs font-bold text-white truncate">${summary.categoryRules || "UR, SEBC, SC, ST"}</div>
+                  <div class="mt-1 text-xs text-indigo-400 font-mono">Full reservation matrix</div>
+                </div>
+              </div>
+
+              <!-- Rules Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Minimum Qualifications & Eligibility Requirements</h3>
+                    <p class="text-xs text-slate-400">Educational degrees, general & reserved age ceilings, Odia tests and physical standards</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="elg-exp-search" placeholder="Search rules..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Exam / Cadre Group</th>
+                        <th class="p-3">Minimum Education</th>
+                        <th class="p-3 font-mono">Min Age</th>
+                        <th class="p-3 font-mono">Max (UR)</th>
+                        <th class="p-3 font-mono">Max (Reserved)</th>
+                        <th class="p-3">Odia Language Requirement</th>
+                        <th class="p-3">Physical Standards</th>
+                        <th class="p-3 text-right">Active</th>
+                      </tr>
+                    </thead>
+                    <tbody id="elg-exp-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${rules.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">${item.examOrPostGroup || ''}</td>
+                          <td class="p-3 text-slate-300">${item.minEducation || ''}</td>
+                          <td class="p-3 font-mono text-teal-400 font-bold">${item.minAge ?? 21}</td>
+                          <td class="p-3 font-mono text-slate-300 font-bold">${item.maxAgeGeneral ?? 38}</td>
+                          <td class="p-3 font-mono text-emerald-400 font-bold">${item.maxAgeReserved ?? 43}</td>
+                          <td class="p-3 text-slate-400">${item.odiaRequirement || ''}</td>
+                          <td class="p-3 text-slate-400">${item.physicalCriteria || 'Standard'}</td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="elg-exp-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('elg-exp-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportEligibilityExplorerManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('elg-exp-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset eligibility explorer to factory defaults?')) {
+              config = store.resetEligibilityExplorerConfig();
+              render();
+              store.showToast?.('Eligibility explorer reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('elg-exp-btn-save')?.addEventListener('click', () => {
+            store.saveEligibilityExplorerConfig(config);
+            store.showToast?.('Eligibility rules successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.elg-exp-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (rules[idx]) {
+                rules[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('elg-exp-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#elg-exp-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-nav-jobs-03', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-nav-jobs-03</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    // --- MODULE NAV-JOBS-04: Courses, Entrance Exams & Certifications ---
+    function renderCoursesEntranceWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getCoursesEntranceConfig();
+
+        function render() {
+          const entrances = config.entranceExams || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Courses, Entrance Exams & Certifications</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-nav-jobs-04 • CPET, OJEE, OSSTET, B.Ed portals, examination syllabi & conducting authority schedule</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="crs-ent-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="crs-ent-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="crs-ent-btn-save" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Entrances
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Total Entrances</span>
+                    <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.totalEntrancesTracked || entrances.length}</div>
+                  <div class="mt-1 text-xs text-teal-400 font-mono">Cataloged tests</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Conducting Bodies</span>
+                    <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-sm font-bold text-white truncate">${summary.conductingBodies || "OJEE, SSB, SAMS"}</div>
+                  <div class="mt-1 text-xs text-blue-400 font-mono">Official entrance committees</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400">Active Windows</span>
+                    <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                  </div>
+                  <div class="mt-2 text-2xl font-bold text-white">${summary.currentActiveEntrances || 4}</div>
+                  <div class="mt-1 text-xs text-emerald-400 font-mono">Live registration drives</div>
+                </div>
+              </div>
+
+              <!-- Entrances Table -->
+              <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden backdrop-blur">
+                <div class="p-4 border-b border-slate-700/60 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-semibold text-white">Higher Education & Professional Entrance Examinations</h3>
+                    <p class="text-xs text-slate-400">Conducted authorities, target courses, frequency cycles and syllabus download mirrors</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="crs-ent-search" placeholder="Search entrances..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-900/50 text-slate-400 font-semibold border-b border-slate-700/60">
+                        <th class="p-3">Entrance Examination</th>
+                        <th class="p-3">Conducting Authority</th>
+                        <th class="p-3">Target Courses</th>
+                        <th class="p-3">Frequency</th>
+                        <th class="p-3">Application Status</th>
+                        <th class="p-3">Syllabus PDF</th>
+                        <th class="p-3 text-right">Active</th>
+                      </tr>
+                    </thead>
+                    <tbody id="crs-ent-table-body" class="divide-y divide-slate-800 text-slate-300">
+                      ${entrances.map((item, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">${item.entranceName || ''}</td>
+                          <td class="p-3 font-mono text-teal-400 font-bold">${item.conductingAuthority || ''}</td>
+                          <td class="p-3 text-slate-300">${item.targetCourses || ''}</td>
+                          <td class="p-3 text-slate-400">${item.examFrequency || 'Annual'}</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              ${item.applicationStatus || 'Active'}
+                            </span>
+                          </td>
+                          <td class="p-3 font-mono text-xs text-teal-300">
+                            <a href="${item.syllabusBlueprintUrl || '#'}" target="_blank" class="hover:underline flex items-center gap-1">
+                              PDF Mirror
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </a>
+                          </td>
+                          <td class="p-3 text-right">
+                            <input type="checkbox" data-idx="${idx}" class="crs-ent-toggle rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" ${item.active ? 'checked' : ''} />
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.getElementById('crs-ent-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportCoursesEntranceManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          document.getElementById('crs-ent-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset courses & entrance exams directory to factory defaults?')) {
+              config = store.resetCoursesEntranceConfig();
+              render();
+              store.showToast?.('Entrance exams reset to default.', 'info');
+            }
+          });
+
+          document.getElementById('crs-ent-btn-save')?.addEventListener('click', () => {
+            store.saveCoursesEntranceConfig(config);
+            store.showToast?.('Entrance exams successfully saved!', 'success');
+          });
+
+          container.querySelectorAll('.crs-ent-toggle').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+              const idx = parseInt(e.target.dataset.idx, 10);
+              if (entrances[idx]) {
+                entrances[idx].active = e.target.checked;
+              }
+            });
+          });
+
+          const searchInput = document.getElementById('crs-ent-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase();
+              const rows = container.querySelectorAll('#crs-ent-table-body tr');
+              rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+              });
+            });
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-nav-jobs-04', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-nav-jobs-04</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

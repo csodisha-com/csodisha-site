@@ -13017,7 +13017,11 @@
           featureDependencies: this.getFeatureDependenciesConfig ? this.getFeatureDependenciesConfig() : null,
           implementationStatus: this.getImplementationStatusConfig ? this.getImplementationStatusConfig() : null,
           regressionTestCoverage: this.getRegressionTestCoverageConfig ? this.getRegressionTestCoverageConfig() : null,
-          featureDocumentation: this.getFeatureDocumentationConfig ? this.getFeatureDocumentationConfig() : null
+          featureDocumentation: this.getFeatureDocumentationConfig ? this.getFeatureDocumentationConfig() : null,
+          jobsRecruitment: this.getJobsRecruitmentConfig ? this.getJobsRecruitmentConfig() : null,
+          careerExplorer: this.getCareerExplorerConfig ? this.getCareerExplorerConfig() : null,
+          eligibilityExplorer: this.getEligibilityExplorerConfig ? this.getEligibilityExplorerConfig() : null,
+          coursesEntrance: this.getCoursesEntranceConfig ? this.getCoursesEntranceConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -16693,6 +16697,151 @@
     return filename;
   };
 
+
+  // =========================================================================
+  // JOBS & CAREERS DIRECTORY: Batch 1 (NAV-JOBS-01 to NAV-JOBS-04)
+  // =========================================================================
+
+  // --- MODULE NAV-JOBS-01: Jobs & Recruitment ---
+  const DEFAULT_JOBS_RECRUITMENT = {
+    meta: { version: "2.0", updatedAt: new Date().toISOString() },
+    summary: { totalActiveJobs: 24, closingWithin7Days: 4, totalVacancies: 6840, primaryCadresTracked: 6 },
+    items: [
+      { id: "JOB-REC-01", jobTitle: "Odisha Civil Services Examination (OAS / OPS / OFS) 2026", commissionName: "OPSC", cadreLevel: "Group A & B Executive", totalVacancies: 399, applicationDeadline: "2026-12-15", currentStage: "Apply Window Open", officialUrl: "https://opsconline.gov.in", r2MirrorUrl: "/media/gazettes/opsc-ocs-2026-advt.pdf", districtScope: "Statewide Cadre", active: true },
+      { id: "JOB-REC-02", jobTitle: "Combined Graduate Level Examination (CGL) 2026", commissionName: "OSSC", cadreLevel: "Group B & C Ministerial", totalVacancies: 586, applicationDeadline: "2026-11-28", currentStage: "Admit Card Released", officialUrl: "https://ossc.gov.in", r2MirrorUrl: "/media/gazettes/ossc-cgl-2026-circular.pdf", districtScope: "Statewide Cadre", active: true },
+      { id: "JOB-REC-03", jobTitle: "Revenue Inspector (RI), ARI & Amin Recruitment", commissionName: "OSSSC", cadreLevel: "Group C District Cadre", totalVacancies: 2840, applicationDeadline: "2026-12-05", currentStage: "Detailed Advt Live", officialUrl: "https://osssc.gov.in", r2MirrorUrl: "/media/gazettes/osssc-cre-ri-amin-2026.pdf", districtScope: "30 Districts Cadre", active: true },
+      { id: "JOB-REC-04", jobTitle: "Odisha Police Sub-Inspector & Sergeant Drive", commissionName: "Odisha Police Board", cadreLevel: "Protective Services", totalVacancies: 920, applicationDeadline: "2026-12-30", currentStage: "Indicative Notice", officialUrl: "https://odishapolice.gov.in", r2MirrorUrl: "/media/gazettes/odisha-police-si-2026.pdf", districtScope: "Statewide Selection", active: true }
+    ]
+  };
+  SuperStore.getJobsRecruitmentConfig = function() {
+    return _hydrateConfig('cso_jobs_recruitment_config', 'recruitmentList', () => DEFAULT_JOBS_RECRUITMENT);
+  };
+  SuperStore.saveJobsRecruitmentConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.recruitmentList = cfg.items || cfg.recruitmentList || []; cfg.items = cfg.recruitmentList;
+    localStorage.setItem('cso_jobs_recruitment_config', JSON.stringify(cfg));
+    this.logAudit('JOBS_RECRUITMENT_UPDATED', 'JOBS_CAREERS', `Jobs & recruitment directory updated (${cfg.items.length} postings).`);
+    return true;
+  };
+  SuperStore.resetJobsRecruitmentConfig = function() {
+    localStorage.setItem('cso_jobs_recruitment_config', JSON.stringify(DEFAULT_JOBS_RECRUITMENT));
+    this.logAudit('JOBS_RECRUITMENT_RESET', 'JOBS_CAREERS', 'Jobs & recruitment directory reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_JOBS_RECRUITMENT));
+  };
+  SuperStore.exportJobsRecruitmentManifest = function() {
+    const config = this.getJobsRecruitmentConfig();
+    const filename = "jobs_recruitment_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("JOBS_RECRUITMENT_EXPORTED", "DATA_EXPORT", `Jobs recruitment manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE NAV-JOBS-02: Career Explorer ---
+  const DEFAULT_CAREER_EXPLORER = {
+    meta: { version: "2.0", updatedAt: new Date().toISOString() },
+    summary: { totalCareersMapped: 18, salaryMatrixEngine: "7th CPC Level 9 - 16", careerPathModels: "State Civil, Subordinate, Police, Engineering" },
+    items: [
+      { id: "CAR-EXP-01", careerName: "Odisha Administrative Service (OAS) Officer", entryCommission: "OPSC", payMatrixLevel: "Level 12 (7th CPC)", startingBasicPay: "₹ 56,100", grossMonthlyEstimate: "₹ 88,400", promotionCeiling: "Special Secretary / District Collector (IAS Induction)", postingNature: "Sub-Divisional / District / Secretariat", active: true },
+      { id: "CAR-EXP-02", careerName: "Revenue Inspector (RI)", entryCommission: "OSSSC", payMatrixLevel: "Level 9 (7th CPC)", startingBasicPay: "₹ 35,400", grossMonthlyEstimate: "₹ 54,200", promotionCeiling: "Assistant Revenue Officer (ARO) / Tahasildar Cadre", postingNature: "Tahasil / Revenue Circle Field Duty", active: true },
+      { id: "CAR-EXP-03", careerName: "Assistant Executive Engineer (Civil)", entryCommission: "OPSC", payMatrixLevel: "Level 12 (7th CPC)", startingBasicPay: "₹ 56,100", grossMonthlyEstimate: "₹ 88,400", promotionCeiling: "Chief Engineer / Engineer-in-Chief (EIC)", postingNature: "Works, Water Resources, Rural Dev Depts", active: true },
+      { id: "CAR-EXP-04", careerName: "Sub-Inspector of Police (SI)", entryCommission: "Odisha Police", payMatrixLevel: "Level 9 (7th CPC)", startingBasicPay: "₹ 35,400", grossMonthlyEstimate: "₹ 54,200", promotionCeiling: "Inspector of Police / Deputy Superintendent (OPS)", postingNature: "Police Station In-Charge / Law & Order", active: true }
+    ]
+  };
+  SuperStore.getCareerExplorerConfig = function() {
+    return _hydrateConfig('cso_career_explorer_config', 'careerProfiles', () => DEFAULT_CAREER_EXPLORER);
+  };
+  SuperStore.saveCareerExplorerConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.careerProfiles = cfg.items || cfg.careerProfiles || []; cfg.items = cfg.careerProfiles;
+    localStorage.setItem('cso_career_explorer_config', JSON.stringify(cfg));
+    this.logAudit('CAREER_EXPLORER_UPDATED', 'JOBS_CAREERS', `Career explorer updated (${cfg.items.length} profiles).`);
+    return true;
+  };
+  SuperStore.resetCareerExplorerConfig = function() {
+    localStorage.setItem('cso_career_explorer_config', JSON.stringify(DEFAULT_CAREER_EXPLORER));
+    this.logAudit('CAREER_EXPLORER_RESET', 'JOBS_CAREERS', 'Career explorer reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_CAREER_EXPLORER));
+  };
+  SuperStore.exportCareerExplorerManifest = function() {
+    const config = this.getCareerExplorerConfig();
+    const filename = "career_explorer_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CAREER_EXPLORER_EXPORTED", "DATA_EXPORT", `Career explorer manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE NAV-JOBS-03: Eligibility & Qualification Explorer ---
+  const DEFAULT_ELIGIBILITY_EXPLORER = {
+    meta: { version: "2.0", updatedAt: new Date().toISOString() },
+    summary: { totalRuleSets: 16, ageCalculatorCutoffDate: "2026-01-01", odiaLanguageRequirement: "ME Standard Pass Mandatory", categoryRules: "UR, SEBC, SC, ST, PwD, Ex-SM, Women" },
+    items: [
+      { id: "ELG-EXP-01", examOrPostGroup: "Odisha Civil Services (OAS/OPS)", minEducation: "Bachelor's Degree in Any Discipline", minAge: 21, maxAgeGeneral: 38, maxAgeReserved: 43, odiaRequirement: "Class 10 Odia First/Second Language or ME School Pass", physicalCriteria: "OPS Police Cadre Height & Chest Standards", active: true },
+      { id: "ELG-EXP-02", examOrPostGroup: "OSSC CGL (Auditor / Inspector / Sub-Inspector)", minEducation: "Bachelor's Degree + Computer Proficiency (DCA/PGDCA)", minAge: 21, maxAgeGeneral: 38, maxAgeReserved: 43, odiaRequirement: "Class 7 ME Standard Pass Certificate", physicalCriteria: "Standard Medical Fitness", active: true },
+      { id: "ELG-EXP-03", examOrPostGroup: "OSSSC Combined Recruitment (RI & Amin)", minEducation: "+2 / Higher Secondary (RI: Any Degree)", minAge: 21, maxAgeGeneral: 38, maxAgeReserved: 43, odiaRequirement: "ME School Pass Certificate", physicalCriteria: "Field Fitness Test for Amin Survey Cadre", active: true },
+      { id: "ELG-EXP-04", examOrPostGroup: "Odisha Police Constable & Sepoy", minEducation: "Matriculation / 10th Standard Pass", minAge: 18, maxAgeGeneral: 23, maxAgeReserved: 28, odiaRequirement: "10th Standard Odia Subject Pass", physicalCriteria: "Height: 168cm (UR/SEBC), 160cm (SC/ST); Physical Efficiency Run", active: true }
+    ]
+  };
+  SuperStore.getEligibilityExplorerConfig = function() {
+    return _hydrateConfig('cso_eligibility_explorer_config', 'eligibilityRules', () => DEFAULT_ELIGIBILITY_EXPLORER);
+  };
+  SuperStore.saveEligibilityExplorerConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.eligibilityRules = cfg.items || cfg.eligibilityRules || []; cfg.items = cfg.eligibilityRules;
+    localStorage.setItem('cso_eligibility_explorer_config', JSON.stringify(cfg));
+    this.logAudit('ELIGIBILITY_EXPLORER_UPDATED', 'JOBS_CAREERS', `Eligibility explorer updated (${cfg.items.length} rule sets).`);
+    return true;
+  };
+  SuperStore.resetEligibilityExplorerConfig = function() {
+    localStorage.setItem('cso_eligibility_explorer_config', JSON.stringify(DEFAULT_ELIGIBILITY_EXPLORER));
+    this.logAudit('ELIGIBILITY_EXPLORER_RESET', 'JOBS_CAREERS', 'Eligibility explorer reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_ELIGIBILITY_EXPLORER));
+  };
+  SuperStore.exportEligibilityExplorerManifest = function() {
+    const config = this.getEligibilityExplorerConfig();
+    const filename = "eligibility_explorer_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ELIGIBILITY_EXPLORER_EXPORTED", "DATA_EXPORT", `Eligibility explorer manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE NAV-JOBS-04: Courses, Entrance Exams & Certifications ---
+  const DEFAULT_COURSES_ENTRANCE = {
+    meta: { version: "2.0", updatedAt: new Date().toISOString() },
+    summary: { totalEntrancesTracked: 12, conductingBodies: "OJEE Board, SSB Odisha, Higher Education Dept, OAVS", currentActiveEntrances: 4 },
+    items: [
+      { id: "CRS-ENT-01", entranceName: "Odisha Common PG Entrance Test (CPET) 2026", conductingAuthority: "Higher Education Department, Odisha (SAMS)", targetCourses: "M.A., M.Sc., M.Com across State Universities", examFrequency: "Annual (June)", applicationStatus: "Upcoming Schedule", syllabusBlueprintUrl: "/media/syllabus/cpet-2026-blueprint.pdf", active: true },
+      { id: "CRS-ENT-02", entranceName: "Odisha Secondary School Teacher Eligibility Test (OSSTET)", conductingAuthority: "Board of Secondary Education (BSE) Odisha", targetCourses: "Eligibility for TGT Arts/Science, Hindi/Sanskrit", examFrequency: "Bi-Annual", applicationStatus: "Apply Window Active", syllabusBlueprintUrl: "/media/syllabus/osstet-2026-pattern.pdf", active: true },
+      { id: "CRS-ENT-03", entranceName: "Odisha Joint Entrance Examination (OJEE) 2026", conductingAuthority: "OJEE Committee", targetCourses: "B.Pharm, MBA, MCA, M.Tech, Lateral Entry", examFrequency: "Annual (May)", applicationStatus: "Registration Open", syllabusBlueprintUrl: "/media/syllabus/ojee-2026-syllabus.pdf", active: true },
+      { id: "CRS-ENT-04", entranceName: "State B.Ed / B.H.Ed Entrance Examination", conductingAuthority: "SSB Odisha / TE & SCERT", targetCourses: "Regular 2-Year B.Ed & B.H.Ed Degree", examFrequency: "Annual (July)", applicationStatus: "Notification Pending", syllabusBlueprintUrl: "/media/syllabus/bed-entrance-pattern.pdf", active: true }
+    ]
+  };
+  SuperStore.getCoursesEntranceConfig = function() {
+    return _hydrateConfig('cso_courses_entrance_config', 'entranceExams', () => DEFAULT_COURSES_ENTRANCE);
+  };
+  SuperStore.saveCoursesEntranceConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.entranceExams = cfg.items || cfg.entranceExams || []; cfg.items = cfg.entranceExams;
+    localStorage.setItem('cso_courses_entrance_config', JSON.stringify(cfg));
+    this.logAudit('COURSES_ENTRANCE_UPDATED', 'JOBS_CAREERS', `Courses & entrance exams updated (${cfg.items.length} exams).`);
+    return true;
+  };
+  SuperStore.resetCoursesEntranceConfig = function() {
+    localStorage.setItem('cso_courses_entrance_config', JSON.stringify(DEFAULT_COURSES_ENTRANCE));
+    this.logAudit('COURSES_ENTRANCE_RESET', 'JOBS_CAREERS', 'Courses & entrance exams reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_COURSES_ENTRANCE));
+  };
+  SuperStore.exportCoursesEntranceManifest = function() {
+    const config = this.getCoursesEntranceConfig();
+    const filename = "courses_entrance_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("COURSES_ENTRANCE_EXPORTED", "DATA_EXPORT", `Courses & entrance exams manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -17108,6 +17257,22 @@
     window.CSOSuperStore.saveFeatureDocumentationConfig = SuperStore.saveFeatureDocumentationConfig;
     window.CSOSuperStore.resetFeatureDocumentationConfig = SuperStore.resetFeatureDocumentationConfig;
     window.CSOSuperStore.exportFeatureDocumentationManifest = SuperStore.exportFeatureDocumentationManifest;
+    window.CSOSuperStore.getJobsRecruitmentConfig = SuperStore.getJobsRecruitmentConfig;
+    window.CSOSuperStore.saveJobsRecruitmentConfig = SuperStore.saveJobsRecruitmentConfig;
+    window.CSOSuperStore.resetJobsRecruitmentConfig = SuperStore.resetJobsRecruitmentConfig;
+    window.CSOSuperStore.exportJobsRecruitmentManifest = SuperStore.exportJobsRecruitmentManifest;
+    window.CSOSuperStore.getCareerExplorerConfig = SuperStore.getCareerExplorerConfig;
+    window.CSOSuperStore.saveCareerExplorerConfig = SuperStore.saveCareerExplorerConfig;
+    window.CSOSuperStore.resetCareerExplorerConfig = SuperStore.resetCareerExplorerConfig;
+    window.CSOSuperStore.exportCareerExplorerManifest = SuperStore.exportCareerExplorerManifest;
+    window.CSOSuperStore.getEligibilityExplorerConfig = SuperStore.getEligibilityExplorerConfig;
+    window.CSOSuperStore.saveEligibilityExplorerConfig = SuperStore.saveEligibilityExplorerConfig;
+    window.CSOSuperStore.resetEligibilityExplorerConfig = SuperStore.resetEligibilityExplorerConfig;
+    window.CSOSuperStore.exportEligibilityExplorerManifest = SuperStore.exportEligibilityExplorerManifest;
+    window.CSOSuperStore.getCoursesEntranceConfig = SuperStore.getCoursesEntranceConfig;
+    window.CSOSuperStore.saveCoursesEntranceConfig = SuperStore.saveCoursesEntranceConfig;
+    window.CSOSuperStore.resetCoursesEntranceConfig = SuperStore.resetCoursesEntranceConfig;
+    window.CSOSuperStore.exportCoursesEntranceManifest = SuperStore.exportCoursesEntranceManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
