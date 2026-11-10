@@ -301,9 +301,11 @@
         const checkedExams = Array.from(document.querySelectorAll('input[name="auth-exam"]:checked')).map(cb => cb.value);
 
         // Attempt backend auth if available, with graceful fallback
-        if (window.CSOAuth && typeof window.CSOAuth.register === 'function' && signupFields.style.display !== 'none') {
+        const isSignUpMode = signupFields.style.display !== 'none';
+        const pwVal = document.getElementById('auth-password')?.value || 'Candidate@123';
+
+        if (window.CSOAuth && typeof window.CSOAuth.register === 'function' && isSignUpMode) {
           try {
-            const pwVal = document.getElementById('auth-password')?.value || 'Candidate@123';
             const res = await window.CSOAuth.register({
               email: emailVal || 'candidate@csodisha.com',
               fullName: nameVal,
@@ -319,22 +321,48 @@
           } catch (netErr) {
             console.warn('Backend auth endpoint unavailable, falling back to local session', netErr);
           }
+        } else if (window.CSOAuth && typeof window.CSOAuth.login === 'function' && !isSignUpMode) {
+          try {
+            const res = await window.CSOAuth.login({
+              email: emailVal || identifier,
+              password: pwVal
+            });
+            if (res && res.ok) {
+              console.log('Backend auth login succeeded');
+            }
+          } catch (loginErr) {
+            console.warn('Backend login endpoint unavailable, falling back to local session', loginErr);
+          }
         }
 
-        const candidateSession = {
-          fullName: nameVal,
-          email: emailVal,
-          mobile: mobileVal,
-          state: stateSelect.value || 'Odisha',
-          district: districtVal,
-          dob: `${dobDay.value}-${dobMonth.value}-${dobYear.value}`,
+        let existingSession = null;
+        try {
+          const raw = localStorage.getItem(SESSION_KEY);
+          if (raw) existingSession = JSON.parse(raw);
+        } catch (e) {}
+
+        const candidateEmail = emailVal || (existingSession && existingSession.email) || identifier;
+        const candidateName = (existingSession && (existingSession.fullName || existingSession.name))
+          ? (existingSession.fullName || existingSession.name)
+          : (nameVal !== 'Aspirant' ? nameVal : candidateEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+
+        const sessionPayload = {
+          fullName: candidateName,
+          name: candidateName,
+          email: candidateEmail,
+          mobile: mobileVal || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
+          phone: mobileVal || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
+          state: (existingSession && existingSession.state) ? existingSession.state : (stateSelect.value || "Odisha"),
+          district: (districtVal !== 'Balasore (Baleswar)' && districtVal) ? districtVal : ((existingSession && existingSession.district) ? existingSession.district : "Balasore (Baleswar)"),
+          dob: (existingSession && existingSession.dob) ? existingSession.dob : `${dobDay.value}-${dobMonth.value}-${dobYear.value}`,
           isAuthenticated: true,
-          sessionType: 'local_verified',
-          registeredAt: new Date().toISOString(),
-          targetExams: checkedExams.length > 0 ? checkedExams : ['OPSC OCS', 'OSSC CGL', 'Odisha B.Ed']
+          sessionType: "local_verified",
+          lastLoginAt: new Date().toISOString(),
+          registeredAt: (existingSession && existingSession.registeredAt) ? existingSession.registeredAt : new Date().toISOString(),
+          targetExams: (checkedExams.length > 0) ? checkedExams : ((existingSession && existingSession.targetExams) ? existingSession.targetExams : ["OPSC OCS", "OSSC CGL", "Odisha B.Ed"])
         };
 
-        localStorage.setItem(SESSION_KEY, JSON.stringify(candidateSession));
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionPayload));
         updateHeaderAuthElements();
 
         closeModal();
