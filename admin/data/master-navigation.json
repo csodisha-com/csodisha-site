@@ -886,52 +886,52 @@
         {
           "id": "module-12-001",
           "title": "Advertising Placements",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-002",
           "title": "Sponsors",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-003",
           "title": "Promotional Banners",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-004",
           "title": "Campaigns",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-005",
           "title": "Referral Tracking",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-006",
           "title": "Campaign Analytics",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-007",
           "title": "UTM Management",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-008",
           "title": "Social Sharing",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-009",
           "title": "Promotional Landing Pages",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-12-010",
           "title": "Advertising Reports",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

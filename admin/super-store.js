@@ -12915,10 +12915,16 @@
           accessibilityStyling: this.getAccessibilityStylingConfig(),
           custom404: this.getCustom404Config(),
           designVersions: this.getDesignVersionsConfig(),
-
-
-
-
+          adPlacements: this.getAdPlacementsConfig ? this.getAdPlacementsConfig() : null,
+          sponsors: this.getSponsorsConfig ? this.getSponsorsConfig() : null,
+          promotionalBanners: this.getPromotionalBannersConfig ? this.getPromotionalBannersConfig() : null,
+          campaigns: this.getCampaignsConfig ? this.getCampaignsConfig() : null,
+          referralTracking: this.getReferralTrackingConfig ? this.getReferralTrackingConfig() : null,
+          campaignAnalytics: this.getCampaignAnalyticsConfig ? this.getCampaignAnalyticsConfig() : null,
+          utmManagement: this.getUtmManagementConfig ? this.getUtmManagementConfig() : null,
+          socialSharing: this.getSocialSharingConfig ? this.getSocialSharingConfig() : null,
+          promoLandingPages: this.getPromoLandingPagesConfig ? this.getPromoLandingPagesConfig() : null,
+          advertisingReports: this.getAdvertisingReportsConfig ? this.getAdvertisingReportsConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -12940,6 +12946,23 @@
 
       this.logAudit('DISASTER_RECOVERY_RESTORE', 'ALL_MODULES', `Restored from snapshot created at ${snapshot.createdAt}`);
       return true;
+    },
+
+    downloadJson(filename, data) {
+      try {
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('Error downloading JSON:', err);
+      }
     }
   };
 
@@ -12981,9 +13004,387 @@
 
   window.CSOSuperStore = SuperStore;
 
+  // --- MODULE 12-001: Advertising Placements ---
+  const DEFAULT_AD_PLACEMENTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalSlots: 8, activeSlots: 6, fillRate: "87.5%", averageCPM: "₹45.00" },
+    items: [
+      { id: "PLC-01", slotName: "Homepage Hero Leaderboard", location: "Homepage Top", dimensions: "728x90 / Responsive", formatType: "Display Banner", monthlyRateINR: 15000, currentSponsor: "Utkal Career Academy", status: "Occupied", active: true },
+      { id: "PLC-02", slotName: "Job Alert Detail Sidebar", location: "Jobs & Careers Right Rail", dimensions: "300x250 Medium Rectangle", formatType: "Sponsored Card", monthlyRateINR: 8500, currentSponsor: "Bhubaneswar IAS Circle", status: "Occupied", active: true },
+      { id: "PLC-03", slotName: "Study Library Download Gate Interstitial", location: "Library Download Trigger", dimensions: "Fluid Modal Card", formatType: "Native Sponsored Box", monthlyRateINR: 12000, currentSponsor: "None (Open)", status: "Available", active: true },
+      { id: "PLC-04", slotName: "Gazette Daily Digest Footer Strip", location: "All Notification Pages", dimensions: "970x90 Super Leaderboard", formatType: "Sponsorship Tag", monthlyRateINR: 6000, currentSponsor: "Odisha Publications Hub", status: "Occupied", active: true }
+    ]
+  };
+  SuperStore.getAdPlacementsConfig = function() {
+    return _hydrateConfig('cso_ad_placements_config', 'placements', () => DEFAULT_AD_PLACEMENTS);
+  };
+  SuperStore.saveAdPlacementsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.placements = cfg.items || cfg.placements || []; cfg.items = cfg.placements;
+    localStorage.setItem('cso_ad_placements_config', JSON.stringify(cfg));
+    this.logAudit('AD_PLACEMENTS_UPDATED', 'MARKETING', `Advertising placements updated (${cfg.items.length} slots).`);
+    return true;
+  };
+  SuperStore.resetAdPlacementsConfig = function() {
+    localStorage.setItem('cso_ad_placements_config', JSON.stringify(DEFAULT_AD_PLACEMENTS));
+    this.logAudit('AD_PLACEMENTS_RESET', 'MARKETING', 'Advertising placements reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_AD_PLACEMENTS));
+  };
+  SuperStore.exportAdPlacementsManifest = function() {
+    const config = this.getAdPlacementsConfig();
+    const filename = "ad_placements_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("AD_PLACEMENTS_EXPORTED", "DATA_EXPORT", `Ad placements manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-002: Sponsors ---
+  const DEFAULT_SPONSORS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeSponsorsCount: 5, totalContractValueINR: 245000, renewedContracts: 4 },
+    items: [
+      { id: "SPN-01", sponsorName: "Utkal Career Academy", contactPerson: "S. K. Tripathy", email: "partnerships@utkalcareer.in", tier: "Gold Partner", activeSlotsCount: 2, contractValidTill: "2027-03-31", status: "Active", active: true },
+      { id: "SPN-02", sponsorName: "Bhubaneswar IAS Circle", contactPerson: "P. R. Mohanty", email: "director@bbsriascircle.com", tier: "Silver Sponsor", activeSlotsCount: 1, contractValidTill: "2026-12-31", status: "Active", active: true },
+      { id: "SPN-03", sponsorName: "Odisha Publications Hub", contactPerson: "Anil Nayak", email: "info@odishabooks.org", tier: "Educational Patron", activeSlotsCount: 1, contractValidTill: "2027-06-30", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getSponsorsConfig = function() {
+    return _hydrateConfig('cso_sponsors_config', 'sponsors', () => DEFAULT_SPONSORS);
+  };
+  SuperStore.saveSponsorsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.sponsors = cfg.items || cfg.sponsors || []; cfg.items = cfg.sponsors;
+    localStorage.setItem('cso_sponsors_config', JSON.stringify(cfg));
+    this.logAudit('SPONSORS_UPDATED', 'MARKETING', `Sponsors directory updated (${cfg.items.length} sponsors).`);
+    return true;
+  };
+  SuperStore.resetSponsorsConfig = function() {
+    localStorage.setItem('cso_sponsors_config', JSON.stringify(DEFAULT_SPONSORS));
+    this.logAudit('SPONSORS_RESET', 'MARKETING', 'Sponsors directory reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SPONSORS));
+  };
+  SuperStore.exportSponsorsManifest = function() {
+    const config = this.getSponsorsConfig();
+    const filename = "sponsors_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SPONSORS_EXPORTED", "DATA_EXPORT", `Sponsors manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-003: Promotional Banners ---
+  const DEFAULT_PROMOTIONAL_BANNERS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    items: [
+      { id: "PRB-01", bannerTitle: "Statewide OPSC OAS Prelims Mock Test Registration Open", targetPage: "Homepage & Library", imageSrc: "/assets/banners/promo-mock-oas.webp", destinationUrl: "/study-library/mock-tests", impressionCount: 42100, clickCount: 3820, ctrRate: "9.07%", status: "Live", active: true },
+      { id: "PRB-02", bannerTitle: "Balasore District Study Circle Aspirants Meet 2026", targetPage: "Community Lounge", imageSrc: "/assets/banners/promo-meet-balasore.webp", destinationUrl: "/community/?district=balasore", impressionCount: 18400, clickCount: 1410, ctrRate: "7.66%", status: "Live", active: true },
+      { id: "PRB-03", bannerTitle: "Annual All-Access Pass 25% Diwali Discount", targetPage: "Pricing & Checkout", imageSrc: "/assets/banners/promo-diwali-pass.webp", destinationUrl: "/pricing/?coupon=DIWALI50", impressionCount: 29500, clickCount: 3120, ctrRate: "10.58%", status: "Scheduled", active: true }
+    ]
+  };
+  SuperStore.getPromotionalBannersConfig = function() {
+    return _hydrateConfig('cso_promotional_banners_config', 'banners', () => DEFAULT_PROMOTIONAL_BANNERS);
+  };
+  SuperStore.savePromotionalBannersConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.banners = cfg.items || cfg.banners || []; cfg.items = cfg.banners;
+    localStorage.setItem('cso_promotional_banners_config', JSON.stringify(cfg));
+    this.logAudit('PROMOTIONAL_BANNERS_UPDATED', 'MARKETING', `Promotional banners updated (${cfg.items.length} banners).`);
+    return true;
+  };
+  SuperStore.resetPromotionalBannersConfig = function() {
+    localStorage.setItem('cso_promotional_banners_config', JSON.stringify(DEFAULT_PROMOTIONAL_BANNERS));
+    this.logAudit('PROMOTIONAL_BANNERS_RESET', 'MARKETING', 'Promotional banners reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_PROMOTIONAL_BANNERS));
+  };
+  SuperStore.exportPromotionalBannersManifest = function() {
+    const config = this.getPromotionalBannersConfig();
+    const filename = "promotional_banners_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PROMOTIONAL_BANNERS_EXPORTED", "DATA_EXPORT", `Promotional banners manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-004: Campaigns ---
+  const DEFAULT_CAMPAIGNS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalCampaigns: 6, runningCampaigns: 3, budgetUtilizedINR: 42800, totalReach: 184500 },
+    items: [
+      { id: "CMPG-01", campaignName: "OPSC 2026 Notification Awareness Drive", channel: "Multi-Channel (Web + Push + Social)", startDate: "2026-11-01", endDate: "2026-12-15", budgetINR: 20000, conversionsCount: 1420, roiMetric: "3.4x", status: "Active", active: true },
+      { id: "CMPG-02", campaignName: "Tribal & Rural District Study Circle Outreach", channel: "Telegram + SMS Digest", startDate: "2026-10-15", endDate: "2026-11-30", budgetINR: 15000, conversionsCount: 2190, roiMetric: "4.8x", status: "Active", active: true },
+      { id: "CMPG-03", campaignName: "Scholarship Portal Form Assistance Initiative", channel: "In-App Dialog + Banner", startDate: "2026-11-05", endDate: "2026-12-31", budgetINR: 8000, conversionsCount: 890, roiMetric: "2.8x", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getCampaignsConfig = function() {
+    return _hydrateConfig('cso_campaigns_config', 'campaigns', () => DEFAULT_CAMPAIGNS);
+  };
+  SuperStore.saveCampaignsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.campaigns = cfg.items || cfg.campaigns || []; cfg.items = cfg.campaigns;
+    localStorage.setItem('cso_campaigns_config', JSON.stringify(cfg));
+    this.logAudit('CAMPAIGNS_UPDATED', 'MARKETING', `Campaigns config updated (${cfg.items.length} campaigns).`);
+    return true;
+  };
+  SuperStore.resetCampaignsConfig = function() {
+    localStorage.setItem('cso_campaigns_config', JSON.stringify(DEFAULT_CAMPAIGNS));
+    this.logAudit('CAMPAIGNS_RESET', 'MARKETING', 'Campaigns config reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_CAMPAIGNS));
+  };
+  SuperStore.exportCampaignsManifest = function() {
+    const config = this.getCampaignsConfig();
+    const filename = "campaigns_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CAMPAIGNS_EXPORTED", "DATA_EXPORT", `Campaigns manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-005: Referral Tracking ---
+  const DEFAULT_REFERRAL_TRACKING = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalReferrers: 142, successfulReferrals: 1840, rewardedCreditsINR: 92000 },
+    items: [
+      { id: "REF-01", referrerName: "Subhashree Mohanty", referrerEmail: "subhashree.m@gmail.com", referralCode: "CSO-SUBHA-26", totalInvited: 48, convertedSignups: 39, earnedCreditsINR: 1950, payoutStatus: "Paid", active: true },
+      { id: "REF-02", referrerName: "Ramesh Chandra Behera", referrerEmail: "ramesh.behera@gmail.com", referralCode: "CSO-RAMESH-OAS", totalInvited: 34, convertedSignups: 28, earnedCreditsINR: 1400, payoutStatus: "Paid", active: true },
+      { id: "REF-03", referrerName: "Debabrata Nayak", referrerEmail: "debabrata.n@gmail.com", referralCode: "CSO-DEBA-JUD", totalInvited: 22, convertedSignups: 18, earnedCreditsINR: 900, payoutStatus: "Pending", active: true }
+    ]
+  };
+  SuperStore.getReferralTrackingConfig = function() {
+    return _hydrateConfig('cso_referral_tracking_config', 'referrals', () => DEFAULT_REFERRAL_TRACKING);
+  };
+  SuperStore.saveReferralTrackingConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.referrals = cfg.items || cfg.referrals || []; cfg.items = cfg.referrals;
+    localStorage.setItem('cso_referral_tracking_config', JSON.stringify(cfg));
+    this.logAudit('REFERRAL_TRACKING_UPDATED', 'MARKETING', `Referral tracking updated (${cfg.items.length} records).`);
+    return true;
+  };
+  SuperStore.resetReferralTrackingConfig = function() {
+    localStorage.setItem('cso_referral_tracking_config', JSON.stringify(DEFAULT_REFERRAL_TRACKING));
+    this.logAudit('REFERRAL_TRACKING_RESET', 'MARKETING', 'Referral tracking reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_REFERRAL_TRACKING));
+  };
+  SuperStore.exportReferralTrackingManifest = function() {
+    const config = this.getReferralTrackingConfig();
+    const filename = "referral_tracking_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("REFERRAL_TRACKING_EXPORTED", "DATA_EXPORT", `Referral tracking manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-006: Campaign Analytics ---
+  const DEFAULT_CAMPAIGN_ANALYTICS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalImpressions: 485200, totalClicks: 41800, averageCTR: "8.61%", totalConversions: 3840, blendedCPA: "₹18.40" },
+    items: [
+      { id: "ANL-01", campaignName: "OAS 2026 Notification Drive", impressions: 210400, clicks: 19800, ctr: "9.41%", conversions: 1820, spendINR: 20000, roas: "4.2x", status: "Active", active: true },
+      { id: "ANL-02", campaignName: "Tribal District Outreach", impressions: 145000, clicks: 12400, ctr: "8.55%", conversions: 1390, spendINR: 15000, roas: "5.1x", status: "Active", active: true },
+      { id: "ANL-03", campaignName: "SSP Scholarship Assistance", impressions: 129800, clicks: 9600, ctr: "7.39%", conversions: 630, spendINR: 8000, roas: "3.2x", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getCampaignAnalyticsConfig = function() {
+    return _hydrateConfig('cso_campaign_analytics_config', 'analytics', () => DEFAULT_CAMPAIGN_ANALYTICS);
+  };
+  SuperStore.saveCampaignAnalyticsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.analytics = cfg.items || cfg.analytics || []; cfg.items = cfg.analytics;
+    localStorage.setItem('cso_campaign_analytics_config', JSON.stringify(cfg));
+    this.logAudit('CAMPAIGN_ANALYTICS_UPDATED', 'MARKETING', `Campaign analytics updated (${cfg.items.length} records).`);
+    return true;
+  };
+  SuperStore.resetCampaignAnalyticsConfig = function() {
+    localStorage.setItem('cso_campaign_analytics_config', JSON.stringify(DEFAULT_CAMPAIGN_ANALYTICS));
+    this.logAudit('CAMPAIGN_ANALYTICS_RESET', 'MARKETING', 'Campaign analytics reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_CAMPAIGN_ANALYTICS));
+  };
+  SuperStore.exportCampaignAnalyticsManifest = function() {
+    const config = this.getCampaignAnalyticsConfig();
+    const filename = "campaign_analytics_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CAMPAIGN_ANALYTICS_EXPORTED", "DATA_EXPORT", `Campaign analytics manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-007: UTM Management ---
+  const DEFAULT_UTM_MANAGEMENT = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    items: [
+      { id: "UTM-01", tagTitle: "Telegram Daily Current Affairs Digest", source: "telegram", medium: "broadcast_channel", campaign: "daily_capsule_nov26", shortUrl: "https://csodisha.com/go/tg-capsule", clicksCount: 14820, active: true },
+      { id: "UTM-02", tagTitle: "WhatsApp District Study Circles Alert", source: "whatsapp", medium: "community_group", campaign: "district_study_circles", shortUrl: "https://csodisha.com/go/wa-balasore", clicksCount: 9410, active: true },
+      { id: "UTM-03", tagTitle: "YouTube Community Tab Gazette Link", source: "youtube", medium: "community_post", campaign: "opsc_oas_syllabus", shortUrl: "https://csodisha.com/go/yt-oas-guide", clicksCount: 18230, active: true }
+    ]
+  };
+  SuperStore.getUtmManagementConfig = function() {
+    return _hydrateConfig('cso_utm_management_config', 'utmTags', () => DEFAULT_UTM_MANAGEMENT);
+  };
+  SuperStore.saveUtmManagementConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.utmTags = cfg.items || cfg.utmTags || []; cfg.items = cfg.utmTags;
+    localStorage.setItem('cso_utm_management_config', JSON.stringify(cfg));
+    this.logAudit('UTM_MANAGEMENT_UPDATED', 'MARKETING', `UTM management updated (${cfg.items.length} tags).`);
+    return true;
+  };
+  SuperStore.resetUtmManagementConfig = function() {
+    localStorage.setItem('cso_utm_management_config', JSON.stringify(DEFAULT_UTM_MANAGEMENT));
+    this.logAudit('UTM_MANAGEMENT_RESET', 'MARKETING', 'UTM management reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_UTM_MANAGEMENT));
+  };
+  SuperStore.exportUtmManagementManifest = function() {
+    const config = this.getUtmManagementConfig();
+    const filename = "utm_management_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("UTM_MANAGEMENT_EXPORTED", "DATA_EXPORT", `UTM management manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-008: Social Sharing ---
+  const DEFAULT_SOCIAL_SHARING = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { defaultOgImage: "/assets/images/og-share-default.webp", twitterCardType: "summary_large_image", appendSiteBranding: true },
+    items: [
+      { id: "SOC-01", pageContext: "Recruitment Notice Detail Pages", ogTitle: "{{exam_name}} Notification & Syllabus | CS Odisha", ogDescription: "Official commission circular, eligibility rules, age criteria, and district vacancy breakdown.", ogImage: "/assets/images/og-recruitment.webp", twitterHandle: "@CSOdisha_Portal", active: true },
+      { id: "SOC-02", pageContext: "Study Library Mock Test Hub", ogTitle: "Free Odisha State Mock Test Series 2026", ogDescription: "Attempt full-length prelims mocks with real-time statewide percentile ranking.", ogImage: "/assets/images/og-mock-test.webp", twitterHandle: "@CSOdisha_Portal", active: true },
+      { id: "SOC-03", pageContext: "District Aspirants Lounge", ogTitle: "Connect with {{district_name}} Aspirants Circle", ogDescription: "Peer doubt solving, offline study group schedules, and local exam center coordination.", ogImage: "/assets/images/og-community.webp", twitterHandle: "@CSOdisha_Portal", active: true }
+    ]
+  };
+  SuperStore.getSocialSharingConfig = function() {
+    return _hydrateConfig('cso_social_sharing_config', 'cards', () => DEFAULT_SOCIAL_SHARING);
+  };
+  SuperStore.saveSocialSharingConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.cards = cfg.items || cfg.cards || []; cfg.items = cfg.cards;
+    localStorage.setItem('cso_social_sharing_config', JSON.stringify(cfg));
+    this.logAudit('SOCIAL_SHARING_UPDATED', 'MARKETING', `Social sharing configuration updated (${cfg.items.length} cards).`);
+    return true;
+  };
+  SuperStore.resetSocialSharingConfig = function() {
+    localStorage.setItem('cso_social_sharing_config', JSON.stringify(DEFAULT_SOCIAL_SHARING));
+    this.logAudit('SOCIAL_SHARING_RESET', 'MARKETING', 'Social sharing reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SOCIAL_SHARING));
+  };
+  SuperStore.exportSocialSharingManifest = function() {
+    const config = this.getSocialSharingConfig();
+    const filename = "social_sharing_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SOCIAL_SHARING_EXPORTED", "DATA_EXPORT", `Social sharing manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-009: Promotional Landing Pages ---
+  const DEFAULT_PROMO_LANDING_PAGES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    items: [
+      { id: "LND-01", pageTitle: "OPSC OAS 2026 Rapid Strategy & Capsule Pack", urlSlug: "/lp/oas-2026-strategy", targetExam: "OPSC Civil Services", heroHeading: "Master OPSC OAS Prelims in 90 Days", primaryCta: "Claim Free 30-District Capsule", conversionCount: 2410, conversionRate: "14.2%", status: "Published", active: true },
+      { id: "LND-02", pageTitle: "OSSC CGL Mathematics Mastery Workshop", urlSlug: "/lp/ossc-math-mastery", targetExam: "OSSC CGL Combined", heroHeading: "Formula Cheat Sheets & PYQ Shortcuts", primaryCta: "Register for Workshop", conversionCount: 1180, conversionRate: "11.8%", status: "Published", active: true },
+      { id: "LND-03", pageTitle: "Odisha State Scholarship Portal (SSP) Assistance Drive", urlSlug: "/lp/ssp-scholarship-help", targetExam: "State Welfare & Education", heroHeading: "Zero-Error Scholarship Application Walkthrough", primaryCta: "Download Document Checklist", conversionCount: 3840, conversionRate: "22.5%", status: "Published", active: true }
+    ]
+  };
+  SuperStore.getPromoLandingPagesConfig = function() {
+    return _hydrateConfig('cso_promo_landing_pages_config', 'landingPages', () => DEFAULT_PROMO_LANDING_PAGES);
+  };
+  SuperStore.savePromoLandingPagesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.landingPages = cfg.items || cfg.landingPages || []; cfg.items = cfg.landingPages;
+    localStorage.setItem('cso_promo_landing_pages_config', JSON.stringify(cfg));
+    this.logAudit('PROMO_LANDING_PAGES_UPDATED', 'MARKETING', `Promotional landing pages updated (${cfg.items.length} pages).`);
+    return true;
+  };
+  SuperStore.resetPromoLandingPagesConfig = function() {
+    localStorage.setItem('cso_promo_landing_pages_config', JSON.stringify(DEFAULT_PROMO_LANDING_PAGES));
+    this.logAudit('PROMO_LANDING_PAGES_RESET', 'MARKETING', 'Promotional landing pages reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_PROMO_LANDING_PAGES));
+  };
+  SuperStore.exportPromoLandingPagesManifest = function() {
+    const config = this.getPromoLandingPagesConfig();
+    const filename = "promo_landing_pages_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PROMO_LANDING_PAGES_EXPORTED", "DATA_EXPORT", `Promo landing pages manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 12-010: Advertising Reports ---
+  const DEFAULT_ADVERTISING_REPORTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalAdRevenueINR: 245000, collectedRevenueINR: 215000, pendingInvoicesINR: 30000, auditedPeriod: "FY26 Q3 (Oct-Dec 2026)" },
+    items: [
+      { id: "ADR-01", reportMonth: "October 2026", grossRevenueINR: 85000, billableImpressions: 412000, activeAdvertisers: 3, topSponsor: "Utkal Career Academy (₹45,000)", complianceAudit: "100% SLA Met", fileFormat: "PDF & CSV", active: true },
+      { id: "ADR-02", reportMonth: "November 2026 (MTD)", grossRevenueINR: 92000, billableImpressions: 485200, activeAdvertisers: 4, topSponsor: "Bhubaneswar IAS Circle (₹38,000)", complianceAudit: "100% SLA Met", fileFormat: "PDF & CSV", active: true },
+      { id: "ADR-03", reportMonth: "September 2026", grossRevenueINR: 68000, billableImpressions: 340000, activeAdvertisers: 2, topSponsor: "Odisha Publications Hub (₹28,000)", complianceAudit: "100% SLA Met", fileFormat: "CSV", active: true }
+    ]
+  };
+  SuperStore.getAdvertisingReportsConfig = function() {
+    return _hydrateConfig('cso_advertising_reports_config', 'reports', () => DEFAULT_ADVERTISING_REPORTS);
+  };
+  SuperStore.saveAdvertisingReportsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.reports = cfg.items || cfg.reports || []; cfg.items = cfg.reports;
+    localStorage.setItem('cso_advertising_reports_config', JSON.stringify(cfg));
+    this.logAudit('ADVERTISING_REPORTS_UPDATED', 'MARKETING', `Advertising reports updated (${cfg.items.length} reports).`);
+    return true;
+  };
+  SuperStore.resetAdvertisingReportsConfig = function() {
+    localStorage.setItem('cso_advertising_reports_config', JSON.stringify(DEFAULT_ADVERTISING_REPORTS));
+    this.logAudit('ADVERTISING_REPORTS_RESET', 'MARKETING', 'Advertising reports reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ADVERTISING_REPORTS));
+  };
+  SuperStore.exportAdvertisingReportsManifest = function() {
+    const config = this.getAdvertisingReportsConfig();
+    const filename = "advertising_reports_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ADVERTISING_REPORTS_EXPORTED", "DATA_EXPORT", `Advertising reports manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
+    window.CSOSuperStore.getAdPlacementsConfig = SuperStore.getAdPlacementsConfig;
+    window.CSOSuperStore.saveAdPlacementsConfig = SuperStore.saveAdPlacementsConfig;
+    window.CSOSuperStore.resetAdPlacementsConfig = SuperStore.resetAdPlacementsConfig;
+    window.CSOSuperStore.exportAdPlacementsManifest = SuperStore.exportAdPlacementsManifest;
+    window.CSOSuperStore.getSponsorsConfig = SuperStore.getSponsorsConfig;
+    window.CSOSuperStore.saveSponsorsConfig = SuperStore.saveSponsorsConfig;
+    window.CSOSuperStore.resetSponsorsConfig = SuperStore.resetSponsorsConfig;
+    window.CSOSuperStore.exportSponsorsManifest = SuperStore.exportSponsorsManifest;
+    window.CSOSuperStore.getPromotionalBannersConfig = SuperStore.getPromotionalBannersConfig;
+    window.CSOSuperStore.savePromotionalBannersConfig = SuperStore.savePromotionalBannersConfig;
+    window.CSOSuperStore.resetPromotionalBannersConfig = SuperStore.resetPromotionalBannersConfig;
+    window.CSOSuperStore.exportPromotionalBannersManifest = SuperStore.exportPromotionalBannersManifest;
+    window.CSOSuperStore.getCampaignsConfig = SuperStore.getCampaignsConfig;
+    window.CSOSuperStore.saveCampaignsConfig = SuperStore.saveCampaignsConfig;
+    window.CSOSuperStore.resetCampaignsConfig = SuperStore.resetCampaignsConfig;
+    window.CSOSuperStore.exportCampaignsManifest = SuperStore.exportCampaignsManifest;
+    window.CSOSuperStore.getReferralTrackingConfig = SuperStore.getReferralTrackingConfig;
+    window.CSOSuperStore.saveReferralTrackingConfig = SuperStore.saveReferralTrackingConfig;
+    window.CSOSuperStore.resetReferralTrackingConfig = SuperStore.resetReferralTrackingConfig;
+    window.CSOSuperStore.exportReferralTrackingManifest = SuperStore.exportReferralTrackingManifest;
+    window.CSOSuperStore.getCampaignAnalyticsConfig = SuperStore.getCampaignAnalyticsConfig;
+    window.CSOSuperStore.saveCampaignAnalyticsConfig = SuperStore.saveCampaignAnalyticsConfig;
+    window.CSOSuperStore.resetCampaignAnalyticsConfig = SuperStore.resetCampaignAnalyticsConfig;
+    window.CSOSuperStore.exportCampaignAnalyticsManifest = SuperStore.exportCampaignAnalyticsManifest;
+    window.CSOSuperStore.getUtmManagementConfig = SuperStore.getUtmManagementConfig;
+    window.CSOSuperStore.saveUtmManagementConfig = SuperStore.saveUtmManagementConfig;
+    window.CSOSuperStore.resetUtmManagementConfig = SuperStore.resetUtmManagementConfig;
+    window.CSOSuperStore.exportUtmManagementManifest = SuperStore.exportUtmManagementManifest;
+    window.CSOSuperStore.getSocialSharingConfig = SuperStore.getSocialSharingConfig;
+    window.CSOSuperStore.saveSocialSharingConfig = SuperStore.saveSocialSharingConfig;
+    window.CSOSuperStore.resetSocialSharingConfig = SuperStore.resetSocialSharingConfig;
+    window.CSOSuperStore.exportSocialSharingManifest = SuperStore.exportSocialSharingManifest;
+    window.CSOSuperStore.getPromoLandingPagesConfig = SuperStore.getPromoLandingPagesConfig;
+    window.CSOSuperStore.savePromoLandingPagesConfig = SuperStore.savePromoLandingPagesConfig;
+    window.CSOSuperStore.resetPromoLandingPagesConfig = SuperStore.resetPromoLandingPagesConfig;
+    window.CSOSuperStore.exportPromoLandingPagesManifest = SuperStore.exportPromoLandingPagesManifest;
+    window.CSOSuperStore.getAdvertisingReportsConfig = SuperStore.getAdvertisingReportsConfig;
+    window.CSOSuperStore.saveAdvertisingReportsConfig = SuperStore.saveAdvertisingReportsConfig;
+    window.CSOSuperStore.resetAdvertisingReportsConfig = SuperStore.resetAdvertisingReportsConfig;
+    window.CSOSuperStore.exportAdvertisingReportsManifest = SuperStore.exportAdvertisingReportsManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

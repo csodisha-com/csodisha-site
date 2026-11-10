@@ -579,6 +579,16 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-11-012') { renderAccessibilityStylingWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-11-013') { renderCustom404Workspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-11-014') { renderDesignVersionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-001') { renderAdPlacementsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-002') { renderSponsorsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-003') { renderPromotionalBannersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-004') { renderCampaignsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-005') { renderReferralTrackingWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-006') { renderCampaignAnalyticsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-007') { renderUtmManagementWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-008') { renderSocialSharingWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-009') { renderPromoLandingPagesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-12-010') { renderAdvertisingReportsWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -919,6 +929,26 @@ async function loadMasterNavigation() {
         renderCustom404Workspace(dom.workspaceRoot);
       } else if (moduleId === 'module-11-014') {
         renderDesignVersionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-001') {
+        renderAdPlacementsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-002') {
+        renderSponsorsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-003') {
+        renderPromotionalBannersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-004') {
+        renderCampaignsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-005') {
+        renderReferralTrackingWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-006') {
+        renderCampaignAnalyticsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-007') {
+        renderUtmManagementWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-008') {
+        renderSocialSharingWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-009') {
+        renderPromoLandingPagesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-12-010') {
+        renderAdvertisingReportsWorkspace(dom.workspaceRoot);
 
 
 
@@ -48243,6 +48273,3093 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-11-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+
+    /**
+     * =========================================================================
+     * FOLDER 12: MARKETING & ADVERTISING (BATCH 1: MODULES 12-001 TO 12-005)
+     * =========================================================================
+     */
+
+    /**
+     * MODULE 12-001: Advertising Placements
+     */
+    function renderAdPlacementsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAdPlacementsConfig();
+        let items = Array.isArray(config.placements || config.items) ? [...(config.placements || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.slotName || '').toLowerCase().includes(term) ||
+                   (a.location || '').toLowerCase().includes(term) ||
+                   (a.formatType || '').toLowerCase().includes(term) ||
+                   (a.currentSponsor || '').toLowerCase().includes(term) ||
+                   (a.dimensions || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalSlots = items.length;
+          const occupiedCount = items.filter(i => i.status === 'Occupied' || (i.active && i.currentSponsor && !i.currentSponsor.toLowerCase().includes('open'))).length;
+          const fillRate = totalSlots > 0 ? ((occupiedCount / totalSlots) * 100).toFixed(1) + '%' : '0%';
+          const totalMonthlyRev = items.reduce((acc, curr) => acc + (Number(curr.monthlyRateINR) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">AD ENGINE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Advertising Placements</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage display banner slots, interstitial inventory, pricing, and active sponsor allocations</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddPlacement" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white shadow-lg shadow-amber-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Slot
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Ad Slots</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalSlots}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Inventory across web &amp; mobile</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Occupancy Fill Rate</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${fillRate}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${occupiedCount} of ${totalSlots} slots contracted</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Monthly Inventory Value</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">₹${totalMonthlyRev.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Booked potential run-rate</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Average CPM Benchmark</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${config.summary?.averageCPM || '₹45.00'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">State exam aspirant demographic</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoAdPlacementSearch" placeholder="Search by slot name, location, sponsor, format, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Slot ID &amp; Name</th>
+                      <th class="px-4 py-3">Location &amp; Dimensions</th>
+                      <th class="px-4 py-3">Format Type</th>
+                      <th class="px-4 py-3">Monthly Rate</th>
+                      <th class="px-4 py-3">Current Sponsor</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No advertising placements match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-amber-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.slotName}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <div>${item.location}</div>
+                          <div class="text-[10px] text-slate-500 font-mono mt-0.5">${item.dimensions}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.formatType}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ₹${(Number(item.monthlyRateINR) || 0).toLocaleString('en-IN')}<span class="text-[10px] text-slate-500 font-normal">/mo</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${item.currentSponsor || 'None (Open)'}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Occupied' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.status === 'Available' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.status || 'Available'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Slot" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Slot" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoAdPlacementSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoAdPlacementSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Advertising Placements Schema', {
+              id: 'string (unique ID, e.g. PLC-01)',
+              slotName: 'string (e.g. Homepage Hero Leaderboard)',
+              location: 'string (placement zone on csodisha.com)',
+              dimensions: 'string (pixel dimensions, e.g. 728x90 / Responsive)',
+              formatType: 'string (Display Banner, Sponsored Card, Native Sponsored Box)',
+              monthlyRateINR: 'number (monthly rate in INR)',
+              currentSponsor: 'string (active sponsor organization or Open)',
+              status: 'string (Occupied / Available / Paused)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAdPlacementsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset advertising placements to factory defaults?')) {
+              store.resetAdPlacementsConfig();
+              config = store.getAdPlacementsConfig();
+              items = [...(config.placements || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddPlacement')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Advertising Placement Slot',
+              fields: [
+                { name: 'slotName', label: 'Slot Name', type: 'text', placeholder: 'e.g. Header Leaderboard Strip', required: true },
+                { name: 'location', label: 'Location / Page Zone', type: 'text', placeholder: 'e.g. Homepage Top / Article Right Rail', required: true },
+                { name: 'dimensions', label: 'Dimensions', type: 'text', placeholder: 'e.g. 728x90 / 300x250 Medium Rectangle', required: true },
+                { name: 'formatType', label: 'Format Type', type: 'select', options: [
+                  { value: 'Display Banner', label: 'Display Banner' },
+                  { value: 'Sponsored Card', label: 'Sponsored Card' },
+                  { value: 'Native Sponsored Box', label: 'Native Sponsored Box' },
+                  { value: 'Sponsorship Tag', label: 'Sponsorship Tag' },
+                  { value: 'Interstitial / Modal', label: 'Interstitial / Modal' }
+                ], required: true },
+                { name: 'monthlyRateINR', label: 'Monthly Rate (₹ INR)', type: 'number', placeholder: '15000', required: true },
+                { name: 'currentSponsor', label: 'Current Sponsor', type: 'text', placeholder: 'e.g. None (Open) or Partner Brand', required: true },
+                { name: 'status', label: 'Status', type: 'select', options: [
+                  { value: 'Occupied', label: 'Occupied' },
+                  { value: 'Available', label: 'Available' },
+                  { value: 'Reserved', label: 'Reserved' },
+                  { value: 'Paused', label: 'Paused' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'PLC-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  slotName: data.slotName.trim(),
+                  location: data.location.trim(),
+                  dimensions: data.dimensions.trim(),
+                  formatType: data.formatType,
+                  monthlyRateINR: Number(data.monthlyRateINR) || 0,
+                  currentSponsor: data.currentSponsor.trim(),
+                  status: data.status,
+                  active: data.status !== 'Paused'
+                };
+                items.unshift(newItem);
+                config.placements = items;
+                config.items = items;
+                store.saveAdPlacementsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? (item.currentSponsor && !item.currentSponsor.toLowerCase().includes('open') ? 'Occupied' : 'Available') : 'Paused';
+              config.placements = items;
+              config.items = items;
+              store.saveAdPlacementsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Ad Slot: ' + item.slotName,
+                fields: [
+                  { name: 'slotName', label: 'Slot Name', type: 'text', defaultValue: item.slotName, required: true },
+                  { name: 'location', label: 'Location / Page Zone', type: 'text', defaultValue: item.location, required: true },
+                  { name: 'dimensions', label: 'Dimensions', type: 'text', defaultValue: item.dimensions, required: true },
+                  { name: 'formatType', label: 'Format Type', type: 'select', defaultValue: item.formatType, options: [
+                    { value: 'Display Banner', label: 'Display Banner' },
+                    { value: 'Sponsored Card', label: 'Sponsored Card' },
+                    { value: 'Native Sponsored Box', label: 'Native Sponsored Box' },
+                    { value: 'Sponsorship Tag', label: 'Sponsorship Tag' },
+                    { value: 'Interstitial / Modal', label: 'Interstitial / Modal' }
+                  ], required: true },
+                  { name: 'monthlyRateINR', label: 'Monthly Rate (₹ INR)', type: 'number', defaultValue: item.monthlyRateINR, required: true },
+                  { name: 'currentSponsor', label: 'Current Sponsor', type: 'text', defaultValue: item.currentSponsor, required: true },
+                  { name: 'status', label: 'Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Occupied', label: 'Occupied' },
+                    { value: 'Available', label: 'Available' },
+                    { value: 'Reserved', label: 'Reserved' },
+                    { value: 'Paused', label: 'Paused' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.slotName = data.slotName.trim();
+                  item.location = data.location.trim();
+                  item.dimensions = data.dimensions.trim();
+                  item.formatType = data.formatType;
+                  item.monthlyRateINR = Number(data.monthlyRateINR) || 0;
+                  item.currentSponsor = data.currentSponsor.trim();
+                  item.status = data.status;
+                  item.active = data.status !== 'Paused';
+                  config.placements = items;
+                  config.items = items;
+                  store.saveAdPlacementsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete ad placement slot ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.placements = items;
+                config.items = items;
+                store.saveAdPlacementsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-002: Sponsors
+     */
+    function renderSponsorsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSponsorsConfig();
+        let items = Array.isArray(config.sponsors || config.items) ? [...(config.sponsors || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.sponsorName || '').toLowerCase().includes(term) ||
+                   (a.contactPerson || '').toLowerCase().includes(term) ||
+                   (a.email || '').toLowerCase().includes(term) ||
+                   (a.tier || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalSponsors = items.length;
+          const activeSponsors = items.filter(i => i.active && i.status === 'Active').length;
+          const totalSlotsAllocated = items.reduce((acc, curr) => acc + (Number(curr.activeSlotsCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">PARTNERSHIPS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Sponsors &amp; Partners</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Corporate sponsors, academy tie-ups, contract validity, tier levels, and assigned inventory slots</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSponsor" class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-lg shadow-sky-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Sponsor
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Sponsors</div>
+                  <div class="text-2xl font-bold text-white mt-1">${activeSponsors}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Institutional and corporate partners</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Contract Value</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">₹${(config.summary?.totalContractValueINR || 245000).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Total contracted sponsorship value</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Slots Engaged</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalSlotsAllocated}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Active inventory placements</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Renewed Contracts</div>
+                  <div class="text-2xl font-bold text-purple-400 mt-1">${config.summary?.renewedContracts || 4}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Long-term coaching institutions</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSponsorSearch" placeholder="Search by sponsor name, contact person, email, tier, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Sponsor ID &amp; Name</th>
+                      <th class="px-4 py-3">Contact Person &amp; Email</th>
+                      <th class="px-4 py-3">Tier</th>
+                      <th class="px-4 py-3">Active Slots</th>
+                      <th class="px-4 py-3">Contract Validity</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No sponsors match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-sky-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.sponsorName}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <div>${item.contactPerson}</div>
+                          <div class="text-[10px] text-slate-500 font-mono mt-0.5">${item.email}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.tier.includes('Gold') ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' :
+                            item.tier.includes('Silver') ? 'bg-slate-300/10 text-slate-200 border border-slate-400/20' :
+                            'bg-sky-500/10 text-sky-300 border border-sky-500/20'
+                          }">${item.tier}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-white">
+                          ${item.activeSlotsCount} <span class="text-[10px] text-slate-500 font-normal">slots</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 font-mono text-[11px]">
+                          ${item.contractValidTill || 'Perpetual'}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active !== false && item.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.status || 'Active'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Sponsor" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Sponsor" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSponsorSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSponsorSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Sponsors Directory Schema', {
+              id: 'string (unique ID, e.g. SPN-01)',
+              sponsorName: 'string (e.g. Utkal Career Academy)',
+              contactPerson: 'string (authorized representative)',
+              email: 'string (contact email)',
+              tier: 'string (Gold Partner, Silver Sponsor, Educational Patron)',
+              activeSlotsCount: 'number (number of active slots assigned)',
+              contractValidTill: 'string (ISO date YYYY-MM-DD)',
+              status: 'string (Active / Inactive / Expired)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSponsorsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset sponsors directory to factory defaults?')) {
+              store.resetSponsorsConfig();
+              config = store.getSponsorsConfig();
+              items = [...(config.sponsors || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSponsor')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Register Corporate / Institutional Sponsor',
+              fields: [
+                { name: 'sponsorName', label: 'Sponsor / Institute Name', type: 'text', placeholder: 'e.g. Kalinga Academy for Civil Services', required: true },
+                { name: 'contactPerson', label: 'Contact Person', type: 'text', placeholder: 'e.g. Rajesh Pattnaik', required: true },
+                { name: 'email', label: 'Official Email', type: 'email', placeholder: 'partnerships@kalinga.edu.in', required: true },
+                { name: 'tier', label: 'Sponsorship Tier', type: 'select', options: [
+                  { value: 'Gold Partner', label: 'Gold Partner' },
+                  { value: 'Silver Sponsor', label: 'Silver Sponsor' },
+                  { value: 'Educational Patron', label: 'Educational Patron' },
+                  { value: 'Media Associate', label: 'Media Associate' }
+                ], required: true },
+                { name: 'activeSlotsCount', label: 'Active Placements Count', type: 'number', placeholder: '1', required: true },
+                { name: 'contractValidTill', label: 'Contract Valid Till (YYYY-MM-DD)', type: 'text', placeholder: '2027-12-31', required: true },
+                { name: 'status', label: 'Status', type: 'select', options: [
+                  { value: 'Active', label: 'Active' },
+                  { value: 'Inactive', label: 'Inactive' },
+                  { value: 'Pending Renewal', label: 'Pending Renewal' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'SPN-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  sponsorName: data.sponsorName.trim(),
+                  contactPerson: data.contactPerson.trim(),
+                  email: data.email.trim(),
+                  tier: data.tier,
+                  activeSlotsCount: Number(data.activeSlotsCount) || 1,
+                  contractValidTill: data.contractValidTill.trim(),
+                  status: data.status,
+                  active: data.status === 'Active'
+                };
+                items.unshift(newItem);
+                config.sponsors = items;
+                config.items = items;
+                store.saveSponsorsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? 'Active' : 'Inactive';
+              config.sponsors = items;
+              config.items = items;
+              store.saveSponsorsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Sponsor: ' + item.sponsorName,
+                fields: [
+                  { name: 'sponsorName', label: 'Sponsor / Institute Name', type: 'text', defaultValue: item.sponsorName, required: true },
+                  { name: 'contactPerson', label: 'Contact Person', type: 'text', defaultValue: item.contactPerson, required: true },
+                  { name: 'email', label: 'Official Email', type: 'email', defaultValue: item.email, required: true },
+                  { name: 'tier', label: 'Sponsorship Tier', type: 'select', defaultValue: item.tier, options: [
+                    { value: 'Gold Partner', label: 'Gold Partner' },
+                    { value: 'Silver Sponsor', label: 'Silver Sponsor' },
+                    { value: 'Educational Patron', label: 'Educational Patron' },
+                    { value: 'Media Associate', label: 'Media Associate' }
+                  ], required: true },
+                  { name: 'activeSlotsCount', label: 'Active Placements Count', type: 'number', defaultValue: item.activeSlotsCount, required: true },
+                  { name: 'contractValidTill', label: 'Contract Valid Till (YYYY-MM-DD)', type: 'text', defaultValue: item.contractValidTill, required: true },
+                  { name: 'status', label: 'Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Inactive', label: 'Inactive' },
+                    { value: 'Pending Renewal', label: 'Pending Renewal' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.sponsorName = data.sponsorName.trim();
+                  item.contactPerson = data.contactPerson.trim();
+                  item.email = data.email.trim();
+                  item.tier = data.tier;
+                  item.activeSlotsCount = Number(data.activeSlotsCount) || 1;
+                  item.contractValidTill = data.contractValidTill.trim();
+                  item.status = data.status;
+                  item.active = data.status === 'Active';
+                  config.sponsors = items;
+                  config.items = items;
+                  store.saveSponsorsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete sponsor record ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.sponsors = items;
+                config.items = items;
+                store.saveSponsorsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-003: Promotional Banners
+     */
+    function renderPromotionalBannersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPromotionalBannersConfig();
+        let items = Array.isArray(config.banners || config.items) ? [...(config.banners || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.bannerTitle || '').toLowerCase().includes(term) ||
+                   (a.targetPage || '').toLowerCase().includes(term) ||
+                   (a.destinationUrl || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalBanners = items.length;
+          const liveBanners = items.filter(i => i.active && i.status === 'Live').length;
+          const totalImpressions = items.reduce((acc, curr) => acc + (Number(curr.impressionCount) || 0), 0);
+          const totalClicks = items.reduce((acc, curr) => acc + (Number(curr.clickCount) || 0), 0);
+          const overallCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) + '%' : '0.00%';
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">PROMOTIONS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Promotional Banners</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Internal feature spotlights, mock test launches, district lounge banners, and click analytics</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddBanner" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Promo Banner
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Banners</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalBanners}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${liveBanners} currently live across site</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Total Impressions</div>
+                  <div class="text-2xl font-bold text-rose-300 mt-1">${totalImpressions.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Aggregated visual impressions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Total Clicks</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalClicks.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Direct click-through conversions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Average CTR</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${overallCTR}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Benchmark engagement performance</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPromoBannerSearch" placeholder="Search by title, target page, destination URL, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Banner ID &amp; Title</th>
+                      <th class="px-4 py-3">Target Page</th>
+                      <th class="px-4 py-3">Destination Link</th>
+                      <th class="px-4 py-3">Impressions</th>
+                      <th class="px-4 py-3">Clicks</th>
+                      <th class="px-4 py-3">CTR Rate</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No promotional banners match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-rose-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5 line-clamp-1">${item.bannerTitle}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.targetPage}</span>
+                        </td>
+                        <td class="px-4 py-3 text-emerald-400 font-mono text-[11px] max-w-xs truncate">
+                          <a href="${item.destinationUrl}" target="_blank" class="hover:underline">${item.destinationUrl}</a>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-slate-200">
+                          ${(Number(item.impressionCount) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${(Number(item.clickCount) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 font-bold text-amber-300">
+                          ${item.ctrRate || '0.00%'}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Live' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.status === 'Scheduled' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.status || 'Live'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Live/Paused" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Banner" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Banner" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoPromoBannerSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoPromoBannerSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Promotional Banners Schema', {
+              id: 'string (unique ID, e.g. PRB-01)',
+              bannerTitle: 'string (headline title of promotional banner)',
+              targetPage: 'string (placement target e.g. Homepage & Library)',
+              imageSrc: 'string (asset image URI)',
+              destinationUrl: 'string (click target route / URL)',
+              impressionCount: 'number (total impressions delivered)',
+              clickCount: 'number (total click engagements)',
+              ctrRate: 'string (calculated CTR %)',
+              status: 'string (Live / Scheduled / Paused)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPromotionalBannersManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset promotional banners to factory defaults?')) {
+              store.resetPromotionalBannersConfig();
+              config = store.getPromotionalBannersConfig();
+              items = [...(config.banners || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddBanner')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Promotional Banner Campaign',
+              fields: [
+                { name: 'bannerTitle', label: 'Banner Campaign Title', type: 'text', placeholder: 'e.g. Free Odisha Daily Current Affairs PDF Compilation', required: true },
+                { name: 'targetPage', label: 'Target Placement Page', type: 'text', placeholder: 'e.g. Homepage Top / Current Affairs Index', required: true },
+                { name: 'imageSrc', label: 'Banner Asset URL', type: 'text', placeholder: '/assets/banners/promo-current-affairs.webp', required: true },
+                { name: 'destinationUrl', label: 'Destination Route / Link', type: 'text', placeholder: '/study-library/current-affairs', required: true },
+                { name: 'status', label: 'Banner Status', type: 'select', options: [
+                  { value: 'Live', label: 'Live' },
+                  { value: 'Scheduled', label: 'Scheduled' },
+                  { value: 'Paused', label: 'Paused' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'PRB-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  bannerTitle: data.bannerTitle.trim(),
+                  targetPage: data.targetPage.trim(),
+                  imageSrc: data.imageSrc.trim(),
+                  destinationUrl: data.destinationUrl.trim(),
+                  impressionCount: 0,
+                  clickCount: 0,
+                  ctrRate: '0.00%',
+                  status: data.status,
+                  active: data.status !== 'Paused'
+                };
+                items.unshift(newItem);
+                config.banners = items;
+                config.items = items;
+                store.savePromotionalBannersConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? 'Live' : 'Paused';
+              config.banners = items;
+              config.items = items;
+              store.savePromotionalBannersConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Banner: ' + item.bannerTitle,
+                fields: [
+                  { name: 'bannerTitle', label: 'Banner Campaign Title', type: 'text', defaultValue: item.bannerTitle, required: true },
+                  { name: 'targetPage', label: 'Target Placement Page', type: 'text', defaultValue: item.targetPage, required: true },
+                  { name: 'imageSrc', label: 'Banner Asset URL', type: 'text', defaultValue: item.imageSrc, required: true },
+                  { name: 'destinationUrl', label: 'Destination Route / Link', type: 'text', defaultValue: item.destinationUrl, required: true },
+                  { name: 'status', label: 'Banner Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Live', label: 'Live' },
+                    { value: 'Scheduled', label: 'Scheduled' },
+                    { value: 'Paused', label: 'Paused' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.bannerTitle = data.bannerTitle.trim();
+                  item.targetPage = data.targetPage.trim();
+                  item.imageSrc = data.imageSrc.trim();
+                  item.destinationUrl = data.destinationUrl.trim();
+                  item.status = data.status;
+                  item.active = data.status !== 'Paused';
+                  config.banners = items;
+                  config.items = items;
+                  store.savePromotionalBannersConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete promotional banner ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.banners = items;
+                config.items = items;
+                store.savePromotionalBannersConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-004: Campaigns
+     */
+    function renderCampaignsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCampaignsConfig();
+        let items = Array.isArray(config.campaigns || config.items) ? [...(config.campaigns || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.campaignName || '').toLowerCase().includes(term) ||
+                   (a.channel || '').toLowerCase().includes(term) ||
+                   (a.roiMetric || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalCampaigns = items.length;
+          const runningCampaigns = items.filter(i => i.active && i.status === 'Active').length;
+          const totalBudget = items.reduce((acc, curr) => acc + (Number(curr.budgetINR) || 0), 0);
+          const totalConversions = items.reduce((acc, curr) => acc + (Number(curr.conversionsCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">GROWTH INITIATIVES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Marketing Campaigns</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Multi-channel aspirant awareness drives, budget tracking, reach telemetry, and conversion ROI</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddCampaign" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Launch Campaign
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Campaigns</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalCampaigns}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${runningCampaigns} active across channels</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Allocated Budget</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">₹${totalBudget.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Utilized: ₹${(config.summary?.budgetUtilizedINR || 42800).toLocaleString('en-IN')}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Total Conversions</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${totalConversions.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Aspirants onboarded or enrolled</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Audience Reach</div>
+                  <div class="text-2xl font-bold text-purple-400 mt-1">${(config.summary?.totalReach || 184500).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">30 Odisha Districts Targeted</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoCampaignSearch" placeholder="Search by campaign name, channel, ROI, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Campaign ID &amp; Name</th>
+                      <th class="px-4 py-3">Marketing Channel</th>
+                      <th class="px-4 py-3">Timeline</th>
+                      <th class="px-4 py-3">Budget</th>
+                      <th class="px-4 py-3">Conversions</th>
+                      <th class="px-4 py-3">ROI Metric</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No campaigns match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-emerald-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.campaignName}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.channel}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.startDate} &rarr; ${item.endDate}
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ₹${(Number(item.budgetINR) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 font-bold text-white">
+                          ${(Number(item.conversionsCount) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">${item.roiMetric || 'N/A'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.status === 'Completed' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.status || 'Active'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Campaign" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Campaign" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoCampaignSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoCampaignSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Marketing Campaigns Schema', {
+              id: 'string (unique ID, e.g. CMPG-01)',
+              campaignName: 'string (e.g. OPSC 2026 Notification Awareness Drive)',
+              channel: 'string (Multi-Channel, Telegram + SMS Digest, In-App Dialog)',
+              startDate: 'string (ISO date YYYY-MM-DD)',
+              endDate: 'string (ISO date YYYY-MM-DD)',
+              budgetINR: 'number (budget allocated in INR)',
+              conversionsCount: 'number (aspirants converted / signed up)',
+              roiMetric: 'string (multiplier, e.g. 3.4x)',
+              status: 'string (Active / Scheduled / Completed / Paused)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportCampaignsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset marketing campaigns to factory defaults?')) {
+              store.resetCampaignsConfig();
+              config = store.getCampaignsConfig();
+              items = [...(config.campaigns || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddCampaign')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Launch Marketing Campaign',
+              fields: [
+                { name: 'campaignName', label: 'Campaign Name', type: 'text', placeholder: 'e.g. OAS Prelims 2026 Free Mock Test Drive', required: true },
+                { name: 'channel', label: 'Distribution Channel', type: 'text', placeholder: 'e.g. Multi-Channel (Web + Telegram + SMS)', required: true },
+                { name: 'startDate', label: 'Start Date (YYYY-MM-DD)', type: 'text', placeholder: '2026-11-15', required: true },
+                { name: 'endDate', label: 'End Date (YYYY-MM-DD)', type: 'text', placeholder: '2026-12-31', required: true },
+                { name: 'budgetINR', label: 'Budget (₹ INR)', type: 'number', placeholder: '15000', required: true },
+                { name: 'roiMetric', label: 'Target ROI Benchmark', type: 'text', placeholder: '3.5x', required: true },
+                { name: 'status', label: 'Campaign Status', type: 'select', options: [
+                  { value: 'Active', label: 'Active' },
+                  { value: 'Scheduled', label: 'Scheduled' },
+                  { value: 'Completed', label: 'Completed' },
+                  { value: 'Paused', label: 'Paused' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'CMPG-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  campaignName: data.campaignName.trim(),
+                  channel: data.channel.trim(),
+                  startDate: data.startDate.trim(),
+                  endDate: data.endDate.trim(),
+                  budgetINR: Number(data.budgetINR) || 0,
+                  conversionsCount: 0,
+                  roiMetric: data.roiMetric.trim() || '1.0x',
+                  status: data.status,
+                  active: data.status === 'Active'
+                };
+                items.unshift(newItem);
+                config.campaigns = items;
+                config.items = items;
+                store.saveCampaignsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? 'Active' : 'Paused';
+              config.campaigns = items;
+              config.items = items;
+              store.saveCampaignsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Campaign: ' + item.campaignName,
+                fields: [
+                  { name: 'campaignName', label: 'Campaign Name', type: 'text', defaultValue: item.campaignName, required: true },
+                  { name: 'channel', label: 'Distribution Channel', type: 'text', defaultValue: item.channel, required: true },
+                  { name: 'startDate', label: 'Start Date (YYYY-MM-DD)', type: 'text', defaultValue: item.startDate, required: true },
+                  { name: 'endDate', label: 'End Date (YYYY-MM-DD)', type: 'text', defaultValue: item.endDate, required: true },
+                  { name: 'budgetINR', label: 'Budget (₹ INR)', type: 'number', defaultValue: item.budgetINR, required: true },
+                  { name: 'conversionsCount', label: 'Conversions Count', type: 'number', defaultValue: item.conversionsCount, required: true },
+                  { name: 'roiMetric', label: 'ROI Benchmark', type: 'text', defaultValue: item.roiMetric, required: true },
+                  { name: 'status', label: 'Campaign Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Scheduled', label: 'Scheduled' },
+                    { value: 'Completed', label: 'Completed' },
+                    { value: 'Paused', label: 'Paused' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.campaignName = data.campaignName.trim();
+                  item.channel = data.channel.trim();
+                  item.startDate = data.startDate.trim();
+                  item.endDate = data.endDate.trim();
+                  item.budgetINR = Number(data.budgetINR) || 0;
+                  item.conversionsCount = Number(data.conversionsCount) || 0;
+                  item.roiMetric = data.roiMetric.trim();
+                  item.status = data.status;
+                  item.active = data.status === 'Active';
+                  config.campaigns = items;
+                  config.items = items;
+                  store.saveCampaignsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete marketing campaign ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.campaigns = items;
+                config.items = items;
+                store.saveCampaignsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-005: Referral Tracking
+     */
+    function renderReferralTrackingWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getReferralTrackingConfig();
+        let items = Array.isArray(config.referrals || config.items) ? [...(config.referrals || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.referrerName || '').toLowerCase().includes(term) ||
+                   (a.referrerEmail || '').toLowerCase().includes(term) ||
+                   (a.referralCode || '').toLowerCase().includes(term) ||
+                   (a.payoutStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalReferrers = items.length;
+          const totalInvited = items.reduce((acc, curr) => acc + (Number(curr.totalInvited) || 0), 0);
+          const totalConverted = items.reduce((acc, curr) => acc + (Number(curr.convertedSignups) || 0), 0);
+          const totalCredits = items.reduce((acc, curr) => acc + (Number(curr.earnedCreditsINR) || 0), 0);
+          const conversionRate = totalInvited > 0 ? ((totalConverted / totalInvited) * 100).toFixed(1) + '%' : '0.0%';
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">VIRAL REFERRALS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Referral Tracking &amp; Rewards</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track student referral codes, invite counts, successful signups, rewarded wallet credits, and payouts</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddReferral" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Referrer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Ambassadors</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalReferrers}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Platform referral program champions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Converted Signups</div>
+                  <div class="text-2xl font-bold text-indigo-300 mt-1">${totalConverted}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${conversionRate} conversion rate (${totalInvited} invited)</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Total Credits Earned</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">₹${totalCredits.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Student study credit balance</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Rewarded Platform Total</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">₹${(config.summary?.rewardedCreditsINR || 92000).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${config.summary?.successfulReferrals || 1840} verified students</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoReferralSearch" placeholder="Search by referrer name, email, code, status, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Referrer ID &amp; Name</th>
+                      <th class="px-4 py-3">Email</th>
+                      <th class="px-4 py-3">Referral Code</th>
+                      <th class="px-4 py-3">Invited</th>
+                      <th class="px-4 py-3">Signups</th>
+                      <th class="px-4 py-3">Earned Credits</th>
+                      <th class="px-4 py-3">Payout Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No referrers match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-indigo-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.referrerName}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 font-mono text-[11px]">
+                          ${item.referrerEmail}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">${item.referralCode}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-slate-200">
+                          ${item.totalInvited}
+                        </td>
+                        <td class="px-4 py-3 font-bold text-white">
+                          ${item.convertedSignups}
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ₹${(Number(item.earnedCreditsINR) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.payoutStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.payoutStatus === 'Pending' ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.payoutStatus || 'Pending'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-status" data-id="${item.id}" title="Toggle Paid/Pending" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Referrer" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Referrer" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoReferralSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoReferralSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Referral Tracking Schema', {
+              id: 'string (unique ID, e.g. REF-01)',
+              referrerName: 'string (full name of referring student or mentor)',
+              referrerEmail: 'string (contact email address)',
+              referralCode: 'string (unique alphanumeric discount & tracking code)',
+              totalInvited: 'number (total invitations dispatched)',
+              convertedSignups: 'number (number of active converted registrations)',
+              earnedCreditsINR: 'number (earned wallet balance / reward credits in INR)',
+              payoutStatus: 'string (Paid / Pending / Processing)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportReferralTrackingManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset referral tracking to factory defaults?')) {
+              store.resetReferralTrackingConfig();
+              config = store.getReferralTrackingConfig();
+              items = [...(config.referrals || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddReferral')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Referral Ambassador / Code',
+              fields: [
+                { name: 'referrerName', label: 'Referrer Name', type: 'text', placeholder: 'e.g. Alok Dash', required: true },
+                { name: 'referrerEmail', label: 'Referrer Email', type: 'email', placeholder: 'alok.dash@gmail.com', required: true },
+                { name: 'referralCode', label: 'Unique Referral Code', type: 'text', placeholder: 'CSO-ALOK-2026', required: true },
+                { name: 'totalInvited', label: 'Total Invited', type: 'number', placeholder: '10', required: true },
+                { name: 'convertedSignups', label: 'Converted Signups', type: 'number', placeholder: '5', required: true },
+                { name: 'earnedCreditsINR', label: 'Earned Credits (₹ INR)', type: 'number', placeholder: '250', required: true },
+                { name: 'payoutStatus', label: 'Payout Status', type: 'select', options: [
+                  { value: 'Paid', label: 'Paid' },
+                  { value: 'Pending', label: 'Pending' },
+                  { value: 'Processing', label: 'Processing' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'REF-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  referrerName: data.referrerName.trim(),
+                  referrerEmail: data.referrerEmail.trim(),
+                  referralCode: data.referralCode.trim().toUpperCase(),
+                  totalInvited: Number(data.totalInvited) || 0,
+                  convertedSignups: Number(data.convertedSignups) || 0,
+                  earnedCreditsINR: Number(data.earnedCreditsINR) || 0,
+                  payoutStatus: data.payoutStatus,
+                  active: true
+                };
+                items.unshift(newItem);
+                config.referrals = items;
+                config.items = items;
+                store.saveReferralTrackingConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.payoutStatus = item.payoutStatus === 'Paid' ? 'Pending' : 'Paid';
+              config.referrals = items;
+              config.items = items;
+              store.saveReferralTrackingConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Referrer: ' + item.referrerName,
+                fields: [
+                  { name: 'referrerName', label: 'Referrer Name', type: 'text', defaultValue: item.referrerName, required: true },
+                  { name: 'referrerEmail', label: 'Referrer Email', type: 'email', defaultValue: item.referrerEmail, required: true },
+                  { name: 'referralCode', label: 'Unique Referral Code', type: 'text', defaultValue: item.referralCode, required: true },
+                  { name: 'totalInvited', label: 'Total Invited', type: 'number', defaultValue: item.totalInvited, required: true },
+                  { name: 'convertedSignups', label: 'Converted Signups', type: 'number', defaultValue: item.convertedSignups, required: true },
+                  { name: 'earnedCreditsINR', label: 'Earned Credits (₹ INR)', type: 'number', defaultValue: item.earnedCreditsINR, required: true },
+                  { name: 'payoutStatus', label: 'Payout Status', type: 'select', defaultValue: item.payoutStatus, options: [
+                    { value: 'Paid', label: 'Paid' },
+                    { value: 'Pending', label: 'Pending' },
+                    { value: 'Processing', label: 'Processing' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.referrerName = data.referrerName.trim();
+                  item.referrerEmail = data.referrerEmail.trim();
+                  item.referralCode = data.referralCode.trim().toUpperCase();
+                  item.totalInvited = Number(data.totalInvited) || 0;
+                  item.convertedSignups = Number(data.convertedSignups) || 0;
+                  item.earnedCreditsINR = Number(data.earnedCreditsINR) || 0;
+                  item.payoutStatus = data.payoutStatus;
+                  config.referrals = items;
+                  config.items = items;
+                  store.saveReferralTrackingConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete referral record ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.referrals = items;
+                config.items = items;
+                store.saveReferralTrackingConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * =========================================================================
+     * FOLDER 12: MARKETING & ADVERTISING (BATCH 2: MODULES 12-006 TO 12-010)
+     * =========================================================================
+     */
+
+    /**
+     * MODULE 12-006: Campaign Analytics
+     */
+    function renderCampaignAnalyticsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCampaignAnalyticsConfig();
+        let items = Array.isArray(config.analytics || config.items) ? [...(config.analytics || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.campaignName || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.roas || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalCampaigns = items.length;
+          const totalImpressions = items.reduce((acc, curr) => acc + (Number(curr.impressions) || 0), 0);
+          const totalClicks = items.reduce((acc, curr) => acc + (Number(curr.clicks) || 0), 0);
+          const totalConversions = items.reduce((acc, curr) => acc + (Number(curr.conversions) || 0), 0);
+          const totalSpend = items.reduce((acc, curr) => acc + (Number(curr.spendINR) || 0), 0);
+          const avgCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) + '%' : '0.00%';
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">PERFORMANCE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Campaign Analytics</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track multi-channel conversion funnels, blended CPA, ROAS, click-through metrics, and budget efficiency</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddAnalytics" class="px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Campaign Record
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Impressions</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalImpressions.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Across all promotion streams</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-violet-400 uppercase tracking-wider">Total Clicks</div>
+                  <div class="text-2xl font-bold text-violet-300 mt-1">${totalClicks.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Average CTR: ${avgCTR}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Total Conversions</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalConversions.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Signups &amp; Capsule downloads</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Total Spend</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">₹${totalSpend.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Cumulative ad outlay</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Blended CPA</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary?.blendedCPA || '₹18.40'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Cost per verified conversion</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoCampaignAnalyticsSearch" placeholder="Search by campaign name, status, roas, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">ID &amp; Campaign Name</th>
+                      <th class="px-4 py-3">Impressions</th>
+                      <th class="px-4 py-3">Clicks &amp; CTR</th>
+                      <th class="px-4 py-3">Conversions</th>
+                      <th class="px-4 py-3">Ad Spend</th>
+                      <th class="px-4 py-3">ROAS</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No campaign analytics records match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-violet-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.campaignName}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${(Number(item.impressions) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <div>${(Number(item.clicks) || 0).toLocaleString('en-IN')}</div>
+                          <div class="text-[10px] text-violet-400 font-mono mt-0.5">${item.ctr}</div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${(Number(item.conversions) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 text-amber-400 font-mono font-medium">
+                          ₹${(Number(item.spendINR) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">${item.roas}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.status || 'Active'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Record" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Record" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoCampaignAnalyticsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoCampaignAnalyticsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Campaign Analytics Schema', {
+              id: 'string (unique ID, e.g. ANL-01)',
+              campaignName: 'string (e.g. OAS 2026 Notification Drive)',
+              impressions: 'number (total impressions delivered)',
+              clicks: 'number (total clicks generated)',
+              ctr: 'string (click-through rate, e.g. 9.41%)',
+              conversions: 'number (verified goal conversions)',
+              spendINR: 'number (outlay in ₹ INR)',
+              roas: 'string (return on ad spend, e.g. 4.2x)',
+              status: 'string (Active / Paused / Concluded)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportCampaignAnalyticsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset campaign analytics data to factory defaults?')) {
+              store.resetCampaignAnalyticsConfig();
+              config = store.getCampaignAnalyticsConfig();
+              items = [...(config.analytics || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddAnalytics')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Campaign Analytics Record',
+              fields: [
+                { name: 'campaignName', label: 'Campaign Name', type: 'text', placeholder: 'e.g. Odisha Forest Guard 2026 Drive', required: true },
+                { name: 'impressions', label: 'Impressions', type: 'number', placeholder: '100000', required: true },
+                { name: 'clicks', label: 'Clicks', type: 'number', placeholder: '8500', required: true },
+                { name: 'conversions', label: 'Conversions', type: 'number', placeholder: '750', required: true },
+                { name: 'spendINR', label: 'Spend (₹ INR)', type: 'number', placeholder: '10000', required: true },
+                { name: 'roas', label: 'ROAS Metric', type: 'text', placeholder: 'e.g. 3.8x', required: true },
+                { name: 'status', label: 'Status', type: 'select', options: [
+                  { value: 'Active', label: 'Active' },
+                  { value: 'Paused', label: 'Paused' },
+                  { value: 'Concluded', label: 'Concluded' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'ANL-' + String(items.length + 1).padStart(2, '0');
+                const imps = Number(data.impressions) || 0;
+                const clks = Number(data.clicks) || 0;
+                const calculatedCtr = imps > 0 ? ((clks / imps) * 100).toFixed(2) + '%' : '0.00%';
+                const newItem = {
+                  id: nextId,
+                  campaignName: data.campaignName.trim(),
+                  impressions: imps,
+                  clicks: clks,
+                  ctr: calculatedCtr,
+                  conversions: Number(data.conversions) || 0,
+                  spendINR: Number(data.spendINR) || 0,
+                  roas: data.roas.trim(),
+                  status: data.status,
+                  active: data.status === 'Active'
+                };
+                items.unshift(newItem);
+                config.analytics = items;
+                config.items = items;
+                store.saveCampaignAnalyticsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? 'Active' : 'Paused';
+              config.analytics = items;
+              config.items = items;
+              store.saveCampaignAnalyticsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Campaign Analytics: ' + item.campaignName,
+                fields: [
+                  { name: 'campaignName', label: 'Campaign Name', type: 'text', defaultValue: item.campaignName, required: true },
+                  { name: 'impressions', label: 'Impressions', type: 'number', defaultValue: item.impressions, required: true },
+                  { name: 'clicks', label: 'Clicks', type: 'number', defaultValue: item.clicks, required: true },
+                  { name: 'conversions', label: 'Conversions', type: 'number', defaultValue: item.conversions, required: true },
+                  { name: 'spendINR', label: 'Spend (₹ INR)', type: 'number', defaultValue: item.spendINR, required: true },
+                  { name: 'roas', label: 'ROAS Metric', type: 'text', defaultValue: item.roas, required: true },
+                  { name: 'status', label: 'Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Paused', label: 'Paused' },
+                    { value: 'Concluded', label: 'Concluded' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.campaignName = data.campaignName.trim();
+                  item.impressions = Number(data.impressions) || 0;
+                  item.clicks = Number(data.clicks) || 0;
+                  item.ctr = item.impressions > 0 ? ((item.clicks / item.impressions) * 100).toFixed(2) + '%' : '0.00%';
+                  item.conversions = Number(data.conversions) || 0;
+                  item.spendINR = Number(data.spendINR) || 0;
+                  item.roas = data.roas.trim();
+                  item.status = data.status;
+                  item.active = data.status === 'Active';
+                  config.analytics = items;
+                  config.items = items;
+                  store.saveCampaignAnalyticsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete campaign analytics record ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.analytics = items;
+                config.items = items;
+                store.saveCampaignAnalyticsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-007: UTM Management
+     */
+    function renderUtmManagementWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getUtmManagementConfig();
+        let items = Array.isArray(config.utmTags || config.items) ? [...(config.utmTags || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.tagTitle || '').toLowerCase().includes(term) ||
+                   (a.source || '').toLowerCase().includes(term) ||
+                   (a.medium || '').toLowerCase().includes(term) ||
+                   (a.campaign || '').toLowerCase().includes(term) ||
+                   (a.shortUrl || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalTags = items.length;
+          const totalClicks = items.reduce((acc, curr) => acc + (Number(curr.clicksCount) || 0), 0);
+          const activeTags = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">TRACKING</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">UTM Management</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Campaign URL parameters, short link dispatchers, attribution channels, and source click audits</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddUtm" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create UTM Tag
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured UTM Tags</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalTags}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeTags} tags actively redirecting</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Attributed Inbound Clicks</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalClicks.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Tracked via dispatch short links</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">Active Channels</div>
+                  <div class="text-2xl font-bold text-cyan-300 mt-1">${new Set(items.map(i => i.source)).size}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Telegram, WhatsApp, YouTube, Web</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoUtmSearch" placeholder="Search by tag title, source, medium, campaign, or short URL..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Tag ID &amp; Title</th>
+                      <th class="px-4 py-3">utm_source / medium</th>
+                      <th class="px-4 py-3">utm_campaign</th>
+                      <th class="px-4 py-3">Short URL</th>
+                      <th class="px-4 py-3">Clicks</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No UTM tags match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-emerald-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.tagTitle}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <div class="font-semibold text-slate-200">${item.source}</div>
+                          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.medium}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700 font-mono">${item.campaign}</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-sky-400">
+                          <a href="${item.shortUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1">
+                            ${item.shortUrl}
+                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                          </a>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${(Number(item.clicksCount) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Inactive'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit UTM Tag" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete UTM Tag" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoUtmSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoUtmSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('UTM Management Schema', {
+              id: 'string (unique ID, e.g. UTM-01)',
+              tagTitle: 'string (human readable campaign tag name)',
+              source: 'string (utm_source, e.g. telegram, whatsapp, youtube)',
+              medium: 'string (utm_medium, e.g. broadcast_channel, community_group)',
+              campaign: 'string (utm_campaign, e.g. daily_capsule_nov26)',
+              shortUrl: 'string (short redirect link, e.g. https://csodisha.com/go/...)',
+              clicksCount: 'number (total recorded redirects)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportUtmManagementManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset UTM management tags to factory defaults?')) {
+              store.resetUtmManagementConfig();
+              config = store.getUtmManagementConfig();
+              items = [...(config.utmTags || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddUtm')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create UTM Tracking Tag',
+              fields: [
+                { name: 'tagTitle', label: 'Tag Title / Description', type: 'text', placeholder: 'e.g. Daily Current Affairs Telegram Dispatch', required: true },
+                { name: 'source', label: 'Campaign Source (utm_source)', type: 'text', placeholder: 'e.g. telegram, newsletter, twitter', required: true },
+                { name: 'medium', label: 'Campaign Medium (utm_medium)', type: 'text', placeholder: 'e.g. broadcast, cpc, post, bio', required: true },
+                { name: 'campaign', label: 'Campaign Name (utm_campaign)', type: 'text', placeholder: 'e.g. opsc_mock_series_2026', required: true },
+                { name: 'shortSlug', label: 'Short URL Slug', type: 'text', placeholder: 'e.g. tg-oas-mock', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'UTM-' + String(items.length + 1).padStart(2, '0');
+                const slug = data.shortSlug.trim().replace(/^\/+/, '');
+                const newItem = {
+                  id: nextId,
+                  tagTitle: data.tagTitle.trim(),
+                  source: data.source.trim().toLowerCase(),
+                  medium: data.medium.trim().toLowerCase(),
+                  campaign: data.campaign.trim().toLowerCase(),
+                  shortUrl: 'https://csodisha.com/go/' + slug,
+                  clicksCount: 0,
+                  active: true
+                };
+                items.unshift(newItem);
+                config.utmTags = items;
+                config.items = items;
+                store.saveUtmManagementConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.utmTags = items;
+              config.items = items;
+              store.saveUtmManagementConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit UTM Tag: ' + item.tagTitle,
+                fields: [
+                  { name: 'tagTitle', label: 'Tag Title / Description', type: 'text', defaultValue: item.tagTitle, required: true },
+                  { name: 'source', label: 'Campaign Source (utm_source)', type: 'text', defaultValue: item.source, required: true },
+                  { name: 'medium', label: 'Campaign Medium (utm_medium)', type: 'text', defaultValue: item.medium, required: true },
+                  { name: 'campaign', label: 'Campaign Name (utm_campaign)', type: 'text', defaultValue: item.campaign, required: true },
+                  { name: 'shortUrl', label: 'Short Redirect URL', type: 'text', defaultValue: item.shortUrl, required: true }
+                ],
+                onSave: (data) => {
+                  item.tagTitle = data.tagTitle.trim();
+                  item.source = data.source.trim().toLowerCase();
+                  item.medium = data.medium.trim().toLowerCase();
+                  item.campaign = data.campaign.trim().toLowerCase();
+                  item.shortUrl = data.shortUrl.trim();
+                  config.utmTags = items;
+                  config.items = items;
+                  store.saveUtmManagementConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete UTM tag ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.utmTags = items;
+                config.items = items;
+                store.saveUtmManagementConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-008: Social Sharing
+     */
+    function renderSocialSharingWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSocialSharingConfig();
+        let items = Array.isArray(config.cards || config.items) ? [...(config.cards || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.pageContext || '').toLowerCase().includes(term) ||
+                   (a.ogTitle || '').toLowerCase().includes(term) ||
+                   (a.ogDescription || '').toLowerCase().includes(term) ||
+                   (a.twitterHandle || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalCards = items.length;
+          const activeCards = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-pink-500/10 text-pink-400 border border-pink-500/20">VIRALITY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Social Sharing &amp; OpenGraph</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">OpenGraph preview metadata, Twitter cards, fallback social banners, and dynamic sharing templates</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSocialCard" class="px-3.5 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-xs font-semibold text-white shadow-lg shadow-pink-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create OG Template
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Card Templates</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalCards}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeCards} active page context bindings</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-pink-400 uppercase tracking-wider">Twitter Card Type</div>
+                  <div class="text-2xl font-bold text-pink-300 mt-1 font-mono text-lg">${config.settings?.twitterCardType || 'summary_large_image'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Optimal high-resolution rich preview</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Fallback OG Image</div>
+                  <div class="text-xs font-mono text-slate-200 mt-2 truncate">${config.settings?.defaultOgImage || '/assets/images/og-share-default.webp'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Branded site backup asset</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSocialSharingSearch" placeholder="Search by page context, OG title, description, or twitter handle..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Cards Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${filtered.length === 0 ? `
+                  <div class="col-span-full p-8 text-center text-slate-500 border border-slate-800 rounded-xl bg-slate-900/30">
+                    No social sharing templates match the search query.
+                  </div>
+                ` : filtered.map(item => `
+                  <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur flex flex-col justify-between space-y-4 hover:border-slate-700 transition-colors">
+                    <div>
+                      <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                        <span class="font-mono text-pink-400 text-xs font-semibold">${item.id}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                          'bg-slate-700 text-slate-400'
+                        }">${item.active ? 'Active' : 'Inactive'}</span>
+                      </div>
+                      <div class="text-xs font-bold text-slate-300 mt-2 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        <span>${item.pageContext}</span>
+                      </div>
+                      <div class="mt-3 p-3 rounded-lg bg-slate-800/80 border border-slate-700/80">
+                        <div class="text-[11px] font-mono text-slate-400 mb-1 flex items-center gap-1">
+                          <span class="text-amber-400">og:title</span>
+                        </div>
+                        <div class="text-xs font-semibold text-white">${item.ogTitle}</div>
+                        <div class="text-[11px] font-mono text-slate-400 mt-2 mb-1 flex items-center gap-1">
+                          <span class="text-blue-400">og:description</span>
+                        </div>
+                        <div class="text-xs text-slate-300 line-clamp-2">${item.ogDescription}</div>
+                      </div>
+                      <div class="mt-3 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <span class="truncate max-w-[150px] text-slate-500">${item.ogImage}</span>
+                        <span class="text-sky-400">${item.twitterHandle}</span>
+                      </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-1.5">
+                      <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-pink-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                      </button>
+                      <button data-action="edit" data-id="${item.id}" title="Edit Template" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-pink-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      </button>
+                      <button data-action="delete" data-id="${item.id}" title="Delete Template" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSocialSharingSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSocialSharingSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Social Sharing Schema', {
+              id: 'string (unique ID, e.g. SOC-01)',
+              pageContext: 'string (e.g. Recruitment Notice Detail Pages)',
+              ogTitle: 'string (e.g. {{exam_name}} Notification & Syllabus | CS Odisha)',
+              ogDescription: 'string (meta description for preview snippet)',
+              ogImage: 'string (image URL path, e.g. /assets/images/og-recruitment.webp)',
+              twitterHandle: 'string (e.g. @CSOdisha_Portal)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSocialSharingManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset social sharing templates to factory defaults?')) {
+              store.resetSocialSharingConfig();
+              config = store.getSocialSharingConfig();
+              items = [...(config.cards || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSocialCard')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Social Sharing Template',
+              fields: [
+                { name: 'pageContext', label: 'Page Context / Category', type: 'text', placeholder: 'e.g. Odisha GK Quiz Hub', required: true },
+                { name: 'ogTitle', label: 'OpenGraph Title Template', type: 'text', placeholder: 'e.g. {{quiz_title}} - Practice Test | CS Odisha', required: true },
+                { name: 'ogDescription', label: 'OpenGraph Description Template', type: 'textarea', placeholder: 'e.g. Take real-time Odisha government exam quizzes and compare your rank.', required: true },
+                { name: 'ogImage', label: 'Preview Image Asset Path', type: 'text', placeholder: 'e.g. /assets/images/og-quiz.webp', required: true },
+                { name: 'twitterHandle', label: 'Twitter / X Attribution Handle', type: 'text', placeholder: 'e.g. @CSOdisha_Portal', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'SOC-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  pageContext: data.pageContext.trim(),
+                  ogTitle: data.ogTitle.trim(),
+                  ogDescription: data.ogDescription.trim(),
+                  ogImage: data.ogImage.trim(),
+                  twitterHandle: data.twitterHandle.trim(),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.cards = items;
+                config.items = items;
+                store.saveSocialSharingConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.cards = items;
+              config.items = items;
+              store.saveSocialSharingConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit OG Template: ' + item.pageContext,
+                fields: [
+                  { name: 'pageContext', label: 'Page Context / Category', type: 'text', defaultValue: item.pageContext, required: true },
+                  { name: 'ogTitle', label: 'OpenGraph Title Template', type: 'text', defaultValue: item.ogTitle, required: true },
+                  { name: 'ogDescription', label: 'OpenGraph Description Template', type: 'textarea', defaultValue: item.ogDescription, required: true },
+                  { name: 'ogImage', label: 'Preview Image Asset Path', type: 'text', defaultValue: item.ogImage, required: true },
+                  { name: 'twitterHandle', label: 'Twitter / X Attribution Handle', type: 'text', defaultValue: item.twitterHandle, required: true }
+                ],
+                onSave: (data) => {
+                  item.pageContext = data.pageContext.trim();
+                  item.ogTitle = data.ogTitle.trim();
+                  item.ogDescription = data.ogDescription.trim();
+                  item.ogImage = data.ogImage.trim();
+                  item.twitterHandle = data.twitterHandle.trim();
+                  config.cards = items;
+                  config.items = items;
+                  store.saveSocialSharingConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete social sharing template ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.cards = items;
+                config.items = items;
+                store.saveSocialSharingConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-009: Promotional Landing Pages
+     */
+    function renderPromoLandingPagesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPromoLandingPagesConfig();
+        let items = Array.isArray(config.landingPages || config.items) ? [...(config.landingPages || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.pageTitle || '').toLowerCase().includes(term) ||
+                   (a.urlSlug || '').toLowerCase().includes(term) ||
+                   (a.targetExam || '').toLowerCase().includes(term) ||
+                   (a.heroHeading || '').toLowerCase().includes(term) ||
+                   (a.primaryCta || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalPages = items.length;
+          const publishedCount = items.filter(i => i.status === 'Published' && i.active).length;
+          const totalConversions = items.reduce((acc, curr) => acc + (Number(curr.conversionCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">CONVERSIONS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Promotional Landing Pages</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Standalone lead generation funnels, exam capsule drives, scholarship form guides, and conversion tracking</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddLandingPage" class="px-3.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-semibold text-white shadow-lg shadow-orange-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Landing Page
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Landing Pages</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalPages}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${publishedCount} active published funnels</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-orange-400 uppercase tracking-wider">Total Leads / Conversions</div>
+                  <div class="text-2xl font-bold text-orange-300 mt-1">${totalConversions.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Aspirants enrolled via promo funnels</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Avg Conversion Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">16.2%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">High intent exam aspirant traffic</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPromoLandingSearch" placeholder="Search by page title, URL slug, target exam, or CTA..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Page ID &amp; Title</th>
+                      <th class="px-4 py-3">URL Slug &amp; Target Exam</th>
+                      <th class="px-4 py-3">Hero Heading &amp; Primary CTA</th>
+                      <th class="px-4 py-3">Conversions</th>
+                      <th class="px-4 py-3">Conv. Rate</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No promotional landing pages match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-orange-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.pageTitle}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <div class="font-mono text-sky-400 text-[11px]">${item.urlSlug}</div>
+                          <div class="text-[10px] text-slate-400 mt-0.5">${item.targetExam}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <div class="text-slate-200 font-medium">${item.heroHeading}</div>
+                          <div class="text-[10px] text-amber-400 mt-0.5 flex items-center gap-1">
+                            <span class="px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/20">${item.primaryCta}</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${(Number(item.conversionCount) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 font-mono font-medium text-purple-300">
+                          ${item.conversionRate}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.status === 'Draft' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.status || 'Draft'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Published / Draft" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-orange-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Landing Page" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-orange-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Landing Page" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoPromoLandingSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoPromoLandingSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Promotional Landing Pages Schema', {
+              id: 'string (unique ID, e.g. LND-01)',
+              pageTitle: 'string (e.g. OPSC OAS 2026 Rapid Strategy & Capsule Pack)',
+              urlSlug: 'string (e.g. /lp/oas-2026-strategy)',
+              targetExam: 'string (e.g. OPSC Civil Services)',
+              heroHeading: 'string (hero headline copy)',
+              primaryCta: 'string (button call-to-action label)',
+              conversionCount: 'number (total successful conversions)',
+              conversionRate: 'string (e.g. 14.2%)',
+              status: 'string (Published / Draft / Archived)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPromoLandingPagesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset promotional landing pages to factory defaults?')) {
+              store.resetPromoLandingPagesConfig();
+              config = store.getPromoLandingPagesConfig();
+              items = [...(config.landingPages || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddLandingPage')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Promotional Landing Page',
+              fields: [
+                { name: 'pageTitle', label: 'Page Title', type: 'text', placeholder: 'e.g. OSSTET 2026 Pedagogy Super Pack', required: true },
+                { name: 'urlSlug', label: 'URL Slug', type: 'text', placeholder: 'e.g. /lp/osstet-pedagogy-super-pack', required: true },
+                { name: 'targetExam', label: 'Target Exam / Audience', type: 'text', placeholder: 'e.g. OSSTET / Teacher Recruitment', required: true },
+                { name: 'heroHeading', label: 'Hero Headline', type: 'text', placeholder: 'e.g. Score 45+ in Child Development & Pedagogy', required: true },
+                { name: 'primaryCta', label: 'Primary CTA Button Label', type: 'text', placeholder: 'e.g. Access Free Module & Notes', required: true },
+                { name: 'status', label: 'Publishing Status', type: 'select', options: [
+                  { value: 'Published', label: 'Published' },
+                  { value: 'Draft', label: 'Draft' },
+                  { value: 'Archived', label: 'Archived' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'LND-' + String(items.length + 1).padStart(2, '0');
+                let slug = data.urlSlug.trim();
+                if (!slug.startsWith('/')) slug = '/' + slug;
+                const newItem = {
+                  id: nextId,
+                  pageTitle: data.pageTitle.trim(),
+                  urlSlug: slug,
+                  targetExam: data.targetExam.trim(),
+                  heroHeading: data.heroHeading.trim(),
+                  primaryCta: data.primaryCta.trim(),
+                  conversionCount: 0,
+                  conversionRate: '0.0%',
+                  status: data.status,
+                  active: data.status === 'Published'
+                };
+                items.unshift(newItem);
+                config.landingPages = items;
+                config.items = items;
+                store.savePromoLandingPagesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? 'Published' : 'Draft';
+              config.landingPages = items;
+              config.items = items;
+              store.savePromoLandingPagesConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Landing Page: ' + item.pageTitle,
+                fields: [
+                  { name: 'pageTitle', label: 'Page Title', type: 'text', defaultValue: item.pageTitle, required: true },
+                  { name: 'urlSlug', label: 'URL Slug', type: 'text', defaultValue: item.urlSlug, required: true },
+                  { name: 'targetExam', label: 'Target Exam / Audience', type: 'text', defaultValue: item.targetExam, required: true },
+                  { name: 'heroHeading', label: 'Hero Headline', type: 'text', defaultValue: item.heroHeading, required: true },
+                  { name: 'primaryCta', label: 'Primary CTA Button Label', type: 'text', defaultValue: item.primaryCta, required: true },
+                  { name: 'status', label: 'Publishing Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Published', label: 'Published' },
+                    { value: 'Draft', label: 'Draft' },
+                    { value: 'Archived', label: 'Archived' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.pageTitle = data.pageTitle.trim();
+                  item.urlSlug = data.urlSlug.trim();
+                  item.targetExam = data.targetExam.trim();
+                  item.heroHeading = data.heroHeading.trim();
+                  item.primaryCta = data.primaryCta.trim();
+                  item.status = data.status;
+                  item.active = data.status === 'Published';
+                  config.landingPages = items;
+                  config.items = items;
+                  store.savePromoLandingPagesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete promotional landing page ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.landingPages = items;
+                config.items = items;
+                store.savePromoLandingPagesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 12-010: Advertising Reports
+     */
+    function renderAdvertisingReportsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getAdvertisingReportsConfig();
+        let items = Array.isArray(config.reports || config.items) ? [...(config.reports || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.reportMonth || '').toLowerCase().includes(term) ||
+                   (a.topSponsor || '').toLowerCase().includes(term) ||
+                   (a.complianceAudit || '').toLowerCase().includes(term) ||
+                   (a.fileFormat || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalReports = items.length;
+          const totalGrossRev = items.reduce((acc, curr) => acc + (Number(curr.grossRevenueINR) || 0), 0);
+          const totalImpressions = items.reduce((acc, curr) => acc + (Number(curr.billableImpressions) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">FINANCIAL AUDIT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-12-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Advertising Reports &amp; Statements</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Monthly billing statements, sponsor impression verification, compliance audits, and revenue reconciliation</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddReport" class="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white shadow-lg shadow-teal-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Generate Report
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Ad Revenue</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">₹${(config.summary?.totalAdRevenueINR || totalGrossRev).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${config.summary?.auditedPeriod || 'Audited Period FY26'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Collected Revenue</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">₹${(config.summary?.collectedRevenueINR || 215000).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Direct bank transfer &amp; gateway</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Pending Invoices</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">₹${(config.summary?.pendingInvoicesINR || 30000).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Under 15-day payment cycle</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Audited Impressions</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${totalImpressions.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">100% verified SLA compliance</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoAdReportsSearch" placeholder="Search by report month, top sponsor, compliance status, or format..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Report ID &amp; Month</th>
+                      <th class="px-4 py-3">Gross Revenue</th>
+                      <th class="px-4 py-3">Billable Impressions</th>
+                      <th class="px-4 py-3">Active Advertisers</th>
+                      <th class="px-4 py-3">Top Sponsor</th>
+                      <th class="px-4 py-3">Audit SLA</th>
+                      <th class="px-4 py-3">Export Formats</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No advertising reports match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-teal-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.reportMonth}</div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-teal-300 font-mono">
+                          ₹${(Number(item.grossRevenueINR) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${(Number(item.billableImpressions) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.activeAdvertisers} Advertisers</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200">
+                          ${item.topSponsor}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${item.complianceAudit}</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-slate-400">
+                          ${item.fileFormat}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="download-csv" data-id="${item.id}" title="Download Audit CSV" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Report" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Report" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoAdReportsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoAdReportsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Advertising Reports Schema', {
+              id: 'string (unique ID, e.g. ADR-01)',
+              reportMonth: 'string (e.g. October 2026)',
+              grossRevenueINR: 'number (total monthly revenue in INR)',
+              billableImpressions: 'number (verified impression count)',
+              activeAdvertisers: 'number (count of sponsors active)',
+              topSponsor: 'string (e.g. Utkal Career Academy (₹45,000))',
+              complianceAudit: 'string (e.g. 100% SLA Met)',
+              fileFormat: 'string (PDF & CSV)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAdvertisingReportsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset advertising reports to factory defaults?')) {
+              store.resetAdvertisingReportsConfig();
+              config = store.getAdvertisingReportsConfig();
+              items = [...(config.reports || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddReport')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Generate Advertising Audit Report',
+              fields: [
+                { name: 'reportMonth', label: 'Report Month / Period', type: 'text', placeholder: 'e.g. December 2026', required: true },
+                { name: 'grossRevenueINR', label: 'Gross Revenue (₹ INR)', type: 'number', placeholder: '95000', required: true },
+                { name: 'billableImpressions', label: 'Billable Impressions', type: 'number', placeholder: '500000', required: true },
+                { name: 'activeAdvertisers', label: 'Active Advertisers Count', type: 'number', placeholder: '4', required: true },
+                { name: 'topSponsor', label: 'Top Sponsor Contribution', type: 'text', placeholder: 'e.g. Bhubaneswar IAS Circle (₹40,000)', required: true },
+                { name: 'complianceAudit', label: 'Compliance Audit Status', type: 'text', placeholder: '100% SLA Met', required: true },
+                { name: 'fileFormat', label: 'File Format', type: 'text', placeholder: 'PDF & CSV', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'ADR-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  reportMonth: data.reportMonth.trim(),
+                  grossRevenueINR: Number(data.grossRevenueINR) || 0,
+                  billableImpressions: Number(data.billableImpressions) || 0,
+                  activeAdvertisers: Number(data.activeAdvertisers) || 0,
+                  topSponsor: data.topSponsor.trim(),
+                  complianceAudit: data.complianceAudit.trim(),
+                  fileFormat: data.fileFormat.trim() || 'PDF & CSV',
+                  active: true
+                };
+                items.unshift(newItem);
+                config.reports = items;
+                config.items = items;
+                store.saveAdvertisingReportsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="download-csv"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const csvContent = "data:text/csv;charset=utf-8," +
+                "Report ID,Month,Gross Revenue INR,Billable Impressions,Active Advertisers,Top Sponsor,Compliance SLA\n" +
+                `"${item.id}","${item.reportMonth}",${item.grossRevenueINR},${item.billableImpressions},${item.activeAdvertisers},"${item.topSponsor}","${item.complianceAudit}"`;
+              const encodedUri = encodeURI(csvContent);
+              const link = document.createElement("a");
+              link.setAttribute("href", encodedUri);
+              link.setAttribute("download", `ad_report_${item.id.toLowerCase()}_${item.reportMonth.replace(/\s+/g, '_')}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Ad Report: ' + item.reportMonth,
+                fields: [
+                  { name: 'reportMonth', label: 'Report Month / Period', type: 'text', defaultValue: item.reportMonth, required: true },
+                  { name: 'grossRevenueINR', label: 'Gross Revenue (₹ INR)', type: 'number', defaultValue: item.grossRevenueINR, required: true },
+                  { name: 'billableImpressions', label: 'Billable Impressions', type: 'number', defaultValue: item.billableImpressions, required: true },
+                  { name: 'activeAdvertisers', label: 'Active Advertisers Count', type: 'number', defaultValue: item.activeAdvertisers, required: true },
+                  { name: 'topSponsor', label: 'Top Sponsor Contribution', type: 'text', defaultValue: item.topSponsor, required: true },
+                  { name: 'complianceAudit', label: 'Compliance Audit Status', type: 'text', defaultValue: item.complianceAudit, required: true },
+                  { name: 'fileFormat', label: 'File Format', type: 'text', defaultValue: item.fileFormat, required: true }
+                ],
+                onSave: (data) => {
+                  item.reportMonth = data.reportMonth.trim();
+                  item.grossRevenueINR = Number(data.grossRevenueINR) || 0;
+                  item.billableImpressions = Number(data.billableImpressions) || 0;
+                  item.activeAdvertisers = Number(data.activeAdvertisers) || 0;
+                  item.topSponsor = data.topSponsor.trim();
+                  item.complianceAudit = data.complianceAudit.trim();
+                  item.fileFormat = data.fileFormat.trim() || 'PDF & CSV';
+                  config.reports = items;
+                  config.items = items;
+                  store.saveAdvertisingReportsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete advertising report ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.reports = items;
+                config.items = items;
+                store.saveAdvertisingReportsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-12-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
     function renderAdministrativeNotificationsWorkspace() {
