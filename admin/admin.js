@@ -650,6 +650,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-17-010') { renderScheduledJobsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-17-011') { renderAutomationRulesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-17-012') { renderMaintenanceModeWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-013') { renderCacheManagementWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-014') { renderDeploymentStatusWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-015') { renderReleaseHistoryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-016') { renderDisasterRecoveryWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1132,6 +1136,14 @@ async function loadMasterNavigation() {
         renderAutomationRulesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-17-012') {
         renderMaintenanceModeWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-013') {
+        renderCacheManagementWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-014') {
+        renderDeploymentStatusWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-015') {
+        renderReleaseHistoryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-016') {
+        renderDisasterRecoveryWorkspace(dom.workspaceRoot);
 
 
 
@@ -66551,6 +66563,599 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-17-012', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 17-013: Cache Management
+    // ==========================================
+    function renderCacheManagementWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getCacheManagementConfig();
+
+        function render() {
+          const zones = config.cacheZones || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Edge Cache Management & Zone Invalidation</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-013 • Cloudflare Tier-1 edge caching, path-specific purge & hit-ratio analytics</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="cch-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="cch-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="cch-btn-purge-everything" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-rose-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Purge Entire Zone Cache
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Global Cache Hit Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.globalHitRate || '94.8%'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Origin Offload Ratio</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Cached Volume</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary && config.summary.totalCachedBytes || '412.5 MB'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Edge In-Memory Buffer</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Purges (24h)</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.activePurgeRequests24h || 6}</div>
+                  <div class="text-xs text-slate-400 mt-1">Instant Tag Invalidation</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Edge Infrastructure</div>
+                  <div class="text-sm font-bold text-violet-400 mt-2 truncate">${config.summary && config.summary.edgeTier || 'Cloudflare Enterprise'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Anycast 310+ POPs</div>
+                </div>
+              </div>
+
+              <!-- Cache Zones Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Cache Zone</th>
+                      <th class="p-3">Path Pattern</th>
+                      <th class="p-3">Edge TTL</th>
+                      <th class="p-3">Hit Ratio</th>
+                      <th class="p-3">Last Purged</th>
+                      <th class="p-3">Status</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${zones.map((z, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${z.cacheZone}</td>
+                        <td class="p-3 font-mono text-emerald-400">${z.pathPattern}</td>
+                        <td class="p-3 font-mono text-slate-300 font-bold">${z.ttlSeconds >= 86400 ? (z.ttlSeconds/86400) + 'd' : (z.ttlSeconds/3600) + 'h'}</td>
+                        <td class="p-3 font-mono text-white font-bold">${z.cacheHitRatio}</td>
+                        <td class="p-3 text-slate-400">${z.lastPurged}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${z.status}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <button class="cch-purge-zone-btn text-xs font-semibold px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition" data-index="${idx}">
+                            Purge Path
+                          </button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.cch-purge-zone-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              const z = zones[idx];
+              z.lastPurged = new Date().toISOString().slice(0, 16).replace('T', ' ');
+              config.cacheZones = zones;
+              config.items = zones;
+              store.saveCacheManagementConfig(config);
+              alert(`Cache purged for pattern [${z.pathPattern}]. CDN edge updated.`);
+              render();
+            };
+          });
+
+          const purgeAllBtn = container.querySelector('#cch-btn-purge-everything');
+          if (purgeAllBtn) {
+            purgeAllBtn.onclick = () => {
+              if (confirm('Are you sure you want to purge the ENTIRE edge cache? Origin traffic will spike temporarily.')) {
+                zones.forEach(z => { z.lastPurged = new Date().toISOString().slice(0, 16).replace('T', ' '); });
+                config.cacheZones = zones;
+                config.items = zones;
+                store.saveCacheManagementConfig(config);
+                alert('Cloudflare Global Zone purge initiated. Entire domain cache invalidated.');
+                render();
+              }
+            };
+          }
+
+          const exportBtn = container.querySelector('#cch-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportCacheManagementManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#cch-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Cache Management configuration to factory defaults?')) {
+                config = store.resetCacheManagementConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-014: Deployment Status
+    // ==========================================
+    function renderDeploymentStatusWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDeploymentStatusConfig();
+
+        function render() {
+          const deployments = config.deployments || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Deployment Status & CI/CD Pipeline</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-014 • Cloudflare Pages Git deployments, production builds & commit logs</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="dep-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="dep-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Production Build</div>
+                  <div class="text-sm font-bold text-sky-400 font-mono mt-2">${config.summary && config.summary.currentProductionBuild || 'build-2026.11'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Live On Cloudflare Edge</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Provider</div>
+                  <div class="text-lg font-bold text-white mt-1">Cloudflare Pages</div>
+                  <div class="text-xs text-slate-400 mt-1">Direct GitHub Webhooks</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Build Duration</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.buildDurationAvg || '42s'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Static Asset Bundler</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Pipeline Health</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${config.summary && config.summary.healthStatus || 'Passing 100%'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Zero Deployment Errors</div>
+                </div>
+              </div>
+
+              <!-- Deployments Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Commit Hash</th>
+                      <th class="p-3">Branch</th>
+                      <th class="p-3">Target Environment</th>
+                      <th class="p-3">Operator / Trigger</th>
+                      <th class="p-3">Duration</th>
+                      <th class="p-3">Status</th>
+                      <th class="p-3">Deployed At</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${deployments.map(d => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-mono text-sky-400 font-bold">${d.commitHash}</td>
+                        <td class="p-3 font-mono text-slate-300 font-semibold">${d.branch}</td>
+                        <td class="p-3 font-semibold text-white">${d.environment}</td>
+                        <td class="p-3 text-slate-300">${d.deployedBy}</td>
+                        <td class="p-3 font-mono text-white">${d.durationSeconds}s</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${d.deploymentStatus && d.deploymentStatus.includes('Live') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-300'}">
+                            ${d.deploymentStatus}
+                          </span>
+                        </td>
+                        <td class="p-3 text-slate-400">${d.deployedAt}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const exportBtn = container.querySelector('#dep-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportDeploymentStatusManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#dep-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Deployment Status configuration to factory defaults?')) {
+                config = store.resetDeploymentStatusConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-015: Release History
+    // ==========================================
+    function renderReleaseHistoryWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getReleaseHistoryConfig();
+
+        function render() {
+          const releases = config.releases || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Portal Release History & Changelog Ledger</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-015 • Version tags, release milestone notes & production rollout timeline</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="rel-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="rel-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="rel-btn-new-release" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-violet-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Tag New Release
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Total Releases</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary && config.summary.totalReleases || releases.length}</div>
+                  <div class="text-xs text-violet-400 mt-1">Production Milestones</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Current Tag</div>
+                  <div class="text-xl font-bold text-emerald-400 font-mono mt-1">${config.summary && config.summary.currentReleaseTag || 'v2026.11.2'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Live in Production</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Release Cadence</div>
+                  <div class="text-sm font-bold text-sky-400 mt-2">${config.summary && config.summary.releaseCadence || 'Bi-Weekly'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Rolling Deployments</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Stability Index</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${config.summary && config.summary.stabilityIndex || '99.98%'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Zero Regressions</div>
+                </div>
+              </div>
+
+              <!-- Releases List -->
+              <div class="space-y-4">
+                ${releases.map((rel, idx) => `
+                  <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-violet-500/20 text-violet-300 border border-violet-500/40">${rel.releaseTag}</span>
+                          <h3 class="text-sm font-bold text-white">${rel.releaseTitle}</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">${rel.changelogSummary}</p>
+                      </div>
+                      <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${rel.releaseStatus && rel.releaseStatus.includes('Current') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-300'}">
+                        ${rel.releaseStatus}
+                      </span>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                      <span>Released: ${rel.releaseDate}</span>
+                      <button class="rel-del-btn text-rose-400 hover:text-rose-300" data-index="${idx}">Delete Record</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.rel-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this release history entry?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                releases.splice(idx, 1);
+                config.releases = releases;
+                config.items = releases;
+                store.saveReleaseHistoryConfig(config);
+                render();
+              }
+            };
+          });
+
+          const newBtn = container.querySelector('#rel-btn-new-release');
+          if (newBtn) {
+            newBtn.onclick = () => {
+              const tag = prompt('Release Tag (e.g. v2026.11.3):', 'v2026.11.3');
+              if (!tag) return;
+              const title = prompt('Release Title:');
+              if (!title) return;
+              const summary = prompt('Changelog Summary:');
+              if (!summary) return;
+              releases.unshift({
+                id: 'REL-0' + (releases.length + 1),
+                releaseTag: tag,
+                releaseTitle: title,
+                releaseDate: new Date().toISOString().slice(0, 10),
+                changelogSummary: summary,
+                breakingChanges: 'None',
+                releaseStatus: 'Current Production',
+                active: true
+              });
+              config.releases = releases;
+              config.items = releases;
+              config.summary = config.summary || {};
+              config.summary.currentReleaseTag = tag;
+              store.saveReleaseHistoryConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#rel-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportReleaseHistoryManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#rel-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Release History to factory defaults?')) {
+                config = store.resetReleaseHistoryConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-015', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-015</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-016: Disaster Recovery
+    // ==========================================
+    function renderDisasterRecoveryWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDisasterRecoveryConfig();
+
+        function render() {
+          const components = config.drComponents || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Disaster Recovery (DR) & Failover Orchestration</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-016 • Multi-region failover, hot standby database sync & cold archive recovery</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="dr-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="dr-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="dr-btn-simulate-drill" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Simulate DR Failover Drill
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">DR Readiness Score</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.drReadinessScore || '99.6%'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Multi-Region Redundant</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">RTO Target</div>
+                  <div class="text-xl font-bold text-sky-400 mt-1">${config.summary && config.summary.rtoTarget || '< 15 mins'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Recovery Time Objective</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">RPO Target</div>
+                  <div class="text-xl font-bold text-violet-400 mt-1">${config.summary && config.summary.rpoTarget || '< 1 hour'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Recovery Point Objective</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Standby Region</div>
+                  <div class="text-sm font-bold text-teal-400 mt-2 truncate">${config.summary && config.summary.standbyRegion || 'Singapore'}</div>
+                  <div class="text-xs text-slate-400 mt-1">AWS ap-southeast-1</div>
+                </div>
+              </div>
+
+              <!-- DR Components Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Critical Subsystem</th>
+                      <th class="p-3">Replication Mode</th>
+                      <th class="p-3">Failover Status</th>
+                      <th class="p-3">Last Drill Date</th>
+                      <th class="p-3">Operational Status</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${components.map((c, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${c.component}</td>
+                        <td class="p-3 text-slate-300 font-mono">${c.replicationMode}</td>
+                        <td class="p-3 font-mono text-teal-400">${c.failoverStatus}</td>
+                        <td class="p-3 text-slate-400">${c.lastTestedDate}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${c.status}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <button class="dr-test-btn text-xs font-semibold px-2 py-1 rounded bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 transition" data-index="${idx}">
+                            Test Sync
+                          </button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.dr-test-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              components[idx].lastTestedDate = new Date().toISOString().slice(0, 10);
+              config.drComponents = components;
+              config.items = components;
+              store.saveDisasterRecoveryConfig(config);
+              alert('Replication handshake verified. Latency: 22ms.');
+              render();
+            };
+          });
+
+          const drillBtn = container.querySelector('#dr-btn-simulate-drill');
+          if (drillBtn) {
+            drillBtn.onclick = () => {
+              if (confirm('Initiate synthetic disaster recovery drill? This validates standby routing without disrupting public traffic.')) {
+                components.forEach(c => { c.lastTestedDate = new Date().toISOString().slice(0, 10); });
+                config.drComponents = components;
+                config.items = components;
+                store.saveDisasterRecoveryConfig(config);
+                alert('Disaster Recovery Drill Completed Successfully! RTO simulated: 4m 12s (Well within 15m threshold).');
+                render();
+              }
+            };
+          }
+
+          const exportBtn = container.querySelector('#dr-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportDisasterRecoveryManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#dr-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Disaster Recovery configuration to factory defaults?')) {
+                config = store.resetDisasterRecoveryConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-016', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

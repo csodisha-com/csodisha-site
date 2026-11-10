@@ -12985,7 +12985,11 @@
           errorLogs: this.getErrorLogsConfig ? this.getErrorLogsConfig() : null,
           scheduledJobs: this.getScheduledJobsConfig ? this.getScheduledJobsConfig() : null,
           automationRules: this.getAutomationRulesConfig ? this.getAutomationRulesConfig() : null,
-          maintenanceMode: this.getMaintenanceModeConfig ? this.getMaintenanceModeConfig() : null
+          maintenanceMode: this.getMaintenanceModeConfig ? this.getMaintenanceModeConfig() : null,
+          cacheManagement: this.getCacheManagementConfig ? this.getCacheManagementConfig() : null,
+          deploymentStatus: this.getDeploymentStatusConfig ? this.getDeploymentStatusConfig() : null,
+          releaseHistory: this.getReleaseHistoryConfig ? this.getReleaseHistoryConfig() : null,
+          disasterRecovery: this.getDisasterRecoveryConfig ? this.getDisasterRecoveryConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15525,6 +15529,145 @@
     return filename;
   };
 
+
+  // --- MODULE 17-013: Cache Management ---
+  const DEFAULT_CACHE_MANAGEMENT = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { globalHitRate: "94.8%", totalCachedBytes: "412.5 MB", activePurgeRequests24h: 6, edgeTier: "Cloudflare Enterprise Tier 1" },
+    items: [
+      { id: "CCH-01", cacheZone: "Static Assets & CSS/JS Bundles", pathPattern: "/assets/*", ttlSeconds: 2592000, cacheHitRatio: "99.2%", status: "Active & Primed", lastPurged: "2026-11-08 12:00", active: true },
+      { id: "CCH-02", cacheZone: "Public Recruitment Gazette HTML Pages", pathPattern: "/jobs-careers/*", ttlSeconds: 1800, cacheHitRatio: "91.4%", status: "Active & Primed", lastPurged: "2026-11-10 08:30", active: true },
+      { id: "CCH-03", cacheZone: "Schemes & Welfare Benefits Explorer", pathPattern: "/schemes-benefits/*", ttlSeconds: 86400, cacheHitRatio: "95.6%", status: "Active & Primed", lastPurged: "2026-11-09 14:00", active: true },
+      { id: "CCH-04", cacheZone: "Study Library PYQ Document Catalogs", pathPattern: "/study-library/*", ttlSeconds: 43200, cacheHitRatio: "93.1%", status: "Active & Primed", lastPurged: "2026-11-09 18:00", active: true }
+    ]
+  };
+  SuperStore.getCacheManagementConfig = function() {
+    return _hydrateConfig('cso_cache_management_config', 'cacheZones', () => DEFAULT_CACHE_MANAGEMENT);
+  };
+  SuperStore.saveCacheManagementConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.cacheZones = cfg.items || cfg.cacheZones || []; cfg.items = cfg.cacheZones;
+    localStorage.setItem('cso_cache_management_config', JSON.stringify(cfg));
+    this.logAudit('CACHE_MANAGEMENT_UPDATED', 'OPERATIONS', `Cache management rules updated (${cfg.items.length} zones).`);
+    return true;
+  };
+  SuperStore.resetCacheManagementConfig = function() {
+    localStorage.setItem('cso_cache_management_config', JSON.stringify(DEFAULT_CACHE_MANAGEMENT));
+    this.logAudit('CACHE_MANAGEMENT_RESET', 'OPERATIONS', 'Cache management reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_CACHE_MANAGEMENT));
+  };
+  SuperStore.exportCacheManagementManifest = function() {
+    const config = this.getCacheManagementConfig();
+    const filename = "cache_management_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CACHE_MANAGEMENT_EXPORTED", "DATA_EXPORT", `Cache management manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-014: Deployment Status ---
+  const DEFAULT_DEPLOYMENT_STATUS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { currentProductionBuild: "build-2026.11-0ed2", deploymentProvider: "Cloudflare Pages & Workers", buildDurationAvg: "42s", healthStatus: "Passing 100%" },
+    items: [
+      { id: "DEP-01", commitHash: "0ed2182", branch: "main", environment: "Production (csodisha.com)", deployedBy: "CI/CD GitHub Actions", durationSeconds: 38, deploymentStatus: "Success (Live)", deployedAt: "2026-11-10 09:22", active: true },
+      { id: "DEP-02", commitHash: "49a0274", branch: "main", environment: "Production (csodisha.com)", deployedBy: "CI/CD GitHub Actions", durationSeconds: 44, deploymentStatus: "Superseded", deployedAt: "2026-11-10 08:40", active: true },
+      { id: "DEP-03", commitHash: "32bc14a", branch: "staging", environment: "Preview Staging", deployedBy: "Lead Engineer", durationSeconds: 29, deploymentStatus: "Success (Staging)", deployedAt: "2026-11-10 07:15", active: true }
+    ]
+  };
+  SuperStore.getDeploymentStatusConfig = function() {
+    return _hydrateConfig('cso_deployment_status_config', 'deployments', () => DEFAULT_DEPLOYMENT_STATUS);
+  };
+  SuperStore.saveDeploymentStatusConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.deployments = cfg.items || cfg.deployments || []; cfg.items = cfg.deployments;
+    localStorage.setItem('cso_deployment_status_config', JSON.stringify(cfg));
+    this.logAudit('DEPLOYMENT_STATUS_UPDATED', 'OPERATIONS', `Deployment status updated (${cfg.items.length} records).`);
+    return true;
+  };
+  SuperStore.resetDeploymentStatusConfig = function() {
+    localStorage.setItem('cso_deployment_status_config', JSON.stringify(DEFAULT_DEPLOYMENT_STATUS));
+    this.logAudit('DEPLOYMENT_STATUS_RESET', 'OPERATIONS', 'Deployment status reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_DEPLOYMENT_STATUS));
+  };
+  SuperStore.exportDeploymentStatusManifest = function() {
+    const config = this.getDeploymentStatusConfig();
+    const filename = "deployment_status_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DEPLOYMENT_STATUS_EXPORTED", "DATA_EXPORT", `Deployment status manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-015: Release History ---
+  const DEFAULT_RELEASE_HISTORY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalReleases: 18, currentReleaseTag: "v2026.11.2", releaseCadence: "Bi-Weekly Milestones", stabilityIndex: "99.98%" },
+    items: [
+      { id: "REL-01", releaseTag: "v2026.11.2", releaseTitle: "Master Admin Operations & Security Hardening", releaseDate: "2026-11-10", changelogSummary: "Complete deployment of Folders 16 and 17 (Security, Privacy, Operations, Disaster Recovery)", breakingChanges: "None", releaseStatus: "Current Production", active: true },
+      { id: "REL-02", releaseTag: "v2026.11.1", releaseTitle: "Integrations & External APIs Hub", releaseDate: "2026-11-09", changelogSummary: "Supabase connection telemetry, Cloudflare Gateway mounts, Brevo SMTP & multi-cloud storage", breakingChanges: "None", releaseStatus: "Previous Stable", active: true },
+      { id: "REL-03", releaseTag: "v2026.10.8", releaseTitle: "Statewide Mock Exam Engine & District Leaderboards", releaseDate: "2026-10-25", changelogSummary: "Launched 30-district candidate leaderboard with live score recalculation", breakingChanges: "None", releaseStatus: "Archived", active: true }
+    ]
+  };
+  SuperStore.getReleaseHistoryConfig = function() {
+    return _hydrateConfig('cso_release_history_config', 'releases', () => DEFAULT_RELEASE_HISTORY);
+  };
+  SuperStore.saveReleaseHistoryConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.releases = cfg.items || cfg.releases || []; cfg.items = cfg.releases;
+    localStorage.setItem('cso_release_history_config', JSON.stringify(cfg));
+    this.logAudit('RELEASE_HISTORY_UPDATED', 'OPERATIONS', `Release history updated (${cfg.items.length} releases).`);
+    return true;
+  };
+  SuperStore.resetReleaseHistoryConfig = function() {
+    localStorage.setItem('cso_release_history_config', JSON.stringify(DEFAULT_RELEASE_HISTORY));
+    this.logAudit('RELEASE_HISTORY_RESET', 'OPERATIONS', 'Release history reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_RELEASE_HISTORY));
+  };
+  SuperStore.exportReleaseHistoryManifest = function() {
+    const config = this.getReleaseHistoryConfig();
+    const filename = "release_history_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("RELEASE_HISTORY_EXPORTED", "DATA_EXPORT", `Release history manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-016: Disaster Recovery ---
+  const DEFAULT_DISASTER_RECOVERY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { drReadinessScore: "99.6%", primaryRegion: "Cloudflare Anycast + AWS Mumbai (ap-south-1)", standbyRegion: "Singapore (ap-southeast-1)", rtoTarget: "< 15 minutes", rpoTarget: "< 1 hour" },
+    items: [
+      { id: "DR-01", component: "Statewide Candidate Database Cluster", replicationMode: "Multi-region Realtime Streaming", failoverStatus: "Hot Standby Ready", lastTestedDate: "2026-10-30", status: "Operational", active: true },
+      { id: "DR-02", component: "Gazette Archive & Study PDF Storage", replicationMode: "Cross-Cloud Replication (R2 -> S3)", failoverStatus: "Active-Active Multi-Provider", lastTestedDate: "2026-11-02", status: "Operational", active: true },
+      { id: "DR-03", component: "Edge Worker Compute Network", replicationMode: "Anycast 310 Global Data Centres", failoverStatus: "Instant Automatic Routing", lastTestedDate: "2026-11-08", status: "Operational", active: true },
+      { id: "DR-04", component: "Platform State Backup Snapshot Pool", replicationMode: "Air-Gapped Immutable Cold Storage", failoverStatus: "On-Demand Point-in-Time Restore", lastTestedDate: "2026-11-10", status: "Operational", active: true }
+    ]
+  };
+  SuperStore.getDisasterRecoveryConfig = function() {
+    return _hydrateConfig('cso_disaster_recovery_config', 'drComponents', () => DEFAULT_DISASTER_RECOVERY);
+  };
+  SuperStore.saveDisasterRecoveryConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.drComponents = cfg.items || cfg.drComponents || []; cfg.items = cfg.drComponents;
+    localStorage.setItem('cso_disaster_recovery_config', JSON.stringify(cfg));
+    this.logAudit('DISASTER_RECOVERY_UPDATED', 'OPERATIONS', `Disaster recovery plan updated (${cfg.items.length} components).`);
+    return true;
+  };
+  SuperStore.resetDisasterRecoveryConfig = function() {
+    localStorage.setItem('cso_disaster_recovery_config', JSON.stringify(DEFAULT_DISASTER_RECOVERY));
+    this.logAudit('DISASTER_RECOVERY_RESET', 'OPERATIONS', 'Disaster recovery config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_DISASTER_RECOVERY));
+  };
+  SuperStore.exportDisasterRecoveryManifest = function() {
+    const config = this.getDisasterRecoveryConfig();
+    const filename = "disaster_recovery_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DISASTER_RECOVERY_EXPORTED", "DATA_EXPORT", `Disaster recovery manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -15812,6 +15955,22 @@
     window.CSOSuperStore.saveMaintenanceModeConfig = SuperStore.saveMaintenanceModeConfig;
     window.CSOSuperStore.resetMaintenanceModeConfig = SuperStore.resetMaintenanceModeConfig;
     window.CSOSuperStore.exportMaintenanceModeManifest = SuperStore.exportMaintenanceModeManifest;
+    window.CSOSuperStore.getCacheManagementConfig = SuperStore.getCacheManagementConfig;
+    window.CSOSuperStore.saveCacheManagementConfig = SuperStore.saveCacheManagementConfig;
+    window.CSOSuperStore.resetCacheManagementConfig = SuperStore.resetCacheManagementConfig;
+    window.CSOSuperStore.exportCacheManagementManifest = SuperStore.exportCacheManagementManifest;
+    window.CSOSuperStore.getDeploymentStatusConfig = SuperStore.getDeploymentStatusConfig;
+    window.CSOSuperStore.saveDeploymentStatusConfig = SuperStore.saveDeploymentStatusConfig;
+    window.CSOSuperStore.resetDeploymentStatusConfig = SuperStore.resetDeploymentStatusConfig;
+    window.CSOSuperStore.exportDeploymentStatusManifest = SuperStore.exportDeploymentStatusManifest;
+    window.CSOSuperStore.getReleaseHistoryConfig = SuperStore.getReleaseHistoryConfig;
+    window.CSOSuperStore.saveReleaseHistoryConfig = SuperStore.saveReleaseHistoryConfig;
+    window.CSOSuperStore.resetReleaseHistoryConfig = SuperStore.resetReleaseHistoryConfig;
+    window.CSOSuperStore.exportReleaseHistoryManifest = SuperStore.exportReleaseHistoryManifest;
+    window.CSOSuperStore.getDisasterRecoveryConfig = SuperStore.getDisasterRecoveryConfig;
+    window.CSOSuperStore.saveDisasterRecoveryConfig = SuperStore.saveDisasterRecoveryConfig;
+    window.CSOSuperStore.resetDisasterRecoveryConfig = SuperStore.resetDisasterRecoveryConfig;
+    window.CSOSuperStore.exportDisasterRecoveryManifest = SuperStore.exportDisasterRecoveryManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
