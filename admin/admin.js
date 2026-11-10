@@ -654,6 +654,11 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-17-014') { renderDeploymentStatusWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-17-015') { renderReleaseHistoryWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-17-016') { renderDisasterRecoveryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-001') { renderGeneralWebsiteSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-002') { renderWebsiteIdentityWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-003') { renderContactInformationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-004') { renderLocalizationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-005') { renderLanguagesWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1144,6 +1149,16 @@ async function loadMasterNavigation() {
         renderReleaseHistoryWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-17-016') {
         renderDisasterRecoveryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-001') {
+        renderGeneralWebsiteSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-002') {
+        renderWebsiteIdentityWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-003') {
+        renderContactInformationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-004') {
+        renderLocalizationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-005') {
+        renderLanguagesWorkspace(dom.workspaceRoot);
 
 
 
@@ -67156,6 +67171,778 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-17-016', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 18-001: General Website Settings
+    // ==========================================
+    function renderGeneralWebsiteSettingsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getGeneralWebsiteSettingsConfig();
+
+        function render() {
+          const settings = config.settingsList || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">General Website Settings & Global Master Parameters</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-001 • Primary site name, canonical domain, default landing routing & operational status</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="gen-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="gen-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="gen-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Platform Title</div>
+                  <div class="text-lg font-bold text-white mt-1 truncate">${config.summary && config.summary.platformName || 'Common Sense Odisha'}</div>
+                  <div class="text-xs text-teal-400 mt-1">Official Portal Entity</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Operational State</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.operationalState || 'Active Live'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Public Access Unrestricted</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Configured Parameters</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${settings.length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Global Site Directives</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Public SLA Tier</div>
+                  <div class="text-sm font-bold text-violet-400 mt-2 truncate">${config.summary && config.summary.defaultSlaTier || 'Public Aspirant Tier'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Statewide Community Free Tier</div>
+                </div>
+              </div>
+
+              <!-- Settings Grid -->
+              <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                <h3 class="text-sm font-bold text-white">Core Portal Directives</h3>
+                <div class="space-y-4">
+                  ${settings.map((s, idx) => `
+                    <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-mono font-bold text-teal-400">${s.settingKey}</span>
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-mono">${s.settingGroup}</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white mt-0.5">${s.displayName}</div>
+                      </div>
+                      <div class="w-full sm:w-1/2">
+                        <input type="text" value="${s.currentValue}" class="setting-val-input w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" data-index="${idx}">
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#gen-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.setting-val-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                settings[idx].currentValue = input.value.trim();
+              });
+              config.settingsList = settings;
+              config.items = settings;
+              store.saveGeneralWebsiteSettingsConfig(config);
+              alert('General website settings updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#gen-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportGeneralWebsiteSettingsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#gen-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset General Website Settings to factory defaults?')) {
+                config = store.resetGeneralWebsiteSettingsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-002: Website Identity
+    // ==========================================
+    function renderWebsiteIdentityWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getWebsiteIdentityConfig();
+
+        function render() {
+          const assets = config.brandAssets || config.items || [];
+          const branding = config.branding || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Website Brand Identity, Logos & Visual Assets</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-002 • High-resolution SVG logos, PWA app icons, typography styling & color palette</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="idn-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="idn-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="idn-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Brand Color Palette -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Primary Brand</div>
+                  <div class="flex items-center gap-2 mt-2">
+                    <span class="w-5 h-5 rounded border border-white/20" style="background-color: ${branding.primaryColorHex || '#0F766E'}"></span>
+                    <span class="text-sm font-mono font-bold text-white">${branding.primaryColorHex || '#0F766E'}</span>
+                  </div>
+                  <div class="text-xs text-teal-400 mt-1">Deep Teal 700</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Accent Amber</div>
+                  <div class="flex items-center gap-2 mt-2">
+                    <span class="w-5 h-5 rounded border border-white/20" style="background-color: ${branding.accentColorHex || '#F59E0B'}"></span>
+                    <span class="text-sm font-mono font-bold text-white">${branding.accentColorHex || '#F59E0B'}</span>
+                  </div>
+                  <div class="text-xs text-amber-400 mt-1">Konark Gold / Amber</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Dark Canvas</div>
+                  <div class="flex items-center gap-2 mt-2">
+                    <span class="w-5 h-5 rounded border border-white/20" style="background-color: ${branding.darkBgHex || '#042F2E'}"></span>
+                    <span class="text-sm font-mono font-bold text-white">${branding.darkBgHex || '#042F2E'}</span>
+                  </div>
+                  <div class="text-xs text-slate-400 mt-1">Night Slate Backdrop</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Headings Font</div>
+                  <div class="text-sm font-bold text-sky-400 mt-2 truncate font-mono">${branding.typographyHeadings || 'Outfit, Inter'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Native Variable Web Font</div>
+                </div>
+              </div>
+
+              <!-- Brand Assets Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Asset Role</th>
+                      <th class="p-3">Asset URL Path</th>
+                      <th class="p-3">Dimensions</th>
+                      <th class="p-3">Format</th>
+                      <th class="p-3">Production Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${assets.map((a, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${a.assetRole}</td>
+                        <td class="p-3">
+                          <input type="text" value="${a.assetUrl}" class="asset-url-input w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 font-mono text-slate-300">${a.dimensions}</td>
+                        <td class="p-3 font-mono text-slate-400">${a.format}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${a.status}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#idn-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.asset-url-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                assets[idx].assetUrl = input.value.trim();
+              });
+              config.brandAssets = assets;
+              config.items = assets;
+              store.saveWebsiteIdentityConfig(config);
+              alert('Brand identity assets saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#idn-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportWebsiteIdentityManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#idn-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Website Identity to factory defaults?')) {
+                config = store.resetWebsiteIdentityConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-003: Contact Information
+    // ==========================================
+    function renderContactInformationWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getContactInformationConfig();
+
+        function render() {
+          const channels = config.channels || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Public Contact Channels & Support SLA Directives</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-003 • Aspirant helpdesk, editorial desk, statutory DPO & headquarters physical contact</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="cnt-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="cnt-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="cnt-btn-add-channel" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Contact Channel
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Primary Support</div>
+                  <div class="text-sm font-bold text-teal-400 font-mono mt-2 truncate">${config.summary && config.summary.primarySupportEmail || 'support@csodisha.com'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Aspirant Inquiries</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Grievance Cell</div>
+                  <div class="text-sm font-bold text-amber-400 font-mono mt-2 truncate">${config.summary && config.summary.grievanceEmail || 'grievance@csodisha.com'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Escalated Resolution</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Channels</div>
+                  <div class="text-2xl font-bold text-white mt-1">${channels.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Monitored Daily</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Headquarters</div>
+                  <div class="text-xs font-bold text-violet-400 mt-2 truncate">${config.summary && config.summary.headquarterDistrict || 'Bhubaneswar, Odisha'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Physical Presence</div>
+                </div>
+              </div>
+
+              <!-- Channels Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Contact Channel</th>
+                      <th class="p-3">Address / Handle / Recipient</th>
+                      <th class="p-3">Operating Hours</th>
+                      <th class="p-3">Response SLA</th>
+                      <th class="p-3">Channel Type</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${channels.map((c, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${c.contactChannel}</td>
+                        <td class="p-3 font-mono text-teal-400">${c.recipientOrHandle}</td>
+                        <td class="p-3 text-slate-300">${c.operatingHours}</td>
+                        <td class="p-3 font-bold text-white">${c.responseSla}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/30">
+                            ${c.channelType}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <button class="cnt-del-btn text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 transition" data-index="${idx}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.cnt-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this contact channel?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                channels.splice(idx, 1);
+                config.channels = channels;
+                config.items = channels;
+                store.saveContactInformationConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#cnt-btn-add-channel');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const name = prompt('Channel Name:');
+              if (!name) return;
+              const handle = prompt('Handle / Email / Address:');
+              if (!handle) return;
+              channels.push({
+                id: 'CNT-0' + (channels.length + 1),
+                contactChannel: name,
+                recipientOrHandle: handle,
+                operatingHours: '09:00 AM - 06:00 PM IST',
+                responseSla: 'Within 24 Hours',
+                channelType: 'Digital Channel',
+                active: true
+              });
+              config.channels = channels;
+              config.items = channels;
+              store.saveContactInformationConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#cnt-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportContactInformationManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#cnt-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Contact Information to factory defaults?')) {
+                config = store.resetContactInformationConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-004: Localization
+    // ==========================================
+    function renderLocalizationWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getLocalizationConfig();
+
+        function render() {
+          const scopes = config.translationScopes || config.items || [];
+          const settings = config.settings || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Localization & Odia Transliteration Strings</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-004 • Bilingual navigation, gazette terminology dictionary & native script coverage</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="loc-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="loc-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="loc-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default Language</div>
+                  <div class="text-lg font-bold text-teal-400 mt-1">${settings.defaultLanguage || 'or (Odia)'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Statewide Native Standard</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Fallback Language</div>
+                  <div class="text-lg font-bold text-white mt-1">${settings.fallbackLanguage || 'en (English)'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Auto-fallback for missing strings</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Transliteration Engine</div>
+                  <div class="text-xs font-bold text-amber-400 font-mono mt-2 truncate">${settings.transliterationEngine || 'Akshara Web Odia v1.4'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Zero latency local phonetic map</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Localization Scopes</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${scopes.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">98.5% Translation Coverage</div>
+                </div>
+              </div>
+
+              <!-- Localization Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">UI Scope</th>
+                      <th class="p-3">Primary Odia Translation (ଓଡ଼ିଆ)</th>
+                      <th class="p-3">English Fallback</th>
+                      <th class="p-3">Coverage</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${scopes.map((s, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${s.localeScope}</td>
+                        <td class="p-3">
+                          <input type="text" value="${s.primaryLocaleTranslation}" class="scope-odia-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-teal-300 font-medium" data-index="${idx}">
+                        </td>
+                        <td class="p-3 text-slate-400 font-mono">${s.fallbackText}</td>
+                        <td class="p-3 font-mono text-emerald-400 font-bold">${s.coveragePercent}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${s.status}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#loc-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.scope-odia-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                scopes[idx].primaryLocaleTranslation = input.value.trim();
+              });
+              config.translationScopes = scopes;
+              config.items = scopes;
+              store.saveLocalizationConfig(config);
+              alert('Localization strings updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#loc-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportLocalizationManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#loc-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Localization configuration to factory defaults?')) {
+                config = store.resetLocalizationConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-005: Languages
+    // ==========================================
+    function renderLanguagesWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getLanguagesConfig();
+
+        function render() {
+          const languages = config.languages || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Active Platform Languages & Locale Codes</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-005 • Supported language packs, default locale, script text directions & completeness</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="lng-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="lng-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="lng-btn-add-lang" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Language
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Supported Languages</div>
+                  <div class="text-2xl font-bold text-white mt-1">${languages.length}</div>
+                  <div class="text-xs text-teal-400 mt-1">Full Bilingual Coverage</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default Locale</div>
+                  <div class="text-2xl font-bold text-teal-400 font-mono mt-1">${config.summary && config.summary.defaultLocaleCode || 'or'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">ଓଡ଼ିଆ (Odia Primary)</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Completion Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">100%</div>
+                  <div class="text-xs text-slate-400 mt-1">All Core Modules Translated</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Text Direction</div>
+                  <div class="text-2xl font-bold text-violet-400 font-mono mt-1">LTR</div>
+                  <div class="text-xs text-slate-400 mt-1">Left-to-Right Rendering</div>
+                </div>
+              </div>
+
+              <!-- Languages Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Language</th>
+                      <th class="p-3">Locale Code</th>
+                      <th class="p-3">Native Script</th>
+                      <th class="p-3">Text Direction</th>
+                      <th class="p-3">Default Primary</th>
+                      <th class="p-3">Completion</th>
+                      <th class="p-3">Status</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${languages.map((l, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${l.languageName}</td>
+                        <td class="p-3 font-mono text-teal-400 font-bold">${l.localeCode}</td>
+                        <td class="p-3 text-slate-300 font-medium">${l.nativeScript}</td>
+                        <td class="p-3 font-mono text-slate-400 uppercase">${l.textDirection}</td>
+                        <td class="p-3">
+                          <button class="lng-default-btn px-2 py-0.5 rounded text-[11px] font-semibold transition ${l.isDefault ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40' : 'bg-slate-800 text-slate-400 hover:text-white'}" data-index="${idx}">
+                            ${l.isDefault ? 'Primary Default' : 'Set As Default'}
+                          </button>
+                        </td>
+                        <td class="p-3 font-mono text-emerald-400 font-bold">${l.completionRate}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${l.status}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          ${!l.isDefault ? `
+                            <button class="lng-del-btn text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 transition" data-index="${idx}">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          ` : '<span class="text-slate-500 font-mono text-[10px]">Protected</span>'}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.lng-default-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              languages.forEach((l, i) => { l.isDefault = (i === idx); });
+              config.languages = languages;
+              config.items = languages;
+              config.summary = config.summary || {};
+              config.summary.defaultLocaleCode = languages[idx].localeCode;
+              store.saveLanguagesConfig(config);
+              render();
+            };
+          });
+
+          container.querySelectorAll('.lng-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this language option?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                languages.splice(idx, 1);
+                config.languages = languages;
+                config.items = languages;
+                store.saveLanguagesConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#lng-btn-add-lang');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const name = prompt('Language Name (e.g. Hindi):');
+              if (!name) return;
+              const code = prompt('Locale Code (e.g. hi):', 'hi');
+              if (!code) return;
+              languages.push({
+                id: 'LNG-0' + (languages.length + 1),
+                languageName: name,
+                localeCode: code,
+                nativeScript: name,
+                textDirection: 'ltr',
+                isDefault: false,
+                completionRate: '90%',
+                status: 'Active Additional',
+                active: true
+              });
+              config.languages = languages;
+              config.items = languages;
+              store.saveLanguagesConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#lng-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportLanguagesManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#lng-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Languages configuration to factory defaults?')) {
+                config = store.resetLanguagesConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

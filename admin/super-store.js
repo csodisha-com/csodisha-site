@@ -12989,7 +12989,12 @@
           cacheManagement: this.getCacheManagementConfig ? this.getCacheManagementConfig() : null,
           deploymentStatus: this.getDeploymentStatusConfig ? this.getDeploymentStatusConfig() : null,
           releaseHistory: this.getReleaseHistoryConfig ? this.getReleaseHistoryConfig() : null,
-          disasterRecovery: this.getDisasterRecoveryConfig ? this.getDisasterRecoveryConfig() : null
+          disasterRecovery: this.getDisasterRecoveryConfig ? this.getDisasterRecoveryConfig() : null,
+          generalWebsiteSettings: this.getGeneralWebsiteSettingsConfig ? this.getGeneralWebsiteSettingsConfig() : null,
+          websiteIdentity: this.getWebsiteIdentityConfig ? this.getWebsiteIdentityConfig() : null,
+          contactInformation: this.getContactInformationConfig ? this.getContactInformationConfig() : null,
+          localization: this.getLocalizationConfig ? this.getLocalizationConfig() : null,
+          languages: this.getLanguagesConfig ? this.getLanguagesConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15668,6 +15673,184 @@
     return filename;
   };
 
+
+  // =========================================================================
+  // FOLDER 18: Settings & Configuration — Batch 1 (18-001 to 18-005)
+  // =========================================================================
+
+  // --- MODULE 18-001: General Website Settings ---
+  const DEFAULT_GENERAL_WEBSITE_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { platformName: "Common Sense Odisha", operationalState: "Active Live", defaultSlaTier: "Statewide Aspirant Public Tier" },
+    items: [
+      { id: "SET-GEN-01", settingKey: "SITE_NAME", settingGroup: "Portal Metadata", displayName: "Platform Official Name", currentValue: "Common Sense Odisha", dataType: "String", isEditable: true, active: true },
+      { id: "SET-GEN-02", settingKey: "PRIMARY_DOMAIN", settingGroup: "Networking & SSL", displayName: "Canonical Production Domain", currentValue: "https://csodisha.com", dataType: "URL", isEditable: true, active: true },
+      { id: "SET-GEN-03", settingKey: "PORTAL_TAGLINE", settingGroup: "Portal Metadata", displayName: "Public Tagline", currentValue: "Democratizing Odisha Recruitment, Schemes & Aspirant Intelligence", dataType: "String", isEditable: true, active: true },
+      { id: "SET-GEN-04", settingKey: "DEFAULT_LANDING_SECTION", settingGroup: "Navigation", displayName: "Default Home Module", currentValue: "Jobs & Careers Gateway", dataType: "Route", isEditable: true, active: true }
+    ]
+  };
+  SuperStore.getGeneralWebsiteSettingsConfig = function() {
+    return _hydrateConfig('cso_general_website_settings_config', 'settingsList', () => DEFAULT_GENERAL_WEBSITE_SETTINGS);
+  };
+  SuperStore.saveGeneralWebsiteSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.settingsList = cfg.items || cfg.settingsList || []; cfg.items = cfg.settingsList;
+    localStorage.setItem('cso_general_website_settings_config', JSON.stringify(cfg));
+    this.logAudit('GENERAL_SETTINGS_UPDATED', 'SETTINGS', `General website settings updated (${cfg.items.length} settings).`);
+    return true;
+  };
+  SuperStore.resetGeneralWebsiteSettingsConfig = function() {
+    localStorage.setItem('cso_general_website_settings_config', JSON.stringify(DEFAULT_GENERAL_WEBSITE_SETTINGS));
+    this.logAudit('GENERAL_SETTINGS_RESET', 'SETTINGS', 'General website settings reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_GENERAL_WEBSITE_SETTINGS));
+  };
+  SuperStore.exportGeneralWebsiteSettingsManifest = function() {
+    const config = this.getGeneralWebsiteSettingsConfig();
+    const filename = "general_website_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("GENERAL_SETTINGS_EXPORTED", "DATA_EXPORT", `General website settings manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-002: Website Identity ---
+  const DEFAULT_WEBSITE_IDENTITY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    branding: { primaryColorHex: "#0F766E", accentColorHex: "#F59E0B", darkBgHex: "#042F2E", typographyHeadings: "Outfit, Inter, sans-serif" },
+    items: [
+      { id: "IDN-01", assetRole: "Header Primary Logo (SVG)", assetUrl: "/assets/images/brand/cso-logo-primary.svg", dimensions: "240x60", format: "image/svg+xml", status: "Active in Production", active: true },
+      { id: "IDN-02", assetRole: "Favicon Vector & ICO Package", assetUrl: "/assets/icons/favicon.ico", dimensions: "32x32 / 48x48", format: "image/x-icon", status: "Active in Production", active: true },
+      { id: "IDN-03", assetRole: "Mobile Apple Touch Icon", assetUrl: "/assets/icons/apple-touch-icon.png", dimensions: "180x180", format: "image/png", status: "Active in Production", active: true },
+      { id: "IDN-04", assetRole: "PWA Web App Manifest Icon (Maskable)", assetUrl: "/assets/icons/icon-512x512.png", dimensions: "512x512", format: "image/png", status: "Active in Production", active: true }
+    ]
+  };
+  SuperStore.getWebsiteIdentityConfig = function() {
+    return _hydrateConfig('cso_website_identity_config', 'brandAssets', () => DEFAULT_WEBSITE_IDENTITY);
+  };
+  SuperStore.saveWebsiteIdentityConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.brandAssets = cfg.items || cfg.brandAssets || []; cfg.items = cfg.brandAssets;
+    localStorage.setItem('cso_website_identity_config', JSON.stringify(cfg));
+    this.logAudit('WEBSITE_IDENTITY_UPDATED', 'SETTINGS', `Website identity brand assets updated (${cfg.items.length} assets).`);
+    return true;
+  };
+  SuperStore.resetWebsiteIdentityConfig = function() {
+    localStorage.setItem('cso_website_identity_config', JSON.stringify(DEFAULT_WEBSITE_IDENTITY));
+    this.logAudit('WEBSITE_IDENTITY_RESET', 'SETTINGS', 'Website identity reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_WEBSITE_IDENTITY));
+  };
+  SuperStore.exportWebsiteIdentityManifest = function() {
+    const config = this.getWebsiteIdentityConfig();
+    const filename = "website_identity_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("WEBSITE_IDENTITY_EXPORTED", "DATA_EXPORT", `Website identity manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-003: Contact Information ---
+  const DEFAULT_CONTACT_INFORMATION = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { primarySupportEmail: "support@csodisha.com", grievanceEmail: "grievance@csodisha.com", headquarterDistrict: "Bhubaneswar & Balasore, Odisha" },
+    items: [
+      { id: "CNT-01", contactChannel: "Aspirant Help Desk & Telegram Bot", recipientOrHandle: "@CSOdisha_SupportBot / support@csodisha.com", operatingHours: "08:00 AM - 08:00 PM IST (Mon-Sat)", responseSla: "Within 2 Hours", channelType: "Digital Helpdesk", active: true },
+      { id: "CNT-02", contactChannel: "Official Editorial & Gazette Desk", recipientOrHandle: "editor@csodisha.com", operatingHours: "09:00 AM - 06:00 PM IST", responseSla: "Same Day Verification", channelType: "Email Channel", active: true },
+      { id: "CNT-03", contactChannel: "Statutory Data Protection Officer (DPDP)", recipientOrHandle: "privacy@csodisha.com", operatingHours: "10:00 AM - 05:00 PM IST", responseSla: "Within 48 Hours", channelType: "Legal Compliance", active: true },
+      { id: "CNT-04", contactChannel: "Headquarters Liaison Office", recipientOrHandle: "Plot No. 142, Saheed Nagar, Bhubaneswar, Odisha - 751007", operatingHours: "10:00 AM - 05:00 PM IST (Working Days)", responseSla: "Postal Communications", channelType: "Physical Office", active: true }
+    ]
+  };
+  SuperStore.getContactInformationConfig = function() {
+    return _hydrateConfig('cso_contact_information_config', 'channels', () => DEFAULT_CONTACT_INFORMATION);
+  };
+  SuperStore.saveContactInformationConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.channels = cfg.items || cfg.channels || []; cfg.items = cfg.channels;
+    localStorage.setItem('cso_contact_information_config', JSON.stringify(cfg));
+    this.logAudit('CONTACT_INFO_UPDATED', 'SETTINGS', `Contact information updated (${cfg.items.length} channels).`);
+    return true;
+  };
+  SuperStore.resetContactInformationConfig = function() {
+    localStorage.setItem('cso_contact_information_config', JSON.stringify(DEFAULT_CONTACT_INFORMATION));
+    this.logAudit('CONTACT_INFO_RESET', 'SETTINGS', 'Contact information reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_CONTACT_INFORMATION));
+  };
+  SuperStore.exportContactInformationManifest = function() {
+    const config = this.getContactInformationConfig();
+    const filename = "contact_information_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CONTACT_INFO_EXPORTED", "DATA_EXPORT", `Contact information manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-004: Localization ---
+  const DEFAULT_LOCALIZATION_CONFIG = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { defaultLanguage: "or (Odia)", fallbackLanguage: "en (English)", autoDetectBrowserLocale: true, transliterationEngine: "Akshara Web Odia Engine v1.4" },
+    items: [
+      { id: "LOC-01", localeScope: "Public Exam Navigation & Header", primaryLocaleTranslation: "ଓଡ଼ିଶା ଚାକିରି, ଯୋଜନା ଓ ପରୀକ୍ଷା ସହାୟତା", fallbackText: "Odisha Jobs, Schemes & Exam Intelligence", coveragePercent: "100%", status: "Verified Native", active: true },
+      { id: "LOC-02", localeScope: "Jobs & Careers Gazette Metadata", primaryLocaleTranslation: "ବିଜ୍ଞପ୍ତି ତାରିଖ, ଆବେଦନ ଶେଷ ଦିନ, ଯୋଗ୍ୟତା", fallbackText: "Gazette Notice, Closing Date, Eligibility", coveragePercent: "98.5%", status: "Verified Native", active: true },
+      { id: "LOC-03", localeScope: "Statewide Welfare Schemes Directory", primaryLocaleTranslation: "ସରକାରୀ ଯୋଜନା, ଛାତ୍ରବୃତ୍ତି ଓ ହିତାଧିକାରୀ ସୂଚୀ", fallbackText: "Govt Schemes, Scholarships & Beneficiary List", coveragePercent: "99.0%", status: "Verified Native", active: true },
+      { id: "LOC-04", localeScope: "Study Library & Mock Test Instructions", primaryLocaleTranslation: "ମକ ଟେଷ୍ଟ ପରୀକ୍ଷା ପ୍ରଣାଳୀ ଓ ଉତ୍ତର ବିଶ୍ଳେଷଣ", fallbackText: "Mock Test Examination & Answer Key Analysis", coveragePercent: "97.2%", status: "Verified Native", active: true }
+    ]
+  };
+  SuperStore.getLocalizationConfig = function() {
+    return _hydrateConfig('cso_localization_config', 'translationScopes', () => DEFAULT_LOCALIZATION_CONFIG);
+  };
+  SuperStore.saveLocalizationConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.translationScopes = cfg.items || cfg.translationScopes || []; cfg.items = cfg.translationScopes;
+    localStorage.setItem('cso_localization_config', JSON.stringify(cfg));
+    this.logAudit('LOCALIZATION_CONFIG_UPDATED', 'SETTINGS', `Localization translation scopes updated (${cfg.items.length} scopes).`);
+    return true;
+  };
+  SuperStore.resetLocalizationConfig = function() {
+    localStorage.setItem('cso_localization_config', JSON.stringify(DEFAULT_LOCALIZATION_CONFIG));
+    this.logAudit('LOCALIZATION_CONFIG_RESET', 'SETTINGS', 'Localization config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_LOCALIZATION_CONFIG));
+  };
+  SuperStore.exportLocalizationManifest = function() {
+    const config = this.getLocalizationConfig();
+    const filename = "localization_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("LOCALIZATION_EXPORTED", "DATA_EXPORT", `Localization manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-005: Languages ---
+  const DEFAULT_LANGUAGES_CONFIG = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalSupportedLanguages: 2, defaultLocaleCode: "or", activeLocalesCount: 2 },
+    items: [
+      { id: "LNG-01", languageName: "ଓଡ଼ିଆ (Odia)", localeCode: "or", nativeScript: "ଓଡ଼ିଆ ଲିପି", textDirection: "ltr", isDefault: true, completionRate: "100%", status: "Active Primary", active: true },
+      { id: "LNG-02", languageName: "English (India)", localeCode: "en-IN", nativeScript: "Latin Script", textDirection: "ltr", isDefault: false, completionRate: "100%", status: "Active Secondary", active: true }
+    ]
+  };
+  SuperStore.getLanguagesConfig = function() {
+    return _hydrateConfig('cso_languages_config', 'languages', () => DEFAULT_LANGUAGES_CONFIG);
+  };
+  SuperStore.saveLanguagesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.languages = cfg.items || cfg.languages || []; cfg.items = cfg.languages;
+    localStorage.setItem('cso_languages_config', JSON.stringify(cfg));
+    this.logAudit('LANGUAGES_CONFIG_UPDATED', 'SETTINGS', `Languages config updated (${cfg.items.length} languages).`);
+    return true;
+  };
+  SuperStore.resetLanguagesConfig = function() {
+    localStorage.setItem('cso_languages_config', JSON.stringify(DEFAULT_LANGUAGES_CONFIG));
+    this.logAudit('LANGUAGES_CONFIG_RESET', 'SETTINGS', 'Languages config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_LANGUAGES_CONFIG));
+  };
+  SuperStore.exportLanguagesManifest = function() {
+    const config = this.getLanguagesConfig();
+    const filename = "languages_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("LANGUAGES_EXPORTED", "DATA_EXPORT", `Languages manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -15971,6 +16154,26 @@
     window.CSOSuperStore.saveDisasterRecoveryConfig = SuperStore.saveDisasterRecoveryConfig;
     window.CSOSuperStore.resetDisasterRecoveryConfig = SuperStore.resetDisasterRecoveryConfig;
     window.CSOSuperStore.exportDisasterRecoveryManifest = SuperStore.exportDisasterRecoveryManifest;
+    window.CSOSuperStore.getGeneralWebsiteSettingsConfig = SuperStore.getGeneralWebsiteSettingsConfig;
+    window.CSOSuperStore.saveGeneralWebsiteSettingsConfig = SuperStore.saveGeneralWebsiteSettingsConfig;
+    window.CSOSuperStore.resetGeneralWebsiteSettingsConfig = SuperStore.resetGeneralWebsiteSettingsConfig;
+    window.CSOSuperStore.exportGeneralWebsiteSettingsManifest = SuperStore.exportGeneralWebsiteSettingsManifest;
+    window.CSOSuperStore.getWebsiteIdentityConfig = SuperStore.getWebsiteIdentityConfig;
+    window.CSOSuperStore.saveWebsiteIdentityConfig = SuperStore.saveWebsiteIdentityConfig;
+    window.CSOSuperStore.resetWebsiteIdentityConfig = SuperStore.resetWebsiteIdentityConfig;
+    window.CSOSuperStore.exportWebsiteIdentityManifest = SuperStore.exportWebsiteIdentityManifest;
+    window.CSOSuperStore.getContactInformationConfig = SuperStore.getContactInformationConfig;
+    window.CSOSuperStore.saveContactInformationConfig = SuperStore.saveContactInformationConfig;
+    window.CSOSuperStore.resetContactInformationConfig = SuperStore.resetContactInformationConfig;
+    window.CSOSuperStore.exportContactInformationManifest = SuperStore.exportContactInformationManifest;
+    window.CSOSuperStore.getLocalizationConfig = SuperStore.getLocalizationConfig;
+    window.CSOSuperStore.saveLocalizationConfig = SuperStore.saveLocalizationConfig;
+    window.CSOSuperStore.resetLocalizationConfig = SuperStore.resetLocalizationConfig;
+    window.CSOSuperStore.exportLocalizationManifest = SuperStore.exportLocalizationManifest;
+    window.CSOSuperStore.getLanguagesConfig = SuperStore.getLanguagesConfig;
+    window.CSOSuperStore.saveLanguagesConfig = SuperStore.saveLanguagesConfig;
+    window.CSOSuperStore.resetLanguagesConfig = SuperStore.resetLanguagesConfig;
+    window.CSOSuperStore.exportLanguagesManifest = SuperStore.exportLanguagesManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
