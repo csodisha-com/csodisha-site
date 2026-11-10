@@ -12998,7 +12998,11 @@
           timeZone: this.getTimeZoneConfig ? this.getTimeZoneConfig() : null,
           dateNumberFormats: this.getDateNumberFormatsConfig ? this.getDateNumberFormatsConfig() : null,
           homepageSettings: this.getHomepageSettingsConfig ? this.getHomepageSettingsConfig() : null,
-          featureToggles: this.getFeatureTogglesConfig ? this.getFeatureTogglesConfig() : null
+          featureToggles: this.getFeatureTogglesConfig ? this.getFeatureTogglesConfig() : null,
+          emailSettings: this.getEmailSettingsConfig ? this.getEmailSettingsConfig() : null,
+          uploadLimits: this.getUploadLimitsConfig ? this.getUploadLimitsConfig() : null,
+          contentDefaults: this.getContentDefaultsConfig ? this.getContentDefaultsConfig() : null,
+          registrationSettings: this.getRegistrationSettingsConfig ? this.getRegistrationSettingsConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15995,6 +15999,147 @@
     return filename;
   };
 
+
+  // --- MODULE 18-010: Email Settings ---
+  const DEFAULT_EMAIL_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    globalHeaders: { defaultFromAddress: "alerts@csodisha.com", defaultFromName: "Common Sense Odisha Portal", replyToAddress: "support@csodisha.com", dkimSigned: true, spfStatus: "Pass (v=spf1 include:brevo.com ~all)" },
+    items: [
+      { id: "SET-EML-01", settingKey: "TRANSACTIONAL_SENDER_NAME", displayName: "System Notification Sender Name", settingValue: "Common Sense Odisha Alerts", description: "Header displayed on exam alerts and password reset emails", active: true },
+      { id: "SET-EML-02", settingKey: "PRIMARY_ALERT_EMAIL", displayName: "Default From Address", settingValue: "alerts@csodisha.com", description: "Verified domain sender address for candidate communications", active: true },
+      { id: "SET-EML-03", settingKey: "SUPPORT_INBOX_EMAIL", displayName: "Default Reply-To Address", settingValue: "support@csodisha.com", description: "Direct recipient for aspirant email responses", active: true },
+      { id: "SET-EML-04", settingKey: "SMTP_DELIVERY_RETRY_MAX", displayName: "Maximum Dispatch Retry Attempts", settingValue: "3 Retries (Exponential Backoff)", description: "Queue retry threshold before flagging recipient as soft-bounce", active: true }
+    ]
+  };
+  SuperStore.getEmailSettingsConfig = function() {
+    return _hydrateConfig('cso_email_settings_config', 'settingsList', () => DEFAULT_EMAIL_SETTINGS);
+  };
+  SuperStore.saveEmailSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.settingsList = cfg.items || cfg.settingsList || []; cfg.items = cfg.settingsList;
+    localStorage.setItem('cso_email_settings_config', JSON.stringify(cfg));
+    this.logAudit('EMAIL_SETTINGS_UPDATED', 'SETTINGS', `Email settings updated (${cfg.items.length} parameters).`);
+    return true;
+  };
+  SuperStore.resetEmailSettingsConfig = function() {
+    localStorage.setItem('cso_email_settings_config', JSON.stringify(DEFAULT_EMAIL_SETTINGS));
+    this.logAudit('EMAIL_SETTINGS_RESET', 'SETTINGS', 'Email settings reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_EMAIL_SETTINGS));
+  };
+  SuperStore.exportEmailSettingsManifest = function() {
+    const config = this.getEmailSettingsConfig();
+    const filename = "email_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EMAIL_SETTINGS_EXPORTED", "DATA_EXPORT", `Email settings manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-011: Upload Limits ---
+  const DEFAULT_UPLOAD_LIMITS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { maxSingleFileMB: 25, maxConcurrentBatch: 5, autoStripExif: true, enforceMagicBytes: true },
+    items: [
+      { id: "LIM-01", targetCategory: "Gazette Circulars & Exam PDFs", maxSizeBytes: "25 MB", allowedMimes: "application/pdf", storageDestination: "Cloudflare R2 (Gazette Bucket)", status: "Active Constraint", active: true },
+      { id: "LIM-02", targetCategory: "Aspirant Profile Photos", maxSizeBytes: "2 MB", allowedMimes: "image/jpeg, image/png, image/webp", storageDestination: "Cloudflare R2 (User Media)", status: "Active Constraint", active: true },
+      { id: "LIM-03", targetCategory: "Study Notes & Model Papers", maxSizeBytes: "35 MB", allowedMimes: "application/pdf, application/epub+zip", storageDestination: "Cloudflare R2 (Library Bucket)", status: "Active Constraint", active: true },
+      { id: "LIM-04", targetCategory: "Community Forum Attachments", maxSizeBytes: "5 MB", allowedMimes: "image/jpeg, image/png, application/pdf", storageDestination: "Cloudflare R2 (Public Forum)", status: "Active Constraint", active: true }
+    ]
+  };
+  SuperStore.getUploadLimitsConfig = function() {
+    return _hydrateConfig('cso_upload_limits_config', 'limitRules', () => DEFAULT_UPLOAD_LIMITS);
+  };
+  SuperStore.saveUploadLimitsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.limitRules = cfg.items || cfg.limitRules || []; cfg.items = cfg.limitRules;
+    localStorage.setItem('cso_upload_limits_config', JSON.stringify(cfg));
+    this.logAudit('UPLOAD_LIMITS_UPDATED', 'SETTINGS', `Upload limits updated (${cfg.items.length} categories).`);
+    return true;
+  };
+  SuperStore.resetUploadLimitsConfig = function() {
+    localStorage.setItem('cso_upload_limits_config', JSON.stringify(DEFAULT_UPLOAD_LIMITS));
+    this.logAudit('UPLOAD_LIMITS_RESET', 'SETTINGS', 'Upload limits reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_UPLOAD_LIMITS));
+  };
+  SuperStore.exportUploadLimitsManifest = function() {
+    const config = this.getUploadLimitsConfig();
+    const filename = "upload_limits_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("UPLOAD_LIMITS_EXPORTED", "DATA_EXPORT", `Upload limits manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-012: Content Defaults ---
+  const DEFAULT_CONTENT_DEFAULTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { defaultAuthor: "CS Odisha Editorial Desk", autoGenerateSlug: true, defaultLicence: "CC BY-NC 4.0 (Non-Commercial State Open Access)" },
+    items: [
+      { id: "DEF-01", propertyName: "Default Editorial Author", propertyValue: "CS Odisha Editorial Desk", context: "Assigned when no individual author is selected", active: true },
+      { id: "DEF-02", propertyName: "Default Gazette Commission Category", propertyValue: "General State Administration", context: "Fallback category for unclassified notices", active: true },
+      { id: "DEF-03", propertyName: "Automated URL Slug Format", propertyValue: "lowercase-hyphenated-with-date", context: "Generates clean URLs such as /jobs/opsc-oas-2026", active: true },
+      { id: "DEF-04", propertyName: "Default Content Access Tier", propertyValue: "Public Free Access", context: "Ensures newly created articles and notifications are open by default", active: true }
+    ]
+  };
+  SuperStore.getContentDefaultsConfig = function() {
+    return _hydrateConfig('cso_content_defaults_config', 'defaults', () => DEFAULT_CONTENT_DEFAULTS);
+  };
+  SuperStore.saveContentDefaultsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.defaults = cfg.items || cfg.defaults || []; cfg.items = cfg.defaults;
+    localStorage.setItem('cso_content_defaults_config', JSON.stringify(cfg));
+    this.logAudit('CONTENT_DEFAULTS_UPDATED', 'SETTINGS', `Content defaults updated (${cfg.items.length} properties).`);
+    return true;
+  };
+  SuperStore.resetContentDefaultsConfig = function() {
+    localStorage.setItem('cso_content_defaults_config', JSON.stringify(DEFAULT_CONTENT_DEFAULTS));
+    this.logAudit('CONTENT_DEFAULTS_RESET', 'SETTINGS', 'Content defaults reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_CONTENT_DEFAULTS));
+  };
+  SuperStore.exportContentDefaultsManifest = function() {
+    const config = this.getContentDefaultsConfig();
+    const filename = "content_defaults_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CONTENT_DEFAULTS_EXPORTED", "DATA_EXPORT", `Content defaults manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-013: Registration Settings ---
+  const DEFAULT_REGISTRATION_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { allowRegistrations: true, requireEmailVerification: true, enforceDistrictSelection: true, turnstileCaptchaActive: true },
+    items: [
+      { id: "REG-SET-01", parameterName: "Open Candidate Registration", currentValue: "Enabled", description: "Permits aspirants across Odisha to create free portal accounts", active: true },
+      { id: "REG-SET-02", parameterName: "Mandatory Email OTP Verification", currentValue: "Enforced", description: "Sends one-time password verification code before activating account", active: true },
+      { id: "REG-SET-03", parameterName: "Home District Selection (30 Districts)", currentValue: "Mandatory", description: "Requires candidate to pick home district for targeted study circle alerts", active: true },
+      { id: "REG-SET-04", parameterName: "Cloudflare Turnstile Bot Defense", currentValue: "Active on Register Form", description: "Blocks automated spam bots without frustrating candidate math CAPTCHAs", active: true }
+    ]
+  };
+  SuperStore.getRegistrationSettingsConfig = function() {
+    return _hydrateConfig('cso_registration_settings_config', 'parameters', () => DEFAULT_REGISTRATION_SETTINGS);
+  };
+  SuperStore.saveRegistrationSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.parameters = cfg.items || cfg.parameters || []; cfg.items = cfg.parameters;
+    localStorage.setItem('cso_registration_settings_config', JSON.stringify(cfg));
+    this.logAudit('REGISTRATION_SETTINGS_UPDATED', 'SETTINGS', `Registration settings updated (${cfg.items.length} parameters).`);
+    return true;
+  };
+  SuperStore.resetRegistrationSettingsConfig = function() {
+    localStorage.setItem('cso_registration_settings_config', JSON.stringify(DEFAULT_REGISTRATION_SETTINGS));
+    this.logAudit('REGISTRATION_SETTINGS_RESET', 'SETTINGS', 'Registration settings reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_REGISTRATION_SETTINGS));
+  };
+  SuperStore.exportRegistrationSettingsManifest = function() {
+    const config = this.getRegistrationSettingsConfig();
+    const filename = "registration_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("REGISTRATION_SETTINGS_EXPORTED", "DATA_EXPORT", `Registration settings manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -16334,6 +16479,22 @@
     window.CSOSuperStore.saveFeatureTogglesConfig = SuperStore.saveFeatureTogglesConfig;
     window.CSOSuperStore.resetFeatureTogglesConfig = SuperStore.resetFeatureTogglesConfig;
     window.CSOSuperStore.exportFeatureTogglesManifest = SuperStore.exportFeatureTogglesManifest;
+    window.CSOSuperStore.getEmailSettingsConfig = SuperStore.getEmailSettingsConfig;
+    window.CSOSuperStore.saveEmailSettingsConfig = SuperStore.saveEmailSettingsConfig;
+    window.CSOSuperStore.resetEmailSettingsConfig = SuperStore.resetEmailSettingsConfig;
+    window.CSOSuperStore.exportEmailSettingsManifest = SuperStore.exportEmailSettingsManifest;
+    window.CSOSuperStore.getUploadLimitsConfig = SuperStore.getUploadLimitsConfig;
+    window.CSOSuperStore.saveUploadLimitsConfig = SuperStore.saveUploadLimitsConfig;
+    window.CSOSuperStore.resetUploadLimitsConfig = SuperStore.resetUploadLimitsConfig;
+    window.CSOSuperStore.exportUploadLimitsManifest = SuperStore.exportUploadLimitsManifest;
+    window.CSOSuperStore.getContentDefaultsConfig = SuperStore.getContentDefaultsConfig;
+    window.CSOSuperStore.saveContentDefaultsConfig = SuperStore.saveContentDefaultsConfig;
+    window.CSOSuperStore.resetContentDefaultsConfig = SuperStore.resetContentDefaultsConfig;
+    window.CSOSuperStore.exportContentDefaultsManifest = SuperStore.exportContentDefaultsManifest;
+    window.CSOSuperStore.getRegistrationSettingsConfig = SuperStore.getRegistrationSettingsConfig;
+    window.CSOSuperStore.saveRegistrationSettingsConfig = SuperStore.saveRegistrationSettingsConfig;
+    window.CSOSuperStore.resetRegistrationSettingsConfig = SuperStore.resetRegistrationSettingsConfig;
+    window.CSOSuperStore.exportRegistrationSettingsManifest = SuperStore.exportRegistrationSettingsManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

@@ -663,6 +663,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-18-007') { renderDateNumberFormatsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-008') { renderHomepageSettingsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-009') { renderFeatureTogglesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-010') { renderEmailSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-011') { renderUploadLimitsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-012') { renderContentDefaultsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-013') { renderRegistrationSettingsWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1171,6 +1175,14 @@ async function loadMasterNavigation() {
         renderHomepageSettingsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-18-009') {
         renderFeatureTogglesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-010') {
+        renderEmailSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-011') {
+        renderUploadLimitsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-012') {
+        renderContentDefaultsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-013') {
+        renderRegistrationSettingsWorkspace(dom.workspaceRoot);
 
 
 
@@ -68527,6 +68539,533 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-18-009', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 18-010: Email Settings
+    // ==========================================
+    function renderEmailSettingsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getEmailSettingsConfig();
+
+        function render() {
+          const settings = config.settingsList || config.items || [];
+          const headers = config.globalHeaders || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Transactional Email Directives & SPF/DKIM Authentication</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-010 • Verified domain senders, reply-to routing, queue retry thresholds & Brevo SMTP headers</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="eml-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="eml-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="eml-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default From Address</div>
+                  <div class="text-sm font-bold text-teal-400 font-mono mt-2 truncate">${headers.defaultFromAddress || 'alerts@csodisha.com'}</div>
+                  <div class="text-xs text-slate-400 mt-1">${headers.defaultFromName || 'CS Odisha Portal'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">DKIM Signature</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">2048-bit RSA</div>
+                  <div class="text-xs text-emerald-400 mt-1">Cryptographically Validated</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">SPF Record Status</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">PASS</div>
+                  <div class="text-xs text-slate-400 mt-1">include:brevo.com</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Configured Parameters</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${settings.length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Global Mail Headers</div>
+                </div>
+              </div>
+
+              <!-- Settings Grid -->
+              <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                <h3 class="text-sm font-bold text-white">System Email Parameters</h3>
+                <div class="space-y-4">
+                  ${settings.map((s, idx) => `
+                    <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div class="text-xs font-mono font-bold text-teal-400">${s.settingKey}</div>
+                        <div class="text-sm font-semibold text-white mt-0.5">${s.displayName}</div>
+                        <div class="text-xs text-slate-400 mt-0.5">${s.description}</div>
+                      </div>
+                      <div class="w-full sm:w-1/2">
+                        <input type="text" value="${s.settingValue}" class="eml-val-input w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" data-index="${idx}">
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#eml-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.eml-val-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                settings[idx].settingValue = input.value.trim();
+              });
+              config.settingsList = settings;
+              config.items = settings;
+              store.saveEmailSettingsConfig(config);
+              alert('Email settings updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#eml-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportEmailSettingsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#eml-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Email Settings to factory defaults?')) {
+                config = store.resetEmailSettingsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-011: Upload Limits
+    // ==========================================
+    function renderUploadLimitsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getUploadLimitsConfig();
+
+        function render() {
+          const rules = config.limitRules || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Upload Limits, Quotas & File Type Constraints</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-011 • Payload size limits, MIME whitelists, Cloudflare R2 bucket destinations & batch rules</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="lim-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="lim-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="lim-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Limits
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Max Single File</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${summary.maxSingleFileMB || 25} MB</div>
+                  <div class="text-xs text-slate-400 mt-1">Gazette & PYQ Documents</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Concurrent Batch</div>
+                  <div class="text-2xl font-bold text-white mt-1">${summary.maxConcurrentBatch || 5} Files</div>
+                  <div class="text-xs text-slate-400 mt-1">Multi-upload Parallel Limit</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Magic Byte Check</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">ENFORCED</div>
+                  <div class="text-xs text-emerald-400 mt-1">MIME Spoofing Guard</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Strip EXIF Metadata</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">ACTIVE</div>
+                  <div class="text-xs text-slate-400 mt-1">Candidate Privacy Guard</div>
+                </div>
+              </div>
+
+              <!-- Rules Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Upload Category</th>
+                      <th class="p-3">Max Permitted Size</th>
+                      <th class="p-3">Allowed MIME Types</th>
+                      <th class="p-3">R2 Storage Destination</th>
+                      <th class="p-3">Constraint Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${rules.map((r, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${r.targetCategory}</td>
+                        <td class="p-3">
+                          <input type="text" value="${r.maxSizeBytes}" class="lim-size-input w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 font-mono text-slate-300 text-[11px]">${r.allowedMimes}</td>
+                        <td class="p-3 font-mono text-amber-300 text-[11px]">${r.storageDestination}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${r.status}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#lim-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.lim-size-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                rules[idx].maxSizeBytes = input.value.trim();
+              });
+              config.limitRules = rules;
+              config.items = rules;
+              store.saveUploadLimitsConfig(config);
+              alert('Upload limit rules updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#lim-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportUploadLimitsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#lim-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Upload Limits to factory defaults?')) {
+                config = store.resetUploadLimitsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-012: Content Defaults
+    // ==========================================
+    function renderContentDefaultsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getContentDefaultsConfig();
+
+        function render() {
+          const defaults = config.defaults || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Editorial Content Defaults & URL Slug Directives</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-012 • Default editorial authorship, commission fallbacks, automated slug schemas & public access tier</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="def-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="def-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="def-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Defaults
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default Author</div>
+                  <div class="text-sm font-bold text-teal-400 mt-2 truncate">${summary.defaultAuthor || 'CS Odisha Editorial Desk'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Fallback Contributor</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Auto-Generate Slugs</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${summary.autoGenerateSlug ? 'ENABLED' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">SEO-Optimized Hyphenated</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default License</div>
+                  <div class="text-xs font-bold text-amber-400 mt-2 truncate">${summary.defaultLicence || 'CC BY-NC 4.0'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">State Open Access</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Configured Defaults</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${defaults.length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Active Presets</div>
+                </div>
+              </div>
+
+              <!-- Defaults Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Property Name</th>
+                      <th class="p-3">Configured Preset Value</th>
+                      <th class="p-3">Application Context</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${defaults.map((d, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${d.propertyName}</td>
+                        <td class="p-3">
+                          <input type="text" value="${d.propertyValue}" class="def-val-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 text-slate-400">${d.context}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#def-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.def-val-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                defaults[idx].propertyValue = input.value.trim();
+              });
+              config.defaults = defaults;
+              config.items = defaults;
+              store.saveContentDefaultsConfig(config);
+              alert('Content defaults updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#def-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportContentDefaultsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#def-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Content Defaults to factory defaults?')) {
+                config = store.resetContentDefaultsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-013: Registration Settings
+    // ==========================================
+    function renderRegistrationSettingsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getRegistrationSettingsConfig();
+
+        function render() {
+          const params = config.parameters || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Candidate Registration & Account Onboarding Settings</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-013 • Email OTP verification, 30-district assignment & Cloudflare Turnstile anti-bot</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="reg-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="reg-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="reg-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Open Registration</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${summary.allowRegistrations ? 'ENABLED' : 'PAUSED'}</div>
+                  <div class="text-xs text-teal-400 mt-1">Statewide Public Access</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Email OTP Verification</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${summary.requireEmailVerification ? 'MANDATORY' : 'OPTIONAL'}</div>
+                  <div class="text-xs text-slate-400 mt-1">6-Digit Instant OTP</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">District Selection</div>
+                  <div class="text-2xl font-bold text-white mt-1">30 Districts</div>
+                  <div class="text-xs text-emerald-400 mt-1">Targeted Mock Rankings</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Turnstile Bot Shield</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${summary.turnstileCaptchaActive ? 'ACTIVE' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Non-intrusive Verification</div>
+                </div>
+              </div>
+
+              <!-- Parameters Grid -->
+              <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                <h3 class="text-sm font-bold text-white">Registration Directives</h3>
+                <div class="space-y-4">
+                  ${params.map((p, idx) => `
+                    <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div class="text-sm font-semibold text-white">${p.parameterName}</div>
+                        <div class="text-xs text-slate-400 mt-0.5">${p.description}</div>
+                      </div>
+                      <div class="w-full sm:w-1/3">
+                        <input type="text" value="${p.currentValue}" class="reg-param-input w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-teal-400 font-mono" data-index="${idx}">
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#reg-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.reg-param-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                params[idx].currentValue = input.value.trim();
+              });
+              config.parameters = params;
+              config.items = params;
+              store.saveRegistrationSettingsConfig(config);
+              alert('Registration parameters updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#reg-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportRegistrationSettingsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#reg-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Registration Settings to factory defaults?')) {
+                config = store.resetRegistrationSettingsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 
