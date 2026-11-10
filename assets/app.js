@@ -722,6 +722,30 @@ function authForm(mode) {
 
     try {
       if (isSignup) {
+        // Vault check for duplicates first
+        let vault = [];
+        try {
+          const rawVault = localStorage.getItem('cso_registered_accounts_v1');
+          if (rawVault) vault = JSON.parse(rawVault) || [];
+        } catch (e) {}
+
+        const normalizedEmail = (v.email || '').trim().toLowerCase();
+        const cleanMobile = (v.phone || '').trim().replace(/\D/g, '');
+
+        if (vault.some(acc => (acc.email || '').toLowerCase() === normalizedEmail)) {
+          errorBox.textContent = 'An account with email "' + normalizedEmail + '" is already registered. Please login.';
+          submit.disabled = false;
+          submit.textContent = originalLabel;
+          return;
+        }
+
+        if (cleanMobile && vault.some(acc => (acc.mobile || '').replace(/\D/g, '') === cleanMobile)) {
+          errorBox.textContent = 'An account with mobile number "' + (v.phone || '').trim() + '" is already registered. Please login.';
+          submit.disabled = false;
+          submit.textContent = originalLabel;
+          return;
+        }
+
         let result;
         try {
           result = await window.CSOAuth.register({
@@ -746,6 +770,33 @@ function authForm(mode) {
           const districtVal = v.district || 'Balasore (Baleswar)';
           const dobVal = v.dob || '';
 
+          // Add to registered accounts vault
+          let passwordHash = '';
+          if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.hashPassword === 'function') {
+            passwordHash = window.CSOCandidateAuth.hashPassword(v.pw || '');
+          }
+
+          const newVaultAcc = {
+            id: 'cso_usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7),
+            fullName: fullNameVal,
+            email: emailVal,
+            mobile: mobileVal,
+            passwordHash: passwordHash,
+            dob: dobVal,
+            state: stateVal,
+            district: districtVal,
+            targetExams: ['OPSC OCS', 'OSSC CGL', 'Odisha B.Ed'],
+            registeredAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
+            failedLoginAttempts: 0,
+            lockoutUntil: null
+          };
+
+          vault.push(newVaultAcc);
+          try {
+            localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault));
+          } catch(e) {}
+
           const candidateSession = {
             fullName: fullNameVal,
             name: fullNameVal,
@@ -758,6 +809,7 @@ function authForm(mode) {
             isAuthenticated: true,
             sessionType: 'local_verified',
             registeredAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
             targetExams: ['OPSC OCS', 'OSSC CGL', 'Odisha B.Ed']
           };
 
@@ -901,31 +953,91 @@ function authForm(mode) {
       }
 
       if (!loginResult || !loginResult.ok) {
-        // Fallback to client-side session authentication
+        // Fallback to client-side session authentication with Vault verification & lockout checks
+        let vault = [];
+        try {
+          const rawVault = localStorage.getItem('cso_registered_accounts_v1');
+          if (rawVault) vault = JSON.parse(rawVault) || [];
+        } catch (e) {}
+
+        const identifier = (v.email || '').trim().toLowerCase();
+        const cleanMobile = identifier.replace(/\D/g, '');
+        const isPhone = !identifier.includes('@');
+
+        let account = vault.find(acc => {
+          if (isPhone && cleanMobile.length >= 10) {
+            return (acc.mobile || '').replace(/\D/g, '').endsWith(cleanMobile);
+          }
+          return (acc.email || '').toLowerCase() === identifier;
+        });
+
+        const now = Date.now();
+        if (account && account.lockoutUntil && account.lockoutUntil > now) {
+          const mins = Math.ceil((account.lockoutUntil - now) / 60000);
+          errorBox.textContent = 'Account is temporarily locked. Please try again in ' + mins + ' minute(s).';
+          submit.disabled = false;
+          submit.textContent = originalLabel;
+          return;
+        }
+
+        // Verify password hash if account exists in vault
+        let passwordHash = '';
+        if (window.CSOCandidateAuth && typeof window.CSOCandidateAuth.hashPassword === 'function') {
+          passwordHash = window.CSOCandidateAuth.hashPassword(v.pw || '');
+        }
+
+        if (account && account.passwordHash && passwordHash && account.passwordHash !== passwordHash) {
+          account.failedLoginAttempts = (account.failedLoginAttempts || 0) + 1;
+          if (account.failedLoginAttempts >= 5) {
+            account.lockoutUntil = now + (15 * 60 * 1000);
+            try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault)); } catch (e) {}
+            errorBox.textContent = 'Too many incorrect login attempts. Your account is temporarily locked for 15 minutes.';
+            submit.disabled = false;
+            submit.textContent = originalLabel;
+            return;
+          }
+          try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault)); } catch (e) {}
+          const remaining = 5 - account.failedLoginAttempts;
+          errorBox.textContent = 'Incorrect password. You have ' + remaining + ' attempt(s) remaining before account lockout.';
+          submit.disabled = false;
+          submit.textContent = originalLabel;
+          return;
+        }
+
+        if (account) {
+          account.failedLoginAttempts = 0;
+          account.lockoutUntil = null;
+          account.lastLoginAt = new Date().toISOString();
+          try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(vault)); } catch (e) {}
+        }
+
         let existingSession = null;
         try {
           const raw = localStorage.getItem('cso_candidate_session_v1');
           if (raw) existingSession = JSON.parse(raw);
         } catch (e) {}
 
-        const candidateEmail = v.email ? v.email.trim() : "candidate@csodisha.gov.in";
-        const candidateName = (existingSession && (existingSession.fullName || existingSession.name))
-          ? (existingSession.fullName || existingSession.name)
-          : candidateEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const candidateEmail = (account && account.email) || (v.email ? v.email.trim() : "candidate@csodisha.gov.in");
+        const candidateName = (account && account.fullName)
+          ? account.fullName
+          : ((existingSession && (existingSession.fullName || existingSession.name))
+              ? (existingSession.fullName || existingSession.name)
+              : candidateEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
 
         const sessionPayload = {
           fullName: candidateName,
           name: candidateName,
           email: candidateEmail,
-          mobile: (existingSession && (existingSession.mobile || existingSession.phone)) ? (existingSession.mobile || existingSession.phone) : "+91 9876543210",
-          phone: (existingSession && (existingSession.mobile || existingSession.phone)) ? (existingSession.mobile || existingSession.phone) : "+91 9876543210",
-          state: (existingSession && existingSession.state) ? existingSession.state : "Odisha",
-          district: (existingSession && existingSession.district) ? existingSession.district : "Balasore (Baleswar)",
-          dob: (existingSession && existingSession.dob) ? existingSession.dob : "15-08-2000",
+          mobile: (account && account.mobile) || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
+          phone: (account && account.mobile) || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
+          state: (account && account.state) || (existingSession && existingSession.state) || "Odisha",
+          district: (account && account.district) || (existingSession && existingSession.district) || "Balasore (Baleswar)",
+          dob: (account && account.dob) || (existingSession && existingSession.dob) || "15-08-2000",
           isAuthenticated: true,
           sessionType: "local_verified",
           lastLoginAt: new Date().toISOString(),
-          targetExams: (existingSession && existingSession.targetExams) ? existingSession.targetExams : ["OPSC OCS", "OSSC CGL", "Odisha B.Ed"]
+          registeredAt: (account && account.registeredAt) || (existingSession && existingSession.registeredAt) || new Date().toISOString(),
+          targetExams: (account && account.targetExams) || (existingSession && existingSession.targetExams) || ["OPSC OCS", "OSSC CGL", "Odisha B.Ed"]
         };
 
         localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));

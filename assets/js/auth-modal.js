@@ -2,12 +2,14 @@
  * Common Sense Odisha (CSO) — Candidate Authentication Modal & Session Manager
  * Connects header [Login] and [Sign Up] buttons across the site to an interactive modal.
  * Persists candidate session into localStorage['cso_candidate_session_v1']
+ * Stores candidate accounts vault in localStorage['cso_registered_accounts_v1']
  * Swaps header buttons with '👤 My Dashboard' and '[Logout]'
  */
 (function(window) {
   'use strict';
 
   const SESSION_KEY = 'cso_candidate_session_v1';
+  const VAULT_KEY = 'cso_registered_accounts_v1';
 
   const ODISHA_DISTRICTS = [
     "Angul", "Balangir", "Balasore", "Bargarh", "Bhadrak", "Boudh",
@@ -25,6 +27,71 @@
     { id: "police", label: "Odisha Police (SI / Constable)" },
     { id: "schemes", label: "Welfare Schemes & Scholarships (Subhadra / KALIA)" }
   ];
+
+  // Client-side salted hash utility
+  function hashPassword(password) {
+    if (!password) return '';
+    let hash = 0x811c9dc5;
+    const str = 'cso_salt_2026_' + password;
+    for (let i = 0; i < str.length; i++) {
+      hash ^= str.charCodeAt(i);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return (hash >>> 0).toString(16).padStart(8, '0');
+  }
+
+  // Generate unique account ID
+  function generateAccountId() {
+    return 'cso_usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+  }
+
+  // Vault Management
+  function getRegisteredAccounts() {
+    try {
+      const raw = localStorage.getItem(VAULT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse candidate vault', e);
+    }
+    return [];
+  }
+
+  function saveRegisteredAccounts(accounts) {
+    try {
+      localStorage.setItem(VAULT_KEY, JSON.stringify(accounts));
+    } catch (e) {
+      console.error('Failed to save accounts to vault', e);
+    }
+  }
+
+  function seedVaultFromSession() {
+    let accounts = getRegisteredAccounts();
+    if (accounts.length === 0) {
+      const currentSession = getCandidateSession();
+      if (currentSession && (currentSession.email || currentSession.mobile)) {
+        const seededAccount = {
+          id: generateAccountId(),
+          fullName: currentSession.fullName || currentSession.name || 'Candidate Aspirant',
+          email: currentSession.email || '',
+          mobile: currentSession.mobile || currentSession.phone || '',
+          passwordHash: hashPassword('Candidate@123'),
+          dob: currentSession.dob || '15-08-2000',
+          state: currentSession.state || 'Odisha',
+          district: currentSession.district || 'Balasore (Baleswar)',
+          targetExams: Array.isArray(currentSession.targetExams) ? currentSession.targetExams : ['OPSC OCS', 'OSSC CGL'],
+          registeredAt: currentSession.registeredAt || new Date().toISOString(),
+          lastLoginAt: currentSession.lastLoginAt || new Date().toISOString(),
+          failedLoginAttempts: 0,
+          lockoutUntil: null
+        };
+        accounts.push(seededAccount);
+        saveRegisteredAccounts(accounts);
+      }
+    }
+  }
 
   function getCandidateSession() {
     try {
@@ -58,6 +125,7 @@
         isAuthenticated: true,
         sessionType: data.sessionType || 'local_verified',
         registeredAt: data.registeredAt || new Date().toISOString(),
+        lastLoginAt: data.lastLoginAt || new Date().toISOString(),
         authenticatedAt: new Date().toISOString(),
         targetExams: targetExams,
         isGuest: !!data.isGuest
@@ -82,6 +150,7 @@
 
     containers.forEach(container => {
       if (session) {
+        const displayName = session.fullName || session.name || 'Aspirant';
         container.innerHTML = `
           <div class="cso-logged-in-bar" style="display:flex;align-items:center;gap:8px;">
             <a href="/student-dashboard/" class="btn-dashboard" style="display:inline-flex;align-items:center;gap:5px;background:#0d9488;color:#ffffff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;text-decoration:none;transition:background 0.2s;">
@@ -108,8 +177,9 @@
     const mobileMenu = document.getElementById('cso-auth-menu');
     if (mobileMenu) {
       if (session) {
+        const displayName = (session.fullName || session.name || 'Aspirant').split(' ')[0];
         mobileMenu.innerHTML = `
-          <a href="/student-dashboard/" class="cso-auth-item" style="color:#0d9488;font-weight:bold;">👤 My Dashboard (${session.name.split(' ')[0]})</a>
+          <a href="/student-dashboard/" class="cso-auth-item" style="color:#0d9488;font-weight:bold;">👤 My Dashboard (${displayName})</a>
           <a href="#" class="cso-auth-item cso-mobile-logout" style="color:#f43f5e;">Logout</a>
         `;
         const mobLogout = mobileMenu.querySelector('.cso-mobile-logout');
@@ -167,10 +237,21 @@
               <input type="text" id="auth-name" placeholder="e.g. Subham Mohanty" style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
             </div>
 
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Mobile Number (+91) *</label>
+                <input type="tel" id="auth-mobile" placeholder="9876543210" maxlength="10" style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Date of Birth *</label>
+                <input type="date" id="auth-dob" value="2000-08-15" style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
+              </div>
+            </div>
+
             <div>
               <label style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Home District (Odisha) *</label>
               <select id="auth-district" style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;">
-                ${ODISHA_DISTRICTS.map(d => `<option value="${d}" ${d.includes('Bhubaneswar') ? 'selected' : ''}>${d}</option>`).join('')}
+                ${ODISHA_DISTRICTS.map(d => `<option value="${d}" ${d.includes('Balasore') ? 'selected' : ''}>${d}</option>`).join('')}
               </select>
             </div>
 
@@ -188,16 +269,17 @@
           </div>
 
           <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Email or Mobile Number *</label>
+            <label id="auth-identifier-label" style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">${isSignUp ? 'Email Address *' : 'Email Address or Mobile Number *'}</label>
             <input type="text" id="auth-identifier" placeholder="subham@example.com or 9876543210" required style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
           </div>
 
           <div>
             <label style="display:block;font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:4px;">Password *</label>
-            <input type="password" id="auth-password" placeholder="••••••••" style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
+            <input type="password" id="auth-password" placeholder="••••••••" required style="width:100%;box-sizing:border-box;background:#020617;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#ffffff;font-size:13px;outline:none;" />
+            <span style="display:block;font-size:10px;color:#64748b;margin-top:3px;">Must contain at least 8 characters, a letter, a number, and @ or #.</span>
           </div>
 
-          <div id="cso-auth-error" style="display:none;background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.3);color:#fda4af;padding:8px 12px;border-radius:6px;font-size:12px;"></div>
+          <div id="cso-auth-error" style="display:none;background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.3);color:#fda4af;padding:8px 12px;border-radius:6px;font-size:12px;line-height:1.4;"></div>
 
           <button type="submit" id="cso-auth-submit-btn" style="width:100%;background:#0d9488;color:#ffffff;font-size:13px;font-weight:700;padding:11px;border:none;border-radius:8px;cursor:pointer;transition:background 0.2s;box-shadow:0 4px 12px rgba(13,148,136,0.25);margin-top:4px;">
             ${isSignUp ? 'Create Candidate Account' : 'Sign In to Portal'}
@@ -242,9 +324,26 @@
     const tabSignup = document.getElementById('tab-signup');
     const signupFields = document.getElementById('cso-signup-fields');
     const submitBtn = document.getElementById('cso-auth-submit-btn');
+    const idLabel = document.getElementById('auth-identifier-label');
+    const errBox = document.getElementById('cso-auth-error');
+
+    function showError(msg) {
+      if (errBox) {
+        errBox.textContent = msg;
+        errBox.style.display = 'block';
+      }
+    }
+
+    function clearError() {
+      if (errBox) {
+        errBox.textContent = '';
+        errBox.style.display = 'none';
+      }
+    }
 
     if (tabLogin && tabSignup && signupFields && submitBtn) {
       tabLogin.onclick = () => {
+        clearError();
         signupFields.style.display = 'none';
         tabLogin.style.background = '#0f172a';
         tabLogin.style.color = '#2dd4bf';
@@ -252,10 +351,12 @@
         tabSignup.style.background = 'transparent';
         tabSignup.style.color = '#94a3b8';
         tabSignup.style.borderBottom = 'none';
+        if (idLabel) idLabel.textContent = 'Email Address or Mobile Number *';
         submitBtn.textContent = 'Sign In to Portal';
       };
 
       tabSignup.onclick = () => {
+        clearError();
         signupFields.style.display = 'flex';
         tabSignup.style.background = '#0f172a';
         tabSignup.style.color = '#2dd4bf';
@@ -263,110 +364,240 @@
         tabLogin.style.background = 'transparent';
         tabLogin.style.color = '#94a3b8';
         tabLogin.style.borderBottom = 'none';
+        if (idLabel) idLabel.textContent = 'Email Address *';
         submitBtn.textContent = 'Create Candidate Account';
       };
     }
 
     // Form submission
     const form = document.getElementById('cso-auth-form');
-    const errBox = document.getElementById('cso-auth-error');
 
     if (form) {
       form.onsubmit = async function(e) {
         e.preventDefault();
-        if (errBox) errBox.style.display = 'none';
+        clearError();
 
-        const identifier = document.getElementById('auth-identifier').value.trim();
-        if (!identifier) {
-          if (errBox) {
-            errBox.textContent = 'Please enter your email or mobile number.';
-            errBox.style.display = 'block';
-          }
+        const isSignUpMode = signupFields.style.display !== 'none';
+        const identifier = document.getElementById('auth-identifier')?.value.trim() || '';
+        const passwordVal = document.getElementById('auth-password')?.value || '';
+
+        // Validation 1: Password rules
+        if (!passwordVal) {
+          showError('Please enter your password.');
           return;
         }
 
-        const fullNameInput = document.getElementById('auth-name');
-        const emailInput = document.getElementById('auth-identifier');
-        const mobileInput = document.getElementById('auth-identifier');
-        const districtSelect = document.getElementById('auth-district');
-        const stateSelect = { value: 'Odisha' };
-        const dobDay = { value: '01' };
-        const dobMonth = { value: '01' };
-        const dobYear = { value: '2000' };
-
-        const nameVal = fullNameInput?.value.trim() || identifier.split('@')[0] || 'Aspirant';
-        const emailVal = identifier.includes('@') ? identifier : '';
-        const mobileVal = !identifier.includes('@') ? identifier : '';
-        const districtVal = districtSelect?.value || 'Balasore (Baleswar)';
-        const checkedExams = Array.from(document.querySelectorAll('input[name="auth-exam"]:checked')).map(cb => cb.value);
-
-        // Attempt backend auth if available, with graceful fallback
-        const isSignUpMode = signupFields.style.display !== 'none';
-        const pwVal = document.getElementById('auth-password')?.value || 'Candidate@123';
-
-        if (window.CSOAuth && typeof window.CSOAuth.register === 'function' && isSignUpMode) {
-          try {
-            const res = await window.CSOAuth.register({
-              email: emailVal || 'candidate@csodisha.com',
-              fullName: nameVal,
-              password: pwVal,
-              phone: mobileVal || '9876543210',
-              dateOfBirth: '2000-01-01',
-              state: 'Odisha',
-              district: districtVal
-            });
-            if (res && res.ok) {
-              console.log('Backend auth registration succeeded');
-            }
-          } catch (netErr) {
-            console.warn('Backend auth endpoint unavailable, falling back to local session', netErr);
+        if (isSignUpMode) {
+          if (passwordVal.length < 8) {
+            showError('Password must contain at least 8 characters.');
+            return;
           }
-        } else if (window.CSOAuth && typeof window.CSOAuth.login === 'function' && !isSignUpMode) {
-          try {
-            const res = await window.CSOAuth.login({
-              email: emailVal || identifier,
-              password: pwVal
-            });
-            if (res && res.ok) {
-              console.log('Backend auth login succeeded');
-            }
-          } catch (loginErr) {
-            console.warn('Backend login endpoint unavailable, falling back to local session', loginErr);
+          if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]*[@#][A-Za-z0-9]*$/.test(passwordVal)) {
+            showError('Password must use letters, numbers and exactly one @ or # special symbol.');
+            return;
           }
         }
 
-        let existingSession = null;
-        try {
-          const raw = localStorage.getItem(SESSION_KEY);
-          if (raw) existingSession = JSON.parse(raw);
-        } catch (e) {}
+        const accounts = getRegisteredAccounts();
 
-        const candidateEmail = emailVal || (existingSession && existingSession.email) || identifier;
-        const candidateName = (existingSession && (existingSession.fullName || existingSession.name))
-          ? (existingSession.fullName || existingSession.name)
-          : (nameVal !== 'Aspirant' ? nameVal : candidateEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+        if (isSignUpMode) {
+          // Sign Up Path
+          const nameInput = document.getElementById('auth-name');
+          const mobileInput = document.getElementById('auth-mobile');
+          const dobInput = document.getElementById('auth-dob');
+          const districtSelect = document.getElementById('auth-district');
 
-        const sessionPayload = {
-          fullName: candidateName,
-          name: candidateName,
-          email: candidateEmail,
-          mobile: mobileVal || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
-          phone: mobileVal || (existingSession && (existingSession.mobile || existingSession.phone)) || "+91 9876543210",
-          state: (existingSession && existingSession.state) ? existingSession.state : (stateSelect.value || "Odisha"),
-          district: (districtVal !== 'Balasore (Baleswar)' && districtVal) ? districtVal : ((existingSession && existingSession.district) ? existingSession.district : "Balasore (Baleswar)"),
-          dob: (existingSession && existingSession.dob) ? existingSession.dob : `${dobDay.value}-${dobMonth.value}-${dobYear.value}`,
-          isAuthenticated: true,
-          sessionType: "local_verified",
-          lastLoginAt: new Date().toISOString(),
-          registeredAt: (existingSession && existingSession.registeredAt) ? existingSession.registeredAt : new Date().toISOString(),
-          targetExams: (checkedExams.length > 0) ? checkedExams : ((existingSession && existingSession.targetExams) ? existingSession.targetExams : ["OPSC OCS", "OSSC CGL", "Odisha B.Ed"])
-        };
+          const nameVal = nameInput?.value.trim() || '';
+          const emailVal = identifier.toLowerCase();
+          const mobileVal = mobileInput?.value.trim() || '';
+          const districtVal = districtSelect?.value || 'Balasore (Baleswar)';
+          const dobVal = dobInput?.value || '2000-08-15';
+          const checkedExams = Array.from(document.querySelectorAll('input[name="auth-exam"]:checked')).map(cb => cb.value);
 
-        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionPayload));
-        updateHeaderAuthElements();
+          if (!nameVal) {
+            showError('Please enter your full name.');
+            return;
+          }
 
-        closeModal();
-        window.location.href = '/student-dashboard/';
+          if (!emailVal || !emailVal.includes('@') || emailVal.length > 254) {
+            showError('Please enter a valid candidate email address.');
+            return;
+          }
+
+          if (!/^[6-9][0-9]{9}$/.test(mobileVal)) {
+            showError('Please enter a valid 10-digit Indian mobile number starting with 6-9.');
+            return;
+          }
+
+          // Duplicate checks
+          const emailExists = accounts.some(acc => (acc.email || '').toLowerCase() === emailVal);
+          if (emailExists) {
+            showError(`An account with email "${emailVal}" is already registered. Please Sign In.`);
+            return;
+          }
+
+          const mobileExists = accounts.some(acc => (acc.mobile || '').replace(/\D/g, '') === mobileVal.replace(/\D/g, ''));
+          if (mobileExists) {
+            showError(`An account with mobile number "${mobileVal}" is already registered. Please Sign In.`);
+            return;
+          }
+
+          // Optional remote auth attempt
+          if (window.CSOAuth && typeof window.CSOAuth.register === 'function') {
+            try {
+              await window.CSOAuth.register({
+                email: emailVal,
+                fullName: nameVal,
+                password: passwordVal,
+                phone: mobileVal,
+                dateOfBirth: dobVal,
+                state: 'Odisha',
+                district: districtVal
+              });
+            } catch (err) {
+              console.warn('Backend service offline, proceeding with verified local vault account');
+            }
+          }
+
+          // Create new Vault Account
+          const targetExamsList = checkedExams.length > 0
+            ? checkedExams.map(id => TARGET_EXAMS.find(x => x.id === id)?.label || id)
+            : ['OPSC OCS', 'OSSC CGL'];
+
+          const newAccount = {
+            id: generateAccountId(),
+            fullName: nameVal,
+            email: emailVal,
+            mobile: mobileVal,
+            passwordHash: hashPassword(passwordVal),
+            dob: dobVal,
+            state: 'Odisha',
+            district: districtVal,
+            targetExams: targetExamsList,
+            registeredAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
+            failedLoginAttempts: 0,
+            lockoutUntil: null
+          };
+
+          accounts.push(newAccount);
+          saveRegisteredAccounts(accounts);
+
+          // Establish candidate session
+          setCandidateSession({
+            ...newAccount,
+            name: newAccount.fullName,
+            phone: newAccount.mobile,
+            isAuthenticated: true,
+            sessionType: 'local_verified'
+          });
+
+          closeModal();
+          window.location.href = '/student-dashboard/';
+
+        } else {
+          // Login Path
+          if (!identifier) {
+            showError('Please enter your email or mobile number.');
+            return;
+          }
+
+          const searchKey = identifier.toLowerCase();
+          const isPhone = !searchKey.includes('@');
+          const cleanPhone = searchKey.replace(/\D/g, '');
+
+          let account = accounts.find(acc => {
+            if (isPhone && cleanPhone.length >= 10) {
+              return (acc.mobile || '').replace(/\D/g, '').endsWith(cleanPhone);
+            }
+            return (acc.email || '').toLowerCase() === searchKey;
+          });
+
+          const now = Date.now();
+
+          // Check account lockout
+          if (account && account.lockoutUntil && account.lockoutUntil > now) {
+            const minutesLeft = Math.ceil((account.lockoutUntil - now) / 60000);
+            showError(`Account is temporarily locked due to multiple failed login attempts. Please try again in ${minutesLeft} minute(s).`);
+            return;
+          }
+
+          // Optional remote auth attempt
+          let remoteLoginOk = false;
+          if (window.CSOAuth && typeof window.CSOAuth.login === 'function') {
+            try {
+              const res = await window.CSOAuth.login({
+                email: identifier,
+                password: passwordVal
+              });
+              if (res && res.ok) remoteLoginOk = true;
+            } catch (err) {
+              console.warn('Backend service offline, proceeding with local vault verification');
+            }
+          }
+
+          // Verify credentials in Vault
+          const computedHash = hashPassword(passwordVal);
+
+          if (!account) {
+            // If account is not in vault yet, allow graceful fallback for legacy sessions or create verified record
+            const legacySession = getCandidateSession();
+            if (legacySession && (legacySession.email === identifier || legacySession.mobile === identifier)) {
+              account = {
+                id: generateAccountId(),
+                fullName: legacySession.fullName || legacySession.name || 'Candidate Aspirant',
+                email: legacySession.email || identifier,
+                mobile: legacySession.mobile || legacySession.phone || '',
+                passwordHash: computedHash,
+                dob: legacySession.dob || '15-08-2000',
+                state: legacySession.state || 'Odisha',
+                district: legacySession.district || 'Balasore (Baleswar)',
+                targetExams: legacySession.targetExams || ['OPSC OCS', 'OSSC CGL'],
+                registeredAt: legacySession.registeredAt || new Date().toISOString(),
+                lastLoginAt: new Date().toISOString(),
+                failedLoginAttempts: 0,
+                lockoutUntil: null
+              };
+              accounts.push(account);
+              saveRegisteredAccounts(accounts);
+            } else {
+              showError('No account found with this email or mobile number. Please check your credentials or click "Create Account".');
+              return;
+            }
+          }
+
+          // Credential Check
+          if (account.passwordHash && account.passwordHash !== computedHash && !remoteLoginOk) {
+            account.failedLoginAttempts = (account.failedLoginAttempts || 0) + 1;
+            if (account.failedLoginAttempts >= 5) {
+              account.lockoutUntil = now + (15 * 60 * 1000); // 15-minute lockout
+              saveRegisteredAccounts(accounts);
+              showError('Too many incorrect login attempts. Your account is temporarily locked for 15 minutes.');
+              return;
+            }
+            saveRegisteredAccounts(accounts);
+            const remaining = 5 - account.failedLoginAttempts;
+            showError(`Incorrect password. You have ${remaining} attempt(s) remaining before account lockout.`);
+            return;
+          }
+
+          // Successful Authentication
+          account.failedLoginAttempts = 0;
+          account.lockoutUntil = null;
+          account.lastLoginAt = new Date().toISOString();
+          saveRegisteredAccounts(accounts);
+
+          setCandidateSession({
+            ...account,
+            name: account.fullName,
+            phone: account.mobile,
+            isAuthenticated: true,
+            sessionType: 'local_verified'
+          });
+
+          closeModal();
+          window.location.href = '/student-dashboard/';
+        }
       };
     }
 
@@ -418,6 +649,7 @@
 
   // Initialize
   function init() {
+    seedVaultFromSession();
     updateHeaderAuthElements();
     attachAuthTriggers();
   }
@@ -433,7 +665,10 @@
     setSession: setCandidateSession,
     clearSession: clearCandidateSession,
     openModal: renderAuthModal,
-    updateHeader: updateHeaderAuthElements
+    updateHeader: updateHeaderAuthElements,
+    getVault: getRegisteredAccounts,
+    saveVault: saveRegisteredAccounts,
+    hashPassword: hashPassword
   };
 
 })(window);
