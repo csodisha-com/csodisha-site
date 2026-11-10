@@ -6498,65 +6498,94 @@ html, body {
     word-break: break-word !important;
   }
 
-  /* Compact Footer on Mobile */
+  /* Center footer and stack main regions vertically */
   footer, .site-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
     padding: 1.5rem 1rem !important;
     gap: 1.25rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
+  /* Full-width brand block at the top */
+  footer .footer-brand,
+  footer .f-brand,
+  footer > div:first-child,
+  footer .cso-footer-zone1 {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin: 0 !important;
+  }
+
+  footer .footer-brand p,
+  footer .f-brand p,
+  footer .cso-footer-zone1 p {
+    font-size: 0.8rem !important;
+    margin: 0.25rem 0 !important;
+    max-width: 300px !important;
+  }
+
+  /* Full-width 2-column grid for the link columns */
   footer .footer-links,
   footer .f-links,
   footer .links-grid,
-  footer .grid,
-  footer .cso-footer-grid,
+  footer > .grid,
   footer .cso-footer-zone2 {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 1.25rem !important;
-    text-align: left !important;
     width: 100% !important;
-    max-width: 360px !important;
+    max-width: 320px !important;
+    gap: 1.5rem !important;
+    text-align: center !important;
     margin: 0 auto !important;
   }
 
   footer h4, footer .f-title, footer strong, footer .cso-footer-col h4 {
-    font-size: 0.8rem !important;
+    font-size: 0.85rem !important;
     margin-bottom: 0.5rem !important;
     letter-spacing: 0.05em !important;
   }
 
   footer ul, footer nav {
-    gap: 0.35rem !important;
-    margin-bottom: 0 !important;
+    list-style: none !important;
     padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.4rem !important;
   }
 
   footer li, footer a, footer .cso-footer-col a {
     font-size: 0.85rem !important;
-    line-height: 1.4 !important;
-    padding: 0.15rem 0 !important;
+    line-height: 1.3 !important;
   }
 
-  footer .footer-brand, footer .f-brand, footer .cso-footer-zone1 {
-    margin-bottom: 0.5rem !important;
+  /* Bottom region with map and language buttons */
+  footer .footer-bottom,
+  footer .f-bottom,
+  footer .cso-footer-zone3 {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     text-align: center !important;
-  }
-
-  footer .footer-brand p, footer .f-brand p, footer .cso-footer-zone1 p {
-    font-size: 0.8rem !important;
-    margin: 0.25rem 0 !important;
-  }
-
-  footer .footer-bottom, footer .f-bottom, footer .cso-footer-zone3 {
-    margin-top: 0.75rem !important;
+    gap: 0.5rem !important;
+    margin-top: 0.5rem !important;
     padding-top: 0.75rem !important;
-    text-align: center !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 
-  footer img.map-icon, footer svg.odisha-map, footer img.cso-footer-odisha-map {
-    max-height: 36px !important;
+  footer img.map-icon,
+  footer svg.odisha-map,
+  footer img.cso-footer-odisha-map {
+    max-height: 32px !important;
     width: auto !important;
-    margin-bottom: 0.25rem !important;
   }
 }
 
