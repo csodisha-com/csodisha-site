@@ -40,6 +40,18 @@ CREATE TABLE IF NOT EXISTS candidate_checklists (
   FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
 
+-- 2b. Candidate Bookmarks (State Sync)
+CREATE TABLE IF NOT EXISTS candidate_bookmarks (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  article_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  category TEXT,
+  created_at INTEGER NOT NULL,
+  UNIQUE(user_id, article_id)
+);
+
 -- 3. Document Locker Statuses
 CREATE TABLE IF NOT EXISTS candidate_lockers (
   candidate_id TEXT PRIMARY KEY,
@@ -85,3 +97,4 @@ CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_email ON email_verifications(email);
 CREATE INDEX IF NOT EXISTS idx_candidate_checklists_cid ON candidate_checklists(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_candidate_mock_scores_cid ON candidate_mock_scores(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON candidate_bookmarks(user_id);

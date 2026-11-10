@@ -35,8 +35,93 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
       window.dispatchEvent(new CustomEvent('cso:bookmarks-updated', { detail: bookmarks }));
+
+      // Trigger cloud sync if online and candidate session active
+      syncBookmarksWithCloud(bookmarks);
     } catch (e) {
       console.error('Failed to save candidate bookmarks', e);
+    }
+  }
+
+  // Background sync bookmarks with Cloudflare D1
+  let bmSyncTimeout = null;
+  async function syncBookmarksWithCloud(bookmarks) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+    clearTimeout(bmSyncTimeout);
+    bmSyncTimeout = setTimeout(async () => {
+      try {
+        const rawSession = localStorage.getItem('cso_candidate_session_v1');
+        if (!rawSession) return;
+        const session = JSON.parse(rawSession);
+        if (!session || !session.id) return;
+
+        // Flatten bookmarks array for cloud API
+        const all = bookmarks || getAllBookmarks();
+        const flatList = [];
+        ['jobs', 'schemes', 'study'].forEach(cat => {
+          if (Array.isArray(all[cat])) {
+            all[cat].forEach(item => {
+              flatList.push({
+                articleId: item.id,
+                title: item.title,
+                url: item.url || item.pdfUrl || '',
+                category: cat
+              });
+            });
+          }
+        });
+
+        await fetch('/api/candidate/bookmarks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookmarks: flatList, userId: session.id })
+        });
+      } catch (err) {
+        console.warn('Bookmarks cloud sync notice:', err.message);
+      }
+    }, 1200);
+  }
+
+  // Initial cloud reconciliation on startup
+  async function reconcileBookmarksFromCloud() {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+    try {
+      const rawSession = localStorage.getItem('cso_candidate_session_v1');
+      if (!rawSession) return;
+      const session = JSON.parse(rawSession);
+      if (!session || !session.id) return;
+
+      const res = await fetch(`/api/candidate/bookmarks?userId=${encodeURIComponent(session.id)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.bookmarks) && data.bookmarks.length > 0) {
+        const current = getAllBookmarks();
+        let changed = false;
+
+        data.bookmarks.forEach(bm => {
+          const cat = bm.category || 'study';
+          if (!current[cat]) current[cat] = [];
+          const exists = current[cat].some(x => String(x.id) === String(bm.article_id));
+          if (!exists) {
+            current[cat].unshift({
+              id: bm.article_id,
+              title: bm.title,
+              url: bm.url,
+              badge: cat.toUpperCase(),
+              savedAt: new Date(bm.created_at * 1000).toISOString()
+            });
+            changed = true;
+          }
+        });
+
+        if (changed) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+          updateBookmarkButtonsUI();
+          window.dispatchEvent(new CustomEvent('cso:bookmarks-updated', { detail: current }));
+        }
+      }
+    } catch (err) {
+      console.warn('Bookmarks cloud reconcile notice:', err.message);
     }
   }
 
@@ -145,10 +230,12 @@
     document.addEventListener('DOMContentLoaded', () => {
       initBookmarkDelegator();
       updateBookmarkButtonsUI();
+      reconcileBookmarksFromCloud();
     });
   } else {
     initBookmarkDelegator();
     updateBookmarkButtonsUI();
+    reconcileBookmarksFromCloud();
   }
 
   window.CSOBookmarks = {

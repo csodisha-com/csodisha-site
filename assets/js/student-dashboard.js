@@ -201,10 +201,72 @@
     return {};
   }
 
+  let checklistSyncTimeout = null;
   function saveChecklists(obj) {
     try {
       localStorage.setItem(CHECKLIST_KEY, JSON.stringify(obj));
+
+      // Immediate UI broadcast
+      window.dispatchEvent(new CustomEvent('cso:checklists-updated', { detail: obj }));
+
+      // Debounced background sync to Cloudflare D1
+      if (typeof navigator !== 'undefined' && navigator.onLine) {
+        clearTimeout(checklistSyncTimeout);
+        checklistSyncTimeout = setTimeout(async () => {
+          try {
+            const rawSession = localStorage.getItem(SESSION_KEY);
+            if (!rawSession) return;
+            const session = JSON.parse(rawSession);
+            if (!session || !session.id) return;
+
+            await fetch('/api/candidate/checklist', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ checklists: obj, userId: session.id })
+            });
+          } catch (err) {
+            console.warn('Checklists cloud sync notice:', err.message);
+          }
+        }, 1200);
+      }
     } catch(e) {}
+  }
+
+  // Cloud reconciliation for syllabus checklists
+  async function reconcileChecklistsFromCloud() {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+    try {
+      const rawSession = localStorage.getItem(SESSION_KEY);
+      if (!rawSession) return;
+      const session = JSON.parse(rawSession);
+      if (!session || !session.id) return;
+
+      const res = await fetch(`/api/candidate/checklist?userId=${encodeURIComponent(session.id)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.success && data.checklists && typeof data.checklists === 'object') {
+        const local = getSavedChecklists();
+        let changed = false;
+
+        for (const [examKey, topics] of Object.entries(data.checklists)) {
+          if (!local[examKey]) local[examKey] = {};
+          for (const [topicId, isCompleted] of Object.entries(topics)) {
+            if (local[examKey][topicId] === undefined) {
+              local[examKey][topicId] = isCompleted;
+              changed = true;
+            }
+          }
+        }
+
+        if (changed) {
+          localStorage.setItem(CHECKLIST_KEY, JSON.stringify(local));
+          renderChecklistTracker();
+          updateExamCards();
+        }
+      }
+    } catch (err) {
+      console.warn('Checklists cloud reconcile notice:', err.message);
+    }
   }
 
   function getMockScores() {
@@ -1538,6 +1600,9 @@
       renderJobsShelf();
       renderStudyShelf();
     });
+
+    // Reconcile checklist from cloud
+    reconcileChecklistsFromCloud();
   }
 
   if (document.readyState === 'loading') {

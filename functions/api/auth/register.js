@@ -123,24 +123,63 @@ export async function onRequestPost({ request, env }) {
         created_at = excluded.created_at
     `).bind(cleanEmail, otpCode, passwordHash, salt, candidateData, expiresAt, nowUnix).run();
 
-    // Dispatch OTP email via configured transactional provider if available
-    try {
-      if (env.RESEND_API_KEY) {
-        await fetch('https://api.resend.com/emails', {
+    // Dispatch OTP email via configured transactional provider
+    const emailSubject = 'Your Verification Code - Common Sense Odisha';
+    const emailHtml = `
+      <div style="font-family:system-ui,-apple-system,sans-serif;max-width:540px;margin:0 auto;padding:24px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
+        <h2 style="color:#093824;margin-top:0;">Common Sense Odisha</h2>
+        <p>Namaskar <strong>${cleanName}</strong>,</p>
+        <p>Your verification code is:</p>
+        <div style="font-size:32px;font-weight:700;letter-spacing:6px;padding:16px 24px;background:#f8fafc;border:2px dashed #093824;border-radius:8px;text-align:center;color:#093824;margin:20px 0;">
+          ${otpCode}
+        </div>
+        <p style="font-size:14px;color:#64748b;line-height:1.5;">
+          It will expire in 15 minutes. If you did not request this, please ignore this email.
+        </p>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+        <p style="font-size:12px;color:#94a3b8;margin-bottom:0;">
+          Common Sense Odisha (csodisha.com) — Independent Candidate Workspace
+        </p>
+      </div>
+    `;
+    const emailText = `Namaskar ${cleanName},\n\nYour verification code is: ${otpCode}.\nIt will expire in 15 minutes. If you did not request this, please ignore this email.\n\n— Common Sense Odisha`;
+
+    if (env.RESEND_API_KEY) {
+      try {
+        const fromAddress = env.EMAIL_FROM || 'Common Sense Odisha <onboarding@resend.dev>';
+        const emailRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${env.RESEND_API_KEY}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'Common Sense Odisha <noreply@csodisha.com>',
-            to: cleanEmail,
-            subject: 'Your Common Sense Odisha Verification Code: ' + otpCode,
-            html: `<p>Namaskar ${cleanName},</p><p>Your 6-digit candidate verification code is: <strong>${otpCode}</strong>.</p><p>This code expires in 15 minutes.</p>`
+            from: fromAddress,
+            to: [cleanEmail],
+            subject: emailSubject,
+            html: emailHtml,
+            text: emailText
           })
         });
-      } else if (env.SENDGRID_API_KEY) {
-        await fetch('https://api.sendgrid.com/v3/mail/send', {
+
+        if (!emailRes.ok) {
+          const errData = await emailRes.text().catch(() => '');
+          console.error('Email dispatch failed:', emailRes.status, errData);
+          return jsonResponse({
+            success: false,
+            error: 'Failed to deliver verification email. Please check your address or try again.'
+          }, 502);
+        }
+      } catch (err) {
+        console.error('Email dispatch failed:', err);
+        return jsonResponse({
+          success: false,
+          error: 'Failed to deliver verification email. Please check your address or try again.'
+        }, 502);
+      }
+    } else if (env.SENDGRID_API_KEY) {
+      try {
+        const emailRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
@@ -148,14 +187,30 @@ export async function onRequestPost({ request, env }) {
           },
           body: JSON.stringify({
             personalizations: [{ to: [{ email: cleanEmail }] }],
-            from: { email: 'noreply@csodisha.com', name: 'Common Sense Odisha' },
-            subject: 'Your Common Sense Odisha Verification Code: ' + otpCode,
-            content: [{ type: 'text/html', value: `<p>Your verification code is: <strong>${otpCode}</strong></p>` }]
+            from: { email: env.EMAIL_FROM || 'noreply@csodisha.com', name: 'Common Sense Odisha' },
+            subject: emailSubject,
+            content: [
+              { type: 'text/plain', value: emailText },
+              { type: 'text/html', value: emailHtml }
+            ]
           })
         });
+
+        if (!emailRes.ok) {
+          const errData = await emailRes.text().catch(() => '');
+          console.error('Email dispatch failed:', emailRes.status, errData);
+          return jsonResponse({
+            success: false,
+            error: 'Failed to deliver verification email. Please check your address or try again.'
+          }, 502);
+        }
+      } catch (err) {
+        console.error('Email dispatch failed:', err);
+        return jsonResponse({
+          success: false,
+          error: 'Failed to deliver verification email. Please check your address or try again.'
+        }, 502);
       }
-    } catch (mailErr) {
-      console.warn('Transactional email dispatch notice:', mailErr);
     }
 
     // Return verification code sent response without inserting into users or candidates table

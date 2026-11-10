@@ -6,6 +6,8 @@
 import { onRequestGet as handleHealthGet, onRequestOptions as handleHealthOptions } from './functions/api/health.js';
 import { onRequestPost as handleRegisterPost, onRequestOptions as handleRegisterOptions } from './functions/api/auth/register.js';
 import { onRequestPost as handleVerifyOtpPost, onRequestOptions as handleVerifyOtpOptions } from './functions/api/auth/verify-otp.js';
+import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
+import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
 
 // Convert hex string to Uint8Array
@@ -216,6 +218,20 @@ export default {
       if (request.method === 'OPTIONS') return handleSyncOptions();
       if (request.method === 'GET') return handleSyncGet({ request, env, ctx });
       if (request.method === 'POST') return handleSyncPost({ request, env, ctx });
+    }
+
+    // 5. /api/candidate/bookmarks
+    if (pathname === '/api/candidate/bookmarks') {
+      if (request.method === 'OPTIONS') return handleBookmarksOptions();
+      if (request.method === 'GET') return handleBookmarksGet({ request, env, ctx });
+      if (request.method === 'POST') return handleBookmarksPost({ request, env, ctx });
+    }
+
+    // 6. /api/candidate/checklist
+    if (pathname === '/api/candidate/checklist') {
+      if (request.method === 'OPTIONS') return handleChecklistOptions();
+      if (request.method === 'GET') return handleChecklistGet({ request, env, ctx });
+      if (request.method === 'POST') return handleChecklistPost({ request, env, ctx });
     }
 
     // Fall back to static asset binding
