@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const siteRoot = '/home/rb717/projects/csodisha-site';
+const siteRoot = path.resolve(__dirname, '..');
 
 // 1. Mock Browser Environment for SuperStore
 console.log('--> Step 1: Setting up mock environment for SuperStore...');
@@ -23,7 +23,7 @@ const mockLocalStorage = {
   clear: () => { Object.keys(storage).forEach(k => delete storage[k]); }
 };
 
-// Seed sample candidate identity vault & session
+// Seed sample candidate identity vault & session (Deterministic timestamps for deterministic snapshot verification)
 const sampleAccount = {
   id: "cso_usr_chandan_balasore_01",
   fullName: "Chandan Dash",
@@ -34,8 +34,8 @@ const sampleAccount = {
   state: "Odisha",
   district: "Balasore (Baleswar)",
   targetExams: ["opsc", "ossc", "teaching"],
-  registeredAt: new Date().toISOString(),
-  lastLoginAt: new Date().toISOString(),
+  registeredAt: "2026-11-10T14:10:40.279Z",
+  lastLoginAt: "2026-11-10T14:10:40.290Z",
   failedLoginAttempts: 0,
   lockoutUntil: null
 };
@@ -211,7 +211,8 @@ const existingSnapshotRaw = fs.readFileSync(path.join(siteRoot, 'v1.0.0-gold-sna
 const existingSnapshot = JSON.parse(existingSnapshotRaw);
 
 // Merge snapshot.state with existing snapshot full state
-existingSnapshot.createdAt = new Date().toISOString();
+// Keep existing createdAt to prevent non-deterministic timestamp diffs across automated runs
+existingSnapshot.createdAt = existingSnapshot.createdAt || "2026-11-10T14:10:40.830Z";
 existingSnapshot.state.registeredAccounts = snapshot.state.registeredAccounts;
 existingSnapshot.state.candidateChecklists = snapshot.state.candidateChecklists;
 existingSnapshot.state.candidateLocker = snapshot.state.candidateLocker;
