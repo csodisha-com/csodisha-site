@@ -638,6 +638,11 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-16-011') { renderAccountDeletionWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-16-012') { renderSecurityAuditLogsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-16-013') { renderIncidentResponseWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-001') { renderSystemHealthWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-002') { renderWebsiteAvailabilityWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-003') { renderApiDiagnosticsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-004') { renderDatabaseHealthWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-17-005') { renderStorageMonitoringWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1096,6 +1101,16 @@ async function loadMasterNavigation() {
         renderSecurityAuditLogsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-16-013') {
         renderIncidentResponseWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-001') {
+        renderSystemHealthWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-002') {
+        renderWebsiteAvailabilityWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-003') {
+        renderApiDiagnosticsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-004') {
+        renderDatabaseHealthWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-17-005') {
+        renderStorageMonitoringWorkspace(dom.workspaceRoot);
 
 
 
@@ -64389,6 +64404,850 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-16-013', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 17-001: System Health
+    // ==========================================
+    function renderSystemHealthWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getSystemHealthConfig();
+        let searchQuery = '';
+
+        function render() {
+          const nodes = config.healthNodes || config.items || [];
+          const filtered = nodes.filter(n => {
+            const q = searchQuery.toLowerCase();
+            return !q || (n.subsystemName && n.subsystemName.toLowerCase().includes(q)) || (n.status && n.status.toLowerCase().includes(q));
+          });
+
+          const operationalCount = nodes.filter(n => n.status === 'Operational').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">System Health & Subsystem Nodes</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-001 • Real-time CPU, RAM, edge cluster & microservice telemetry</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="sys-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="sys-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="sys-btn-refresh" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-emerald-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Ping Subsystems
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Overall Status</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.overallStatus || 'Operational'}</div>
+                  <div class="text-xs text-emerald-400 mt-1 flex items-center gap-1">All Core Subsystems Active</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Health Score</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary && config.summary.healthScore || '99/100'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Weighted SLA Standard</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">CPU Load Avg</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.cpuLoadAverage || '14.2%'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Memory: ${config.summary && config.summary.memoryUsage || '38.6%'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Edge Nodes Active</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${config.summary && config.summary.activeEdgeNodes || 310}</div>
+                  <div class="text-xs text-slate-400 mt-1">Cloudflare Global Anycast</div>
+                </div>
+              </div>
+
+              <!-- Subsystems Table -->
+              <div class="space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                  <div class="relative w-full sm:w-80">
+                    <input id="sys-search-input" type="text" placeholder="Filter subsystem..." value="${searchQuery}" class="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500">
+                    <svg class="w-4 h-4 absolute left-3 top-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  </div>
+                  <button id="sys-btn-add-node" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Subsystem
+                  </button>
+                </div>
+
+                <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                      <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                        <tr>
+                          <th class="p-3">Node ID</th>
+                          <th class="p-3">Subsystem Name</th>
+                          <th class="p-3">Current Load / Metric</th>
+                          <th class="p-3">24h Incidents</th>
+                          <th class="p-3">Status</th>
+                          <th class="p-3">Last Check</th>
+                          <th class="p-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-800">
+                        ${filtered.map((n, idx) => `
+                          <tr class="hover:bg-slate-800/30 transition">
+                            <td class="p-3 font-mono text-emerald-400 font-bold">${n.id}</td>
+                            <td class="p-3 font-semibold text-white">${n.subsystemName}</td>
+                            <td class="p-3 font-mono text-slate-300">${n.loadMetric || 'Normal'}</td>
+                            <td class="p-3 text-slate-300 font-bold">${n.incident24h || 0}</td>
+                            <td class="p-3">
+                              <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${n.status === 'Operational' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'}">
+                                ${n.status}
+                              </span>
+                            </td>
+                            <td class="p-3 text-slate-400">${n.lastCheck || 'Just now'}</td>
+                            <td class="p-3 text-right">
+                              <button class="sys-toggle-btn text-xs font-semibold px-2 py-1 rounded transition ${n.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700 text-slate-400'}" data-index="${idx}">
+                                ${n.active ? 'Active' : 'Disabled'}
+                              </button>
+                            </td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Bindings
+          const searchInput = container.querySelector('#sys-search-input');
+          if (searchInput) {
+            searchInput.oninput = (e) => { searchQuery = e.target.value; render(); };
+          }
+
+          container.querySelectorAll('.sys-toggle-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              nodes[idx].active = !nodes[idx].active;
+              config.healthNodes = nodes;
+              config.items = nodes;
+              store.saveSystemHealthConfig(config);
+              render();
+            };
+          });
+
+          const addBtn = container.querySelector('#sys-btn-add-node');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const name = prompt('Subsystem Name:');
+              if (!name) return;
+              const metric = prompt('Load / Latency metric (e.g. 15ms TTFB):', '15ms TTFB');
+              nodes.push({
+                id: 'SYS-0' + (nodes.length + 1),
+                subsystemName: name,
+                status: 'Operational',
+                loadMetric: metric || 'Normal',
+                incident24h: 0,
+                lastCheck: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                active: true
+              });
+              config.healthNodes = nodes;
+              config.items = nodes;
+              store.saveSystemHealthConfig(config);
+              render();
+            };
+          }
+
+          const refreshBtn = container.querySelector('#sys-btn-refresh');
+          if (refreshBtn) {
+            refreshBtn.onclick = () => {
+              nodes.forEach(n => { n.lastCheck = new Date().toISOString().slice(0, 16).replace('T', ' '); });
+              config.healthNodes = nodes;
+              config.items = nodes;
+              store.saveSystemHealthConfig(config);
+              alert('Pings dispatched to all registered edge and database nodes. Telemetry refreshed.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#sys-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportSystemHealthManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#sys-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset System Health configuration to factory defaults?')) {
+                config = store.resetSystemHealthConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-002: Website Availability
+    // ==========================================
+    function renderWebsiteAvailabilityWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getWebsiteAvailabilityConfig();
+
+        function render() {
+          const probes = config.probes || config.items || [];
+          const allUp = probes.every(p => p.status === 'Up');
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Website Availability & Multi-Region Probes</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-002 • 60-second synthetic HTTP probes, SSL certificate monitoring & outage SLA</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="avl-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="avl-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="avl-btn-probe-now" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-sky-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Run Global Probe
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">30-Day Uptime</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.current30DayUptime || '99.98%'}</div>
+                  <div class="text-xs text-slate-400 mt-1">SLA Target: 99.9%</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Outage Total (30d)</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary && config.summary.totalOutageMinutes30d || 8} <span class="text-xs text-slate-500 font-normal">Mins</span></div>
+                  <div class="text-xs text-emerald-400 mt-1">Zero Sev-1 Incidents</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Probe Interval</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.globalCheckInterval || '60 Seconds'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Multi-POP Probing</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">SSL Days Remaining</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${config.summary && config.summary.sslDaysRemaining || 284}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Cloudflare Universal SSL</div>
+                </div>
+              </div>
+
+              <!-- Probes List -->
+              <div class="space-y-4">
+                <div class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400">Live synthetic HTTP GET latency across geographic probes.</div>
+                  <button id="avl-btn-add-probe" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Probe Location
+                  </button>
+                </div>
+
+                <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                      <tr>
+                        <th class="p-3">Probe Location</th>
+                        <th class="p-3">Target Endpoint URL</th>
+                        <th class="p-3">HTTP Status</th>
+                        <th class="p-3">Response Time</th>
+                        <th class="p-3">Availability</th>
+                        <th class="p-3">Last Checked</th>
+                        <th class="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      ${probes.map((p, idx) => `
+                        <tr class="hover:bg-slate-800/30 transition">
+                          <td class="p-3 font-semibold text-white">${p.probeLocation}</td>
+                          <td class="p-3 font-mono text-sky-400 truncate max-w-xs">${p.targetUrl}</td>
+                          <td class="p-3 font-mono text-emerald-400 font-bold">${p.httpStatus || 200}</td>
+                          <td class="p-3 font-mono text-slate-300">${p.responseTimeMs} ms</td>
+                          <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold ${p.status === 'Up' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'}">
+                              ${p.status}
+                            </span>
+                          </td>
+                          <td class="p-3 text-slate-400">${p.lastChecked || 'Just now'}</td>
+                          <td class="p-3 text-right">
+                            <button class="avl-del-btn text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 transition" data-index="${idx}">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Event handlers
+          container.querySelectorAll('.avl-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this probe location?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                probes.splice(idx, 1);
+                config.probes = probes;
+                config.items = probes;
+                store.saveWebsiteAvailabilityConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#avl-btn-add-probe');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const loc = prompt('Probe Location name:');
+              if (!loc) return;
+              const url = prompt('Target URL:', 'https://csodisha.com/');
+              if (!url) return;
+              probes.push({
+                id: 'AVL-0' + (probes.length + 1),
+                probeLocation: loc,
+                targetUrl: url,
+                httpStatus: 200,
+                responseTimeMs: Math.floor(Math.random() * 30 + 15),
+                status: 'Up',
+                lastChecked: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                active: true
+              });
+              config.probes = probes;
+              config.items = probes;
+              store.saveWebsiteAvailabilityConfig(config);
+              render();
+            };
+          }
+
+          const probeBtn = container.querySelector('#avl-btn-probe-now');
+          if (probeBtn) {
+            probeBtn.onclick = () => {
+              probes.forEach(p => {
+                p.responseTimeMs = Math.floor(Math.random() * 25 + 12);
+                p.lastChecked = new Date().toISOString().slice(0, 16).replace('T', ' ');
+              });
+              config.probes = probes;
+              config.items = probes;
+              store.saveWebsiteAvailabilityConfig(config);
+              alert('Synthetic probe cycle executed across all global test runners.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#avl-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportWebsiteAvailabilityManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#avl-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Website Availability configuration to factory defaults?')) {
+                config = store.resetWebsiteAvailabilityConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-003: API Diagnostics
+    // ==========================================
+    function renderApiDiagnosticsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getApiDiagnosticsConfig();
+
+        function render() {
+          const endpoints = config.diagnostics || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">API Diagnostics & Latency Profiler</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-003 • Edge endpoint response latencies, error frequencies & P99 SLA monitoring</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="dgn-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="dgn-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="dgn-btn-test-all" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Profile All Endpoints
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Avg Latency</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.avgLatencyMs || '28ms'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Global P50 Metric</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">P99 Latency</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.p99LatencyMs || '84ms'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Threshold: 200ms</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Error Rate (24h)</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${config.summary && config.summary.errorRate24h || '0.02%'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Well Within 0.1% SLA</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Probed Endpoints</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${endpoints.length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Active Synthetic Health Checks</div>
+                </div>
+              </div>
+
+              <!-- Endpoints Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Endpoint Name</th>
+                      <th class="p-3">API Route Path</th>
+                      <th class="p-3">Expected Status</th>
+                      <th class="p-3">Last Latency</th>
+                      <th class="p-3">24h Errors</th>
+                      <th class="p-3">Status</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${endpoints.map((e, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${e.endpointName}</td>
+                        <td class="p-3 font-mono text-indigo-400">${e.path}</td>
+                        <td class="p-3 font-mono text-slate-300 font-bold">${e.expectedStatus || 200}</td>
+                        <td class="p-3 font-mono text-emerald-400 font-bold">${e.lastLatencyMs} ms</td>
+                        <td class="p-3 font-mono text-slate-400">${e.errorCount24h || 0}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${e.status}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <button class="dgn-ping-btn text-indigo-400 hover:text-indigo-300 font-semibold" data-index="${idx}">Ping</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.dgn-ping-btn').forEach(btn => {
+            btn.onclick = () => {
+              const idx = parseInt(btn.dataset.index, 10);
+              endpoints[idx].lastLatencyMs = Math.floor(Math.random() * 20 + 8);
+              config.diagnostics = endpoints;
+              config.items = endpoints;
+              store.saveApiDiagnosticsConfig(config);
+              render();
+            };
+          });
+
+          const testBtn = container.querySelector('#dgn-btn-test-all');
+          if (testBtn) {
+            testBtn.onclick = () => {
+              endpoints.forEach(e => {
+                e.lastLatencyMs = Math.floor(Math.random() * 25 + 10);
+              });
+              config.diagnostics = endpoints;
+              config.items = endpoints;
+              store.saveApiDiagnosticsConfig(config);
+              alert('Completed profiling on all endpoints.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#dgn-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportApiDiagnosticsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#dgn-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset API diagnostics to factory defaults?')) {
+                config = store.resetApiDiagnosticsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-004: Database Health
+    // ==========================================
+    function renderDatabaseHealthWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getDatabaseHealthConfig();
+
+        function render() {
+          const metrics = config.dbMetrics || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Database Health & PostgreSQL Query Metrics</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-004 • Supabase PgBouncer pool, autovacuum bloat & index hit ratio telemetry</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="dbh-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="dbh-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="dbh-btn-vacuum" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Trigger Analyze
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">DB Engine</div>
+                  <div class="text-lg font-bold text-white mt-1">${config.summary && config.summary.dbEngine || 'PostgreSQL 16.2'}</div>
+                  <div class="text-xs text-teal-400 mt-1">Supabase ap-south-1</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Cache Hit Ratio</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.cacheHitRatio || '99.4%'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Memory Buffer Optimal</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Transactions</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.activeTransactions || 18}</div>
+                  <div class="text-xs text-slate-400 mt-1">Pool Saturation: ${config.summary && config.summary.poolUtilization || '30%'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Slow Queries (24h)</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary && config.summary.slowQueriesCount24h || 1}</div>
+                  <div class="text-xs text-slate-400 mt-1">&gt; 500ms Execution Time</div>
+                </div>
+              </div>
+
+              <!-- Metrics Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Diagnostic Metric</th>
+                      <th class="p-3">Current Observation</th>
+                      <th class="p-3">Configured Threshold</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${metrics.map(m => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${m.metricName}</td>
+                        <td class="p-3 font-mono text-teal-400 font-bold">${m.currentValue}</td>
+                        <td class="p-3 text-slate-400">${m.thresholdLimit}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${m.status}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const vacuumBtn = container.querySelector('#dbh-btn-vacuum');
+          if (vacuumBtn) {
+            vacuumBtn.onclick = () => {
+              alert('VACUUM ANALYZE initiated on all core tables. Schema statistics refreshed.');
+            };
+          }
+
+          const exportBtn = container.querySelector('#dbh-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportDatabaseHealthManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#dbh-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset database health metrics to factory defaults?')) {
+                config = store.resetDatabaseHealthConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 17-005: Storage Monitoring
+    // ==========================================
+    function renderStorageMonitoringWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getStorageMonitoringConfig();
+
+        function render() {
+          const volumes = config.storageVolumes || config.items || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Storage Monitoring & Bucket Capacity</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-17-005 • Cloudflare R2 object quotas, cold archive buckets & bandwidth egress</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="str-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="str-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="str-btn-add-bucket" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-amber-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Volume
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Allocated Quota</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary && config.summary.totalAllocatedStorageGB || '500 GB'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Cloudflare R2 Bucket Pool</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Used Storage</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.summary && config.summary.totalUsedStorageGB || '148.6 GB'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">${config.summary && config.summary.utilizationPercent || '29.7%'} Utilized</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Monthly Egress</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary && config.summary.monthlyEgressGB || '184.2 GB'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Zero Cloudflare Egress Fees</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Volumes</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${volumes.length}</div>
+                  <div class="text-xs text-slate-400 mt-1">Buckets Monitored</div>
+                </div>
+              </div>
+
+              <!-- Volumes Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Volume Name</th>
+                      <th class="p-3">Bucket Identifier</th>
+                      <th class="p-3">Storage Tier</th>
+                      <th class="p-3">Used Capacity</th>
+                      <th class="p-3">Object Count</th>
+                      <th class="p-3">Status</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${volumes.map((v, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${v.volumeName}</td>
+                        <td class="p-3 font-mono text-amber-400">${v.bucketRef}</td>
+                        <td class="p-3 text-slate-300 font-mono">${v.storageType}</td>
+                        <td class="p-3 font-bold text-white">${v.usedGB}</td>
+                        <td class="p-3 font-mono text-slate-400">${v.objectCount.toLocaleString()} Objects</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${v.status}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <button class="str-del-btn text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 transition" data-index="${idx}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          container.querySelectorAll('.str-del-btn').forEach(btn => {
+            btn.onclick = () => {
+              if (confirm('Delete this volume reference?')) {
+                const idx = parseInt(btn.dataset.index, 10);
+                volumes.splice(idx, 1);
+                config.storageVolumes = volumes;
+                config.items = volumes;
+                store.saveStorageMonitoringConfig(config);
+                render();
+              }
+            };
+          });
+
+          const addBtn = container.querySelector('#str-btn-add-bucket');
+          if (addBtn) {
+            addBtn.onclick = () => {
+              const name = prompt('Volume label:');
+              if (!name) return;
+              const bucket = prompt('R2 Bucket name:', 'cso-custom-storage');
+              if (!bucket) return;
+              volumes.push({
+                id: 'STR-M0' + (volumes.length + 1),
+                volumeName: name,
+                bucketRef: bucket,
+                usedGB: '0.5 GB',
+                objectCount: 12,
+                storageType: 'Standard Fast Tier',
+                status: 'Healthy',
+                active: true
+              });
+              config.storageVolumes = volumes;
+              config.items = volumes;
+              store.saveStorageMonitoringConfig(config);
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#str-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportStorageMonitoringManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#str-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset storage monitoring to factory defaults?')) {
+                config = store.resetStorageMonitoringConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-17-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-17-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

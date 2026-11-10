@@ -12973,7 +12973,12 @@
           dataRetention: this.getDataRetentionConfig ? this.getDataRetentionConfig() : null,
           accountDeletion: this.getAccountDeletionConfig ? this.getAccountDeletionConfig() : null,
           securityAuditLogs: this.getSecurityAuditLogsConfig ? this.getSecurityAuditLogsConfig() : null,
-          incidentResponse: this.getIncidentResponseConfig ? this.getIncidentResponseConfig() : null
+          incidentResponse: this.getIncidentResponseConfig ? this.getIncidentResponseConfig() : null,
+          systemHealth: this.getSystemHealthConfig ? this.getSystemHealthConfig() : null,
+          websiteAvailability: this.getWebsiteAvailabilityConfig ? this.getWebsiteAvailabilityConfig() : null,
+          apiDiagnostics: this.getApiDiagnosticsConfig ? this.getApiDiagnosticsConfig() : null,
+          databaseHealth: this.getDatabaseHealthConfig ? this.getDatabaseHealthConfig() : null,
+          storageMonitoring: this.getStorageMonitoringConfig ? this.getStorageMonitoringConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15086,6 +15091,186 @@
     return filename;
   };
 
+
+  // =========================================================================
+  // FOLDER 17: Operations, Backups & Recovery — Batch 1 (17-001 to 17-005)
+  // =========================================================================
+
+  // --- MODULE 17-001: System Health ---
+  const DEFAULT_SYSTEM_HEALTH = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { overallStatus: "Operational", cpuLoadAverage: "14.2%", memoryUsage: "38.6%", activeEdgeNodes: 310, healthScore: "99/100" },
+    items: [
+      { id: "SYS-01", subsystemName: "Cloudflare Edge Compute (Pages & Workers)", status: "Operational", loadMetric: "12ms TTFB", incident24h: 0, lastCheck: "2026-11-10 09:15", active: true },
+      { id: "SYS-02", subsystemName: "Supabase Mumbai PostgreSQL Primary Node", status: "Operational", loadMetric: "18% CPU / 42% RAM", incident24h: 0, lastCheck: "2026-11-10 09:14", active: true },
+      { id: "SYS-03", subsystemName: "Static Asset CDN & Cloudflare R2 Gateway", status: "Operational", loadMetric: "94.2% Cache Hit Rate", incident24h: 0, lastCheck: "2026-11-10 09:15", active: true },
+      { id: "SYS-04", subsystemName: "Transaction Mail Relay (Brevo SMTP)", status: "Operational", loadMetric: "0.2s Avg Queue Dispatch", incident24h: 0, lastCheck: "2026-11-10 09:12", active: true }
+    ]
+  };
+  SuperStore.getSystemHealthConfig = function() {
+    return _hydrateConfig('cso_system_health_config', 'healthNodes', () => DEFAULT_SYSTEM_HEALTH);
+  };
+  SuperStore.saveSystemHealthConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.healthNodes = cfg.items || cfg.healthNodes || []; cfg.items = cfg.healthNodes;
+    localStorage.setItem('cso_system_health_config', JSON.stringify(cfg));
+    this.logAudit('SYSTEM_HEALTH_UPDATED', 'OPERATIONS', `System health nodes updated (${cfg.items.length} nodes).`);
+    return true;
+  };
+  SuperStore.resetSystemHealthConfig = function() {
+    localStorage.setItem('cso_system_health_config', JSON.stringify(DEFAULT_SYSTEM_HEALTH));
+    this.logAudit('SYSTEM_HEALTH_RESET', 'OPERATIONS', 'System health config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_SYSTEM_HEALTH));
+  };
+  SuperStore.exportSystemHealthManifest = function() {
+    const config = this.getSystemHealthConfig();
+    const filename = "system_health_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SYSTEM_HEALTH_EXPORTED", "DATA_EXPORT", `System health manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-002: Website Availability ---
+  const DEFAULT_WEBSITE_AVAILABILITY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { current30DayUptime: "99.98%", totalOutageMinutes30d: 8, globalCheckInterval: "60 Seconds", sslDaysRemaining: 284 },
+    items: [
+      { id: "AVL-01", probeLocation: "Bhubaneswar (Odisha Local ISP)", targetUrl: "https://csodisha.com/", httpStatus: 200, responseTimeMs: 24, status: "Up", lastChecked: "2026-11-10 09:15", active: true },
+      { id: "AVL-02", probeLocation: "Mumbai (AWS ap-south-1 Probe)", targetUrl: "https://csodisha.com/jobs-careers/", httpStatus: 200, responseTimeMs: 18, status: "Up", lastChecked: "2026-11-10 09:15", active: true },
+      { id: "AVL-03", probeLocation: "Singapore (APAC Primary Edge)", targetUrl: "https://csodisha.com/schemes-benefits/", httpStatus: 200, responseTimeMs: 38, status: "Up", lastChecked: "2026-11-10 09:14", active: true },
+      { id: "AVL-04", probeLocation: "Frankfurt (Europe Gateway Probe)", targetUrl: "https://csodisha.com/study-library/", httpStatus: 200, responseTimeMs: 110, status: "Up", lastChecked: "2026-11-10 09:13", active: true }
+    ]
+  };
+  SuperStore.getWebsiteAvailabilityConfig = function() {
+    return _hydrateConfig('cso_website_availability_config', 'probes', () => DEFAULT_WEBSITE_AVAILABILITY);
+  };
+  SuperStore.saveWebsiteAvailabilityConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.probes = cfg.items || cfg.probes || []; cfg.items = cfg.probes;
+    localStorage.setItem('cso_website_availability_config', JSON.stringify(cfg));
+    this.logAudit('WEBSITE_AVAILABILITY_UPDATED', 'OPERATIONS', `Website availability probes updated (${cfg.items.length} probes).`);
+    return true;
+  };
+  SuperStore.resetWebsiteAvailabilityConfig = function() {
+    localStorage.setItem('cso_website_availability_config', JSON.stringify(DEFAULT_WEBSITE_AVAILABILITY));
+    this.logAudit('WEBSITE_AVAILABILITY_RESET', 'OPERATIONS', 'Website availability config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_WEBSITE_AVAILABILITY));
+  };
+  SuperStore.exportWebsiteAvailabilityManifest = function() {
+    const config = this.getWebsiteAvailabilityConfig();
+    const filename = "website_availability_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("WEBSITE_AVAILABILITY_EXPORTED", "DATA_EXPORT", `Website availability manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-003: API Diagnostics ---
+  const DEFAULT_API_DIAGNOSTICS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalEndpointsProbed: 5, avgLatencyMs: "28ms", errorRate24h: "0.02%", p99LatencyMs: "84ms" },
+    items: [
+      { id: "DGN-01", endpointName: "Public Jobs & Gazette Search API", path: "/api/search?q=opsc", expectedStatus: 200, lastLatencyMs: 14, errorCount24h: 0, status: "Healthy", active: true },
+      { id: "DGN-02", endpointName: "Candidate Authentication Token Verification", path: "/api/auth/verify-session", expectedStatus: 200, lastLatencyMs: 22, errorCount24h: 1, status: "Healthy", active: true },
+      { id: "DGN-03", endpointName: "District Mock Test Leaderboard Engine", path: "/api/mock/leaderboard?district=balasore", expectedStatus: 200, lastLatencyMs: 36, errorCount24h: 0, status: "Healthy", active: true },
+      { id: "DGN-04", endpointName: "Static JSON Navigation Tree Fetch", path: "/admin/data/master-navigation.json", expectedStatus: 200, lastLatencyMs: 12, errorCount24h: 0, status: "Healthy", active: true }
+    ]
+  };
+  SuperStore.getApiDiagnosticsConfig = function() {
+    return _hydrateConfig('cso_api_diagnostics_config', 'diagnostics', () => DEFAULT_API_DIAGNOSTICS);
+  };
+  SuperStore.saveApiDiagnosticsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.diagnostics = cfg.items || cfg.diagnostics || []; cfg.items = cfg.diagnostics;
+    localStorage.setItem('cso_api_diagnostics_config', JSON.stringify(cfg));
+    this.logAudit('API_DIAGNOSTICS_UPDATED', 'OPERATIONS', `API diagnostics updated (${cfg.items.length} endpoints).`);
+    return true;
+  };
+  SuperStore.resetApiDiagnosticsConfig = function() {
+    localStorage.setItem('cso_api_diagnostics_config', JSON.stringify(DEFAULT_API_DIAGNOSTICS));
+    this.logAudit('API_DIAGNOSTICS_RESET', 'OPERATIONS', 'API diagnostics reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_API_DIAGNOSTICS));
+  };
+  SuperStore.exportApiDiagnosticsManifest = function() {
+    const config = this.getApiDiagnosticsConfig();
+    const filename = "api_diagnostics_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("API_DIAGNOSTICS_EXPORTED", "DATA_EXPORT", `API diagnostics manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-004: Database Health ---
+  const DEFAULT_DATABASE_HEALTH = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { dbEngine: "PostgreSQL 16.2 (Supabase)", poolUtilization: "30%", activeTransactions: 18, slowQueriesCount24h: 1, cacheHitRatio: "99.4%" },
+    items: [
+      { id: "DBH-01", metricName: "Connection Pool Saturation (PgBouncer)", currentValue: "18 / 60 Active Connections", thresholdLimit: "50 Max", status: "Optimal", active: true },
+      { id: "DBH-02", metricName: "Buffer Cache Hit Ratio", currentValue: "99.42%", thresholdLimit: "Min 95.0%", status: "Optimal", active: true },
+      { id: "DBH-03", metricName: "Index Scan vs Sequential Scan Ratio", currentValue: "94.8% Index Scanned", thresholdLimit: "Min 85.0%", status: "Optimal", active: true },
+      { id: "DBH-04", metricName: "Dead Tuples & Vacuum Status", currentValue: "Autovacuum Healthy (0.2% Bloat)", thresholdLimit: "Max 5% Bloat", status: "Optimal", active: true }
+    ]
+  };
+  SuperStore.getDatabaseHealthConfig = function() {
+    return _hydrateConfig('cso_database_health_config', 'dbMetrics', () => DEFAULT_DATABASE_HEALTH);
+  };
+  SuperStore.saveDatabaseHealthConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.dbMetrics = cfg.items || cfg.dbMetrics || []; cfg.items = cfg.dbMetrics;
+    localStorage.setItem('cso_database_health_config', JSON.stringify(cfg));
+    this.logAudit('DATABASE_HEALTH_UPDATED', 'OPERATIONS', `Database health metrics updated (${cfg.items.length} metrics).`);
+    return true;
+  };
+  SuperStore.resetDatabaseHealthConfig = function() {
+    localStorage.setItem('cso_database_health_config', JSON.stringify(DEFAULT_DATABASE_HEALTH));
+    this.logAudit('DATABASE_HEALTH_RESET', 'OPERATIONS', 'Database health config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_DATABASE_HEALTH));
+  };
+  SuperStore.exportDatabaseHealthManifest = function() {
+    const config = this.getDatabaseHealthConfig();
+    const filename = "database_health_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("DATABASE_HEALTH_EXPORTED", "DATA_EXPORT", `Database health manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-005: Storage Monitoring ---
+  const DEFAULT_STORAGE_MONITORING = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalAllocatedStorageGB: "500 GB", totalUsedStorageGB: "148.6 GB", utilizationPercent: "29.7%", monthlyEgressGB: "184.2 GB" },
+    items: [
+      { id: "STR-M01", volumeName: "Gazette Archive Storage (Cloudflare R2)", bucketRef: "cso-gazette-circulars-prod", usedGB: "84.2 GB", objectCount: 4210, storageType: "Standard Fast Tier", status: "Healthy", active: true },
+      { id: "STR-M02", volumeName: "Study Library PYQ PDFs & Notes", bucketRef: "cso-pyq-vault-study-docs", usedGB: "46.1 GB", objectCount: 2840, storageType: "Standard Fast Tier", status: "Healthy", active: true },
+      { id: "STR-M03", volumeName: "Encrypted Disaster Recovery Snapshots", bucketRef: "cso-admin-backups-snapshots", usedGB: "14.8 GB", objectCount: 48, storageType: "Infrequent Cold Archive", status: "Healthy", active: true },
+      { id: "STR-M04", volumeName: "Candidate Verification Uploads", bucketRef: "cso-user-verification-docs", usedGB: "3.5 GB", objectCount: 1322, storageType: "Private Vault", status: "Healthy", active: true }
+    ]
+  };
+  SuperStore.getStorageMonitoringConfig = function() {
+    return _hydrateConfig('cso_storage_monitoring_config', 'storageVolumes', () => DEFAULT_STORAGE_MONITORING);
+  };
+  SuperStore.saveStorageMonitoringConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.storageVolumes = cfg.items || cfg.storageVolumes || []; cfg.items = cfg.storageVolumes;
+    localStorage.setItem('cso_storage_monitoring_config', JSON.stringify(cfg));
+    this.logAudit('STORAGE_MONITORING_UPDATED', 'OPERATIONS', `Storage monitoring volumes updated (${cfg.items.length} volumes).`);
+    return true;
+  };
+  SuperStore.resetStorageMonitoringConfig = function() {
+    localStorage.setItem('cso_storage_monitoring_config', JSON.stringify(DEFAULT_STORAGE_MONITORING));
+    this.logAudit('STORAGE_MONITORING_RESET', 'OPERATIONS', 'Storage monitoring config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_STORAGE_MONITORING));
+  };
+  SuperStore.exportStorageMonitoringManifest = function() {
+    const config = this.getStorageMonitoringConfig();
+    const filename = "storage_monitoring_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("STORAGE_MONITORING_EXPORTED", "DATA_EXPORT", `Storage monitoring manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -15325,6 +15510,26 @@
     window.CSOSuperStore.saveIncidentResponseConfig = SuperStore.saveIncidentResponseConfig;
     window.CSOSuperStore.resetIncidentResponseConfig = SuperStore.resetIncidentResponseConfig;
     window.CSOSuperStore.exportIncidentResponseManifest = SuperStore.exportIncidentResponseManifest;
+    window.CSOSuperStore.getSystemHealthConfig = SuperStore.getSystemHealthConfig;
+    window.CSOSuperStore.saveSystemHealthConfig = SuperStore.saveSystemHealthConfig;
+    window.CSOSuperStore.resetSystemHealthConfig = SuperStore.resetSystemHealthConfig;
+    window.CSOSuperStore.exportSystemHealthManifest = SuperStore.exportSystemHealthManifest;
+    window.CSOSuperStore.getWebsiteAvailabilityConfig = SuperStore.getWebsiteAvailabilityConfig;
+    window.CSOSuperStore.saveWebsiteAvailabilityConfig = SuperStore.saveWebsiteAvailabilityConfig;
+    window.CSOSuperStore.resetWebsiteAvailabilityConfig = SuperStore.resetWebsiteAvailabilityConfig;
+    window.CSOSuperStore.exportWebsiteAvailabilityManifest = SuperStore.exportWebsiteAvailabilityManifest;
+    window.CSOSuperStore.getApiDiagnosticsConfig = SuperStore.getApiDiagnosticsConfig;
+    window.CSOSuperStore.saveApiDiagnosticsConfig = SuperStore.saveApiDiagnosticsConfig;
+    window.CSOSuperStore.resetApiDiagnosticsConfig = SuperStore.resetApiDiagnosticsConfig;
+    window.CSOSuperStore.exportApiDiagnosticsManifest = SuperStore.exportApiDiagnosticsManifest;
+    window.CSOSuperStore.getDatabaseHealthConfig = SuperStore.getDatabaseHealthConfig;
+    window.CSOSuperStore.saveDatabaseHealthConfig = SuperStore.saveDatabaseHealthConfig;
+    window.CSOSuperStore.resetDatabaseHealthConfig = SuperStore.resetDatabaseHealthConfig;
+    window.CSOSuperStore.exportDatabaseHealthManifest = SuperStore.exportDatabaseHealthManifest;
+    window.CSOSuperStore.getStorageMonitoringConfig = SuperStore.getStorageMonitoringConfig;
+    window.CSOSuperStore.saveStorageMonitoringConfig = SuperStore.saveStorageMonitoringConfig;
+    window.CSOSuperStore.resetStorageMonitoringConfig = SuperStore.resetStorageMonitoringConfig;
+    window.CSOSuperStore.exportStorageMonitoringManifest = SuperStore.exportStorageMonitoringManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
