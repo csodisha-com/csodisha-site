@@ -13031,7 +13031,8 @@
           studyDirectoryTree: this.getStudyDirectoryTreeConfig ? this.getStudyDirectoryTreeConfig() : null,
           communityDirectoryTree: this.getCommunityDirectoryTreeConfig ? this.getCommunityDirectoryTreeConfig() : null,
           eventsScheduleTree: this.getEventsScheduleConfig ? this.getEventsScheduleConfig() : null,
-          seoDiscoveryTree: this.getSeoDiscoveryTreeConfig ? this.getSeoDiscoveryTreeConfig() : null
+          seoDiscoveryTree: this.getSeoDiscoveryTreeConfig ? this.getSeoDiscoveryTreeConfig() : null,
+          securityRbacTree: this.getSecurityRbacTreeConfig ? this.getSecurityRbacTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -110962,6 +110963,655 @@
   SuperStore.saveKeywordBoostingConfig = function(cfg) { return this.saveSeoDiscoveryTreeConfig(cfg); };
   SuperStore.resetKeywordBoostingConfig = function() { return this.resetSeoDiscoveryTreeConfig(); };
   SuperStore.exportKeywordBoostingManifest = function() { return this.exportSeoDiscoveryTreeManifest(); };
+
+  // =========================================================================
+  // SECURITY, PRIVACY & RBAC SUITE: Master Directory Tree & Configuration Engine
+  // Cache Key: cso_security_rbac_tree_v1 (All 13 Modules)
+  // =========================================================================
+  const DEFAULT_SECURITY_DIRECTORY_TREE = {
+    meta: {
+      version: "2026.11",
+      updatedAt: new Date().toISOString(),
+      author: "Common Sense Odisha (CSO) InfoSec Architecture",
+      suite: "Security, Privacy & RBAC Suite",
+      folderId: "folder-security-privacy"
+    },
+    activeCategoryId: "cat-sec-01",
+    selectedNodeId: "SEC-NODE-01-01",
+    categories: [
+      {
+        id: "cat-sec-01",
+        moduleId: "module-sec-001",
+        code: "01",
+        title: "RBAC Hierarchy & Role Entitlements",
+        titleOdia: "ଭୂମିକା ଆଧାରିତ ପ୍ରବେଶ ଅଧିକାର ଓ ପଦବୀ କ୍ରମ",
+        description: "Multi-tier administrative roles (Super Admin, Senior Editor, Reviewer) and baseline access matrix",
+        nodes: [
+          {
+            id: "SEC-NODE-01-01",
+            title: "Super Admin Master Entitlement Policy",
+            titleOdia: "ସୁପର ଆଡମିନ ପୂର୍ଣ୍ଣ ପ୍ରବେଶ ନିୟମାବଳୀ",
+            slug: "super-admin-master-entitlement",
+            categoryCode: "01",
+            role: "Super Admin",
+            scope: "Global System-Wide (All 6 Engines & Infrastructure)",
+            severity: "Critical",
+            enforced: true,
+            status: "Active / Enforced",
+            permissions: {
+              jobsEngine: ["create", "edit", "delete", "publish"],
+              schemesEngine: ["create", "edit", "delete", "publish"],
+              studyEngine: ["create", "edit", "delete", "publish"],
+              communityEngine: ["create", "edit", "delete", "publish"],
+              eventsEngine: ["create", "edit", "delete", "publish"],
+              seoEngine: ["create", "edit", "delete", "publish"]
+            },
+            assignedUsers: ["admin@csodisha.com", "director@csodisha.com"],
+            description: "Full unrestricted write, read, delete, and instant publish authority across all master modules, database snapshots, and credential rotations.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-01-01-SUB-1",
+                title: "Super Admin Root Credential Vault & Recovery Keys",
+                titleOdia: "ମୁଖ୍ୟ ପ୍ରଶାସକ କ୍ରେଡେନସିଆଲ ଭଲ୍ଟ",
+                slug: "super-admin-credential-vault",
+                categoryCode: "01",
+                role: "Super Admin",
+                scope: "Infrastructure & Secret Storage",
+                severity: "Critical",
+                enforced: true,
+                status: "Active / Enforced",
+                assignedUsers: ["admin@csodisha.com"],
+                description: "Dedicated encrypted offline recovery shards and quorum-based secret recovery policies.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          },
+          {
+            id: "SEC-NODE-01-02",
+            title: "Senior Editor Content Authoring & Draft Policy",
+            titleOdia: "ବରିଷ୍ଠ ସମ୍ପାଦକ କଣ୍ଟେଣ୍ଟ ରଚନା ଓ ସଂଶୋଧନ ଅଧିକାର",
+            slug: "senior-editor-entitlement",
+            categoryCode: "01",
+            role: "Senior Editor",
+            scope: "Editorial Portals (Jobs, Schemes, Study, Community, Events)",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            permissions: {
+              jobsEngine: ["create", "edit", "draft"],
+              schemesEngine: ["create", "edit", "draft"],
+              studyEngine: ["create", "edit", "draft"],
+              communityEngine: ["create", "edit", "draft"],
+              eventsEngine: ["create", "edit", "draft"],
+              seoEngine: ["read", "edit"]
+            },
+            assignedUsers: ["editor.lead@csodisha.com", "content.ops@csodisha.com"],
+            description: "Unrestricted draft creation, modification, and previewing. Mutations to 'Published Live' status require 2-person approval or super admin elevation.",
+            lastUpdated: "2026-11-10",
+            children: []
+          },
+          {
+            id: "SEC-NODE-01-03",
+            title: "Reviewer & Fact-Checker Inspect Policy",
+            titleOdia: "ସମୀକ୍ଷକ ତଥ୍ୟ ଯାଞ୍ଚ ଓ ନିରୀକ୍ଷଣ ଅଧିକାର",
+            slug: "reviewer-inspect-entitlement",
+            categoryCode: "01",
+            role: "Reviewer",
+            scope: "Public Portal Verification Staging",
+            severity: "Medium",
+            enforced: true,
+            status: "Active / Enforced",
+            permissions: {
+              jobsEngine: ["read", "audit"],
+              schemesEngine: ["read", "audit"],
+              studyEngine: ["read", "audit"],
+              communityEngine: ["read", "audit"],
+              eventsEngine: ["read", "audit"],
+              seoEngine: ["read"]
+            },
+            assignedUsers: ["factcheck@csodisha.com", "compliance.auditor@csodisha.com"],
+            description: "Read-only inspection of draft payloads, diff viewer, and commentary annotation. Forbidden from executing destructive deletes or publishing live records.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-sec-02",
+        moduleId: "module-sec-002",
+        code: "02",
+        title: "Publish & Mutation Permissions Guard",
+        titleOdia: "ପ୍ରକାଶନ ଓ ତଥ୍ୟ ପରିବର୍ତ୍ତନ ସୁରକ୍ଷା କବଚ",
+        description: "Granular action interceptor preventing unauthorized mutations across all 6 SuperStore engines",
+        nodes: [
+          {
+            id: "SEC-NODE-02-01",
+            title: "6-Engine Dual-Key Mutation Guard",
+            titleOdia: "୬ଟି ଇଞ୍ଜିନର ତଥ୍ୟ ପରିବର୍ତ୍ତନ ରକ୍ଷାକବଚ",
+            slug: "engine-mutation-guard",
+            categoryCode: "02",
+            role: "System Guard",
+            scope: "Jobs, Schemes, Study, Community, Events, SEO Engines",
+            severity: "Critical",
+            enforced: true,
+            status: "Active / Enforced",
+            engineKeys: [
+              "cso_jobs_master_tree_config",
+              "cso_schemes_recursive_tree_v2",
+              "cso_study_recursive_tree_v1",
+              "cso_community_recursive_tree_v1",
+              "cso_events_schedule_tree_v1",
+              "cso_seo_discovery_tree_v1"
+            ],
+            description: "Requires active session token with cryptographic role claim matching target engine before committing changes to localStorage or Supabase persistence.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-02-01-SUB-1",
+                title: "Jobs & Careers Engine Mutation Barrier",
+                titleOdia: "ନିଯୁକ୍ତି ଇଞ୍ଜିନ ମ୍ୟୁଟେସନ୍ ସୁରକ୍ଷା",
+                slug: "jobs-engine-guard",
+                categoryCode: "02",
+                role: "Engine Guard",
+                scope: "cso_jobs_master_tree_config",
+                severity: "High",
+                enforced: true,
+                status: "Active / Enforced",
+                description: "Interprets write tokens and enforces schema validation before job notifications enter published index.",
+                lastUpdated: "2026-11-10",
+                children: []
+              },
+              {
+                id: "SEC-NODE-02-01-SUB-2",
+                title: "Welfare Schemes & Benefits Mutation Barrier",
+                titleOdia: "ଯୋଜନା ଇଞ୍ଜିନ ମ୍ୟୁଟେସନ୍ ସୁରକ୍ଷା",
+                slug: "schemes-engine-guard",
+                categoryCode: "02",
+                role: "Engine Guard",
+                scope: "cso_schemes_recursive_tree_v2",
+                severity: "High",
+                enforced: true,
+                status: "Active / Enforced",
+                description: "Prevents unauthorized alteration to government grant amounts, eligibility criteria, and portal links.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-sec-03",
+        moduleId: "module-sec-003",
+        code: "03",
+        title: "Session Lifecycle, Inactivity & Token Expiry",
+        titleOdia: "ସେସନ ଆୟୁଷ, ନିଷ୍କ୍ରିୟତା ସମୟସୀମା ଓ ଟୋକନ ବୈଧତା",
+        description: "Ephemeral admin token lifespans, idle screen auto-lock, and sliding window reauthentication",
+        nodes: [
+          {
+            id: "SEC-NODE-03-01",
+            title: "Adaptive Inactivity Auto-Lock & Session Invalidation",
+            titleOdia: "ନିଷ୍କ୍ରିୟତା ଲକ୍ ଓ ସେସନ ଅବସାନ ନିୟମ",
+            slug: "session-inactivity-policy",
+            categoryCode: "03",
+            role: "All Administrative Staff",
+            scope: "Admin Portal (/admin/)",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            inactivityTimeoutMinutes: 30,
+            absoluteTokenLifetimeHours: 12,
+            refreshTokenIntervalMinutes: 15,
+            description: "Terminates administrative console context after 30 minutes of mouse/keyboard idle time. Forces cryptographic re-authentication before sensitive mutations.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-03-01-SUB-1",
+                title: "Idle Screen Blur & Key Invalidation Handlers",
+                titleOdia: "ନିଷ୍କ୍ରିୟ ସ୍କ୍ରିନ ବ୍ଲର୍ ଓ କି ଅବସାନ",
+                slug: "screen-blur-invalidation",
+                categoryCode: "03",
+                role: "Client Defense",
+                scope: "Admin UI DOM",
+                severity: "Medium",
+                enforced: true,
+                status: "Active / Enforced",
+                description: "Automatically blurs workspace and flushes in-memory credentials on browser tab unfocus or device lock.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-sec-04",
+        moduleId: "module-sec-004",
+        code: "04",
+        title: "Cloudflare Turnstile & Edge Bot Deterrence Rules",
+        titleOdia: "କ୍ଲାଉଡଫ୍ଲେୟାର ଟର୍ନଷ୍ଟାଇଲ ଓ ବଟ୍ ନିରୋଧକ ସୁରକ୍ଷା",
+        description: "Frictionless challenge tokens, headless scraper rate limiting, and zero-CAPTCHA human verification",
+        nodes: [
+          {
+            id: "SEC-NODE-04-01",
+            title: "Cloudflare Managed Turnstile Verification",
+            titleOdia: "କ୍ଲାଉଡଫ୍ଲେୟାର ମ୍ୟାନେଜ୍ଡ ଟର୍ନଷ୍ଟାଇଲ ନିୟନ୍ତ୍ରଣ",
+            slug: "cloudflare-turnstile-managed",
+            categoryCode: "04",
+            role: "Edge Gatekeeper",
+            scope: "Public Forms, Inquiries, Admin Login, Search Bar",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            turnstileMode: "Managed (Smart Edge Challenge)",
+            siteKey: "0x4AAAAAAABcDeFgHiJkLmNo",
+            clearanceDurationSeconds: 86400,
+            failClosed: true,
+            description: "Enforces non-interactive privacy-preserving edge checks. Automatically challenges high-frequency IP requests without interrupting legitimate Odisha students.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-sec-05",
+        moduleId: "module-sec-005",
+        code: "05",
+        title: "Visual Audit Log Timeline Explorer & Event Streams",
+        titleOdia: "ଅଡିଟ୍ ଲଗ୍ ଟାଇମଲାଇନ ନିରୀକ୍ଷକ ଓ ଇଭେଣ୍ଟ ଷ୍ଟ୍ରିମ",
+        description: "Chronological immutable record of administrative operations, mutation diffs, and security alerts",
+        nodes: [
+          {
+            id: "SEC-NODE-05-01",
+            title: "Platform Audit Log Telemetry & Event Inspector",
+            titleOdia: "ପ୍ଲାଟଫର୍ମ ଅଡିଟ ଟେଲିମେଟ୍ରି ଓ ଲଗ୍ ରେକର୍ଡ",
+            slug: "audit-log-telemetry-inspector",
+            categoryCode: "05",
+            role: "Audit Inspector",
+            scope: "Global CSO Audit Stream",
+            severity: "Medium",
+            enforced: true,
+            status: "Active / Enforced",
+            retentionDays: 365,
+            targetKeys: ["cso_super_audit", "cso_security_rbac_tree_v1"],
+            description: "Continuously logs every MUTATION, RESET, EXPORT, PUBLISH, and DELETE action with ISO timestamp, actor email, IP address, and payload delta.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-sec-06",
+        moduleId: "module-sec-006",
+        code: "06",
+        title: "IP Access Control Lists & Geofencing",
+        titleOdia: "ଆଇପି ଅନୁମୋଦନ ତାଲିକା ଓ ଭୌଗୋଳିକ ସୀମା ନିୟନ୍ତ୍ରଣ",
+        description: "CIDR allowlists for admin login, malicious IP blocklists, and regional geo-restrictions",
+        nodes: [
+          {
+            id: "SEC-NODE-06-01",
+            title: "Administrative CIDR Allowlist & Geofence",
+            titleOdia: "ପ୍ରଶାସନିକ ଆଇପି ଅନୁମୋଦନ ତାଲିକା",
+            slug: "ip-allowlist-geofence",
+            categoryCode: "06",
+            role: "Network Security",
+            scope: "Admin Console /admin/*",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            allowedCidrs: ["103.24.0.0/22", "157.41.0.0/16", "14.139.212.0/24"],
+            blockedCountries: ["KP", "IR", "SY"],
+            description: "Restricts privileged console login to recognized Indian ASN gateways and verified institutional IPs, blocking foreign anonymous proxies.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-06-01-SUB-1",
+                title: "Malicious Scraping Autonomous ASN Shunning",
+                titleOdia: "ଦୂରଦୂରାନ୍ତ ବଟ୍ ଆଇପି ବ୍ୟାନ୍ ନିୟମ",
+                slug: "bot-asn-shun-policy",
+                categoryCode: "06",
+                role: "Network Defense",
+                scope: "Edge WAF",
+                severity: "High",
+                enforced: true,
+                status: "Active / Enforced",
+                description: "Automated dynamic shunning of residential proxy pools attempting credential stuffing attacks.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-sec-07",
+        moduleId: "module-sec-007",
+        code: "07",
+        title: "Two-Factor Authentication & Hardware Keys",
+        titleOdia: "ଦୁଇ-ସ୍ତରୀୟ ପ୍ରମାଣୀକରଣ (2FA / TOTP) ଓ ହାର୍ଡୱେୟାର କି",
+        description: "Time-based One-Time Password (TOTP RFC 6238), WebAuthn / FIDO2 security keys, and emergency recovery codes",
+        nodes: [
+          {
+            id: "SEC-NODE-07-01",
+            title: "Mandatory TOTP & FIDO2 for Super Admins",
+            titleOdia: "ସୁପର ଆଡମିନ ପାଇଁ ବାଧ୍ୟତାମୂଳକ TOTP ପ୍ରମାଣୀକରଣ",
+            slug: "mandatory-totp-fido2",
+            categoryCode: "07",
+            role: "Super Admin & Senior Editor",
+            scope: "Console Login",
+            severity: "Critical",
+            enforced: true,
+            status: "Active / Enforced",
+            totpAlgorithm: "SHA-256",
+            digitLength: 6,
+            timeStepSeconds: 30,
+            allowBackupCodes: true,
+            description: "Requires hardware key or authenticator app (Google Authenticator, Microsoft Authenticator, YubiKey) before authorizing administrative sessions.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-sec-08",
+        moduleId: "module-sec-008",
+        code: "08",
+        title: "Sensitive Field Masking & PII Redaction Controls",
+        titleOdia: "ସମ୍ବେଦନଶୀଳ ତଥ୍ୟ ଗୋପନୀୟତା ଓ ବ୍ୟକ୍ତିଗତ ପରିଚୟ ସୁରକ୍ଷା",
+        description: "Automated masking of Aadhaar, mobile numbers, email hashes, and applicant roll numbers in logs and public views",
+        nodes: [
+          {
+            id: "SEC-NODE-08-01",
+            title: "Aadhaar & Mobile Number Dynamic Redaction Filter",
+            titleOdia: "ଆଧାର ଓ ମୋବାଇଲ ନମ୍ବର ସ୍ୱତଃ ଗୋପନୀୟତା ରକ୍ଷା",
+            slug: "pii-redaction-filter",
+            categoryCode: "08",
+            role: "Data Privacy Officer",
+            scope: "Public Comments, Inquiry Forms, CSV Exports",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            redactionRules: [
+              { pattern: "\\b\\d{4}\\s?\\d{4}\\s?\\d{4}\\b", mask: "XXXX-XXXX-$3", label: "Aadhaar Number" },
+              { pattern: "\\b[6-9]\\d{9}\\b", mask: "XXXXXX$2", label: "Indian Mobile Number" }
+            ],
+            description: "Scans all public inputs and audit export snapshots, masking identifiable personal numbers with cryptographic redaction patterns.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-08-01-SUB-1",
+                title: "Candidate Roll Number Pseudonymization Policy",
+                titleOdia: "ପ୍ରାର୍ଥୀ ରୋଲ ନମ୍ବର ସୁରକ୍ଷିତ ଛଦ୍ମନାମକରଣ",
+                slug: "roll-number-pseudonymization",
+                categoryCode: "08",
+                role: "Data Privacy Officer",
+                scope: "Scorecard & Verification Rosters",
+                severity: "Medium",
+                enforced: true,
+                status: "Active / Enforced",
+                description: "Stores one-way salt hashes of exam roll numbers for verification while protecting identity.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-sec-09",
+        moduleId: "module-sec-009",
+        code: "09",
+        title: "API Key Management & Token Scoping",
+        titleOdia: "ଏପିଆଇ କି ପରିଚାଳନା ଓ ଟୋକନ ଅନୁମତି ସୀମା",
+        description: "Scoped machine-to-machine tokens, IP-bound API credentials, and automatic secret rotation",
+        nodes: [
+          {
+            id: "SEC-NODE-09-01",
+            title: "Supabase & CDN Edge API Token Registry",
+            titleOdia: "ସୁପାବେସ ଓ ଏଜ୍ ଏପିଆଇ ଟୋକନ ପରିଚାଳନା",
+            slug: "edge-api-token-registry",
+            categoryCode: "09",
+            role: "API Gateway",
+            scope: "Backend Sync & Storage Mirroring",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            rateLimitPerMinute: 600,
+            scopedScopes: ["read:schemes", "read:jobs", "write:telemetry"],
+            description: "Restricts serverless API tokens with strict least-privilege scopes. Disallows raw SQL queries or administrative mutations from edge tokens.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-sec-010",
+        moduleId: "module-sec-010",
+        code: "10",
+        title: "CSRF Protection & Origin Integrity Headers",
+        titleOdia: "ସିଏସଆରଏଫ ସୁରକ୍ଷା ଓ ଅରିଜିନ ହେଡର ଯାଞ୍ଚ",
+        description: "SameSite cookie policies, anti-CSRF token verification, and Content Security Policy (CSP) headers",
+        nodes: [
+          {
+            id: "SEC-NODE-010-01",
+            title: "Strict CSP & Double-Submit CSRF Cookie Policy",
+            titleOdia: "କଠୋର ସିଏସପି ଓ ସିଏସଆରଏଫ କୁକି ସୁରକ୍ଷା",
+            slug: "strict-csp-csrf-policy",
+            categoryCode: "10",
+            role: "Web Application Firewall",
+            scope: "All HTTP Endpoints & Fetch Handlers",
+            severity: "Critical",
+            enforced: true,
+            status: "Active / Enforced",
+            sameSitePolicy: "Strict",
+            contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;",
+            description: "Blocks cross-origin form submissions, embeds, and malicious framing via X-Frame-Options: DENY and Content-Security-Policy directives.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      },
+      {
+        id: "cat-sec-011",
+        moduleId: "module-sec-011",
+        code: "11",
+        title: "Emergency Maintenance Mode & Lockdown Dispatcher",
+        titleOdia: "ଜରୁରୀକାଳୀନ ରକ୍ଷଣାବେକ୍ଷଣ ମୋଡ୍ ଓ ଲକଡାଉନ୍ କଣ୍ଟ୍ରୋଲର",
+        description: "One-click global read-only toggle, database write freeze, and public maintenance banner dispatcher",
+        nodes: [
+          {
+            id: "SEC-NODE-011-01",
+            title: "Global Platform Emergency Lockdown Switch",
+            titleOdia: "ସମଗ୍ର ପ୍ଲାଟଫର୍ମ ଜରୁରୀକାଳୀନ ଲକଡାଉନ୍ ସୁଇଚ୍",
+            slug: "emergency-lockdown-switch",
+            categoryCode: "11",
+            role: "Incident Commander",
+            scope: "Global Platform (Frontend + Admin Console)",
+            severity: "Critical",
+            enforced: false,
+            status: "Standby / Armed",
+            lockdownMode: "Normal Operations",
+            readOnlyFreeze: false,
+            bannerMessage: "System maintenance in progress. CSO is currently operating in read-only mode.",
+            description: "Instantly freezes all database mutations across all 6 engines, revoking non-super-admin tokens during critical outages or cyber threat events.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-011-01-SUB-1",
+                title: "Public Emergency Banner Dispatcher",
+                titleOdia: "ସର୍ବସାଧାରଣ ଜରୁରୀ ସୂଚନା ବ୍ୟାନର",
+                slug: "emergency-banner-dispatcher",
+                categoryCode: "11",
+                role: "Communications Alert",
+                scope: "All Public Headers",
+                severity: "High",
+                enforced: false,
+                status: "Standby / Armed",
+                description: "Overlays an amber/red warning header across the top of csodisha.com informing students of scheduled maintenance windows.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-sec-012",
+        moduleId: "module-sec-012",
+        code: "12",
+        title: "Data Privacy, DPDP Act 2023 Compliance & Consent Vault",
+        titleOdia: "ତଥ୍ୟ ଗୋପନୀୟତା, DPDP ଆଇନ ୨୦୨୩ ଅନୁପାଳନ ଓ ସମ୍ମତି ଭଲ୍ଟ",
+        description: "Digital Personal Data Protection Act compliance, consent artifact lifecycle, and Right-to-be-Forgotten workflows",
+        nodes: [
+          {
+            id: "SEC-NODE-012-01",
+            title: "DPDP Act 2023 Consent & Data Principal Rights Policy",
+            titleOdia: "DPDP ଆଇନ ୨୦୨୩ ଅନୁଯାୟୀ ନାଗରିକ ସମ୍ମତି ନିୟମ",
+            slug: "dpdp-2023-consent-policy",
+            categoryCode: "12",
+            role: "Data Protection Officer",
+            scope: "All Citizens & Platform Users",
+            severity: "High",
+            enforced: true,
+            status: "Active / Enforced",
+            noticeLanguages: ["English", "Odia"],
+            purposeSpecification: "Educational notifications, job alerts, welfare scheme discovery",
+            dataErasureSlaDays: 30,
+            description: "Adheres to Section 6 of India DPDP Act 2023. Explicit purpose limitation, accessible in Odia and English, with verified revocation channels.",
+            lastUpdated: "2026-11-10",
+            children: [
+              {
+                id: "SEC-NODE-012-01-SUB-1",
+                title: "Right to Correction & Grievance Redressal Board",
+                titleOdia: "ତଥ୍ୟ ସଂଶୋଧନ ଓ ଅଭିଯୋଗ ନିବାରଣ ବ୍ୟବସ୍ଥା",
+                slug: "dpdp-grievance-redressal",
+                categoryCode: "12",
+                role: "Grievance Officer",
+                scope: "Citizen Data Subject Inquiries",
+                severity: "Medium",
+                enforced: true,
+                status: "Active / Enforced",
+                description: "Provides 72-hour formal resolution timeline for citizen queries regarding profile data inaccuracy.",
+                lastUpdated: "2026-11-10",
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "cat-sec-013",
+        moduleId: "module-sec-013",
+        code: "13",
+        title: "Security Incident Response & Audit Snapshot Export",
+        titleOdia: "ସୁରକ୍ଷା ଘଟଣା ପ୍ରତିକ୍ରିୟା ଓ ଅଡିଟ ସ୍ନାପସଟ୍ ରପ୍ତାନି",
+        description: "Computer Security Incident Response Team (CSIRT) triage workflows and signed disaster snapshot packages",
+        nodes: [
+          {
+            id: "SEC-NODE-013-01",
+            title: "CSIRT Severity 1 Triage & Forensic Snapshot Workflow",
+            titleOdia: "ଜରୁରୀକାଳୀନ ସାଇବର ସୁରକ୍ଷା ଅନୁସନ୍ଧାନ କାର୍ଯ୍ୟପଦ୍ଧତି",
+            slug: "csirt-forensic-snapshot-workflow",
+            categoryCode: "13",
+            role: "CSIRT Team",
+            scope: "Disaster Recovery & Forensic Audits",
+            severity: "Critical",
+            enforced: true,
+            status: "Active / Enforced",
+            slaMinutes: 15,
+            notificationChannels: ["sms", "email", "internal-pager"],
+            snapshotFormat: "Encrypted JSON Manifest",
+            description: "Automated trigger collecting full 162-domain snapshot in createPlatformSnapshot(), freezing logs and transmitting cryptographic hashes to lead engineers.",
+            lastUpdated: "2026-11-10",
+            children: []
+          }
+        ]
+      }
+    ]
+  };
+
+  SuperStore.getSecurityRbacTreeConfig = function() {
+    return _hydrateConfig('cso_security_rbac_tree_v1', 'categories', () => DEFAULT_SECURITY_DIRECTORY_TREE);
+  };
+
+  SuperStore.saveSecurityRbacTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_security_rbac_tree_v1', JSON.stringify(cfg));
+    this.logAudit('SECURITY_RBAC_MUTATION', 'SECURITY_RBAC', 'Saved Security & RBAC Suite policy updates (' + cfg.categories.length + ' modules).');
+    return true;
+  };
+
+  SuperStore.resetSecurityRbacTreeConfig = function() {
+    localStorage.setItem('cso_security_rbac_tree_v1', JSON.stringify(DEFAULT_SECURITY_DIRECTORY_TREE));
+    this.logAudit('SECURITY_RBAC_RESET', 'SECURITY_RBAC', 'Security, Privacy & RBAC Suite reset to authentic factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_SECURITY_DIRECTORY_TREE));
+  };
+
+  SuperStore.exportSecurityRbacManifest = function() {
+    const config = this.getSecurityRbacTreeConfig();
+    const filename = "security_rbac_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SECURITY_RBAC_EXPORTED", "DATA_EXPORT", "Security & RBAC policy manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  SuperStore.getCurrentUserRole = function() {
+    try {
+      const sess = localStorage.getItem('cso_admin_session');
+      if (sess) {
+        const parsed = JSON.parse(sess);
+        return parsed.role || 'Super Admin';
+      }
+    } catch(e) {}
+    return 'Super Admin';
+  };
+
+  SuperStore.canUserPerformAction = function(role, action, domain) {
+    const currentRole = role || this.getCurrentUserRole();
+    if (currentRole === 'Super Admin') return true;
+    if (currentRole === 'Senior Editor') {
+      if (action === 'delete') return false;
+      if (action === 'publish' && domain === 'security') return false;
+      return true;
+    }
+    if (currentRole === 'Reviewer') {
+      return action === 'read' || action === 'audit';
+    }
+    return false;
+  };
+
+  // Forwarding accessors for individual Security suite modules:
+  SuperStore.getRbacHierarchyConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveRbacHierarchyConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getMutationGuardConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveMutationGuardConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getSessionLifecycleConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveSessionLifecycleConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getTurnstileConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveTurnstileConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getVisualAuditConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveVisualAuditConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getIpAclConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveIpAclConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getTwoFactorConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveTwoFactorConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getPiiRedactionConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.savePiiRedactionConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getApiKeyManagerConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveApiKeyManagerConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getCsrfOriginConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveCsrfOriginConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getEmergencyLockdownConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveEmergencyLockdownConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getDataPrivacyDpdpConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveDataPrivacyDpdpConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+  SuperStore.getIncidentResponseConfig = function() { return this.getSecurityRbacTreeConfig(); };
+  SuperStore.saveIncidentResponseConfig = function(cfg) { return this.saveSecurityRbacTreeConfig(cfg); };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -111605,6 +112255,38 @@
     window.CSOSuperStore.saveKeywordBoostingConfig = SuperStore.saveKeywordBoostingConfig;
     window.CSOSuperStore.resetKeywordBoostingConfig = SuperStore.resetKeywordBoostingConfig;
     window.CSOSuperStore.exportKeywordBoostingManifest = SuperStore.exportKeywordBoostingManifest;
+    window.CSOSuperStore.getSecurityRbacTreeConfig = SuperStore.getSecurityRbacTreeConfig;
+    window.CSOSuperStore.saveSecurityRbacTreeConfig = SuperStore.saveSecurityRbacTreeConfig;
+    window.CSOSuperStore.resetSecurityRbacTreeConfig = SuperStore.resetSecurityRbacTreeConfig;
+    window.CSOSuperStore.exportSecurityRbacManifest = SuperStore.exportSecurityRbacManifest;
+    window.CSOSuperStore.getCurrentUserRole = SuperStore.getCurrentUserRole;
+    window.CSOSuperStore.canUserPerformAction = SuperStore.canUserPerformAction;
+    window.CSOSuperStore.getRbacHierarchyConfig = SuperStore.getRbacHierarchyConfig;
+    window.CSOSuperStore.saveRbacHierarchyConfig = SuperStore.saveRbacHierarchyConfig;
+    window.CSOSuperStore.getMutationGuardConfig = SuperStore.getMutationGuardConfig;
+    window.CSOSuperStore.saveMutationGuardConfig = SuperStore.saveMutationGuardConfig;
+    window.CSOSuperStore.getSessionLifecycleConfig = SuperStore.getSessionLifecycleConfig;
+    window.CSOSuperStore.saveSessionLifecycleConfig = SuperStore.saveSessionLifecycleConfig;
+    window.CSOSuperStore.getTurnstileConfig = SuperStore.getTurnstileConfig;
+    window.CSOSuperStore.saveTurnstileConfig = SuperStore.saveTurnstileConfig;
+    window.CSOSuperStore.getVisualAuditConfig = SuperStore.getVisualAuditConfig;
+    window.CSOSuperStore.saveVisualAuditConfig = SuperStore.saveVisualAuditConfig;
+    window.CSOSuperStore.getIpAclConfig = SuperStore.getIpAclConfig;
+    window.CSOSuperStore.saveIpAclConfig = SuperStore.saveIpAclConfig;
+    window.CSOSuperStore.getTwoFactorConfig = SuperStore.getTwoFactorConfig;
+    window.CSOSuperStore.saveTwoFactorConfig = SuperStore.saveTwoFactorConfig;
+    window.CSOSuperStore.getPiiRedactionConfig = SuperStore.getPiiRedactionConfig;
+    window.CSOSuperStore.savePiiRedactionConfig = SuperStore.savePiiRedactionConfig;
+    window.CSOSuperStore.getApiKeyManagerConfig = SuperStore.getApiKeyManagerConfig;
+    window.CSOSuperStore.saveApiKeyManagerConfig = SuperStore.saveApiKeyManagerConfig;
+    window.CSOSuperStore.getCsrfOriginConfig = SuperStore.getCsrfOriginConfig;
+    window.CSOSuperStore.saveCsrfOriginConfig = SuperStore.saveCsrfOriginConfig;
+    window.CSOSuperStore.getEmergencyLockdownConfig = SuperStore.getEmergencyLockdownConfig;
+    window.CSOSuperStore.saveEmergencyLockdownConfig = SuperStore.saveEmergencyLockdownConfig;
+    window.CSOSuperStore.getDataPrivacyDpdpConfig = SuperStore.getDataPrivacyDpdpConfig;
+    window.CSOSuperStore.saveDataPrivacyDpdpConfig = SuperStore.saveDataPrivacyDpdpConfig;
+    window.CSOSuperStore.getIncidentResponseConfig = SuperStore.getIncidentResponseConfig;
+    window.CSOSuperStore.saveIncidentResponseConfig = SuperStore.saveIncidentResponseConfig;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

@@ -706,6 +706,10 @@ async function loadMasterNavigation() {
         renderSeoCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
         return;
       }
+      if (moduleId.startsWith('module-sec-') || moduleId.startsWith('module-16-') || moduleId.startsWith('module-15-') || folderId === 'folder-16' || folderId === 'folder-15' || folderId === 'folder-security-privacy') {
+        renderSecurityCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
+        return;
+      }
 
 
 
@@ -1264,6 +1268,8 @@ async function loadMasterNavigation() {
         renderEventsCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
       } else if (moduleId.startsWith('module-seo-') || moduleId.startsWith('module-13-') || folderId === 'folder-13' || folderId === 'folder-seo-discovery') {
         renderSeoCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
+      } else if (moduleId.startsWith('module-sec-') || moduleId.startsWith('module-16-') || moduleId.startsWith('module-15-') || folderId === 'folder-16' || folderId === 'folder-15' || folderId === 'folder-security-privacy') {
+        renderSecurityCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
 
 
 
@@ -20658,7 +20664,576 @@ async function loadMasterNavigation() {
     }
 
 
+    // =========================================================================
+    // SECURITY, PRIVACY & RBAC SUITE: Category Tree & Configuration Studio
+    // =========================================================================
+    function renderSecurityCategoryTreeStudioWorkspace(container, targetModuleId) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getSecurityRbacTreeConfig();
 
+        // Map targetModuleId to category if provided (supporting module-sec-*, module-16-*, and module-15-*)
+        const modToCat = {
+          'module-sec-001': 'cat-sec-01', 'module-16-001': 'cat-sec-01', 'module-sec-01': 'cat-sec-01', 'module-15-001': 'cat-sec-01',
+          'module-sec-002': 'cat-sec-02', 'module-16-002': 'cat-sec-02', 'module-sec-02': 'cat-sec-02', 'module-15-002': 'cat-sec-02',
+          'module-sec-003': 'cat-sec-03', 'module-16-003': 'cat-sec-03', 'module-sec-03': 'cat-sec-03', 'module-15-003': 'cat-sec-03',
+          'module-sec-004': 'cat-sec-04', 'module-16-004': 'cat-sec-04', 'module-sec-04': 'cat-sec-04', 'module-15-004': 'cat-sec-04',
+          'module-sec-005': 'cat-sec-05', 'module-16-005': 'cat-sec-05', 'module-sec-05': 'cat-sec-05', 'module-15-005': 'cat-sec-05',
+          'module-sec-006': 'cat-sec-06', 'module-16-006': 'cat-sec-06', 'module-sec-06': 'cat-sec-06', 'module-15-006': 'cat-sec-06',
+          'module-sec-007': 'cat-sec-07', 'module-16-007': 'cat-sec-07', 'module-sec-07': 'cat-sec-07', 'module-15-007': 'cat-sec-07',
+          'module-sec-008': 'cat-sec-08', 'module-16-008': 'cat-sec-08', 'module-sec-08': 'cat-sec-08', 'module-15-008': 'cat-sec-08',
+          'module-sec-009': 'cat-sec-09', 'module-16-009': 'cat-sec-09', 'module-sec-09': 'cat-sec-09', 'module-15-009': 'cat-sec-09',
+          'module-sec-010': 'cat-sec-10', 'module-16-010': 'cat-sec-10', 'module-sec-10': 'cat-sec-10', 'module-15-010': 'cat-sec-10',
+          'module-sec-011': 'cat-sec-11', 'module-16-011': 'cat-sec-11', 'module-sec-11': 'cat-sec-11', 'module-15-011': 'cat-sec-11',
+          'module-sec-012': 'cat-sec-12', 'module-16-012': 'cat-sec-12', 'module-sec-12': 'cat-sec-12', 'module-15-012': 'cat-sec-12',
+          'module-sec-013': 'cat-sec-13', 'module-16-013': 'cat-sec-13', 'module-sec-13': 'cat-sec-13', 'module-15-013': 'cat-sec-13'
+        };
+
+        if (targetModuleId && modToCat[targetModuleId]) {
+          config.activeCategoryId = modToCat[targetModuleId];
+        }
+
+        let activeCatId = config.activeCategoryId || 'cat-sec-01';
+        let searchTerm = '';
+
+        // Helper to flatten node tree with depth for hierarchical tree display
+        function flattenTree(nodes, depth = 0, parentTitle = 'Root') {
+          let list = [];
+          for (const n of nodes) {
+            list.push({ ...n, depth, parentTitle });
+            if (n.children && n.children.length > 0) {
+              list = list.concat(flattenTree(n.children, depth + 1, n.title));
+            }
+          }
+          return list;
+        }
+
+        // Helper to find node recursively by ID
+        function findNodeDeep(nodes, id) {
+          for (const n of nodes) {
+            if (n.id === id) return n;
+            if (n.children && n.children.length > 0) {
+              const found = findNodeDeep(n.children, id);
+              if (found) return found;
+            }
+          }
+          return null;
+        }
+
+        // Helper to delete node recursively
+        function deleteNodeDeep(nodes, id) {
+          const idx = nodes.findIndex(n => n.id === id);
+          if (idx !== -1) {
+            nodes.splice(idx, 1);
+            return true;
+          }
+          for (const n of nodes) {
+            if (n.children && n.children.length > 0) {
+              if (deleteNodeDeep(n.children, id)) return true;
+            }
+          }
+          return false;
+        }
+
+        function render() {
+          const categories = config.categories || [];
+          const currentCat = categories.find(c => c.id === activeCatId) || categories[0] || { nodes: [] };
+          const flatNodes = flattenTree(currentCat.nodes || []);
+
+          let selectedNodeId = config.selectedNodeId;
+          let selectedNode = selectedNodeId ? findNodeDeep(currentCat.nodes || [], selectedNodeId) : null;
+          if (!selectedNode && flatNodes.length > 0) {
+            selectedNode = flatNodes[0];
+            selectedNodeId = selectedNode.id;
+            config.selectedNodeId = selectedNodeId;
+          }
+
+          // Filter nodes if search term present
+          const displayedNodes = searchTerm
+            ? flatNodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm) || (n.role || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.scope || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
+            : flatNodes;
+
+          // Compute total statistics
+          let totalAllNodes = 0;
+          categories.forEach(c => {
+            totalAllNodes += flattenTree(c.nodes || []).length;
+          });
+
+          // Fetch raw audit log entries for Timeline Explorer
+          const rawAuditLogs = (store.getAudit ? store.getAudit() : []) || [];
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Security, Privacy & RBAC Suite</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-security-privacy • 13 Modules • Role Governance, Bot Deterrence & Visual Audit Logs • ${totalAllNodes} Enforced Policies</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="sec-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="sec-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="sec-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Top Category Navigation Pills (All 13 Modules) -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+                ${categories.map(cat => {
+                  const isActive = cat.id === activeCatId;
+                  const catNodeCount = flattenTree(cat.nodes || []).length;
+                  return `
+                    <button class="sec-cat-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                        : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60'
+                    }" data-cat-id="${cat.id}">
+                      <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-700'}">${cat.code || ''}</span>
+                      <span>${cat.title}</span>
+                      <span class="text-[10px] opacity-75 font-mono">(${catNodeCount})</span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Main Two-Column Studio Layout -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left Column: Category Hierarchy & Rule Tree (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                  <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                      <div>
+                        <h3 class="text-sm font-bold text-white">${currentCat.title}</h3>
+                        <p class="text-xs text-slate-400 font-serif">${currentCat.titleOdia || currentCat.description || ''}</p>
+                      </div>
+                      <button id="sec-btn-add-node" class="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Root Policy
+                      </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                      <input type="text" id="sec-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} security rules or audit policies..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                    </div>
+
+                    <!-- Node List (Hierarchical Indentation) -->
+                    <div class="space-y-1.5 max-h-[620px] overflow-y-auto pr-1">
+                      ${displayedNodes.map(node => {
+                        const isSelected = node.id === selectedNodeId;
+                        const indentPx = Math.min((node.depth || 0) * 16, 64);
+                        const isEnforced = node.enforced !== false && node.status !== 'Disabled / Testing';
+                        return `
+                          <div class="sec-node-card p-2.5 rounded-lg border cursor-pointer transition ${
+                            isSelected
+                              ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
+                              : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                            <div class="flex items-start justify-between gap-2">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '🛡️' : (node.depth === 1 ? '└' : '└ └')}</span>
+                                <h4 class="text-xs font-semibold ${isSelected ? 'text-teal-300' : 'text-white'} truncate">${node.title}</h4>
+                              </div>
+                              <span class="px-1.5 py-0.5 rounded text-[9px] font-mono whitespace-nowrap ${isEnforced ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                ${node.status || (isEnforced ? 'Active / Enforced' : 'Disabled / Testing')}
+                              </span>
+                            </div>
+                            <div class="mt-1 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                              <span class="text-teal-300 truncate max-w-[170px]">${node.role || 'Role Policy'}</span>
+                              <span class="px-1 py-0.2 rounded ${node.severity === 'Critical' ? 'bg-rose-500/20 text-rose-300' : (node.severity === 'High' ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300')} text-[9px]">${node.severity || 'Medium'}</span>
+                            </div>
+                            ${node.titleOdia ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate font-serif">${node.titleOdia}</p>` : ''}
+                            <div class="mt-1.5 flex items-center justify-between text-[9px] text-slate-500">
+                              <span class="font-mono">${node.id}</span>
+                              <span>${(node.children && node.children.length > 0) ? `${node.children.length} sub-policies` : (node.scope || 'System-Wide')}</span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No matching security policies found.</div>' : ''}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Authoring & Configuration Studio (7 Cols) -->
+                <div class="lg:col-span-7">
+                  ${selectedNode ? `
+                    <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-4">
+                      <!-- Studio Top Bar -->
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
+                        <div>
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">POLICY & ACCESS GOVERNANCE STUDIO</span>
+                          <h3 class="text-base font-bold text-white mt-0.5">${selectedNode.title}</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button id="sec-btn-add-subnode" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
+                            + Sub-policy
+                          </button>
+                          <button id="sec-btn-delete-node" class="px-2.5 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition">
+                            Delete
+                          </button>
+                          <button id="sec-btn-toggle-enforce" class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition ${
+                            selectedNode.enforced
+                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                          }">
+                            ${selectedNode.enforced ? 'Bypass / Test' : 'Enforce Policy'}
+                          </button>
+                          <button id="sec-btn-save-node" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
+                            Save Policy
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Standard Form Fields Grid -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Policy Title (English)</label>
+                          <input type="text" id="sec-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Policy Title (Odia)</label>
+                          <input type="text" id="sec-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Assigned Role</label>
+                          <input type="text" id="sec-form-role" value="${selectedNode.role || 'Super Admin'}" placeholder="Super Admin, Senior Editor, Reviewer" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-teal-300 focus:outline-none focus:border-teal-500 font-semibold" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Enforcement Scope</label>
+                          <input type="text" id="sec-form-scope" value="${selectedNode.scope || 'Global System-Wide'}" placeholder="e.g. Jobs Engine, Admin Console" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-cyan-300 focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Severity Level</label>
+                          <select id="sec-form-severity" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                            <option value="Critical" ${selectedNode.severity === 'Critical' ? 'selected' : ''}>Critical (System Root)</option>
+                            <option value="High" ${selectedNode.severity === 'High' ? 'selected' : ''}>High (Elevated Ops)</option>
+                            <option value="Medium" ${selectedNode.severity === 'Medium' ? 'selected' : ''}>Medium (Standard Audit)</option>
+                            <option value="Low" ${selectedNode.severity === 'Low' ? 'selected' : ''}>Low (Informational)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <!-- DEDICATED VIEW 1: RBAC Role Matrix Grid (for module-sec-001 & module-sec-002) -->
+                      ${(currentCat.id === 'cat-sec-01' || currentCat.id === 'cat-sec-02') ? `
+                        <div class="p-3.5 rounded-lg bg-slate-900/90 border border-slate-700/80 space-y-3">
+                          <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-teal-400 font-mono">6-Engine Permission Matrix Guard</span>
+                            <span class="text-[10px] text-slate-400 font-mono">Dual-Key Access Control</span>
+                          </div>
+                          <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                              <thead class="bg-slate-800/80 text-[10px] uppercase font-mono text-slate-400">
+                                <tr>
+                                  <th class="p-2">Target Engine</th>
+                                  <th class="p-2 text-center">Create</th>
+                                  <th class="p-2 text-center">Edit</th>
+                                  <th class="p-2 text-center">Delete</th>
+                                  <th class="p-2 text-center">Publish Live</th>
+                                </tr>
+                              </thead>
+                              <tbody class="divide-y divide-slate-800">
+                                ${[
+                                  { key: 'jobsEngine', label: 'Jobs & Careers (JC)' },
+                                  { key: 'schemesEngine', label: 'Schemes & Benefits (SB)' },
+                                  { key: 'studyEngine', label: 'Study Library (SL)' },
+                                  { key: 'communityEngine', label: 'Community Hub (CD)' },
+                                  { key: 'eventsEngine', label: 'Events & Schedule (ES)' },
+                                  { key: 'seoEngine', label: 'SEO & Search Meta (SEO)' }
+                                ].map(eng => {
+                                  const p = (selectedNode.permissions && selectedNode.permissions[eng.key]) || ['create', 'edit'];
+                                  const isSuper = selectedNode.role === 'Super Admin';
+                                  return `
+                                    <tr>
+                                      <td class="p-2 font-medium text-white">${eng.label}</td>
+                                      <td class="p-2 text-center"><input type="checkbox" checked disabled class="rounded bg-slate-800 text-teal-500" /></td>
+                                      <td class="p-2 text-center"><input type="checkbox" checked disabled class="rounded bg-slate-800 text-teal-500" /></td>
+                                      <td class="p-2 text-center"><input type="checkbox" ${(isSuper || p.includes('delete')) ? 'checked' : ''} disabled class="rounded bg-slate-800 text-rose-500" /></td>
+                                      <td class="p-2 text-center"><input type="checkbox" ${(isSuper || p.includes('publish')) ? 'checked' : ''} disabled class="rounded bg-slate-800 text-emerald-500" /></td>
+                                    </tr>
+                                  `;
+                                }).join('')}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div>
+                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">Assigned Admin Accounts (Comma separated)</label>
+                            <input type="text" id="sec-form-assigned-users" value="${(selectedNode.assignedUsers || []).join(', ')}" placeholder="admin@csodisha.com, lead@csodisha.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          </div>
+                        </div>
+                      ` : ''}
+
+                      <!-- DEDICATED VIEW 2: Session & Turnstile Parameters (for module-sec-003 & module-sec-004) -->
+                      ${(currentCat.id === 'cat-sec-03' || currentCat.id === 'cat-sec-04') ? `
+                        <div class="p-3.5 rounded-lg bg-slate-900/90 border border-slate-700/80 space-y-3">
+                          <span class="text-xs font-bold uppercase tracking-wider text-teal-400 font-mono">Edge Bot & Session Defense Config</span>
+                          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                              <label class="block text-[11px] font-semibold text-slate-300 mb-1">Turnstile Mode</label>
+                              <select id="sec-form-turnstile-mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                                <option value="Managed (Smart Edge Challenge)" selected>Managed (Smart Edge Challenge)</option>
+                                <option value="Non-Interactive">Non-Interactive</option>
+                                <option value="Invisible">Invisible Background</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label class="block text-[11px] font-semibold text-slate-300 mb-1">Inactivity Timeout</label>
+                              <select id="sec-form-inactivity-timeout" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono">
+                                <option value="15">15 Minutes</option>
+                                <option value="30" selected>30 Minutes (Recommended)</option>
+                                <option value="60">60 Minutes</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label class="block text-[11px] font-semibold text-slate-300 mb-1">Clearance Duration</label>
+                              <input type="text" id="sec-form-clearance" value="86400s (24 Hours)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                            </div>
+                          </div>
+                        </div>
+                      ` : ''}
+
+                      <!-- DEDICATED VIEW 3: Audit Log Timeline Explorer (for module-sec-005) -->
+                      ${currentCat.id === 'cat-sec-05' ? `
+                        <div class="p-3.5 rounded-lg bg-slate-900/90 border border-slate-700/80 space-y-3">
+                          <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-teal-400 font-mono">Visual Audit Log Timeline Explorer</span>
+                            <span class="text-[10px] text-emerald-400 font-mono">${rawAuditLogs.length} Chronological Entries</span>
+                          </div>
+                          <div class="max-h-[260px] overflow-y-auto space-y-2 pr-1 font-mono text-[11px]">
+                            ${rawAuditLogs.slice(0, 10).map((log, idx) => `
+                              <div class="p-2 rounded bg-slate-950/70 border border-slate-800 flex items-start justify-between gap-3">
+                                <div>
+                                  <div class="flex items-center gap-2">
+                                    <span class="text-teal-400 font-bold">${log.action || 'ACTION'}</span>
+                                    <span class="text-slate-400 text-[10px]">${log.domain || 'SYSTEM'}</span>
+                                  </div>
+                                  <p class="text-slate-300 text-xs mt-0.5 font-sans">${log.details || log.description || 'Audit log event captured'}</p>
+                                </div>
+                                <div class="text-right text-[10px] text-slate-500 whitespace-nowrap">
+                                  <span>${(log.timestamp || new Date().toISOString()).slice(0, 19).replace('T', ' ')}</span>
+                                  <div class="text-cyan-400">${log.user || 'admin@csodisha.com'}</div>
+                                </div>
+                              </div>
+                            `).join('')}
+                            ${rawAuditLogs.length === 0 ? '<div class="text-center py-6 text-slate-500">No audit log entries recorded yet.</div>' : ''}
+                          </div>
+                        </div>
+                      ` : ''}
+
+                      <!-- Detailed Markdown Description & SOP -->
+                      <div>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="text-xs font-semibold text-slate-300">Detailed Markdown Policy Description & Standard Operating Procedure (SOP)</label>
+                          <span class="text-[10px] text-teal-400 font-mono">Markdown Standard</span>
+                        </div>
+                        <textarea id="sec-form-description" rows="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.description || ''}</textarea>
+                      </div>
+
+                      <!-- Visibility & Enforced Toggle -->
+                      <div class="flex items-center justify-between pt-2 border-t border-slate-700/60">
+                        <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                          <input type="checkbox" id="sec-form-enforced" ${selectedNode.enforced ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" />
+                          Enforced in Active Security Kernel
+                        </label>
+                        <span class="text-xs text-slate-500 font-mono">Updated: ${selectedNode.lastUpdated || 'Today'}</span>
+                      </div>
+                    </div>
+                  ` : `
+                    <div class="p-12 text-center rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
+                      Select a security policy or audit rule from the tree on the left to start editing.
+                    </div>
+                  `}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Category Pill switching
+          container.querySelectorAll('.sec-cat-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              activeCatId = e.currentTarget.dataset.catId;
+              config.activeCategoryId = activeCatId;
+              const cat = categories.find(c => c.id === activeCatId);
+              const fl = flattenTree(cat ? cat.nodes || [] : []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              render();
+            });
+          });
+
+          // Node Card selection
+          container.querySelectorAll('.sec-node-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+              const treeScrollContainer = container.querySelector('.max-h-\\[620px\\]') || container.querySelector('.overflow-y-auto');
+              const scrollTop = treeScrollContainer ? treeScrollContainer.scrollTop : 0;
+              config.selectedNodeId = e.currentTarget.dataset.nodeId;
+              render();
+              const newTreeScrollContainer = container.querySelector('.max-h-\\[620px\\]') || container.querySelector('.overflow-y-auto');
+              if (newTreeScrollContainer) newTreeScrollContainer.scrollTop = scrollTop;
+            });
+          });
+
+          // Search input
+          const searchInput = document.getElementById('sec-tree-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          // Add Root Node Button
+          document.getElementById('sec-btn-add-node')?.addEventListener('click', () => {
+            const newNodeId = `SEC-NODE-${Date.now().toString().slice(-4)}`;
+            const newNode = {
+              id: newNodeId,
+              title: "New Administrative Access & Security Policy",
+              titleOdia: "ନୂତନ ସୁରକ୍ଷା ଓ ପ୍ରବେଶ ଅଧିକାର ନିୟମ",
+              slug: "new-security-policy",
+              categoryCode: currentCat.code || "01",
+              role: "Super Admin",
+              scope: "Global Platform",
+              severity: "High",
+              enforced: true,
+              status: "Active / Enforced",
+              description: "Standard operating procedure, cryptographic verification constraints, and enforcement directives.",
+              lastUpdated: new Date().toISOString().slice(0, 10),
+              children: []
+            };
+
+            currentCat.nodes = currentCat.nodes || [];
+            currentCat.nodes.unshift(newNode);
+            config.selectedNodeId = newNodeId;
+            store.saveSecurityRbacTreeConfig(config);
+            render();
+            store.showToast?.('New Security Policy created!', 'success');
+          });
+
+          // Add Sub-node Button
+          document.getElementById('sec-btn-add-subnode')?.addEventListener('click', () => {
+            if (!selectedNode) return;
+            const subNodeId = `${selectedNode.id}-SUB-${Date.now().toString().slice(-3)}`;
+            const subNode = {
+              id: subNodeId,
+              title: `Sub-policy for ${selectedNode.title}`,
+              titleOdia: "ଉପ-ନିୟମ",
+              slug: `${selectedNode.slug || 'policy'}-sub`,
+              categoryCode: currentCat.code || "01",
+              role: selectedNode.role || "Super Admin",
+              scope: selectedNode.scope || "Component Scope",
+              severity: selectedNode.severity || "Medium",
+              enforced: true,
+              status: "Active / Enforced",
+              description: "Specific sub-clause or micro-service guard policy.",
+              lastUpdated: new Date().toISOString().slice(0, 10),
+              children: []
+            };
+
+            selectedNode.children = selectedNode.children || [];
+            selectedNode.children.unshift(subNode);
+            config.selectedNodeId = subNodeId;
+            store.saveSecurityRbacTreeConfig(config);
+            render();
+            store.showToast?.('Sub-policy added!', 'success');
+          });
+
+          // Delete Node Button
+          document.getElementById('sec-btn-delete-node')?.addEventListener('click', () => {
+            if (confirm(`Delete Security Policy "${selectedNode.title}" from this directory?`)) {
+              deleteNodeDeep(currentCat.nodes || [], selectedNode.id);
+              const fl = flattenTree(currentCat.nodes || []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              store.saveSecurityRbacTreeConfig(config);
+              render();
+              store.showToast?.('Security Policy deleted.', 'info');
+            }
+          });
+
+          // Toggle Enforce
+          document.getElementById('sec-btn-toggle-enforce')?.addEventListener('click', () => {
+            selectedNode.enforced = !selectedNode.enforced;
+            selectedNode.status = selectedNode.enforced ? 'Active / Enforced' : 'Disabled / Testing';
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+            store.saveSecurityRbacTreeConfig(config);
+            render();
+            store.showToast?.(`Policy is now ${selectedNode.status}`, 'success');
+          });
+
+          // Save Node Function
+          function saveCurrentNode() {
+            if (!selectedNode) return;
+            selectedNode.title = document.getElementById('sec-form-title')?.value || selectedNode.title;
+            selectedNode.titleOdia = document.getElementById('sec-form-title-odia')?.value || '';
+            selectedNode.role = document.getElementById('sec-form-role')?.value || '';
+            selectedNode.scope = document.getElementById('sec-form-scope')?.value || '';
+            selectedNode.severity = document.getElementById('sec-form-severity')?.value || 'Medium';
+            selectedNode.description = document.getElementById('sec-form-description')?.value || '';
+            selectedNode.enforced = !!document.getElementById('sec-form-enforced')?.checked;
+            selectedNode.status = selectedNode.enforced ? 'Active / Enforced' : 'Disabled / Testing';
+            
+            const rawUsers = document.getElementById('sec-form-assigned-users')?.value;
+            if (rawUsers !== undefined) {
+              selectedNode.assignedUsers = rawUsers.split(',').map(u => u.trim()).filter(Boolean);
+            }
+            
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+
+            store.saveSecurityRbacTreeConfig(config);
+            store.showToast?.('Security policy saved!', 'success');
+          }
+
+          document.getElementById('sec-btn-save-node')?.addEventListener('click', () => {
+            saveCurrentNode();
+            render();
+          });
+
+          document.getElementById('sec-btn-save-all')?.addEventListener('click', () => {
+            saveCurrentNode();
+            store.saveSecurityRbacTreeConfig(config);
+            render();
+            store.showToast?.('All Security & RBAC Suite policies saved!', 'success');
+          });
+
+          // Export Manifest
+          document.getElementById('sec-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportSecurityRbacManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          // Reset Factory
+          document.getElementById('sec-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset Security, Privacy & RBAC Suite to authentic factory defaults?')) {
+              config = store.resetSecurityRbacTreeConfig();
+              activeCatId = config.activeCategoryId;
+              render();
+              store.showToast?.('Security & RBAC Suite reset to authentic defaults.', 'info');
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in Security & RBAC Suite Studio', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in Security & RBAC Suite Studio</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
 
 
     function renderMenuTreeWorkspace(container, folderKey, folderTitle, folderIcon, activeModuleId) {

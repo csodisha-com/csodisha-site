@@ -1137,74 +1137,75 @@
     },
     {
       "id": "folder-16",
-      "title": "Security & Privacy",
+      "title": "Security, Privacy & RBAC Suite",
       "modules": [
         {
-          "id": "module-16-001",
-          "title": "Authentication",
+          "id": "module-sec-001",
+          "title": "RBAC Hierarchy & Role Entitlements (Super Admin, Senior Editor, Reviewer)",
           "status": "active"
         },
         {
-          "id": "module-16-002",
-          "title": "Two-Factor Authentication",
+          "id": "module-sec-002",
+          "title": "Publish & Mutation Permissions Guard across all 6 Engines",
           "status": "active"
         },
         {
-          "id": "module-16-003",
-          "title": "Admin Sessions",
+          "id": "module-sec-003",
+          "title": "Session Lifecycle, Inactivity Timeouts & Token Expiry",
           "status": "active"
         },
         {
-          "id": "module-16-004",
-          "title": "Roles & Access Policies",
+          "id": "module-sec-004",
+          "title": "Cloudflare Turnstile & Edge Bot Deterrence Rules",
           "status": "active"
         },
         {
-          "id": "module-16-005",
-          "title": "Login History",
+          "id": "module-sec-005",
+          "title": "Visual Audit Log Timeline Explorer & Event Streams",
           "status": "active"
         },
         {
-          "id": "module-16-006",
-          "title": "Security Alerts",
+          "id": "module-sec-006",
+          "title": "IP Access Control Lists (Allowlist / Blocklist) & Geofencing",
           "status": "active"
         },
         {
-          "id": "module-16-007",
-          "title": "Rate Limits",
+          "id": "module-sec-007",
+          "title": "Two-Factor Authentication (2FA / TOTP) & Hardware Keys",
           "status": "active"
         },
         {
-          "id": "module-16-008",
-          "title": "Upload Security",
+          "id": "module-sec-008",
+          "title": "Sensitive Field Masking & PII Redaction Controls",
           "status": "active"
         },
         {
-          "id": "module-16-009",
-          "title": "Privacy & Consent",
+          "id": "module-sec-009",
+          "title": "API Key Management & Token Scoping",
           "status": "active"
         },
         {
-          "id": "module-16-010",
-          "title": "Data Retention",
+          "id": "module-sec-010",
+          "title": "CSRF Protection & Origin Integrity Headers",
           "status": "active"
         },
         {
-          "id": "module-16-011",
-          "title": "Account Deletion Requests",
+          "id": "module-sec-011",
+          "title": "Emergency Maintenance Mode & Lockdown Dispatcher",
           "status": "active"
         },
         {
-          "id": "module-16-012",
-          "title": "Security Audit Logs",
+          "id": "module-sec-012",
+          "title": "Data Privacy, DPDP Act 2023 Compliance & Consent Vault",
           "status": "active"
         },
         {
-          "id": "module-16-013",
-          "title": "Incident Response",
+          "id": "module-sec-013",
+          "title": "Security Incident Response & Audit Snapshot Export",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-17",
