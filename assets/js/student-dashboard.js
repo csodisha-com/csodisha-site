@@ -413,6 +413,9 @@
 
         updateExamCards();
         renderChecklistTracker();
+        if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
+          window.CSOSync.pushLocalStateToCloud();
+        }
       });
     });
 
@@ -523,6 +526,9 @@
         updateExamCards();
         renderUpcomingLessons();
         renderChecklistTracker();
+        if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
+          window.CSOSync.pushLocalStateToCloud();
+        }
       });
     });
   }
@@ -710,6 +716,9 @@
         try {
           localStorage.setItem(NOTES_KEY, textarea.value);
           if (indicator) indicator.textContent = 'Auto-saved to device';
+          if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
+            window.CSOSync.pushLocalStateToCloud();
+          }
         } catch(e) {}
       }, 500);
     });
@@ -776,6 +785,9 @@
       saveMockScores(list);
       renderMockScores();
       showToast('Mock test score logged successfully!');
+      if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
+        window.CSOSync.pushLocalStateToCloud();
+      }
     });
   }
 
@@ -801,6 +813,9 @@
           localStorage.setItem(LOCKER_KEY, JSON.stringify(lockerState));
         } catch(e) {}
         showToast(cb.checked ? 'Document marked as verified.' : 'Document status updated.');
+        if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
+          window.CSOSync.pushLocalStateToCloud();
+        }
       });
     });
   }
