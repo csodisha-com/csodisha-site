@@ -991,12 +991,60 @@
     });
   }
 
+  function nodeToExplorer(node) {
+    const children = (node.children || []).filter(c => c.active !== false && c.status !== "Draft").map(nodeToExplorer);
+    return {
+      number: node.number || node.syllabusCode || undefined,
+      title: node.title,
+      titleOdia: node.titleOdia || undefined,
+      slug: node.slug,
+      description: node.description || node.articleTitle || undefined,
+      officialUrl: node.officialUrl || undefined,
+      mirrorUrl: node.mirrorUrl || undefined,
+      children: children,
+      notes: node.contentBody ? [node.contentBody] : []
+    };
+  }
+
+  function loadSuperStoreTree() {
+    try {
+      const raw = localStorage.getItem('cso_jobs_master_tree_config');
+      if (!raw) return null;
+      const cfg = JSON.parse(raw);
+      const categories = cfg.categories || cfg.items || [];
+      if (!Array.isArray(categories) || categories.length !== 8) return null;
+      return categories.map(cat => ({
+        number: cat.code || cat.number,
+        title: cat.title,
+        children: (cat.nodes || []).filter(n => n.active !== false && n.status !== "Draft").map(nodeToExplorer),
+        notes: []
+      }));
+    } catch (_) {
+      return null;
+    }
+  }
+
   const jsonUrls = [
     './generated/directory.json',
     '/jobs-careers/generated/directory.json'
   ];
 
   function tryFetch(urlIndex = 0) {
+    // 1. Prioritize SuperStore dynamic state engine
+    const liveSections = loadSuperStoreTree();
+    if (liveSections) {
+      sections = liveSections;
+      buildDashboard();
+      renderStatistics({ sections: liveSections });
+      syncFromUrl(false);
+      if (loadStatus) {
+        loadStatus.hidden = true;
+        loadStatus.style.display = 'none';
+      }
+      return;
+    }
+
+    // 2. Fallback to static JSON
     if (urlIndex >= jsonUrls.length) {
       if (loadStatus) {
         loadStatus.textContent = 'Unable to load directory data. Please check your connection.';

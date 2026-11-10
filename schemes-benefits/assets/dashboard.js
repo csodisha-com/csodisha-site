@@ -949,32 +949,77 @@
     });
   }
 
-  fetch('./generated/directory.json')
-    .then(response => {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.json();
-    })
-    .then(data => {
-      if (!Array.isArray(data.navigation) || data.navigation.length !== 8) {
-        throw new Error('Invalid Schemes & Benefits directory structure');
-      }
+  function nodeToExplorer(node) {
+    const children = (node.children || []).filter(c => c.active !== false && c.status !== "Draft").map(nodeToExplorer);
+    return {
+      number: node.number || node.syllabusCode || undefined,
+      title: node.title,
+      titleOdia: node.titleOdia || undefined,
+      slug: node.slug,
+      description: node.description || node.articleTitle || undefined,
+      officialUrl: node.officialUrl || undefined,
+      mirrorUrl: node.mirrorUrl || undefined,
+      children: children,
+      notes: node.contentBody ? [node.contentBody] : []
+    };
+  }
 
-      // Adapt the eight navigation groups to the existing explorer format.
-      // Original section numbers, titles and category hierarchy are preserved.
-      sections = data.navigation.map(group => ({
-        number: group.number,
-        title: group.title,
-        children: group.sections || [],
+  function loadSuperStoreTree() {
+    try {
+      const raw = localStorage.getItem('cso_schemes_recursive_tree_v2') || localStorage.getItem('cso_schemes_recursive_tree_v1');
+      if (!raw) return null;
+      const cfg = JSON.parse(raw);
+      const categories = cfg.categories || cfg.items || [];
+      if (!Array.isArray(categories) || categories.length !== 8) return null;
+      return categories.map(cat => ({
+        number: cat.code || cat.number,
+        title: cat.title,
+        children: (cat.nodes || []).filter(n => n.active !== false && n.status !== "Draft").map(nodeToExplorer),
         notes: []
       }));
-      buildDashboard();
-      renderStatistics(data);
+    } catch (_) {
+      return null;
+    }
+  }
 
-      syncFromUrl(false);
-
+  // 1. Prioritize SuperStore dynamic state engine
+  const liveSections = loadSuperStoreTree();
+  if (liveSections) {
+    sections = liveSections;
+    buildDashboard();
+    renderStatistics({ navigation: liveSections });
+    syncFromUrl(false);
+    if (loadStatus) {
       loadStatus.hidden = true;
-    })
-    .catch(error => {
-      loadStatus.textContent = 'Unable to load directory: ' + error.message;
-    });
+      loadStatus.style.display = 'none';
+    }
+  } else {
+    // 2. Fallback to static JSON
+    fetch('./generated/directory.json')
+      .then(response => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data.navigation) || data.navigation.length !== 8) {
+          throw new Error('Invalid Schemes & Benefits directory structure');
+        }
+
+        sections = data.navigation.map(group => ({
+          number: group.number,
+          title: group.title,
+          children: group.sections || [],
+          notes: []
+        }));
+        buildDashboard();
+        renderStatistics(data);
+
+        syncFromUrl(false);
+
+        loadStatus.hidden = true;
+      })
+      .catch(error => {
+        loadStatus.textContent = 'Unable to load directory: ' + error.message;
+      });
+  }
 })();
