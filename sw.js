@@ -65,18 +65,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML Navigation: Network first, fallback to cache
-  if (request.mode === 'navigate') {
+  // 1. Always fetch navigation/dashboard HTML fresh from the network
+  if (request.mode === 'navigate' || url.pathname.includes('/student-dashboard')) {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        .then((networkResponse) => {
+          // Clone and update the cache with the fresh response
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, copy);
+            });
           }
-          return response;
+          return networkResponse;
         })
         .catch(() => {
+          // Only fallback to cache if the device is completely offline
           return caches.match(request).then((matched) => {
             return matched || caches.match('/student-dashboard/index.html') || caches.match('/');
           });
@@ -85,35 +89,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static Assets (CSS, JS, Fonts, Images): Cache first with network fallback
-  if (
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    request.destination === 'image' ||
-    url.pathname.endsWith('.css') ||
-    url.pathname.endsWith('.js') ||
-    url.pathname.endsWith('.svg')
-  ) {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          // Fetch update in background (stale-while-revalidate)
-          fetch(request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
-            }
-          }).catch(() => {});
-          return cachedResponse;
-        }
-
-        return fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return networkResponse;
-        });
-      })
-    );
-  }
+  // 2. Default handler for static assets (images, fonts, stylesheets)
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      return cachedResponse || fetch(request);
+    })
+  );
 });
