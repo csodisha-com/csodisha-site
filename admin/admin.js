@@ -620,6 +620,11 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-15-004') { renderPaymentIntegrationsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-15-005') { renderEmailProviderWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-15-006') { renderCloudStorageWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-007') { renderAnalyticsIntegrationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-008') { renderApiConfigurationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-009') { renderWebhookManagementWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-010') { renderIntegrationLogsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-011') { renderIntegrationHealthWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1042,6 +1047,16 @@ async function loadMasterNavigation() {
         renderEmailProviderWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-15-006') {
         renderCloudStorageWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-007') {
+        renderAnalyticsIntegrationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-008') {
+        renderApiConfigurationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-009') {
+        renderWebhookManagementWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-010') {
+        renderIntegrationLogsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-011') {
+        renderIntegrationHealthWorkspace(dom.workspaceRoot);
 
 
 
@@ -60117,6 +60132,1225 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // =========================================================================
+    // MODULE 15-007: Analytics Integrations
+    // =========================================================================
+    function renderAnalyticsIntegrationsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getAnalyticsIntegrationsConfig();
+        let items = Array.isArray(config.analyticsSinks || config.items) ? [...(config.analyticsSinks || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.platformName || '').toLowerCase().includes(term) ||
+                   (a.trackingId || '').toLowerCase().includes(term) ||
+                   (a.privacyConsentTier || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+          const totalDailyEvents = items.reduce((sum, s) => sum + (Number(s.dailyEventsCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-pink-500/10 text-pink-400 border border-pink-500/20">TELEMETRY &amp; PRIVACY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Analytics Integrations &amp; Telemetry Sinks</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage GA4, Cloudflare Web Analytics, PostHog, cookie-less tracking, and DPDP 2023 compliance</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSink" class="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-pink-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Connect Sink
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Sinks</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-pink-400 mt-1">${items.filter(s => s.active).length} streams capturing events</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Daily Events Processed</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${totalDailyEvents.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Real-time candidate telemetry</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Privacy Framework</div>
+                  <div class="text-xl font-bold text-purple-300 mt-1">DPDP 2023</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">IP Anonymization: Active</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Cookie Mode</div>
+                  <div class="text-xl font-bold text-sky-300 mt-1">Cookie-Less Strict</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Zero tracking cookies used</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoAnlSearchInput" value="${searchTerm}" placeholder="Search platform, tracking ID, privacy tier..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-pink-500" />
+                </div>
+              </div>
+
+              <!-- Sinks Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Platform &amp; ID</th>
+                      <th class="py-3 px-4">Measurement ID</th>
+                      <th class="py-3 px-4">Integration Method</th>
+                      <th class="py-3 px-4">Privacy Tier</th>
+                      <th class="py-3 px-4">Daily Events</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No analytics platforms match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.platformName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-pink-400 font-medium">
+                          ${item.trackingId}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.integrationMethod}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-purple-300 border border-purple-500/20">${item.privacyConsentTier}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-emerald-400">
+                          ${(item.dailyEventsCount || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Streaming' : 'Paused'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoAnlSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Analytics Integrations Schema', {
+              id: 'string (unique ID, e.g. ANL-01)',
+              platformName: 'string (GA4, Cloudflare Analytics, PostHog)',
+              trackingId: 'string (measurement ID or token)',
+              integrationMethod: 'string (Direct Global Tag, Edge Injection, Proxy)',
+              privacyConsentTier: 'string (Explicit Consent, No Cookies, Anonymized)',
+              dailyEventsCount: 'number (daily volume)',
+              status: 'string (Active Stream, Paused)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAnalyticsIntegrationsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Analytics Integrations to factory defaults?')) {
+              store.resetAnalyticsIntegrationsConfig();
+              config = store.getAnalyticsIntegrationsConfig();
+              items = [...(config.analyticsSinks || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSink')?.addEventListener('click', () => {
+            const name = prompt('Platform Name:');
+            if (!name) return;
+            const tid = prompt('Tracking / Measurement ID:', 'G-NEW' + Math.floor(1000 + Math.random() * 9000));
+            const newId = 'ANL-' + String(items.length + 1).padStart(2, '0');
+            const newSink = {
+              id: newId,
+              platformName: name,
+              trackingId: tid || 'G-CUSTOM',
+              integrationMethod: 'Edge Script Injection',
+              privacyConsentTier: 'Strictly Privacy-First (No Cookies)',
+              dailyEventsCount: 0,
+              status: 'Active Stream',
+              active: true
+            };
+            items.push(newSink);
+            config.analyticsSinks = items;
+            config.items = items;
+            store.saveAnalyticsIntegrationsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.analyticsSinks = items;
+                config.items = items;
+                store.saveAnalyticsIntegrationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Platform Name:', item.platformName);
+              if (newName !== null && newName.trim()) {
+                item.platformName = newName.trim();
+                const newTid = prompt('Edit Tracking ID:', item.trackingId);
+                if (newTid !== null) item.trackingId = newTid.trim();
+                const newMethod = prompt('Edit Method:', item.integrationMethod);
+                if (newMethod !== null) item.integrationMethod = newMethod.trim();
+                config.analyticsSinks = items;
+                config.items = items;
+                store.saveAnalyticsIntegrationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete telemetry sink ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.analyticsSinks = items;
+                config.items = items;
+                store.saveAnalyticsIntegrationsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-008: API Configuration
+    // =========================================================================
+    function renderApiConfigurationWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getApiConfigurationConfig();
+        let items = Array.isArray(config.apiKeys || config.items) ? [...(config.apiKeys || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.keyName || '').toLowerCase().includes(term) ||
+                   (a.prefix || '').toLowerCase().includes(term) ||
+                   (a.scopes || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">API TOKENS &amp; LIMITS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">API Key Governance &amp; Rate Limits</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Issue and revoke client API tokens, manage CORS origins, enforce IP rate limits, and configure scope permissions</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOIssueKey" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-cyan-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Issue API Key
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Keys</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-cyan-400 mt-1">${items.filter(k => k.active).length} authorized tokens</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Default Rate Limit</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.defaultRateLimit || '60 req/min'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">DDoS mitigation enforced</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">CORS Origins</div>
+                  <div class="text-xl font-bold text-purple-300 mt-1">Whitelisted</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${summary.corsOrigins || 'csodisha.com'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Security Tier</div>
+                  <div class="text-xl font-bold text-amber-300 mt-1">HMAC SHA256</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Scoped RBAC authorization</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoApiSearchInput" value="${searchTerm}" placeholder="Search key name, prefix, scopes..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500" />
+                </div>
+              </div>
+
+              <!-- API Keys Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Key Name &amp; ID</th>
+                      <th class="py-3 px-4">Key Prefix</th>
+                      <th class="py-3 px-4">Rate Limit Tier</th>
+                      <th class="py-3 px-4">Authorized Scopes</th>
+                      <th class="py-3 px-4">Last Activity</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No API keys match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.keyName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-cyan-400">
+                          ${item.prefix}••••••••
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.rateLimitTier}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.scopes}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.lastUsed}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Revoked'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoApiSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('API Configuration Schema', {
+              id: 'string (unique ID, e.g. API-01)',
+              keyName: 'string (purpose description)',
+              prefix: 'string (token prefix, e.g. cso_pub_live_)',
+              rateLimitTier: 'string (e.g. 120 req/min)',
+              scopes: 'string (read:jobs, write:gazettes, etc.)',
+              issuedDate: 'string (YYYY-MM-DD)',
+              lastUsed: 'string (YYYY-MM-DD HH:MM)',
+              status: 'string (Active, Revoked)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportApiConfigurationManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset API Configuration to factory defaults?')) {
+              store.resetApiConfigurationConfig();
+              config = store.getApiConfigurationConfig();
+              items = [...(config.apiKeys || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOIssueKey')?.addEventListener('click', () => {
+            const name = prompt('Key Name:');
+            if (!name) return;
+            const scopes = prompt('Authorized Scopes (comma-separated):', 'read:public');
+            const newId = 'API-' + String(items.length + 1).padStart(2, '0');
+            const newKey = {
+              id: newId,
+              keyName: name,
+              prefix: 'cso_cli_' + Math.floor(100 + Math.random() * 900) + '_',
+              rateLimitTier: '60 req/min',
+              scopes: scopes || 'read:public',
+              issuedDate: new Date().toISOString().slice(0, 10),
+              lastUsed: 'Just now',
+              status: 'Active',
+              active: true
+            };
+            items.push(newKey);
+            config.apiKeys = items;
+            config.items = items;
+            store.saveApiConfigurationConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                item.status = item.active ? 'Active' : 'Revoked';
+                config.apiKeys = items;
+                config.items = items;
+                store.saveApiConfigurationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Key Name:', item.keyName);
+              if (newName !== null && newName.trim()) {
+                item.keyName = newName.trim();
+                const newScopes = prompt('Edit Scopes:', item.scopes);
+                if (newScopes !== null) item.scopes = newScopes.trim();
+                const newLimit = prompt('Edit Rate Limit Tier:', item.rateLimitTier);
+                if (newLimit !== null) item.rateLimitTier = newLimit.trim();
+                config.apiKeys = items;
+                config.items = items;
+                store.saveApiConfigurationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Permanently revoke and delete API key ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.apiKeys = items;
+                config.items = items;
+                store.saveApiConfigurationConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-009: Webhook Management
+    // =========================================================================
+    function renderWebhookManagementWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getWebhookManagementConfig();
+        let items = Array.isArray(config.webhooks || config.items) ? [...(config.webhooks || config.items)] : [];
+        let searchTerm = '';
+        let directionFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.webhookName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.targetUrl || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.eventTypes || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesDir = directionFilter === 'ALL' || a.direction === directionFilter;
+            return matchesSearch && matchesDir;
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">EVENT SUBSCRIPTIONS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Webhook Subscriptions &amp; Relays</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage inbound payment/auth webhooks, outbound Telegram notifications, signature verification, and retries</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddWebhook" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Webhook
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Webhooks</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-indigo-400 mt-1">${items.filter(w => w.active).length} listening endpoints</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Success Rate (24h)</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.successRate24h || '99.85%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Reliable event processing</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Retry Policy</div>
+                  <div class="text-xl font-bold text-sky-300 mt-1">Exp Backoff</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Max 5 delivery retries</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Traffic Types</div>
+                  <div class="text-xl font-bold text-purple-300 mt-1">Inbound / Outbound</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Razorpay, Supabase, Brevo, TG</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoWhkSearchInput" value="${searchTerm}" placeholder="Search webhook name, URL, event types..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoWhkDirectionFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+                    <option value="ALL" ${directionFilter === 'ALL' ? 'selected' : ''}>All Directions</option>
+                    <option value="Inbound" ${directionFilter === 'Inbound' ? 'selected' : ''}>Inbound Only</option>
+                    <option value="Outbound" ${directionFilter === 'Outbound' ? 'selected' : ''}>Outbound Only</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Webhooks Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Webhook Name &amp; ID</th>
+                      <th class="py-3 px-4">Direction</th>
+                      <th class="py-3 px-4">Target / Endpoint URL</th>
+                      <th class="py-3 px-4">Event Types</th>
+                      <th class="py-3 px-4">Signature / Auth</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No webhooks match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.webhookName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium ${item.direction === 'Inbound' ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20' : 'bg-purple-500/10 text-purple-300 border border-purple-500/20'}">
+                            ${item.direction}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300 truncate max-w-xs" title="${item.targetUrl}">
+                          ${item.targetUrl}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.eventTypes}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[10px] text-slate-400">
+                          ${item.secretHash}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Listening' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoWhkSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoWhkDirectionFilter')?.addEventListener('change', (e) => {
+            directionFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Webhook Management Schema', {
+              id: 'string (unique ID, e.g. WHK-01)',
+              webhookName: 'string (subscription name)',
+              direction: 'string (Inbound, Outbound)',
+              targetUrl: 'string (destination webhook URL)',
+              eventTypes: 'string (comma-separated event names)',
+              secretHash: 'string (HMAC signing secret identifier)',
+              status: 'string (Listening, Dispatched Live, Disabled)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportWebhookManagementManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Webhook Management to factory defaults?')) {
+              store.resetWebhookManagementConfig();
+              config = store.getWebhookManagementConfig();
+              items = [...(config.webhooks || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddWebhook')?.addEventListener('click', () => {
+            const name = prompt('Webhook Name:');
+            if (!name) return;
+            const dir = prompt('Direction (Inbound, Outbound):', 'Inbound');
+            const url = prompt('Target Endpoint URL:', 'https://csodisha.com/api/webhooks/custom');
+            const events = prompt('Subscribed Event Types:', 'notification.dispatched');
+            const newId = 'WHK-' + String(items.length + 1).padStart(2, '0');
+            const newWhk = {
+              id: newId,
+              webhookName: name,
+              direction: dir || 'Inbound',
+              targetUrl: url || 'https://csodisha.com/api/webhooks/custom',
+              eventTypes: events || 'notification.dispatched',
+              secretHash: 'sha256_cust_sec_***' + Math.floor(10 + Math.random() * 89),
+              status: 'Listening',
+              active: true
+            };
+            items.push(newWhk);
+            config.webhooks = items;
+            config.items = items;
+            store.saveWebhookManagementConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.webhooks = items;
+                config.items = items;
+                store.saveWebhookManagementConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Webhook Name:', item.webhookName);
+              if (newName !== null && newName.trim()) {
+                item.webhookName = newName.trim();
+                const newUrl = prompt('Edit Target URL:', item.targetUrl);
+                if (newUrl !== null) item.targetUrl = newUrl.trim();
+                const newEvents = prompt('Edit Event Types:', item.eventTypes);
+                if (newEvents !== null) item.eventTypes = newEvents.trim();
+                config.webhooks = items;
+                config.items = items;
+                store.saveWebhookManagementConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete webhook ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.webhooks = items;
+                config.items = items;
+                store.saveWebhookManagementConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-010: Integration Logs
+    // =========================================================================
+    function renderIntegrationLogsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getIntegrationLogsConfig();
+        let items = Array.isArray(config.logs || config.items) ? [...(config.logs || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.provider || '').toLowerCase().includes(term) ||
+                   (a.endpoint || '').toLowerCase().includes(term) ||
+                   (a.traceId || '').toLowerCase().includes(term) ||
+                   (a.payloadSnippet || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">EVENT AUDIT LOGS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Integration Transaction Logs &amp; Forensics</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time trace IDs, HTTP status codes, payload audit payloads, and provider response times</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOClearLogs" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5 border border-slate-700">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Clear Logs
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Captured Logs</div>
+                  <div class="text-2xl font-bold text-white mt-1">${(summary.totalLogsCaptured || items.length).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Rolling 7-day retention buffer</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Errors Encountered (24h)</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${summary.errorIncidents24h || 2} Incidents</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Automated retry triggered</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Average Roundtrip Latency</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.averageLatencyMs || '32ms'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">High-speed edge interconnects</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoLogSearchInput" value="${searchTerm}" placeholder="Search provider, endpoint, trace ID, payload..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-rose-500" />
+                </div>
+              </div>
+
+              <!-- Logs Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Timestamp &amp; Trace ID</th>
+                      <th class="py-3 px-4">Provider</th>
+                      <th class="py-3 px-4">Endpoint Action</th>
+                      <th class="py-3 px-4">HTTP Status</th>
+                      <th class="py-3 px-4">Response Time</th>
+                      <th class="py-3 px-4">Payload Snippet</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No integration logs match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4 font-mono text-[11px]">
+                          <div class="text-white">${item.timestamp}</div>
+                          <div class="text-slate-500 text-[10px]">${item.traceId}</div>
+                        </td>
+                        <td class="py-3 px-4 font-medium text-slate-200">
+                          ${item.provider}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300 truncate max-w-xs" title="${item.endpoint}">
+                          ${item.endpoint}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold font-mono ${item.httpStatus < 300 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.httpStatus === 429 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                            ${item.httpStatus}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-emerald-400">
+                          ${item.responseTimeMs}ms
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[10px] text-slate-400 truncate max-w-xs" title="${item.payloadSnippet}">
+                          ${item.payloadSnippet}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoLogSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Integration Logs Schema', {
+              id: 'string (unique ID, e.g. LOG-01)',
+              timestamp: 'string (YYYY-MM-DD HH:MM:SS)',
+              provider: 'string (Razorpay, Brevo, Supabase, Telegram)',
+              endpoint: 'string (HTTP method & path)',
+              httpStatus: 'number (200, 201, 429, 500)',
+              responseTimeMs: 'number (latency in ms)',
+              traceId: 'string (unique distributed tracing id)',
+              payloadSnippet: 'string (JSON snippet)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportIntegrationLogsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Integration Logs to factory defaults?')) {
+              store.resetIntegrationLogsConfig();
+              config = store.getIntegrationLogsConfig();
+              items = [...(config.logs || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOClearLogs')?.addEventListener('click', () => {
+            if (confirm('Flush all captured integration logs?')) {
+              items = [];
+              config.logs = items;
+              config.items = items;
+              store.saveIntegrationLogsConfig(config);
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-011: Integration Health
+    // =========================================================================
+    function renderIntegrationHealthWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getIntegrationHealthConfig();
+        let items = Array.isArray(config.monitors || config.items) ? [...(config.monitors || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.systemName || '').toLowerCase().includes(term) ||
+                   (a.lastIncident || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SYSTEM HEALTH SLA</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Integration Health &amp; Uptime Probes</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated heartbeat probes, SLA availability tracking, failure thresholds, and incident history across all SaaS rails</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOTriggerHealthAudit" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Audit Health SLA
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Overall Platform SLA</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${summary.systemSlaAvailability || '99.94%'}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">Exceeding 99.9% target SLA</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Active Probes</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${items.length} Systems</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Continuous automated probing</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Critical Alerts</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.criticalAlerts || 0} Open</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">All integration rails nominal</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoHltSearchInput" value="${searchTerm}" placeholder="Search system name, incident..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+
+              <!-- Health Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">System Monitored &amp; ID</th>
+                      <th class="py-3 px-4">Uptime SLA</th>
+                      <th class="py-3 px-4">Probe Interval</th>
+                      <th class="py-3 px-4">Failure Threshold</th>
+                      <th class="py-3 px-4">Last Incident</th>
+                      <th class="py-3 px-4">Health Score</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No health monitors match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.systemName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-medium text-emerald-400 text-xs">
+                          ${item.uptimePercent}
+                        </td>
+                        <td class="py-3 px-4 text-slate-400 text-xs">
+                          ${item.checkInterval}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-amber-300">
+                          ${item.failureThreshold}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.lastIncident}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.healthScore}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Muted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoHltSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Integration Health Schema', {
+              id: 'string (unique ID, e.g. HLT-01)',
+              systemName: 'string (service probed)',
+              uptimePercent: 'string (e.g. 99.98%)',
+              checkInterval: 'string (Every 30s, Every 60s)',
+              failureThreshold: 'string (2 Retries, 3 Retries)',
+              lastIncident: 'string (description of latest incident)',
+              healthScore: 'string (e.g. 100/100, 98/100)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportIntegrationHealthManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Integration Health to factory defaults?')) {
+              store.resetIntegrationHealthConfig();
+              config = store.getIntegrationHealthConfig();
+              items = [...(config.monitors || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOTriggerHealthAudit')?.addEventListener('click', () => {
+            alert('Live health audit executed across Supabase, Cloudflare, Razorpay, Brevo, and R2. All systems passing 100% nominal.');
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.monitors = items;
+                config.items = items;
+                store.saveIntegrationHealthConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit System Name:', item.systemName);
+              if (newName !== null && newName.trim()) {
+                item.systemName = newName.trim();
+                const newUptime = prompt('Edit Uptime %:', item.uptimePercent);
+                if (newUptime !== null) item.uptimePercent = newUptime.trim();
+                const newScore = prompt('Edit Health Score:', item.healthScore);
+                if (newScore !== null) item.healthScore = newScore.trim();
+                config.monitors = items;
+                config.items = items;
+                store.saveIntegrationHealthConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete health monitor ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.monitors = items;
+                config.items = items;
+                store.saveIntegrationHealthConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 

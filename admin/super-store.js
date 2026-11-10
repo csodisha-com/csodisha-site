@@ -12955,7 +12955,12 @@
           cloudflareIntegration: this.getCloudflareIntegrationConfig ? this.getCloudflareIntegrationConfig() : null,
           paymentIntegrations: this.getPaymentIntegrationsConfig ? this.getPaymentIntegrationsConfig() : null,
           emailProvider: this.getEmailProviderConfig ? this.getEmailProviderConfig() : null,
-          cloudStorage: this.getCloudStorageConfig ? this.getCloudStorageConfig() : null
+          cloudStorage: this.getCloudStorageConfig ? this.getCloudStorageConfig() : null,
+          analyticsIntegrations: this.getAnalyticsIntegrationsConfig ? this.getAnalyticsIntegrationsConfig() : null,
+          apiConfiguration: this.getApiConfigurationConfig ? this.getApiConfigurationConfig() : null,
+          webhookManagement: this.getWebhookManagementConfig ? this.getWebhookManagementConfig() : null,
+          integrationLogs: this.getIntegrationLogsConfig ? this.getIntegrationLogsConfig() : null,
+          integrationHealth: this.getIntegrationHealthConfig ? this.getIntegrationHealthConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -14443,6 +14448,180 @@
     return filename;
   };
 
+  // --- MODULE 15-007: Analytics Integrations ---
+  const DEFAULT_ANALYTICS_INTEGRATIONS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeSinksCount: 3, complianceMode: "DPDP 2023 Cookie-Less Strict", ipAnonymization: true },
+    items: [
+      { id: "ANL-01", platformName: "Google Analytics 4 (GA4)", trackingId: "G-CSODISHA26", integrationMethod: "Direct Global Tag (gtag.js)", privacyConsentTier: "Explicit Aspirant Consent", dailyEventsCount: 64200, status: "Active Stream", active: true },
+      { id: "ANL-02", platformName: "Cloudflare Web Analytics", trackingId: "cso_cf_beacon_9941", integrationMethod: "Edge Script Injection", privacyConsentTier: "Strictly Privacy-First (No Cookies)", dailyEventsCount: 89400, status: "Active Stream", active: true },
+      { id: "ANL-03", platformName: "PostHog Product Analytics", trackingId: "phc_csoLiveProductTelemetry", integrationMethod: "Self-Hosted Edge Proxy", privacyConsentTier: "Session Replay Anonymized", dailyEventsCount: 38100, status: "Active Stream", active: true }
+    ]
+  };
+  SuperStore.getAnalyticsIntegrationsConfig = function() {
+    return _hydrateConfig('cso_analytics_integrations_config', 'analyticsSinks', () => DEFAULT_ANALYTICS_INTEGRATIONS);
+  };
+  SuperStore.saveAnalyticsIntegrationsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.analyticsSinks = cfg.items || cfg.analyticsSinks || []; cfg.items = cfg.analyticsSinks;
+    localStorage.setItem('cso_analytics_integrations_config', JSON.stringify(cfg));
+    this.logAudit('ANALYTICS_INTEGRATIONS_UPDATED', 'ANALYTICS', `Analytics sinks updated (${cfg.items.length} sinks).`);
+    return true;
+  };
+  SuperStore.resetAnalyticsIntegrationsConfig = function() {
+    localStorage.setItem('cso_analytics_integrations_config', JSON.stringify(DEFAULT_ANALYTICS_INTEGRATIONS));
+    this.logAudit('ANALYTICS_INTEGRATIONS_RESET', 'ANALYTICS', 'Analytics sinks reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ANALYTICS_INTEGRATIONS));
+  };
+  SuperStore.exportAnalyticsIntegrationsManifest = function() {
+    const config = this.getAnalyticsIntegrationsConfig();
+    const filename = "analytics_integrations_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ANALYTICS_INTEGRATIONS_EXPORTED", "DATA_EXPORT", `Analytics integrations manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-008: API Configuration ---
+  const DEFAULT_API_CONFIGURATION = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalApiKeysIssued: 6, defaultRateLimit: "60 req/min", corsOrigins: "https://csodisha.com, https://admin.csodisha.com" },
+    items: [
+      { id: "API-01", keyName: "Mobile PWA Public Read-Only Key", prefix: "cso_pub_live_", rateLimitTier: "120 req/min per IP", scopes: "read:jobs, read:schemes, read:library", issuedDate: "2026-10-01", lastUsed: "2026-11-10 08:35", status: "Active", active: true },
+      { id: "API-02", keyName: "Gazette Ingestion Edge Worker Token", prefix: "cso_srv_ingest_", rateLimitTier: "1000 req/min", scopes: "write:gazettes, write:notifications", issuedDate: "2026-09-15", lastUsed: "2026-11-10 07:45", status: "Active", active: true },
+      { id: "API-03", keyName: "Automated Backup & DR Service Role", prefix: "cso_adm_root_", rateLimitTier: "Unlimited (Internal IP Only)", scopes: "admin:all, snapshot:export", issuedDate: "2026-09-01", lastUsed: "2026-11-09 23:59", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getApiConfigurationConfig = function() {
+    return _hydrateConfig('cso_api_configuration_config', 'apiKeys', () => DEFAULT_API_CONFIGURATION);
+  };
+  SuperStore.saveApiConfigurationConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.apiKeys = cfg.items || cfg.apiKeys || []; cfg.items = cfg.apiKeys;
+    localStorage.setItem('cso_api_configuration_config', JSON.stringify(cfg));
+    this.logAudit('API_CONFIGURATION_UPDATED', 'SECURITY', `API configurations updated (${cfg.items.length} keys).`);
+    return true;
+  };
+  SuperStore.resetApiConfigurationConfig = function() {
+    localStorage.setItem('cso_api_configuration_config', JSON.stringify(DEFAULT_API_CONFIGURATION));
+    this.logAudit('API_CONFIGURATION_RESET', 'SECURITY', 'API configuration reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_API_CONFIGURATION));
+  };
+  SuperStore.exportApiConfigurationManifest = function() {
+    const config = this.getApiConfigurationConfig();
+    const filename = "api_configuration_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("API_CONFIGURATION_EXPORTED", "DATA_EXPORT", `API configuration manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-009: Webhook Management ---
+  const DEFAULT_WEBHOOK_MANAGEMENT = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalWebhooks: 5, successRate24h: "99.85%", retryPolicy: "Exponential Backoff (Max 5)" },
+    items: [
+      { id: "WHK-01", webhookName: "Razorpay Payment Succeeded", direction: "Inbound", targetUrl: "https://csodisha.com/api/webhooks/razorpay", eventTypes: "payment.captured, order.paid", secretHash: "sha256_rzp_sec_***9a", status: "Listening", active: true },
+      { id: "WHK-02", webhookName: "Supabase User Registered Event", direction: "Inbound", targetUrl: "https://csodisha.com/api/webhooks/user-sync", eventTypes: "auth.user.created, auth.user.updated", secretHash: "sha256_sub_sec_***2b", status: "Listening", active: true },
+      { id: "WHK-03", webhookName: "Brevo Hard Bounce & Unsubscribe", direction: "Inbound", targetUrl: "https://csodisha.com/api/webhooks/brevo-events", eventTypes: "email.hard_bounce, email.unsubscribed", secretHash: "sha256_brv_sec_***8c", status: "Listening", active: true },
+      { id: "WHK-04", webhookName: "Telegram District Bot Gazette Push", direction: "Outbound", targetUrl: "https://api.telegram.org/bot[TOKEN]/sendMessage", eventTypes: "gazette.published, mock.released", secretHash: "Custom Header Auth", status: "Dispatched Live", active: true }
+    ]
+  };
+  SuperStore.getWebhookManagementConfig = function() {
+    return _hydrateConfig('cso_webhook_management_config', 'webhooks', () => DEFAULT_WEBHOOK_MANAGEMENT);
+  };
+  SuperStore.saveWebhookManagementConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.webhooks = cfg.items || cfg.webhooks || []; cfg.items = cfg.webhooks;
+    localStorage.setItem('cso_webhook_management_config', JSON.stringify(cfg));
+    this.logAudit('WEBHOOK_MANAGEMENT_UPDATED', 'INTEGRATIONS', `Webhook configurations updated (${cfg.items.length} webhooks).`);
+    return true;
+  };
+  SuperStore.resetWebhookManagementConfig = function() {
+    localStorage.setItem('cso_webhook_management_config', JSON.stringify(DEFAULT_WEBHOOK_MANAGEMENT));
+    this.logAudit('WEBHOOK_MANAGEMENT_RESET', 'INTEGRATIONS', 'Webhook management reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_WEBHOOK_MANAGEMENT));
+  };
+  SuperStore.exportWebhookManagementManifest = function() {
+    const config = this.getWebhookManagementConfig();
+    const filename = "webhook_management_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("WEBHOOK_MANAGEMENT_EXPORTED", "DATA_EXPORT", `Webhook management manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-010: Integration Logs ---
+  const DEFAULT_INTEGRATION_LOGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalLogsCaptured: 1240, errorIncidents24h: 2, averageLatencyMs: "32ms" },
+    items: [
+      { id: "LOG-01", timestamp: "2026-11-10 08:35:12", provider: "Razorpay Live", endpoint: "POST /v1/payments/pay_9921/capture", httpStatus: 200, responseTimeMs: 145, traceId: "trc_rzp_9941a8", payloadSnippet: '{"amount":49900,"currency":"INR","status":"captured"}', active: true },
+      { id: "LOG-02", timestamp: "2026-11-10 08:34:05", provider: "Brevo SMTP", endpoint: "POST /v3/smtp/email", httpStatus: 201, responseTimeMs: 88, traceId: "trc_brv_8812c4", payloadSnippet: '{"to":"aspirant@gmail.com","templateId":14,"status":"queued"}', active: true },
+      { id: "LOG-03", timestamp: "2026-11-10 08:30:40", provider: "Supabase Auth", endpoint: "POST /auth/v1/token?grant_type=refresh", httpStatus: 200, responseTimeMs: 34, traceId: "trc_sub_1109ff", payloadSnippet: '{"user_id":"usr_cso_9812","role":"aspirant"}', active: true },
+      { id: "LOG-04", timestamp: "2026-11-10 07:12:15", provider: "Telegram Webhook", endpoint: "POST /sendMessage", httpStatus: 429, responseTimeMs: 310, traceId: "trc_tg_error_04", payloadSnippet: '{"error":"Too Many Requests: retry after 2"}', active: true }
+    ]
+  };
+  SuperStore.getIntegrationLogsConfig = function() {
+    return _hydrateConfig('cso_integration_logs_config', 'logs', () => DEFAULT_INTEGRATION_LOGS);
+  };
+  SuperStore.saveIntegrationLogsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.logs = cfg.items || cfg.logs || []; cfg.items = cfg.logs;
+    localStorage.setItem('cso_integration_logs_config', JSON.stringify(cfg));
+    this.logAudit('INTEGRATION_LOGS_UPDATED', 'LOGGING', `Integration logs updated (${cfg.items.length} entries).`);
+    return true;
+  };
+  SuperStore.resetIntegrationLogsConfig = function() {
+    localStorage.setItem('cso_integration_logs_config', JSON.stringify(DEFAULT_INTEGRATION_LOGS));
+    this.logAudit('INTEGRATION_LOGS_RESET', 'LOGGING', 'Integration logs reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_INTEGRATION_LOGS));
+  };
+  SuperStore.exportIntegrationLogsManifest = function() {
+    const config = this.getIntegrationLogsConfig();
+    const filename = "integration_logs_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("INTEGRATION_LOGS_EXPORTED", "DATA_EXPORT", `Integration logs manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-011: Integration Health ---
+  const DEFAULT_INTEGRATION_HEALTH = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { systemSlaAvailability: "99.94%", totalHeartbeatsChecked: 11, criticalAlerts: 0 },
+    items: [
+      { id: "HLT-01", systemName: "Supabase Primary Database", uptimePercent: "99.98%", checkInterval: "Every 60s", failureThreshold: "3 Retries", lastIncident: "None in 90 days", healthScore: "100/100", active: true },
+      { id: "HLT-02", systemName: "Cloudflare Pages & Edge Workers", uptimePercent: "100.0%", checkInterval: "Every 30s", failureThreshold: "2 Retries", lastIncident: "None in 180 days", healthScore: "100/100", active: true },
+      { id: "HLT-03", systemName: "Razorpay Checkout Rails", uptimePercent: "99.92%", checkInterval: "Every 120s", failureThreshold: "2 Retries", lastIncident: "Scheduled Gateway Maintenance (Oct 22)", healthScore: "98/100", active: true },
+      { id: "HLT-04", systemName: "Brevo Transactional SMTP", uptimePercent: "99.88%", checkInterval: "Every 180s", failureThreshold: "3 Retries", lastIncident: "Minor Queue Delay (Nov 02)", healthScore: "97/100", active: true },
+      { id: "HLT-05", systemName: "Cloudflare R2 Storage CDN", uptimePercent: "100.0%", checkInterval: "Every 60s", failureThreshold: "2 Retries", lastIncident: "None in 180 days", healthScore: "100/100", active: true }
+    ]
+  };
+  SuperStore.getIntegrationHealthConfig = function() {
+    return _hydrateConfig('cso_integration_health_config', 'monitors', () => DEFAULT_INTEGRATION_HEALTH);
+  };
+  SuperStore.saveIntegrationHealthConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.monitors = cfg.items || cfg.monitors || []; cfg.items = cfg.monitors;
+    localStorage.setItem('cso_integration_health_config', JSON.stringify(cfg));
+    this.logAudit('INTEGRATION_HEALTH_UPDATED', 'MONITORING', `Integration health updated (${cfg.items.length} systems).`);
+    return true;
+  };
+  SuperStore.resetIntegrationHealthConfig = function() {
+    localStorage.setItem('cso_integration_health_config', JSON.stringify(DEFAULT_INTEGRATION_HEALTH));
+    this.logAudit('INTEGRATION_HEALTH_RESET', 'MONITORING', 'Integration health reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_INTEGRATION_HEALTH));
+  };
+  SuperStore.exportIntegrationHealthManifest = function() {
+    const config = this.getIntegrationHealthConfig();
+    const filename = "integration_health_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("INTEGRATION_HEALTH_EXPORTED", "DATA_EXPORT", `Integration health manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -14610,6 +14789,26 @@
     window.CSOSuperStore.saveCloudStorageConfig = SuperStore.saveCloudStorageConfig;
     window.CSOSuperStore.resetCloudStorageConfig = SuperStore.resetCloudStorageConfig;
     window.CSOSuperStore.exportCloudStorageManifest = SuperStore.exportCloudStorageManifest;
+    window.CSOSuperStore.getAnalyticsIntegrationsConfig = SuperStore.getAnalyticsIntegrationsConfig;
+    window.CSOSuperStore.saveAnalyticsIntegrationsConfig = SuperStore.saveAnalyticsIntegrationsConfig;
+    window.CSOSuperStore.resetAnalyticsIntegrationsConfig = SuperStore.resetAnalyticsIntegrationsConfig;
+    window.CSOSuperStore.exportAnalyticsIntegrationsManifest = SuperStore.exportAnalyticsIntegrationsManifest;
+    window.CSOSuperStore.getApiConfigurationConfig = SuperStore.getApiConfigurationConfig;
+    window.CSOSuperStore.saveApiConfigurationConfig = SuperStore.saveApiConfigurationConfig;
+    window.CSOSuperStore.resetApiConfigurationConfig = SuperStore.resetApiConfigurationConfig;
+    window.CSOSuperStore.exportApiConfigurationManifest = SuperStore.exportApiConfigurationManifest;
+    window.CSOSuperStore.getWebhookManagementConfig = SuperStore.getWebhookManagementConfig;
+    window.CSOSuperStore.saveWebhookManagementConfig = SuperStore.saveWebhookManagementConfig;
+    window.CSOSuperStore.resetWebhookManagementConfig = SuperStore.resetWebhookManagementConfig;
+    window.CSOSuperStore.exportWebhookManagementManifest = SuperStore.exportWebhookManagementManifest;
+    window.CSOSuperStore.getIntegrationLogsConfig = SuperStore.getIntegrationLogsConfig;
+    window.CSOSuperStore.saveIntegrationLogsConfig = SuperStore.saveIntegrationLogsConfig;
+    window.CSOSuperStore.resetIntegrationLogsConfig = SuperStore.resetIntegrationLogsConfig;
+    window.CSOSuperStore.exportIntegrationLogsManifest = SuperStore.exportIntegrationLogsManifest;
+    window.CSOSuperStore.getIntegrationHealthConfig = SuperStore.getIntegrationHealthConfig;
+    window.CSOSuperStore.saveIntegrationHealthConfig = SuperStore.saveIntegrationHealthConfig;
+    window.CSOSuperStore.resetIntegrationHealthConfig = SuperStore.resetIntegrationHealthConfig;
+    window.CSOSuperStore.exportIntegrationHealthManifest = SuperStore.exportIntegrationHealthManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

@@ -1109,22 +1109,22 @@
         {
           "id": "module-15-007",
           "title": "Analytics Integrations",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-15-008",
           "title": "API Configuration",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-15-009",
           "title": "Webhook Management",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-15-010",
           "title": "Integration Logs",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-15-011",
