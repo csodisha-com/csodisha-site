@@ -13028,7 +13028,8 @@
           institutionsVerification: this.getInstitutionsVerificationConfig ? this.getInstitutionsVerificationConfig() : null,
           jobsDirectoryTree: this.getJobsDirectoryTreeConfig ? this.getJobsDirectoryTreeConfig() : null,
           schemesDirectoryTree: this.getSchemesDirectoryTreeConfig ? this.getSchemesDirectoryTreeConfig() : null,
-          studyDirectoryTree: this.getStudyDirectoryTreeConfig ? this.getStudyDirectoryTreeConfig() : null
+          studyDirectoryTree: this.getStudyDirectoryTreeConfig ? this.getStudyDirectoryTreeConfig() : null,
+          communityDirectoryTree: this.getCommunityDirectoryTreeConfig ? this.getCommunityDirectoryTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -107931,6 +107932,1953 @@
   SuperStore.saveOdishaStudyHubConfig = function(cfg) { return this.saveStudyDirectoryTreeConfig(cfg); };
   SuperStore.resetOdishaStudyHubConfig = function() { return this.resetStudyDirectoryTreeConfig(); };
   SuperStore.exportOdishaStudyHubManifest = function() { return this.exportStudyDirectoryTreeManifest(); };
+
+  // =========================================================================
+  // COMMUNITY MASTER SELECTION DIRECTORY ENGINE
+  // =========================================================================
+  const DEFAULT_COMMUNITY_DIRECTORY_TREE = {
+  "meta": {
+    "version": "2.0",
+    "updatedAt": "2026-11-10T09:46:09.084Z"
+  },
+  "activeCategoryId": "cat-cm-01",
+  "selectedNodeId": "CM-GRP-01",
+  "categories": [
+    {
+      "id": "cat-cm-01",
+      "moduleId": "module-cm-001",
+      "code": "01",
+      "title": "Local & Odisha Communities",
+      "titleOdia": "ସ୍ଥାନୀୟ ଏବଂ ଓଡ଼ିଶା ସମୁଦାୟ",
+      "description": "District forums, regional networks, panchayat citizen circles, and urban resident collectives",
+      "nodes": [
+        {
+          "id": "CM-GRP-01",
+          "title": "Local & Odisha Communities Directory",
+          "titleOdia": "ସ୍ଥାନୀୟ ଏବଂ ଓଡ଼ିଶା ସମୁଦାୟ",
+          "slug": "local-odisha-communities",
+          "categoryCode": "01",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=0",
+          "mirrorUrl": "/assets/pdf/local-odisha-communities.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Local & Odisha Communities | Common Sense Odisha",
+          "contentBody": "# Local & Odisha Communities\n\nAuthentic Odisha knowledgebase and directory for Local & Odisha Communities.",
+          "tags": [
+            "local-odisha-communities",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-001",
+              "title": "District & Regional Forums",
+              "titleOdia": "",
+              "slug": "district-regional-forums",
+              "categoryCode": "01",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/district-regional-forums.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "District & Regional Forums | Common Sense Odisha",
+              "contentBody": "# District & Regional Forums\n\nVerified public information for District & Regional Forums.",
+              "tags": [
+                "district-regional-forums",
+                "community-directory",
+                "01"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-002",
+                  "title": "Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara)",
+                  "titleOdia": "",
+                  "slug": "coastal-odisha-puri-cuttack-balasore-jagatsinghpur-kendrapara",
+                  "categoryCode": "01",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/coastal-odisha-puri-cuttack-balasore-jagatsinghpur-kendrapara.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara) | Common Sense Odisha",
+                  "contentBody": "# Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara)\n\nVerified public information for Coastal Odisha (Puri, Cuttack, Balasore, Jagatsinghpur, Kendrapara).",
+                  "tags": [
+                    "coastal-odisha-puri-cuttack-balasore-jagatsinghpur-kendrapara",
+                    "community-directory",
+                    "01"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-003",
+                  "title": "Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh)",
+                  "titleOdia": "",
+                  "slug": "western-odisha-sambalpur-bargarh-bolangir-jharsuguda-sundargarh",
+                  "categoryCode": "01",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/western-odisha-sambalpur-bargarh-bolangir-jharsuguda-sundargarh.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh) | Common Sense Odisha",
+                  "contentBody": "# Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh)\n\nVerified public information for Western Odisha (Sambalpur, Bargarh, Bolangir, Jharsuguda, Sundargarh).",
+                  "tags": [
+                    "western-odisha-sambalpur-bargarh-bolangir-jharsuguda-sundargarh",
+                    "community-directory",
+                    "01"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-004",
+                  "title": "Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri)",
+                  "titleOdia": "",
+                  "slug": "southern-odisha-ganjam-gajapati-koraput-rayagada-malkangiri",
+                  "categoryCode": "01",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/southern-odisha-ganjam-gajapati-koraput-rayagada-malkangiri.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri) | Common Sense Odisha",
+                  "contentBody": "# Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri)\n\nVerified public information for Southern Odisha (Ganjam, Gajapati, Koraput, Rayagada, Malkangiri).",
+                  "tags": [
+                    "southern-odisha-ganjam-gajapati-koraput-rayagada-malkangiri",
+                    "community-directory",
+                    "01"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-005",
+                  "title": "Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal)",
+                  "titleOdia": "",
+                  "slug": "northern-central-odisha-mayurbhanj-keonjhar-angul-dhenkanal",
+                  "categoryCode": "01",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/northern-central-odisha-mayurbhanj-keonjhar-angul-dhenkanal.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal) | Common Sense Odisha",
+                  "contentBody": "# Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal)\n\nVerified public information for Northern & Central Odisha (Mayurbhanj, Keonjhar, Angul, Dhenkanal).",
+                  "tags": [
+                    "northern-central-odisha-mayurbhanj-keonjhar-angul-dhenkanal",
+                    "community-directory",
+                    "01"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-006",
+              "title": "Panchayat & Urban Civic Groups",
+              "titleOdia": "",
+              "slug": "panchayat-urban-civic-groups",
+              "categoryCode": "01",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/panchayat-urban-civic-groups.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Panchayat & Urban Civic Groups | Common Sense Odisha",
+              "contentBody": "# Panchayat & Urban Civic Groups\n\nVerified public information for Panchayat & Urban Civic Groups.",
+              "tags": [
+                "panchayat-urban-civic-groups",
+                "community-directory",
+                "01"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-007",
+                  "title": "Gram Panchayat Citizen Circles",
+                  "titleOdia": "",
+                  "slug": "gram-panchayat-citizen-circles",
+                  "categoryCode": "01",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/gram-panchayat-citizen-circles.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Gram Panchayat Citizen Circles | Common Sense Odisha",
+                  "contentBody": "# Gram Panchayat Citizen Circles\n\nVerified public information for Gram Panchayat Citizen Circles.",
+                  "tags": [
+                    "gram-panchayat-citizen-circles",
+                    "community-directory",
+                    "01"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-008",
+                  "title": "Urban Local Bodies & Resident Associations",
+                  "titleOdia": "",
+                  "slug": "urban-local-bodies-resident-associations",
+                  "categoryCode": "01",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/urban-local-bodies-resident-associations.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Urban Local Bodies & Resident Associations | Common Sense Odisha",
+                  "contentBody": "# Urban Local Bodies & Resident Associations\n\nVerified public information for Urban Local Bodies & Resident Associations.",
+                  "tags": [
+                    "urban-local-bodies-resident-associations",
+                    "community-directory",
+                    "01"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-02",
+      "moduleId": "module-cm-002",
+      "code": "02",
+      "title": "Students, Educators & Mentorship",
+      "titleOdia": "ଛାତ୍ର, ଶିକ୍ଷାବିତ୍ ଏବଂ ପରାମର୍ଶଦାତା",
+      "description": "Student clubs, alumni associations, teacher circles, and mentorship networks",
+      "nodes": [
+        {
+          "id": "CM-GRP-02",
+          "title": "Students, Educators & Mentorship Directory",
+          "titleOdia": "ଛାତ୍ର, ଶିକ୍ଷାବିତ୍ ଏବଂ ପରାମର୍ଶଦାତା",
+          "slug": "students-educators-mentorship",
+          "categoryCode": "02",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=1",
+          "mirrorUrl": "/assets/pdf/students-educators-mentorship.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Students, Educators & Mentorship | Common Sense Odisha",
+          "contentBody": "# Students, Educators & Mentorship\n\nAuthentic Odisha knowledgebase and directory for Students, Educators & Mentorship.",
+          "tags": [
+            "students-educators-mentorship",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-009",
+              "title": "School & College Student Circles",
+              "titleOdia": "",
+              "slug": "school-college-student-circles",
+              "categoryCode": "02",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/school-college-student-circles.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "School & College Student Circles | Common Sense Odisha",
+              "contentBody": "# School & College Student Circles\n\nVerified public information for School & College Student Circles.",
+              "tags": [
+                "school-college-student-circles",
+                "community-directory",
+                "02"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-010",
+                  "title": "Secondary & Higher Secondary Study Circles",
+                  "titleOdia": "",
+                  "slug": "secondary-higher-secondary-study-circles",
+                  "categoryCode": "02",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/secondary-higher-secondary-study-circles.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Secondary & Higher Secondary Study Circles | Common Sense Odisha",
+                  "contentBody": "# Secondary & Higher Secondary Study Circles\n\nVerified public information for Secondary & Higher Secondary Study Circles.",
+                  "tags": [
+                    "secondary-higher-secondary-study-circles",
+                    "community-directory",
+                    "02"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-011",
+                  "title": "Undergraduate & University Study Collectives",
+                  "titleOdia": "",
+                  "slug": "undergraduate-university-study-collectives",
+                  "categoryCode": "02",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/undergraduate-university-study-collectives.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Undergraduate & University Study Collectives | Common Sense Odisha",
+                  "contentBody": "# Undergraduate & University Study Collectives\n\nVerified public information for Undergraduate & University Study Collectives.",
+                  "tags": [
+                    "undergraduate-university-study-collectives",
+                    "community-directory",
+                    "02"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-012",
+              "title": "Educators, Teachers & Mentorship Hub",
+              "titleOdia": "",
+              "slug": "educators-teachers-mentorship-hub",
+              "categoryCode": "02",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/educators-teachers-mentorship-hub.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Educators, Teachers & Mentorship Hub | Common Sense Odisha",
+              "contentBody": "# Educators, Teachers & Mentorship Hub\n\nVerified public information for Educators, Teachers & Mentorship Hub.",
+              "tags": [
+                "educators-teachers-mentorship-hub",
+                "community-directory",
+                "02"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-013",
+                  "title": "School Teachers & Pedagogy Network",
+                  "titleOdia": "",
+                  "slug": "school-teachers-pedagogy-network",
+                  "categoryCode": "02",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/school-teachers-pedagogy-network.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "School Teachers & Pedagogy Network | Common Sense Odisha",
+                  "contentBody": "# School Teachers & Pedagogy Network\n\nVerified public information for School Teachers & Pedagogy Network.",
+                  "tags": [
+                    "school-teachers-pedagogy-network",
+                    "community-directory",
+                    "02"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-014",
+                  "title": "Higher Education Mentors & Researchers",
+                  "titleOdia": "",
+                  "slug": "higher-education-mentors-researchers",
+                  "categoryCode": "02",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/higher-education-mentors-researchers.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Higher Education Mentors & Researchers | Common Sense Odisha",
+                  "contentBody": "# Higher Education Mentors & Researchers\n\nVerified public information for Higher Education Mentors & Researchers.",
+                  "tags": [
+                    "higher-education-mentors-researchers",
+                    "community-directory",
+                    "02"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-03",
+      "moduleId": "module-cm-003",
+      "code": "03",
+      "title": "Careers, Business & Professional Networks",
+      "titleOdia": "କ୍ୟାରିଅର୍, ବ୍ୟବସାୟ ଏବଂ ବୃତ୍ତିଗତ ନେଟୱାର୍କ",
+      "description": "Professional chapters, industry associations, startup circles, and trade guilds",
+      "nodes": [
+        {
+          "id": "CM-GRP-03",
+          "title": "Careers, Business & Professional Networks Directory",
+          "titleOdia": "କ୍ୟାରିଅର୍, ବ୍ୟବସାୟ ଏବଂ ବୃତ୍ତିଗତ ନେଟୱାର୍କ",
+          "slug": "careers-business-professional-networks",
+          "categoryCode": "03",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=2",
+          "mirrorUrl": "/assets/pdf/careers-business-professional-networks.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Careers, Business & Professional Networks | Common Sense Odisha",
+          "contentBody": "# Careers, Business & Professional Networks\n\nAuthentic Odisha knowledgebase and directory for Careers, Business & Professional Networks.",
+          "tags": [
+            "careers-business-professional-networks",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-015",
+              "title": "Job Seekers & Competitive Aspirants",
+              "titleOdia": "",
+              "slug": "job-seekers-competitive-aspirants",
+              "categoryCode": "03",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/job-seekers-competitive-aspirants.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Job Seekers & Competitive Aspirants | Common Sense Odisha",
+              "contentBody": "# Job Seekers & Competitive Aspirants\n\nVerified public information for Job Seekers & Competitive Aspirants.",
+              "tags": [
+                "job-seekers-competitive-aspirants",
+                "community-directory",
+                "03"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-016",
+                  "title": "OPSC, OSSC & OSSSC Exam Aspirants",
+                  "titleOdia": "",
+                  "slug": "opsc-ossc-osssc-exam-aspirants",
+                  "categoryCode": "03",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/opsc-ossc-osssc-exam-aspirants.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "OPSC, OSSC & OSSSC Exam Aspirants | Common Sense Odisha",
+                  "contentBody": "# OPSC, OSSC & OSSSC Exam Aspirants\n\nVerified public information for OPSC, OSSC & OSSSC Exam Aspirants.",
+                  "tags": [
+                    "opsc-ossc-osssc-exam-aspirants",
+                    "community-directory",
+                    "03"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-017",
+                  "title": "Banking, Railway & SSC Central Exam Forums",
+                  "titleOdia": "",
+                  "slug": "banking-railway-ssc-central-exam-forums",
+                  "categoryCode": "03",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/banking-railway-ssc-central-exam-forums.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Banking, Railway & SSC Central Exam Forums | Common Sense Odisha",
+                  "contentBody": "# Banking, Railway & SSC Central Exam Forums\n\nVerified public information for Banking, Railway & SSC Central Exam Forums.",
+                  "tags": [
+                    "banking-railway-ssc-central-exam-forums",
+                    "community-directory",
+                    "03"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-018",
+              "title": "Entrepreneurs, Startups & MSMEs",
+              "titleOdia": "",
+              "slug": "entrepreneurs-startups-msmes",
+              "categoryCode": "03",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/entrepreneurs-startups-msmes.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Entrepreneurs, Startups & MSMEs | Common Sense Odisha",
+              "contentBody": "# Entrepreneurs, Startups & MSMEs\n\nVerified public information for Entrepreneurs, Startups & MSMEs.",
+              "tags": [
+                "entrepreneurs-startups-msmes",
+                "community-directory",
+                "03"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-019",
+                  "title": "Odisha Startup Founders & Innovators",
+                  "titleOdia": "",
+                  "slug": "odisha-startup-founders-innovators",
+                  "categoryCode": "03",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/odisha-startup-founders-innovators.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Odisha Startup Founders & Innovators | Common Sense Odisha",
+                  "contentBody": "# Odisha Startup Founders & Innovators\n\nVerified public information for Odisha Startup Founders & Innovators.",
+                  "tags": [
+                    "odisha-startup-founders-innovators",
+                    "community-directory",
+                    "03"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-020",
+                  "title": "Small Business & Trade Guilds",
+                  "titleOdia": "",
+                  "slug": "small-business-trade-guilds",
+                  "categoryCode": "03",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/small-business-trade-guilds.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Small Business & Trade Guilds | Common Sense Odisha",
+                  "contentBody": "# Small Business & Trade Guilds\n\nVerified public information for Small Business & Trade Guilds.",
+                  "tags": [
+                    "small-business-trade-guilds",
+                    "community-directory",
+                    "03"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-04",
+      "moduleId": "module-cm-004",
+      "code": "04",
+      "title": "Agriculture & Rural Livelihoods",
+      "titleOdia": "କୃଷି ଏବଂ ଗ୍ରାମୀଣ ଜୀବିକା",
+      "description": "Farmer producer groups, rural cooperatives, artisan clusters, and grassroots livelihoods",
+      "nodes": [
+        {
+          "id": "CM-GRP-04",
+          "title": "Agriculture & Rural Livelihoods Directory",
+          "titleOdia": "କୃଷି ଏବଂ ଗ୍ରାମୀଣ ଜୀବିକା",
+          "slug": "agriculture-rural-livelihoods",
+          "categoryCode": "04",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=3",
+          "mirrorUrl": "/assets/pdf/agriculture-rural-livelihoods.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Agriculture & Rural Livelihoods | Common Sense Odisha",
+          "contentBody": "# Agriculture & Rural Livelihoods\n\nAuthentic Odisha knowledgebase and directory for Agriculture & Rural Livelihoods.",
+          "tags": [
+            "agriculture-rural-livelihoods",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-021",
+              "title": "Farmer Collectives & Organic Growers",
+              "titleOdia": "",
+              "slug": "farmer-collectives-organic-growers",
+              "categoryCode": "04",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/farmer-collectives-organic-growers.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Farmer Collectives & Organic Growers | Common Sense Odisha",
+              "contentBody": "# Farmer Collectives & Organic Growers\n\nVerified public information for Farmer Collectives & Organic Growers.",
+              "tags": [
+                "farmer-collectives-organic-growers",
+                "community-directory",
+                "04"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-022",
+                  "title": "Krushak Knowledge Sharing Circles",
+                  "titleOdia": "",
+                  "slug": "krushak-knowledge-sharing-circles",
+                  "categoryCode": "04",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/krushak-knowledge-sharing-circles.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Krushak Knowledge Sharing Circles | Common Sense Odisha",
+                  "contentBody": "# Krushak Knowledge Sharing Circles\n\nVerified public information for Krushak Knowledge Sharing Circles.",
+                  "tags": [
+                    "krushak-knowledge-sharing-circles",
+                    "community-directory",
+                    "04"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-023",
+                  "title": "Millet Mission & Indigenous Crops",
+                  "titleOdia": "",
+                  "slug": "millet-mission-indigenous-crops",
+                  "categoryCode": "04",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/millet-mission-indigenous-crops.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Millet Mission & Indigenous Crops | Common Sense Odisha",
+                  "contentBody": "# Millet Mission & Indigenous Crops\n\nVerified public information for Millet Mission & Indigenous Crops.",
+                  "tags": [
+                    "millet-mission-indigenous-crops",
+                    "community-directory",
+                    "04"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-024",
+              "title": "Allied Rural Sectors",
+              "titleOdia": "",
+              "slug": "allied-rural-sectors",
+              "categoryCode": "04",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/allied-rural-sectors.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Allied Rural Sectors | Common Sense Odisha",
+              "contentBody": "# Allied Rural Sectors\n\nVerified public information for Allied Rural Sectors.",
+              "tags": [
+                "allied-rural-sectors",
+                "community-directory",
+                "04"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-025",
+                  "title": "Dairy, Poultry & Livestock Keepers",
+                  "titleOdia": "",
+                  "slug": "dairy-poultry-livestock-keepers",
+                  "categoryCode": "04",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/dairy-poultry-livestock-keepers.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Dairy, Poultry & Livestock Keepers | Common Sense Odisha",
+                  "contentBody": "# Dairy, Poultry & Livestock Keepers\n\nVerified public information for Dairy, Poultry & Livestock Keepers.",
+                  "tags": [
+                    "dairy-poultry-livestock-keepers",
+                    "community-directory",
+                    "04"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-026",
+                  "title": "Fisheries & Coastal Livelihoods",
+                  "titleOdia": "",
+                  "slug": "fisheries-coastal-livelihoods",
+                  "categoryCode": "04",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/fisheries-coastal-livelihoods.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Fisheries & Coastal Livelihoods | Common Sense Odisha",
+                  "contentBody": "# Fisheries & Coastal Livelihoods\n\nVerified public information for Fisheries & Coastal Livelihoods.",
+                  "tags": [
+                    "fisheries-coastal-livelihoods",
+                    "community-directory",
+                    "04"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-05",
+      "moduleId": "module-cm-005",
+      "code": "05",
+      "title": "Women, Families, Health & Inclusion",
+      "titleOdia": "ମହିଳା, ପରିବାର, ସ୍ୱାସ୍ଥ୍ୟ ଏବଂ ଅନ୍ତର୍ଭୁକ୍ତିକରଣ",
+      "description": "Women self-help groups, family welfare networks, healthcare collectives, and accessibility forums",
+      "nodes": [
+        {
+          "id": "CM-GRP-05",
+          "title": "Women, Families, Health & Inclusion Directory",
+          "titleOdia": "ମହିଳା, ପରିବାର, ସ୍ୱାସ୍ଥ୍ୟ ଏବଂ ଅନ୍ତର୍ଭୁକ୍ତିକରଣ",
+          "slug": "women-families-health-inclusion",
+          "categoryCode": "05",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=4",
+          "mirrorUrl": "/assets/pdf/women-families-health-inclusion.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Women, Families, Health & Inclusion | Common Sense Odisha",
+          "contentBody": "# Women, Families, Health & Inclusion\n\nAuthentic Odisha knowledgebase and directory for Women, Families, Health & Inclusion.",
+          "tags": [
+            "women-families-health-inclusion",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-027",
+              "title": "Mission Shakti & Women Groups",
+              "titleOdia": "",
+              "slug": "mission-shakti-women-groups",
+              "categoryCode": "05",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/mission-shakti-women-groups.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Mission Shakti & Women Groups | Common Sense Odisha",
+              "contentBody": "# Mission Shakti & Women Groups\n\nVerified public information for Mission Shakti & Women Groups.",
+              "tags": [
+                "mission-shakti-women-groups",
+                "community-directory",
+                "05"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-028",
+                  "title": "Self-Help Groups (SHGs) & Financial Literacy",
+                  "titleOdia": "",
+                  "slug": "self-help-groups-shgs-financial-literacy",
+                  "categoryCode": "05",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/self-help-groups-shgs-financial-literacy.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Self-Help Groups (SHGs) & Financial Literacy | Common Sense Odisha",
+                  "contentBody": "# Self-Help Groups (SHGs) & Financial Literacy\n\nVerified public information for Self-Help Groups (SHGs) & Financial Literacy.",
+                  "tags": [
+                    "self-help-groups-shgs-financial-literacy",
+                    "community-directory",
+                    "05"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-029",
+                  "title": "Women Health, Safety & Legal Rights",
+                  "titleOdia": "",
+                  "slug": "women-health-safety-legal-rights",
+                  "categoryCode": "05",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/women-health-safety-legal-rights.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Women Health, Safety & Legal Rights | Common Sense Odisha",
+                  "contentBody": "# Women Health, Safety & Legal Rights\n\nVerified public information for Women Health, Safety & Legal Rights.",
+                  "tags": [
+                    "women-health-safety-legal-rights",
+                    "community-directory",
+                    "05"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-030",
+              "title": "Special Beneficiaries & Inclusion",
+              "titleOdia": "",
+              "slug": "special-beneficiaries-inclusion",
+              "categoryCode": "05",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/special-beneficiaries-inclusion.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Special Beneficiaries & Inclusion | Common Sense Odisha",
+              "contentBody": "# Special Beneficiaries & Inclusion\n\nVerified public information for Special Beneficiaries & Inclusion.",
+              "tags": [
+                "special-beneficiaries-inclusion",
+                "community-directory",
+                "05"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-031",
+                  "title": "Divyangjan (Persons with Disabilities) Support",
+                  "titleOdia": "",
+                  "slug": "divyangjan-persons-with-disabilities-support",
+                  "categoryCode": "05",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/divyangjan-persons-with-disabilities-support.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Divyangjan (Persons with Disabilities) Support | Common Sense Odisha",
+                  "contentBody": "# Divyangjan (Persons with Disabilities) Support\n\nVerified public information for Divyangjan (Persons with Disabilities) Support.",
+                  "tags": [
+                    "divyangjan-persons-with-disabilities-support",
+                    "community-directory",
+                    "05"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-032",
+                  "title": "Senior Citizens & Elder Care Forums",
+                  "titleOdia": "",
+                  "slug": "senior-citizens-elder-care-forums",
+                  "categoryCode": "05",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/senior-citizens-elder-care-forums.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Senior Citizens & Elder Care Forums | Common Sense Odisha",
+                  "contentBody": "# Senior Citizens & Elder Care Forums\n\nVerified public information for Senior Citizens & Elder Care Forums.",
+                  "tags": [
+                    "senior-citizens-elder-care-forums",
+                    "community-directory",
+                    "05"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-06",
+      "moduleId": "module-cm-006",
+      "code": "06",
+      "title": "Youth, NGOs & Volunteering",
+      "titleOdia": "ଯୁବଗୋଷ୍ଠୀ, ଏନଜିଓ ଏବଂ ସ୍ୱେଚ୍ଛାସେବୀ",
+      "description": "Youth volunteering clubs, grassroots civil societies, social impact projects, and youth leadership",
+      "nodes": [
+        {
+          "id": "CM-GRP-06",
+          "title": "Youth, NGOs & Volunteering Directory",
+          "titleOdia": "ଯୁବଗୋଷ୍ଠୀ, ଏନଜିଓ ଏବଂ ସ୍ୱେଚ୍ଛାସେବୀ",
+          "slug": "youth-ngos-volunteering",
+          "categoryCode": "06",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=5",
+          "mirrorUrl": "/assets/pdf/youth-ngos-volunteering.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Youth, NGOs & Volunteering | Common Sense Odisha",
+          "contentBody": "# Youth, NGOs & Volunteering\n\nAuthentic Odisha knowledgebase and directory for Youth, NGOs & Volunteering.",
+          "tags": [
+            "youth-ngos-volunteering",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-033",
+              "title": "Youth Development & Leadership",
+              "titleOdia": "",
+              "slug": "youth-development-leadership",
+              "categoryCode": "06",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/youth-development-leadership.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Youth Development & Leadership | Common Sense Odisha",
+              "contentBody": "# Youth Development & Leadership\n\nVerified public information for Youth Development & Leadership.",
+              "tags": [
+                "youth-development-leadership",
+                "community-directory",
+                "06"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-034",
+                  "title": "NYKS, NSS & Youth Clubs",
+                  "titleOdia": "",
+                  "slug": "nyks-nss-youth-clubs",
+                  "categoryCode": "06",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/nyks-nss-youth-clubs.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "NYKS, NSS & Youth Clubs | Common Sense Odisha",
+                  "contentBody": "# NYKS, NSS & Youth Clubs\n\nVerified public information for NYKS, NSS & Youth Clubs.",
+                  "tags": [
+                    "nyks-nss-youth-clubs",
+                    "community-directory",
+                    "06"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-035",
+                  "title": "Skill Development & Vocational Circles",
+                  "titleOdia": "",
+                  "slug": "skill-development-vocational-circles",
+                  "categoryCode": "06",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/skill-development-vocational-circles.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Skill Development & Vocational Circles | Common Sense Odisha",
+                  "contentBody": "# Skill Development & Vocational Circles\n\nVerified public information for Skill Development & Vocational Circles.",
+                  "tags": [
+                    "skill-development-vocational-circles",
+                    "community-directory",
+                    "06"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-036",
+              "title": "Civil Society & NGOs",
+              "titleOdia": "",
+              "slug": "civil-society-ngos",
+              "categoryCode": "06",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/civil-society-ngos.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Civil Society & NGOs | Common Sense Odisha",
+              "contentBody": "# Civil Society & NGOs\n\nVerified public information for Civil Society & NGOs.",
+              "tags": [
+                "civil-society-ngos",
+                "community-directory",
+                "06"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-037",
+                  "title": "Non-Profit Networks in Odisha",
+                  "titleOdia": "",
+                  "slug": "non-profit-networks-in-odisha",
+                  "categoryCode": "06",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/non-profit-networks-in-odisha.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Non-Profit Networks in Odisha | Common Sense Odisha",
+                  "contentBody": "# Non-Profit Networks in Odisha\n\nVerified public information for Non-Profit Networks in Odisha.",
+                  "tags": [
+                    "non-profit-networks-in-odisha",
+                    "community-directory",
+                    "06"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-038",
+                  "title": "Volunteering Opportunities",
+                  "titleOdia": "",
+                  "slug": "volunteering-opportunities",
+                  "categoryCode": "06",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/volunteering-opportunities.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Volunteering Opportunities | Common Sense Odisha",
+                  "contentBody": "# Volunteering Opportunities\n\nVerified public information for Volunteering Opportunities.",
+                  "tags": [
+                    "volunteering-opportunities",
+                    "community-directory",
+                    "06"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-07",
+      "moduleId": "module-cm-007",
+      "code": "07",
+      "title": "Culture, Sports & Traditional Communities",
+      "titleOdia": "ସଂସ୍କୃତି, କ୍ରୀଡ଼ା ଏବଂ ପାରମ୍ପରିକ ସମୁଦାୟ",
+      "description": "Heritage preservation societies, folk art guilds, sports academies, and cultural sanghas",
+      "nodes": [
+        {
+          "id": "CM-GRP-07",
+          "title": "Culture, Sports & Traditional Communities Directory",
+          "titleOdia": "ସଂସ୍କୃତି, କ୍ରୀଡ଼ା ଏବଂ ପାରମ୍ପରିକ ସମୁଦାୟ",
+          "slug": "culture-sports-traditional-communities",
+          "categoryCode": "07",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=6",
+          "mirrorUrl": "/assets/pdf/culture-sports-traditional-communities.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Culture, Sports & Traditional Communities | Common Sense Odisha",
+          "contentBody": "# Culture, Sports & Traditional Communities\n\nAuthentic Odisha knowledgebase and directory for Culture, Sports & Traditional Communities.",
+          "tags": [
+            "culture-sports-traditional-communities",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-039",
+              "title": "Odisha Heritage & Arts",
+              "titleOdia": "",
+              "slug": "odisha-heritage-arts",
+              "categoryCode": "07",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/odisha-heritage-arts.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Odisha Heritage & Arts | Common Sense Odisha",
+              "contentBody": "# Odisha Heritage & Arts\n\nVerified public information for Odisha Heritage & Arts.",
+              "tags": [
+                "odisha-heritage-arts",
+                "community-directory",
+                "07"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-040",
+                  "title": "Odia Language, Literature & Poetry",
+                  "titleOdia": "",
+                  "slug": "odia-language-literature-poetry",
+                  "categoryCode": "07",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/odia-language-literature-poetry.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Odia Language, Literature & Poetry | Common Sense Odisha",
+                  "contentBody": "# Odia Language, Literature & Poetry\n\nVerified public information for Odia Language, Literature & Poetry.",
+                  "tags": [
+                    "odia-language-literature-poetry",
+                    "community-directory",
+                    "07"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-041",
+                  "title": "Traditional Handlooms & Handicrafts",
+                  "titleOdia": "",
+                  "slug": "traditional-handlooms-handicrafts",
+                  "categoryCode": "07",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/traditional-handlooms-handicrafts.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Traditional Handlooms & Handicrafts | Common Sense Odisha",
+                  "contentBody": "# Traditional Handlooms & Handicrafts\n\nVerified public information for Traditional Handlooms & Handicrafts.",
+                  "tags": [
+                    "traditional-handlooms-handicrafts",
+                    "community-directory",
+                    "07"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-042",
+              "title": "Sports & Athletics Networks",
+              "titleOdia": "",
+              "slug": "sports-athletics-networks",
+              "categoryCode": "07",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/sports-athletics-networks.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Sports & Athletics Networks | Common Sense Odisha",
+              "contentBody": "# Sports & Athletics Networks\n\nVerified public information for Sports & Athletics Networks.",
+              "tags": [
+                "sports-athletics-networks",
+                "community-directory",
+                "07"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-043",
+                  "title": "Hockey, Football & Athletic Clubs",
+                  "titleOdia": "",
+                  "slug": "hockey-football-athletic-clubs",
+                  "categoryCode": "07",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/hockey-football-athletic-clubs.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Hockey, Football & Athletic Clubs | Common Sense Odisha",
+                  "contentBody": "# Hockey, Football & Athletic Clubs\n\nVerified public information for Hockey, Football & Athletic Clubs.",
+                  "tags": [
+                    "hockey-football-athletic-clubs",
+                    "community-directory",
+                    "07"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-044",
+                  "title": "Indigenous Games & Yoga Clubs",
+                  "titleOdia": "",
+                  "slug": "indigenous-games-yoga-clubs",
+                  "categoryCode": "07",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/indigenous-games-yoga-clubs.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Indigenous Games & Yoga Clubs | Common Sense Odisha",
+                  "contentBody": "# Indigenous Games & Yoga Clubs\n\nVerified public information for Indigenous Games & Yoga Clubs.",
+                  "tags": [
+                    "indigenous-games-yoga-clubs",
+                    "community-directory",
+                    "07"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-08",
+      "moduleId": "module-cm-008",
+      "code": "08",
+      "title": "Environment, Science & Technology",
+      "titleOdia": "ପରିବେଶ, ବିଜ୍ଞାନ ଏବଂ ପ୍ରଯୁକ୍ତିବିଦ୍ୟା",
+      "description": "Ecological conservation groups, sustainable farming collectives, tech innovation, and science clubs",
+      "nodes": [
+        {
+          "id": "CM-GRP-08",
+          "title": "Environment, Science & Technology Directory",
+          "titleOdia": "ପରିବେଶ, ବିଜ୍ଞାନ ଏବଂ ପ୍ରଯୁକ୍ତିବିଦ୍ୟା",
+          "slug": "environment-science-technology",
+          "categoryCode": "08",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=7",
+          "mirrorUrl": "/assets/pdf/environment-science-technology.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Environment, Science & Technology | Common Sense Odisha",
+          "contentBody": "# Environment, Science & Technology\n\nAuthentic Odisha knowledgebase and directory for Environment, Science & Technology.",
+          "tags": [
+            "environment-science-technology",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-045",
+              "title": "Environmental Conservation & Climate",
+              "titleOdia": "",
+              "slug": "environmental-conservation-climate",
+              "categoryCode": "08",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/environmental-conservation-climate.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Environmental Conservation & Climate | Common Sense Odisha",
+              "contentBody": "# Environmental Conservation & Climate\n\nVerified public information for Environmental Conservation & Climate.",
+              "tags": [
+                "environmental-conservation-climate",
+                "community-directory",
+                "08"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-046",
+                  "title": "Forest & Wildlife Conservation",
+                  "titleOdia": "",
+                  "slug": "forest-wildlife-conservation",
+                  "categoryCode": "08",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/forest-wildlife-conservation.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Forest & Wildlife Conservation | Common Sense Odisha",
+                  "contentBody": "# Forest & Wildlife Conservation\n\nVerified public information for Forest & Wildlife Conservation.",
+                  "tags": [
+                    "forest-wildlife-conservation",
+                    "community-directory",
+                    "08"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-047",
+                  "title": "Disaster Preparedness & Climate Action",
+                  "titleOdia": "",
+                  "slug": "disaster-preparedness-climate-action",
+                  "categoryCode": "08",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/disaster-preparedness-climate-action.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Disaster Preparedness & Climate Action | Common Sense Odisha",
+                  "contentBody": "# Disaster Preparedness & Climate Action\n\nVerified public information for Disaster Preparedness & Climate Action.",
+                  "tags": [
+                    "disaster-preparedness-climate-action",
+                    "community-directory",
+                    "08"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-048",
+              "title": "Open Science & Technology Innovation",
+              "titleOdia": "",
+              "slug": "open-science-technology-innovation",
+              "categoryCode": "08",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/open-science-technology-innovation.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Open Science & Technology Innovation | Common Sense Odisha",
+              "contentBody": "# Open Science & Technology Innovation\n\nVerified public information for Open Science & Technology Innovation.",
+              "tags": [
+                "open-science-technology-innovation",
+                "community-directory",
+                "08"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-049",
+                  "title": "Coding & Open Source Developers",
+                  "titleOdia": "",
+                  "slug": "coding-open-source-developers",
+                  "categoryCode": "08",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/coding-open-source-developers.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Coding & Open Source Developers | Common Sense Odisha",
+                  "contentBody": "# Coding & Open Source Developers\n\nVerified public information for Coding & Open Source Developers.",
+                  "tags": [
+                    "coding-open-source-developers",
+                    "community-directory",
+                    "08"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-050",
+                  "title": "Science Clubs & STEM Outreach",
+                  "titleOdia": "",
+                  "slug": "science-clubs-stem-outreach",
+                  "categoryCode": "08",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/science-clubs-stem-outreach.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Science Clubs & STEM Outreach | Common Sense Odisha",
+                  "contentBody": "# Science Clubs & STEM Outreach\n\nVerified public information for Science Clubs & STEM Outreach.",
+                  "tags": [
+                    "science-clubs-stem-outreach",
+                    "community-directory",
+                    "08"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-09",
+      "moduleId": "module-cm-009",
+      "code": "09",
+      "title": "Digital, International & Community Forums",
+      "titleOdia": "ଡିଜିଟାଲ୍, ଆନ୍ତର୍ଜାତୀୟ ଏବଂ ସାମୁଦାୟିକ ମଞ୍ଚ",
+      "description": "Diaspora Odia associations, global cultural exchange, digital interest groups, and open forums",
+      "nodes": [
+        {
+          "id": "CM-GRP-09",
+          "title": "Digital, International & Community Forums Directory",
+          "titleOdia": "ଡିଜିଟାଲ୍, ଆନ୍ତର୍ଜାତୀୟ ଏବଂ ସାମୁଦାୟିକ ମଞ୍ଚ",
+          "slug": "digital-international-community-forums",
+          "categoryCode": "09",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=8",
+          "mirrorUrl": "/assets/pdf/digital-international-community-forums.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Digital, International & Community Forums | Common Sense Odisha",
+          "contentBody": "# Digital, International & Community Forums\n\nAuthentic Odisha knowledgebase and directory for Digital, International & Community Forums.",
+          "tags": [
+            "digital-international-community-forums",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-051",
+              "title": "Global Odia Diaspora Networks",
+              "titleOdia": "",
+              "slug": "global-odia-diaspora-networks",
+              "categoryCode": "09",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/global-odia-diaspora-networks.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Global Odia Diaspora Networks | Common Sense Odisha",
+              "contentBody": "# Global Odia Diaspora Networks\n\nVerified public information for Global Odia Diaspora Networks.",
+              "tags": [
+                "global-odia-diaspora-networks",
+                "community-directory",
+                "09"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-052",
+                  "title": "International Odia Societies (OSSA, OSA, UK, Middle East)",
+                  "titleOdia": "",
+                  "slug": "international-odia-societies-ossa-osa-uk-middle-east",
+                  "categoryCode": "09",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/international-odia-societies-ossa-osa-uk-middle-east.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "International Odia Societies (OSSA, OSA, UK, Middle East) | Common Sense Odisha",
+                  "contentBody": "# International Odia Societies (OSSA, OSA, UK, Middle East)\n\nVerified public information for International Odia Societies (OSSA, OSA, UK, Middle East).",
+                  "tags": [
+                    "international-odia-societies-ossa-osa-uk-middle-east",
+                    "community-directory",
+                    "09"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-053",
+                  "title": "Knowledge & Skill Remittance",
+                  "titleOdia": "",
+                  "slug": "knowledge-skill-remittance",
+                  "categoryCode": "09",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/knowledge-skill-remittance.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Knowledge & Skill Remittance | Common Sense Odisha",
+                  "contentBody": "# Knowledge & Skill Remittance\n\nVerified public information for Knowledge & Skill Remittance.",
+                  "tags": [
+                    "knowledge-skill-remittance",
+                    "community-directory",
+                    "09"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-054",
+              "title": "Digital & Virtual Discussion Hubs",
+              "titleOdia": "",
+              "slug": "digital-virtual-discussion-hubs",
+              "categoryCode": "09",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/digital-virtual-discussion-hubs.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Digital & Virtual Discussion Hubs | Common Sense Odisha",
+              "contentBody": "# Digital & Virtual Discussion Hubs\n\nVerified public information for Digital & Virtual Discussion Hubs.",
+              "tags": [
+                "digital-virtual-discussion-hubs",
+                "community-directory",
+                "09"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-055",
+                  "title": "Online Knowledge Commons",
+                  "titleOdia": "",
+                  "slug": "online-knowledge-commons",
+                  "categoryCode": "09",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/online-knowledge-commons.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Online Knowledge Commons | Common Sense Odisha",
+                  "contentBody": "# Online Knowledge Commons\n\nVerified public information for Online Knowledge Commons.",
+                  "tags": [
+                    "online-knowledge-commons",
+                    "community-directory",
+                    "09"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-056",
+                  "title": "Ask CSO Community Helpdesk",
+                  "titleOdia": "",
+                  "slug": "ask-cso-community-helpdesk",
+                  "categoryCode": "09",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/ask-cso-community-helpdesk.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Ask CSO Community Helpdesk | Common Sense Odisha",
+                  "contentBody": "# Ask CSO Community Helpdesk\n\nVerified public information for Ask CSO Community Helpdesk.",
+                  "tags": [
+                    "ask-cso-community-helpdesk",
+                    "community-directory",
+                    "09"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-cm-10",
+      "moduleId": "module-cm-010",
+      "code": "10",
+      "title": "Community Directory, Safety & Governance",
+      "titleOdia": "ସମୁଦାୟ ନିର୍ଦ୍ଦେଶିକା, ସୁରକ୍ଷା ଏବଂ ଶାସନ",
+      "description": "Safety helplines, dispute resolution circles, legal aid networks, and civic governance oversight",
+      "nodes": [
+        {
+          "id": "CM-GRP-10",
+          "title": "Community Directory, Safety & Governance Directory",
+          "titleOdia": "ସମୁଦାୟ ନିର୍ଦ୍ଦେଶିକା, ସୁରକ୍ଷା ଏବଂ ଶାସନ",
+          "slug": "community-directory-safety-governance",
+          "categoryCode": "10",
+          "type": "directory",
+          "stage": "Root Pillar",
+          "officialUrl": "/community/?section=9",
+          "mirrorUrl": "/assets/pdf/community-directory-safety-governance.pdf",
+          "communityFocus": "District & Citizen Welfare",
+          "targetMembers": "All Odisha Residents & Community Organizations",
+          "articleTitle": "Community Directory, Safety & Governance | Common Sense Odisha",
+          "contentBody": "# Community Directory, Safety & Governance\n\nAuthentic Odisha knowledgebase and directory for Community Directory, Safety & Governance.",
+          "tags": [
+            "community-directory-safety-governance",
+            "community-directory",
+            "root"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "CM-NODE-057",
+              "title": "Community Guidelines & Moderation",
+              "titleOdia": "",
+              "slug": "community-guidelines-moderation",
+              "categoryCode": "10",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/community-guidelines-moderation.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Community Guidelines & Moderation | Common Sense Odisha",
+              "contentBody": "# Community Guidelines & Moderation\n\nVerified public information for Community Guidelines & Moderation.",
+              "tags": [
+                "community-guidelines-moderation",
+                "community-directory",
+                "10"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-058",
+                  "title": "Code of Conduct & Civic Standards",
+                  "titleOdia": "",
+                  "slug": "code-of-conduct-civic-standards",
+                  "categoryCode": "10",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/code-of-conduct-civic-standards.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Code of Conduct & Civic Standards | Common Sense Odisha",
+                  "contentBody": "# Code of Conduct & Civic Standards\n\nVerified public information for Code of Conduct & Civic Standards.",
+                  "tags": [
+                    "code-of-conduct-civic-standards",
+                    "community-directory",
+                    "10"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-059",
+                  "title": "Content Verification & Fact-Checking",
+                  "titleOdia": "",
+                  "slug": "content-verification-fact-checking",
+                  "categoryCode": "10",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/content-verification-fact-checking.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Content Verification & Fact-Checking | Common Sense Odisha",
+                  "contentBody": "# Content Verification & Fact-Checking\n\nVerified public information for Content Verification & Fact-Checking.",
+                  "tags": [
+                    "content-verification-fact-checking",
+                    "community-directory",
+                    "10"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "CM-NODE-060",
+              "title": "Safety, Support & Grievance Redressal",
+              "titleOdia": "",
+              "slug": "safety-support-grievance-redressal",
+              "categoryCode": "10",
+              "type": "directory",
+              "stage": "Directory",
+              "officialUrl": "",
+              "mirrorUrl": "/assets/pdf/safety-support-grievance-redressal.pdf",
+              "communityFocus": "Civic & Regional Engagement",
+              "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+              "articleTitle": "Safety, Support & Grievance Redressal | Common Sense Odisha",
+              "contentBody": "# Safety, Support & Grievance Redressal\n\nVerified public information for Safety, Support & Grievance Redressal.",
+              "tags": [
+                "safety-support-grievance-redressal",
+                "community-directory",
+                "10"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": [
+                {
+                  "id": "CM-NODE-061",
+                  "title": "Reporting Safety Concerns",
+                  "titleOdia": "",
+                  "slug": "reporting-safety-concerns",
+                  "categoryCode": "10",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/reporting-safety-concerns.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Reporting Safety Concerns | Common Sense Odisha",
+                  "contentBody": "# Reporting Safety Concerns\n\nVerified public information for Reporting Safety Concerns.",
+                  "tags": [
+                    "reporting-safety-concerns",
+                    "community-directory",
+                    "10"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                },
+                {
+                  "id": "CM-NODE-062",
+                  "title": "Feedback & Continuous Improvement",
+                  "titleOdia": "",
+                  "slug": "feedback-continuous-improvement",
+                  "categoryCode": "10",
+                  "type": "page",
+                  "stage": "Community Circle",
+                  "officialUrl": "",
+                  "mirrorUrl": "/assets/pdf/feedback-continuous-improvement.pdf",
+                  "communityFocus": "Civic & Regional Engagement",
+                  "targetMembers": "Odisha Citizens, Youth & Community Leaders",
+                  "articleTitle": "Feedback & Continuous Improvement | Common Sense Odisha",
+                  "contentBody": "# Feedback & Continuous Improvement\n\nVerified public information for Feedback & Continuous Improvement.",
+                  "tags": [
+                    "feedback-continuous-improvement",
+                    "community-directory",
+                    "10"
+                  ],
+                  "status": "Published",
+                  "active": true,
+                  "lastUpdated": "2026-11-10",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+  SuperStore.getCommunityDirectoryTreeConfig = function() {
+    return _hydrateConfig('cso_community_recursive_tree_v1', 'categories', () => DEFAULT_COMMUNITY_DIRECTORY_TREE);
+  };
+  SuperStore.saveCommunityDirectoryTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_community_recursive_tree_v1', JSON.stringify(cfg));
+    this.logAudit('COMMUNITY_TREE_MUTATION', 'COMMUNITY', 'Saved community directory and content updates (' + cfg.categories.length + ' categories).');
+    return true;
+  };
+  SuperStore.resetCommunityDirectoryTreeConfig = function() {
+    localStorage.setItem('cso_community_recursive_tree_v1', JSON.stringify(DEFAULT_COMMUNITY_DIRECTORY_TREE));
+    this.logAudit('COMMUNITY_TREE_RESET', 'COMMUNITY', 'Community master directory tree reset to authentic frontend defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_COMMUNITY_DIRECTORY_TREE));
+  };
+  SuperStore.exportCommunityDirectoryTreeManifest = function() {
+    const config = this.getCommunityDirectoryTreeConfig();
+    const filename = "community_directory_tree_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("COMMUNITY_TREE_EXPORTED", "DATA_EXPORT", "Community master directory tree manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  // Forwarding accessors for all 10 discrete community module routes:
+  SuperStore.getLocalCommunitiesConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveLocalCommunitiesConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetLocalCommunitiesConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportLocalCommunitiesManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getStudentsEducatorsConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveStudentsEducatorsConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetStudentsEducatorsConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportStudentsEducatorsManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getCareersBusinessConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveCareersBusinessConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetCareersBusinessConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportCareersBusinessManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getAgricultureRuralConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveAgricultureRuralConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetAgricultureRuralConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportAgricultureRuralManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getWomenFamiliesConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveWomenFamiliesConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetWomenFamiliesConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportWomenFamiliesManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getYouthNGOsConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveYouthNGOsConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetYouthNGOsConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportYouthNGOsManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getCultureSportsConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveCultureSportsConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetCultureSportsConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportCultureSportsManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getEnvironmentScienceConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveEnvironmentScienceConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetEnvironmentScienceConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportEnvironmentScienceManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getDigitalForumsConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveDigitalForumsConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetDigitalForumsConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportDigitalForumsManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  SuperStore.getSafetyGovernanceConfig = function() { return this.getCommunityDirectoryTreeConfig(); };
+  SuperStore.saveSafetyGovernanceConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
+  SuperStore.resetSafetyGovernanceConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
+  SuperStore.exportSafetyGovernanceManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -108462,6 +110410,50 @@
     window.CSOSuperStore.saveOdishaStudyHubConfig = SuperStore.saveOdishaStudyHubConfig;
     window.CSOSuperStore.resetOdishaStudyHubConfig = SuperStore.resetOdishaStudyHubConfig;
     window.CSOSuperStore.exportOdishaStudyHubManifest = SuperStore.exportOdishaStudyHubManifest;
+    window.CSOSuperStore.getCommunityDirectoryTreeConfig = SuperStore.getCommunityDirectoryTreeConfig;
+    window.CSOSuperStore.saveCommunityDirectoryTreeConfig = SuperStore.saveCommunityDirectoryTreeConfig;
+    window.CSOSuperStore.resetCommunityDirectoryTreeConfig = SuperStore.resetCommunityDirectoryTreeConfig;
+    window.CSOSuperStore.exportCommunityDirectoryTreeManifest = SuperStore.exportCommunityDirectoryTreeManifest;
+    window.CSOSuperStore.getLocalCommunitiesConfig = SuperStore.getLocalCommunitiesConfig;
+    window.CSOSuperStore.saveLocalCommunitiesConfig = SuperStore.saveLocalCommunitiesConfig;
+    window.CSOSuperStore.resetLocalCommunitiesConfig = SuperStore.resetLocalCommunitiesConfig;
+    window.CSOSuperStore.exportLocalCommunitiesManifest = SuperStore.exportLocalCommunitiesManifest;
+    window.CSOSuperStore.getStudentsEducatorsConfig = SuperStore.getStudentsEducatorsConfig;
+    window.CSOSuperStore.saveStudentsEducatorsConfig = SuperStore.saveStudentsEducatorsConfig;
+    window.CSOSuperStore.resetStudentsEducatorsConfig = SuperStore.resetStudentsEducatorsConfig;
+    window.CSOSuperStore.exportStudentsEducatorsManifest = SuperStore.exportStudentsEducatorsManifest;
+    window.CSOSuperStore.getCareersBusinessConfig = SuperStore.getCareersBusinessConfig;
+    window.CSOSuperStore.saveCareersBusinessConfig = SuperStore.saveCareersBusinessConfig;
+    window.CSOSuperStore.resetCareersBusinessConfig = SuperStore.resetCareersBusinessConfig;
+    window.CSOSuperStore.exportCareersBusinessManifest = SuperStore.exportCareersBusinessManifest;
+    window.CSOSuperStore.getAgricultureRuralConfig = SuperStore.getAgricultureRuralConfig;
+    window.CSOSuperStore.saveAgricultureRuralConfig = SuperStore.saveAgricultureRuralConfig;
+    window.CSOSuperStore.resetAgricultureRuralConfig = SuperStore.resetAgricultureRuralConfig;
+    window.CSOSuperStore.exportAgricultureRuralManifest = SuperStore.exportAgricultureRuralManifest;
+    window.CSOSuperStore.getWomenFamiliesConfig = SuperStore.getWomenFamiliesConfig;
+    window.CSOSuperStore.saveWomenFamiliesConfig = SuperStore.saveWomenFamiliesConfig;
+    window.CSOSuperStore.resetWomenFamiliesConfig = SuperStore.resetWomenFamiliesConfig;
+    window.CSOSuperStore.exportWomenFamiliesManifest = SuperStore.exportWomenFamiliesManifest;
+    window.CSOSuperStore.getYouthNGOsConfig = SuperStore.getYouthNGOsConfig;
+    window.CSOSuperStore.saveYouthNGOsConfig = SuperStore.saveYouthNGOsConfig;
+    window.CSOSuperStore.resetYouthNGOsConfig = SuperStore.resetYouthNGOsConfig;
+    window.CSOSuperStore.exportYouthNGOsManifest = SuperStore.exportYouthNGOsManifest;
+    window.CSOSuperStore.getCultureSportsConfig = SuperStore.getCultureSportsConfig;
+    window.CSOSuperStore.saveCultureSportsConfig = SuperStore.saveCultureSportsConfig;
+    window.CSOSuperStore.resetCultureSportsConfig = SuperStore.resetCultureSportsConfig;
+    window.CSOSuperStore.exportCultureSportsManifest = SuperStore.exportCultureSportsManifest;
+    window.CSOSuperStore.getEnvironmentScienceConfig = SuperStore.getEnvironmentScienceConfig;
+    window.CSOSuperStore.saveEnvironmentScienceConfig = SuperStore.saveEnvironmentScienceConfig;
+    window.CSOSuperStore.resetEnvironmentScienceConfig = SuperStore.resetEnvironmentScienceConfig;
+    window.CSOSuperStore.exportEnvironmentScienceManifest = SuperStore.exportEnvironmentScienceManifest;
+    window.CSOSuperStore.getDigitalForumsConfig = SuperStore.getDigitalForumsConfig;
+    window.CSOSuperStore.saveDigitalForumsConfig = SuperStore.saveDigitalForumsConfig;
+    window.CSOSuperStore.resetDigitalForumsConfig = SuperStore.resetDigitalForumsConfig;
+    window.CSOSuperStore.exportDigitalForumsManifest = SuperStore.exportDigitalForumsManifest;
+    window.CSOSuperStore.getSafetyGovernanceConfig = SuperStore.getSafetyGovernanceConfig;
+    window.CSOSuperStore.saveSafetyGovernanceConfig = SuperStore.saveSafetyGovernanceConfig;
+    window.CSOSuperStore.resetSafetyGovernanceConfig = SuperStore.resetSafetyGovernanceConfig;
+    window.CSOSuperStore.exportSafetyGovernanceManifest = SuperStore.exportSafetyGovernanceManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
