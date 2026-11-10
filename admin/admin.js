@@ -610,6 +610,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-14-003') { renderRecruitmentDeadlinesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-14-004') { renderWebinarsSessionsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-14-005') { renderEventRegistrationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-006') { renderScheduledPublicationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-007') { renderExpiryRulesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-008') { renderReminderConfigurationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-009') { renderScheduledMaintenanceWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1012,6 +1016,14 @@ async function loadMasterNavigation() {
         renderWebinarsSessionsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-14-005') {
         renderEventRegistrationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-006') {
+        renderScheduledPublicationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-007') {
+        renderExpiryRulesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-008') {
+        renderReminderConfigurationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-009') {
+        renderScheduledMaintenanceWorkspace(dom.workspaceRoot);
 
 
 
@@ -57465,6 +57477,1109 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // =========================================================================
+    // MODULE 14-006: Scheduled Publications
+    // =========================================================================
+    function renderScheduledPublicationsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getScheduledPublicationsConfig();
+        let items = Array.isArray(config.publications || config.items) ? [...(config.publications || config.items)] : [];
+        let searchTerm = '';
+        let sectionFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.contentTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.contentType || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.targetSection || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSection = sectionFilter === 'ALL' || a.targetSection === sectionFilter;
+            return matchesSearch && matchesSection;
+          });
+
+          const queuedCount = items.filter(p => p.status === 'Queued').length;
+          const reviewCount = items.filter(p => p.status === 'Draft Review').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AUTOMATED RELEASE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Scheduled Content Publications</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automate timed release of answer keys, employment digests, gazette notifications, and social broadcasts</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOQueuePublication" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Queue Publication
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Scheduled</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">Pending auto-release</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Queued for Live Go</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${queuedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Automated timer armed</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Draft Review Required</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${reviewCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Editorial sign-off pending</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Social Auto-Broadcast</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${items.filter(i => i.autoSocialBroadcast).length} Active</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Telegram &amp; WhatsApp feeds</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPubSearchInput" value="${searchTerm}" placeholder="Search publication title, content type, section..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoPubSectionFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                    <option value="ALL" ${sectionFilter === 'ALL' ? 'selected' : ''}>All Target Sections</option>
+                    <option value="Study Library" ${sectionFilter === 'Study Library' ? 'selected' : ''}>Study Library</option>
+                    <option value="Jobs & Careers" ${sectionFilter === 'Jobs & Careers' ? 'selected' : ''}>Jobs & Careers</option>
+                    <option value="Schemes & Benefits" ${sectionFilter === 'Schemes & Benefits' ? 'selected' : ''}>Schemes & Benefits</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Publications Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Content Title &amp; ID</th>
+                      <th class="py-3 px-4">Type</th>
+                      <th class="py-3 px-4">Target Section</th>
+                      <th class="py-3 px-4">Scheduled Release</th>
+                      <th class="py-3 px-4">Social Broadcast</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No scheduled publications match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.contentTitle}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-emerald-300 border border-emerald-500/20">${item.contentType}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 font-medium">
+                          ${item.targetSection}
+                        </td>
+                        <td class="py-3 px-4 font-mono font-medium text-amber-300 text-xs">
+                          ${item.scheduledPublishTime}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium ${item.autoSocialBroadcast ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                            ${item.autoSocialBroadcast ? 'Enabled (Auto)' : 'Manual Only'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Queued' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Paused'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoPubSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoPubSectionFilter')?.addEventListener('change', (e) => {
+            sectionFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Scheduled Publications Schema', {
+              id: 'string (unique ID, e.g. PUB-01)',
+              contentTitle: 'string (title of post, document, or key)',
+              contentType: 'string (Mock Solution PDF, Editorial Article, Scheme Guide)',
+              targetSection: 'string (Study Library, Jobs & Careers, Schemes & Benefits)',
+              scheduledPublishTime: 'string (YYYY-MM-DD HH:MM)',
+              autoSocialBroadcast: 'boolean (auto-post to Telegram/WhatsApp channels)',
+              status: 'string (Queued, Draft Review, Published, Cancelled)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportScheduledPublicationsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Scheduled Publications to factory defaults?')) {
+              store.resetScheduledPublicationsConfig();
+              config = store.getScheduledPublicationsConfig();
+              items = [...(config.publications || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOQueuePublication')?.addEventListener('click', () => {
+            const title = prompt('Content Title:');
+            if (!title) return;
+            const type = prompt('Content Type (Editorial Article, Mock Solution PDF, Scheme Guide):', 'Editorial Article');
+            const section = prompt('Target Section (Study Library, Jobs & Careers, Schemes & Benefits):', 'Jobs & Careers');
+            const time = prompt('Scheduled Time (YYYY-MM-DD HH:MM):', '2026-11-20 09:00');
+            const newId = 'PUB-' + String(items.length + 1).padStart(2, '0');
+            const newPub = {
+              id: newId,
+              contentTitle: title,
+              contentType: type || 'Editorial Article',
+              targetSection: section || 'Jobs & Careers',
+              scheduledPublishTime: time || '2026-11-20 09:00',
+              autoSocialBroadcast: true,
+              status: 'Queued',
+              active: true
+            };
+            items.push(newPub);
+            config.publications = items;
+            config.items = items;
+            store.saveScheduledPublicationsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.publications = items;
+                config.items = items;
+                store.saveScheduledPublicationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newTitle = prompt('Edit Content Title:', item.contentTitle);
+              if (newTitle !== null && newTitle.trim()) {
+                item.contentTitle = newTitle.trim();
+                const newTime = prompt('Edit Scheduled Time:', item.scheduledPublishTime);
+                if (newTime !== null) item.scheduledPublishTime = newTime.trim();
+                const newStatus = prompt('Edit Status (Queued, Draft Review, Published):', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.publications = items;
+                config.items = items;
+                store.saveScheduledPublicationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete publication ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.publications = items;
+                config.items = items;
+                store.saveScheduledPublicationsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-007: Expiry Rules
+    // =========================================================================
+    function renderExpiryRulesWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getExpiryRulesConfig();
+        let items = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+        let searchTerm = '';
+        let targetFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.ruleName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.targetContentType || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.actionOnExpiry || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesTarget = targetFilter === 'ALL' || a.targetContentType === targetFilter;
+            return matchesSearch && matchesTarget;
+          });
+
+          const totalRules = items.length;
+          const activeRules = items.filter(r => r.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">RETENTION &amp; OBSOLESCENCE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Automated Content Expiry Rules</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define automated lifecycle archival, deadline-based deprecation, banner dismissals, and legacy purge triggers</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddExpiryRule" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-rose-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Expiry Rule
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Rules</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalRules}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">${activeRules} policies actively monitoring</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Archived Last 30 Days</div>
+                  <div class="text-2xl font-bold text-rose-300 mt-1">42 Items</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Automated cleanup actions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Default Retention</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">90 Days</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Post-deadline archive period</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoExpirySearchInput" value="${searchTerm}" placeholder="Search rule name, target type, action..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoExpiryTargetFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-rose-500">
+                    <option value="ALL" ${targetFilter === 'ALL' ? 'selected' : ''}>All Content Targets</option>
+                    <option value="Job Postings" ${targetFilter === 'Job Postings' ? 'selected' : ''}>Job Postings</option>
+                    <option value="Announcement Banners" ${targetFilter === 'Announcement Banners' ? 'selected' : ''}>Announcement Banners</option>
+                    <option value="Draft Syllabus PDFs" ${targetFilter === 'Draft Syllabus PDFs' ? 'selected' : ''}>Draft Syllabus PDFs</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Expiry Rules Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Rule Name &amp; ID</th>
+                      <th class="py-3 px-4">Target Content</th>
+                      <th class="py-3 px-4">Trigger Condition</th>
+                      <th class="py-3 px-4">Action On Expiry</th>
+                      <th class="py-3 px-4">Editor Alert</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No expiry rules match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.ruleName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-rose-300 border border-rose-500/20">${item.targetContentType}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-amber-300">
+                          ${item.triggerCondition}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300">
+                          ${item.actionOnExpiry}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium ${item.notifyEditor ? 'bg-sky-500/10 text-sky-300 border border-sky-500/20' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                            ${item.notifyEditor ? 'Yes (Email)' : 'Silent'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Enabled' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoExpirySearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoExpiryTargetFilter')?.addEventListener('change', (e) => {
+            targetFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Expiry Rules Schema', {
+              id: 'string (unique ID, e.g. EXP-01)',
+              ruleName: 'string (policy description name)',
+              targetContentType: 'string (Job Postings, Announcement Banners, Draft Syllabus PDFs)',
+              triggerCondition: 'string (e.g. Application Closing Date + 7 Days, Timestamp Reached)',
+              actionOnExpiry: 'string (Archive & Disable, Unpublish Immediately, Move to Legacy Archive)',
+              notifyEditor: 'boolean (send warning email to content editor)',
+              status: 'string (Active Rule, Paused, Deprecated)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportExpiryRulesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Expiry Rules to factory defaults?')) {
+              store.resetExpiryRulesConfig();
+              config = store.getExpiryRulesConfig();
+              items = [...(config.rules || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddExpiryRule')?.addEventListener('click', () => {
+            const name = prompt('Rule Name:');
+            if (!name) return;
+            const target = prompt('Target Content Type:', 'Job Postings');
+            const condition = prompt('Trigger Condition:', 'Closing Date + 14 Days');
+            const action = prompt('Action On Expiry:', 'Archive and Unpublish');
+            const newId = 'EXP-' + String(items.length + 1).padStart(2, '0');
+            const newRule = {
+              id: newId,
+              ruleName: name,
+              targetContentType: target || 'Job Postings',
+              triggerCondition: condition || 'Timestamp Reached',
+              actionOnExpiry: action || 'Archive Immediately',
+              notifyEditor: true,
+              status: 'Active Rule',
+              active: true
+            };
+            items.push(newRule);
+            config.rules = items;
+            config.items = items;
+            store.saveExpiryRulesConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                item.status = item.active ? 'Active Rule' : 'Paused';
+                config.rules = items;
+                config.items = items;
+                store.saveExpiryRulesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Rule Name:', item.ruleName);
+              if (newName !== null && newName.trim()) {
+                item.ruleName = newName.trim();
+                const newCond = prompt('Edit Trigger Condition:', item.triggerCondition);
+                if (newCond !== null) item.triggerCondition = newCond.trim();
+                const newAct = prompt('Edit Action On Expiry:', item.actionOnExpiry);
+                if (newAct !== null) item.actionOnExpiry = newAct.trim();
+                config.rules = items;
+                config.items = items;
+                store.saveExpiryRulesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete expiry rule ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.rules = items;
+                config.items = items;
+                store.saveExpiryRulesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-008: Reminder Configuration
+    // =========================================================================
+    function renderReminderConfigurationWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getReminderConfigurationConfig();
+        let items = Array.isArray(config.reminders || config.items) ? [...(config.reminders || config.items)] : [];
+        let searchTerm = '';
+        let channelFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.reminderTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.targetAudience || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.dispatchChannel || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.templateKey || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesChannel = channelFilter === 'ALL' || (a.dispatchChannel || '').includes(channelFilter);
+            return matchesSearch && matchesChannel;
+          });
+
+          const totalReminders = items.length;
+          const activeReminders = items.filter(r => r.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">NOTIFICATIONS &amp; DISPATCH</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Automated Aspirant Reminders</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Configure multi-channel push, SMS, email, and WhatsApp reminder triggers for deadlines and live sessions</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddReminder" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-amber-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Reminder
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Reminders</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalReminders}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">${activeReminders} triggers armed</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Dispatched Last 24h</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">3,410 Alerts</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">High deliverability rate (99.4%)</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Supported Gateways</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">4 Gateways</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Email, Push, SMS, WhatsApp</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoRemSearchInput" value="${searchTerm}" placeholder="Search reminder title, audience, template..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoRemChannelFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-amber-500">
+                    <option value="ALL" ${channelFilter === 'ALL' ? 'selected' : ''}>All Channels</option>
+                    <option value="Email" ${channelFilter === 'Email' ? 'selected' : ''}>Email</option>
+                    <option value="Push" ${channelFilter === 'Push' ? 'selected' : ''}>Push Notification</option>
+                    <option value="SMS" ${channelFilter === 'SMS' ? 'selected' : ''}>SMS / WhatsApp</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Reminders Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Reminder Title &amp; ID</th>
+                      <th class="py-3 px-4">Trigger Offset</th>
+                      <th class="py-3 px-4">Target Audience</th>
+                      <th class="py-3 px-4">Channels</th>
+                      <th class="py-3 px-4">Template Ref</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No reminder triggers match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.reminderTitle}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-amber-300 font-medium">
+                          ${item.triggerOffset}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300">
+                          ${item.targetAudience}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-sky-300 border border-sky-500/20">${item.dispatchChannel}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.templateKey}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Muted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoRemSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoRemChannelFilter')?.addEventListener('change', (e) => {
+            channelFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Reminder Configuration Schema', {
+              id: 'string (unique ID, e.g. REM-01)',
+              reminderTitle: 'string (name of the trigger)',
+              triggerOffset: 'string (e.g. 48 Hours Before Deadline, 1 Hour Before Start)',
+              targetAudience: 'string (user segment receiving notification)',
+              dispatchChannel: 'string (Email + Push Notification, SMS / WhatsApp)',
+              templateKey: 'string (template identifier, e.g. EXAM_DEADLINE_URGENT)',
+              status: 'string (Active, Muted, Suspended)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportReminderConfigurationManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Reminder Configuration to factory defaults?')) {
+              store.resetReminderConfigurationConfig();
+              config = store.getReminderConfigurationConfig();
+              items = [...(config.reminders || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddReminder')?.addEventListener('click', () => {
+            const title = prompt('Reminder Title:');
+            if (!title) return;
+            const offset = prompt('Trigger Offset (e.g. 24 Hours Before Start):', '24 Hours Before');
+            const audience = prompt('Target Audience:', 'Registered Aspirants');
+            const channel = prompt('Dispatch Channels:', 'Email + Push Notification');
+            const newId = 'REM-' + String(items.length + 1).padStart(2, '0');
+            const newRem = {
+              id: newId,
+              reminderTitle: title,
+              triggerOffset: offset || '24 Hours Before',
+              targetAudience: audience || 'Registered Aspirants',
+              dispatchChannel: channel || 'Email + Push',
+              templateKey: 'CUSTOM_ALERT_' + String(items.length + 1),
+              status: 'Active',
+              active: true
+            };
+            items.push(newRem);
+            config.reminders = items;
+            config.items = items;
+            store.saveReminderConfigurationConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                item.status = item.active ? 'Active' : 'Muted';
+                config.reminders = items;
+                config.items = items;
+                store.saveReminderConfigurationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newTitle = prompt('Edit Reminder Title:', item.reminderTitle);
+              if (newTitle !== null && newTitle.trim()) {
+                item.reminderTitle = newTitle.trim();
+                const newOffset = prompt('Edit Trigger Offset:', item.triggerOffset);
+                if (newOffset !== null) item.triggerOffset = newOffset.trim();
+                const newChannel = prompt('Edit Channels:', item.dispatchChannel);
+                if (newChannel !== null) item.dispatchChannel = newChannel.trim();
+                config.reminders = items;
+                config.items = items;
+                store.saveReminderConfigurationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete reminder ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.reminders = items;
+                config.items = items;
+                store.saveReminderConfigurationConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-009: Scheduled Maintenance
+    // =========================================================================
+    function renderScheduledMaintenanceWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getScheduledMaintenanceConfig();
+        let items = Array.isArray(config.windows || config.items) ? [...(config.windows || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.windowTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.userImpactLevel || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.status || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'ALL' || a.status === statusFilter;
+            return matchesSearch && matchesStatus;
+          });
+
+          const scheduledCount = items.filter(w => w.status === 'Scheduled').length;
+          const completedCount = items.filter(w => w.status === 'Completed').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">SYSTEM OPERATIONS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Scheduled Maintenance Windows</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Plan and execute low-traffic maintenance windows, broadcast maintenance alerts, and manage read-only states</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddMaintenance" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Schedule Window
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Upcoming Windows</div>
+                  <div class="text-2xl font-bold text-white mt-1">${scheduledCount}</div>
+                  <div class="text-[10px] text-indigo-400 mt-1">Pending maintenance sessions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Completed Maintenance</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${completedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Historical maintenance records</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Avg Downtime Window</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">15 Mins</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Off-peak 02:00 - 04:00 AM IST</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoMntSearchInput" value="${searchTerm}" placeholder="Search maintenance title, impact level..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoMntStatusFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+                    <option value="ALL" ${statusFilter === 'ALL' ? 'selected' : ''}>All Statuses</option>
+                    <option value="Scheduled" ${statusFilter === 'Scheduled' ? 'selected' : ''}>Scheduled</option>
+                    <option value="Completed" ${statusFilter === 'Completed' ? 'selected' : ''}>Completed</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Maintenance Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Maintenance Window &amp; ID</th>
+                      <th class="py-3 px-4">Window Timings</th>
+                      <th class="py-3 px-4">Estimated Downtime</th>
+                      <th class="py-3 px-4">Impact Level</th>
+                      <th class="py-3 px-4">Countdown Banner</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No maintenance windows match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.windowTitle}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          <div>${item.startDateTime}</div>
+                          <div class="text-slate-500 text-[10px]">→ ${item.endDateTime}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs ${item.estimatedDowntimeMinutes > 0 ? 'text-amber-400' : 'text-emerald-400'}">
+                          ${item.estimatedDowntimeMinutes} mins
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-indigo-300 border border-indigo-500/20">${item.userImpactLevel}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium ${item.countdownBannerEnabled ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                            ${item.countdownBannerEnabled ? 'Banner ON' : 'Off'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Scheduled' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-status" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+                            Toggle Status
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoMntSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoMntStatusFilter')?.addEventListener('change', (e) => {
+            statusFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Scheduled Maintenance Schema', {
+              id: 'string (unique ID, e.g. MNT-01)',
+              windowTitle: 'string (maintenance window description)',
+              startDateTime: 'string (YYYY-MM-DD HH:MM)',
+              endDateTime: 'string (YYYY-MM-DD HH:MM)',
+              estimatedDowntimeMinutes: 'number (estimated minutes of disruption)',
+              userImpactLevel: 'string (Partial Read-Only Mode, Zero Downtime, Full Offline)',
+              countdownBannerEnabled: 'boolean (show warning header banner on live site)',
+              status: 'string (Scheduled, Completed, In-Progress, Cancelled)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportScheduledMaintenanceManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Scheduled Maintenance to factory defaults?')) {
+              store.resetScheduledMaintenanceConfig();
+              config = store.getScheduledMaintenanceConfig();
+              items = [...(config.windows || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddMaintenance')?.addEventListener('click', () => {
+            const title = prompt('Maintenance Window Title:');
+            if (!title) return;
+            const start = prompt('Start Time (YYYY-MM-DD HH:MM):', '2026-12-05 02:00');
+            const end = prompt('End Time (YYYY-MM-DD HH:MM):', '2026-12-05 03:00');
+            const downtime = prompt('Estimated Downtime (minutes):', '30');
+            const newId = 'MNT-' + String(items.length + 1).padStart(2, '0');
+            const newMnt = {
+              id: newId,
+              windowTitle: title,
+              startDateTime: start || '2026-12-05 02:00',
+              endDateTime: end || '2026-12-05 03:00',
+              estimatedDowntimeMinutes: parseInt(downtime, 10) || 0,
+              userImpactLevel: 'Partial (Read-Only Mode)',
+              countdownBannerEnabled: true,
+              status: 'Scheduled',
+              active: true
+            };
+            items.push(newMnt);
+            config.windows = items;
+            config.items = items;
+            store.saveScheduledMaintenanceConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.status = item.status === 'Scheduled' ? 'Completed' : 'Scheduled';
+                config.windows = items;
+                config.items = items;
+                store.saveScheduledMaintenanceConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newTitle = prompt('Edit Title:', item.windowTitle);
+              if (newTitle !== null && newTitle.trim()) {
+                item.windowTitle = newTitle.trim();
+                const newStart = prompt('Edit Start:', item.startDateTime);
+                if (newStart !== null) item.startDateTime = newStart.trim();
+                const newEnd = prompt('Edit End:', item.endDateTime);
+                if (newEnd !== null) item.endDateTime = newEnd.trim();
+                const newStatus = prompt('Edit Status (Scheduled, Completed):', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.windows = items;
+                config.items = items;
+                store.saveScheduledMaintenanceConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete maintenance window ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.windows = items;
+                config.items = items;
+                store.saveScheduledMaintenanceConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 

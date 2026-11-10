@@ -1053,22 +1053,22 @@
         {
           "id": "module-14-006",
           "title": "Scheduled Publications",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-14-007",
           "title": "Expiry Rules",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-14-008",
           "title": "Reminder Configuration",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-14-009",
           "title": "Scheduled Maintenance",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

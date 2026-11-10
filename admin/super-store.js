@@ -12945,7 +12945,11 @@
           examCalendar: this.getExamCalendarConfig ? this.getExamCalendarConfig() : null,
           recruitmentDeadlines: this.getRecruitmentDeadlinesConfig ? this.getRecruitmentDeadlinesConfig() : null,
           webinarsSessions: this.getWebinarsSessionsConfig ? this.getWebinarsSessionsConfig() : null,
-          eventRegistrations: this.getEventRegistrationsConfig ? this.getEventRegistrationsConfig() : null
+          eventRegistrations: this.getEventRegistrationsConfig ? this.getEventRegistrationsConfig() : null,
+          scheduledPublications: this.getScheduledPublicationsConfig ? this.getScheduledPublicationsConfig() : null,
+          expiryRules: this.getExpiryRulesConfig ? this.getExpiryRulesConfig() : null,
+          reminderConfiguration: this.getReminderConfigurationConfig ? this.getReminderConfigurationConfig() : null,
+          scheduledMaintenance: this.getScheduledMaintenanceConfig ? this.getScheduledMaintenanceConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -14089,6 +14093,141 @@
     return filename;
   };
 
+  // --- MODULE 14-006: Scheduled Publications ---
+  const DEFAULT_SCHEDULED_PUBLICATIONS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalQueuedCount: 8, publishingNext24h: 3, publishedThisMonth: 28 },
+    items: [
+      { id: "PUB-01", contentTitle: "OPSC OAS Prelims 2026 Model Answer Key & Explanations", contentType: "Mock Solution PDF", targetSection: "Study Library", scheduledPublishTime: "2026-11-15 18:00", autoSocialBroadcast: true, status: "Queued", active: true },
+      { id: "PUB-02", contentTitle: "Weekly Odisha Employment Gazette Digest #46", contentType: "Editorial Article", targetSection: "Jobs & Careers", scheduledPublishTime: "2026-11-16 08:00", autoSocialBroadcast: true, status: "Queued", active: true },
+      { id: "PUB-03", contentTitle: "Tribal Language Welfare Scheme Application Guide", contentType: "Scheme Guide", targetSection: "Schemes & Benefits", scheduledPublishTime: "2026-11-18 10:30", autoSocialBroadcast: false, status: "Draft Review", active: true }
+    ]
+  };
+  SuperStore.getScheduledPublicationsConfig = function() {
+    return _hydrateConfig('cso_scheduled_publications_config', 'publications', () => DEFAULT_SCHEDULED_PUBLICATIONS);
+  };
+  SuperStore.saveScheduledPublicationsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.publications = cfg.items || cfg.publications || []; cfg.items = cfg.publications;
+    localStorage.setItem('cso_scheduled_publications_config', JSON.stringify(cfg));
+    this.logAudit('SCHEDULED_PUBLICATIONS_UPDATED', 'SCHEDULING', `Scheduled publications updated (${cfg.items.length} items).`);
+    return true;
+  };
+  SuperStore.resetScheduledPublicationsConfig = function() {
+    localStorage.setItem('cso_scheduled_publications_config', JSON.stringify(DEFAULT_SCHEDULED_PUBLICATIONS));
+    this.logAudit('SCHEDULED_PUBLICATIONS_RESET', 'SCHEDULING', 'Scheduled publications reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SCHEDULED_PUBLICATIONS));
+  };
+  SuperStore.exportScheduledPublicationsManifest = function() {
+    const config = this.getScheduledPublicationsConfig();
+    const filename = "scheduled_publications_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SCHEDULED_PUBLICATIONS_EXPORTED", "DATA_EXPORT", `Scheduled publications manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-007: Expiry Rules ---
+  const DEFAULT_EXPIRY_RULES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeRulesCount: 5, autoArchivedLast30Days: 42, customRetentionDays: 90 },
+    items: [
+      { id: "EXP-01", ruleName: "Closed Recruitment Notice Archival", targetContentType: "Job Postings", triggerCondition: "Application Closing Date + 7 Days", actionOnExpiry: "Archive & Disable Application Link", notifyEditor: true, status: "Active Rule", active: true },
+      { id: "EXP-02", ruleName: "Temporary Alert Banner Auto-Dismissal", targetContentType: "Announcement Banners", triggerCondition: "Expiration Timestamp Reached", actionOnExpiry: "Unpublish Immediately", notifyEditor: false, status: "Active Rule", active: true },
+      { id: "EXP-03", ruleName: "Superseded Syllabus Draft Cleanup", targetContentType: "Draft Syllabus PDFs", triggerCondition: "New Gazette Version Published", actionOnExpiry: "Move to Legacy Archive", notifyEditor: true, status: "Active Rule", active: true }
+    ]
+  };
+  SuperStore.getExpiryRulesConfig = function() {
+    return _hydrateConfig('cso_expiry_rules_config', 'rules', () => DEFAULT_EXPIRY_RULES);
+  };
+  SuperStore.saveExpiryRulesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.rules = cfg.items || cfg.rules || []; cfg.items = cfg.rules;
+    localStorage.setItem('cso_expiry_rules_config', JSON.stringify(cfg));
+    this.logAudit('EXPIRY_RULES_UPDATED', 'SCHEDULING', `Expiry rules updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetExpiryRulesConfig = function() {
+    localStorage.setItem('cso_expiry_rules_config', JSON.stringify(DEFAULT_EXPIRY_RULES));
+    this.logAudit('EXPIRY_RULES_RESET', 'SCHEDULING', 'Expiry rules reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_EXPIRY_RULES));
+  };
+  SuperStore.exportExpiryRulesManifest = function() {
+    const config = this.getExpiryRulesConfig();
+    const filename = "expiry_rules_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EXPIRY_RULES_EXPORTED", "DATA_EXPORT", `Expiry rules manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-008: Reminder Configuration ---
+  const DEFAULT_REMINDER_CONFIG = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalRemindersConfigured: 6, dispatched24h: 3410, deliveryChannels: "Email + Push + Telegram" },
+    items: [
+      { id: "REM-01", reminderTitle: "Application Fee Cutoff Countdown", triggerOffset: "48 Hours Before Deadline", targetAudience: "Draft Incomplete Applicants", dispatchChannel: "Email + Push Notification", templateKey: "EXAM_DEADLINE_URGENT", status: "Active", active: true },
+      { id: "REM-02", reminderTitle: "Live Strategy Webinar Starting Alert", triggerOffset: "1 Hour Before Start", targetAudience: "Registered Attendees", dispatchChannel: "SMS / WhatsApp + Email", templateKey: "WEBINAR_STARTING_NOW", status: "Active", active: true },
+      { id: "REM-03", reminderTitle: "Mock Test Weekend Exam Reminder", triggerOffset: "Every Saturday 08:00 AM", targetAudience: "Active Mock Passholders", dispatchChannel: "Push Notification", templateKey: "WEEKEND_MOCK_INVITE", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getReminderConfigurationConfig = function() {
+    return _hydrateConfig('cso_reminder_configuration_config', 'reminders', () => DEFAULT_REMINDER_CONFIG);
+  };
+  SuperStore.saveReminderConfigurationConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.reminders = cfg.items || cfg.reminders || []; cfg.items = cfg.reminders;
+    localStorage.setItem('cso_reminder_configuration_config', JSON.stringify(cfg));
+    this.logAudit('REMINDER_CONFIGURATION_UPDATED', 'SCHEDULING', `Reminder configuration updated (${cfg.items.length} reminders).`);
+    return true;
+  };
+  SuperStore.resetReminderConfigurationConfig = function() {
+    localStorage.setItem('cso_reminder_configuration_config', JSON.stringify(DEFAULT_REMINDER_CONFIG));
+    this.logAudit('REMINDER_CONFIGURATION_RESET', 'SCHEDULING', 'Reminder configuration reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_REMINDER_CONFIG));
+  };
+  SuperStore.exportReminderConfigurationManifest = function() {
+    const config = this.getReminderConfigurationConfig();
+    const filename = "reminder_configuration_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("REMINDER_CONFIGURATION_EXPORTED", "DATA_EXPORT", `Reminder configuration manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-009: Scheduled Maintenance ---
+  const DEFAULT_SCHEDULED_MAINTENANCE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { upcomingWindowScheduled: false, nextWindowDate: "None Scheduled", platformState: "Normal Operational" },
+    items: [
+      { id: "MNT-01", windowTitle: "Cloudflare D1 Database Index Optimization", startDateTime: "2026-11-22 02:00", endDateTime: "2026-11-22 04:00", estimatedDowntimeMinutes: 30, userImpactLevel: "Partial (Read-Only Mode)", countdownBannerEnabled: true, status: "Scheduled", active: true },
+      { id: "MNT-02", windowTitle: "Storage Gateway Asset Migration", startDateTime: "2026-10-18 01:00", endDateTime: "2026-10-18 02:30", estimatedDowntimeMinutes: 0, userImpactLevel: "Zero Downtime", countdownBannerEnabled: false, status: "Completed", active: true }
+    ]
+  };
+  SuperStore.getScheduledMaintenanceConfig = function() {
+    return _hydrateConfig('cso_scheduled_maintenance_config', 'windows', () => DEFAULT_SCHEDULED_MAINTENANCE);
+  };
+  SuperStore.saveScheduledMaintenanceConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.windows = cfg.items || cfg.windows || []; cfg.items = cfg.windows;
+    localStorage.setItem('cso_scheduled_maintenance_config', JSON.stringify(cfg));
+    this.logAudit('SCHEDULED_MAINTENANCE_UPDATED', 'SYSTEM_ADMIN', `Scheduled maintenance updated (${cfg.items.length} windows).`);
+    return true;
+  };
+  SuperStore.resetScheduledMaintenanceConfig = function() {
+    localStorage.setItem('cso_scheduled_maintenance_config', JSON.stringify(DEFAULT_SCHEDULED_MAINTENANCE));
+    this.logAudit('SCHEDULED_MAINTENANCE_RESET', 'SYSTEM_ADMIN', 'Scheduled maintenance reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SCHEDULED_MAINTENANCE));
+  };
+  SuperStore.exportScheduledMaintenanceManifest = function() {
+    const config = this.getScheduledMaintenanceConfig();
+    const filename = "scheduled_maintenance_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SCHEDULED_MAINTENANCE_EXPORTED", "DATA_EXPORT", `Scheduled maintenance manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -14216,6 +14355,22 @@
     window.CSOSuperStore.saveEventRegistrationsConfig = SuperStore.saveEventRegistrationsConfig;
     window.CSOSuperStore.resetEventRegistrationsConfig = SuperStore.resetEventRegistrationsConfig;
     window.CSOSuperStore.exportEventRegistrationsManifest = SuperStore.exportEventRegistrationsManifest;
+    window.CSOSuperStore.getScheduledPublicationsConfig = SuperStore.getScheduledPublicationsConfig;
+    window.CSOSuperStore.saveScheduledPublicationsConfig = SuperStore.saveScheduledPublicationsConfig;
+    window.CSOSuperStore.resetScheduledPublicationsConfig = SuperStore.resetScheduledPublicationsConfig;
+    window.CSOSuperStore.exportScheduledPublicationsManifest = SuperStore.exportScheduledPublicationsManifest;
+    window.CSOSuperStore.getExpiryRulesConfig = SuperStore.getExpiryRulesConfig;
+    window.CSOSuperStore.saveExpiryRulesConfig = SuperStore.saveExpiryRulesConfig;
+    window.CSOSuperStore.resetExpiryRulesConfig = SuperStore.resetExpiryRulesConfig;
+    window.CSOSuperStore.exportExpiryRulesManifest = SuperStore.exportExpiryRulesManifest;
+    window.CSOSuperStore.getReminderConfigurationConfig = SuperStore.getReminderConfigurationConfig;
+    window.CSOSuperStore.saveReminderConfigurationConfig = SuperStore.saveReminderConfigurationConfig;
+    window.CSOSuperStore.resetReminderConfigurationConfig = SuperStore.resetReminderConfigurationConfig;
+    window.CSOSuperStore.exportReminderConfigurationManifest = SuperStore.exportReminderConfigurationManifest;
+    window.CSOSuperStore.getScheduledMaintenanceConfig = SuperStore.getScheduledMaintenanceConfig;
+    window.CSOSuperStore.saveScheduledMaintenanceConfig = SuperStore.saveScheduledMaintenanceConfig;
+    window.CSOSuperStore.resetScheduledMaintenanceConfig = SuperStore.resetScheduledMaintenanceConfig;
+    window.CSOSuperStore.exportScheduledMaintenanceManifest = SuperStore.exportScheduledMaintenanceManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
