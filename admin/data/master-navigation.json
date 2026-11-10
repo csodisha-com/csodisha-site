@@ -1084,7 +1084,7 @@
         {
           "id": "module-15-002",
           "title": "Supabase Connection Status",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-15-003",
@@ -1104,7 +1104,7 @@
         {
           "id": "module-15-006",
           "title": "Cloud Storage Integrations",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-15-007",

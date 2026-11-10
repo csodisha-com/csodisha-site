@@ -12949,7 +12949,13 @@
           scheduledPublications: this.getScheduledPublicationsConfig ? this.getScheduledPublicationsConfig() : null,
           expiryRules: this.getExpiryRulesConfig ? this.getExpiryRulesConfig() : null,
           reminderConfiguration: this.getReminderConfigurationConfig ? this.getReminderConfigurationConfig() : null,
-          scheduledMaintenance: this.getScheduledMaintenanceConfig ? this.getScheduledMaintenanceConfig() : null
+          scheduledMaintenance: this.getScheduledMaintenanceConfig ? this.getScheduledMaintenanceConfig() : null,
+          integrationDirectory: this.getIntegrationDirectoryConfig ? this.getIntegrationDirectoryConfig() : null,
+          supabaseStatus: this.getSupabaseStatusConfig ? this.getSupabaseStatusConfig() : null,
+          cloudflareIntegration: this.getCloudflareIntegrationConfig ? this.getCloudflareIntegrationConfig() : null,
+          paymentIntegrations: this.getPaymentIntegrationsConfig ? this.getPaymentIntegrationsConfig() : null,
+          emailProvider: this.getEmailProviderConfig ? this.getEmailProviderConfig() : null,
+          cloudStorage: this.getCloudStorageConfig ? this.getCloudStorageConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -14228,6 +14234,215 @@
     return filename;
   };
 
+  // --- MODULE 15-001: Integration Directory ---
+  const DEFAULT_INTEGRATION_DIRECTORY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalConnectors: 14, activeIntegrations: 11, configuredGateways: 8, pendingSetup: 3 },
+    items: [
+      { id: "INT-01", serviceName: "Supabase PostgreSQL & Auth", category: "Database & Identity", connectionProtocol: "HTTPS REST / WebSocket Realtime", authType: "Service Role JWT", status: "Operational", active: true },
+      { id: "INT-02", serviceName: "Cloudflare Pages & Edge Workers", category: "CDN, Edge Compute & Security", connectionProtocol: "Cloudflare v4 API", authType: "Global API Token", status: "Operational", active: true },
+      { id: "INT-03", serviceName: "Razorpay Payment Gateway", category: "Financial Rails", connectionProtocol: "REST Webhooks v2", authType: "API Key + Webhook Secret", status: "Operational", active: true },
+      { id: "INT-04", serviceName: "Brevo (Sendinblue) Transactional Mail", category: "Email & Notifications", connectionProtocol: "SMTP / REST API v3", authType: "Bearer API Key", status: "Operational", active: true },
+      { id: "INT-05", serviceName: "Cloudflare R2 Object Storage", category: "Cloud Storage", connectionProtocol: "S3 Compatible API", authType: "Access Key ID + Secret", status: "Operational", active: true }
+    ]
+  };
+  SuperStore.getIntegrationDirectoryConfig = function() {
+    return _hydrateConfig('cso_integration_directory_config', 'integrations', () => DEFAULT_INTEGRATION_DIRECTORY);
+  };
+  SuperStore.saveIntegrationDirectoryConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.integrations = cfg.items || cfg.integrations || []; cfg.items = cfg.integrations;
+    localStorage.setItem('cso_integration_directory_config', JSON.stringify(cfg));
+    this.logAudit('INTEGRATION_DIRECTORY_UPDATED', 'INTEGRATIONS', `Integration directory updated (${cfg.items.length} connectors).`);
+    return true;
+  };
+  SuperStore.resetIntegrationDirectoryConfig = function() {
+    localStorage.setItem('cso_integration_directory_config', JSON.stringify(DEFAULT_INTEGRATION_DIRECTORY));
+    this.logAudit('INTEGRATION_DIRECTORY_RESET', 'INTEGRATIONS', 'Integration directory reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_INTEGRATION_DIRECTORY));
+  };
+  SuperStore.exportIntegrationDirectoryManifest = function() {
+    const config = this.getIntegrationDirectoryConfig();
+    const filename = "integration_directory_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("INTEGRATION_DIRECTORY_EXPORTED", "DATA_EXPORT", `Integration directory manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-002: Supabase Connection Status ---
+  const DEFAULT_SUPABASE_STATUS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    telemetry: { projectRef: "cso-odisha-db-prod", region: "ap-south-1 (Mumbai)", dbVersion: "PostgreSQL 16.2", poolMode: "Transaction (PgBouncer)", activeConnections: 18, maxPoolSize: 60, roundTripLatencyMs: "18ms" },
+    items: [
+      { id: "SUB-01", subsystem: "PostgreSQL Primary Node", endpoint: "db.csodisha.supabase.co:5432", healthStatus: "Healthy (0 Errors)", lastHeartbeat: "2026-11-10 08:30", latencyMs: 16, active: true },
+      { id: "SUB-02", subsystem: "PostgREST Data API", endpoint: "https://cso-odisha.supabase.co/rest/v1/", healthStatus: "Healthy (0 Errors)", lastHeartbeat: "2026-11-10 08:31", latencyMs: 22, active: true },
+      { id: "SUB-03", subsystem: "GoTrue Auth Engine", endpoint: "https://cso-odisha.supabase.co/auth/v1/", healthStatus: "Healthy (0 Errors)", lastHeartbeat: "2026-11-10 08:29", latencyMs: 19, active: true },
+      { id: "SUB-04", subsystem: "Realtime WebSocket Hub", endpoint: "wss://cso-odisha.supabase.co/realtime/v1/", healthStatus: "Connected", lastHeartbeat: "2026-11-10 08:31", latencyMs: 14, active: true }
+    ]
+  };
+  SuperStore.getSupabaseStatusConfig = function() {
+    return _hydrateConfig('cso_supabase_status_config', 'subsystems', () => DEFAULT_SUPABASE_STATUS);
+  };
+  SuperStore.saveSupabaseStatusConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.subsystems = cfg.items || cfg.subsystems || []; cfg.items = cfg.subsystems;
+    localStorage.setItem('cso_supabase_status_config', JSON.stringify(cfg));
+    this.logAudit('SUPABASE_STATUS_UPDATED', 'DATABASE', `Supabase connection telemetry updated (${cfg.items.length} subsystems).`);
+    return true;
+  };
+  SuperStore.resetSupabaseStatusConfig = function() {
+    localStorage.setItem('cso_supabase_status_config', JSON.stringify(DEFAULT_SUPABASE_STATUS));
+    this.logAudit('SUPABASE_STATUS_RESET', 'DATABASE', 'Supabase connection status reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SUPABASE_STATUS));
+  };
+  SuperStore.exportSupabaseStatusManifest = function() {
+    const config = this.getSupabaseStatusConfig();
+    const filename = "supabase_status_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SUPABASE_STATUS_EXPORTED", "DATA_EXPORT", `Supabase status manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-003: Cloudflare Integration ---
+  const DEFAULT_CLOUDFLARE_INTEGRATION = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    zoneSummary: { zoneName: "csodisha.com", zoneId: "cso_cf_zone_8829104", sslMode: "Full (Strict)", ddosProtection: "Under Attack Auto-Mitigate", edgeCacheHitRate: "93.4%", wafBlocked24h: 312 },
+    items: [
+      { id: "CFR-01", featureName: "Cloudflare Pages Deployment Pipeline", resourceRef: "csodisha-site.pages.dev", currentCommit: "9cf8041 (main)", edgeStatus: "Active", autoDeployOnPush: true, active: true },
+      { id: "CFR-02", featureName: "Edge Cache Rules & HTML Purge", resourceRef: "Cache Everything (TTL 4h)", currentCommit: "Rule #CF-01", edgeStatus: "Active", autoDeployOnPush: true, active: true },
+      { id: "CFR-03", featureName: "Web Application Firewall (WAF) Rulebook", resourceRef: "OWASP ModSecurity Core Set", currentCommit: "Rule #CF-WAF-09", edgeStatus: "Active", autoDeployOnPush: true, active: true },
+      { id: "CFR-04", featureName: "DNS SEC & Anycast Routing", resourceRef: "1.1.1.1 Anycast Cluster", currentCommit: "Verified Valid", edgeStatus: "Active", autoDeployOnPush: false, active: true }
+    ]
+  };
+  SuperStore.getCloudflareIntegrationConfig = function() {
+    return _hydrateConfig('cso_cloudflare_integration_config', 'rules', () => DEFAULT_CLOUDFLARE_INTEGRATION);
+  };
+  SuperStore.saveCloudflareIntegrationConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.rules = cfg.items || cfg.rules || []; cfg.items = cfg.rules;
+    localStorage.setItem('cso_cloudflare_integration_config', JSON.stringify(cfg));
+    this.logAudit('CLOUDFLARE_INTEGRATION_UPDATED', 'INFRASTRUCTURE', `Cloudflare integration updated (${cfg.items.length} features).`);
+    return true;
+  };
+  SuperStore.resetCloudflareIntegrationConfig = function() {
+    localStorage.setItem('cso_cloudflare_integration_config', JSON.stringify(DEFAULT_CLOUDFLARE_INTEGRATION));
+    this.logAudit('CLOUDFLARE_INTEGRATION_RESET', 'INFRASTRUCTURE', 'Cloudflare integration reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_CLOUDFLARE_INTEGRATION));
+  };
+  SuperStore.exportCloudflareIntegrationManifest = function() {
+    const config = this.getCloudflareIntegrationConfig();
+    const filename = "cloudflare_integration_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CLOUDFLARE_INTEGRATION_EXPORTED", "DATA_EXPORT", `Cloudflare integration manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-004: Payment Integrations ---
+  const DEFAULT_PAYMENT_INTEGRATIONS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeGatewaysCount: 2, defaultRail: "Razorpay Auto-Routing", webhookSuccessRate: "99.8%", settlingCurrency: "INR (₹)" },
+    items: [
+      { id: "PAY-01", gatewayName: "Razorpay Standard Checkout", environment: "Production Live", merchantId: "rzp_live_CSOdisha982", supportedInstruments: "UPI (GPay/PhonePe), NetBanking, RuPay/Cards", webhookEndpoint: "https://csodisha.com/api/webhooks/razorpay", status: "Active & Processing", active: true },
+      { id: "PAY-02", gatewayName: "Cashfree Backup Payment Rail", environment: "Production Standby", merchantId: "cf_live_CSOdisha412", supportedInstruments: "UPI FastRail, IMPS", webhookEndpoint: "https://csodisha.com/api/webhooks/cashfree", status: "Standby Failover", active: true },
+      { id: "PAY-03", gatewayName: "Razorpay Sandbox Simulation", environment: "Test Sandbox", merchantId: "rzp_test_Simulate992", supportedInstruments: "Virtual UPI & Test Cards", webhookEndpoint: "https://csodisha.com/api/webhooks/test", status: "Sandbox Active", active: true }
+    ]
+  };
+  SuperStore.getPaymentIntegrationsConfig = function() {
+    return _hydrateConfig('cso_payment_integrations_config', 'gateways', () => DEFAULT_PAYMENT_INTEGRATIONS);
+  };
+  SuperStore.savePaymentIntegrationsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.gateways = cfg.items || cfg.gateways || []; cfg.items = cfg.gateways;
+    localStorage.setItem('cso_payment_integrations_config', JSON.stringify(cfg));
+    this.logAudit('PAYMENT_INTEGRATIONS_UPDATED', 'FINANCE', `Payment integrations updated (${cfg.items.length} gateways).`);
+    return true;
+  };
+  SuperStore.resetPaymentIntegrationsConfig = function() {
+    localStorage.setItem('cso_payment_integrations_config', JSON.stringify(DEFAULT_PAYMENT_INTEGRATIONS));
+    this.logAudit('PAYMENT_INTEGRATIONS_RESET', 'FINANCE', 'Payment integrations reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_PAYMENT_INTEGRATIONS));
+  };
+  SuperStore.exportPaymentIntegrationsManifest = function() {
+    const config = this.getPaymentIntegrationsConfig();
+    const filename = "payment_integrations_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PAYMENT_INTEGRATIONS_EXPORTED", "DATA_EXPORT", `Payment integrations manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-005: Email Provider ---
+  const DEFAULT_EMAIL_PROVIDER = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { primaryProvider: "Brevo SMTP & API", monthlyQuota: 100000, sentThisMonth: 28410, bounceRate: "0.4%", senderIdentity: "alerts@csodisha.com" },
+    items: [
+      { id: "EML-01", configScope: "Transactional Exam Notices", smtpHost: "smtp-relay.brevo.com", port: 587, security: "TLS", senderAddress: "alerts@csodisha.com", status: "Connected & Verified", active: true },
+      { id: "EML-02", configScope: "Aspirant Digest & Gazette Broadcasts", smtpHost: "smtp-relay.brevo.com", port: 587, security: "TLS", senderAddress: "newsletter@csodisha.com", status: "Connected & Verified", active: true },
+      { id: "EML-03", configScope: "Support & Grievance Desks", smtpHost: "smtp.gmail.com (Google Workspace)", port: 465, security: "SSL", senderAddress: "support@csodisha.com", status: "Connected & Verified", active: true }
+    ]
+  };
+  SuperStore.getEmailProviderConfig = function() {
+    return _hydrateConfig('cso_email_provider_config', 'mailConfigs', () => DEFAULT_EMAIL_PROVIDER);
+  };
+  SuperStore.saveEmailProviderConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.mailConfigs = cfg.items || cfg.mailConfigs || []; cfg.items = cfg.mailConfigs;
+    localStorage.setItem('cso_email_provider_config', JSON.stringify(cfg));
+    this.logAudit('EMAIL_PROVIDER_UPDATED', 'NOTIFICATIONS', `Email provider configs updated (${cfg.items.length} scopes).`);
+    return true;
+  };
+  SuperStore.resetEmailProviderConfig = function() {
+    localStorage.setItem('cso_email_provider_config', JSON.stringify(DEFAULT_EMAIL_PROVIDER));
+    this.logAudit('EMAIL_PROVIDER_RESET', 'NOTIFICATIONS', 'Email provider configs reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_EMAIL_PROVIDER));
+  };
+  SuperStore.exportEmailProviderManifest = function() {
+    const config = this.getEmailProviderConfig();
+    const filename = "email_provider_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EMAIL_PROVIDER_EXPORTED", "DATA_EXPORT", `Email provider manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 15-006: Cloud Storage Integrations ---
+  const DEFAULT_CLOUD_STORAGE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalBuckets: 4, storageUtilizedGB: "148.6 GB", totalFilesCount: 8420, bandwidthEgress24h: "32.4 GB" },
+    items: [
+      { id: "STR-01", bucketName: "cso-gazette-circulars-prod", provider: "Cloudflare R2", region: "Automatic (Global Fast)", publicAccess: "Public CDN URL", cdnUrlPrefix: "https://media.csodisha.com/gazettes", status: "Connected", active: true },
+      { id: "STR-02", bucketName: "cso-pyq-vault-study-docs", provider: "Cloudflare R2", region: "Automatic (Global Fast)", publicAccess: "Public CDN URL", cdnUrlPrefix: "https://media.csodisha.com/library", status: "Connected", active: true },
+      { id: "STR-03", bucketName: "cso-admin-backups-snapshots", provider: "AWS S3 Compliant Bucket", region: "ap-south-1", publicAccess: "Strictly Private", cdnUrlPrefix: "s3://cso-admin-backups-prod", status: "Connected", active: true },
+      { id: "STR-04", bucketName: "cso-user-verification-docs", provider: "Supabase Private Storage", region: "ap-south-1", publicAccess: "Authenticated Signed URL", cdnUrlPrefix: "supabase://storage/v1/s/users", status: "Connected", active: true }
+    ]
+  };
+  SuperStore.getCloudStorageConfig = function() {
+    return _hydrateConfig('cso_cloud_storage_config', 'buckets', () => DEFAULT_CLOUD_STORAGE);
+  };
+  SuperStore.saveCloudStorageConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.buckets = cfg.items || cfg.buckets || []; cfg.items = cfg.buckets;
+    localStorage.setItem('cso_cloud_storage_config', JSON.stringify(cfg));
+    this.logAudit('CLOUD_STORAGE_UPDATED', 'STORAGE', `Cloud storage configs updated (${cfg.items.length} buckets).`);
+    return true;
+  };
+  SuperStore.resetCloudStorageConfig = function() {
+    localStorage.setItem('cso_cloud_storage_config', JSON.stringify(DEFAULT_CLOUD_STORAGE));
+    this.logAudit('CLOUD_STORAGE_RESET', 'STORAGE', 'Cloud storage configs reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_CLOUD_STORAGE));
+  };
+  SuperStore.exportCloudStorageManifest = function() {
+    const config = this.getCloudStorageConfig();
+    const filename = "cloud_storage_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CLOUD_STORAGE_EXPORTED", "DATA_EXPORT", `Cloud storage manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -14371,6 +14586,30 @@
     window.CSOSuperStore.saveScheduledMaintenanceConfig = SuperStore.saveScheduledMaintenanceConfig;
     window.CSOSuperStore.resetScheduledMaintenanceConfig = SuperStore.resetScheduledMaintenanceConfig;
     window.CSOSuperStore.exportScheduledMaintenanceManifest = SuperStore.exportScheduledMaintenanceManifest;
+    window.CSOSuperStore.getIntegrationDirectoryConfig = SuperStore.getIntegrationDirectoryConfig;
+    window.CSOSuperStore.saveIntegrationDirectoryConfig = SuperStore.saveIntegrationDirectoryConfig;
+    window.CSOSuperStore.resetIntegrationDirectoryConfig = SuperStore.resetIntegrationDirectoryConfig;
+    window.CSOSuperStore.exportIntegrationDirectoryManifest = SuperStore.exportIntegrationDirectoryManifest;
+    window.CSOSuperStore.getSupabaseStatusConfig = SuperStore.getSupabaseStatusConfig;
+    window.CSOSuperStore.saveSupabaseStatusConfig = SuperStore.saveSupabaseStatusConfig;
+    window.CSOSuperStore.resetSupabaseStatusConfig = SuperStore.resetSupabaseStatusConfig;
+    window.CSOSuperStore.exportSupabaseStatusManifest = SuperStore.exportSupabaseStatusManifest;
+    window.CSOSuperStore.getCloudflareIntegrationConfig = SuperStore.getCloudflareIntegrationConfig;
+    window.CSOSuperStore.saveCloudflareIntegrationConfig = SuperStore.saveCloudflareIntegrationConfig;
+    window.CSOSuperStore.resetCloudflareIntegrationConfig = SuperStore.resetCloudflareIntegrationConfig;
+    window.CSOSuperStore.exportCloudflareIntegrationManifest = SuperStore.exportCloudflareIntegrationManifest;
+    window.CSOSuperStore.getPaymentIntegrationsConfig = SuperStore.getPaymentIntegrationsConfig;
+    window.CSOSuperStore.savePaymentIntegrationsConfig = SuperStore.savePaymentIntegrationsConfig;
+    window.CSOSuperStore.resetPaymentIntegrationsConfig = SuperStore.resetPaymentIntegrationsConfig;
+    window.CSOSuperStore.exportPaymentIntegrationsManifest = SuperStore.exportPaymentIntegrationsManifest;
+    window.CSOSuperStore.getEmailProviderConfig = SuperStore.getEmailProviderConfig;
+    window.CSOSuperStore.saveEmailProviderConfig = SuperStore.saveEmailProviderConfig;
+    window.CSOSuperStore.resetEmailProviderConfig = SuperStore.resetEmailProviderConfig;
+    window.CSOSuperStore.exportEmailProviderManifest = SuperStore.exportEmailProviderManifest;
+    window.CSOSuperStore.getCloudStorageConfig = SuperStore.getCloudStorageConfig;
+    window.CSOSuperStore.saveCloudStorageConfig = SuperStore.saveCloudStorageConfig;
+    window.CSOSuperStore.resetCloudStorageConfig = SuperStore.resetCloudStorageConfig;
+    window.CSOSuperStore.exportCloudStorageManifest = SuperStore.exportCloudStorageManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

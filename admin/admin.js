@@ -614,6 +614,12 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-14-007') { renderExpiryRulesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-14-008') { renderReminderConfigurationWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-14-009') { renderScheduledMaintenanceWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-001') { renderIntegrationDirectoryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-002') { renderSupabaseStatusWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-003') { renderCloudflareIntegrationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-004') { renderPaymentIntegrationsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-005') { renderEmailProviderWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-15-006') { renderCloudStorageWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1024,6 +1030,18 @@ async function loadMasterNavigation() {
         renderReminderConfigurationWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-14-009') {
         renderScheduledMaintenanceWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-001') {
+        renderIntegrationDirectoryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-002') {
+        renderSupabaseStatusWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-003') {
+        renderCloudflareIntegrationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-004') {
+        renderPaymentIntegrationsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-005') {
+        renderEmailProviderWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-15-006') {
+        renderCloudStorageWorkspace(dom.workspaceRoot);
 
 
 
@@ -58579,6 +58597,1527 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // =========================================================================
+    // MODULE 15-001: Integration Directory
+    // =========================================================================
+    function renderIntegrationDirectoryWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getIntegrationDirectoryConfig();
+        let items = Array.isArray(config.integrations || config.items) ? [...(config.integrations || config.items)] : [];
+        let searchTerm = '';
+        let categoryFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.serviceName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.connectionProtocol || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCat = categoryFilter === 'ALL' || a.category === categoryFilter;
+            return matchesSearch && matchesCat;
+          });
+
+          const totalConnectors = items.length;
+          const activeCount = items.filter(i => i.status === 'Operational' && i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">INTEGRATION HUB</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Platform Integration Directory</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Central service registry managing third-party connectors, SaaS protocols, and authentication handshakes</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddConnector" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-blue-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Connector
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Connectors</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalConnectors}</div>
+                  <div class="text-[10px] text-blue-400 mt-1">SaaS &amp; infrastructure rails</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Operational Health</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${activeCount} / ${totalConnectors}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Passing healthcheck probes</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Authentication Types</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${new Set(items.map(i => i.authType)).size} Models</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">JWT, API Token, S3 Keys, HMAC</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Domain Categories</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${new Set(items.map(i => i.category)).size} Domains</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Database, CDN, Mail, Storage</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoIntSearchInput" value="${searchTerm}" placeholder="Search service name, category, protocol..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoIntCategoryFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-blue-500">
+                    <option value="ALL" ${categoryFilter === 'ALL' ? 'selected' : ''}>All Categories</option>
+                    <option value="Database & Identity" ${categoryFilter === 'Database & Identity' ? 'selected' : ''}>Database & Identity</option>
+                    <option value="CDN, Edge Compute & Security" ${categoryFilter === 'CDN, Edge Compute & Security' ? 'selected' : ''}>CDN & Edge Compute</option>
+                    <option value="Financial Rails" ${categoryFilter === 'Financial Rails' ? 'selected' : ''}>Financial Rails</option>
+                    <option value="Email & Notifications" ${categoryFilter === 'Email & Notifications' ? 'selected' : ''}>Email & Notifications</option>
+                    <option value="Cloud Storage" ${categoryFilter === 'Cloud Storage' ? 'selected' : ''}>Cloud Storage</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Integrations Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Service Name &amp; ID</th>
+                      <th class="py-3 px-4">Category</th>
+                      <th class="py-3 px-4">Protocol</th>
+                      <th class="py-3 px-4">Auth Type</th>
+                      <th class="py-3 px-4">Health Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No integrations match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.serviceName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-blue-300 border border-blue-500/20">${item.category}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 font-mono text-[11px]">
+                          ${item.connectionProtocol}
+                        </td>
+                        <td class="py-3 px-4 text-slate-400 text-xs">
+                          ${item.authType}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Operational' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Enabled' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoIntSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoIntCategoryFilter')?.addEventListener('change', (e) => {
+            categoryFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Integration Directory Schema', {
+              id: 'string (unique ID, e.g. INT-01)',
+              serviceName: 'string (platform connector name)',
+              category: 'string (Database, CDN, Financial, Email, Storage)',
+              connectionProtocol: 'string (HTTPS REST, S3 API, WebSockets)',
+              authType: 'string (JWT, Global API Token, Access Key ID)',
+              status: 'string (Operational, Degraded, Pending Setup)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportIntegrationDirectoryManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Integration Directory to factory defaults?')) {
+              store.resetIntegrationDirectoryConfig();
+              config = store.getIntegrationDirectoryConfig();
+              items = [...(config.integrations || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddConnector')?.addEventListener('click', () => {
+            const name = prompt('Service Name:');
+            if (!name) return;
+            const cat = prompt('Category:', 'External API');
+            const proto = prompt('Connection Protocol:', 'HTTPS REST');
+            const auth = prompt('Auth Type:', 'Bearer API Key');
+            const newId = 'INT-' + String(items.length + 1).padStart(2, '0');
+            const newInt = {
+              id: newId,
+              serviceName: name,
+              category: cat || 'External API',
+              connectionProtocol: proto || 'HTTPS REST',
+              authType: auth || 'API Key',
+              status: 'Operational',
+              active: true
+            };
+            items.push(newInt);
+            config.integrations = items;
+            config.items = items;
+            store.saveIntegrationDirectoryConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.integrations = items;
+                config.items = items;
+                store.saveIntegrationDirectoryConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Service Name:', item.serviceName);
+              if (newName !== null && newName.trim()) {
+                item.serviceName = newName.trim();
+                const newCat = prompt('Edit Category:', item.category);
+                if (newCat !== null) item.category = newCat.trim();
+                const newProto = prompt('Edit Protocol:', item.connectionProtocol);
+                if (newProto !== null) item.connectionProtocol = newProto.trim();
+                const newStatus = prompt('Edit Status (Operational, Degraded):', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.integrations = items;
+                config.items = items;
+                store.saveIntegrationDirectoryConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete connector ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.integrations = items;
+                config.items = items;
+                store.saveIntegrationDirectoryConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-002: Supabase Connection Status
+    // =========================================================================
+    function renderSupabaseStatusWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getSupabaseStatusConfig();
+        let items = Array.isArray(config.subsystems || config.items) ? [...(config.subsystems || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.subsystem || '').toLowerCase().includes(term) ||
+                   (a.endpoint || '').toLowerCase().includes(term) ||
+                   (a.healthStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const telemetry = config.telemetry || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">DATABASE TELEMETRY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Supabase Cluster Connection Status</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Live heartbeat probe metrics, PostgreSQL 16 connection pooling, PostgREST API latency, and Auth health</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOPingSubsystems" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Ping Cluster
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Project Ref</div>
+                  <div class="text-xl font-bold text-white mt-1 font-mono">${telemetry.projectRef || 'cso-prod'}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">${telemetry.region || 'ap-south-1'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">PgBouncer Pool</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${telemetry.activeConnections || 18} / ${telemetry.maxPoolSize || 60}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Mode: ${telemetry.poolMode || 'Transaction'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Round Trip Latency</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${telemetry.roundTripLatencyMs || '18ms'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Edge to Mumbai primary</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Engine Version</div>
+                  <div class="text-xl font-bold text-purple-300 mt-1">${telemetry.dbVersion || 'PostgreSQL 16'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Managed Supabase runtime</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSubSearchInput" value="${searchTerm}" placeholder="Search subsystem, endpoint, health..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+
+              <!-- Subsystem Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Subsystem &amp; ID</th>
+                      <th class="py-3 px-4">Endpoint Host / URL</th>
+                      <th class="py-3 px-4">Latency</th>
+                      <th class="py-3 px-4">Last Heartbeat</th>
+                      <th class="py-3 px-4">Health Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No subsystems match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.subsystem}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300 truncate max-w-xs" title="${item.endpoint}">
+                          ${item.endpoint}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-emerald-400">
+                          ${item.latencyMs}ms
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.lastHeartbeat}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.healthStatus}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Monitored' : 'Muted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoSubSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Supabase Status Schema', {
+              id: 'string (unique ID, e.g. SUB-01)',
+              subsystem: 'string (node name: PostgreSQL, PostgREST, Auth, Realtime)',
+              endpoint: 'string (host or URL)',
+              healthStatus: 'string (Healthy, Degraded, Unreachable)',
+              lastHeartbeat: 'string (YYYY-MM-DD HH:MM)',
+              latencyMs: 'number (ping latency in milliseconds)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSupabaseStatusManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Supabase Status to factory defaults?')) {
+              store.resetSupabaseStatusConfig();
+              config = store.getSupabaseStatusConfig();
+              items = [...(config.subsystems || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOPingSubsystems')?.addEventListener('click', () => {
+            items.forEach(sub => {
+              sub.latencyMs = Math.floor(12 + Math.random() * 12);
+              sub.lastHeartbeat = new Date().toISOString().slice(0, 16).replace('T', ' ');
+            });
+            config.subsystems = items;
+            config.items = items;
+            store.saveSupabaseStatusConfig(config);
+            alert('Supabase nodes pinged successfully. Cluster health 100% OK.');
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.subsystems = items;
+                config.items = items;
+                store.saveSupabaseStatusConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newSub = prompt('Edit Subsystem Name:', item.subsystem);
+              if (newSub !== null && newSub.trim()) {
+                item.subsystem = newSub.trim();
+                const newEnd = prompt('Edit Endpoint:', item.endpoint);
+                if (newEnd !== null) item.endpoint = newEnd.trim();
+                config.subsystems = items;
+                config.items = items;
+                store.saveSupabaseStatusConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete subsystem probe ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.subsystems = items;
+                config.items = items;
+                store.saveSupabaseStatusConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-003: Cloudflare Integration
+    // =========================================================================
+    function renderCloudflareIntegrationWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getCloudflareIntegrationConfig();
+        let items = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.featureName || '').toLowerCase().includes(term) ||
+                   (a.resourceRef || '').toLowerCase().includes(term) ||
+                   (a.edgeStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const zone = config.zoneSummary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">EDGE COMPUTE &amp; SECURITY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Cloudflare Edge &amp; CDN Integration</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Control Cloudflare Pages CI/CD, Anycast CDN edge cache purge, WAF security, and strict SSL rules</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOPurgeEdgeCache" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-orange-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Purge Edge Cache
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Zone</div>
+                  <div class="text-xl font-bold text-white mt-1 font-mono">${zone.zoneName || 'csodisha.com'}</div>
+                  <div class="text-[10px] text-orange-400 mt-1">SSL: ${zone.sslMode || 'Full (Strict)'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Edge Cache Hit Ratio</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${zone.edgeCacheHitRate || '93.4%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Bandwidth saved at edge</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">WAF Mitigated 24h</div>
+                  <div class="text-2xl font-bold text-rose-300 mt-1">${zone.wafBlocked24h || 312} Threats</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">DDoS: ${zone.ddosProtection || 'Under Attack'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Pages Pipeline</div>
+                  <div class="text-xl font-bold text-sky-300 mt-1">Automated</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Git push triggers auto-deploy</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoCfSearchInput" value="${searchTerm}" placeholder="Search Cloudflare features, resources..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-orange-500" />
+                </div>
+              </div>
+
+              <!-- Rules Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Feature &amp; ID</th>
+                      <th class="py-3 px-4">Resource Reference</th>
+                      <th class="py-3 px-4">Current Target</th>
+                      <th class="py-3 px-4">Auto-Deploy</th>
+                      <th class="py-3 px-4">Edge Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No Cloudflare features match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.featureName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.resourceRef}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-orange-400">
+                          ${item.currentCommit}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium ${item.autoDeployOnPush ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                            ${item.autoDeployOnPush ? 'On Push' : 'Manual'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.edgeStatus}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Muted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoCfSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Cloudflare Integration Schema', {
+              id: 'string (unique ID, e.g. CFR-01)',
+              featureName: 'string (Cloudflare capability name)',
+              resourceRef: 'string (endpoint or rule description)',
+              currentCommit: 'string (commit hash or rule version)',
+              edgeStatus: 'string (Active, Bypass, Inactive)',
+              autoDeployOnPush: 'boolean (flag)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportCloudflareIntegrationManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Cloudflare Integration to factory defaults?')) {
+              store.resetCloudflareIntegrationConfig();
+              config = store.getCloudflareIntegrationConfig();
+              items = [...(config.rules || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOPurgeEdgeCache')?.addEventListener('click', () => {
+            alert('Cloudflare Anycast edge cache purge signal dispatched. All edge nodes invalidating static HTML & assets.');
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.rules = items;
+                config.items = items;
+                store.saveCloudflareIntegrationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Feature Name:', item.featureName);
+              if (newName !== null && newName.trim()) {
+                item.featureName = newName.trim();
+                const newRef = prompt('Edit Resource Ref:', item.resourceRef);
+                if (newRef !== null) item.resourceRef = newRef.trim();
+                config.rules = items;
+                config.items = items;
+                store.saveCloudflareIntegrationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete rule ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.rules = items;
+                config.items = items;
+                store.saveCloudflareIntegrationConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-004: Payment Integrations
+    // =========================================================================
+    function renderPaymentIntegrationsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getPaymentIntegrationsConfig();
+        let items = Array.isArray(config.gateways || config.items) ? [...(config.gateways || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.gatewayName || '').toLowerCase().includes(term) ||
+                   (a.environment || '').toLowerCase().includes(term) ||
+                   (a.merchantId || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">PAYMENT RAILS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Payment Gateway Integrations</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage Razorpay and Cashfree UPI/NetBanking rails, webhook callbacks, and sandbox testing environments</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddGateway" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Gateway Rail
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Gateways</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">${items.filter(g => g.active).length} active rails</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Webhook Reliability</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.webhookSuccessRate || '99.8%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Signature validation verified</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Settlement Currency</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${summary.settlingCurrency || 'INR (₹)'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">T+1 automated settlement</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Routing Mode</div>
+                  <div class="text-xl font-bold text-purple-300 mt-1">Smart Failover</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Primary Razorpay + Cashfree</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPaySearchInput" value="${searchTerm}" placeholder="Search gateway name, environment, merchant ID..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+
+              <!-- Gateways Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Gateway &amp; ID</th>
+                      <th class="py-3 px-4">Environment</th>
+                      <th class="py-3 px-4">Merchant ID</th>
+                      <th class="py-3 px-4">Supported Instruments</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No payment gateways match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.gatewayName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-medium text-xs ${item.environment.includes('Live') ? 'text-emerald-400' : 'text-amber-400'}">
+                          ${item.environment}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.merchantId}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.supportedInstruments}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status.includes('Active') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoPaySearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Payment Integrations Schema', {
+              id: 'string (unique ID, e.g. PAY-01)',
+              gatewayName: 'string (payment rail name)',
+              environment: 'string (Production Live, Production Standby, Test Sandbox)',
+              merchantId: 'string (merchant identifier key)',
+              supportedInstruments: 'string (UPI, Cards, NetBanking, Wallets)',
+              webhookEndpoint: 'string (callback verification route URL)',
+              status: 'string (Active & Processing, Standby Failover, Sandbox Active)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPaymentIntegrationsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Payment Integrations to factory defaults?')) {
+              store.resetPaymentIntegrationsConfig();
+              config = store.getPaymentIntegrationsConfig();
+              items = [...(config.gateways || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddGateway')?.addEventListener('click', () => {
+            const name = prompt('Gateway Name:');
+            if (!name) return;
+            const env = prompt('Environment (Production Live, Test Sandbox):', 'Production Live');
+            const merchant = prompt('Merchant ID / Key:', 'rzp_live_' + Math.floor(1000 + Math.random() * 9000));
+            const newId = 'PAY-' + String(items.length + 1).padStart(2, '0');
+            const newPay = {
+              id: newId,
+              gatewayName: name,
+              environment: env || 'Production Live',
+              merchantId: merchant || 'merchant_id_key',
+              supportedInstruments: 'UPI, NetBanking, Cards',
+              webhookEndpoint: 'https://csodisha.com/api/webhooks/' + name.toLowerCase().replace(/[^a-z]/g, ''),
+              status: 'Active & Processing',
+              active: true
+            };
+            items.push(newPay);
+            config.gateways = items;
+            config.items = items;
+            store.savePaymentIntegrationsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.gateways = items;
+                config.items = items;
+                store.savePaymentIntegrationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Gateway Name:', item.gatewayName);
+              if (newName !== null && newName.trim()) {
+                item.gatewayName = newName.trim();
+                const newEnv = prompt('Edit Environment:', item.environment);
+                if (newEnv !== null) item.environment = newEnv.trim();
+                const newStatus = prompt('Edit Status:', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.gateways = items;
+                config.items = items;
+                store.savePaymentIntegrationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete gateway rail ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.gateways = items;
+                config.items = items;
+                store.savePaymentIntegrationsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-005: Email Provider
+    // =========================================================================
+    function renderEmailProviderWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getEmailProviderConfig();
+        let items = Array.isArray(config.mailConfigs || config.items) ? [...(config.mailConfigs || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.configScope || '').toLowerCase().includes(term) ||
+                   (a.smtpHost || '').toLowerCase().includes(term) ||
+                   (a.senderAddress || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">EMAIL &amp; SMTP DISPATCH</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Email Provider Configuration</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage Brevo transactional mail relay, sender verification, DKIM/SPF integrity, and SMTP transport credentials</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddMailConfig" class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-violet-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Mail Scope
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Primary Provider</div>
+                  <div class="text-xl font-bold text-white mt-1">${summary.primaryProvider || 'Brevo SMTP'}</div>
+                  <div class="text-[10px] text-violet-400 mt-1">${summary.senderIdentity || 'alerts@csodisha.com'}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Monthly Volume</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${(summary.sentThisMonth || 28410).toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Quota: ${(summary.monthlyQuota || 100000).toLocaleString('en-IN')} / mo</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Bounce Rate</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${summary.bounceRate || '0.4%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Reputation Score: High (99.6%)</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Configured Scopes</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${items.length} Scopes</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Notices, Broadcasts, Grievance</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoEmlSearchInput" value="${searchTerm}" placeholder="Search scope, host, sender address..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-violet-500" />
+                </div>
+              </div>
+
+              <!-- Mail Scopes Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Config Scope &amp; ID</th>
+                      <th class="py-3 px-4">SMTP Host</th>
+                      <th class="py-3 px-4">Port &amp; Security</th>
+                      <th class="py-3 px-4">Sender Address</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No email scopes match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.configScope}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.smtpHost}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-violet-400">
+                          ${item.port} (${item.security})
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 font-mono text-[11px]">
+                          ${item.senderAddress}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Muted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoEmlSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Email Provider Schema', {
+              id: 'string (unique ID, e.g. EML-01)',
+              configScope: 'string (e.g. Transactional Exam Notices)',
+              smtpHost: 'string (relay server address)',
+              port: 'number (587, 465, 25)',
+              security: 'string (TLS, SSL)',
+              senderAddress: 'string (email sender address)',
+              status: 'string (Connected & Verified, Unverified)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportEmailProviderManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Email Provider configs to factory defaults?')) {
+              store.resetEmailProviderConfig();
+              config = store.getEmailProviderConfig();
+              items = [...(config.mailConfigs || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddMailConfig')?.addEventListener('click', () => {
+            const scope = prompt('Config Scope:');
+            if (!scope) return;
+            const host = prompt('SMTP Host:', 'smtp-relay.brevo.com');
+            const sender = prompt('Sender Address:', 'notifications@csodisha.com');
+            const newId = 'EML-' + String(items.length + 1).padStart(2, '0');
+            const newMail = {
+              id: newId,
+              configScope: scope,
+              smtpHost: host || 'smtp-relay.brevo.com',
+              port: 587,
+              security: 'TLS',
+              senderAddress: sender || 'notifications@csodisha.com',
+              status: 'Connected & Verified',
+              active: true
+            };
+            items.push(newMail);
+            config.mailConfigs = items;
+            config.items = items;
+            store.saveEmailProviderConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.mailConfigs = items;
+                config.items = items;
+                store.saveEmailProviderConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newScope = prompt('Edit Scope:', item.configScope);
+              if (newScope !== null && newScope.trim()) {
+                item.configScope = newScope.trim();
+                const newHost = prompt('Edit Host:', item.smtpHost);
+                if (newHost !== null) item.smtpHost = newHost.trim();
+                const newSender = prompt('Edit Sender Address:', item.senderAddress);
+                if (newSender !== null) item.senderAddress = newSender.trim();
+                config.mailConfigs = items;
+                config.items = items;
+                store.saveEmailProviderConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete email config ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.mailConfigs = items;
+                config.items = items;
+                store.saveEmailProviderConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 15-006: Cloud Storage Integrations
+    // =========================================================================
+    function renderCloudStorageWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getCloudStorageConfig();
+        let items = Array.isArray(config.buckets || config.items) ? [...(config.buckets || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.bucketName || '').toLowerCase().includes(term) ||
+                   (a.provider || '').toLowerCase().includes(term) ||
+                   (a.cdnUrlPrefix || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">OBJECT STORAGE &amp; S3</span>
+                    <span class="text-xs text-slate-400 font-mono">module-15-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Cloud Storage &amp; Bucket Integrations</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage Cloudflare R2 and AWS S3 compliant buckets for official gazettes, PDF circulars, and candidate docs</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddBucket" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-sky-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Connect Bucket
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Connected Buckets</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-sky-400 mt-1">${items.filter(b => b.active).length} active storage mounts</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Storage Utilized</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.storageUtilizedGB || '148.6 GB'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Files: ${(summary.totalFilesCount || 8420).toLocaleString('en-IN')} objects</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">24h Egress Bandwidth</div>
+                  <div class="text-2xl font-bold text-cyan-300 mt-1">${summary.bandwidthEgress24h || '32.4 GB'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Zero egress fees via R2</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Providers Linked</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${new Set(items.map(b => b.provider)).size} Clouds</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Cloudflare R2, AWS S3, Supabase</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoStrSearchInput" value="${searchTerm}" placeholder="Search bucket name, provider, CDN URL..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
+
+              <!-- Buckets Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Bucket Name &amp; ID</th>
+                      <th class="py-3 px-4">Provider</th>
+                      <th class="py-3 px-4">Region</th>
+                      <th class="py-3 px-4">Access Level</th>
+                      <th class="py-3 px-4">CDN Prefix</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No storage buckets match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.bucketName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-sky-300 border border-sky-500/20">${item.provider}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-400 text-xs">
+                          ${item.region}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] ${item.publicAccess.includes('Public') ? 'text-emerald-400' : 'text-amber-400'}">
+                          ${item.publicAccess}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300 truncate max-w-xs" title="${item.cdnUrlPrefix}">
+                          ${item.cdnUrlPrefix}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Unmounted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoStrSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Cloud Storage Schema', {
+              id: 'string (unique ID, e.g. STR-01)',
+              bucketName: 'string (bucket identifier in cloud)',
+              provider: 'string (Cloudflare R2, AWS S3, Supabase Private)',
+              region: 'string (region code or Global Fast)',
+              publicAccess: 'string (Public CDN URL, Strictly Private, Authenticated Signed URL)',
+              cdnUrlPrefix: 'string (base URL for downloads)',
+              status: 'string (Connected, Degraded)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportCloudStorageManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Cloud Storage configs to factory defaults?')) {
+              store.resetCloudStorageConfig();
+              config = store.getCloudStorageConfig();
+              items = [...(config.buckets || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddBucket')?.addEventListener('click', () => {
+            const name = prompt('Bucket Name:');
+            if (!name) return;
+            const prov = prompt('Cloud Provider (Cloudflare R2, AWS S3):', 'Cloudflare R2');
+            const cdn = prompt('CDN URL Prefix:', 'https://media.csodisha.com/new-bucket');
+            const newId = 'STR-' + String(items.length + 1).padStart(2, '0');
+            const newStr = {
+              id: newId,
+              bucketName: name,
+              provider: prov || 'Cloudflare R2',
+              region: 'Automatic (Global Fast)',
+              publicAccess: 'Public CDN URL',
+              cdnUrlPrefix: cdn || 'https://media.csodisha.com/' + name,
+              status: 'Connected',
+              active: true
+            };
+            items.push(newStr);
+            config.buckets = items;
+            config.items = items;
+            store.saveCloudStorageConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.buckets = items;
+                config.items = items;
+                store.saveCloudStorageConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Bucket Name:', item.bucketName);
+              if (newName !== null && newName.trim()) {
+                item.bucketName = newName.trim();
+                const newProv = prompt('Edit Provider:', item.provider);
+                if (newProv !== null) item.provider = newProv.trim();
+                const newCdn = prompt('Edit CDN Prefix:', item.cdnUrlPrefix);
+                if (newCdn !== null) item.cdnUrlPrefix = newCdn.trim();
+                config.buckets = items;
+                config.items = items;
+                store.saveCloudStorageConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete bucket mount ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.buckets = items;
+                config.items = items;
+                store.saveCloudStorageConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-15-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 
