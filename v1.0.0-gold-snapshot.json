@@ -1,6 +1,6 @@
 {
   "version": "CSO-SUPER-2026.11",
-  "createdAt": "2026-11-10T11:48:31.834Z",
+  "createdAt": "2026-11-10T12:24:06.944Z",
   "exportedBy": "admin@csodisha.com",
   "state": {
     "users": [
@@ -371832,6 +371832,55 @@
           ]
         }
       ]
+    },
+    "registeredAccounts": [
+      {
+        "id": "cso_usr_chandan_balasore_01",
+        "fullName": "Chandan Dash",
+        "email": "aspirant.balasore@csodisha.gov.in",
+        "mobile": "9876543210",
+        "passwordHash": "a1b2c3d4",
+        "dob": "15-08-2000",
+        "state": "Odisha",
+        "district": "Balasore (Baleswar)",
+        "targetExams": [
+          "opsc",
+          "ossc",
+          "teaching"
+        ],
+        "registeredAt": "2026-11-10T12:24:06.387Z",
+        "lastLoginAt": "2026-11-10T12:24:06.399Z",
+        "failedLoginAttempts": 0,
+        "lockoutUntil": null
+      }
+    ],
+    "candidateChecklists": {
+      "opsc": {
+        "opsc-prelims": {
+          "opsc-p-gs1-hist": true,
+          "opsc-p-gs1-geo": true,
+          "opsc-p-gs1-pol": true,
+          "opsc-p-gs2-csat": true
+        },
+        "opsc-mains": {
+          "opsc-m-odia": true,
+          "opsc-m-eng": true
+        }
+      },
+      "ossc": {
+        "ossc-stage1": {
+          "ossc-p-arith": true,
+          "ossc-p-di": true,
+          "ossc-p-reason": true
+        }
+      },
+      "teaching": {
+        "bed-paper1": {
+          "bed-p1-eng": true,
+          "bed-p1-odia": true,
+          "bed-p1-aptitude": true
+        }
+      }
     }
   }
 }

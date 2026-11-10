@@ -13036,7 +13036,19 @@
           integrationsEdgeTree: this.getIntegrationsEdgeTreeConfig ? this.getIntegrationsEdgeTreeConfig() : null,
           operationsRecoveryTree: this.getOperationsRecoveryTreeConfig ? this.getOperationsRecoveryTreeConfig() : null,
           communicationsAlertsTree: this.getCommunicationsAlertsTreeConfig ? this.getCommunicationsAlertsTreeConfig() : null,
-          analyticsTelemetryTree: this.getAnalyticsTelemetryTreeConfig ? this.getAnalyticsTelemetryTreeConfig() : null
+          analyticsTelemetryTree: this.getAnalyticsTelemetryTreeConfig ? this.getAnalyticsTelemetryTreeConfig() : null,
+          registeredAccounts: (function() {
+            try {
+              const raw = localStorage.getItem('cso_registered_accounts_v1');
+              return raw ? JSON.parse(raw) : [];
+            } catch(e) { return []; }
+          })(),
+          candidateChecklists: (function() {
+            try {
+              const raw = localStorage.getItem('cso_candidate_checklist_v1');
+              return raw ? JSON.parse(raw) : {};
+            } catch(e) { return {}; }
+          })()
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -13046,7 +13058,7 @@
       if (!snapshot || !snapshot.state) {
         throw new Error('Invalid snapshot schema: Missing state payload');
       }
-      const { users, roles, pages, system, security, audit, broadcast, inquiries } = snapshot.state;
+      const { users, roles, pages, system, security, audit, broadcast, inquiries, registeredAccounts, candidateChecklists } = snapshot.state;
       if (users) this.saveUsers(users);
       if (roles) this.saveRoles(roles);
       if (pages) this.savePages(pages);
@@ -13055,6 +13067,12 @@
       if (audit) save(KEYS.AUDIT, audit);
       if (broadcast) save(KEYS.BROADCAST, broadcast);
       if (inquiries) this.saveInquiries(inquiries);
+      if (registeredAccounts && Array.isArray(registeredAccounts)) {
+        try { localStorage.setItem('cso_registered_accounts_v1', JSON.stringify(registeredAccounts)); } catch(e) {}
+      }
+      if (candidateChecklists && typeof candidateChecklists === 'object') {
+        try { localStorage.setItem('cso_candidate_checklist_v1', JSON.stringify(candidateChecklists)); } catch(e) {}
+      }
 
       this.logAudit('DISASTER_RECOVERY_RESTORE', 'ALL_MODULES', `Restored from snapshot created at ${snapshot.createdAt}`);
       return true;
