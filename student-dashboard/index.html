@@ -48,12 +48,6 @@
             </a>
           </li>
           <li>
-            <a href="/study-library/" class="bp-nav-item" data-tab="tab-study-library">
-              <span class="bp-nav-icon">📖</span>
-              <span class="bp-nav-label">Study Library</span>
-            </a>
-          </li>
-          <li>
             <a href="#tab-my-learning" class="bp-nav-item" data-tab="tab-my-learning">
               <span class="bp-nav-icon">🎯</span>
               <span class="bp-nav-label">My Learning</span>
@@ -62,13 +56,7 @@
           <li>
             <a href="#tab-bookmarks" class="bp-nav-item" data-tab="tab-bookmarks">
               <span class="bp-nav-icon">★</span>
-              <span class="bp-nav-label">My Bookmarks</span>
-            </a>
-          </li>
-          <li>
-            <a href="/community/" class="bp-nav-item" data-tab="tab-ask-cso">
-              <span class="bp-nav-icon">💬</span>
-              <span class="bp-nav-label">Ask CSO</span>
+              <span class="bp-nav-label">Private Library &amp; Bookmarks</span>
             </a>
           </li>
           <li>
@@ -88,30 +76,12 @@
 
       <!-- Section 2: Learning Tools -->
       <div class="bp-nav-group">
-        <div class="bp-nav-section-title">Learning Tools</div>
+        <div class="bp-nav-section-title">Candidate Tools</div>
         <ul class="bp-nav-list">
           <li>
             <a href="#tool-search" class="bp-nav-item" id="tool-search-btn">
               <span class="bp-nav-icon">🔍</span>
               <span class="bp-nav-label">Universal Search</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-recent" class="bp-nav-item" data-tab="tool-recent">
-              <span class="bp-nav-icon">🕒</span>
-              <span class="bp-nav-label">Recently Viewed</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-downloads" class="bp-nav-item" data-tab="tool-downloads">
-              <span class="bp-nav-icon">⬇</span>
-              <span class="bp-nav-label">Download History</span>
-            </a>
-          </li>
-          <li>
-            <a href="#tool-reading" class="bp-nav-item" data-tab="tool-reading">
-              <span class="bp-nav-icon">📚</span>
-              <span class="bp-nav-label">Reading History</span>
             </a>
           </li>
           <li>
@@ -127,9 +97,15 @@
             </a>
           </li>
           <li>
-            <a href="#tool-recommendations" class="bp-nav-item" data-tab="tool-recommendations">
-              <span class="bp-nav-icon">💡</span>
-              <span class="bp-nav-label">Recommendations</span>
+            <a href="#tool-notes" class="bp-nav-item" data-tab="tool-notes">
+              <span class="bp-nav-icon">📝</span>
+              <span class="bp-nav-label">Revision Scratchpad</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-analytics" class="bp-nav-item" data-tab="tool-analytics">
+              <span class="bp-nav-icon">📈</span>
+              <span class="bp-nav-label">Mock Score Logger</span>
             </a>
           </li>
         </ul>
@@ -140,10 +116,10 @@
     <!-- Sidebar Bottom Profile Badge -->
     <div class="bp-sidebar-footer">
       <div id="bp-sidebar-user-pill" class="bp-user-pill-side" title="Edit Profile &amp; Preferences">
-        <div class="bp-user-avatar" id="bp-side-avatar">A</div>
+        <div class="bp-user-avatar" id="bp-side-avatar">R</div>
         <div class="bp-user-meta bp-user-badge">
-          <span class="bp-user-name" id="bp-side-name">Aspirant</span>
-          <span class="bp-user-district" id="bp-side-district">Odisha</span>
+          <span class="bp-user-name" id="bp-side-name">RAMESH BISWAL</span>
+          <span class="bp-user-district" id="bp-side-district">Balasore (Baleswar)</span>
         </div>
       </div>
     </div>
@@ -153,7 +129,7 @@
   <!-- ========================================================================
        2. Main Content Canvas
        ======================================================================== -->
-  <div class="bp-main-canvas">
+  <div class="bp-main-canvas" id="dashboard-main-canvas">
 
     <!-- Top Bar -->
     <header class="bp-topbar">
@@ -186,12 +162,18 @@
 
         <!-- Candidate Profile Pill -->
         <div class="bp-user-pill-top" id="bp-topbar-user-pill" title="Click to edit profile &amp; preferences">
-          <div class="bp-user-avatar" id="bp-top-avatar">A</div>
+          <div class="bp-user-avatar" id="bp-top-avatar">R</div>
           <div class="bp-user-meta">
-            <span class="bp-user-name" id="bp-top-name">Candidate Aspirant</span>
+            <span class="bp-user-name" id="bp-top-name">RAMESH BISWAL</span>
             <span class="bp-user-district" id="bp-top-district">Balasore (Baleswar)</span>
           </div>
         </div>
+
+        <!-- Dedicated Logout Action Button -->
+        <button type="button" class="bp-logout-btn" id="bp-topbar-logout-btn" title="Sign out of student portal">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
 
       </div>
 
@@ -350,9 +332,9 @@
             <div class="bp-panel-header">
               <div class="bp-panel-title">
                 <span>💼</span>
-                <span>Bookmarked Jobs &amp; Opportunities</span>
+                <span>My Bookmarked Vacancies &amp; Syllabi</span>
               </div>
-              <a href="/jobs-careers/" class="bp-panel-link">Browse Jobs →</a>
+              <a href="#tab-bookmarks" class="bp-panel-link bp-nav-switch" data-tab="tab-bookmarks">Manage Bookmarks →</a>
             </div>
             <div id="candidate-jobs-shelf" style="display:flex;flex-direction:column;gap:10px;">
               <p class="mut" style="font-size:12px;">Loading bookmarked positions...</p>
@@ -364,9 +346,9 @@
             <div class="bp-panel-header">
               <div class="bp-panel-title">
                 <span>🤲</span>
-                <span>Eligible Scholarships &amp; Schemes</span>
+                <span>Personalized Scheme Tracker</span>
               </div>
-              <a href="/schemes-benefits/" class="bp-panel-link">All Schemes →</a>
+              <span style="font-size:11px;color:#94a3b8;font-weight:600;">Tailored to your district &amp; target streams</span>
             </div>
             <div id="candidate-schemes-list" style="display:flex;flex-direction:column;gap:10px;">
               <p class="mut" style="font-size:12px;">Finding eligible welfare programs...</p>
@@ -395,21 +377,21 @@
       </div>
 
       <!-- ====================================================================
-           TAB VIEW: MY BOOKMARKS
+           TAB VIEW: PRIVATE LIBRARY & BOOKMARKS
            ==================================================================== -->
       <div id="tab-bookmarks" class="bp-tab-view">
         <div class="bp-shelves-grid">
           <div class="bp-panel">
             <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>📚</span><span>Saved Study Materials &amp; PYQs</span></div>
-              <a href="/study-library/" class="bp-panel-link">Library →</a>
+              <div class="bp-panel-title"><span>📚</span><span>Candidate PYQ Shelf &amp; PDF Mirrors</span></div>
+              <span style="font-size:11px;color:#94a3b8;">Cloudflare R2 mirrors</span>
             </div>
             <div id="candidate-pyq-shelf" style="display:flex;flex-direction:column;gap:10px;"></div>
           </div>
           <div class="bp-panel">
             <div class="bp-panel-header">
-              <div class="bp-panel-title"><span>💼</span><span>Saved Job Postings</span></div>
-              <a href="/jobs-careers/" class="bp-panel-link">Jobs →</a>
+              <div class="bp-panel-title"><span>💼</span><span>Bookmarked Recruitment Alerts</span></div>
+              <span style="font-size:11px;color:#94a3b8;">Private candidate pins</span>
             </div>
             <div id="bookmarks-tab-jobs-shelf" style="display:flex;flex-direction:column;gap:10px;"></div>
           </div>
@@ -423,11 +405,12 @@
         <div class="bp-panel">
           <div class="bp-panel-header">
             <div class="bp-panel-title"><span>🏆</span><span>Milestone Badges &amp; Preparation Streaks</span></div>
+            <span style="font-size:11px;color:#10b981;font-weight:700;background:rgba(16,185,129,0.15);padding:2px 8px;border-radius:6px;">Syllabus Readiness Score: 68/100</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;padding:12px 0;">
             <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;">
               <span style="font-size:36px;display:block;margin-bottom:8px;">🔥</span>
-              <h4 style="font-size:14px;font-weight:700;color:#f8fafc;margin:0 0 4px;">7-Day Study Streak</h4>
+              <h4 style="font-size:14px;font-weight:700;color:#f8fafc;margin:0 0 4px;">3-Day Revision Streak 🔥</h4>
               <p style="font-size:11px;color:#94a3b8;margin:0;">Active candidate revision cadence maintained</p>
             </div>
             <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;">
@@ -451,7 +434,7 @@
         <div class="bp-panel">
           <div class="bp-panel-header">
             <div class="bp-panel-title"><span>📅</span><span>Target Examination Calendar &amp; Countdown</span></div>
-            <a href="/jobs-careers/" class="bp-panel-link">All Recruitment Notices →</a>
+            <span style="font-size:11px;color:#38bdf8;font-weight:700;">Official State Commission Deadlines</span>
           </div>
           <div id="candidate-milestones-list" style="display:flex;flex-direction:column;gap:12px;"></div>
         </div>
@@ -464,37 +447,102 @@
         <div class="bp-panel">
           <div class="bp-panel-header">
             <div class="bp-panel-title"><span>🗂️</span><span>Candidate KYC &amp; Verification Document Locker</span></div>
+            <span style="font-size:11px;color:#2dd4bf;font-weight:700;" id="locker-status-tag">Readiness: Verified</span>
           </div>
           <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Keep track of required identity, educational certificates, and category verifications for state admissions.</p>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-              <input type="checkbox" checked style="accent-color:#0d9488;width:18px;height:18px;" />
+            <div class="bp-locker-item verified">
+              <input type="checkbox" checked class="bp-locker-cb" />
               <div style="flex:1;">
-                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Aadhaar Card (Linked with Mobile &amp; Bank DBT)</h5>
-                <p style="margin:0;font-size:11px;color:#94a3b8;">Mandatory for Subhadra, Medhabruti, and OPSC online portal registration</p>
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">10th / HSC Board Certificate &amp; Marksheet</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Mandatory proof of Date of Birth &amp; ME School Odia Pass criteria</p>
               </div>
-            </label>
-            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-              <input type="checkbox" checked style="accent-color:#0d9488;width:18px;height:18px;" />
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.15);color:#34d399;font-weight:700;">READY</span>
+            </div>
+            <div class="bp-locker-item verified">
+              <input type="checkbox" checked class="bp-locker-cb" />
               <div style="flex:1;">
-                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Resident / Domicile Certificate (Odisha)</h5>
-                <p style="margin:0;font-size:11px;color:#94a3b8;">Issued by Tahasildar via e-District Odisha portal</p>
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Graduation Degree / Provisional Certificate</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Required for OPSC OCS and OSSC CGL eligibility verification</p>
               </div>
-            </label>
-            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-              <input type="checkbox" style="accent-color:#0d9488;width:18px;height:18px;" />
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.15);color:#34d399;font-weight:700;">READY</span>
+            </div>
+            <div class="bp-locker-item verified">
+              <input type="checkbox" checked class="bp-locker-cb" />
               <div style="flex:1;">
-                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Caste Certificate (ST / SC / SEBC) &amp; Income Certificate</h5>
-                <p style="margin:0;font-size:11px;color:#94a3b8;">Required for reservation and fee exemption benefits</p>
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Resident / Domicile Certificate (e-District Odisha)</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Digitally signed certificate issued by Tahasildar via edistrict.odisha.gov.in</p>
               </div>
-            </label>
-            <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-              <input type="checkbox" style="accent-color:#0d9488;width:18px;height:18px;" />
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.15);color:#34d399;font-weight:700;">READY</span>
+            </div>
+            <div class="bp-locker-item">
+              <input type="checkbox" class="bp-locker-cb" />
               <div style="flex:1;">
-                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">10th / +2 / Graduation Final Marksheets &amp; Odia Pass Certificate</h5>
-                <p style="margin:0;font-size:11px;color:#94a3b8;">Verified for ME School standard Odia language criteria</p>
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Category / Caste Certificate (SEBC / SC / ST) &amp; Income Certificate</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Non-Creamy Layer (NCL) certificate for SEBC or relevant category certificate</p>
               </div>
-            </label>
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(234,179,8,0.15);color:#facc15;font-weight:700;">PENDING</span>
+            </div>
+            <div class="bp-locker-item verified">
+              <input type="checkbox" checked class="bp-locker-cb" />
+              <div style="flex:1;">
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Identity Document (Government ID / KYC)</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Aadhaar Card linked to mobile number and active bank DBT account</p>
+              </div>
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.15);color:#34d399;font-weight:700;">READY</span>
+            </div>
+            <div class="bp-locker-item">
+              <input type="checkbox" class="bp-locker-cb" />
+              <div style="flex:1;">
+                <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">Candidate Passport Photo &amp; Signature (Standard Dimensions)</h5>
+                <p style="margin:0;font-size:11px;color:#94a3b8;">Recent photo (20KB–50KB, JPG) and signature on white paper with black/blue ink</p>
+              </div>
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(234,179,8,0.15);color:#facc15;font-weight:700;">PENDING</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: REVISION SCRATCHPAD & NOTES
+           ==================================================================== -->
+      <div id="tool-notes" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>📝</span><span>Revision Scratchpad &amp; Daily Notes</span></div>
+            <span id="scratchpad-save-indicator" style="font-size:11px;color:#10b981;font-weight:700;">Auto-saved to device</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 14px;">Private aspirant workspace for jotting formulas, historical dates (e.g., Paika Rebellion 1817, Praja Mandala Movement), and quick review points.</p>
+          <textarea id="bp-candidate-scratchpad" class="bp-scratchpad-area" placeholder="Write your revision notes, formulas, and history key points here... Notes are automatically saved to your local session."></textarea>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: MOCK TEST SCORE LOGGER
+           ==================================================================== -->
+      <div id="tool-analytics" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>📈</span><span>Mock Test Score Logger &amp; Speed Tracking</span></div>
+            <button type="button" id="bp-add-mock-score-btn" style="background:#0d9488;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">+ Log New Mock</button>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Monitor performance trends, score progressions, and accuracy percentages across test series.</p>
+          <div class="bp-table-container">
+            <table class="bp-scores-table" id="bp-mock-scores-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Examination &amp; Paper</th>
+                  <th>Score</th>
+                  <th>Max Marks</th>
+                  <th>Accuracy</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="bp-mock-scores-body">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

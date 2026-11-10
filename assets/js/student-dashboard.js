@@ -1,12 +1,16 @@
 /**
- * Common Sense Odisha (CSO) — Student Dashboard Portal Logic (BrightPath Edition)
- * Integrates:
- * - Collapsible SaaS Glass Sidebar with desktop icon rail and mobile drawer
- * - Multi-Tab Navigation (Overview, Study Library, My Learning, Bookmarks, Calendar, Locker, etc.)
- * - Colorful Target Exam Cards (Cobalt OPSC, Sunset Coral OSSC, Charcoal Teaching/Police)
- * - Next Lessons & Upcoming Targets interactive checklist
- * - Topbar Profile & Central Universal Search modal (Ctrl + K)
- * - Reactive local state (cso_candidate_session_v1, cso_candidate_checklist_v1, cso_candidate_bookmarks_v1)
+ * Common Sense Odisha (CSO) — Student Dashboard Portal Logic (Independent Candidate Workspace Edition)
+ * Features:
+ * - Dynamic Candidate Topbar Profile with real registered name from cso_candidate_session_v1
+ * - Direct [🚪 Logout] Action with session clearing, toast notification & clean redirect
+ * - Self-contained In-Dashboard SPA Tools:
+ *     - Multi-Stage Syllabus Checklists (cso_candidate_checklist_v1)
+ *     - Private Library & Bookmarks (cso_candidate_bookmarks_v1)
+ *     - Revision Scratchpad & Daily Notes (cso_candidate_notes_v1)
+ *     - Mock Test Score Logger (cso_candidate_mock_scores_v1)
+ *     - Exam Calendar & Countdown Timeline
+ *     - Candidate KYC & Document Locker Checklist (cso_candidate_locker_v1)
+ * - Isolated from public website: No routing back to general public tables or external prompts
  */
 (function(window) {
   'use strict';
@@ -14,6 +18,9 @@
   const SESSION_KEY = 'cso_candidate_session_v1';
   const CHECKLIST_KEY = 'cso_candidate_checklist_v1';
   const VAULT_KEY = 'cso_registered_accounts_v1';
+  const NOTES_KEY = 'cso_candidate_notes_v1';
+  const SCORES_KEY = 'cso_candidate_mock_scores_v1';
+  const LOCKER_KEY = 'cso_candidate_locker_v1';
 
   const ODISHA_DISTRICTS = [
     "Angul", "Balangir", "Balasore (Baleswar)", "Bargarh", "Bhadrak", "Boudh",
@@ -200,6 +207,24 @@
     } catch(e) {}
   }
 
+  function getMockScores() {
+    try {
+      const raw = localStorage.getItem(SCORES_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return [
+      { id: "mock-1", date: "2026-11-04", exam: "OPSC OCS Prelims", paper: "General Studies Paper I", score: 142, max: 200, accuracy: "71%" },
+      { id: "mock-2", date: "2026-11-07", exam: "OSSC CGL CBRE", paper: "Arithmetic & Reasoning Speed Test", score: 118, max: 150, accuracy: "78.6%" },
+      { id: "mock-3", date: "2026-11-09", exam: "Odisha B.Ed Entrance", paper: "Teaching Aptitude & General English", score: 68, max: 80, accuracy: "85%" }
+    ];
+  }
+
+  function saveMockScores(list) {
+    try {
+      localStorage.setItem(SCORES_KEY, JSON.stringify(list));
+    } catch(e) {}
+  }
+
   // Toast Notification
   function showToast(message, type = 'success') {
     let container = document.getElementById('cso-toast-container');
@@ -229,13 +254,13 @@
     }, 3200);
   }
 
-  // Topbar and Sidebar User Info
+  // Topbar and Sidebar User Info & Logout
   function renderUserProfile(session) {
-    const candidateName = session?.fullName || session?.name || 'Ramesh Biswal';
+    const candidateName = (session?.fullName || session?.name || 'RAMESH BISWAL').toUpperCase();
     const candidateDistrict = session?.district || 'Balasore (Baleswar)';
-    const initial = candidateName.charAt(0).toUpperCase();
+    const initial = candidateName.charAt(0);
 
-    // Topbar Pill
+    // Topbar Profile Pill
     const topAvatar = document.getElementById('bp-top-avatar');
     const topName = document.getElementById('bp-top-name');
     const topDistrict = document.getElementById('bp-top-district');
@@ -243,13 +268,27 @@
     if (topName) topName.textContent = candidateName;
     if (topDistrict) topDistrict.textContent = candidateDistrict;
 
-    // Sidebar Footer Pill
+    // Sidebar Footer Profile Badge
     const sideAvatar = document.getElementById('bp-side-avatar');
     const sideName = document.getElementById('bp-side-name');
     const sideDistrict = document.getElementById('bp-side-district');
     if (sideAvatar) sideAvatar.textContent = initial;
     if (sideName) sideName.textContent = candidateName;
     if (sideDistrict) sideDistrict.textContent = candidateDistrict;
+  }
+
+  // Handle Logout
+  function handleCandidateLogout() {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch(e) {}
+
+    showToast('Logged out successfully.');
+
+    // Redirect to home or trigger clean state
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 600);
   }
 
   // Calculate Progress Stats for an Exam
@@ -312,7 +351,6 @@
 
     const saved = getSavedChecklists();
 
-    // Collect next 5-6 core syllabus items across exams
     const targetItems = [
       { exam: "opsc", stageId: "opsc-prelims", topicId: "opsc-p-gs1-hist", title: "History of India & National Movement (Odisha Special)", stream: "OPSC OCS", time: "45 min" },
       { exam: "opsc", stageId: "opsc-prelims", topicId: "opsc-p-gs1-geo", title: "Odisha Physical & Economic Geography Compendium", stream: "OPSC OCS", time: "30 min" },
@@ -509,10 +547,10 @@
 
     if (allEvents.length === 0) {
       allEvents = [
-        { id: "EV-01", title: "OPSC Odisha Civil Services (OCS) Prelims 2026", titleOdia: "ଓପିଏସସି ସିଭିଲ ସର୍ଭିସେସ ପ୍ରିଲିମ୍ସ", eventStartDate: "2026-11-29", eventType: "Exam", venueDistrict: "All 30 Districts", officialPortalUrl: "https://opsc.gov.in" },
-        { id: "EV-02", title: "OSSC Combined Graduate Level (CGL) Mains 2026", titleOdia: "ଓଏସଏସସି ସିଜିଏଲ ମୁଖ୍ୟ ପରୀକ୍ଷା", eventStartDate: "2026-12-14", eventType: "Exam", venueDistrict: "Bhubaneswar / Cuttack", officialPortalUrl: "https://ossc.gov.in" },
-        { id: "EV-03", title: "OSSSC RI & ARI Practical Skill Test Schedule", titleOdia: "ଆରଆଇ ଏବଂ ଏଆରଆଇ କମ୍ପ୍ୟୁଟର ପରୀକ୍ଷା", eventStartDate: "2026-12-22", eventType: "Skill Test", venueDistrict: "District HQs", officialPortalUrl: "https://osssc.gov.in" },
-        { id: "EV-04", title: "Odisha B.Ed Entrance Application Form Closing", titleOdia: "ବି.ଏଡ୍ ପ୍ରବେଶିକା ଆବେଦନ ଶେଷ ତାରିଖ", eventStartDate: "2026-12-05", eventType: "Deadline", venueDistrict: "Online State Portal", officialPortalUrl: "https://samsodisha.gov.in" }
+        { id: "EV-01", title: "OPSC Odisha Civil Services (OCS) Prelims 2026", titleOdia: "ଓପିଏସସି ସିଭିଲ ସର୍ଭିସେସ ପ୍ରିଲିମ୍ସ", eventStartDate: "2026-11-29", eventType: "Exam", venueDistrict: "All 30 Districts" },
+        { id: "EV-02", title: "OSSC Combined Graduate Level (CGL) Mains 2026", titleOdia: "ଓଏସଏସସି ସିଜିଏଲ ମୁଖ୍ୟ ପରୀକ୍ଷା", eventStartDate: "2026-12-14", eventType: "Exam", venueDistrict: "Bhubaneswar / Cuttack" },
+        { id: "EV-03", title: "OSSSC RI & ARI Practical Skill Test Schedule", titleOdia: "ଆରଆଇ ଏବଂ ଏଆରଆଇ କମ୍ପ୍ୟୁଟର ପରୀକ୍ଷା", eventStartDate: "2026-12-22", eventType: "Skill Test", venueDistrict: "District HQs" },
+        { id: "EV-04", title: "Odisha B.Ed Entrance Application Form Closing", titleOdia: "ବି.ଏଡ୍ ପ୍ରବେଶିକା ଆବେଦନ ଶେଷ ତାରିଖ", eventStartDate: "2026-12-05", eventType: "Deadline", venueDistrict: "Online State Portal" }
       ];
     }
 
@@ -547,7 +585,7 @@
     }).join('');
   }
 
-  // Bookmarked Jobs Shelf
+  // Bookmarked Jobs Shelf (Candidate Isolated)
   function renderJobsShelf() {
     const listEl = document.getElementById('candidate-jobs-shelf');
     const tabListEl = document.getElementById('bookmarks-tab-jobs-shelf');
@@ -560,9 +598,9 @@
 
     if (bookmarkedJobs.length === 0) {
       const emptyHtml = `
-        <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.12);text-align:center;">
-          <p style="font-size:12px;color:#94a3b8;margin:0 0 6px;">No jobs bookmarked yet.</p>
-          <a href="/jobs-careers/" style="font-size:11px;color:#2dd4bf;text-decoration:none;font-weight:600;">Browse Jobs Directory to star posts →</a>
+        <div style="padding:16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.12);text-align:center;">
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 4px;">You haven't bookmarked any opportunities yet.</p>
+          <p style="font-size:11px;color:#64748b;margin:0;">Star any post or recruitment alert across your modules to pin it to your quick shelf.</p>
         </div>
       `;
       listEl.innerHTML = emptyHtml;
@@ -577,8 +615,7 @@
           <span style="font-size:10px;color:#2dd4bf;">${job.badge || 'Jobs'}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <a href="${job.url || '/jobs-careers/'}" style="padding:4px 8px;border-radius:6px;background:rgba(13,148,136,0.15);color:#2dd4bf;font-size:11px;text-decoration:none;font-weight:600;">View</a>
-          <button type="button" class="btn-remove-bm" data-type="jobs" data-id="${job.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 6px;color:#94a3b8;font-size:11px;cursor:pointer;">✕</button>
+          <button type="button" class="btn-remove-bm" data-type="jobs" data-id="${job.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 8px;color:#f87171;font-size:11px;cursor:pointer;">Remove ✕</button>
         </div>
       </div>
     `).join('');
@@ -590,6 +627,8 @@
       btn.addEventListener('click', () => {
         if (window.CSOBookmarks) {
           window.CSOBookmarks.removeBookmark(btn.dataset.type, btn.dataset.id);
+          renderJobsShelf();
+          showToast('Bookmark removed from your shelf.');
         }
       });
     });
@@ -606,8 +645,8 @@
     }
 
     const defaultItems = [
-      { id: "def-pyq-1", title: "OPSC OCS General Studies Paper I — 5 Year PYQ Compilation", size: "3.4 MB", ext: "PDF", link: "/assets/pdf/opsc-ocs-gs1-pyq.pdf", badge: "Official Mirror" },
-      { id: "def-pyq-2", title: "OSSC CGL Arithmetic & Reasoning Topic-Wise Question Bank", size: "2.1 MB", ext: "PDF", link: "/assets/pdf/ossc-cgl-maths-bank.pdf", badge: "Cloudflare R2" }
+      { id: "def-pyq-1", title: "OPSC OCS General Studies Paper I — 5 Year PYQ Compilation", size: "3.4 MB", ext: "PDF", link: "https://assets.csodisha.org/pdf/pyq/2025/opsc-ocs-prelims-gs1-solved.pdf", badge: "Official Mirror" },
+      { id: "def-pyq-2", title: "OSSC CGL Arithmetic & Reasoning Topic-Wise Question Bank", size: "2.1 MB", ext: "PDF", link: "https://assets.csodisha.org/pdf/pyq/2025/ossc-cgl-maths-bank.pdf", badge: "Cloudflare R2" }
     ];
 
     const items = bookmarkedStudy.length > 0 ? bookmarkedStudy : defaultItems;
@@ -618,20 +657,21 @@
           <h4 style="font-size:12px;font-weight:600;color:#f8fafc;margin:0 0 2px;">${item.title}</h4>
           <span style="font-size:10px;color:#94a3b8;">${item.size || 'PDF'} • <span style="color:#2dd4bf;">${item.badge || 'Study Library'}</span></span>
         </div>
-        <a href="${item.link || item.url || '/study-library/'}" target="_blank" rel="noopener noreferrer" style="padding:4px 10px;border-radius:6px;background:#1e293b;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;font-size:11px;text-decoration:none;">Download ⬇</a>
+        <a href="${item.link || item.url || '#'}" target="_blank" rel="noopener noreferrer" style="padding:4px 10px;border-radius:6px;background:#1e293b;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;font-size:11px;text-decoration:none;">Download ⬇</a>
       </div>
     `).join('');
   }
 
-  // Schemes Shelf
-  function renderSchemes() {
+  // Personalized Schemes Shelf
+  function renderSchemes(session) {
     const listEl = document.getElementById('candidate-schemes-list');
     if (!listEl) return;
 
+    const district = session?.district || 'Balasore (Baleswar)';
     const schemes = [
-      { title: "Subhadra Yojana — Financial Aid", amount: "₹10,000 / Yr", target: "Women (21-60)" },
-      { title: "e-Medhabruti Higher Education Scholarship", amount: "Up to ₹10,000", target: "UG & PG Students" },
-      { title: "KALIA Scholarship for Professional Education", amount: "Full Fee Waiver", target: "Children of Farmers" }
+      { title: "Subhadra Yojana — Financial Aid", amount: "₹10,000 / Yr", target: "Women (21-60)", status: "Active DBT" },
+      { title: "e-Medhabruti Higher Education Scholarship", amount: "Up to ₹10,000", target: "Undergraduate & Post-Graduate", status: "Open for Domicile" },
+      { title: "KALIA Scholarship for Professional Education", amount: "Full Fee Waiver", target: "Farmers' Children (MBBS/Tech)", status: `Verified for ${district}` }
     ];
 
     listEl.innerHTML = schemes.map(sc => `
@@ -640,12 +680,126 @@
           <h4 style="font-size:12px;font-weight:700;color:#f8fafc;margin:0 0 2px;">${sc.title}</h4>
           <span style="font-size:10px;color:#94a3b8;"><strong style="color:#34d399;">${sc.amount}</strong> • ${sc.target}</span>
         </div>
-        <a href="/schemes-benefits/" style="padding:4px 10px;border-radius:6px;background:rgba(13,148,136,0.15);color:#2dd4bf;font-size:11px;text-decoration:none;font-weight:600;">Details →</a>
+        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(13,148,136,0.15);color:#2dd4bf;font-weight:700;">${sc.status}</span>
       </div>
     `).join('');
   }
 
-  // Tab View Switcher
+  // In-Dashboard Scratchpad & Daily Notes
+  function initScratchpad() {
+    const textarea = document.getElementById('bp-candidate-scratchpad');
+    const indicator = document.getElementById('scratchpad-save-indicator');
+    if (!textarea) return;
+
+    try {
+      const savedNote = localStorage.getItem(NOTES_KEY);
+      if (savedNote) textarea.value = savedNote;
+    } catch(e) {}
+
+    let timeout = null;
+    textarea.addEventListener('input', () => {
+      if (indicator) indicator.textContent = 'Saving...';
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        try {
+          localStorage.setItem(NOTES_KEY, textarea.value);
+          if (indicator) indicator.textContent = 'Auto-saved to device';
+        } catch(e) {}
+      }, 500);
+    });
+  }
+
+  // In-Dashboard Mock Test Score Logger
+  function renderMockScores() {
+    const tbody = document.getElementById('bp-mock-scores-body');
+    if (!tbody) return;
+
+    const scores = getMockScores();
+    if (scores.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:16px;">No mock tests logged yet. Click "+ Log New Mock" to track your first test score.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = scores.map(item => `
+      <tr>
+        <td style="font-family:monospace;color:#94a3b8;">${item.date}</td>
+        <td><strong style="color:#f8fafc;">${item.exam}</strong><br><span style="color:#64748b;font-size:11px;">${item.paper}</span></td>
+        <td style="color:#2dd4bf;font-weight:700;">${item.score}</td>
+        <td style="color:#94a3b8;">${item.max}</td>
+        <td><span style="padding:2px 8px;border-radius:4px;background:rgba(16,185,129,0.15);color:#34d399;font-weight:700;">${item.accuracy}</span></td>
+        <td><button type="button" class="btn-del-score" data-id="${item.id}" style="background:transparent;border:none;color:#f87171;cursor:pointer;font-size:12px;">✕</button></td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('.btn-del-score').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const filtered = getMockScores().filter(x => x.id !== id);
+        saveMockScores(filtered);
+        renderMockScores();
+        showToast('Mock test record deleted.');
+      });
+    });
+  }
+
+  function initMockScoreLogger() {
+    renderMockScores();
+
+    const addBtn = document.getElementById('bp-add-mock-score-btn');
+    addBtn?.addEventListener('click', () => {
+      const exam = prompt("Enter Examination Name (e.g. OPSC OCS Prelims, OSSC CGL):", "OPSC OCS Prelims");
+      if (!exam) return;
+      const paper = prompt("Enter Paper Name (e.g. GS Paper I, CSAT):", "General Studies Mock Test");
+      if (!paper) return;
+      const scoreStr = prompt("Marks Scored:", "135");
+      const maxStr = prompt("Total Marks:", "200");
+      const score = parseFloat(scoreStr) || 0;
+      const max = parseFloat(maxStr) || 200;
+      const accuracy = Math.round((score / max) * 100) + "%";
+
+      const list = getMockScores();
+      list.unshift({
+        id: "mock-" + Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        exam,
+        paper,
+        score,
+        max,
+        accuracy
+      });
+      saveMockScores(list);
+      renderMockScores();
+      showToast('Mock test score logged successfully!');
+    });
+  }
+
+  // Document Locker Reactive Checkboxes
+  function initDocumentLocker() {
+    let lockerState = {};
+    try {
+      const raw = localStorage.getItem(LOCKER_KEY);
+      if (raw) lockerState = JSON.parse(raw);
+    } catch(e) {}
+
+    const items = document.querySelectorAll('.bp-locker-item');
+    items.forEach((item, idx) => {
+      const cb = item.querySelector('.bp-locker-cb');
+      if (lockerState[idx] !== undefined) {
+        cb.checked = lockerState[idx];
+        item.classList.toggle('verified', cb.checked);
+      }
+      cb?.addEventListener('change', () => {
+        lockerState[idx] = cb.checked;
+        item.classList.toggle('verified', cb.checked);
+        try {
+          localStorage.setItem(LOCKER_KEY, JSON.stringify(lockerState));
+        } catch(e) {}
+        showToast(cb.checked ? 'Document marked as verified.' : 'Document status updated.');
+      });
+    });
+  }
+
+  // Tab View Switcher (Self-Contained SPA)
   function switchTab(tabId) {
     if (!tabId) return;
 
@@ -662,10 +816,12 @@
     const titles = {
       'tab-overview': ['Dashboard Overview', 'Live exam preparation, syllabus milestones & downloads'],
       'tab-my-learning': ['My Learning & Syllabi', 'Stage-wise topic checklists, milestones, and syllabus coverage'],
-      'tab-bookmarks': ['Candidate Bookmarks', 'Starred civil service notifications, syllabus PDFs & schemes'],
+      'tab-bookmarks': ['Private Library & Bookmarks', 'Curated repository of saved PYQs, bookmarked opportunities, and study notes'],
       'tab-achievements': ['Achievements & Badges', 'Study streaks, syllabus completion ratios & milestone tokens'],
       'tool-calendar': ['Exam Calendar & Timeline', 'Official countdowns for upcoming OPSC, OSSC, and B.Ed exams'],
-      'tool-locker': ['Document Locker', 'KYC certificates, domicile proofs, and examination marksheets']
+      'tool-locker': ['Document Locker', 'KYC certificates, domicile proofs, and examination marksheets'],
+      'tool-notes': ['Revision Scratchpad & Daily Notes', 'Aspirant notepad for historical milestones and formulas'],
+      'tool-analytics': ['Mock Score Tracker & Diagnostics', 'Test series analytics, accuracy ratios, and mark logger']
     };
 
     if (titles[tabId]) {
@@ -692,7 +848,7 @@
     let existingModal = document.getElementById('cso-profile-editor-modal');
     if (existingModal) existingModal.remove();
 
-    const currentName = currentSession?.fullName || currentSession?.name || 'Ramesh Biswal';
+    const currentName = currentSession?.fullName || currentSession?.name || 'RAMESH BISWAL';
     const currentMobile = currentSession?.mobile || currentSession?.phone || '9876543210';
     const currentDistrict = currentSession?.district || 'Balasore (Baleswar)';
     const selectedExams = Array.isArray(currentSession?.targetExams) ? currentSession.targetExams : ['opsc', 'ossc'];
@@ -752,7 +908,7 @@
 
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:8px;">Target Examinations &amp; Streams</label>
-            <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="flex-direction:column;gap:6px;display:flex;">
               ${examCheckboxes}
             </div>
           </div>
@@ -795,6 +951,7 @@
       } catch(err) {}
 
       renderUserProfile(updatedSession);
+      renderSchemes(updatedSession);
       modal.remove();
       showToast('Aspirant Profile successfully updated!');
     });
@@ -846,7 +1003,6 @@
       }
     });
 
-    // Instant Search Filter across Syllabus & Portals
     input?.addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
       if (!q) {
@@ -917,7 +1073,7 @@
       }
     });
 
-    // Sidebar Navigation Click Routing
+    // Sidebar Navigation Click Routing (Self-Contained SPA)
     document.querySelectorAll('.bp-nav-item').forEach(item => {
       item.addEventListener('click', (e) => {
         const href = item.getAttribute('href');
@@ -962,6 +1118,9 @@
       openProfileEditorModal(getSession());
     });
 
+    // Logout Action Button
+    document.getElementById('bp-topbar-logout-btn')?.addEventListener('click', handleCandidateLogout);
+
     // Exam Filter Chips in Overview
     document.querySelectorAll('#bp-exam-filter-chips .bp-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -992,7 +1151,10 @@
     renderMilestones();
     renderJobsShelf();
     renderStudyShelf();
-    renderSchemes();
+    renderSchemes(session);
+    initScratchpad();
+    initMockScoreLogger();
+    initDocumentLocker();
 
     // Listen for bookmark updates
     window.addEventListener('cso:bookmarks-updated', () => {
