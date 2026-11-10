@@ -12960,7 +12960,14 @@
           apiConfiguration: this.getApiConfigurationConfig ? this.getApiConfigurationConfig() : null,
           webhookManagement: this.getWebhookManagementConfig ? this.getWebhookManagementConfig() : null,
           integrationLogs: this.getIntegrationLogsConfig ? this.getIntegrationLogsConfig() : null,
-          integrationHealth: this.getIntegrationHealthConfig ? this.getIntegrationHealthConfig() : null
+          integrationHealth: this.getIntegrationHealthConfig ? this.getIntegrationHealthConfig() : null,
+          authentication: this.getAuthenticationConfig ? this.getAuthenticationConfig() : null,
+          twoFactor: this.getTwoFactorConfig ? this.getTwoFactorConfig() : null,
+          adminSessions: this.getAdminSessionsConfig ? this.getAdminSessionsConfig() : null,
+          rolesAccessPolicies: this.getRolesAccessPoliciesConfig ? this.getRolesAccessPoliciesConfig() : null,
+          loginHistory: this.getLoginHistoryConfig ? this.getLoginHistoryConfig() : null,
+          securityAlerts: this.getSecurityAlertsConfig ? this.getSecurityAlertsConfig() : null,
+          rateLimits: this.getRateLimitsConfig ? this.getRateLimitsConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -14622,6 +14629,251 @@
     return filename;
   };
 
+  // --- MODULE 16-001: Authentication ---
+  const DEFAULT_AUTHENTICATION_CONFIG = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { minPasswordLength: 12, requireSpecialChar: true, requireNumber: true, requireUppercase: true, maxFailedAttempts: 5, lockoutDurationMinutes: 30, sessionTimeoutMinutes: 120 },
+    items: [
+      { id: "AUTH-01", policyName: "Master Admin Password Policy", targetRole: "Super Admin / Root", enforcementLevel: "Mandatory 14-char Complex", passwordExpiryDays: 60, status: "Active", active: true },
+      { id: "AUTH-02", policyName: "Staff Editorial Auth Policy", targetRole: "Editor / Content Desk", enforcementLevel: "Mandatory 12-char Complex", passwordExpiryDays: 90, status: "Active", active: true },
+      { id: "AUTH-03", policyName: "Candidate Portal Password Policy", targetRole: "Aspirant / Student", enforcementLevel: "Standard 8-char Alphanumeric", passwordExpiryDays: 180, status: "Active", active: true },
+      { id: "AUTH-04", policyName: "Automated Bot Brute-Force Lockout", targetRole: "Global (All Endpoints)", enforcementLevel: "5 Failed Attempts / 30m IP Jail", passwordExpiryDays: 0, status: "Active", active: true }
+    ]
+  };
+  SuperStore.getAuthenticationConfig = function() {
+    return _hydrateConfig('cso_authentication_config', 'policies', () => DEFAULT_AUTHENTICATION_CONFIG);
+  };
+  SuperStore.saveAuthenticationConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.policies = cfg.items || cfg.policies || []; cfg.items = cfg.policies;
+    localStorage.setItem('cso_authentication_config', JSON.stringify(cfg));
+    this.logAudit('AUTHENTICATION_CONFIG_UPDATED', 'SECURITY', `Authentication policies updated (${cfg.items.length} policies).`);
+    return true;
+  };
+  SuperStore.resetAuthenticationConfig = function() {
+    localStorage.setItem('cso_authentication_config', JSON.stringify(DEFAULT_AUTHENTICATION_CONFIG));
+    this.logAudit('AUTHENTICATION_CONFIG_RESET', 'SECURITY', 'Authentication configuration reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_AUTHENTICATION_CONFIG));
+  };
+  SuperStore.exportAuthenticationManifest = function() {
+    const config = this.getAuthenticationConfig();
+    const filename = "authentication_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("AUTHENTICATION_EXPORTED", "DATA_EXPORT", `Authentication manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-002: Two-Factor Authentication ---
+  const DEFAULT_TWO_FACTOR_CONFIG = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { total2FAEnrolled: 18, adminEnforcementRate: "100%", primaryMethod: "TOTP (Google/Microsoft Authenticator)", backupCodesGenerated: 180 },
+    items: [
+      { id: "2FA-01", adminUser: "Root Super Admin", email: "admin@csodisha.com", role: "Super Admin", method: "TOTP Authenticator", backupCodesRemaining: 8, enforcedMandatory: true, enrolledDate: "2026-08-10", status: "Active", active: true },
+      { id: "2FA-02", adminUser: "Debabrata Nayak", email: "debabrata.n@csodisha.com", role: "Lead Editor", method: "TOTP Authenticator", backupCodesRemaining: 10, enforcedMandatory: true, enrolledDate: "2026-09-01", status: "Active", active: true },
+      { id: "2FA-03", adminUser: "Subhashree Mohanty", email: "subhashree.m@csodisha.com", role: "Community Manager", method: "TOTP + SMS OTP", backupCodesRemaining: 6, enforcedMandatory: true, enrolledDate: "2026-09-15", status: "Active", active: true },
+      { id: "2FA-04", adminUser: "Finance Auditor Desk", email: "finance@csodisha.com", role: "Finance Manager", method: "Hardware Security Key (FIDO2)", backupCodesRemaining: 10, enforcedMandatory: true, enrolledDate: "2026-10-01", status: "Active", active: true }
+    ]
+  };
+  SuperStore.getTwoFactorConfig = function() {
+    return _hydrateConfig('cso_two_factor_config', 'accounts', () => DEFAULT_TWO_FACTOR_CONFIG);
+  };
+  SuperStore.saveTwoFactorConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.accounts = cfg.items || cfg.accounts || []; cfg.items = cfg.accounts;
+    localStorage.setItem('cso_two_factor_config', JSON.stringify(cfg));
+    this.logAudit('TWO_FACTOR_CONFIG_UPDATED', 'SECURITY', `Two-factor authentication accounts updated (${cfg.items.length} accounts).`);
+    return true;
+  };
+  SuperStore.resetTwoFactorConfig = function() {
+    localStorage.setItem('cso_two_factor_config', JSON.stringify(DEFAULT_TWO_FACTOR_CONFIG));
+    this.logAudit('TWO_FACTOR_CONFIG_RESET', 'SECURITY', 'Two-factor configuration reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_TWO_FACTOR_CONFIG));
+  };
+  SuperStore.exportTwoFactorManifest = function() {
+    const config = this.getTwoFactorConfig();
+    const filename = "two_factor_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("TWO_FACTOR_EXPORTED", "DATA_EXPORT", `Two-factor manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-003: Admin Sessions ---
+  const DEFAULT_ADMIN_SESSIONS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeSessionsCount: 4, idleRevocationThreshold: "30 Minutes", concurrentLoginsAllowed: 2 },
+    items: [
+      { id: "SES-01", userEmail: "admin@csodisha.com", role: "Super Admin", ipAddress: "103.14.77.21 (Bhubaneswar)", device: "Chrome 131 / macOS Sonoma", loginTime: "2026-11-10 08:05", lastActiveTime: "2026-11-10 09:00", sessionState: "Current Active", active: true },
+      { id: "SES-02", userEmail: "debabrata.n@csodisha.com", role: "Lead Editor", ipAddress: "115.240.112.44 (Cuttack)", device: "Firefox 132 / Windows 11", loginTime: "2026-11-10 07:30", lastActiveTime: "2026-11-10 08:45", sessionState: "Active", active: true },
+      { id: "SES-03", userEmail: "subhashree.m@csodisha.com", role: "Community Manager", ipAddress: "157.34.89.12 (Balasore)", device: "Safari / iOS 18", loginTime: "2026-11-10 08:40", lastActiveTime: "2026-11-10 08:58", sessionState: "Active", active: true },
+      { id: "SES-04", userEmail: "backup.operator@csodisha.com", role: "Backup Operator", ipAddress: "49.36.120.89 (Rourkela)", device: "Edge 130 / Ubuntu Linux", loginTime: "2026-11-09 22:15", lastActiveTime: "2026-11-09 23:30", sessionState: "Expired / Idle", active: true }
+    ]
+  };
+  SuperStore.getAdminSessionsConfig = function() {
+    return _hydrateConfig('cso_admin_sessions_config', 'sessions', () => DEFAULT_ADMIN_SESSIONS);
+  };
+  SuperStore.saveAdminSessionsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.sessions = cfg.items || cfg.sessions || []; cfg.items = cfg.sessions;
+    localStorage.setItem('cso_admin_sessions_config', JSON.stringify(cfg));
+    this.logAudit('ADMIN_SESSIONS_UPDATED', 'SECURITY', `Admin sessions updated (${cfg.items.length} sessions).`);
+    return true;
+  };
+  SuperStore.resetAdminSessionsConfig = function() {
+    localStorage.setItem('cso_admin_sessions_config', JSON.stringify(DEFAULT_ADMIN_SESSIONS));
+    this.logAudit('ADMIN_SESSIONS_RESET', 'SECURITY', 'Admin sessions reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ADMIN_SESSIONS));
+  };
+  SuperStore.exportAdminSessionsManifest = function() {
+    const config = this.getAdminSessionsConfig();
+    const filename = "admin_sessions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ADMIN_SESSIONS_EXPORTED", "DATA_EXPORT", `Admin sessions manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-004: Roles & Access Policies ---
+  const DEFAULT_ROLES_ACCESS_POLICIES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalRolesCount: 5, totalPermissionsDefined: 48, defaultAspirantRole: "Candidate Read-Only" },
+    items: [
+      { id: "ROL-01", roleName: "Super Admin (Root)", scopeLevel: "Platform-Wide", userCount: 2, permissionsSummary: "Full Root CRUD across all 241 modules + Snapshot restore", isSystemReserved: true, status: "Active", active: true },
+      { id: "ROL-02", roleName: "Editorial & Gazette Desk Lead", scopeLevel: "Content & Exams", userCount: 4, permissionsSummary: "Read/Write in Folders 02-06, 10, 13, 14; Read-Only elsewhere", isSystemReserved: false, status: "Active", active: true },
+      { id: "ROL-03", roleName: "Finance & Sponsor Auditor", scopeLevel: "Financial Vault", userCount: 2, permissionsSummary: "Read/Write in Folder 08, 12-010; No access to student PII", isSystemReserved: false, status: "Active", active: true },
+      { id: "ROL-04", roleName: "District Community Moderator", scopeLevel: "Community Forums", userCount: 8, permissionsSummary: "Moderate discussions, mute bad actors, handle spam flags in Folders 09-10", isSystemReserved: false, status: "Active", active: true },
+      { id: "ROL-05", roleName: "Registered Aspirant (Verified)", scopeLevel: "Public Portal", userCount: 14820, permissionsSummary: "Profile edit, attempt mock tests, comment on public forums, bookmark PYQs", isSystemReserved: true, status: "Active", active: true }
+    ]
+  };
+  SuperStore.getRolesAccessPoliciesConfig = function() {
+    return _hydrateConfig('cso_roles_access_policies_config', 'roles', () => DEFAULT_ROLES_ACCESS_POLICIES);
+  };
+  SuperStore.saveRolesAccessPoliciesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.roles = cfg.items || cfg.roles || []; cfg.items = cfg.roles;
+    localStorage.setItem('cso_roles_access_policies_config', JSON.stringify(cfg));
+    this.logAudit('ROLES_ACCESS_POLICIES_UPDATED', 'RBAC', `Roles & access policies updated (${cfg.items.length} roles).`);
+    return true;
+  };
+  SuperStore.resetRolesAccessPoliciesConfig = function() {
+    localStorage.setItem('cso_roles_access_policies_config', JSON.stringify(DEFAULT_ROLES_ACCESS_POLICIES));
+    this.logAudit('ROLES_ACCESS_POLICIES_RESET', 'RBAC', 'Roles & access policies reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ROLES_ACCESS_POLICIES));
+  };
+  SuperStore.exportRolesAccessPoliciesManifest = function() {
+    const config = this.getRolesAccessPoliciesConfig();
+    const filename = "roles_access_policies_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ROLES_ACCESS_POLICIES_EXPORTED", "DATA_EXPORT", `Roles access policies manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-005: Login History ---
+  const DEFAULT_LOGIN_HISTORY = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalLoginsLogged24h: 312, successfulLogins: 301, failedAttempts: 11, flaggedGeolocations: 1 },
+    items: [
+      { id: "LOG-01", timestamp: "2026-11-10 08:05:22", email: "admin@csodisha.com", ipAddress: "103.14.77.21", location: "Bhubaneswar, Odisha", result: "Success", authMethod: "Password + TOTP", threatScore: "0 (Low)", active: true },
+      { id: "LOG-02", timestamp: "2026-11-10 07:44:10", email: "root@csodisha.com", ipAddress: "185.220.101.4 (Tor Exit)", location: "Frankfurt, Germany", result: "Blocked (WAF Rule)", authMethod: "Brute Force Password Attempt", threatScore: "95 (Critical)", active: true },
+      { id: "LOG-03", timestamp: "2026-11-10 07:30:15", email: "debabrata.n@csodisha.com", ipAddress: "115.240.112.44", location: "Cuttack, Odisha", result: "Success", authMethod: "Password + TOTP", threatScore: "0 (Low)", active: true },
+      { id: "LOG-04", timestamp: "2026-11-10 06:12:40", email: "unknown_aspirant@gmail.com", ipAddress: "49.36.14.12", location: "Balasore, Odisha", result: "Failed (Wrong Password)", authMethod: "Candidate Auth", threatScore: "15 (Low)", active: true }
+    ]
+  };
+  SuperStore.getLoginHistoryConfig = function() {
+    return _hydrateConfig('cso_login_history_config', 'history', () => DEFAULT_LOGIN_HISTORY);
+  };
+  SuperStore.saveLoginHistoryConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.history = cfg.items || cfg.history || []; cfg.items = cfg.history;
+    localStorage.setItem('cso_login_history_config', JSON.stringify(cfg));
+    this.logAudit('LOGIN_HISTORY_UPDATED', 'SECURITY', `Login history updated (${cfg.items.length} records).`);
+    return true;
+  };
+  SuperStore.resetLoginHistoryConfig = function() {
+    localStorage.setItem('cso_login_history_config', JSON.stringify(DEFAULT_LOGIN_HISTORY));
+    this.logAudit('LOGIN_HISTORY_RESET', 'SECURITY', 'Login history reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_LOGIN_HISTORY));
+  };
+  SuperStore.exportLoginHistoryManifest = function() {
+    const config = this.getLoginHistoryConfig();
+    const filename = "login_history_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("LOGIN_HISTORY_EXPORTED", "DATA_EXPORT", `Login history manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-006: Security Alerts ---
+  const DEFAULT_SECURITY_ALERTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { openAlertsCount: 2, criticalAlerts: 0, resolvedThisWeek: 14, automatedMitigationRate: "92%" },
+    items: [
+      { id: "ALT-01", alertTitle: "Suspicious Multi-IP Login Attempt on Admin Portal", severity: "Medium", category: "Credential Abuse", detectedAt: "2026-11-10 07:45", sourceIp: "185.220.101.4", automatedActionTaken: "IP Blocked at Cloudflare Edge (24h)", status: "Mitigated", active: true },
+      { id: "ALT-02", alertTitle: "High Rate of Mock Test Scoring Requests from Single Token", severity: "Low", category: "API Rate Abuse", detectedAt: "2026-11-10 05:20", sourceIp: "49.36.12.88", automatedActionTaken: "Token Throttled to 10 req/min", status: "Under Observation", active: true },
+      { id: "ALT-03", alertTitle: "Unusual Bulk Document Download Pattern Detected", severity: "Low", category: "Scraping / Crawling", detectedAt: "2026-11-09 23:10", sourceIp: "103.21.244.0/24", automatedActionTaken: "Served Cloudflare Turnstile Challenge", status: "Resolved", active: true }
+    ]
+  };
+  SuperStore.getSecurityAlertsConfig = function() {
+    return _hydrateConfig('cso_security_alerts_config', 'alerts', () => DEFAULT_SECURITY_ALERTS);
+  };
+  SuperStore.saveSecurityAlertsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.alerts = cfg.items || cfg.alerts || []; cfg.items = cfg.alerts;
+    localStorage.setItem('cso_security_alerts_config', JSON.stringify(cfg));
+    this.logAudit('SECURITY_ALERTS_UPDATED', 'SECURITY', `Security alerts updated (${cfg.items.length} alerts).`);
+    return true;
+  };
+  SuperStore.resetSecurityAlertsConfig = function() {
+    localStorage.setItem('cso_security_alerts_config', JSON.stringify(DEFAULT_SECURITY_ALERTS));
+    this.logAudit('SECURITY_ALERTS_RESET', 'SECURITY', 'Security alerts reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SECURITY_ALERTS));
+  };
+  SuperStore.exportSecurityAlertsManifest = function() {
+    const config = this.getSecurityAlertsConfig();
+    const filename = "security_alerts_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SECURITY_ALERTS_EXPORTED", "DATA_EXPORT", `Security alerts manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 16-007: Rate Limits ---
+  const DEFAULT_RATE_LIMITS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalProtectedEndpoints: 6, globalAlgorithm: "Token Bucket with Cloudflare Edge Guard", requestsThrottled24h: 84 },
+    items: [
+      { id: "RTL-01", endpointPath: "/api/auth/login", method: "POST", limitWindow: "1 Minute", maxRequests: 5, actionOnExceeded: "429 Too Many Requests + 15m Cooldown", active: true },
+      { id: "RTL-02", endpointPath: "/api/search/*", method: "GET", limitWindow: "1 Minute", maxRequests: 60, actionOnExceeded: "Temporary 429 Throttle", active: true },
+      { id: "RTL-03", endpointPath: "/api/library/download/*", method: "GET", limitWindow: "1 Hour", maxRequests: 30, actionOnExceeded: "Require Turnstile Captcha", active: true },
+      { id: "RTL-04", endpointPath: "/api/mock/submit", method: "POST", limitWindow: "1 Minute", maxRequests: 3, actionOnExceeded: "Reject Duplicate Submissions", active: true }
+    ]
+  };
+  SuperStore.getRateLimitsConfig = function() {
+    return _hydrateConfig('cso_rate_limits_config', 'limits', () => DEFAULT_RATE_LIMITS);
+  };
+  SuperStore.saveRateLimitsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.limits = cfg.items || cfg.limits || []; cfg.items = cfg.limits;
+    localStorage.setItem('cso_rate_limits_config', JSON.stringify(cfg));
+    this.logAudit('RATE_LIMITS_UPDATED', 'SECURITY', `Rate limits updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetRateLimitsConfig = function() {
+    localStorage.setItem('cso_rate_limits_config', JSON.stringify(DEFAULT_RATE_LIMITS));
+    this.logAudit('RATE_LIMITS_RESET', 'SECURITY', 'Rate limits reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_RATE_LIMITS));
+  };
+  SuperStore.exportRateLimitsManifest = function() {
+    const config = this.getRateLimitsConfig();
+    const filename = "rate_limits_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("RATE_LIMITS_EXPORTED", "DATA_EXPORT", `Rate limits manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -14809,6 +15061,34 @@
     window.CSOSuperStore.saveIntegrationHealthConfig = SuperStore.saveIntegrationHealthConfig;
     window.CSOSuperStore.resetIntegrationHealthConfig = SuperStore.resetIntegrationHealthConfig;
     window.CSOSuperStore.exportIntegrationHealthManifest = SuperStore.exportIntegrationHealthManifest;
+    window.CSOSuperStore.getAuthenticationConfig = SuperStore.getAuthenticationConfig;
+    window.CSOSuperStore.saveAuthenticationConfig = SuperStore.saveAuthenticationConfig;
+    window.CSOSuperStore.resetAuthenticationConfig = SuperStore.resetAuthenticationConfig;
+    window.CSOSuperStore.exportAuthenticationManifest = SuperStore.exportAuthenticationManifest;
+    window.CSOSuperStore.getTwoFactorConfig = SuperStore.getTwoFactorConfig;
+    window.CSOSuperStore.saveTwoFactorConfig = SuperStore.saveTwoFactorConfig;
+    window.CSOSuperStore.resetTwoFactorConfig = SuperStore.resetTwoFactorConfig;
+    window.CSOSuperStore.exportTwoFactorManifest = SuperStore.exportTwoFactorManifest;
+    window.CSOSuperStore.getAdminSessionsConfig = SuperStore.getAdminSessionsConfig;
+    window.CSOSuperStore.saveAdminSessionsConfig = SuperStore.saveAdminSessionsConfig;
+    window.CSOSuperStore.resetAdminSessionsConfig = SuperStore.resetAdminSessionsConfig;
+    window.CSOSuperStore.exportAdminSessionsManifest = SuperStore.exportAdminSessionsManifest;
+    window.CSOSuperStore.getRolesAccessPoliciesConfig = SuperStore.getRolesAccessPoliciesConfig;
+    window.CSOSuperStore.saveRolesAccessPoliciesConfig = SuperStore.saveRolesAccessPoliciesConfig;
+    window.CSOSuperStore.resetRolesAccessPoliciesConfig = SuperStore.resetRolesAccessPoliciesConfig;
+    window.CSOSuperStore.exportRolesAccessPoliciesManifest = SuperStore.exportRolesAccessPoliciesManifest;
+    window.CSOSuperStore.getLoginHistoryConfig = SuperStore.getLoginHistoryConfig;
+    window.CSOSuperStore.saveLoginHistoryConfig = SuperStore.saveLoginHistoryConfig;
+    window.CSOSuperStore.resetLoginHistoryConfig = SuperStore.resetLoginHistoryConfig;
+    window.CSOSuperStore.exportLoginHistoryManifest = SuperStore.exportLoginHistoryManifest;
+    window.CSOSuperStore.getSecurityAlertsConfig = SuperStore.getSecurityAlertsConfig;
+    window.CSOSuperStore.saveSecurityAlertsConfig = SuperStore.saveSecurityAlertsConfig;
+    window.CSOSuperStore.resetSecurityAlertsConfig = SuperStore.resetSecurityAlertsConfig;
+    window.CSOSuperStore.exportSecurityAlertsManifest = SuperStore.exportSecurityAlertsManifest;
+    window.CSOSuperStore.getRateLimitsConfig = SuperStore.getRateLimitsConfig;
+    window.CSOSuperStore.saveRateLimitsConfig = SuperStore.saveRateLimitsConfig;
+    window.CSOSuperStore.resetRateLimitsConfig = SuperStore.resetRateLimitsConfig;
+    window.CSOSuperStore.exportRateLimitsManifest = SuperStore.exportRateLimitsManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

@@ -625,6 +625,13 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-15-009') { renderWebhookManagementWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-15-010') { renderIntegrationLogsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-15-011') { renderIntegrationHealthWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-001') { renderAuthenticationWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-002') { renderTwoFactorWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-003') { renderAdminSessionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-004') { renderRolesAccessPoliciesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-005') { renderLoginHistoryWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-006') { renderSecurityAlertsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-16-007') { renderRateLimitsWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1057,6 +1064,20 @@ async function loadMasterNavigation() {
         renderIntegrationLogsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-15-011') {
         renderIntegrationHealthWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-001') {
+        renderAuthenticationWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-002') {
+        renderTwoFactorWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-003') {
+        renderAdminSessionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-004') {
+        renderRolesAccessPoliciesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-005') {
+        renderLoginHistoryWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-006') {
+        renderSecurityAlertsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-16-007') {
+        renderRateLimitsWorkspace(dom.workspaceRoot);
 
 
 
@@ -61350,6 +61371,1654 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-15-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // =========================================================================
+    // MODULE 16-001: Authentication
+    // =========================================================================
+    function renderAuthenticationWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getAuthenticationConfig();
+        let items = Array.isArray(config.policies || config.items) ? [...(config.policies || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.policyName || '').toLowerCase().includes(term) ||
+                   (a.targetRole || '').toLowerCase().includes(term) ||
+                   (a.enforcementLevel || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const settings = config.settings || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">CREDENTIAL POLICY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Authentication Policies &amp; Password Governance</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Enforce password entropy requirements, brute-force jail lockouts, and session TTL parameters across user roles</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddPolicy" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-rose-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Policy
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Policies</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-rose-400 mt-1">${items.filter(p => p.active).length} enforced across tiers</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Min Password Length</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${settings.minPasswordLength || 12} Chars</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Complexity: Symbols, Upper, Digits</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Brute-Force Lockout</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${settings.maxFailedAttempts || 5} Attempts</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Jail: ${settings.lockoutDurationMinutes || 30} mins lockout</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Max Session TTL</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${settings.sessionTimeoutMinutes || 120} Mins</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Automated idle revocation</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoAuthSearchInput" value="${searchTerm}" placeholder="Search policy name, role, enforcement..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-rose-500" />
+                </div>
+              </div>
+
+              <!-- Policies Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Policy Name &amp; ID</th>
+                      <th class="py-3 px-4">Target Role / Scope</th>
+                      <th class="py-3 px-4">Enforcement Level</th>
+                      <th class="py-3 px-4">Password Expiry</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No authentication policies match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.policyName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-rose-300 border border-rose-500/20">${item.targetRole}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.enforcementLevel}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] ${item.passwordExpiryDays > 0 ? 'text-amber-400' : 'text-slate-400'}">
+                          ${item.passwordExpiryDays > 0 ? item.passwordExpiryDays + ' Days' : 'No Rotation'}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Enforced' : 'Muted'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoAuthSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Authentication Policy Schema', {
+              id: 'string (unique ID, e.g. AUTH-01)',
+              policyName: 'string (policy title description)',
+              targetRole: 'string (Super Admin, Editor, Aspirant, Global)',
+              enforcementLevel: 'string (Mandatory 14-char Complex, etc.)',
+              passwordExpiryDays: 'number (rotation interval in days)',
+              status: 'string (Active, Muted)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAuthenticationManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Authentication Policies to factory defaults?')) {
+              store.resetAuthenticationConfig();
+              config = store.getAuthenticationConfig();
+              items = [...(config.policies || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddPolicy')?.addEventListener('click', () => {
+            const name = prompt('Policy Name:');
+            if (!name) return;
+            const role = prompt('Target Role:', 'Staff Operator');
+            const level = prompt('Enforcement Level:', 'Mandatory 12-char Alphanumeric');
+            const newId = 'AUTH-' + String(items.length + 1).padStart(2, '0');
+            const newPol = {
+              id: newId,
+              policyName: name,
+              targetRole: role || 'Staff Operator',
+              enforcementLevel: level || 'Mandatory 12-char Complex',
+              passwordExpiryDays: 90,
+              status: 'Active',
+              active: true
+            };
+            items.push(newPol);
+            config.policies = items;
+            config.items = items;
+            store.saveAuthenticationConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                item.status = item.active ? 'Active' : 'Muted';
+                config.policies = items;
+                config.items = items;
+                store.saveAuthenticationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Policy Name:', item.policyName);
+              if (newName !== null && newName.trim()) {
+                item.policyName = newName.trim();
+                const newLevel = prompt('Edit Enforcement Level:', item.enforcementLevel);
+                if (newLevel !== null) item.enforcementLevel = newLevel.trim();
+                const newExpiry = prompt('Edit Expiry Days:', item.passwordExpiryDays);
+                if (newExpiry !== null && !isNaN(newExpiry)) item.passwordExpiryDays = parseInt(newExpiry, 10);
+                config.policies = items;
+                config.items = items;
+                store.saveAuthenticationConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete authentication policy ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.policies = items;
+                config.items = items;
+                store.saveAuthenticationConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 16-002: Two-Factor Authentication
+    // =========================================================================
+    function renderTwoFactorWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getTwoFactorConfig();
+        let items = Array.isArray(config.accounts || config.items) ? [...(config.accounts || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.adminUser || '').toLowerCase().includes(term) ||
+                   (a.email || '').toLowerCase().includes(term) ||
+                   (a.role || '').toLowerCase().includes(term) ||
+                   (a.method || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">MFA ENFORCEMENT</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Two-Factor Authentication (2FA / TOTP)</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Enforce mandatory TOTP/FIDO2 hardware keys for administrative personnel and monitor backup emergency codes</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOEnrollAdmin" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Enroll Administrator
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Enrolled Admins</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">${items.filter(a => a.active).length} active 2FA tokens</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Enforcement Rate</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.adminEnforcementRate || '100%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Strict admin isolation</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Primary Method</div>
+                  <div class="text-xl font-bold text-sky-300 mt-1">TOTP Auth</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Google / MS Authenticator</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Backup Codes</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${summary.backupCodesGenerated || 180} Issued</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Emergency offline recovery</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="cso2faSearchInput" value="${searchTerm}" placeholder="Search admin user, email, role, method..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+
+              <!-- 2FA Accounts Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Admin User &amp; ID</th>
+                      <th class="py-3 px-4">Email Address</th>
+                      <th class="py-3 px-4">Role</th>
+                      <th class="py-3 px-4">MFA Method</th>
+                      <th class="py-3 px-4">Backup Codes</th>
+                      <th class="py-3 px-4">Enrolled Date</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No 2FA accounts match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.adminUser}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.email}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-sky-300 border border-sky-500/20">${item.role}</span>
+                        </td>
+                        <td class="py-3 px-4 text-emerald-400 text-xs font-medium">
+                          ${item.method}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-purple-300">
+                          ${item.backupCodesRemaining} Remaining
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.enrolledDate}
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Revoke</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#cso2faSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Two-Factor Authentication Schema', {
+              id: 'string (unique ID, e.g. 2FA-01)',
+              adminUser: 'string (staff member name)',
+              email: 'string (admin email address)',
+              role: 'string (Super Admin, Lead Editor, Community Manager)',
+              method: 'string (TOTP Authenticator, FIDO2 Key)',
+              backupCodesRemaining: 'number (count)',
+              enforcedMandatory: 'boolean (flag)',
+              enrolledDate: 'string (YYYY-MM-DD)',
+              status: 'string (Active, Disabled)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportTwoFactorManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Two-Factor Authentication to factory defaults?')) {
+              store.resetTwoFactorConfig();
+              config = store.getTwoFactorConfig();
+              items = [...(config.accounts || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOEnrollAdmin')?.addEventListener('click', () => {
+            const name = prompt('Admin Full Name:');
+            if (!name) return;
+            const email = prompt('Email Address:', 'staff@csodisha.com');
+            const role = prompt('Role:', 'Staff Editor');
+            const newId = '2FA-' + String(items.length + 1).padStart(2, '0');
+            const new2FA = {
+              id: newId,
+              adminUser: name,
+              email: email || 'staff@csodisha.com',
+              role: role || 'Staff Editor',
+              method: 'TOTP Authenticator',
+              backupCodesRemaining: 10,
+              enforcedMandatory: true,
+              enrolledDate: new Date().toISOString().slice(0, 10),
+              status: 'Active',
+              active: true
+            };
+            items.push(new2FA);
+            config.accounts = items;
+            config.items = items;
+            store.saveTwoFactorConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                item.status = item.active ? 'Active' : 'Disabled';
+                config.accounts = items;
+                config.items = items;
+                store.saveTwoFactorConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Admin User:', item.adminUser);
+              if (newName !== null && newName.trim()) {
+                item.adminUser = newName.trim();
+                const newMethod = prompt('Edit 2FA Method:', item.method);
+                if (newMethod !== null) item.method = newMethod.trim();
+                const newCodes = prompt('Edit Backup Codes Count:', item.backupCodesRemaining);
+                if (newCodes !== null && !isNaN(newCodes)) item.backupCodesRemaining = parseInt(newCodes, 10);
+                config.accounts = items;
+                config.items = items;
+                store.saveTwoFactorConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Revoke 2FA token for ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.accounts = items;
+                config.items = items;
+                store.saveTwoFactorConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 16-003: Admin Sessions
+    // =========================================================================
+    function renderAdminSessionsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getAdminSessionsConfig();
+        let items = Array.isArray(config.sessions || config.items) ? [...(config.sessions || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.userEmail || '').toLowerCase().includes(term) ||
+                   (a.role || '').toLowerCase().includes(term) ||
+                   (a.ipAddress || '').toLowerCase().includes(term) ||
+                   (a.device || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">LIVE JWT &amp; DEVICE TOKENS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Admin Session Management &amp; Device Registry</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Inspect active operator sessions, device fingerprints, IP locations, and perform immediate session termination</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSORevokeAllSessions" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-rose-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Terminate Other Sessions
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Sessions</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.filter(s => s.sessionState.includes('Active')).length}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">Concurrently logged in operators</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Idle Threshold</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${summary.idleRevocationThreshold || '30 Minutes'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Auto-expires dormant tokens</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Concurrent Limit</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${summary.concurrentLoginsAllowed || 2} Per User</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Prevents credential sharing</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSesSearchInput" value="${searchTerm}" placeholder="Search user email, role, IP, device..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
+
+              <!-- Sessions Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Operator &amp; ID</th>
+                      <th class="py-3 px-4">Role</th>
+                      <th class="py-3 px-4">IP &amp; Location</th>
+                      <th class="py-3 px-4">Device &amp; User-Agent</th>
+                      <th class="py-3 px-4">Login Time</th>
+                      <th class="py-3 px-4">State</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No active sessions match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.userEmail}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-sky-300 border border-sky-500/20">${item.role}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.ipAddress}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs truncate max-w-xs" title="${item.device}">
+                          ${item.device}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.loginTime}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.sessionState.includes('Current') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.sessionState === 'Active' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${item.sessionState}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          ${!item.sessionState.includes('Current') ? `
+                            <button data-action="terminate" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Terminate</button>
+                          ` : `
+                            <span class="text-[10px] text-emerald-400 font-medium">This Session</span>
+                          `}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoSesSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Admin Sessions Schema', {
+              id: 'string (unique ID, e.g. SES-01)',
+              userEmail: 'string (operator email)',
+              role: 'string (Super Admin, Editor, etc.)',
+              ipAddress: 'string (IP and Geo City)',
+              device: 'string (browser & OS fingerprint)',
+              loginTime: 'string (YYYY-MM-DD HH:MM)',
+              lastActiveTime: 'string (YYYY-MM-DD HH:MM)',
+              sessionState: 'string (Current Active, Active, Expired / Idle)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportAdminSessionsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Admin Sessions to factory defaults?')) {
+              store.resetAdminSessionsConfig();
+              config = store.getAdminSessionsConfig();
+              items = [...(config.sessions || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSORevokeAllSessions')?.addEventListener('click', () => {
+            if (confirm('Terminate all active sessions except your current session?')) {
+              items = items.filter(s => s.sessionState.includes('Current'));
+              config.sessions = items;
+              config.items = items;
+              store.saveAdminSessionsConfig(config);
+              alert('All concurrent operator sessions terminated immediately.');
+              render();
+            }
+          });
+
+          container.querySelectorAll('button[data-action="terminate"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Terminate session ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.sessions = items;
+                config.items = items;
+                store.saveAdminSessionsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 16-004: Roles & Access Policies
+    // =========================================================================
+    function renderRolesAccessPoliciesWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getRolesAccessPoliciesConfig();
+        let items = Array.isArray(config.roles || config.items) ? [...(config.roles || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.roleName || '').toLowerCase().includes(term) ||
+                   (a.scopeLevel || '').toLowerCase().includes(term) ||
+                   (a.permissionsSummary || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">RBAC AUTHORIZATION</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Role-Based Access Control (RBAC) &amp; Scope Policies</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Define granular permissions across all 241 modules, enforce least-privilege scoping, and manage role assignments</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddRole" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-purple-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Custom Role
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Roles</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-purple-400 mt-1">${items.filter(r => r.isSystemReserved).length} system reserved roles</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Defined Permissions</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.totalPermissionsDefined || 48} Direct Scopes</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Read/Write/Delete/Audit</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Default Candidate Role</div>
+                  <div class="text-xl font-bold text-sky-300 mt-1">${summary.defaultAspirantRole || 'Candidate'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Zero administrative exposure</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoRolSearchInput" value="${searchTerm}" placeholder="Search role name, scope, permissions..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-500" />
+                </div>
+              </div>
+
+              <!-- Roles Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Role Name &amp; ID</th>
+                      <th class="py-3 px-4">Scope Level</th>
+                      <th class="py-3 px-4">Assigned Users</th>
+                      <th class="py-3 px-4">Permissions Scopes</th>
+                      <th class="py-3 px-4">Type</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No roles match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.roleName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-purple-300 border border-purple-500/20">${item.scopeLevel}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-emerald-400">
+                          ${(item.userCount || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs max-w-md truncate" title="${item.permissionsSummary}">
+                          ${item.permissionsSummary}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.isSystemReserved ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${item.isSystemReserved ? 'System Reserved' : 'Custom'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          ${!item.isSystemReserved ? `
+                            <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                          ` : ''}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoRolSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Roles & Access Policies Schema', {
+              id: 'string (unique ID, e.g. ROL-01)',
+              roleName: 'string (role title)',
+              scopeLevel: 'string (Platform-Wide, Content & Exams, Financial)',
+              userCount: 'number (assigned users count)',
+              permissionsSummary: 'string (summary of granted permissions)',
+              isSystemReserved: 'boolean (flag)',
+              status: 'string (Active, Disabled)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportRolesAccessPoliciesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Roles & Access Policies to factory defaults?')) {
+              store.resetRolesAccessPoliciesConfig();
+              config = store.getRolesAccessPoliciesConfig();
+              items = [...(config.roles || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddRole')?.addEventListener('click', () => {
+            const name = prompt('Role Name:');
+            if (!name) return;
+            const scope = prompt('Scope Level:', 'Custom Workgroup');
+            const perms = prompt('Permissions Summary:', 'Read and update assigned circulars');
+            const newId = 'ROL-' + String(items.length + 1).padStart(2, '0');
+            const newRole = {
+              id: newId,
+              roleName: name,
+              scopeLevel: scope || 'Custom Workgroup',
+              userCount: 0,
+              permissionsSummary: perms || 'Restricted custom permissions',
+              isSystemReserved: false,
+              status: 'Active',
+              active: true
+            };
+            items.push(newRole);
+            config.roles = items;
+            config.items = items;
+            store.saveRolesAccessPoliciesConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                item.status = item.active ? 'Active' : 'Disabled';
+                config.roles = items;
+                config.items = items;
+                store.saveRolesAccessPoliciesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Role Name:', item.roleName);
+              if (newName !== null && newName.trim()) {
+                item.roleName = newName.trim();
+                const newScope = prompt('Edit Scope Level:', item.scopeLevel);
+                if (newScope !== null) item.scopeLevel = newScope.trim();
+                const newPerms = prompt('Edit Permissions Summary:', item.permissionsSummary);
+                if (newPerms !== null) item.permissionsSummary = newPerms.trim();
+                config.roles = items;
+                config.items = items;
+                store.saveRolesAccessPoliciesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete custom role ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.roles = items;
+                config.items = items;
+                store.saveRolesAccessPoliciesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 16-005: Login History
+    // =========================================================================
+    function renderLoginHistoryWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getLoginHistoryConfig();
+        let items = Array.isArray(config.history || config.items) ? [...(config.history || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.email || '').toLowerCase().includes(term) ||
+                   (a.ipAddress || '').toLowerCase().includes(term) ||
+                   (a.location || '').toLowerCase().includes(term) ||
+                   (a.result || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">AUTH AUDIT TRAIL</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Authentication History &amp; Access Log</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track successful authentications, failed passwords, brute-force WAF blocks, and threat risk scoring</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOFlushLogins" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5 border border-slate-700">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Flush History
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Logins (24h)</div>
+                  <div class="text-2xl font-bold text-white mt-1">${summary.totalLoginsLogged24h || 312}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Total recorded attempts</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Successful</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.successfulLogins || 301}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Clean credential validations</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Failed / Blocked</div>
+                  <div class="text-2xl font-bold text-rose-300 mt-1">${summary.failedAttempts || 11}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">WAF and incorrect password</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Flagged Geo</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${summary.flaggedGeolocations || 1}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Non-domestic Tor / VPN</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoLogHistSearchInput" value="${searchTerm}" placeholder="Search email, IP, location, result..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500" />
+                </div>
+              </div>
+
+              <!-- Login History Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Timestamp &amp; ID</th>
+                      <th class="py-3 px-4">User Email</th>
+                      <th class="py-3 px-4">IP Address &amp; Geo</th>
+                      <th class="py-3 px-4">Result</th>
+                      <th class="py-3 px-4">Auth Method</th>
+                      <th class="py-3 px-4">Threat Score</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No login records match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4 font-mono text-[11px]">
+                          <div class="text-white">${item.timestamp}</div>
+                          <div class="text-slate-500 text-[10px]">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4 font-medium text-slate-200">
+                          ${item.email}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          <div>${item.ipAddress}</div>
+                          <div class="text-slate-500 text-[10px]">${item.location}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.result.includes('Success') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.result.includes('Blocked') ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                            ${item.result}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.authMethod}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs ${item.threatScore.includes('Critical') ? 'text-rose-400 font-bold' : 'text-emerald-400'}">
+                          ${item.threatScore}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoLogHistSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Login History Schema', {
+              id: 'string (unique ID, e.g. LOG-01)',
+              timestamp: 'string (YYYY-MM-DD HH:MM:SS)',
+              email: 'string (attempted login identifier)',
+              ipAddress: 'string (client IP)',
+              location: 'string (GeoIP City, Country)',
+              result: 'string (Success, Blocked, Failed)',
+              authMethod: 'string (Password + TOTP, Candidate Auth, etc.)',
+              threatScore: 'string (0 Low, 95 Critical)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportLoginHistoryManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Login History to factory defaults?')) {
+              store.resetLoginHistoryConfig();
+              config = store.getLoginHistoryConfig();
+              items = [...(config.history || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOFlushLogins')?.addEventListener('click', () => {
+            if (confirm('Flush all recorded login history entries?')) {
+              items = [];
+              config.history = items;
+              config.items = items;
+              store.saveLoginHistoryConfig(config);
+              render();
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 16-006: Security Alerts
+    // =========================================================================
+    function renderSecurityAlertsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getSecurityAlertsConfig();
+        let items = Array.isArray(config.alerts || config.items) ? [...(config.alerts || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.alertTitle || '').toLowerCase().includes(term) ||
+                   (a.category || '').toLowerCase().includes(term) ||
+                   (a.severity || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">THREAT INTELLIGENCE</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Real-Time Security Alerts &amp; Incident Feed</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Monitor credential stuffing, automated scraping patterns, API abuse, and automated Edge WAF mitigations</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOResolveAll" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Mark All Resolved
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Open Alerts</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.filter(a => a.status !== 'Resolved').length}</div>
+                  <div class="text-[10px] text-amber-400 mt-1">Under active review</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Critical Severity</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.criticalAlerts || 0}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Zero unmitigated criticals</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Mitigation Rate</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${summary.automatedMitigationRate || '92%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Handled at edge layer</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Resolved This Week</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${summary.resolvedThisWeek || 14} Incidents</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Cleared threat log</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoAltSearchInput" value="${searchTerm}" placeholder="Search alert title, category, IP, status..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-rose-500" />
+                </div>
+              </div>
+
+              <!-- Alerts Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Alert Title &amp; ID</th>
+                      <th class="py-3 px-4">Severity</th>
+                      <th class="py-3 px-4">Category</th>
+                      <th class="py-3 px-4">Source IP</th>
+                      <th class="py-3 px-4">Automated Action</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No security alerts match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.alertTitle}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id} • ${item.detectedAt}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.severity === 'Critical' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : item.severity === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">
+                            ${item.severity}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.category}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-300">
+                          ${item.sourceIp}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.automatedActionTaken}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.status === 'Mitigated' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-status" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+                            Resolve
+                          </button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Dismiss</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoAltSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Security Alerts Schema', {
+              id: 'string (unique ID, e.g. ALT-01)',
+              alertTitle: 'string (description of attack pattern)',
+              severity: 'string (Low, Medium, Critical)',
+              category: 'string (Credential Abuse, API Rate Abuse, Scraping)',
+              detectedAt: 'string (YYYY-MM-DD HH:MM)',
+              sourceIp: 'string (IP address or CIDR subnet)',
+              automatedActionTaken: 'string (Edge Block, Throttle, Turnstile Challenge)',
+              status: 'string (Mitigated, Under Observation, Resolved)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSecurityAlertsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Security Alerts to factory defaults?')) {
+              store.resetSecurityAlertsConfig();
+              config = store.getSecurityAlertsConfig();
+              items = [...(config.alerts || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOResolveAll')?.addEventListener('click', () => {
+            items.forEach(a => a.status = 'Resolved');
+            config.alerts = items;
+            config.items = items;
+            store.saveSecurityAlertsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.status = item.status === 'Resolved' ? 'Mitigated' : 'Resolved';
+                config.alerts = items;
+                config.items = items;
+                store.saveSecurityAlertsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Dismiss alert ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.alerts = items;
+                config.items = items;
+                store.saveSecurityAlertsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 16-007: Rate Limits
+    // =========================================================================
+    function renderRateLimitsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getRateLimitsConfig();
+        let items = Array.isArray(config.limits || config.items) ? [...(config.limits || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.endpointPath || '').toLowerCase().includes(term) ||
+                   (a.method || '').toLowerCase().includes(term) ||
+                   (a.actionOnExceeded || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">TRAFFIC SHAPING</span>
+                    <span class="text-xs text-slate-400 font-mono">module-16-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Endpoint Rate Limiting &amp; Anti-Abuse Rules</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Configure per-endpoint request thresholds, sliding time windows, and Cloudflare Edge Guard actions</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddRateLimit" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-amber-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Rate Rule
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Protected Routes</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length} Endpoints</div>
+                  <div class="text-[10px] text-amber-400 mt-1">${items.filter(r => r.active).length} rules actively throttling</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Algorithm</div>
+                  <div class="text-xl font-bold text-emerald-300 mt-1">Token Bucket</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Distributed Edge Guard</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Throttled (24h)</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${summary.requestsThrottled24h || 84} Requests</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Spam / scraper requests intercepted</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoRtlSearchInput" value="${searchTerm}" placeholder="Search endpoint path, method, action..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500" />
+                </div>
+              </div>
+
+              <!-- Rate Limits Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Endpoint Path &amp; ID</th>
+                      <th class="py-3 px-4">Method</th>
+                      <th class="py-3 px-4">Window</th>
+                      <th class="py-3 px-4">Max Requests</th>
+                      <th class="py-3 px-4">Action on Exceeded</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">No rate limit rules match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white font-mono text-[11px]">${item.endpointPath}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium ${item.method === 'POST' ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'}">${item.method}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.limitWindow}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-amber-400 font-medium">
+                          ${item.maxRequests} req
+                        </td>
+                        <td class="py-3 px-4 text-slate-300 text-xs">
+                          ${item.actionOnExceeded}
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Disabled'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoRtlSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Rate Limits Schema', {
+              id: 'string (unique ID, e.g. RTL-01)',
+              endpointPath: 'string (URL path pattern, e.g. /api/auth/login)',
+              method: 'string (POST, GET, PUT, ALL)',
+              limitWindow: 'string (1 Minute, 1 Hour, etc.)',
+              maxRequests: 'number (request ceiling)',
+              actionOnExceeded: 'string (429 Throttle, Captcha, Rejection)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportRateLimitsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Rate Limits to factory defaults?')) {
+              store.resetRateLimitsConfig();
+              config = store.getRateLimitsConfig();
+              items = [...(config.limits || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddRateLimit')?.addEventListener('click', () => {
+            const path = prompt('Endpoint Path Pattern:');
+            if (!path) return;
+            const method = prompt('HTTP Method (GET, POST, ALL):', 'POST');
+            const limit = prompt('Max Requests Per Window:', '10');
+            const newId = 'RTL-' + String(items.length + 1).padStart(2, '0');
+            const newRtl = {
+              id: newId,
+              endpointPath: path,
+              method: method || 'POST',
+              limitWindow: '1 Minute',
+              maxRequests: parseInt(limit, 10) || 10,
+              actionOnExceeded: '429 Rate Limit Intercepted',
+              active: true
+            };
+            items.push(newRtl);
+            config.limits = items;
+            config.items = items;
+            store.saveRateLimitsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.limits = items;
+                config.items = items;
+                store.saveRateLimitsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newPath = prompt('Edit Endpoint Path:', item.endpointPath);
+              if (newPath !== null && newPath.trim()) {
+                item.endpointPath = newPath.trim();
+                const newMethod = prompt('Edit HTTP Method:', item.method);
+                if (newMethod !== null) item.method = newMethod.trim();
+                const newMax = prompt('Edit Max Requests:', item.maxRequests);
+                if (newMax !== null && !isNaN(newMax)) item.maxRequests = parseInt(newMax, 10);
+                config.limits = items;
+                config.items = items;
+                store.saveRateLimitsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete rate limit rule ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.limits = items;
+                config.items = items;
+                store.saveRateLimitsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-16-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-16-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 
