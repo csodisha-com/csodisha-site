@@ -1,0 +1,16 @@
+{
+  "name": "csodisha-site",
+  "compatibility_date": "2026-11-10",
+  "main": "_worker.js",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cso-database",
+      "database_id": "aa11da6a-754f-4ece-a18d-5080cd333aed"
+    }
+  ]
+}
