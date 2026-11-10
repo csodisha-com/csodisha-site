@@ -18157,6 +18157,504 @@ async function loadMasterNavigation() {
         let activeCatId = config.activeCategoryId || 'cat-sb-01';
         let searchTerm = '';
 
+        // Helper to flatten node tree with depth
+        function flattenTree(nodes, depth = 0, parentTitle = 'Root') {
+          let list = [];
+          for (const n of nodes) {
+            list.push({ ...n, depth, parentTitle });
+            if (n.children && n.children.length > 0) {
+              list = list.concat(flattenTree(n.children, depth + 1, n.title));
+            }
+          }
+          return list;
+        }
+
+        // Helper to find node recursively by ID
+        function findNodeDeep(nodes, id) {
+          for (const n of nodes) {
+            if (n.id === id) return n;
+            if (n.children && n.children.length > 0) {
+              const found = findNodeDeep(n.children, id);
+              if (found) return found;
+            }
+          }
+          return null;
+        }
+
+        // Helper to delete node recursively
+        function deleteNodeDeep(nodes, id) {
+          const idx = nodes.findIndex(n => n.id === id);
+          if (idx !== -1) {
+            nodes.splice(idx, 1);
+            return true;
+          }
+          for (const n of nodes) {
+            if (n.children && n.children.length > 0) {
+              if (deleteNodeDeep(n.children, id)) return true;
+            }
+          }
+          return false;
+        }
+
+        function render() {
+          const categories = config.categories || [];
+          const currentCat = categories.find(c => c.id === activeCatId) || categories[0] || { nodes: [] };
+          const flatNodes = flattenTree(currentCat.nodes || []);
+
+          let selectedNodeId = config.selectedNodeId;
+          let selectedNode = selectedNodeId ? findNodeDeep(currentCat.nodes || [], selectedNodeId) : null;
+          if (!selectedNode && flatNodes.length > 0) {
+            selectedNode = flatNodes[0];
+            selectedNodeId = selectedNode.id;
+            config.selectedNodeId = selectedNodeId;
+          }
+
+          // Filter nodes if search term present
+          const displayedNodes = searchTerm
+            ? flatNodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm) || (n.department || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
+            : flatNodes;
+
+          let totalSchemes = 0;
+          categories.forEach(c => { totalSchemes += flattenTree(c.nodes || []).length; });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Schemes & Benefits Directory Studio</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-schemes-benefits • 8 Welfare Pillars • ${totalSchemes} Verified Government Schemes & Direct Benefits Catalog</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="sb-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="sb-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="sb-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Top Category Navigation Pills (All 8 Welfare Pillars) -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+                ${categories.map(cat => {
+                  const isActive = cat.id === activeCatId;
+                  const catCount = flattenTree(cat.nodes || []).length;
+                  return `
+                    <button class="sb-cat-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                        : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60'
+                    }" data-cat-id="${cat.id}">
+                      <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-700'}">${cat.code || ''}</span>
+                      <span>${cat.title}</span>
+                      <span class="text-[10px] opacity-75 font-mono">(${catCount})</span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Main Two-Column Layout -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left Column: Schemes Directory List (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                  <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                      <div>
+                        <h3 class="text-sm font-bold text-white">${currentCat.title}</h3>
+                        <p class="text-xs text-slate-400">${currentCat.titleOdia || currentCat.description || ''}</p>
+                      </div>
+                      <button id="sb-btn-add-node" class="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Add Scheme
+                      </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                      <input type="text" id="sb-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} schemes by name, dept or ID..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                    </div>
+
+                    <!-- Scheme Cards List (Hierarchical Indentation) -->
+                    <div class="space-y-1.5 max-h-[620px] overflow-y-auto pr-1">
+                      ${displayedNodes.map(node => {
+                        const isSelected = node.id === selectedNodeId;
+                        const indentPx = Math.min((node.depth || 0) * 16, 64);
+                        return `
+                          <div class="sb-node-card p-2.5 rounded-lg border cursor-pointer transition ${
+                            isSelected
+                              ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm'
+                              : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                            <div class="flex items-start justify-between gap-2">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-xs opacity-75">${node.depth > 1 ? '└' : '🏛'}</span>
+                                <h4 class="text-xs font-semibold ${isSelected ? 'text-teal-300' : 'text-white'} truncate">${node.title}</h4>
+                              </div>
+                              <span class="px-1.5 py-0.5 rounded text-[9px] font-mono whitespace-nowrap ${node.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                ${node.status || 'Draft'}
+                              </span>
+                            </div>
+                            ${node.titleOdia ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate font-serif">${node.titleOdia}</p>` : ''}
+                            <div class="mt-1.5 flex items-center justify-between text-[9px] text-slate-500">
+                              <span class="truncate max-w-[170px]">${node.department || 'Government of Odisha'}</span>
+                              <span class="font-bold text-teal-400 truncate max-w-[100px]">${node.benefitAmount ? node.benefitAmount.split('(')[0].trim() : 'DBT'}</span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No schemes found matching search criteria.</div>' : ''}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Authoring & Scheme Configuration Studio (7 Cols) -->
+                <div class="lg:col-span-7">
+                  ${selectedNode ? `
+                    <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-4">
+                      <!-- Studio Top Bar -->
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
+                        <div>
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">Scheme Authoring & Entitlements</span>
+                          <h3 class="text-base font-bold text-white mt-0.5">${selectedNode.title}</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button id="sb-btn-add-subscheme" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
+                            + Sub-scheme
+                          </button>
+                          <button id="sb-btn-delete-node" class="px-2.5 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition">
+                            Delete
+                          </button>
+                          <button id="sb-btn-toggle-publish" class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition ${
+                            selectedNode.status === 'Published'
+                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                          }">
+                            ${selectedNode.status === 'Published' ? 'Unpublish' : 'Publish Live'}
+                          </button>
+                          <button id="sb-btn-save-node" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
+                            Save Scheme
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Scheme Bilingual Titles -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Scheme Title (English)</label>
+                          <input type="text" id="sb-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Scheme Title (Odia)</label>
+                          <input type="text" id="sb-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                        </div>
+                      </div>
+
+                      <!-- Administrative Department & Target Beneficiary -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Nodal Department</label>
+                          <input type="text" id="sb-form-department" value="${selectedNode.department || ''}" placeholder="e.g. Women & Child Development" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Target Beneficiary Group</label>
+                          <input type="text" id="sb-form-beneficiary" value="${selectedNode.targetBeneficiary || ''}" placeholder="e.g. Women aged 21 to 60" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                      </div>
+
+                      <!-- Benefit Slabs & Income Limits -->
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Benefit Amount / Rate</label>
+                          <input type="text" id="sb-form-amount" value="${selectedNode.benefitAmount || ''}" placeholder="₹ 10,000 / Year via DBT" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold text-teal-300" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Income Ceiling / Criterion</label>
+                          <input type="text" id="sb-form-income" value="${selectedNode.incomeCeiling || ''}" placeholder="Family income < ₹ 2,50,000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Application Mode</label>
+                          <input type="text" id="sb-form-mode" value="${selectedNode.applicationMode || ''}" placeholder="Mo Seva Kendra / Online" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                      </div>
+
+                      <!-- URLs -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Official Portal URL</label>
+                          <input type="text" id="sb-form-official-url" value="${selectedNode.officialUrl || ''}" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Guidelines PDF / R2 Mirror URL</label>
+                          <input type="text" id="sb-form-mirror-url" value="${selectedNode.mirrorUrl || ''}" placeholder="/media/guidelines/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                      </div>
+
+                      <!-- Documentation Required -->
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Mandatory Documentation & Identifiers</label>
+                        <input type="text" id="sb-form-docs" value="${selectedNode.requiredDocs || ''}" placeholder="Aadhaar Card, Active DBT Bank Account, Ration Card" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                      </div>
+
+                      <!-- Article Title -->
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Editorial / Guidance Headline</label>
+                        <input type="text" id="sb-form-article-title" value="${selectedNode.articleTitle || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
+                      </div>
+
+                      <!-- Content Body -->
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Detailed Scheme Guidelines & SOP (Markdown)</label>
+                        <textarea id="sb-form-content-body" rows="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.contentBody || ''}</textarea>
+                      </div>
+
+                      <!-- Tags & Status -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Tags (Comma separated)</label>
+                          <input type="text" id="sb-form-tags" value="${(selectedNode.tags || []).join(', ')}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Visibility & Audit</label>
+                          <div class="flex items-center gap-4 mt-1.5">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                              <input type="checkbox" id="sb-form-active" ${selectedNode.active ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" />
+                              Active in Directory
+                            </label>
+                            <span class="text-xs text-slate-500 font-mono">Updated: ${selectedNode.lastUpdated || 'Today'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ` : `
+                    <div class="p-12 text-center rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
+                      Select a scheme on the left to edit or click "+ Add Scheme".
+                    </div>
+                  `}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Category Pill switching
+          container.querySelectorAll('.sb-cat-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              activeCatId = e.currentTarget.dataset.catId;
+              config.activeCategoryId = activeCatId;
+              const cat = categories.find(c => c.id === activeCatId);
+              const fl = flattenTree(cat ? cat.nodes || [] : []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              render();
+            });
+          });
+
+          // Node Card selection
+          container.querySelectorAll('.sb-node-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+              config.selectedNodeId = e.currentTarget.dataset.nodeId;
+              render();
+            });
+          });
+
+          // Search input
+          const searchInput = document.getElementById('sb-tree-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          // Add Root Scheme Button
+          document.getElementById('sb-btn-add-node')?.addEventListener('click', () => {
+            const newNodeId = `node-sb-${currentCat.code}-${Date.now().toString().slice(-4)}`;
+            const newNode = {
+              id: newNodeId,
+              title: "New Public Welfare Scheme",
+              titleOdia: "ନୂତନ ସରକାରୀ ଯୋଜନା",
+              department: "Government of Odisha",
+              officialUrl: "",
+              mirrorUrl: "",
+              targetBeneficiary: "Eligible Citizens",
+              incomeCeiling: "Under specified limits",
+              benefitAmount: "Direct Benefit Transfer",
+              requiredDocs: "Aadhaar, Ration Card, Bank Passbook",
+              applicationMode: "Online / Mo Seva Kendra",
+              articleTitle: "Scheme Operational Guidelines & Beneficiary SOP",
+              contentBody: "Comprehensive guidelines and eligibility rules.",
+              tags: [currentCat.title],
+              status: "Draft",
+              active: true,
+              depth: 1,
+              children: [],
+              lastUpdated: new Date().toISOString().slice(0, 10)
+            };
+            currentCat.nodes = currentCat.nodes || [];
+            currentCat.nodes.unshift(newNode);
+            config.selectedNodeId = newNodeId;
+            store.saveSchemesDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('New scheme added to category!', 'success');
+          });
+
+          // Add Sub-scheme Button
+          document.getElementById('sb-btn-add-subscheme')?.addEventListener('click', () => {
+            if (!selectedNode) return;
+            const subNodeId = `node-sb-${currentCat.code}-${Date.now().toString().slice(-4)}`;
+            const subNode = {
+              id: subNodeId,
+              title: "New Sub-Scheme Component",
+              titleOdia: "",
+              department: selectedNode.department || "Government of Odisha",
+              officialUrl: "",
+              mirrorUrl: "",
+              targetBeneficiary: selectedNode.targetBeneficiary || "Eligible Beneficiaries",
+              incomeCeiling: selectedNode.incomeCeiling || "Under limits",
+              benefitAmount: "Component Assistance",
+              requiredDocs: "Aadhaar, Bank Passbook",
+              applicationMode: "Mo Seva Kendra",
+              articleTitle: "Sub-Scheme Component Guidelines",
+              contentBody: "Detailed component instructions.",
+              tags: [selectedNode.title],
+              status: "Draft",
+              active: true,
+              depth: (selectedNode.depth || 1) + 1,
+              children: [],
+              lastUpdated: new Date().toISOString().slice(0, 10)
+            };
+            selectedNode.children = selectedNode.children || [];
+            selectedNode.children.unshift(subNode);
+            config.selectedNodeId = subNodeId;
+            store.saveSchemesDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('Sub-scheme added!', 'success');
+          });
+
+          // Delete Scheme Button
+          document.getElementById('sb-btn-delete-node')?.addEventListener('click', () => {
+            if (confirm(`Delete "${selectedNode.title}" from this directory?`)) {
+              deleteNodeDeep(currentCat.nodes || [], selectedNode.id);
+              const fl = flattenTree(currentCat.nodes || []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              store.saveSchemesDirectoryTreeConfig(config);
+              render();
+              store.showToast?.('Scheme deleted.', 'info');
+            }
+          });
+
+          // Toggle Publish
+          document.getElementById('sb-btn-toggle-publish')?.addEventListener('click', () => {
+            selectedNode.status = selectedNode.status === 'Published' ? 'Draft' : 'Published';
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+            store.saveSchemesDirectoryTreeConfig(config);
+            render();
+            store.showToast?.(`Scheme is now ${selectedNode.status}`, 'success');
+          });
+
+          // Save Scheme Function
+          function saveCurrentNode() {
+            if (!selectedNode) return;
+            selectedNode.title = document.getElementById('sb-form-title')?.value || selectedNode.title;
+            selectedNode.titleOdia = document.getElementById('sb-form-title-odia')?.value || '';
+            selectedNode.department = document.getElementById('sb-form-department')?.value || '';
+            selectedNode.targetBeneficiary = document.getElementById('sb-form-beneficiary')?.value || '';
+            selectedNode.benefitAmount = document.getElementById('sb-form-amount')?.value || '';
+            selectedNode.incomeCeiling = document.getElementById('sb-form-income')?.value || '';
+            selectedNode.applicationMode = document.getElementById('sb-form-mode')?.value || '';
+            selectedNode.officialUrl = document.getElementById('sb-form-official-url')?.value || '';
+            selectedNode.mirrorUrl = document.getElementById('sb-form-mirror-url')?.value || '';
+            selectedNode.requiredDocs = document.getElementById('sb-form-docs')?.value || '';
+            selectedNode.articleTitle = document.getElementById('sb-form-article-title')?.value || '';
+            selectedNode.contentBody = document.getElementById('sb-form-content-body')?.value || '';
+            const rawTags = document.getElementById('sb-form-tags')?.value || '';
+            selectedNode.tags = rawTags.split(',').map(t => t.trim()).filter(Boolean);
+            selectedNode.active = !!document.getElementById('sb-form-active')?.checked;
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+
+            store.saveSchemesDirectoryTreeConfig(config);
+            store.showToast?.('Scheme details saved!', 'success');
+          }
+
+          document.getElementById('sb-btn-save-node')?.addEventListener('click', () => {
+            saveCurrentNode();
+            render();
+          });
+
+          document.getElementById('sb-btn-save-all')?.addEventListener('click', () => {
+            saveCurrentNode();
+            store.saveSchemesDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('All schemes changes saved!', 'success');
+          });
+
+          // Export Manifest
+          document.getElementById('sb-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportSchemesDirectoryTreeManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          // Reset Factory
+          document.getElementById('sb-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset Schemes & Benefits Directory to exhaustive factory defaults?')) {
+              config = store.resetSchemesDirectoryTreeConfig();
+              activeCatId = config.activeCategoryId;
+              render();
+              store.showToast?.('Schemes directory reset to exhaustive defaults.', 'info');
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in Schemes Directory Studio', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in Schemes Directory Studio</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+        /**
+     * VIEW: Menu Hierarchy & Tree Directory Manager
+     * Used by: folder-jobs-careers, folder-schemes-benefits, folder-study-library, folder-community
+     */
+    
+    // =========================================================================
+    // SCHEMES & BENEFITS DIRECTORY: Category Tree & Publishing Studio
+    // =========================================================================
+    function renderSchemesCategoryTreeStudioWorkspace(container, targetModuleId) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getSchemesDirectoryTreeConfig();
+
+        // Map targetModuleId to category if provided
+        const modToCat = {
+          'module-sb-001': 'cat-sb-01',
+          'module-sb-002': 'cat-sb-02',
+          'module-sb-003': 'cat-sb-03',
+          'module-sb-004': 'cat-sb-04',
+          'module-sb-005': 'cat-sb-05',
+          'module-sb-006': 'cat-sb-06',
+          'module-sb-007': 'cat-sb-07',
+          'module-sb-008': 'cat-sb-08'
+        };
+
+        if (targetModuleId && modToCat[targetModuleId]) {
+          config.activeCategoryId = modToCat[targetModuleId];
+        }
+
+        let activeCatId = config.activeCategoryId || 'cat-sb-01';
+        let searchTerm = '';
+
         function render() {
           const categories = config.categories || [];
           const currentCat = categories.find(c => c.id === activeCatId) || categories[0] || { nodes: [] };
