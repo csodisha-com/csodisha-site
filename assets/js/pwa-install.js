@@ -113,6 +113,52 @@
     const banner = document.getElementById('cso-pwa-install-banner');
     if (banner) banner.remove();
     deferredPrompt = null;
+    hideAllInstallTriggers();
+  });
+
+  function hideAllInstallTriggers() {
+    document.querySelectorAll('.cso-pwa-install-trigger').forEach(el => {
+      el.style.display = 'none';
+    });
+  }
+
+  function showAllInstallTriggers() {
+    document.querySelectorAll('.cso-pwa-install-trigger').forEach(el => {
+      el.style.display = '';
+    });
+  }
+
+  // Public API for on-demand install prompt triggers
+  window.CSOPwa = {
+    triggerInstall: async function() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`[CSO PWA] User response to manual install prompt: ${outcome}`);
+        if (outcome === 'accepted') {
+          deferredPrompt = null;
+          hideAllInstallTriggers();
+        }
+        return outcome;
+      } else {
+        // Fallback instructions if browser already installed or doesn't support deferred prompt
+        alert('To install Common Sense Odisha Hub:\n\n• On Chrome/Android: Tap menu (⋮) and choose "Install App" or "Add to Home screen".\n• On Safari/iOS: Tap Share (⎋) and select "Add to Home Screen".\n• On Desktop Chrome/Edge: Click the install icon in the URL bar.');
+        return 'unsupported';
+      }
+    },
+    isInstallable: function() {
+      return !!deferredPrompt;
+    }
+  };
+
+  // Auto-bind click handlers to any element marked with class 'cso-pwa-install-trigger' or id 'btn-install-pwa'
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.cso-pwa-install-trigger, #btn-pwa-install-action, #bp-sidebar-install-btn, #topbar-pwa-install-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.CSOPwa.triggerInstall();
+      });
+    });
   });
 
 })();

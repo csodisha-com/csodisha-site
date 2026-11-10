@@ -1,6 +1,6 @@
 {
   "version": "CSO-SUPER-2026.11",
-  "createdAt": "2026-11-10T13:38:18.897Z",
+  "createdAt": "2026-11-10T14:10:40.830Z",
   "exportedBy": "admin@csodisha.com",
   "state": {
     "users": [
@@ -371848,8 +371848,8 @@
           "ossc",
           "teaching"
         ],
-        "registeredAt": "2026-11-10T13:38:18.375Z",
-        "lastLoginAt": "2026-11-10T13:38:18.375Z",
+        "registeredAt": "2026-11-10T14:10:40.279Z",
+        "lastLoginAt": "2026-11-10T14:10:40.290Z",
         "failedLoginAttempts": 0,
         "lockoutUntil": null
       }

@@ -56,3 +56,15 @@ jobs:
         run: |
           echo "--> Running headless snapshot round-trip test..."
           node scripts/verify-and-update-gold-snapshot.js
+
+      - name: Run Cloudflare Pages D1 Edge Smoke Tests
+        run: |
+          echo "--> Launching local wrangler pages dev instance with D1 SQLite binding..."
+          npx wrangler pages dev . --d1 DB=test-db --port 8788 &
+          SERVER_PID=$!
+          echo "--> Waiting for http://127.0.0.1:8788/api/health to become ready..."
+          npx wait-on http://127.0.0.1:8788/api/health -t 30000
+          echo "--> Executing D1 backend smoke-test suite..."
+          TARGET_URL=http://127.0.0.1:8788 node scripts/smoke-test-d1.js
+          echo "--> Stopping local wrangler dev server..."
+          kill $SERVER_PID

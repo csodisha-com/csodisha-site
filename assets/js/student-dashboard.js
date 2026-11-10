@@ -843,6 +843,9 @@
       'tool-locker': ['Document Locker', 'KYC certificates, domicile proofs, and examination marksheets'],
       'tool-notes': ['Revision Scratchpad & Daily Notes', 'Aspirant notepad for historical milestones and formulas'],
       'tool-analytics': ['Mock Score Tracker & Diagnostics', 'Test series analytics, accuracy ratios, and mark logger'],
+      'tool-study-timer': ['Study Focus Timer & Pomodoro', 'Targeted 25-minute deep syllabus study intervals'],
+      'tool-exam-calculator': ['Cutoff & Negative Marks Calculator', 'Exam score forecaster, penalty deduction & accuracy calculator'],
+      'tool-daily-drill': ['Daily Odisha GK Rapid Flash Drill', 'High-frequency Odisha history, polity & geography recall practice'],
       'tab-profile-settings': ['Profile & Account Settings', 'Manage personal preferences, target exams, and export data backup']
     };
 
@@ -1219,6 +1222,296 @@
     });
   }
 
+  // ==========================================================================
+  // Innovation 1: Candidate Study Focus Timer (Pomodoro Sprint)
+  // ==========================================================================
+  function initStudyFocusTimer() {
+    const display = document.getElementById('timer-display');
+    const toggleBtn = document.getElementById('btn-timer-toggle');
+    const resetBtn = document.getElementById('btn-timer-reset');
+    const modeBtns = document.querySelectorAll('.bp-timer-mode-btn');
+    const sprintCountEl = document.getElementById('timer-sprints-count');
+
+    if (!display || !toggleBtn) return;
+
+    let durationSeconds = 25 * 60;
+    let remainingSeconds = durationSeconds;
+    let timerInterval = null;
+    let isRunning = false;
+    let completedSprints = 0;
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      display.textContent = formatTime(remainingSeconds);
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isRunning) {
+          clearInterval(timerInterval);
+          isRunning = false;
+          toggleBtn.textContent = '▶ Start Session';
+          toggleBtn.style.background = '#0d9488';
+        }
+        modeBtns.forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'rgba(255,255,255,0.06)';
+          b.style.color = '#94a3b8';
+        });
+        btn.classList.add('active');
+        btn.style.background = '#0284c7';
+        btn.style.color = '#ffffff';
+
+        const mins = parseInt(btn.dataset.minutes, 10) || 25;
+        durationSeconds = mins * 60;
+        remainingSeconds = durationSeconds;
+        updateDisplay();
+      });
+    });
+
+    toggleBtn.addEventListener('click', () => {
+      if (!isRunning) {
+        isRunning = true;
+        toggleBtn.textContent = '⏸ Pause';
+        toggleBtn.style.background = '#f59e0b';
+        timerInterval = setInterval(() => {
+          if (remainingSeconds > 0) {
+            remainingSeconds--;
+            updateDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            toggleBtn.textContent = '▶ Start Session';
+            toggleBtn.style.background = '#0d9488';
+            completedSprints++;
+            if (sprintCountEl) sprintCountEl.textContent = completedSprints;
+            showToast('🎉 Focus Sprint completed! Take a 5-minute breather.');
+          }
+        }, 1000);
+      } else {
+        clearInterval(timerInterval);
+        isRunning = false;
+        toggleBtn.textContent = '▶ Resume';
+        toggleBtn.style.background = '#0d9488';
+      }
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      isRunning = false;
+      remainingSeconds = durationSeconds;
+      updateDisplay();
+      toggleBtn.textContent = '▶ Start Session';
+      toggleBtn.style.background = '#0d9488';
+    });
+  }
+
+  // ==========================================================================
+  // Innovation 2: Odisha Competitive Exam Cutoff & Marks Calculator
+  // ==========================================================================
+  function initExamCalculator() {
+    const schemeSelect = document.getElementById('calc-exam-scheme');
+    const correctInput = document.getElementById('calc-correct-input');
+    const incorrectInput = document.getElementById('calc-incorrect-input');
+    const totalInput = document.getElementById('calc-total-input');
+    const penaltyInput = document.getElementById('calc-penalty-input');
+    const calcBtn = document.getElementById('btn-run-calc');
+
+    const netScoreEl = document.getElementById('calc-net-score');
+    const grossMarksEl = document.getElementById('calc-gross-marks');
+    const penaltyDeductedEl = document.getElementById('calc-penalty-deducted');
+    const accuracyRateEl = document.getElementById('calc-accuracy-rate');
+    const unattemptedEl = document.getElementById('calc-unattempted');
+
+    if (!calcBtn || !correctInput) return;
+
+    const schemes = {
+      opsc_ocs_p1: { total: 100, markPerQuestion: 2.0, penalty: 0.66 },
+      opsc_ocs_p2: { total: 80, markPerQuestion: 2.5, penalty: 0.83 },
+      ossc_cgl: { total: 150, markPerQuestion: 1.0, penalty: 0.25 },
+      bed_exam: { total: 100, markPerQuestion: 1.0, penalty: 0.25 }
+    };
+
+    schemeSelect?.addEventListener('change', () => {
+      const key = schemeSelect.value;
+      if (schemes[key]) {
+        totalInput.value = schemes[key].total;
+        penaltyInput.value = schemes[key].penalty;
+        calculateScore();
+      }
+    });
+
+    function calculateScore() {
+      const correct = Math.max(0, parseInt(correctInput.value, 10) || 0);
+      const incorrect = Math.max(0, parseInt(incorrectInput.value, 10) || 0);
+      const total = Math.max(1, parseInt(totalInput.value, 10) || 100);
+      const penalty = parseFloat(penaltyInput.value) || 0;
+
+      const schemeKey = schemeSelect?.value || 'opsc_ocs_p1';
+      const markPerQ = schemes[schemeKey] ? schemes[schemeKey].markPerQuestion : 1.0;
+
+      const attempted = correct + incorrect;
+      const unattempted = Math.max(0, total - attempted);
+      const gross = correct * markPerQ;
+      const penaltyAmt = incorrect * penalty;
+      const net = Math.max(0, gross - penaltyAmt);
+      const accuracy = attempted > 0 ? ((correct / attempted) * 100).toFixed(2) : '0.00';
+
+      if (netScoreEl) netScoreEl.textContent = net.toFixed(2);
+      if (grossMarksEl) grossMarksEl.textContent = gross.toFixed(2);
+      if (penaltyDeductedEl) penaltyDeductedEl.textContent = `-${penaltyAmt.toFixed(2)}`;
+      if (accuracyRateEl) accuracyRateEl.textContent = `${accuracy}%`;
+      if (unattemptedEl) unattemptedEl.textContent = unattempted;
+    }
+
+    calcBtn.addEventListener('click', calculateScore);
+    correctInput.addEventListener('input', calculateScore);
+    incorrectInput.addEventListener('input', calculateScore);
+  }
+
+  // ==========================================================================
+  // Innovation 3: Daily Odisha GK Rapid Flash Drill
+  // ==========================================================================
+  function initDailyFlashQuiz() {
+    const questions = [
+      {
+        q: "In which year did the historic Paika Rebellion take place in Odisha under the leadership of Bakshi Jagabandhu?",
+        options: ["1803", "1817", "1857", "1921"],
+        answer: 1,
+        exp: "The Paika Rebellion erupted in Khordha, Odisha in 1817 under the military command of Bakshi Jagabandhu Bidyadhar Mohapatra."
+      },
+      {
+        q: "Which river is famously known as the 'Lifeline of Odisha'?",
+        options: ["Baitarani River", "Subarnarekha River", "Mahanadi River", "Brahmani River"],
+        answer: 2,
+        exp: "The Mahanadi River is the largest river in Odisha and home to the Hirakud Dam, one of the longest earthen dams in the world."
+      },
+      {
+        q: "In which year was the separate Odisha province officially formed under British India?",
+        options: ["1912", "1936", "1947", "1950"],
+        answer: 1,
+        exp: "Odisha became the first Indian state formed on a linguistic basis on 1st April 1936, commemorated annually as Utkala Dibasa."
+      },
+      {
+        q: "Which national park in Odisha is designated as a UNESCO World Heritage site candidate and renowned for salt-water crocodiles and mangroves?",
+        options: ["Similipal National Park", "Bhitarkanika National Park", "Karlapat Wildlife Sanctuary", "Debrigarh Sanctuary"],
+        answer: 1,
+        exp: "Bhitarkanika National Park in Kendrapara district is famous for its rich mangrove ecosystem, giant saltwater crocodiles, and Olive Ridley turtle nesting grounds."
+      },
+      {
+        q: "Who was revered as 'Utkal Mani' (Jewel of Utkal) for his legendary social service and founding the Satyabadi Bana Bidyalaya?",
+        options: ["Madhusudan Das", "Gopabandhu Das", "Fakir Mohan Senapati", "Gourishankar Ray"],
+        answer: 1,
+        exp: "Pandit Gopabandhu Das is lovingly called 'Utkal Mani' for his dedicated relief work during Odisha floods and famine, and for authoring Dharmapada and Bandira Atmakatha."
+      }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+
+    const qText = document.getElementById('quiz-question-text');
+    const optContainer = document.getElementById('quiz-options-container');
+    const expBox = document.getElementById('quiz-explanation-box');
+    const nextBtn = document.getElementById('btn-quiz-next');
+    const progLabel = document.getElementById('quiz-progress-label');
+    const scoreBadge = document.getElementById('quiz-score-badge');
+
+    if (!qText || !optContainer) return;
+
+    function renderQuestion() {
+      if (currentIndex >= questions.length) {
+        // Quiz completed
+        qText.textContent = `🎉 Flash Drill Complete! Final Score: ${score} / ${questions.length}`;
+        optContainer.innerHTML = `
+          <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;">
+            <p style="font-size:14px;color:#2dd4bf;margin:0 0 12px;font-weight:700;">Excellent revision cadence! Consistent daily recall boosts Prelims accuracy.</p>
+            <button type="button" id="btn-restart-quiz" style="background:#0d9488;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;">↺ Retake Drill</button>
+          </div>
+        `;
+        if (expBox) expBox.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        document.getElementById('btn-restart-quiz')?.addEventListener('click', () => {
+          currentIndex = 0;
+          score = 0;
+          if (scoreBadge) scoreBadge.textContent = 'Score: 0';
+          renderQuestion();
+        });
+        return;
+      }
+
+      const current = questions[currentIndex];
+      if (progLabel) progLabel.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      qText.textContent = current.q;
+      if (expBox) expBox.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
+
+      optContainer.innerHTML = '';
+      current.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = opt;
+        btn.style.cssText = `
+          width: 100%;
+          text-align: left;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 10px;
+          padding: 12px 16px;
+          color: #f8fafc;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s;
+        `;
+
+        btn.addEventListener('click', () => {
+          // Disable all buttons in container
+          optContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+
+          if (idx === current.answer) {
+            btn.style.background = 'rgba(16,185,129,0.2)';
+            btn.style.borderColor = '#10b981';
+            btn.style.color = '#34d399';
+            score++;
+            if (scoreBadge) scoreBadge.textContent = `Score: ${score}`;
+          } else {
+            btn.style.background = 'rgba(239,68,68,0.2)';
+            btn.style.borderColor = '#ef4444';
+            btn.style.color = '#f87171';
+
+            // Highlight correct one
+            const correctBtn = optContainer.querySelectorAll('button')[current.answer];
+            if (correctBtn) {
+              correctBtn.style.background = 'rgba(16,185,129,0.2)';
+              correctBtn.style.borderColor = '#10b981';
+              correctBtn.style.color = '#34d399';
+            }
+          }
+
+          if (expBox) {
+            expBox.innerHTML = `<strong>Answer Note:</strong> ${current.exp}`;
+            expBox.style.display = 'block';
+          }
+
+          if (nextBtn) nextBtn.style.display = 'inline-block';
+        });
+
+        optContainer.appendChild(btn);
+      });
+    }
+
+    nextBtn?.addEventListener('click', () => {
+      currentIndex++;
+      renderQuestion();
+    });
+
+    renderQuestion();
+  }
+
   // Initialization
   function init() {
     const session = getSession();
@@ -1236,6 +1529,9 @@
     initMockScoreLogger();
     initDocumentLocker();
     initDataPortability();
+    initStudyFocusTimer();
+    initExamCalculator();
+    initDailyFlashQuiz();
 
     // Listen for bookmark updates
     window.addEventListener('cso:bookmarks-updated', () => {

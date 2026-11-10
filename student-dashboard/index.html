@@ -125,6 +125,24 @@
               <span class="bp-nav-label">Mock Score Logger</span>
             </a>
           </li>
+          <li>
+            <a href="#tool-study-timer" class="bp-nav-item" data-tab="tool-study-timer">
+              <span class="bp-nav-icon">⏱️</span>
+              <span class="bp-nav-label">Study Focus Timer</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-exam-calculator" class="bp-nav-item" data-tab="tool-exam-calculator">
+              <span class="bp-nav-icon">🧮</span>
+              <span class="bp-nav-label">Cutoff &amp; Marks Calc</span>
+            </a>
+          </li>
+          <li>
+            <a href="#tool-daily-drill" class="bp-nav-item" data-tab="tool-daily-drill">
+              <span class="bp-nav-icon">⚡</span>
+              <span class="bp-nav-label">Odisha GK Flash Quiz</span>
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -132,6 +150,11 @@
 
     <!-- Sidebar Bottom Profile Badge -->
     <div class="bp-sidebar-footer">
+      <button type="button" id="bp-sidebar-install-btn" class="cso-pwa-install-trigger" title="Install App to Home Screen" style="width:100%;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.3);color:#2dd4bf;border-radius:10px;padding:8px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;margin-bottom:10px;">
+        <span>📲</span>
+        <span class="bp-nav-label">Install Offline App</span>
+      </button>
+
       <div id="bp-sidebar-user-pill" class="bp-user-pill-side" title="Edit Profile &amp; Preferences">
         <div class="bp-user-avatar" id="bp-side-avatar">R</div>
         <div class="bp-user-meta bp-user-badge">
@@ -171,6 +194,12 @@
       <!-- Right Action Cluster -->
       <div class="bp-topbar-right">
         
+        <!-- PWA Install Action Button -->
+        <button type="button" class="bp-icon-action-btn cso-pwa-install-trigger" id="topbar-pwa-install-btn" aria-label="Install App" title="Install CSO Workspace App" style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,148,136,0.18);border:1px solid #0d9488;color:#2dd4bf;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;">
+          <span>📲</span>
+          <span style="font-size:11px;">Install App</span>
+        </button>
+
         <!-- Notification Bell -->
         <button type="button" class="bp-icon-action-btn" id="bp-notif-btn" aria-label="Notifications" title="Commission Notifications">
           <span>🔔</span>
@@ -560,6 +589,146 @@
                 <!-- Dynamically rendered -->
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: STUDY FOCUS TIMER (Pomodoro & Syllabus Sprint)
+           ==================================================================== -->
+      <div id="tool-study-timer" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>⏱️</span><span>Candidate Focus Timer &amp; Pomodoro Sprint</span></div>
+            <span style="font-size:11px;color:#38bdf8;font-weight:700;">Deep Work Routine</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Calibrate focused 25-minute deep study intervals for syllabus mastery without cognitive fatigue.</p>
+          
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;">
+            <div style="display:flex;gap:10px;margin-bottom:20px;">
+              <button type="button" class="bp-timer-mode-btn active" data-minutes="25" style="background:#0284c7;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">25m Sprint</button>
+              <button type="button" class="bp-timer-mode-btn" data-minutes="50" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">50m Mock Paper</button>
+              <button type="button" class="bp-timer-mode-btn" data-minutes="5" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">5m Refresh</button>
+            </div>
+            
+            <div id="timer-display" style="font-size:clamp(48px, 8vw, 76px);font-family:monospace;font-weight:800;letter-spacing:2px;color:#f8fafc;margin:12px 0 24px;">25:00</div>
+            
+            <div style="display:flex;gap:12px;align-items:center;">
+              <button type="button" id="btn-timer-toggle" style="background:#0d9488;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(13,148,136,0.4);">▶ Start Session</button>
+              <button type="button" id="btn-timer-reset" style="background:rgba(255,255,255,0.06);color:#cbd5e1;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;">↺ Reset</button>
+            </div>
+
+            <div style="margin-top:20px;font-size:12px;color:#94a3b8;">
+              <span>Completed Sprints Today: </span><strong id="timer-sprints-count" style="color:#2dd4bf;">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: CUTOFF & NEGATIVE MARKING CALCULATOR
+           ==================================================================== -->
+      <div id="tool-exam-calculator" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>🧮</span><span>Odisha Competitive Exam Cutoff &amp; Negative Marks Calculator</span></div>
+            <span style="font-size:11px;color:#facc15;font-weight:700;">Score Forecaster</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Calculate exact net score, penalty deductions, and accuracy percentages according to standard OPSC / OSSC marking rules.</p>
+          
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;">
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px;font-weight:600;">Exam Marking Rule Scheme:</label>
+                <select id="calc-exam-scheme" style="width:100%;background:#090d16;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;">
+                  <option value="opsc_ocs_p1">OPSC OCS Prelims GS-I (+2.0 / -0.66)</option>
+                  <option value="opsc_ocs_p2">OPSC OCS Prelims CSAT (+2.5 / -0.83)</option>
+                  <option value="ossc_cgl">OSSC CGL Prelims (+1.0 / -0.25)</option>
+                  <option value="bed_exam">Odisha B.Ed Entrance (+1.0 / -0.25)</option>
+                  <option value="custom">Custom Configuration</option>
+                </select>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div>
+                  <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px;font-weight:600;">Correct Answers:</label>
+                  <input type="number" id="calc-correct-input" value="65" min="0" style="width:100%;background:#090d16;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px;font-weight:600;">Incorrect Answers:</label>
+                  <input type="number" id="calc-incorrect-input" value="15" min="0" style="width:100%;background:#090d16;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;box-sizing:border-box;">
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div>
+                  <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px;font-weight:600;">Total Questions:</label>
+                  <input type="number" id="calc-total-input" value="100" min="1" style="width:100%;background:#090d16;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px;font-weight:600;">Negative Penalty:</label>
+                  <input type="number" step="0.01" id="calc-penalty-input" value="0.66" style="width:100%;background:#090d16;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;box-sizing:border-box;">
+                </div>
+              </div>
+
+              <button type="button" id="btn-run-calc" style="width:100%;background:#0d9488;color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;">Compute Score &amp; Accuracy</button>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;display:flex;flex-direction:column;justify-content:center;">
+              <div style="font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Net Estimated Score</div>
+              <div id="calc-net-score" style="font-size:38px;font-weight:800;color:#2dd4bf;line-height:1.2;margin-bottom:14px;">120.10</div>
+              
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+                <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;">
+                  <span style="color:#94a3b8;display:block;">Gross Marks:</span>
+                  <strong id="calc-gross-marks" style="color:#f8fafc;font-size:14px;">130.00</strong>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;">
+                  <span style="color:#94a3b8;display:block;">Penalty Deducted:</span>
+                  <strong id="calc-penalty-deducted" style="color:#f43f5e;font-size:14px;">-9.90</strong>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;">
+                  <span style="color:#94a3b8;display:block;">Accuracy Rate:</span>
+                  <strong id="calc-accuracy-rate" style="color:#38bdf8;font-size:14px;">81.25%</strong>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;">
+                  <span style="color:#94a3b8;display:block;">Unattempted:</span>
+                  <strong id="calc-unattempted" style="color:#f8fafc;font-size:14px;">20</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           TAB VIEW: ODISHA GK FLASH DRILL
+           ==================================================================== -->
+      <div id="tool-daily-drill" class="bp-tab-view">
+        <div class="bp-panel">
+          <div class="bp-panel-header">
+            <div class="bp-panel-title"><span>⚡</span><span>Daily Odisha GK Rapid Flash Drill</span></div>
+            <span style="font-size:11px;color:#a855f7;font-weight:700;">High-Frequency Prelims Practice</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Test your knowledge on essential Odisha history, geography, policies, and art in 10-second rapid fire questions.</p>
+          
+          <div id="cso-flash-quiz-container" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;max-width:680px;margin:0 auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <span id="quiz-progress-label" style="font-size:12px;color:#94a3b8;font-weight:600;">Question 1 of 5</span>
+              <span id="quiz-score-badge" style="font-size:11px;background:rgba(168,85,247,0.15);color:#c084fc;padding:2px 8px;border-radius:6px;font-weight:700;">Score: 0</span>
+            </div>
+            
+            <h3 id="quiz-question-text" style="font-size:16px;font-weight:700;color:#f8fafc;margin:0 0 18px;line-height:1.5;">In which year did the historic Paika Rebellion take place in Odisha under the leadership of Bakshi Jagabandhu?</h3>
+            
+            <div id="quiz-options-container" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+              <!-- Options rendered dynamically -->
+            </div>
+            
+            <div id="quiz-explanation-box" style="display:none;background:rgba(13,148,136,0.1);border-left:3px solid #0d9488;padding:12px 14px;border-radius:4px;font-size:12px;color:#cbd5e1;margin-bottom:16px;"></div>
+
+            <div style="display:flex;justify-content:flex-end;">
+              <button type="button" id="btn-quiz-next" style="display:none;background:#a855f7;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;">Next Question →</button>
+            </div>
           </div>
         </div>
       </div>
