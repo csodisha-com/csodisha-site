@@ -690,6 +690,10 @@ async function loadMasterNavigation() {
         renderSchemesCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
         return;
       }
+      if (moduleId.startsWith('module-sl-') || moduleId.startsWith('module-nav-study-') || folderId === 'folder-study-library') {
+        renderStudyCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
+        return;
+      }
 
 
 
@@ -799,7 +803,7 @@ async function loadMasterNavigation() {
       } else if (folderId === 'folder-schemes-benefits') {
         renderSchemesCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
       } else if (folderId === 'folder-study-library') {
-        renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_study_library_tree', 'Study Library Directory', '📖', moduleId);
+        renderStudyCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
       } else if (folderId === 'folder-community') {
         renderMenuTreeWorkspace(dom.workspaceRoot, 'cso_community_tree', 'Community Directory', '👥', moduleId);
       } else if (folderId === 'folder-02') {
@@ -1240,6 +1244,8 @@ async function loadMasterNavigation() {
         renderJobsCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
       } else if (moduleId.startsWith('module-sb-') || moduleId.startsWith('module-nav-schemes-')) {
         renderSchemesCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
+      } else if (moduleId.startsWith('module-sl-') || moduleId.startsWith('module-nav-study-')) {
+        renderStudyCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
 
 
 
@@ -18634,6 +18640,485 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in Schemes Directory Studio</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // =========================================================================
+    // STUDY LIBRARY DIRECTORY: Category Tree & Publishing Studio
+    // =========================================================================
+    function renderStudyCategoryTreeStudioWorkspace(container, targetModuleId) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getStudyDirectoryTreeConfig();
+
+        // Map targetModuleId to category if provided
+        const modToCat = {
+          'module-sl-001': 'cat-sl-01', 'module-nav-study-01': 'cat-sl-01', 'module-sl-01': 'cat-sl-01',
+          'module-sl-002': 'cat-sl-02', 'module-nav-study-02': 'cat-sl-02', 'module-sl-02': 'cat-sl-02',
+          'module-sl-003': 'cat-sl-03', 'module-nav-study-03': 'cat-sl-03', 'module-sl-03': 'cat-sl-03',
+          'module-sl-004': 'cat-sl-04', 'module-nav-study-04': 'cat-sl-04', 'module-sl-04': 'cat-sl-04',
+          'module-sl-005': 'cat-sl-05', 'module-nav-study-05': 'cat-sl-05', 'module-sl-05': 'cat-sl-05',
+          'module-sl-006': 'cat-sl-06', 'module-nav-study-06': 'cat-sl-06', 'module-sl-06': 'cat-sl-06',
+          'module-sl-007': 'cat-sl-07', 'module-nav-study-07': 'cat-sl-07', 'module-sl-07': 'cat-sl-07',
+          'module-sl-008': 'cat-sl-08', 'module-nav-study-08': 'cat-sl-08', 'module-sl-08': 'cat-sl-08',
+          'module-sl-009': 'cat-sl-09', 'module-nav-study-09': 'cat-sl-09', 'module-sl-09': 'cat-sl-09',
+          'module-sl-010': 'cat-sl-10', 'module-nav-study-10': 'cat-sl-10', 'module-sl-10': 'cat-sl-10'
+        };
+
+        if (targetModuleId && modToCat[targetModuleId]) {
+          config.activeCategoryId = modToCat[targetModuleId];
+        }
+
+        let activeCatId = config.activeCategoryId || 'cat-sl-01';
+        let searchTerm = '';
+
+        // Helper to flatten node tree with depth for hierarchical tree display
+        function flattenTree(nodes, depth = 0, parentTitle = 'Root') {
+          let list = [];
+          for (const n of nodes) {
+            list.push({ ...n, depth, parentTitle });
+            if (n.children && n.children.length > 0) {
+              list = list.concat(flattenTree(n.children, depth + 1, n.title));
+            }
+          }
+          return list;
+        }
+
+        // Helper to find node recursively by ID
+        function findNodeDeep(nodes, id) {
+          for (const n of nodes) {
+            if (n.id === id) return n;
+            if (n.children && n.children.length > 0) {
+              const found = findNodeDeep(n.children, id);
+              if (found) return found;
+            }
+          }
+          return null;
+        }
+
+        // Helper to delete node recursively
+        function deleteNodeDeep(nodes, id) {
+          const idx = nodes.findIndex(n => n.id === id);
+          if (idx !== -1) {
+            nodes.splice(idx, 1);
+            return true;
+          }
+          for (const n of nodes) {
+            if (n.children && n.children.length > 0) {
+              if (deleteNodeDeep(n.children, id)) return true;
+            }
+          }
+          return false;
+        }
+
+        function render() {
+          const categories = config.categories || [];
+          const currentCat = categories.find(c => c.id === activeCatId) || categories[0] || { nodes: [] };
+          const flatNodes = flattenTree(currentCat.nodes || []);
+
+          let selectedNodeId = config.selectedNodeId;
+          let selectedNode = selectedNodeId ? findNodeDeep(currentCat.nodes || [], selectedNodeId) : null;
+          if (!selectedNode && flatNodes.length > 0) {
+            selectedNode = flatNodes[0];
+            selectedNodeId = selectedNode.id;
+            config.selectedNodeId = selectedNodeId;
+          }
+
+          // Filter nodes if search term present
+          const displayedNodes = searchTerm
+            ? flatNodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm) || (n.syllabusCode || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
+            : flatNodes;
+
+          // Compute total statistics
+          let totalAllNodes = 0;
+          categories.forEach(c => {
+            totalAllNodes += flattenTree(c.nodes || []).length;
+          });
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header Bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Study Library Complete Directory Studio</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-study-library • 10 Educational Pillars • ${totalAllNodes} Multi-tier Hierarchical Nodes</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="sl-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export Manifest
+                  </button>
+                  <button id="sl-btn-reset" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset Factory
+                  </button>
+                  <button id="sl-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Top Category Navigation Pills (All 10 Directories) -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+                ${categories.map(cat => {
+                  const isActive = cat.id === activeCatId;
+                  const catNodeCount = flattenTree(cat.nodes || []).length;
+                  return `
+                    <button class="sl-cat-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                        : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60'
+                    }" data-cat-id="${cat.id}">
+                      <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-700'}">${cat.code || ''}</span>
+                      <span>${cat.title}</span>
+                      <span class="text-[10px] opacity-75 font-mono">(${catNodeCount})</span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Main Two-Column Studio Layout -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left Column: Category Hierarchy & Node Tree (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                  <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                      <div>
+                        <h3 class="text-sm font-bold text-white">${currentCat.title}</h3>
+                        <p class="text-xs text-slate-400">${currentCat.titleOdia || currentCat.description || ''}</p>
+                      </div>
+                      <button id="sl-btn-add-node" class="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Root Node
+                      </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                      <input type="text" id="sl-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} nodes by title or ID..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                    </div>
+
+                    <!-- Node List (Hierarchical Indentation) -->
+                    <div class="space-y-1.5 max-h-[620px] overflow-y-auto pr-1">
+                      ${displayedNodes.map(node => {
+                        const isSelected = node.id === selectedNodeId;
+                        const indentPx = Math.min((node.depth || 0) * 16, 64);
+                        return `
+                          <div class="sl-node-card p-2.5 rounded-lg border cursor-pointer transition ${
+                            isSelected
+                              ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
+                              : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
+                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                            <div class="flex items-start justify-between gap-2">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '📁' : (node.depth === 1 ? '└' : '└ └')}</span>
+                                <h4 class="text-xs font-semibold ${isSelected ? 'text-teal-300' : 'text-white'} truncate">${node.title}</h4>
+                              </div>
+                              <span class="px-1.5 py-0.5 rounded text-[9px] font-mono whitespace-nowrap ${node.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                ${node.status || 'Draft'}
+                              </span>
+                            </div>
+                            ${node.titleOdia ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate font-serif">${node.titleOdia}</p>` : ''}
+                            <div class="mt-1.5 flex items-center justify-between text-[9px] text-slate-500">
+                              <span class="font-mono">${node.id}</span>
+                              <span>${(node.children && node.children.length > 0) ? `${node.children.length} sub-nodes` : 'page'}</span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No matching nodes found.</div>' : ''}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column: Authoring & Publishing Studio (7 Cols) -->
+                <div class="lg:col-span-7">
+                  ${selectedNode ? `
+                    <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-4">
+                      <!-- Studio Top Bar -->
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
+                        <div>
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">Curriculum & Study Studio</span>
+                          <h3 class="text-base font-bold text-white mt-0.5">${selectedNode.title}</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button id="sl-btn-add-subnode" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
+                            + Sub-node
+                          </button>
+                          <button id="sl-btn-delete-node" class="px-2.5 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition">
+                            Delete
+                          </button>
+                          <button id="sl-btn-toggle-publish" class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition ${
+                            selectedNode.status === 'Published'
+                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                          }">
+                            ${selectedNode.status === 'Published' ? 'Unpublish' : 'Publish Live'}
+                          </button>
+                          <button id="sl-btn-save-node" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
+                            Save Node
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Form Fields Grid -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Title (English)</label>
+                          <input type="text" id="sl-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Title (Odia)</label>
+                          <input type="text" id="sl-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Type / Stage</label>
+                          <input type="text" id="sl-form-stage" value="${selectedNode.stage || selectedNode.type || ''}" placeholder="e.g. Directory / Curriculum" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Syllabus / Exam Code</label>
+                          <input type="text" id="sl-form-code" value="${selectedNode.syllabusCode || ''}" placeholder="e.g. SL-01-SYLLABUS" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Target Audience</label>
+                          <input type="text" id="sl-form-audience" value="${selectedNode.targetAudience || 'Students & Educators'}" placeholder="Students & Educators" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono text-teal-300 font-semibold" />
+                        </div>
+                      </div>
+
+                      <!-- URLs -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Official Portal / Route URL</label>
+                          <input type="text" id="sl-form-official-url" value="${selectedNode.officialUrl || ''}" placeholder="https://... or /study-library/?..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Textbook / PDF Mirror URL</label>
+                          <input type="text" id="sl-form-mirror-url" value="${selectedNode.mirrorUrl || ''}" placeholder="/assets/pdf/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                      </div>
+
+                      <!-- Publishing Article Headline -->
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Article / Editorial Headline</label>
+                        <input type="text" id="sl-form-article-title" value="${selectedNode.articleTitle || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
+                      </div>
+
+                      <!-- Rich Article Content Body -->
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Detailed Study Guide & Curriculum Syllabus (Markdown)</label>
+                        <textarea id="sl-form-content-body" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.contentBody || ''}</textarea>
+                      </div>
+
+                      <!-- Metadata & Tags -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Tags (Comma separated)</label>
+                          <input type="text" id="sl-form-tags" value="${(selectedNode.tags || []).join(', ')}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Visibility & Audit</label>
+                          <div class="flex items-center gap-4 mt-1.5">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                              <input type="checkbox" id="sl-form-active" ${selectedNode.active ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" />
+                              Active in Directory
+                            </label>
+                            <span class="text-xs text-slate-500 font-mono">Updated: ${selectedNode.lastUpdated || 'Today'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ` : `
+                    <div class="p-12 text-center rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
+                      Select a node from the tree on the left to start editing.
+                    </div>
+                  `}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Category Pill switching
+          container.querySelectorAll('.sl-cat-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              activeCatId = e.currentTarget.dataset.catId;
+              config.activeCategoryId = activeCatId;
+              const cat = categories.find(c => c.id === activeCatId);
+              const fl = flattenTree(cat ? cat.nodes || [] : []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              render();
+            });
+          });
+
+          // Node Card selection
+          container.querySelectorAll('.sl-node-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+              const treeScrollContainer = container.querySelector('.max-h-\\[620px\\]') || container.querySelector('.overflow-y-auto');
+              const scrollTop = treeScrollContainer ? treeScrollContainer.scrollTop : 0;
+              config.selectedNodeId = e.currentTarget.dataset.nodeId;
+              render();
+              const newTreeScrollContainer = container.querySelector('.max-h-\\[620px\\]') || container.querySelector('.overflow-y-auto');
+              if (newTreeScrollContainer) newTreeScrollContainer.scrollTop = scrollTop;
+            });
+          });
+
+          // Search input
+          const searchInput = document.getElementById('sl-tree-search');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+            });
+          }
+
+          // Add Root Node Button
+          document.getElementById('sl-btn-add-node')?.addEventListener('click', () => {
+            const newNodeId = `SL-NODE-${Date.now().toString().slice(-4)}`;
+            const newNode = {
+              id: newNodeId,
+              title: "New Study Library Topic",
+              titleOdia: "ନୂତନ ପାଠ୍ୟ ବିଷୟ",
+              slug: "new-study-topic",
+              categoryCode: currentCat.code,
+              type: "directory",
+              syllabusCode: `SL-${currentCat.code}-NEW`,
+              targetAudience: "Students & Educators",
+              officialUrl: "",
+              mirrorUrl: "",
+              stage: "Curriculum",
+              articleTitle: "Study Library Module Guidelines",
+              contentBody: "Comprehensive course materials, syllabus notes, and reference books.",
+              tags: [currentCat.title],
+              status: "Draft",
+              active: true,
+              children: [],
+              lastUpdated: new Date().toISOString().slice(0, 10)
+            };
+            currentCat.nodes = currentCat.nodes || [];
+            currentCat.nodes.unshift(newNode);
+            config.selectedNodeId = newNodeId;
+            store.saveStudyDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('New root node created in study category!', 'success');
+          });
+
+          // Add Sub-node Button
+          document.getElementById('sl-btn-add-subnode')?.addEventListener('click', () => {
+            if (!selectedNode) return;
+            const subNodeId = `SL-NODE-${Date.now().toString().slice(-4)}`;
+            const subNode = {
+              id: subNodeId,
+              title: "New Sub-Topic / Chapter",
+              titleOdia: "",
+              slug: "new-sub-topic",
+              categoryCode: currentCat.code,
+              type: "directory",
+              syllabusCode: selectedNode.syllabusCode || `SL-${currentCat.code}-SUB`,
+              targetAudience: selectedNode.targetAudience || "Students",
+              officialUrl: "",
+              mirrorUrl: "",
+              stage: "Sub-Topic",
+              articleTitle: "Sub-Topic Materials & Question Banks",
+              contentBody: "Detailed lesson notes, lecture points, and practice tests.",
+              tags: [selectedNode.title],
+              status: "Draft",
+              active: true,
+              children: [],
+              lastUpdated: new Date().toISOString().slice(0, 10)
+            };
+            selectedNode.children = selectedNode.children || [];
+            selectedNode.children.unshift(subNode);
+            config.selectedNodeId = subNodeId;
+            store.saveStudyDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('Sub-node added!', 'success');
+          });
+
+          // Delete Node Button
+          document.getElementById('sl-btn-delete-node')?.addEventListener('click', () => {
+            if (confirm(`Delete "${selectedNode.title}" from this directory?`)) {
+              deleteNodeDeep(currentCat.nodes || [], selectedNode.id);
+              const fl = flattenTree(currentCat.nodes || []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
+              store.saveStudyDirectoryTreeConfig(config);
+              render();
+              store.showToast?.('Node deleted.', 'info');
+            }
+          });
+
+          // Toggle Publish
+          document.getElementById('sl-btn-toggle-publish')?.addEventListener('click', () => {
+            selectedNode.status = selectedNode.status === 'Published' ? 'Draft' : 'Published';
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+            store.saveStudyDirectoryTreeConfig(config);
+            render();
+            store.showToast?.(`Node is now ${selectedNode.status}`, 'success');
+          });
+
+          // Save Node Function
+          function saveCurrentNode() {
+            if (!selectedNode) return;
+            selectedNode.title = document.getElementById('sl-form-title')?.value || selectedNode.title;
+            selectedNode.titleOdia = document.getElementById('sl-form-title-odia')?.value || '';
+            selectedNode.stage = document.getElementById('sl-form-stage')?.value || '';
+            selectedNode.syllabusCode = document.getElementById('sl-form-code')?.value || '';
+            selectedNode.targetAudience = document.getElementById('sl-form-audience')?.value || '';
+            selectedNode.officialUrl = document.getElementById('sl-form-official-url')?.value || '';
+            selectedNode.mirrorUrl = document.getElementById('sl-form-mirror-url')?.value || '';
+            selectedNode.articleTitle = document.getElementById('sl-form-article-title')?.value || '';
+            selectedNode.contentBody = document.getElementById('sl-form-content-body')?.value || '';
+            const rawTags = document.getElementById('sl-form-tags')?.value || '';
+            selectedNode.tags = rawTags.split(',').map(t => t.trim()).filter(Boolean);
+            selectedNode.active = !!document.getElementById('sl-form-active')?.checked;
+            selectedNode.lastUpdated = new Date().toISOString().slice(0, 10);
+
+            store.saveStudyDirectoryTreeConfig(config);
+            store.showToast?.('Studio node changes saved!', 'success');
+          }
+
+          document.getElementById('sl-btn-save-node')?.addEventListener('click', () => {
+            saveCurrentNode();
+            render();
+          });
+
+          document.getElementById('sl-btn-save-all')?.addEventListener('click', () => {
+            saveCurrentNode();
+            store.saveStudyDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('All directory and studio changes saved!', 'success');
+          });
+
+          // Export Manifest
+          document.getElementById('sl-btn-export')?.addEventListener('click', () => {
+            const filename = store.exportStudyDirectoryTreeManifest();
+            store.showToast?.(`Exported manifest: ${filename}`, 'success');
+          });
+
+          // Reset Factory
+          document.getElementById('sl-btn-reset')?.addEventListener('click', () => {
+            if (confirm('Reset Study Library Directory to authentic factory defaults?')) {
+              config = store.resetStudyDirectoryTreeConfig();
+              activeCatId = config.activeCategoryId;
+              render();
+              store.showToast?.('Study Library directory tree reset to authentic defaults.', 'info');
+            }
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in Study Library Directory Studio', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in Study Library Directory Studio</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
     function renderMenuTreeWorkspace(container, folderKey, folderTitle, folderIcon, activeModuleId) {
