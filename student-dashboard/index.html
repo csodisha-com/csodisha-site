@@ -8,6 +8,7 @@
   <meta name="description" content="Personalized student preparation dashboard, live exam countdowns, saved syllabi, PYQ question shelf, and welfare scholarships for Odisha aspirants.">
   <link rel="stylesheet" href="/assets/style.css">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
   <!-- CSO Theme Sync -->
   <script>
     (function () {
@@ -83,6 +84,21 @@
         </div>
       </section>
 
+      <!-- Bookmarked Jobs & Recruitment Notifications -->
+      <section class="card" style="border-radius:14px;padding:20px;border:1px solid var(--border, #334155);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--border, #334155);padding-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:18px;">💼</span>
+            <h2 style="font-size:16px;font-weight:700;margin:0;">Bookmarked Jobs &amp; Opportunities</h2>
+          </div>
+          <a href="/jobs-careers/" style="font-size:11px;color:#0d9488;text-decoration:none;font-weight:600;">Browse All Jobs →</a>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted, #94a3b8);margin-top:0;margin-bottom:12px;">Saved state recruitment entries, vacancies, and syllabus alerts.</p>
+        <div id="candidate-jobs-shelf" style="display:flex;flex-direction:column;gap:10px;">
+          <p class="mut" style="font-size:12px;">Checking bookmarked positions...</p>
+        </div>
+      </section>
+
     </div>
 
     <!-- Right Column: Saved PYQs & Eligible Welfare Schemes -->
@@ -129,6 +145,8 @@
 </footer>
 
 <script src="/assets/shared-header.js" defer></script>
+<script src="/assets/js/bookmark-manager.js" defer></script>
+<script src="/assets/js/pwa-install.js" defer></script>
 <script src="/assets/js/auth-modal.js" defer></script>
 <script src="/admin/super-store.js"></script>
 <script src="/assets/js/student-dashboard.js" defer></script>

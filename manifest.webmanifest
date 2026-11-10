@@ -1,0 +1,20 @@
+{
+  "name": "Common Sense Odisha | Candidate Portal",
+  "short_name": "CSO Hub",
+  "description": "Unified Open Access Public Knowledge & Student Preparation Portal for Odisha Aspirants",
+  "start_url": "/student-dashboard/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1d",
+  "theme_color": "#0d9488",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 192x192 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "government", "news", "productivity"]
+}

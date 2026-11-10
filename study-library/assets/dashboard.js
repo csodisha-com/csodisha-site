@@ -550,7 +550,26 @@
       const content = el('div', 'card-content');
       content.append(el('span', 'card-title', entry.text));
       item.append(content);
+
+      // Bookmark action button
+      const bmId = 'study-' + (entry.id || entry.text.substring(0, 32).toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+      const bmBtn = el('button', 'cso-bookmark-btn');
+      bmBtn.type = 'button';
+      bmBtn.dataset.bookmarkType = 'study';
+      bmBtn.dataset.bookmarkId = bmId;
+      bmBtn.dataset.bookmarkTitle = entry.text;
+      bmBtn.dataset.bookmarkBadge = 'Study Material / PYQ';
+      bmBtn.dataset.bookmarkUrl = window.location.href;
+      bmBtn.title = 'Bookmark this study resource';
+      bmBtn.style.cssText = 'background:transparent;border:1px solid #334155;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#94a3b8;flex-shrink:0;margin-left:auto;';
+      bmBtn.innerHTML = '<span style="color:#94a3b8;" aria-hidden="true">☆</span> <span class="cso-bm-text">Bookmark</span>';
+      item.append(bmBtn);
+
       explorerItems.append(item);
+    }
+
+    if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+      window.CSOBookmarks.updateUI();
     }
 
     if (!children.length && !(node.notes || []).length) {
