@@ -6419,6 +6419,42 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ==========================================================================
+   Mobile Responsive Layout Fix: Hero and Latest Updates Stacking (<= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .g1,
+  .hero-grid,
+  .hero-layout,
+  .hero-container {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 1.25rem !important;
+  }
+
+  /* Full width for both hero card and latest updates card */
+  .g1 > .hero,
+  .g1 > .lu,
+  .g1 > .card.lu,
+  .hero,
+  #cso-hero,
+  .hero-card,
+  .hero-left,
+  .hero-banner,
+  .card.lu,
+  .lu,
+  .latest-updates-wrapper,
+  .latest-updates-card,
+  .hero-right {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
 
 
 
