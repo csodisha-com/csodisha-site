@@ -482,6 +482,9 @@
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok || !data.success) {
+              localStorage.removeItem('cso_auth_token');
+              localStorage.removeItem('cso_candidate_profile');
+              localStorage.removeItem('cso_candidate_session_v1');
               showError(data.error || 'Registration failed. Please check your details and try again.');
               submitBtn.disabled = false;
               submitBtn.textContent = originalBtnText;
@@ -541,6 +544,9 @@
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok || !data.success) {
+              localStorage.removeItem('cso_auth_token');
+              localStorage.removeItem('cso_candidate_profile');
+              localStorage.removeItem('cso_candidate_session_v1');
               showError(data.error || 'Invalid email or password');
               submitBtn.disabled = false;
               submitBtn.textContent = originalBtnText;

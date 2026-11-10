@@ -1,9 +1,9 @@
 /**
- * Common Sense Odisha (CSO) — Service Worker v4
+ * Common Sense Odisha (CSO) — Service Worker v6
  * Provides offline caching for core platform shells, style assets, and candidate portal.
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v4';
+const CACHE_NAME = 'cso-candidate-cache-v6';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [

@@ -267,13 +267,21 @@
           if (res.ok && data.success) {
             submitBtn.textContent = 'Access granted! Redirecting...';
             if (data.candidate) {
-              localStorage.setItem('cso_candidate_session_v1', JSON.stringify({
+              const sessionPayload = {
                 ...data.candidate,
                 isAuthenticated: true
-              }));
+              };
+              localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
+              localStorage.setItem('cso_candidate_profile', JSON.stringify(sessionPayload));
+            }
+            if (data.token) {
+              localStorage.setItem('cso_auth_token', data.token);
             }
             window.location.href = '/student-dashboard/';
           } else {
+            localStorage.removeItem('cso_auth_token');
+            localStorage.removeItem('cso_candidate_profile');
+            localStorage.removeItem('cso_candidate_session_v1');
             showError(data.error || 'Invalid email or password');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Sign In to Portal';

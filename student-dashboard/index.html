@@ -27,6 +27,26 @@
   <link rel="stylesheet" href="/assets/css/student-dashboard-bp.css">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
+  <script>
+    (function() {
+      try {
+        const raw = localStorage.getItem('cso_candidate_session_v1') || localStorage.getItem('cso_candidate_profile');
+        if (!raw) {
+          window.location.replace('/login.html');
+          return;
+        }
+        const session = JSON.parse(raw);
+        if (!session || (!session.isAuthenticated && !session.email && !session.id)) {
+          localStorage.removeItem('cso_candidate_session_v1');
+          localStorage.removeItem('cso_candidate_profile');
+          localStorage.removeItem('cso_auth_token');
+          window.location.replace('/login.html');
+        }
+      } catch (e) {
+        window.location.replace('/login.html');
+      }
+    })();
+  </script>
 </head>
 <body class="cso-student-dashboard-page">
 
