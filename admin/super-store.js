@@ -12978,7 +12978,10 @@
           websiteAvailability: this.getWebsiteAvailabilityConfig ? this.getWebsiteAvailabilityConfig() : null,
           apiDiagnostics: this.getApiDiagnosticsConfig ? this.getApiDiagnosticsConfig() : null,
           databaseHealth: this.getDatabaseHealthConfig ? this.getDatabaseHealthConfig() : null,
-          storageMonitoring: this.getStorageMonitoringConfig ? this.getStorageMonitoringConfig() : null
+          storageMonitoring: this.getStorageMonitoringConfig ? this.getStorageMonitoringConfig() : null,
+          backupCentre: this.getBackupCentreConfig ? this.getBackupCentreConfig() : null,
+          restoreCentre: this.getRestoreCentreConfig ? this.getRestoreCentreConfig() : null,
+          revisionRollback: this.getRevisionRollbackConfig ? this.getRevisionRollbackConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -15271,6 +15274,109 @@
     return filename;
   };
 
+
+  // --- MODULE 17-006: Backup Centre ---
+  const DEFAULT_BACKUP_CENTRE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalSnapshots: 14, totalStorageUsedMB: "148.4 MB", automatedCadence: "Daily at 02:00 IST", lastSuccessfulBackup: "2026-11-10 02:00" },
+    items: [
+      { id: "BKP-01", snapshotName: "Full Platform State Snapshot v2.4", snapshotType: "Automated Daily", fileSizeMB: "12.4 MB", checksumSha256: "9f83ab20cde8812a0149bbfe120491823abce8812041289fe12041289aa45120", destination: "Cloudflare R2 + S3 Cold Vault", createdDate: "2026-11-10 02:00", status: "Verified & Encrypted", active: true },
+      { id: "BKP-02", snapshotName: "Pre-Deployment Milestone Folder-16 Final", snapshotType: "Manual Checkpoint", fileSizeMB: "11.8 MB", checksumSha256: "884102c4b812a4501982bfe881c120491823abce8812041289fe12041289c412", destination: "Cloudflare R2 Vault", createdDate: "2026-11-09 23:45", status: "Verified & Encrypted", active: true },
+      { id: "BKP-03", snapshotName: "Weekly Comprehensive Database Dump", snapshotType: "Automated Weekly", fileSizeMB: "38.2 MB", checksumSha256: "7712983acbe1441a778b4562145e69e7102d918341a99bf8812c4091aefbc204", destination: "AWS S3 Mumbai Archive", createdDate: "2026-11-08 03:00", status: "Verified & Encrypted", active: true }
+    ]
+  };
+  SuperStore.getBackupCentreConfig = function() {
+    return _hydrateConfig('cso_backup_centre_config', 'backups', () => DEFAULT_BACKUP_CENTRE);
+  };
+  SuperStore.saveBackupCentreConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.backups = cfg.items || cfg.backups || []; cfg.items = cfg.backups;
+    localStorage.setItem('cso_backup_centre_config', JSON.stringify(cfg));
+    this.logAudit('BACKUP_CENTRE_UPDATED', 'OPERATIONS', `Backup centre snapshots updated (${cfg.items.length} snapshots).`);
+    return true;
+  };
+  SuperStore.resetBackupCentreConfig = function() {
+    localStorage.setItem('cso_backup_centre_config', JSON.stringify(DEFAULT_BACKUP_CENTRE));
+    this.logAudit('BACKUP_CENTRE_RESET', 'OPERATIONS', 'Backup centre config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_BACKUP_CENTRE));
+  };
+  SuperStore.exportBackupCentreManifest = function() {
+    const config = this.getBackupCentreConfig();
+    const filename = "backup_centre_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("BACKUP_CENTRE_EXPORTED", "DATA_EXPORT", `Backup centre manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-007: Restore Centre ---
+  const DEFAULT_RESTORE_CENTRE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalRestoreDrills: 6, lastRestoreDrillDate: "2026-10-28", rtoEstimateMinutes: 5, rpoEstimateHours: 24 },
+    items: [
+      { id: "RST-01", targetSnapshotRef: "BKP-01 (Full Platform State v2.4)", executionEnvironment: "Staging Sandbox", restoredBy: "Root Super Admin", checksumVerified: true, domainsRestoredCount: 124, durationSeconds: 28, status: "Success (Drill)", restoredAt: "2026-11-10 03:15", active: true },
+      { id: "RST-02", targetSnapshotRef: "BKP-03 (Weekly Comprehensive Dump)", executionEnvironment: "Disaster Recovery Standby", restoredBy: "DevOps Engineer", checksumVerified: true, domainsRestoredCount: 124, durationSeconds: 42, status: "Success (Drill)", restoredAt: "2026-10-28 14:00", active: true },
+      { id: "RST-03", targetSnapshotRef: "BKP-02 (Pre-Deploy Milestone)", executionEnvironment: "Local Testing Sandbox", restoredBy: "Root Super Admin", checksumVerified: true, domainsRestoredCount: 118, durationSeconds: 19, status: "Success (Verification)", restoredAt: "2026-11-09 23:55", active: true }
+    ]
+  };
+  SuperStore.getRestoreCentreConfig = function() {
+    return _hydrateConfig('cso_restore_centre_config', 'restoreLogs', () => DEFAULT_RESTORE_CENTRE);
+  };
+  SuperStore.saveRestoreCentreConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.restoreLogs = cfg.items || cfg.restoreLogs || []; cfg.items = cfg.restoreLogs;
+    localStorage.setItem('cso_restore_centre_config', JSON.stringify(cfg));
+    this.logAudit('RESTORE_CENTRE_UPDATED', 'OPERATIONS', `Restore centre logs updated (${cfg.items.length} logs).`);
+    return true;
+  };
+  SuperStore.resetRestoreCentreConfig = function() {
+    localStorage.setItem('cso_restore_centre_config', JSON.stringify(DEFAULT_RESTORE_CENTRE));
+    this.logAudit('RESTORE_CENTRE_RESET', 'OPERATIONS', 'Restore centre config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_RESTORE_CENTRE));
+  };
+  SuperStore.exportRestoreCentreManifest = function() {
+    const config = this.getRestoreCentreConfig();
+    const filename = "restore_centre_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("RESTORE_CENTRE_EXPORTED", "DATA_EXPORT", `Restore centre manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 17-008: Revision Rollback ---
+  const DEFAULT_REVISION_ROLLBACK = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalRevisionsTracked: 184, rollbacksTriggered30d: 2, currentHeadRevision: "rev-2026-11-10-0915" },
+    items: [
+      { id: "REV-01", revisionCode: "REV-16-AUTH-SEC", targetModule: "module-16-001 (Authentication)", author: "Root Admin", changeDescription: "Updated password complexity rules and lockout duration from 15m to 30m", diffSummary: "2 fields modified (+30m lockout, +12 char)", timestamp: "2026-11-10 08:35", rollbackStatus: "Stable (Active Head)", active: true },
+      { id: "REV-02", revisionCode: "REV-15-CLD-R2", targetModule: "module-15-006 (Cloud Storage)", author: "DevOps Engineer", changeDescription: "Added cso-admin-backups-snapshots bucket reference to multi-cloud pool", diffSummary: "1 new bucket mount registered", timestamp: "2026-11-10 07:45", rollbackStatus: "Stable", active: true },
+      { id: "REV-03", revisionCode: "REV-14-EXM-OCS", targetModule: "module-14-002 (Exam Calendar)", author: "Lead Editor (Debabrata)", changeDescription: "Confirmed OPSC OAS preliminary examination timing and shift schedule", diffSummary: "Exam status updated to Date Confirmed", timestamp: "2026-11-09 18:20", rollbackStatus: "Stable", active: true }
+    ]
+  };
+  SuperStore.getRevisionRollbackConfig = function() {
+    return _hydrateConfig('cso_revision_rollback_config', 'revisions', () => DEFAULT_REVISION_ROLLBACK);
+  };
+  SuperStore.saveRevisionRollbackConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.revisions = cfg.items || cfg.revisions || []; cfg.items = cfg.revisions;
+    localStorage.setItem('cso_revision_rollback_config', JSON.stringify(cfg));
+    this.logAudit('REVISION_ROLLBACK_UPDATED', 'OPERATIONS', `Revision rollback entries updated (${cfg.items.length} revisions).`);
+    return true;
+  };
+  SuperStore.resetRevisionRollbackConfig = function() {
+    localStorage.setItem('cso_revision_rollback_config', JSON.stringify(DEFAULT_REVISION_ROLLBACK));
+    this.logAudit('REVISION_ROLLBACK_RESET', 'OPERATIONS', 'Revision rollback config reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_REVISION_ROLLBACK));
+  };
+  SuperStore.exportRevisionRollbackManifest = function() {
+    const config = this.getRevisionRollbackConfig();
+    const filename = "revision_rollback_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("REVISION_ROLLBACK_EXPORTED", "DATA_EXPORT", `Revision rollback manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -15530,6 +15636,18 @@
     window.CSOSuperStore.saveStorageMonitoringConfig = SuperStore.saveStorageMonitoringConfig;
     window.CSOSuperStore.resetStorageMonitoringConfig = SuperStore.resetStorageMonitoringConfig;
     window.CSOSuperStore.exportStorageMonitoringManifest = SuperStore.exportStorageMonitoringManifest;
+    window.CSOSuperStore.getBackupCentreConfig = SuperStore.getBackupCentreConfig;
+    window.CSOSuperStore.saveBackupCentreConfig = SuperStore.saveBackupCentreConfig;
+    window.CSOSuperStore.resetBackupCentreConfig = SuperStore.resetBackupCentreConfig;
+    window.CSOSuperStore.exportBackupCentreManifest = SuperStore.exportBackupCentreManifest;
+    window.CSOSuperStore.getRestoreCentreConfig = SuperStore.getRestoreCentreConfig;
+    window.CSOSuperStore.saveRestoreCentreConfig = SuperStore.saveRestoreCentreConfig;
+    window.CSOSuperStore.resetRestoreCentreConfig = SuperStore.resetRestoreCentreConfig;
+    window.CSOSuperStore.exportRestoreCentreManifest = SuperStore.exportRestoreCentreManifest;
+    window.CSOSuperStore.getRevisionRollbackConfig = SuperStore.getRevisionRollbackConfig;
+    window.CSOSuperStore.saveRevisionRollbackConfig = SuperStore.saveRevisionRollbackConfig;
+    window.CSOSuperStore.resetRevisionRollbackConfig = SuperStore.resetRevisionRollbackConfig;
+    window.CSOSuperStore.exportRevisionRollbackManifest = SuperStore.exportRevisionRollbackManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
