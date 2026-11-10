@@ -127,6 +127,57 @@
       animation-play-state: paused;
     }
   </style>
+
+<style id="mobile-force-stack-fix">
+  @media screen and (max-width: 900px) {
+    .g1,
+    main .g1,
+    body .g1 {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      grid-template-columns: 1fr !important;
+      gap: 1.5rem !important;
+      box-sizing: border-box !important;
+    }
+    .g1 > .hero,
+    .g1 > #cso-hero,
+    .g1 > section.hero {
+      order: 1 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      flex: 1 1 auto !important;
+      box-sizing: border-box !important;
+    }
+    .g1 > .lu,
+    .g1 > aside.lu,
+    .g1 > .card.lu {
+      order: 2 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      flex: 1 1 auto !important;
+      box-sizing: border-box !important;
+    }
+    .card.lu .it,
+    .lu .it {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      width: 100% !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+    }
+    .card.lu .it > div,
+    .lu .it > div {
+      width: 100% !important;
+      white-space: normal !important;
+    }
+  }
+</style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-teal-500 selection:text-white">
 
