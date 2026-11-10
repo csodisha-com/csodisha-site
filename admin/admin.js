@@ -589,6 +589,22 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-12-008') { renderSocialSharingWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-12-009') { renderPromoLandingPagesWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-12-010') { renderAdvertisingReportsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-001') { renderSeoOverviewWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-002') { renderPageMetadataWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-003') { renderCanonicalUrlsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-004') { renderOpenGraphPreviewsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-005') { renderStructuredDataWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-006') { renderXmlSitemapWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-007') { renderRobotsSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-008') { renderSearchConsoleWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-009') { renderInternalSearchManagerWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-010') { renderSearchIndexWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-011') { renderSearchFiltersWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-012') { renderPopularSearchesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-013') { renderZeroResultSearchesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-014') { renderUrlRedirectsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-015') { renderBrokenLinksWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-13-016') { render404ReportsWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -949,6 +965,38 @@ async function loadMasterNavigation() {
         renderPromoLandingPagesWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-12-010') {
         renderAdvertisingReportsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-001') {
+        renderSeoOverviewWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-002') {
+        renderPageMetadataWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-003') {
+        renderCanonicalUrlsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-004') {
+        renderOpenGraphPreviewsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-005') {
+        renderStructuredDataWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-006') {
+        renderXmlSitemapWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-007') {
+        renderRobotsSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-008') {
+        renderSearchConsoleWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-009') {
+        renderInternalSearchManagerWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-010') {
+        renderSearchIndexWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-011') {
+        renderSearchFiltersWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-012') {
+        renderPopularSearchesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-013') {
+        renderZeroResultSearchesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-014') {
+        renderUrlRedirectsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-015') {
+        renderBrokenLinksWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-13-016') {
+        render404ReportsWorkspace(dom.workspaceRoot);
 
 
 
@@ -51357,6 +51405,4630 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-12-010', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-12-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * =========================================================================
+     * FOLDER 13: SEO, SEARCH & DISCOVERY (BATCH 1: MODULES 13-001 TO 13-004)
+     * =========================================================================
+     */
+
+    /**
+     * MODULE 13-001: SEO Overview
+     */
+    function renderSeoOverviewWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSeoOverviewConfig();
+        let items = Array.isArray(config.audits || config.items) ? [...(config.audits || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.checkDomain || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.severity || '').toLowerCase().includes(term) ||
+                   (a.description || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalAudits = items.length;
+          const optimalCount = items.filter(i => i.status === 'Optimal').length;
+          const reviewCount = items.filter(i => i.status === 'Needs Review' || i.status === 'Action Required').length;
+          const totalAffected = items.reduce((acc, curr) => acc + (Number(curr.affectedUrlsCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SEARCH HEALTH</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">SEO Overview &amp; Health Radar</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Platform search crawlability, indexing benchmarks, metadata coverage rates, and automated audit checks</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddAudit" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Audit Check
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Health Grade</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.healthScore?.grade || 'A (94/100)'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Platform crawl &amp; index score</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Indexed Routes</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${config.healthScore?.indexedPagesCount || 184}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Public sitemap endpoints</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Meta Coverage</div>
+                  <div class="text-2xl font-bold text-indigo-400 mt-1">${config.healthScore?.metaCoverageRate || '98.2%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Pages with verified meta tags</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Canonical Integrity</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.healthScore?.canonicalIntegrity || '100%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Zero circular redirects</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">OG Image Coverage</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.healthScore?.ogImageCoverage || '96.5%'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${reviewCount} checks require attention</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSeoOverviewSearch" placeholder="Search by audit check domain, status, severity, or description..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length} checks</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Audit ID &amp; Check Domain</th>
+                      <th class="px-4 py-3">Audit Description</th>
+                      <th class="px-4 py-3">Severity</th>
+                      <th class="px-4 py-3">Affected URLs</th>
+                      <th class="px-4 py-3">Last Audited</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No SEO audit items match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-emerald-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.checkDomain}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 max-w-xs">
+                          ${item.description}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.severity === 'High' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            item.severity === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-800 text-slate-300 border border-slate-700'
+                          }">${item.severity}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold ${item.affectedUrlsCount > 0 ? 'text-amber-400 font-mono' : 'text-slate-400'}">
+                          ${item.affectedUrlsCount} URLs
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.lastAudited}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Optimal' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.status === 'Needs Review' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          }">${item.status || 'Optimal'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Optimal Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Audit Check" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Check" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSeoOverviewSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSeoOverviewSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('SEO Overview Schema', {
+              id: 'string (unique ID, e.g. SEO-01)',
+              checkDomain: 'string (e.g. Core Metadata Completeness)',
+              status: 'string (Optimal / Needs Review / Action Required)',
+              affectedUrlsCount: 'number (count of URLs requiring remediation)',
+              severity: 'string (Low / Medium / High)',
+              description: 'string (detailed diagnostic check description)',
+              lastAudited: 'string (YYYY-MM-DD)',
+              active: 'boolean (active audit rule flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSeoOverviewManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset SEO overview audit rules to factory defaults?')) {
+              store.resetSeoOverviewConfig();
+              config = store.getSeoOverviewConfig();
+              items = [...(config.audits || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddAudit')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Register SEO Audit Check Domain',
+              fields: [
+                { name: 'checkDomain', label: 'Check Domain / Name', type: 'text', placeholder: 'e.g. Structured Schema Breadcrumb Validation', required: true },
+                { name: 'description', label: 'Check Description', type: 'textarea', placeholder: 'e.g. Verify JSON-LD breadcrumb list markup on notice pages', required: true },
+                { name: 'severity', label: 'Severity Level', type: 'select', options: [
+                  { value: 'Low', label: 'Low' },
+                  { value: 'Medium', label: 'Medium' },
+                  { value: 'High', label: 'High' }
+                ], required: true },
+                { name: 'affectedUrlsCount', label: 'Affected URLs Count', type: 'number', placeholder: '0', required: true },
+                { name: 'status', label: 'Audit Status', type: 'select', options: [
+                  { value: 'Optimal', label: 'Optimal' },
+                  { value: 'Needs Review', label: 'Needs Review' },
+                  { value: 'Action Required', label: 'Action Required' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'SEO-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  checkDomain: data.checkDomain.trim(),
+                  description: data.description.trim(),
+                  severity: data.severity,
+                  affectedUrlsCount: Number(data.affectedUrlsCount) || 0,
+                  status: data.status,
+                  lastAudited: new Date().toISOString().slice(0, 10),
+                  active: data.status === 'Optimal'
+                };
+                items.unshift(newItem);
+                config.audits = items;
+                config.items = items;
+                store.saveSeoOverviewConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              item.status = item.active ? 'Optimal' : 'Needs Review';
+              config.audits = items;
+              config.items = items;
+              store.saveSeoOverviewConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Audit Check: ' + item.checkDomain,
+                fields: [
+                  { name: 'checkDomain', label: 'Check Domain / Name', type: 'text', defaultValue: item.checkDomain, required: true },
+                  { name: 'description', label: 'Check Description', type: 'textarea', defaultValue: item.description, required: true },
+                  { name: 'severity', label: 'Severity Level', type: 'select', defaultValue: item.severity, options: [
+                    { value: 'Low', label: 'Low' },
+                    { value: 'Medium', label: 'Medium' },
+                    { value: 'High', label: 'High' }
+                  ], required: true },
+                  { name: 'affectedUrlsCount', label: 'Affected URLs Count', type: 'number', defaultValue: item.affectedUrlsCount, required: true },
+                  { name: 'status', label: 'Audit Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Optimal', label: 'Optimal' },
+                    { value: 'Needs Review', label: 'Needs Review' },
+                    { value: 'Action Required', label: 'Action Required' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.checkDomain = data.checkDomain.trim();
+                  item.description = data.description.trim();
+                  item.severity = data.severity;
+                  item.affectedUrlsCount = Number(data.affectedUrlsCount) || 0;
+                  item.status = data.status;
+                  item.active = data.status === 'Optimal';
+                  item.lastAudited = new Date().toISOString().slice(0, 10);
+                  config.audits = items;
+                  config.items = items;
+                  store.saveSeoOverviewConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete SEO audit check ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.audits = items;
+                config.items = items;
+                store.saveSeoOverviewConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-002: Page Metadata
+     */
+    function renderPageMetadataWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPageMetadataConfig();
+        let items = Array.isArray(config.pages || config.items) ? [...(config.pages || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.routePath || '').toLowerCase().includes(term) ||
+                   (a.pageTitle || '').toLowerCase().includes(term) ||
+                   (a.metaDescription || '').toLowerCase().includes(term) ||
+                   (a.robotsRule || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalRoutes = items.length;
+          const indexedRoutes = items.filter(i => (i.robotsRule || '').includes('index') && !(i.robotsRule || '').includes('noindex')).length;
+          const avgTitleLength = items.length > 0 ? Math.round(items.reduce((acc, curr) => acc + (curr.pageTitle?.length || 0), 0) / items.length) : 0;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">META CONTROLLER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Page Metadata &amp; SERP Tags</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Route-level HTML title tags, meta descriptions, robots indexing directives, and snippet length optimization</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddRouteMeta" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Route Metadata
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Routes</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalRoutes}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Managed route metadata entries</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-blue-400 uppercase tracking-wider">Indexed Routes</div>
+                  <div class="text-2xl font-bold text-blue-400 mt-1">${indexedRoutes}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${totalRoutes - indexedRoutes} protected under noindex</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Avg Title Length</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${avgTitleLength} chars</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Recommended target: 50-60 characters</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPageMetaSearch" placeholder="Search by route path, page title, description, or robots rule..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Route Path &amp; ID</th>
+                      <th class="px-4 py-3">SERP Page Title</th>
+                      <th class="px-4 py-3">Meta Description</th>
+                      <th class="px-4 py-3">Robots Directive</th>
+                      <th class="px-4 py-3">Char Lengths</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No page metadata records match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-blue-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-mono text-white text-[11px] mt-0.5">${item.routePath}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium max-w-xs">
+                          ${item.pageTitle}
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 max-w-sm">
+                          <div class="line-clamp-2">${item.metaDescription}</div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px]">
+                          <span class="px-2 py-0.5 rounded text-[10px] ${
+                            (item.robotsRule || '').includes('noindex') ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          }">${item.robotsRule}</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[10px] text-slate-400">
+                          <div>T: <span class="${item.charLengthTitle > 65 ? 'text-amber-400' : 'text-slate-300'}">${item.charLengthTitle || item.pageTitle.length}</span> chars</div>
+                          <div class="mt-0.5">D: <span class="${item.charLengthDesc > 160 ? 'text-amber-400' : 'text-slate-300'}">${item.charLengthDesc || item.metaDescription.length}</span> chars</div>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="edit" data-id="${item.id}" title="Edit Metadata" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-blue-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Record" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoPageMetaSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoPageMetaSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Page Metadata Schema', {
+              id: 'string (unique ID, e.g. META-01)',
+              routePath: 'string (route URL path, e.g. /jobs-careers/)',
+              pageTitle: 'string (HTML document title tag)',
+              metaDescription: 'string (HTML meta description tag)',
+              robotsRule: 'string (e.g. index, follow or noindex, nofollow)',
+              charLengthTitle: 'number (character count)',
+              charLengthDesc: 'number (character count)',
+              active: 'boolean (active route metadata flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPageMetadataManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset page metadata records to factory defaults?')) {
+              store.resetPageMetadataConfig();
+              config = store.getPageMetadataConfig();
+              items = [...(config.pages || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddRouteMeta')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Route Metadata Entry',
+              fields: [
+                { name: 'routePath', label: 'Route Path (e.g. /districts/)', type: 'text', placeholder: '/districts/', required: true },
+                { name: 'pageTitle', label: 'SERP Document Title', type: 'text', placeholder: 'Odisha 30 Districts Hub | CS Odisha', required: true },
+                { name: 'metaDescription', label: 'Meta Description', type: 'textarea', placeholder: 'Official district recruitment portal links, study circles, and exam centres across Odisha.', required: true },
+                { name: 'robotsRule', label: 'Robots Directive', type: 'select', options: [
+                  { value: 'index, follow', label: 'index, follow (Standard Public)' },
+                  { value: 'noindex, follow', label: 'noindex, follow' },
+                  { value: 'noindex, nofollow', label: 'noindex, nofollow (Private Admin)' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'META-' + String(items.length + 1).padStart(2, '0');
+                const titleStr = data.pageTitle.trim();
+                const descStr = data.metaDescription.trim();
+                const newItem = {
+                  id: nextId,
+                  routePath: data.routePath.trim(),
+                  pageTitle: titleStr,
+                  metaDescription: descStr,
+                  robotsRule: data.robotsRule,
+                  charLengthTitle: titleStr.length,
+                  charLengthDesc: descStr.length,
+                  active: true
+                };
+                items.unshift(newItem);
+                config.pages = items;
+                config.items = items;
+                store.savePageMetadataConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Route Metadata: ' + item.routePath,
+                fields: [
+                  { name: 'routePath', label: 'Route Path', type: 'text', defaultValue: item.routePath, required: true },
+                  { name: 'pageTitle', label: 'SERP Document Title', type: 'text', defaultValue: item.pageTitle, required: true },
+                  { name: 'metaDescription', label: 'Meta Description', type: 'textarea', defaultValue: item.metaDescription, required: true },
+                  { name: 'robotsRule', label: 'Robots Directive', type: 'select', defaultValue: item.robotsRule, options: [
+                    { value: 'index, follow', label: 'index, follow (Standard Public)' },
+                    { value: 'noindex, follow', label: 'noindex, follow' },
+                    { value: 'noindex, nofollow', label: 'noindex, nofollow (Private Admin)' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.routePath = data.routePath.trim();
+                  item.pageTitle = data.pageTitle.trim();
+                  item.metaDescription = data.metaDescription.trim();
+                  item.robotsRule = data.robotsRule;
+                  item.charLengthTitle = item.pageTitle.length;
+                  item.charLengthDesc = item.metaDescription.length;
+                  config.pages = items;
+                  config.items = items;
+                  store.savePageMetadataConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete route metadata for ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.pages = items;
+                config.items = items;
+                store.savePageMetadataConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-003: Canonical URLs
+     */
+    function renderCanonicalUrlsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getCanonicalUrlsConfig();
+        let items = Array.isArray(config.canonicals || config.items) ? [...(config.canonicals || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.requestPattern || '').toLowerCase().includes(term) ||
+                   (a.canonicalTarget || '').toLowerCase().includes(term) ||
+                   (a.normalizationRule || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalRules = items.length;
+          const activeRules = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">CANONICALIZATION</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Canonical URLs &amp; Normalization</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Enforce strict canonical targets, strip tracking query parameters, and resolve duplicate content patterns</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddCanonical" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Canonical Rule
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Canonical Rules</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalRules}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeRules} actively enforced</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Base Production Domain</div>
+                  <div class="text-xs font-mono text-indigo-300 mt-2 truncate">${config.settings?.baseProductionDomain || 'https://csodisha.com'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Authoritative origin host</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Trailing Slash Policy</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.enforceTrailingSlash ? 'Enforced' : 'Optional'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Directory slash standard</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">HTTPS Enforcement</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.settings?.enforceHttps ? 'Strict HSTS' : 'Standard'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Secure protocol requirement</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoCanonicalSearch" placeholder="Search by request pattern, canonical target, or rule name..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Rule ID</th>
+                      <th class="px-4 py-3">Incoming Request Pattern</th>
+                      <th class="px-4 py-3">Canonical Target Target</th>
+                      <th class="px-4 py-3">Normalization Strategy</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No canonical rules match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-indigo-400 font-semibold text-[11px]">
+                          ${item.id}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-slate-300 text-[11px] max-w-xs truncate">
+                          ${item.requestPattern}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-emerald-400 text-[11px] max-w-xs truncate">
+                          ${item.canonicalTarget}
+                        </td>
+                        <td class="px-4 py-3 text-slate-200">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.normalizationRule}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Enforced' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Rule Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Canonical Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoCanonicalSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoCanonicalSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Canonical URLs Schema', {
+              id: 'string (unique ID, e.g. CAN-01)',
+              requestPattern: 'string (e.g. https://csodisha.com/jobs-careers)',
+              canonicalTarget: 'string (normalized canonical target)',
+              normalizationRule: 'string (strategy description, e.g. Enforce Trailing Slash)',
+              active: 'boolean (active enforcement status)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportCanonicalUrlsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset canonical URL rules to factory defaults?')) {
+              store.resetCanonicalUrlsConfig();
+              config = store.getCanonicalUrlsConfig();
+              items = [...(config.canonicals || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddCanonical')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Canonical Normalization Rule',
+              fields: [
+                { name: 'requestPattern', label: 'Incoming Request Pattern', type: 'text', placeholder: 'e.g. https://csodisha.com/schemes', required: true },
+                { name: 'canonicalTarget', label: 'Canonical Target URL', type: 'text', placeholder: 'e.g. https://csodisha.com/schemes-benefits/', required: true },
+                { name: 'normalizationRule', label: 'Normalization Strategy', type: 'text', placeholder: 'e.g. Route Aliasing & Trailing Slash', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'CAN-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  requestPattern: data.requestPattern.trim(),
+                  canonicalTarget: data.canonicalTarget.trim(),
+                  normalizationRule: data.normalizationRule.trim(),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.canonicals = items;
+                config.items = items;
+                store.saveCanonicalUrlsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.canonicals = items;
+              config.items = items;
+              store.saveCanonicalUrlsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Canonical Rule: ' + item.id,
+                fields: [
+                  { name: 'requestPattern', label: 'Incoming Request Pattern', type: 'text', defaultValue: item.requestPattern, required: true },
+                  { name: 'canonicalTarget', label: 'Canonical Target URL', type: 'text', defaultValue: item.canonicalTarget, required: true },
+                  { name: 'normalizationRule', label: 'Normalization Strategy', type: 'text', defaultValue: item.normalizationRule, required: true }
+                ],
+                onSave: (data) => {
+                  item.requestPattern = data.requestPattern.trim();
+                  item.canonicalTarget = data.canonicalTarget.trim();
+                  item.normalizationRule = data.normalizationRule.trim();
+                  config.canonicals = items;
+                  config.items = items;
+                  store.saveCanonicalUrlsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete canonical rule ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.canonicals = items;
+                config.items = items;
+                store.saveCanonicalUrlsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-004: Open Graph Previews
+     */
+    function renderOpenGraphPreviewsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getOpenGraphPreviewsConfig();
+        let items = Array.isArray(config.ogProfiles || config.items) ? [...(config.ogProfiles || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.targetPage || '').toLowerCase().includes(term) ||
+                   (a.ogTitle || '').toLowerCase().includes(term) ||
+                   (a.ogDescription || '').toLowerCase().includes(term) ||
+                   (a.twitterCard || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalProfiles = items.length;
+          const activeProfiles = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">PREVIEW STUDIO</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Open Graph &amp; Social Card Previews</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Live SERP &amp; social snippet simulations, og:image dimension validation, and Twitter large summary cards</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddOgProfile" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add OG Profile
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">OG Profiles</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalProfiles}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeProfiles} profiles active across pages</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">og:site_name</div>
+                  <div class="text-2xl font-bold text-rose-300 mt-1">${config.globalDefaults?.ogSiteName || 'Common Sense Odisha'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Global authority branding</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Twitter Card Binding</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.globalDefaults?.twitterSite || '@CSOdisha_Portal'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Official verified channel</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoOgPreviewSearch" placeholder="Search by target page, OG title, description, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Live Simulation Preview Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${filtered.length === 0 ? `
+                  <div class="col-span-full p-8 text-center text-slate-500 border border-slate-800 rounded-xl bg-slate-900/30">
+                    No Open Graph preview profiles match the search query.
+                  </div>
+                ` : filtered.map(item => `
+                  <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur flex flex-col justify-between space-y-4 hover:border-slate-700 transition-colors">
+                    <div>
+                      <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                        <span class="font-mono text-rose-400 text-xs font-semibold">${item.id}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                          'bg-slate-700 text-slate-400'
+                        }">${item.active ? 'Active' : 'Inactive'}</span>
+                      </div>
+                      <div class="text-xs font-bold text-white mt-2 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        <span>${item.targetPage}</span>
+                      </div>
+
+                      <!-- Social Card Box Simulation -->
+                      <div class="mt-4 rounded-xl border border-slate-700/80 bg-slate-950 overflow-hidden shadow-lg">
+                        <div class="h-32 bg-slate-800 flex items-center justify-center relative overflow-hidden">
+                          <div class="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-800 to-rose-950/40"></div>
+                          <div class="z-10 text-center px-4">
+                            <span class="text-xs font-mono text-slate-400 uppercase tracking-widest block">${item.imageDimensions}</span>
+                            <span class="text-[11px] text-slate-500 font-mono mt-0.5 block truncate max-w-[200px] mx-auto">${item.ogImageUrl}</span>
+                          </div>
+                        </div>
+                        <div class="p-3.5 space-y-1.5">
+                          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">csodisha.com</div>
+                          <div class="text-xs font-bold text-white line-clamp-1">${item.ogTitle}</div>
+                          <div class="text-[11px] text-slate-400 line-clamp-2">${item.ogDescription}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                      <span class="font-mono text-indigo-400">${item.twitterCard}</span>
+                      <div class="flex items-center gap-1.5">
+                        <button data-action="toggle-active" data-id="${item.id}" title="Toggle Profile Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                        </button>
+                        <button data-action="edit" data-id="${item.id}" title="Edit Profile" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                        <button data-action="delete" data-id="${item.id}" title="Delete Profile" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoOgPreviewSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoOgPreviewSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Open Graph Previews Schema', {
+              id: 'string (unique ID, e.g. OGP-01)',
+              targetPage: 'string (target route, e.g. Jobs & Careers (/jobs-careers/))',
+              ogTitle: 'string (OpenGraph document title)',
+              ogDescription: 'string (OpenGraph document snippet description)',
+              ogImageUrl: 'string (asset image URL path)',
+              imageDimensions: 'string (e.g. 1200x630 (Valid))',
+              twitterCard: 'string (e.g. summary_large_image)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportOpenGraphPreviewsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Open Graph preview configurations to factory defaults?')) {
+              store.resetOpenGraphPreviewsConfig();
+              config = store.getOpenGraphPreviewsConfig();
+              items = [...(config.ogProfiles || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddOgProfile')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Open Graph Preview Profile',
+              fields: [
+                { name: 'targetPage', label: 'Target Route Page', type: 'text', placeholder: 'e.g. Current Affairs (/current-affairs/)', required: true },
+                { name: 'ogTitle', label: 'OG Title', type: 'text', placeholder: 'e.g. Odisha Daily Current Affairs Capsule | CS Odisha', required: true },
+                { name: 'ogDescription', label: 'OG Description', type: 'textarea', placeholder: 'e.g. Download state current affairs capsules and daily Odisha gazette summaries.', required: true },
+                { name: 'ogImageUrl', label: 'Image Asset URL Path', type: 'text', placeholder: '/assets/images/og-current-affairs.webp', required: true },
+                { name: 'imageDimensions', label: 'Dimensions Validation', type: 'text', placeholder: '1200x630 (Valid)', required: true },
+                { name: 'twitterCard', label: 'Twitter Card Type', type: 'select', options: [
+                  { value: 'summary_large_image', label: 'summary_large_image (High Impact)' },
+                  { value: 'summary', label: 'summary (Standard Thumbnail)' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'OGP-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  targetPage: data.targetPage.trim(),
+                  ogTitle: data.ogTitle.trim(),
+                  ogDescription: data.ogDescription.trim(),
+                  ogImageUrl: data.ogImageUrl.trim(),
+                  imageDimensions: data.imageDimensions.trim() || '1200x630 (Valid)',
+                  twitterCard: data.twitterCard,
+                  active: true
+                };
+                items.unshift(newItem);
+                config.ogProfiles = items;
+                config.items = items;
+                store.saveOpenGraphPreviewsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.ogProfiles = items;
+              config.items = items;
+              store.saveOpenGraphPreviewsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit OG Profile: ' + item.targetPage,
+                fields: [
+                  { name: 'targetPage', label: 'Target Route Page', type: 'text', defaultValue: item.targetPage, required: true },
+                  { name: 'ogTitle', label: 'OG Title', type: 'text', defaultValue: item.ogTitle, required: true },
+                  { name: 'ogDescription', label: 'OG Description', type: 'textarea', defaultValue: item.ogDescription, required: true },
+                  { name: 'ogImageUrl', label: 'Image Asset URL Path', type: 'text', defaultValue: item.ogImageUrl, required: true },
+                  { name: 'imageDimensions', label: 'Dimensions Validation', type: 'text', defaultValue: item.imageDimensions, required: true },
+                  { name: 'twitterCard', label: 'Twitter Card Type', type: 'select', defaultValue: item.twitterCard, options: [
+                    { value: 'summary_large_image', label: 'summary_large_image (High Impact)' },
+                    { value: 'summary', label: 'summary (Standard Thumbnail)' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.targetPage = data.targetPage.trim();
+                  item.ogTitle = data.ogTitle.trim();
+                  item.ogDescription = data.ogDescription.trim();
+                  item.ogImageUrl = data.ogImageUrl.trim();
+                  item.imageDimensions = data.imageDimensions.trim();
+                  item.twitterCard = data.twitterCard;
+                  config.ogProfiles = items;
+                  config.items = items;
+                  store.saveOpenGraphPreviewsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete Open Graph profile ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.ogProfiles = items;
+                config.items = items;
+                store.saveOpenGraphPreviewsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * =========================================================================
+     * FOLDER 13: SEO, SEARCH & DISCOVERY (BATCH 2: MODULES 13-005 TO 13-008)
+     * =========================================================================
+     */
+
+    /**
+     * MODULE 13-005: Structured Data
+     */
+    function renderStructuredDataWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getStructuredDataConfig();
+        let items = Array.isArray(config.schemas || config.items) ? [...(config.schemas || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.schemaType || '').toLowerCase().includes(term) ||
+                   (a.targetUrlPattern || '').toLowerCase().includes(term) ||
+                   (a.entityName || '').toLowerCase().includes(term) ||
+                   (a.validationStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalSchemas = items.length;
+          const validCount = items.filter(i => i.validationStatus.includes('Valid')).length;
+          const autoInjectEnabled = config.settings?.autoInjectJsonLd ?? true;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">SCHEMA.ORG</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Structured Data &amp; Rich Snippets</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">JSON-LD entities, Schema.org JobPosting, GovernmentService, FAQPage, and BreadcrumbList markup injection</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddStructuredData" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white shadow-lg shadow-amber-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add JSON-LD Schema
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Schemas</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalSchemas}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Schema.org semantic definitions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Validation Rate</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalSchemas > 0 ? Math.round((validCount / totalSchemas) * 100) : 100}%</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${validCount} of ${totalSchemas} schemas syntax verified</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Auto-Injection Engine</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${autoInjectEnabled ? 'Enabled' : 'Paused'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Direct runtime DOM injection</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoStructuredDataSearch" placeholder="Search by schema type, target URL pattern, entity name, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">ID &amp; Type</th>
+                      <th class="px-4 py-3">Entity Name</th>
+                      <th class="px-4 py-3">Target URL Pattern</th>
+                      <th class="px-4 py-3">Validation Status</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No structured data schemas match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-amber-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-bold text-white mt-0.5">${item.schemaType}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${item.entityName}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-sky-400">
+                          ${item.targetUrlPattern}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${item.validationStatus}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Inactive'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="view-raw" data-id="${item.id}" title="View Raw JSON-LD" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Schema" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Schema" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoStructuredDataSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoStructuredDataSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Structured Data Schema', {
+              id: 'string (unique ID, e.g. SCH-01)',
+              schemaType: 'string (e.g. JobPosting, GovernmentService, FAQPage, BreadcrumbList)',
+              targetUrlPattern: 'string (route matching pattern)',
+              entityName: 'string (descriptive label of the entity)',
+              validationStatus: 'string (Valid (Schema.org) / Warning)',
+              rawJsonLd: 'string (serialized JSON-LD string)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportStructuredDataManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset structured data schemas to factory defaults?')) {
+              store.resetStructuredDataConfig();
+              config = store.getStructuredDataConfig();
+              items = [...(config.schemas || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddStructuredData')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Structured Data JSON-LD Schema',
+              fields: [
+                { name: 'schemaType', label: 'Schema.org Type', type: 'select', options: [
+                  { value: 'JobPosting', label: 'JobPosting' },
+                  { value: 'GovernmentService', label: 'GovernmentService' },
+                  { value: 'FAQPage', label: 'FAQPage' },
+                  { value: 'BreadcrumbList', label: 'BreadcrumbList' },
+                  { value: 'Organization', label: 'Organization' },
+                  { value: 'Article', label: 'Article' }
+                ], required: true },
+                { name: 'entityName', label: 'Entity Label / Name', type: 'text', placeholder: 'e.g. OSSC CGL Combined Exam 2026', required: true },
+                { name: 'targetUrlPattern', label: 'Target URL Match Pattern', type: 'text', placeholder: 'e.g. /jobs-careers/?exam=ossc-cgl', required: true },
+                { name: 'rawJsonLd', label: 'Raw JSON-LD Object', type: 'textarea', placeholder: '{"@context":"https://schema.org/","@type":"JobPosting",...}', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'SCH-' + String(items.length + 1).padStart(2, '0');
+                let validStatus = 'Valid (Schema.org)';
+                try {
+                  JSON.parse(data.rawJsonLd);
+                } catch (e) {
+                  validStatus = 'Invalid JSON';
+                }
+                const newItem = {
+                  id: nextId,
+                  schemaType: data.schemaType,
+                  entityName: data.entityName.trim(),
+                  targetUrlPattern: data.targetUrlPattern.trim(),
+                  validationStatus: validStatus,
+                  rawJsonLd: data.rawJsonLd.trim(),
+                  active: validStatus.includes('Valid')
+                };
+                items.unshift(newItem);
+                config.schemas = items;
+                config.items = items;
+                store.saveStructuredDataConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.schemas = items;
+              config.items = items;
+              store.saveStructuredDataConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="view-raw"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              try {
+                const formatted = JSON.stringify(JSON.parse(item.rawJsonLd), null, 2);
+                alert(`Raw JSON-LD for ${item.entityName}:\n\n` + formatted);
+              } catch (e) {
+                alert(`Raw JSON-LD for ${item.entityName}:\n\n` + item.rawJsonLd);
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Schema: ' + item.entityName,
+                fields: [
+                  { name: 'schemaType', label: 'Schema.org Type', type: 'select', defaultValue: item.schemaType, options: [
+                    { value: 'JobPosting', label: 'JobPosting' },
+                    { value: 'GovernmentService', label: 'GovernmentService' },
+                    { value: 'FAQPage', label: 'FAQPage' },
+                    { value: 'BreadcrumbList', label: 'BreadcrumbList' },
+                    { value: 'Organization', label: 'Organization' },
+                    { value: 'Article', label: 'Article' }
+                  ], required: true },
+                  { name: 'entityName', label: 'Entity Label / Name', type: 'text', defaultValue: item.entityName, required: true },
+                  { name: 'targetUrlPattern', label: 'Target URL Match Pattern', type: 'text', defaultValue: item.targetUrlPattern, required: true },
+                  { name: 'rawJsonLd', label: 'Raw JSON-LD Object', type: 'textarea', defaultValue: item.rawJsonLd, required: true }
+                ],
+                onSave: (data) => {
+                  item.schemaType = data.schemaType;
+                  item.entityName = data.entityName.trim();
+                  item.targetUrlPattern = data.targetUrlPattern.trim();
+                  item.rawJsonLd = data.rawJsonLd.trim();
+                  try {
+                    JSON.parse(item.rawJsonLd);
+                    item.validationStatus = 'Valid (Schema.org)';
+                  } catch (e) {
+                    item.validationStatus = 'Invalid JSON';
+                  }
+                  config.schemas = items;
+                  config.items = items;
+                  store.saveStructuredDataConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete structured data schema ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.schemas = items;
+                config.items = items;
+                store.saveStructuredDataConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-006: XML Sitemap
+     */
+    function renderXmlSitemapWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getXmlSitemapConfig();
+        let items = Array.isArray(config.sitemaps || config.items) ? [...(config.sitemaps || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.sitemapFilename || '').toLowerCase().includes(term) ||
+                   (a.routeCategory || '').toLowerCase().includes(term) ||
+                   (a.changeFrequency || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalSitemaps = items.length;
+          const totalUrls = items.reduce((acc, curr) => acc + (Number(curr.urlsCount) || 0), 0);
+          const activeSitemaps = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">CRAWL MAP</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-006</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">XML Sitemap Generator &amp; Index</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Sitemap index files, change frequency directives, priority weight calibrations, and automated search engine pings</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSitemap" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Sitemap File
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Sitemaps</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalSitemaps}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeSitemaps} declared in index</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">Total Indexed URLs</div>
+                  <div class="text-2xl font-bold text-cyan-300 mt-1">${totalUrls}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Dispatched across all feeds</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Sitemap Index URL</div>
+                  <div class="text-xs font-mono text-emerald-400 mt-2 truncate">${config.settings?.sitemapIndexUrl || 'https://csodisha.com/sitemap.xml'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Declared in robots.txt</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Engine Pings</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.settings?.autoPingGoogle ? 'Active' : 'Off'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Google &amp; Bing automated ping</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoXmlSitemapSearch" placeholder="Search by filename, route category, frequency, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Sitemap File</th>
+                      <th class="px-4 py-3">Route Category</th>
+                      <th class="px-4 py-3">Priority</th>
+                      <th class="px-4 py-3">Change Frequency</th>
+                      <th class="px-4 py-3">URL Count</th>
+                      <th class="px-4 py-3">Last Generated</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No sitemaps match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-cyan-400 font-semibold text-[11px]">${item.sitemapFilename}</div>
+                          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.id}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${item.routeCategory}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">${item.priorityWeight}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 font-mono">
+                          ${item.changeFrequency}
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${item.urlsCount} URLs
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.lastGenerated}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Inactive'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Sitemap" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Sitemap" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoXmlSitemapSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoXmlSitemapSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('XML Sitemap Schema', {
+              id: 'string (unique ID, e.g. SIT-01)',
+              sitemapFilename: 'string (e.g. sitemap-pages.xml)',
+              routeCategory: 'string (e.g. Core Portal Pages)',
+              priorityWeight: 'string (0.0 to 1.0)',
+              changeFrequency: 'string (always, hourly, daily, weekly, monthly)',
+              urlsCount: 'number (total URLs included)',
+              lastGenerated: 'string (YYYY-MM-DD)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportXmlSitemapManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset XML sitemap list to factory defaults?')) {
+              store.resetXmlSitemapConfig();
+              config = store.getXmlSitemapConfig();
+              items = [...(config.sitemaps || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSitemap')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add XML Sitemap File',
+              fields: [
+                { name: 'sitemapFilename', label: 'Sitemap Filename', type: 'text', placeholder: 'e.g. sitemap-districts.xml', required: true },
+                { name: 'routeCategory', label: 'Route Category Description', type: 'text', placeholder: 'e.g. District Lounge & Circles', required: true },
+                { name: 'priorityWeight', label: 'Priority Weight', type: 'select', options: [
+                  { value: '1.0', label: '1.0 (Maximum)' },
+                  { value: '0.9', label: '0.9 (Very High)' },
+                  { value: '0.8', label: '0.8 (High)' },
+                  { value: '0.6', label: '0.6 (Medium)' },
+                  { value: '0.4', label: '0.4 (Low)' }
+                ], required: true },
+                { name: 'changeFrequency', label: 'Change Frequency', type: 'select', options: [
+                  { value: 'hourly', label: 'hourly' },
+                  { value: 'daily', label: 'daily' },
+                  { value: 'weekly', label: 'weekly' },
+                  { value: 'monthly', label: 'monthly' }
+                ], required: true },
+                { name: 'urlsCount', label: 'Current URL Count', type: 'number', placeholder: '30', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'SIT-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  sitemapFilename: data.sitemapFilename.trim(),
+                  routeCategory: data.routeCategory.trim(),
+                  priorityWeight: data.priorityWeight,
+                  changeFrequency: data.changeFrequency,
+                  urlsCount: Number(data.urlsCount) || 0,
+                  lastGenerated: new Date().toISOString().slice(0, 10),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.sitemaps = items;
+                config.items = items;
+                store.saveXmlSitemapConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.sitemaps = items;
+              config.items = items;
+              store.saveXmlSitemapConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Sitemap: ' + item.sitemapFilename,
+                fields: [
+                  { name: 'sitemapFilename', label: 'Sitemap Filename', type: 'text', defaultValue: item.sitemapFilename, required: true },
+                  { name: 'routeCategory', label: 'Route Category Description', type: 'text', defaultValue: item.routeCategory, required: true },
+                  { name: 'priorityWeight', label: 'Priority Weight', type: 'select', defaultValue: item.priorityWeight, options: [
+                    { value: '1.0', label: '1.0 (Maximum)' },
+                    { value: '0.9', label: '0.9 (Very High)' },
+                    { value: '0.8', label: '0.8 (High)' },
+                    { value: '0.6', label: '0.6 (Medium)' },
+                    { value: '0.4', label: '0.4 (Low)' }
+                  ], required: true },
+                  { name: 'changeFrequency', label: 'Change Frequency', type: 'select', defaultValue: item.changeFrequency, options: [
+                    { value: 'hourly', label: 'hourly' },
+                    { value: 'daily', label: 'daily' },
+                    { value: 'weekly', label: 'weekly' },
+                    { value: 'monthly', label: 'monthly' }
+                  ], required: true },
+                  { name: 'urlsCount', label: 'Current URL Count', type: 'number', defaultValue: item.urlsCount, required: true }
+                ],
+                onSave: (data) => {
+                  item.sitemapFilename = data.sitemapFilename.trim();
+                  item.routeCategory = data.routeCategory.trim();
+                  item.priorityWeight = data.priorityWeight;
+                  item.changeFrequency = data.changeFrequency;
+                  item.urlsCount = Number(data.urlsCount) || 0;
+                  item.lastGenerated = new Date().toISOString().slice(0, 10);
+                  config.sitemaps = items;
+                  config.items = items;
+                  store.saveXmlSitemapConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete sitemap ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.sitemaps = items;
+                config.items = items;
+                store.saveXmlSitemapConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-006', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-006</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-007: Robots Settings
+     */
+    function renderRobotsSettingsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getRobotsSettingsConfig();
+        let items = Array.isArray(config.rules || config.items) ? [...(config.rules || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.userAgent || '').toLowerCase().includes(term) ||
+                   (a.directiveType || '').toLowerCase().includes(term) ||
+                   (a.pathRule || '').toLowerCase().includes(term) ||
+                   (a.comment || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalDirectives = items.length;
+          const disallowCount = items.filter(i => i.directiveType === 'Disallow').length;
+          const allowCount = items.filter(i => i.directiveType === 'Allow').length;
+
+          // Compute raw simulated robots.txt
+          const simulatedTxt = [
+            `# robots.txt generated by CS Odisha Master SuperStore`,
+            `Sitemap: ${config.settings?.sitemapDirectiveUrl || 'https://csodisha.com/sitemap.xml'}`,
+            '',
+            ...items.filter(i => i.active).map(i => `# ${i.comment}\nUser-agent: ${i.userAgent}\n${i.directiveType}: ${i.pathRule}`)
+          ].join('\n');
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">CRAWL DIRECTIVES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-007</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Robots.txt &amp; Bot Crawl Directives</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Control bot indexing rules, user-agent permissions, private backend disallows, and live robots.txt generation</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddRobotsRule" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Directive
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Directives</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalDirectives}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Configured robot rules</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Disallow Rules</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${disallowCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Admin &amp; private route blocks</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Allow Rules</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${allowCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Permissive search bot access</div>
+                </div>
+              </div>
+
+              <!-- Live robots.txt Code Simulation Preview -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-950">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-xs">
+                  <span class="font-mono text-slate-400 font-semibold flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Live robots.txt Output
+                  </span>
+                  <button id="btnCopyRobotsTxt" class="px-2 py-0.5 rounded text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono transition">Copy robots.txt</button>
+                </div>
+                <pre class="mt-3 text-xs font-mono text-emerald-400 overflow-x-auto whitespace-pre leading-relaxed">${simulatedTxt}</pre>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoRobotsSearch" placeholder="Search by user agent, directive, path, or comment..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Directive ID</th>
+                      <th class="px-4 py-3">User-agent</th>
+                      <th class="px-4 py-3">Directive</th>
+                      <th class="px-4 py-3">Target Path Rule</th>
+                      <th class="px-4 py-3">Operational Comment</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No robots rules match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3 font-mono text-rose-400 font-semibold text-[11px]">
+                          ${item.id}
+                        </td>
+                        <td class="px-4 py-3 font-mono text-white text-[11px]">
+                          ${item.userAgent}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.directiveType === 'Disallow' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          }">${item.directiveType}</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-slate-300 text-[11px]">
+                          ${item.pathRule}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400">
+                          ${item.comment}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoRobotsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoRobotsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCopyRobotsTxt')?.addEventListener('click', () => {
+            navigator.clipboard.writeText(simulatedTxt).then(() => {
+              alert('robots.txt content copied to clipboard.');
+            });
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Robots Settings Schema', {
+              id: 'string (unique ID, e.g. ROB-01)',
+              userAgent: 'string (* or specific bot like Googlebot, GPTBot)',
+              directiveType: 'string (Disallow / Allow)',
+              pathRule: 'string (route path rule, e.g. /admin/)',
+              comment: 'string (reason / operational context)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportRobotsSettingsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset robots.txt directives to factory defaults?')) {
+              store.resetRobotsSettingsConfig();
+              config = store.getRobotsSettingsConfig();
+              items = [...(config.rules || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddRobotsRule')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Robots.txt Directive',
+              fields: [
+                { name: 'userAgent', label: 'User Agent', type: 'text', placeholder: '* (All Crawlers)', required: true },
+                { name: 'directiveType', label: 'Directive Type', type: 'select', options: [
+                  { value: 'Disallow', label: 'Disallow (Block)' },
+                  { value: 'Allow', label: 'Allow (Permit)' }
+                ], required: true },
+                { name: 'pathRule', label: 'Path Rule', type: 'text', placeholder: 'e.g. /private/ or /staging/', required: true },
+                { name: 'comment', label: 'Operational Comment', type: 'text', placeholder: 'e.g. Restrict crawler indexing on staging tests', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'ROB-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  userAgent: data.userAgent.trim(),
+                  directiveType: data.directiveType,
+                  pathRule: data.pathRule.trim(),
+                  comment: data.comment.trim(),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.rules = items;
+                config.items = items;
+                store.saveRobotsSettingsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.rules = items;
+              config.items = items;
+              store.saveRobotsSettingsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Directive: ' + item.id,
+                fields: [
+                  { name: 'userAgent', label: 'User Agent', type: 'text', defaultValue: item.userAgent, required: true },
+                  { name: 'directiveType', label: 'Directive Type', type: 'select', defaultValue: item.directiveType, options: [
+                    { value: 'Disallow', label: 'Disallow (Block)' },
+                    { value: 'Allow', label: 'Allow (Permit)' }
+                  ], required: true },
+                  { name: 'pathRule', label: 'Path Rule', type: 'text', defaultValue: item.pathRule, required: true },
+                  { name: 'comment', label: 'Operational Comment', type: 'text', defaultValue: item.comment, required: true }
+                ],
+                onSave: (data) => {
+                  item.userAgent = data.userAgent.trim();
+                  item.directiveType = data.directiveType;
+                  item.pathRule = data.pathRule.trim();
+                  item.comment = data.comment.trim();
+                  config.rules = items;
+                  config.items = items;
+                  store.saveRobotsSettingsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete robots directive ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.rules = items;
+                config.items = items;
+                store.saveRobotsSettingsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-007', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-007</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-008: Search Console Integration
+     */
+    function renderSearchConsoleWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSearchConsoleConfig();
+        let items = Array.isArray(config.accounts || config.items) ? [...(config.accounts || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.provider || '').toLowerCase().includes(term) ||
+                   (a.verificationMethod || '').toLowerCase().includes(term) ||
+                   (a.verifiedStatus || '').toLowerCase().includes(term) ||
+                   (a.sitemapStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalProviders = items.length;
+          const verifiedCount = items.filter(i => i.verifiedStatus.includes('Verified')).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">WEBMASTER API</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-008</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Search Console Integration &amp; Telemetry</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Google Search Console &amp; Bing Webmaster verification tokens, sitemap submission health, and index coverage telemetry</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddConsoleProvider" class="px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Provider
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Webmaster Providers</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalProviders}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${verifiedCount} verified &amp; receiving telemetries</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-violet-400 uppercase tracking-wider">Google Site Verification</div>
+                  <div class="text-xs font-mono text-violet-300 mt-2 truncate">${config.credentials?.googleSiteVerificationToken || 'google-site-verification=...'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Authoritative site ownership token</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Property Scope</div>
+                  <div class="text-xs font-mono text-slate-200 mt-2 truncate">${config.credentials?.propertyType || 'Domain Property'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Covers https://csodisha.com/*</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSearchConsoleSearch" placeholder="Search by provider, verification method, status, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Provider ID &amp; Name</th>
+                      <th class="px-4 py-3">Verification Method</th>
+                      <th class="px-4 py-3">Verification Status</th>
+                      <th class="px-4 py-3">Sitemap Feed Status</th>
+                      <th class="px-4 py-3">Index Coverage</th>
+                      <th class="px-4 py-3">Last Checked</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No search console providers match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-violet-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-bold text-white mt-0.5">${item.provider}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          ${item.verificationMethod}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${item.verifiedStatus}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-mono text-[11px]">
+                          ${item.sitemapStatus}
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${item.indexCoverageRate}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.lastChecked}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Active Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Provider" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-violet-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Provider" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSearchConsoleSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSearchConsoleSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Search Console Schema', {
+              id: 'string (unique ID, e.g. GSC-01)',
+              provider: 'string (Google Search Console, Bing Webmaster, etc.)',
+              verificationMethod: 'string (HTML Meta Tag + DNS TXT)',
+              verifiedStatus: 'string (Connected & Verified)',
+              sitemapStatus: 'string (Success (sitemap.xml))',
+              indexCoverageRate: 'string (e.g. 98.4%)',
+              lastChecked: 'string (YYYY-MM-DD)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSearchConsoleManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset search console provider list to factory defaults?')) {
+              store.resetSearchConsoleConfig();
+              config = store.getSearchConsoleConfig();
+              items = [...(config.accounts || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddConsoleProvider')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Search Console Provider',
+              fields: [
+                { name: 'provider', label: 'Search Engine Provider', type: 'text', placeholder: 'e.g. Yandex Webmaster / DuckDuckGo', required: true },
+                { name: 'verificationMethod', label: 'Verification Method', type: 'text', placeholder: 'e.g. HTML File Upload or DNS TXT', required: true },
+                { name: 'verifiedStatus', label: 'Verification Status', type: 'text', placeholder: 'Connected & Verified', required: true },
+                { name: 'sitemapStatus', label: 'Sitemap Submission Status', type: 'text', placeholder: 'Success (sitemap.xml)', required: true },
+                { name: 'indexCoverageRate', label: 'Index Coverage %', type: 'text', placeholder: '95.0%', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'GSC-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  provider: data.provider.trim(),
+                  verificationMethod: data.verificationMethod.trim(),
+                  verifiedStatus: data.verifiedStatus.trim(),
+                  sitemapStatus: data.sitemapStatus.trim(),
+                  indexCoverageRate: data.indexCoverageRate.trim(),
+                  lastChecked: new Date().toISOString().slice(0, 10),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.accounts = items;
+                config.items = items;
+                store.saveSearchConsoleConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.accounts = items;
+              config.items = items;
+              store.saveSearchConsoleConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Provider: ' + item.provider,
+                fields: [
+                  { name: 'provider', label: 'Search Engine Provider', type: 'text', defaultValue: item.provider, required: true },
+                  { name: 'verificationMethod', label: 'Verification Method', type: 'text', defaultValue: item.verificationMethod, required: true },
+                  { name: 'verifiedStatus', label: 'Verification Status', type: 'text', defaultValue: item.verifiedStatus, required: true },
+                  { name: 'sitemapStatus', label: 'Sitemap Submission Status', type: 'text', defaultValue: item.sitemapStatus, required: true },
+                  { name: 'indexCoverageRate', label: 'Index Coverage %', type: 'text', defaultValue: item.indexCoverageRate, required: true }
+                ],
+                onSave: (data) => {
+                  item.provider = data.provider.trim();
+                  item.verificationMethod = data.verificationMethod.trim();
+                  item.verifiedStatus = data.verifiedStatus.trim();
+                  item.sitemapStatus = data.sitemapStatus.trim();
+                  item.indexCoverageRate = data.indexCoverageRate.trim();
+                  item.lastChecked = new Date().toISOString().slice(0, 10);
+                  config.accounts = items;
+                  config.items = items;
+                  store.saveSearchConsoleConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete search console provider ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.accounts = items;
+                config.items = items;
+                store.saveSearchConsoleConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-008', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-008</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * =========================================================================
+     * FOLDER 13: SEO, SEARCH & DISCOVERY (BATCH 3: MODULES 13-009 TO 13-013)
+     * =========================================================================
+     */
+
+    /**
+     * MODULE 13-009: Internal Search Manager
+     */
+    function renderInternalSearchManagerWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getInternalSearchManagerConfig();
+        let items = Array.isArray(config.searchRules || config.items) ? [...(config.searchRules || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.paramKey || '').toLowerCase().includes(term) ||
+                   (a.paramTitle || '').toLowerCase().includes(term) ||
+                   (a.value || '').toLowerCase().includes(term) ||
+                   (a.context || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalParams = items.length;
+          const activeParams = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">SEARCH ALGORITHM</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-009</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Internal Search Manager &amp; Ranking Weights</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Fuzzy matching thresholds, typo tolerance, title boost factors, and Odia/English synonym expansions</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddSearchParam" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Parameter
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Weights</div>
+                  <div class="text-2xl font-bold text-white mt-1">${activeParams}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Ranking heuristic overrides</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Fuzzy Threshold</div>
+                  <div class="text-2xl font-bold text-indigo-300 mt-1">${config.settings?.fuzzyThreshold ?? 0.2}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Levenshtein distance tolerance</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Typo Tolerance</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.typoTolerance ? 'Enabled' : 'Disabled'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Automatic spelling recovery</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Default Page Size</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${config.settings?.defaultPageSize || 15}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Results per search page</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoInternalSearchParamSearch" placeholder="Search by parameter key, title, value, or context..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Param ID &amp; Key</th>
+                      <th class="px-4 py-3">Parameter Name</th>
+                      <th class="px-4 py-3">Configured Value</th>
+                      <th class="px-4 py-3">Operational Context</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No search parameters match the query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-indigo-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-mono text-white text-[11px] mt-0.5">${item.paramKey}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${item.paramTitle}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">${item.value}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          ${item.context}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Parameter" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Parameter" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Parameter" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoInternalSearchParamSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoInternalSearchParamSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Internal Search Manager Schema', {
+              id: 'string (unique ID, e.g. SRM-01)',
+              paramKey: 'string (e.g. TITLE_BOOST_FACTOR)',
+              paramTitle: 'string (human-readable title)',
+              value: 'string (e.g. 3.5x, Enabled)',
+              context: 'string (heuristic explanation)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportInternalSearchManagerManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset internal search parameters to factory defaults?')) {
+              store.resetInternalSearchManagerConfig();
+              config = store.getInternalSearchManagerConfig();
+              items = [...(config.searchRules || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddSearchParam')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Search Manager Parameter',
+              fields: [
+                { name: 'paramKey', label: 'Parameter Key (UPPER_CASE)', type: 'text', placeholder: 'e.g. EXACT_MATCH_BONUS', required: true },
+                { name: 'paramTitle', label: 'Parameter Title', type: 'text', placeholder: 'e.g. Exact Keyword Match Weight', required: true },
+                { name: 'value', label: 'Value / Factor', type: 'text', placeholder: 'e.g. 4.0x or Enabled', required: true },
+                { name: 'context', label: 'Operational Context', type: 'text', placeholder: 'e.g. Prioritizes verbatim query strings', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'SRM-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  paramKey: data.paramKey.trim().toUpperCase(),
+                  paramTitle: data.paramTitle.trim(),
+                  value: data.value.trim(),
+                  context: data.context.trim(),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.searchRules = items;
+                config.items = items;
+                store.saveInternalSearchManagerConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.searchRules = items;
+              config.items = items;
+              store.saveInternalSearchManagerConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Parameter: ' + item.paramKey,
+                fields: [
+                  { name: 'paramKey', label: 'Parameter Key (UPPER_CASE)', type: 'text', defaultValue: item.paramKey, required: true },
+                  { name: 'paramTitle', label: 'Parameter Title', type: 'text', defaultValue: item.paramTitle, required: true },
+                  { name: 'value', label: 'Value / Factor', type: 'text', defaultValue: item.value, required: true },
+                  { name: 'context', label: 'Operational Context', type: 'text', defaultValue: item.context, required: true }
+                ],
+                onSave: (data) => {
+                  item.paramKey = data.paramKey.trim().toUpperCase();
+                  item.paramTitle = data.paramTitle.trim();
+                  item.value = data.value.trim();
+                  item.context = data.context.trim();
+                  config.searchRules = items;
+                  config.items = items;
+                  store.saveInternalSearchManagerConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete search parameter ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.searchRules = items;
+                config.items = items;
+                store.saveInternalSearchManagerConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-009', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-009</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-010: Search Index
+     */
+    function renderSearchIndexWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSearchIndexConfig();
+        let items = Array.isArray(config.indices || config.items) ? [...(config.indices || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.indexNamespace || '').toLowerCase().includes(term) ||
+                   (a.collectionName || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalNamespaces = items.length;
+          const totalDocs = items.reduce((acc, curr) => acc + (Number(curr.docCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">INDEX TELEMETRY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-010</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Search Index &amp; Document Inverted Index</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time document index collections, memory footprints, query latency stats, and full platform reindex triggers</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOTriggerReindex" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Full Reindex
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Indexed Documents</div>
+                  <div class="text-2xl font-bold text-white mt-1">${config.summary?.totalIndexedDocuments || totalDocs}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Across ${totalNamespaces} distinct collections</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Index Memory Footprint</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary?.indexSizeBytes || '412 KB'}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Inverted index compressed size</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Average Latency</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${config.summary?.averageQueryLatencyMs || '12ms'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Sub-20ms instant auto-complete</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Last Full Reindex</div>
+                  <div class="text-xs font-mono text-indigo-300 mt-2 truncate">${config.summary?.lastFullReindex || '2026-11-10 06:30'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Automated cluster synchronization</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSearchIndexSearch" placeholder="Search by namespace, collection name, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Namespace &amp; ID</th>
+                      <th class="px-4 py-3">Collection Name</th>
+                      <th class="px-4 py-3">Doc Count</th>
+                      <th class="px-4 py-3">RAM Footprint</th>
+                      <th class="px-4 py-3">Reindex Trigger</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No search index collections match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-emerald-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-mono text-white text-[11px] mt-0.5">${item.indexNamespace}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200 font-medium">
+                          ${item.collectionName}
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${(Number(item.docCount) || 0).toLocaleString('en-IN')} docs
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 font-mono text-[11px]">
+                          ${item.memoryFootprint}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.reindexTrigger}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Healthy' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }">${item.status}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="rebuild" data-id="${item.id}" title="Rebuild Index Namespace" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Collection" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Namespace" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSearchIndexSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSearchIndexSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Search Index Schema', {
+              id: 'string (unique ID, e.g. IDX-01)',
+              indexNamespace: 'string (e.g. jobs-careers)',
+              collectionName: 'string (e.g. Recruitment Circulars & Gazettes)',
+              docCount: 'number (total indexed documents)',
+              memoryFootprint: 'string (e.g. 148 KB)',
+              reindexTrigger: 'string (Automated on Publish, Hourly Cron)',
+              status: 'string (Healthy, Syncing, Stale)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSearchIndexManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset search index collections to factory defaults?')) {
+              store.resetSearchIndexConfig();
+              config = store.getSearchIndexConfig();
+              items = [...(config.indices || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOTriggerReindex')?.addEventListener('click', () => {
+            if (confirm('Trigger full cluster search reindex now?')) {
+              config.summary.lastFullReindex = new Date().toISOString().slice(0, 16).replace('T', ' ');
+              store.saveSearchIndexConfig(config);
+              alert('Full platform search reindex initiated successfully.');
+              render();
+            }
+          });
+
+          container.querySelectorAll('button[data-action="rebuild"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              alert(`Rebuilt search index namespace: ${item.indexNamespace}`);
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Collection: ' + item.collectionName,
+                fields: [
+                  { name: 'indexNamespace', label: 'Namespace', type: 'text', defaultValue: item.indexNamespace, required: true },
+                  { name: 'collectionName', label: 'Collection Name', type: 'text', defaultValue: item.collectionName, required: true },
+                  { name: 'docCount', label: 'Document Count', type: 'number', defaultValue: item.docCount, required: true },
+                  { name: 'memoryFootprint', label: 'Memory Footprint', type: 'text', defaultValue: item.memoryFootprint, required: true },
+                  { name: 'reindexTrigger', label: 'Reindex Trigger Policy', type: 'text', defaultValue: item.reindexTrigger, required: true },
+                  { name: 'status', label: 'Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Healthy', label: 'Healthy' },
+                    { value: 'Syncing', label: 'Syncing' },
+                    { value: 'Stale', label: 'Stale' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.indexNamespace = data.indexNamespace.trim();
+                  item.collectionName = data.collectionName.trim();
+                  item.docCount = Number(data.docCount) || 0;
+                  item.memoryFootprint = data.memoryFootprint.trim();
+                  item.reindexTrigger = data.reindexTrigger.trim();
+                  item.status = data.status;
+                  config.indices = items;
+                  config.items = items;
+                  store.saveSearchIndexConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete search index namespace ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.indices = items;
+                config.items = items;
+                store.saveSearchIndexConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-010', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-010</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-011: Search Filters
+     */
+    function renderSearchFiltersWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getSearchFiltersConfig();
+        let items = Array.isArray(config.filters || config.items) ? [...(config.filters || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.filterLabel || '').toLowerCase().includes(term) ||
+                   (a.filterKey || '').toLowerCase().includes(term) ||
+                   (a.uiComponentType || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalFilters = items.length;
+          const activeFilters = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20">FACETS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-011</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Search Facets &amp; Filter Directives</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">District multi-selects, recruiting commissions, minimum qualifications, and salary range sliders</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddFilter" class="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white shadow-lg shadow-teal-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Facet
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Facets</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalFilters}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeFilters} rendered on live search UI</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-teal-400 uppercase tracking-wider">UI Component Formats</div>
+                  <div class="text-2xl font-bold text-teal-300 mt-1">${new Set(items.map(i => i.uiComponentType)).size}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Dropdowns, pills, sliders, checkboxes</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">Total Facet Options</div>
+                  <div class="text-2xl font-bold text-cyan-400 mt-1">${items.reduce((acc, curr) => acc + (Number(curr.optionsCount) || 0), 0)}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Across 30 districts and exams</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoSearchFiltersSearch" placeholder="Search by filter label, parameter key, or UI component..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Facet ID &amp; Label</th>
+                      <th class="px-4 py-3">Query Key (GET param)</th>
+                      <th class="px-4 py-3">UI Component Type</th>
+                      <th class="px-4 py-3">Options Count</th>
+                      <th class="px-4 py-3">Display Order</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No search filters match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-teal-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.filterLabel}</div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-sky-400">
+                          ?${item.filterKey}=*
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.uiComponentType}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${item.optionsCount} Options
+                        </td>
+                        <td class="px-4 py-3 font-mono text-[11px] text-slate-400">
+                          #${item.displayOrder}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Filter" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Filter" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-teal-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Filter" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoSearchFiltersSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoSearchFiltersSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Search Filters Schema', {
+              id: 'string (unique ID, e.g. FLT-01)',
+              filterLabel: 'string (e.g. District Jurisdiction)',
+              filterKey: 'string (query param key, e.g. district)',
+              uiComponentType: 'string (Multi-Select Dropdown, Pill Tags, Range Slider, Checkbox List)',
+              optionsCount: 'number (total available choices)',
+              displayOrder: 'number (order on sidebar UI)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportSearchFiltersManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset search filters to factory defaults?')) {
+              store.resetSearchFiltersConfig();
+              config = store.getSearchFiltersConfig();
+              items = [...(config.filters || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddFilter')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Create Search Facet Filter',
+              fields: [
+                { name: 'filterLabel', label: 'Filter Label / Heading', type: 'text', placeholder: 'e.g. Exam Mode (Online/Offline)', required: true },
+                { name: 'filterKey', label: 'Query Key (GET param)', type: 'text', placeholder: 'e.g. exam_mode', required: true },
+                { name: 'uiComponentType', label: 'UI Component Type', type: 'select', options: [
+                  { value: 'Multi-Select Dropdown', label: 'Multi-Select Dropdown' },
+                  { value: 'Pill Tags', label: 'Pill Tags' },
+                  { value: 'Radio Group', label: 'Radio Group' },
+                  { value: 'Range Slider', label: 'Range Slider' },
+                  { value: 'Checkbox List', label: 'Checkbox List' }
+                ], required: true },
+                { name: 'optionsCount', label: 'Number of Options', type: 'number', placeholder: '3', required: true },
+                { name: 'displayOrder', label: 'Display Order Priority', type: 'number', placeholder: '6', required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'FLT-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  filterLabel: data.filterLabel.trim(),
+                  filterKey: data.filterKey.trim().toLowerCase(),
+                  uiComponentType: data.uiComponentType,
+                  optionsCount: Number(data.optionsCount) || 0,
+                  displayOrder: Number(data.displayOrder) || items.length + 1,
+                  active: true
+                };
+                items.push(newItem);
+                items.sort((a, b) => a.displayOrder - b.displayOrder);
+                config.filters = items;
+                config.items = items;
+                store.saveSearchFiltersConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.filters = items;
+              config.items = items;
+              store.saveSearchFiltersConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Facet: ' + item.filterLabel,
+                fields: [
+                  { name: 'filterLabel', label: 'Filter Label / Heading', type: 'text', defaultValue: item.filterLabel, required: true },
+                  { name: 'filterKey', label: 'Query Key (GET param)', type: 'text', defaultValue: item.filterKey, required: true },
+                  { name: 'uiComponentType', label: 'UI Component Type', type: 'select', defaultValue: item.uiComponentType, options: [
+                    { value: 'Multi-Select Dropdown', label: 'Multi-Select Dropdown' },
+                    { value: 'Pill Tags', label: 'Pill Tags' },
+                    { value: 'Radio Group', label: 'Radio Group' },
+                    { value: 'Range Slider', label: 'Range Slider' },
+                    { value: 'Checkbox List', label: 'Checkbox List' }
+                  ], required: true },
+                  { name: 'optionsCount', label: 'Number of Options', type: 'number', defaultValue: item.optionsCount, required: true },
+                  { name: 'displayOrder', label: 'Display Order Priority', type: 'number', defaultValue: item.displayOrder, required: true }
+                ],
+                onSave: (data) => {
+                  item.filterLabel = data.filterLabel.trim();
+                  item.filterKey = data.filterKey.trim().toLowerCase();
+                  item.uiComponentType = data.uiComponentType;
+                  item.optionsCount = Number(data.optionsCount) || 0;
+                  item.displayOrder = Number(data.displayOrder) || item.displayOrder;
+                  items.sort((a, b) => a.displayOrder - b.displayOrder);
+                  config.filters = items;
+                  config.items = items;
+                  store.saveSearchFiltersConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete search filter facet ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.filters = items;
+                config.items = items;
+                store.saveSearchFiltersConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-011', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-011</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-012: Popular Searches
+     */
+    function renderPopularSearchesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getPopularSearchesConfig();
+        let items = Array.isArray(config.queries || config.items) ? [...(config.queries || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.searchQuery || '').toLowerCase().includes(term) ||
+                   (a.category || '').toLowerCase().includes(term) ||
+                   (a.trendChange || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalQueries = items.length;
+          const totalVolume = items.reduce((acc, curr) => acc + (Number(curr.searchVolume7d) || 0), 0);
+          const pinnedCount = items.filter(i => i.isPinned).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">SEARCH TRENDS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-012</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Popular &amp; Trending Searches</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">7-day search volume telemetry, pinned search suggestions, category affinity, and trend velocity</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddPopularQuery" class="px-3.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-xs font-semibold text-white shadow-lg shadow-orange-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Query
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Tracked Trending Queries</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalQueries}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${pinnedCount} pinned to search dropdown</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-orange-400 uppercase tracking-wider">7-Day Search Volume</div>
+                  <div class="text-2xl font-bold text-orange-400 mt-1">${totalVolume.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">High-intent aspirant searches</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Top Trending Surge</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">+64%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Odisha GK 30 Districts Capsule</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoPopularSearchesSearch" placeholder="Search by query string, category, or trend..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Query ID &amp; Search String</th>
+                      <th class="px-4 py-3">Affinity Category</th>
+                      <th class="px-4 py-3">7-Day Search Volume</th>
+                      <th class="px-4 py-3">Trend Velocity</th>
+                      <th class="px-4 py-3">Pinned In Modal</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No popular search queries match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-orange-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">${item.searchQuery}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-200">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.category}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-emerald-400">
+                          ${(Number(item.searchVolume7d) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="font-mono text-emerald-400 font-bold">${item.trendChange}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.isPinned ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-800 text-slate-400'
+                          }">${item.isPinned ? 'Pinned' : 'Organic'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Archived'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-pin" data-id="${item.id}" title="Toggle Pin" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Query" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-orange-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Query" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoPopularSearchesSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoPopularSearchesSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Popular Searches Schema', {
+              id: 'string (unique ID, e.g. POP-01)',
+              searchQuery: 'string (e.g. OPSC OAS 2026 Notification)',
+              category: 'string (e.g. Jobs & Careers)',
+              searchVolume7d: 'number (7-day search count)',
+              trendChange: 'string (percentage growth, e.g. +42%)',
+              isPinned: 'boolean (pinned to modal dropdown)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportPopularSearchesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset popular search queries to factory defaults?')) {
+              store.resetPopularSearchesConfig();
+              config = store.getPopularSearchesConfig();
+              items = [...(config.queries || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddPopularQuery')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add Popular Search Suggestion',
+              fields: [
+                { name: 'searchQuery', label: 'Search Query String', type: 'text', placeholder: 'e.g. BSKY Smart Health Card Renewal', required: true },
+                { name: 'category', label: 'Category', type: 'select', options: [
+                  { value: 'Jobs & Careers', label: 'Jobs & Careers' },
+                  { value: 'Schemes & Benefits', label: 'Schemes & Benefits' },
+                  { value: 'Study Library', label: 'Study Library' },
+                  { value: 'Community Forum', label: 'Community Forum' }
+                ], required: true },
+                { name: 'searchVolume7d', label: '7-Day Search Volume', type: 'number', placeholder: '15000', required: true },
+                { name: 'trendChange', label: 'Trend Velocity (+/- %)', type: 'text', placeholder: '+35%', required: true },
+                { name: 'isPinned', label: 'Pinned in Quick Search Modal', type: 'select', options: [
+                  { value: 'true', label: 'Yes (Pinned to top suggestions)' },
+                  { value: 'false', label: 'No (Organic rank only)' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'POP-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  searchQuery: data.searchQuery.trim(),
+                  category: data.category,
+                  searchVolume7d: Number(data.searchVolume7d) || 0,
+                  trendChange: data.trendChange.trim(),
+                  isPinned: data.isPinned === 'true',
+                  active: true
+                };
+                items.unshift(newItem);
+                config.queries = items;
+                config.items = items;
+                store.savePopularSearchesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-pin"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.isPinned = !item.isPinned;
+              config.queries = items;
+              config.items = items;
+              store.savePopularSearchesConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Query: ' + item.searchQuery,
+                fields: [
+                  { name: 'searchQuery', label: 'Search Query String', type: 'text', defaultValue: item.searchQuery, required: true },
+                  { name: 'category', label: 'Category', type: 'select', defaultValue: item.category, options: [
+                    { value: 'Jobs & Careers', label: 'Jobs & Careers' },
+                    { value: 'Schemes & Benefits', label: 'Schemes & Benefits' },
+                    { value: 'Study Library', label: 'Study Library' },
+                    { value: 'Community Forum', label: 'Community Forum' }
+                  ], required: true },
+                  { name: 'searchVolume7d', label: '7-Day Search Volume', type: 'number', defaultValue: item.searchVolume7d, required: true },
+                  { name: 'trendChange', label: 'Trend Velocity (+/- %)', type: 'text', defaultValue: item.trendChange, required: true },
+                  { name: 'isPinned', label: 'Pinned in Quick Search Modal', type: 'select', defaultValue: item.isPinned ? 'true' : 'false', options: [
+                    { value: 'true', label: 'Yes (Pinned to top suggestions)' },
+                    { value: 'false', label: 'No (Organic rank only)' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.searchQuery = data.searchQuery.trim();
+                  item.category = data.category;
+                  item.searchVolume7d = Number(data.searchVolume7d) || 0;
+                  item.trendChange = data.trendChange.trim();
+                  item.isPinned = data.isPinned === 'true';
+                  config.queries = items;
+                  config.items = items;
+                  store.savePopularSearchesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete popular search query ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.queries = items;
+                config.items = items;
+                store.savePopularSearchesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-012', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-012</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-013: Zero-Result Searches
+     */
+    function renderZeroResultSearchesWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getZeroResultSearchesConfig();
+        let items = Array.isArray(config.misses || config.items) ? [...(config.misses || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.failedQuery || '').toLowerCase().includes(term) ||
+                   (a.mappedSynonym || '').toLowerCase().includes(term) ||
+                   (a.resolvedStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalMisses = items.length;
+          const mappedCount = items.filter(i => i.resolvedStatus.includes('Mapped')).length;
+          const pendingCount = items.filter(i => !i.resolvedStatus.includes('Mapped')).length;
+          const totalAttempts = items.reduce((acc, curr) => acc + (Number(curr.attemptedCount) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">SEARCH GAPS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-013</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Zero-Result Searches &amp; Gap Remediation</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track queries returning 0 hits, map search synonyms, trigger content creation tickets, and bridge user vocabulary</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddZeroResult" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Log Query Miss
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Unresolved Queries</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalMisses}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Gaps in catalog search tags</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Failed Attempts</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${totalAttempts.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Cumulative student search misses</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Mapped To Synonyms</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${mappedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Vocabulary bridge established</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Pending Editorial Action</div>
+                  <div class="text-2xl font-bold text-amber-400 mt-1">${pendingCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Requires content ticket or redirect</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoZeroResultSearch" placeholder="Search by failed query, mapped synonym, or resolution status..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Miss ID &amp; Query</th>
+                      <th class="px-4 py-3">Attempt Count</th>
+                      <th class="px-4 py-3">Mapped Target / Synonym</th>
+                      <th class="px-4 py-3">Resolution Status</th>
+                      <th class="px-4 py-3">Logged Date</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No zero-result search misses match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-rose-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-medium text-white mt-0.5">"${item.failedQuery}"</div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-rose-400 font-mono">
+                          ${(Number(item.attemptedCount) || 0).toLocaleString('en-IN')} attempts
+                        </td>
+                        <td class="px-4 py-3 text-slate-200">
+                          <span class="font-mono text-emerald-400 font-medium">${item.mappedSynonym}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.resolvedStatus.includes('Mapped') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.resolvedStatus.includes('Ticket') ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          }">${item.resolvedStatus}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.loggedDate}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="map-synonym" data-id="${item.id}" title="Map to Synonym" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Miss Log" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Log" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoZeroResultSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoZeroResultSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Zero-Result Searches Schema', {
+              id: 'string (unique ID, e.g. ZRO-01)',
+              failedQuery: 'string (exact query string queried by user)',
+              attemptedCount: 'number (total occurrences)',
+              mappedSynonym: 'string (synonym redirect or unresolved label)',
+              resolvedStatus: 'string (Mapped to Synonym, Content Ticket Filed, Needs Investigation)',
+              loggedDate: 'string (YYYY-MM-DD)',
+              active: 'boolean (active tracking status)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportZeroResultSearchesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset zero-result search gaps to factory defaults?')) {
+              store.resetZeroResultSearchesConfig();
+              config = store.getZeroResultSearchesConfig();
+              items = [...(config.misses || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddZeroResult')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Log Zero-Result Query Gap',
+              fields: [
+                { name: 'failedQuery', label: 'Failed Query String', type: 'text', placeholder: 'e.g. OSSC Statistical Field Surveyor Admit Card', required: true },
+                { name: 'attemptedCount', label: 'Attempted Count', type: 'number', placeholder: '50', required: true },
+                { name: 'mappedSynonym', label: 'Mapped Target / Synonym', type: 'text', placeholder: 'e.g. SFS Exam Admit Card', required: true },
+                { name: 'resolvedStatus', label: 'Resolution Status', type: 'select', options: [
+                  { value: 'Mapped to Synonym', label: 'Mapped to Synonym' },
+                  { value: 'Content Ticket Filed', label: 'Content Ticket Filed' },
+                  { value: 'Needs Investigation', label: 'Needs Investigation' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'ZRO-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  failedQuery: data.failedQuery.trim(),
+                  attemptedCount: Number(data.attemptedCount) || 1,
+                  mappedSynonym: data.mappedSynonym.trim(),
+                  resolvedStatus: data.resolvedStatus,
+                  loggedDate: new Date().toISOString().slice(0, 10),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.misses = items;
+                config.items = items;
+                store.saveZeroResultSearchesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="map-synonym"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const target = prompt(`Enter canonical search synonym for "${item.failedQuery}":`, item.mappedSynonym);
+              if (target && target.trim()) {
+                item.mappedSynonym = target.trim();
+                item.resolvedStatus = 'Mapped to Synonym';
+                config.misses = items;
+                config.items = items;
+                store.saveZeroResultSearchesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Gap Record: ' + item.failedQuery,
+                fields: [
+                  { name: 'failedQuery', label: 'Failed Query String', type: 'text', defaultValue: item.failedQuery, required: true },
+                  { name: 'attemptedCount', label: 'Attempted Count', type: 'number', defaultValue: item.attemptedCount, required: true },
+                  { name: 'mappedSynonym', label: 'Mapped Target / Synonym', type: 'text', defaultValue: item.mappedSynonym, required: true },
+                  { name: 'resolvedStatus', label: 'Resolution Status', type: 'select', defaultValue: item.resolvedStatus, options: [
+                    { value: 'Mapped to Synonym', label: 'Mapped to Synonym' },
+                    { value: 'Content Ticket Filed', label: 'Content Ticket Filed' },
+                    { value: 'Needs Investigation', label: 'Needs Investigation' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.failedQuery = data.failedQuery.trim();
+                  item.attemptedCount = Number(data.attemptedCount) || 0;
+                  item.mappedSynonym = data.mappedSynonym.trim();
+                  item.resolvedStatus = data.resolvedStatus;
+                  config.misses = items;
+                  config.items = items;
+                  store.saveZeroResultSearchesConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete zero-result search log ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.misses = items;
+                config.items = items;
+                store.saveZeroResultSearchesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-013', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * =========================================================================
+     * FOLDER 13: SEO, SEARCH & DISCOVERY (BATCH 4: MODULES 13-014 TO 13-016)
+     * =========================================================================
+     */
+
+    /**
+     * MODULE 13-014: URL Redirects
+     */
+    function renderUrlRedirectsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getUrlRedirectsConfig();
+        let items = Array.isArray(config.redirects || config.items) ? [...(config.redirects || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.sourcePath || '').toLowerCase().includes(term) ||
+                   (a.targetUrl || '').toLowerCase().includes(term) ||
+                   (a.redirectType || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalRedirects = items.length;
+          const totalHits = items.reduce((acc, curr) => acc + (Number(curr.totalHits) || 0), 0);
+          const activeCount = items.filter(i => i.active).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">REDIRECT ROUTER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-014</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">URL Redirects &amp; Status Code Mappings</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage 301 Permanent, 302 Temporary, wildcard redirects, and Cloudflare Edge rule triggers</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddRedirect" class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-lg shadow-sky-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Redirect
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Configured Redirects</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalRedirects}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">${activeCount} actively enforced at edge</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Total Redirect Hits</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${totalHits.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Redirected legacy aspirant traffic</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Edge Dispatch Mode</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.settings?.enableAutoCloudflareRedirects ? 'Cloudflare CDN' : 'Local'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Preserve query strings: ${config.settings?.preserveQueryStrings ? 'Yes' : 'No'}</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoUrlRedirectSearch" placeholder="Search by source path, target URL, type, or ID..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">ID &amp; Source Path</th>
+                      <th class="px-4 py-3">Destination Target URL</th>
+                      <th class="px-4 py-3">HTTP Code</th>
+                      <th class="px-4 py-3">Type</th>
+                      <th class="px-4 py-3">Hit Count</th>
+                      <th class="px-4 py-3">Last Hit</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No URL redirects match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-sky-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-mono text-white text-[11px] mt-0.5">${item.sourcePath}</div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-emerald-400 text-[11px]">
+                          ${item.targetUrl}
+                        </td>
+                        <td class="px-4 py-3 font-mono font-bold text-amber-300">
+                          ${item.httpStatus}
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">${item.redirectType}</span>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-sky-400">
+                          ${(Number(item.totalHits) || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.lastHitDate}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-700 text-slate-400'
+                          }">${item.active ? 'Active' : 'Disabled'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="toggle-active" data-id="${item.id}" title="Toggle Redirect" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Redirect" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Delete Redirect" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoUrlRedirectSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoUrlRedirectSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('URL Redirects Schema', {
+              id: 'string (unique ID, e.g. RDR-01)',
+              sourcePath: 'string (incoming URL path, e.g. /jobs/opsc-oas-2025)',
+              targetUrl: 'string (destination target path or URL)',
+              httpStatus: 'number (301, 302, 307, 308)',
+              redirectType: 'string (Permanent (301), Temporary (302), Wildcard Pattern (301))',
+              totalHits: 'number (cumulative redirect hits)',
+              lastHitDate: 'string (YYYY-MM-DD)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportUrlRedirectsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset URL redirects to factory defaults?')) {
+              store.resetUrlRedirectsConfig();
+              config = store.getUrlRedirectsConfig();
+              items = [...(config.redirects || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddRedirect')?.addEventListener('click', () => {
+            openModuleCreateModal({
+              title: 'Add URL Redirect Rule',
+              fields: [
+                { name: 'sourcePath', label: 'Source Path', type: 'text', placeholder: 'e.g. /old-notice/oas', required: true },
+                { name: 'targetUrl', label: 'Target Destination URL', type: 'text', placeholder: 'e.g. /jobs-careers/?filter=oas', required: true },
+                { name: 'httpStatus', label: 'HTTP Status Code', type: 'select', options: [
+                  { value: '301', label: '301 - Permanent Redirect (SEO Equity)' },
+                  { value: '302', label: '302 - Temporary Redirect' },
+                  { value: '307', label: '307 - Temporary (Preserve Method)' },
+                  { value: '308', label: '308 - Permanent (Preserve Method)' }
+                ], required: true },
+                { name: 'redirectType', label: 'Redirect Classification', type: 'select', options: [
+                  { value: 'Permanent (301)', label: 'Permanent (301)' },
+                  { value: 'Temporary (302)', label: 'Temporary (302)' },
+                  { value: 'Wildcard Pattern (301)', label: 'Wildcard Pattern (301)' }
+                ], required: true }
+              ],
+              onSave: (data) => {
+                const nextId = 'RDR-' + String(items.length + 1).padStart(2, '0');
+                const newItem = {
+                  id: nextId,
+                  sourcePath: data.sourcePath.trim(),
+                  targetUrl: data.targetUrl.trim(),
+                  httpStatus: Number(data.httpStatus) || 301,
+                  redirectType: data.redirectType,
+                  totalHits: 0,
+                  lastHitDate: new Date().toISOString().slice(0, 10),
+                  active: true
+                };
+                items.unshift(newItem);
+                config.redirects = items;
+                config.items = items;
+                store.saveUrlRedirectsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.active = !item.active;
+              config.redirects = items;
+              config.items = items;
+              store.saveUrlRedirectsConfig(config);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Edit Redirect: ' + item.sourcePath,
+                fields: [
+                  { name: 'sourcePath', label: 'Source Path', type: 'text', defaultValue: item.sourcePath, required: true },
+                  { name: 'targetUrl', label: 'Target Destination URL', type: 'text', defaultValue: item.targetUrl, required: true },
+                  { name: 'httpStatus', label: 'HTTP Status Code', type: 'select', defaultValue: String(item.httpStatus), options: [
+                    { value: '301', label: '301 - Permanent Redirect (SEO Equity)' },
+                    { value: '302', label: '302 - Temporary Redirect' },
+                    { value: '307', label: '307 - Temporary (Preserve Method)' },
+                    { value: '308', label: '308 - Permanent (Preserve Method)' }
+                  ], required: true },
+                  { name: 'redirectType', label: 'Redirect Classification', type: 'select', defaultValue: item.redirectType, options: [
+                    { value: 'Permanent (301)', label: 'Permanent (301)' },
+                    { value: 'Temporary (302)', label: 'Temporary (302)' },
+                    { value: 'Wildcard Pattern (301)', label: 'Wildcard Pattern (301)' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.sourcePath = data.sourcePath.trim();
+                  item.targetUrl = data.targetUrl.trim();
+                  item.httpStatus = Number(data.httpStatus) || 301;
+                  item.redirectType = data.redirectType;
+                  config.redirects = items;
+                  config.items = items;
+                  store.saveUrlRedirectsConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete URL redirect ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.redirects = items;
+                config.items = items;
+                store.saveUrlRedirectsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-015: Broken Links
+     */
+    function renderBrokenLinksWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.getBrokenLinksConfig();
+        let items = Array.isArray(config.brokenLinks || config.items) ? [...(config.brokenLinks || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.brokenUrl || '').toLowerCase().includes(term) ||
+                   (a.sourcePage || '').toLowerCase().includes(term) ||
+                   (a.anchorText || '').toLowerCase().includes(term) ||
+                   (a.errorType || '').toLowerCase().includes(term) ||
+                   (a.status || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const totalScanned = config.summary?.totalLinksScanned || 563;
+          const totalBroken = items.length;
+          const unresolvedCount = items.filter(i => i.status === 'Unresolved').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">LINK INTEGRITY</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-015</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Broken Links &amp; Crawl Health Monitor</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Automated 404 dead link detection, external authority PDF verifications, and remediation routing</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOTriggerLinkAudit" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Run Link Audit
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Scanned Links</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalScanned}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Site-wide hyperlinks verified</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Broken Dead Links</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${totalBroken}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">${unresolvedCount} unresolved errors</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Link Health Ratio</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${totalScanned > 0 ? (((totalScanned - totalBroken) / totalScanned) * 100).toFixed(1) : 100}%</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Optimal search equity</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Last Audit Completed</div>
+                  <div class="text-xs font-mono text-indigo-300 mt-2 truncate">${config.summary?.lastFullAuditDate || '2026-11-10 07:15'}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Automated crawler cron</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoBrokenLinksSearch" placeholder="Search by broken URL, source page, anchor text, or status..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">ID &amp; Broken URL</th>
+                      <th class="px-4 py-3">Source Route Page</th>
+                      <th class="px-4 py-3">Anchor Text</th>
+                      <th class="px-4 py-3">HTTP Code &amp; Type</th>
+                      <th class="px-4 py-3">Detected</th>
+                      <th class="px-4 py-3">Remediation Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">No broken links detected! Perfect link integrity.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-rose-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-mono text-rose-300 text-[11px] mt-0.5 truncate max-w-xs">${item.brokenUrl}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 font-mono text-[11px]">
+                          ${item.sourcePage}
+                        </td>
+                        <td class="px-4 py-3 text-white font-medium">
+                          "${item.anchorText}"
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="font-mono font-bold text-rose-400">${item.httpStatusCode}</span>
+                          <span class="text-[10px] text-slate-400 block">${item.errorType}</span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.detectedDate}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            item.status === 'Redirect Scheduled' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' :
+                            'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          }">${item.status}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="quick-fix" data-id="${item.id}" title="Schedule Redirect" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            </button>
+                            <button data-action="edit" data-id="${item.id}" title="Edit Status" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Dismiss" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#csoBrokenLinksSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#csoBrokenLinksSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Broken Links Schema', {
+              id: 'string (unique ID, e.g. BRL-01)',
+              brokenUrl: 'string (dead target destination URL)',
+              sourcePage: 'string (route path where link is rendered)',
+              anchorText: 'string (hyperlink clickable text)',
+              httpStatusCode: 'number (404, 503, etc.)',
+              errorType: 'string (External Dead Link, Internal Missing Page)',
+              detectedDate: 'string (YYYY-MM-DD)',
+              status: 'string (Unresolved, Redirect Scheduled, Monitoring, Resolved)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportBrokenLinksManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset broken links audit to factory defaults?')) {
+              store.resetBrokenLinksConfig();
+              config = store.getBrokenLinksConfig();
+              items = [...(config.brokenLinks || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOTriggerLinkAudit')?.addEventListener('click', () => {
+            config.summary.lastFullAuditDate = new Date().toISOString().slice(0, 16).replace('T', ' ');
+            store.saveBrokenLinksConfig(config);
+            alert('Site-wide crawl audit triggered. All 563 links verified against master router.');
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="quick-fix"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              item.status = 'Redirect Scheduled';
+              config.brokenLinks = items;
+              config.items = items;
+              store.saveBrokenLinksConfig(config);
+              alert(`Scheduled permanent 301 redirect for ${item.brokenUrl}`);
+              render();
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              openModuleCreateModal({
+                title: 'Update Broken Link Status: ' + item.id,
+                fields: [
+                  { name: 'status', label: 'Remediation Status', type: 'select', defaultValue: item.status, options: [
+                    { value: 'Unresolved', label: 'Unresolved' },
+                    { value: 'Redirect Scheduled', label: 'Redirect Scheduled' },
+                    { value: 'Monitoring', label: 'Monitoring' },
+                    { value: 'Resolved', label: 'Resolved' }
+                  ], required: true }
+                ],
+                onSave: (data) => {
+                  item.status = data.status;
+                  config.brokenLinks = items;
+                  config.items = items;
+                  store.saveBrokenLinksConfig(config);
+                  render();
+                }
+              });
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Dismiss broken link incident ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.brokenLinks = items;
+                config.items = items;
+                store.saveBrokenLinksConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-015', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-015</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    /**
+     * MODULE 13-016: 404 Reports
+     */
+    function render404ReportsWorkspace(container) {
+      const store = window.CSOSuperStore || (typeof CSOSuperStore !== 'undefined' ? CSOSuperStore : null);
+      if (!store) { container.innerHTML = '<div class="p-6 text-red-400">CSOSuperStore unavailable.</div>'; return; }
+      try {
+        let config = store.get404ReportsConfig();
+        let items = Array.isArray(config.incidents || config.items) ? [...(config.incidents || config.items)] : [];
+        let searchTerm = '';
+
+        function render() {
+          const filtered = items.filter(a => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (a.missingPath || '').toLowerCase().includes(term) ||
+                   (a.referrer || '').toLowerCase().includes(term) ||
+                   (a.userAgentCategory || '').toLowerCase().includes(term) ||
+                   (a.resolutionStatus || '').toLowerCase().includes(term) ||
+                   (a.id || '').toLowerCase().includes(term);
+          });
+
+          const total404s = items.reduce((acc, curr) => acc + (Number(curr.requestHits) || 0), 0);
+          const unresolvedMissing = items.filter(i => i.resolutionStatus === 'Unresolved').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20">INCIDENT LOG</span>
+                    <span class="text-xs text-slate-400 font-mono">module-13-016</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">404 Incident Reports &amp; Traffic Forensics</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time candidate 404 access logs, referrer attribution, missing path aggregation, and quick redirect setup</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Missing Route Hits</div>
+                  <div class="text-2xl font-bold text-rose-400 mt-1">${total404s.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Aggregated candidate 404 requests</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Unresolved Missing Paths</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${unresolvedMissing}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Need redirect rules created</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Resolved via Redirect</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${config.summary?.resolvedViaRedirect || 33}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Rescued candidate visits</div>
+                </div>
+              </div>
+
+              <!-- Search Toolbar -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="cso404ReportsSearch" placeholder="Search by missing path, referrer, or resolution status..." value="${searchTerm}" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 self-center">
+                  <span>Showing <strong class="text-white">${filtered.length}</strong> of ${items.length}</span>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="px-4 py-3">Incident ID &amp; Missing Path</th>
+                      <th class="px-4 py-3">Request Hits</th>
+                      <th class="px-4 py-3">Inbound Referrer</th>
+                      <th class="px-4 py-3">User Agent</th>
+                      <th class="px-4 py-3">First Seen</th>
+                      <th class="px-4 py-3">Last Seen</th>
+                      <th class="px-4 py-3">Resolution Status</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">No 404 incident reports match the search query.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="font-mono text-rose-400 font-semibold text-[11px]">${item.id}</div>
+                          <div class="font-mono text-white text-[11px] mt-0.5">${item.missingPath}</div>
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-rose-400 font-mono">
+                          ${item.requestHits} hits
+                        </td>
+                        <td class="px-4 py-3 text-slate-300">
+                          ${item.referrer}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.userAgentCategory}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.firstSeen}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                          ${item.lastSeen}
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.resolutionStatus.includes('Redirect') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          }">${item.resolutionStatus}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button data-action="create-redirect" data-id="${item.id}" title="Create Redirect Rule" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            </button>
+                            <button data-action="delete" data-id="${item.id}" title="Dismiss" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Event Listeners
+          const searchInput = container.querySelector('#cso404ReportsSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              searchTerm = e.target.value;
+              render();
+              const freshInput = container.querySelector('#cso404ReportsSearch');
+              if (freshInput) { freshInput.focus(); freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length); }
+            });
+          }
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('404 Reports Schema', {
+              id: 'string (unique ID, e.g. R404-01)',
+              missingPath: 'string (URL path requested that returned 404)',
+              requestHits: 'number (total missing hits)',
+              referrer: 'string (HTTP referer header)',
+              userAgentCategory: 'string (Mobile Android, Desktop Chrome, etc.)',
+              firstSeen: 'string (YYYY-MM-DD)',
+              lastSeen: 'string (timestamp)',
+              resolutionStatus: 'string (Unresolved / Redirected (RDR-XX))',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.export404ReportsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset 404 incident logs to factory defaults?')) {
+              store.reset404ReportsConfig();
+              config = store.get404ReportsConfig();
+              items = [...(config.incidents || config.items)];
+              render();
+            }
+          });
+
+          container.querySelectorAll('button[data-action="create-redirect"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const target = prompt(`Enter target URL destination to redirect "${item.missingPath}":`, '/jobs-careers/');
+              if (target && target.trim()) {
+                item.resolutionStatus = 'Redirected (Active)';
+                config.incidents = items;
+                config.items = items;
+                store.save404ReportsConfig(config);
+                // Also save into URL Redirects
+                const rdrConfig = store.getUrlRedirectsConfig();
+                const rdrItems = rdrConfig.redirects || rdrConfig.items || [];
+                const nextRdrId = 'RDR-' + String(rdrItems.length + 1).padStart(2, '0');
+                rdrItems.unshift({
+                  id: nextRdrId,
+                  sourcePath: item.missingPath,
+                  targetUrl: target.trim(),
+                  httpStatus: 301,
+                  redirectType: 'Permanent (301)',
+                  totalHits: item.requestHits,
+                  lastHitDate: new Date().toISOString().slice(0, 10),
+                  active: true
+                });
+                rdrConfig.redirects = rdrItems;
+                rdrConfig.items = rdrItems;
+                store.saveUrlRedirectsConfig(rdrConfig);
+                alert(`Redirect rule ${nextRdrId} created successfully for ${item.missingPath}`);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Dismiss 404 incident ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.incidents = items;
+                config.items = items;
+                store.save404ReportsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-13-016', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

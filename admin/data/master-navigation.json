@@ -952,7 +952,7 @@
         {
           "id": "module-13-003",
           "title": "Canonical URLs",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-004",
@@ -962,7 +962,7 @@
         {
           "id": "module-13-005",
           "title": "Structured Data",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-006",
@@ -972,37 +972,37 @@
         {
           "id": "module-13-007",
           "title": "Robots Settings",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-008",
           "title": "Search Console Integration",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-009",
           "title": "Internal Search Manager",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-010",
           "title": "Search Index",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-011",
           "title": "Search Filters",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-012",
           "title": "Popular Searches",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-013",
           "title": "Zero-Result Searches",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-13-014",
@@ -1017,7 +1017,7 @@
         {
           "id": "module-13-016",
           "title": "404 Reports",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },

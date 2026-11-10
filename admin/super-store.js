@@ -12924,7 +12924,23 @@
           utmManagement: this.getUtmManagementConfig ? this.getUtmManagementConfig() : null,
           socialSharing: this.getSocialSharingConfig ? this.getSocialSharingConfig() : null,
           promoLandingPages: this.getPromoLandingPagesConfig ? this.getPromoLandingPagesConfig() : null,
-          advertisingReports: this.getAdvertisingReportsConfig ? this.getAdvertisingReportsConfig() : null
+          advertisingReports: this.getAdvertisingReportsConfig ? this.getAdvertisingReportsConfig() : null,
+          seoOverview: this.getSeoOverviewConfig ? this.getSeoOverviewConfig() : null,
+          pageMetadata: this.getPageMetadataConfig ? this.getPageMetadataConfig() : null,
+          canonicalUrls: this.getCanonicalUrlsConfig ? this.getCanonicalUrlsConfig() : null,
+          openGraphPreviews: this.getOpenGraphPreviewsConfig ? this.getOpenGraphPreviewsConfig() : null,
+          structuredData: this.getStructuredDataConfig ? this.getStructuredDataConfig() : null,
+          xmlSitemap: this.getXmlSitemapConfig ? this.getXmlSitemapConfig() : null,
+          robotsSettings: this.getRobotsSettingsConfig ? this.getRobotsSettingsConfig() : null,
+          searchConsole: this.getSearchConsoleConfig ? this.getSearchConsoleConfig() : null,
+          internalSearchManager: this.getInternalSearchManagerConfig ? this.getInternalSearchManagerConfig() : null,
+          searchIndex: this.getSearchIndexConfig ? this.getSearchIndexConfig() : null,
+          searchFilters: this.getSearchFiltersConfig ? this.getSearchFiltersConfig() : null,
+          popularSearches: this.getPopularSearchesConfig ? this.getPopularSearchesConfig() : null,
+          zeroResultSearches: this.getZeroResultSearchesConfig ? this.getZeroResultSearchesConfig() : null,
+          urlRedirects: this.getUrlRedirectsConfig ? this.getUrlRedirectsConfig() : null,
+          brokenLinks: this.getBrokenLinksConfig ? this.getBrokenLinksConfig() : null,
+          reports404: this.get404ReportsConfig ? this.get404ReportsConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -13342,6 +13358,562 @@
     return filename;
   };
 
+  // --- MODULE 13-001: SEO Overview ---
+  const DEFAULT_SEO_OVERVIEW = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    healthScore: { grade: "A (94/100)", indexedPagesCount: 184, metaCoverageRate: "98.2%", canonicalIntegrity: "100%", ogImageCoverage: "96.5%" },
+    items: [
+      { id: "SEO-01", checkDomain: "Core Metadata Completeness", status: "Optimal", affectedUrlsCount: 0, severity: "Low", description: "All public HTML routes have unique titles and meta descriptions", lastAudited: "2026-11-09", active: true },
+      { id: "SEO-02", checkDomain: "Canonical Self-Reference Consistency", status: "Optimal", affectedUrlsCount: 0, severity: "Low", description: "No circular or cross-protocol canonical tags detected", lastAudited: "2026-11-09", active: true },
+      { id: "SEO-03", checkDomain: "Mobile Viewport Meta & Scaling", status: "Optimal", affectedUrlsCount: 0, severity: "Low", description: "Responsive viewport meta tags properly set with no user-scalable restrictions", lastAudited: "2026-11-08", active: true },
+      { id: "SEO-04", checkDomain: "Open Graph Social Sharing Previews", status: "Needs Review", affectedUrlsCount: 4, severity: "Medium", description: "4 deep syllabus pages lack explicit 1200x630 og:image tags (using fallback)", lastAudited: "2026-11-09", active: true }
+    ]
+  };
+  SuperStore.getSeoOverviewConfig = function() {
+    return _hydrateConfig('cso_seo_overview_config', 'audits', () => DEFAULT_SEO_OVERVIEW);
+  };
+  SuperStore.saveSeoOverviewConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.audits = cfg.items || cfg.audits || []; cfg.items = cfg.audits;
+    localStorage.setItem('cso_seo_overview_config', JSON.stringify(cfg));
+    this.logAudit('SEO_OVERVIEW_UPDATED', 'SEO', `SEO overview updated (${cfg.items.length} audit checks).`);
+    return true;
+  };
+  SuperStore.resetSeoOverviewConfig = function() {
+    localStorage.setItem('cso_seo_overview_config', JSON.stringify(DEFAULT_SEO_OVERVIEW));
+    this.logAudit('SEO_OVERVIEW_RESET', 'SEO', 'SEO overview reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SEO_OVERVIEW));
+  };
+  SuperStore.exportSeoOverviewManifest = function() {
+    const config = this.getSeoOverviewConfig();
+    const filename = "seo_overview_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SEO_OVERVIEW_EXPORTED", "DATA_EXPORT", `SEO overview manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-002: Page Metadata ---
+  const DEFAULT_PAGE_METADATA = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    items: [
+      { id: "META-01", routePath: "/", pageTitle: "Common Sense Odisha | Odisha Recruitment, Schemes & Aspirant Intelligence", metaDescription: "Verified notifications, syllabus breakdowns, free mock tests, and district study circles for OPSC, OSSC, OSSSC and Odisha state welfare schemes.", robotsRule: "index, follow", charLengthTitle: 68, charLengthDesc: 156, active: true },
+      { id: "META-02", routePath: "/jobs-careers/", pageTitle: "Jobs & Careers in Odisha | OPSC, OSSC, OSSSC Notifications 2026", metaDescription: "Latest Odisha government job vacancies, official gazette circulars, exam dates, eligibility criteria, and application links across all 30 districts.", robotsRule: "index, follow", charLengthTitle: 65, charLengthDesc: 154, active: true },
+      { id: "META-03", routePath: "/schemes-benefits/", pageTitle: "Odisha Welfare Schemes & Scholarships Directory 2026 | CS Odisha", metaDescription: "Complete guide to Odisha government welfare initiatives including KALIA, BSKY, Medhabruti scholarship, eligibility rules, and portal links.", robotsRule: "index, follow", charLengthTitle: 67, charLengthDesc: 152, active: true },
+      { id: "META-04", routePath: "/study-library/", pageTitle: "Odisha Exam Study Library | Free PYQ PDFs & Mock Tests", metaDescription: "Download previous year question papers, Odisha GK capsules, syllabus notes, and attempt statewide rank-benchmarked mock examinations.", robotsRule: "index, follow", charLengthTitle: 59, charLengthDesc: 151, active: true },
+      { id: "META-05", routePath: "/admin/", pageTitle: "Super Admin Command Control Suite | CS Odisha", metaDescription: "Administrative backend management console for Common Sense Odisha platform.", robotsRule: "noindex, nofollow", charLengthTitle: 52, charLengthDesc: 84, active: true }
+    ]
+  };
+  SuperStore.getPageMetadataConfig = function() {
+    return _hydrateConfig('cso_page_metadata_config', 'pages', () => DEFAULT_PAGE_METADATA);
+  };
+  SuperStore.savePageMetadataConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.pages = cfg.items || cfg.pages || []; cfg.items = cfg.pages;
+    localStorage.setItem('cso_page_metadata_config', JSON.stringify(cfg));
+    this.logAudit('PAGE_METADATA_UPDATED', 'SEO', `Page metadata updated (${cfg.items.length} routes).`);
+    return true;
+  };
+  SuperStore.resetPageMetadataConfig = function() {
+    localStorage.setItem('cso_page_metadata_config', JSON.stringify(DEFAULT_PAGE_METADATA));
+    this.logAudit('PAGE_METADATA_RESET', 'SEO', 'Page metadata reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_PAGE_METADATA));
+  };
+  SuperStore.exportPageMetadataManifest = function() {
+    const config = this.getPageMetadataConfig();
+    const filename = "page_metadata_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PAGE_METADATA_EXPORTED", "DATA_EXPORT", `Page metadata manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-003: Canonical URLs ---
+  const DEFAULT_CANONICAL_URLS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { enforceHttps: true, enforceTrailingSlash: true, stripTrackingParameters: true, baseProductionDomain: "https://csodisha.com" },
+    items: [
+      { id: "CAN-01", requestPattern: "https://csodisha.com/jobs-careers", canonicalTarget: "https://csodisha.com/jobs-careers/", normalizationRule: "Enforce Trailing Slash", active: true },
+      { id: "CAN-02", requestPattern: "https://csodisha.com/jobs-careers/?utm_source=*&utm_medium=*", canonicalTarget: "https://csodisha.com/jobs-careers/", normalizationRule: "Strip UTM Parameters", active: true },
+      { id: "CAN-03", requestPattern: "http://csodisha.com/*", canonicalTarget: "https://csodisha.com/*", normalizationRule: "Enforce Strict HTTPS Protocol", active: true },
+      { id: "CAN-04", requestPattern: "https://csodisha.com/schemes-benefits/index.html", canonicalTarget: "https://csodisha.com/schemes-benefits/", normalizationRule: "Strip Directory Index Fallback", active: true }
+    ]
+  };
+  SuperStore.getCanonicalUrlsConfig = function() {
+    return _hydrateConfig('cso_canonical_urls_config', 'canonicals', () => DEFAULT_CANONICAL_URLS);
+  };
+  SuperStore.saveCanonicalUrlsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.canonicals = cfg.items || cfg.canonicals || []; cfg.items = cfg.canonicals;
+    localStorage.setItem('cso_canonical_urls_config', JSON.stringify(cfg));
+    this.logAudit('CANONICAL_URLS_UPDATED', 'SEO', `Canonical URLs updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetCanonicalUrlsConfig = function() {
+    localStorage.setItem('cso_canonical_urls_config', JSON.stringify(DEFAULT_CANONICAL_URLS));
+    this.logAudit('CANONICAL_URLS_RESET', 'SEO', 'Canonical URLs reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_CANONICAL_URLS));
+  };
+  SuperStore.exportCanonicalUrlsManifest = function() {
+    const config = this.getCanonicalUrlsConfig();
+    const filename = "canonical_urls_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("CANONICAL_URLS_EXPORTED", "DATA_EXPORT", `Canonical URLs manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-004: Open Graph Previews ---
+  const DEFAULT_OPEN_GRAPH_PREVIEWS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    globalDefaults: { ogSiteName: "Common Sense Odisha", twitterSite: "@CSOdisha_Portal", defaultOgImage: "/assets/images/og-share-default.webp" },
+    items: [
+      { id: "OGP-01", targetPage: "Homepage (/)", ogTitle: "Common Sense Odisha | Odisha Exam & Scheme Intelligence", ogDescription: "Democratizing state recruitment notifications, syllabus guides, and study materials for aspirants.", ogImageUrl: "/assets/images/og-home.webp", imageDimensions: "1200x630 (Valid)", twitterCard: "summary_large_image", active: true },
+      { id: "OGP-02", targetPage: "Jobs & Careers (/jobs-careers/)", ogTitle: "Odisha Recruitment Notice Vault 2026 | CS Odisha", ogDescription: "Browse all active OPSC, OSSC, and OSSSC government vacancy circulars with verified dates.", ogImageUrl: "/assets/images/og-jobs.webp", imageDimensions: "1200x630 (Valid)", twitterCard: "summary_large_image", active: true },
+      { id: "OGP-03", targetPage: "Study Library (/study-library/)", ogTitle: "Odisha Free Exam Library & Mock Tests | CS Odisha", ogDescription: "Full previous year questions, district general knowledge capsules, and online mock exams.", ogImageUrl: "/assets/images/og-library.webp", imageDimensions: "1200x630 (Valid)", twitterCard: "summary_large_image", active: true }
+    ]
+  };
+  SuperStore.getOpenGraphPreviewsConfig = function() {
+    return _hydrateConfig('cso_opengraph_previews_config', 'ogProfiles', () => DEFAULT_OPEN_GRAPH_PREVIEWS);
+  };
+  SuperStore.saveOpenGraphPreviewsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.ogProfiles = cfg.items || cfg.ogProfiles || []; cfg.items = cfg.ogProfiles;
+    localStorage.setItem('cso_opengraph_previews_config', JSON.stringify(cfg));
+    this.logAudit('OPENGRAPH_PREVIEWS_UPDATED', 'SEO', `Open Graph previews updated (${cfg.items.length} profiles).`);
+    return true;
+  };
+  SuperStore.resetOpenGraphPreviewsConfig = function() {
+    localStorage.setItem('cso_opengraph_previews_config', JSON.stringify(DEFAULT_OPEN_GRAPH_PREVIEWS));
+    this.logAudit('OPENGRAPH_PREVIEWS_RESET', 'SEO', 'Open Graph previews reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_OPEN_GRAPH_PREVIEWS));
+  };
+  SuperStore.exportOpenGraphPreviewsManifest = function() {
+    const config = this.getOpenGraphPreviewsConfig();
+    const filename = "opengraph_previews_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("OPENGRAPH_PREVIEWS_EXPORTED", "DATA_EXPORT", `Open Graph previews manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-005: Structured Data ---
+  const DEFAULT_STRUCTURED_DATA = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { autoInjectJsonLd: true, validateAgainstSchemaOrg: true },
+    items: [
+      { id: "SCH-01", schemaType: "JobPosting", targetUrlPattern: "/jobs-careers/?job=*", entityName: "OPSC OAS Group A & B Recruitment", validationStatus: "Valid (Schema.org)", rawJsonLd: '{"@context":"https://schema.org/","@type":"JobPosting","title":"Odisha Administrative Service (OAS) 2026","hiringOrganization":{"@type":"GovernmentOrganization","name":"Odisha Public Service Commission"}}', active: true },
+      { id: "SCH-02", schemaType: "GovernmentService", targetUrlPattern: "/schemes-benefits/?scheme=*", entityName: "KALIA Welfare & Livelihood Scheme", validationStatus: "Valid (Schema.org)", rawJsonLd: '{"@context":"https://schema.org/","@type":"GovernmentService","name":"Krushak Assistance for Livelihood and Income Augmentation","serviceOperator":{"@type":"GovernmentOrganization","name":"Government of Odisha"}}', active: true },
+      { id: "SCH-03", schemaType: "FAQPage", targetUrlPattern: "/study-library/faqs", entityName: "Odisha Exam Eligibility & Syllabus FAQ", validationStatus: "Valid (Schema.org)", rawJsonLd: '{"@context":"https://schema.org/","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the maximum age limit for OPSC OAS?","acceptedAnswer":{"@type":"Answer","text":"The upper age relaxation is governed by official Odisha state gazette orders."}}]}', active: true },
+      { id: "SCH-04", schemaType: "BreadcrumbList", targetUrlPattern: "/*", entityName: "Global Sitewide Navigation Hierarchy", validationStatus: "Valid (Schema.org)", rawJsonLd: '{"@context":"https://schema.org/","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://csodisha.com/"}]}', active: true }
+    ]
+  };
+  SuperStore.getStructuredDataConfig = function() {
+    return _hydrateConfig('cso_structured_data_config', 'schemas', () => DEFAULT_STRUCTURED_DATA);
+  };
+  SuperStore.saveStructuredDataConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.schemas = cfg.items || cfg.schemas || []; cfg.items = cfg.schemas;
+    localStorage.setItem('cso_structured_data_config', JSON.stringify(cfg));
+    this.logAudit('STRUCTURED_DATA_UPDATED', 'SEO', `Structured data schemas updated (${cfg.items.length} schemas).`);
+    return true;
+  };
+  SuperStore.resetStructuredDataConfig = function() {
+    localStorage.setItem('cso_structured_data_config', JSON.stringify(DEFAULT_STRUCTURED_DATA));
+    this.logAudit('STRUCTURED_DATA_RESET', 'SEO', 'Structured data schemas reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_STRUCTURED_DATA));
+  };
+  SuperStore.exportStructuredDataManifest = function() {
+    const config = this.getStructuredDataConfig();
+    const filename = "structured_data_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("STRUCTURED_DATA_EXPORTED", "DATA_EXPORT", `Structured data manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-006: XML Sitemap ---
+  const DEFAULT_XML_SITEMAP = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { sitemapIndexUrl: "https://csodisha.com/sitemap.xml", autoPingGoogle: true, autoPingBing: true },
+    items: [
+      { id: "SIT-01", sitemapFilename: "sitemap-pages.xml", routeCategory: "Core Portal Pages", priorityWeight: "1.0", changeFrequency: "daily", urlsCount: 14, lastGenerated: "2026-11-09", active: true },
+      { id: "SIT-02", sitemapFilename: "sitemap-jobs.xml", routeCategory: "Recruitment & Gazette Circulars", priorityWeight: "0.9", changeFrequency: "hourly", urlsCount: 110, lastGenerated: "2026-11-10", active: true },
+      { id: "SIT-03", sitemapFilename: "sitemap-schemes.xml", routeCategory: "Welfare Schemes & Scholarships", priorityWeight: "0.8", changeFrequency: "weekly", urlsCount: 45, lastGenerated: "2026-11-08", active: true },
+      { id: "SIT-04", sitemapFilename: "sitemap-library.xml", routeCategory: "Study Notes, PYQs & Mocks", priorityWeight: "0.8", changeFrequency: "daily", urlsCount: 68, lastGenerated: "2026-11-09", active: true }
+    ]
+  };
+  SuperStore.getXmlSitemapConfig = function() {
+    return _hydrateConfig('cso_xml_sitemap_config', 'sitemaps', () => DEFAULT_XML_SITEMAP);
+  };
+  SuperStore.saveXmlSitemapConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.sitemaps = cfg.items || cfg.sitemaps || []; cfg.items = cfg.sitemaps;
+    localStorage.setItem('cso_xml_sitemap_config', JSON.stringify(cfg));
+    this.logAudit('XML_SITEMAP_UPDATED', 'SEO', `XML sitemaps updated (${cfg.items.length} sitemaps).`);
+    return true;
+  };
+  SuperStore.resetXmlSitemapConfig = function() {
+    localStorage.setItem('cso_xml_sitemap_config', JSON.stringify(DEFAULT_XML_SITEMAP));
+    this.logAudit('XML_SITEMAP_RESET', 'SEO', 'XML sitemaps reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_XML_SITEMAP));
+  };
+  SuperStore.exportXmlSitemapManifest = function() {
+    const config = this.getXmlSitemapConfig();
+    const filename = "xml_sitemap_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("XML_SITEMAP_EXPORTED", "DATA_EXPORT", `XML sitemap manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-007: Robots Settings ---
+  const DEFAULT_ROBOTS_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { sitemapDirectiveUrl: "https://csodisha.com/sitemap.xml", defaultCrawlDelaySeconds: 0 },
+    items: [
+      { id: "ROB-01", userAgent: "*", directiveType: "Disallow", pathRule: "/admin/", comment: "Block administrative suite from search engine crawlers", active: true },
+      { id: "ROB-02", userAgent: "*", directiveType: "Disallow", pathRule: "/api/", comment: "Block private internal API endpoints", active: true },
+      { id: "ROB-03", userAgent: "*", directiveType: "Allow", pathRule: "/", comment: "Allow full public route crawling", active: true },
+      { id: "ROB-04", userAgent: "GPTBot", directiveType: "Disallow", pathRule: "/study-library/mock-evaluations/", comment: "Protect proprietary mock scoring engines", active: true }
+    ]
+  };
+  SuperStore.getRobotsSettingsConfig = function() {
+    return _hydrateConfig('cso_robots_settings_config', 'rules', () => DEFAULT_ROBOTS_SETTINGS);
+  };
+  SuperStore.saveRobotsSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.rules = cfg.items || cfg.rules || []; cfg.items = cfg.rules;
+    localStorage.setItem('cso_robots_settings_config', JSON.stringify(cfg));
+    this.logAudit('ROBOTS_SETTINGS_UPDATED', 'SEO', `Robots settings updated (${cfg.items.length} directives).`);
+    return true;
+  };
+  SuperStore.resetRobotsSettingsConfig = function() {
+    localStorage.setItem('cso_robots_settings_config', JSON.stringify(DEFAULT_ROBOTS_SETTINGS));
+    this.logAudit('ROBOTS_SETTINGS_RESET', 'SEO', 'Robots settings reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ROBOTS_SETTINGS));
+  };
+  SuperStore.exportRobotsSettingsManifest = function() {
+    const config = this.getRobotsSettingsConfig();
+    const filename = "robots_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ROBOTS_SETTINGS_EXPORTED", "DATA_EXPORT", `Robots settings manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-008: Search Console Integration ---
+  const DEFAULT_SEARCH_CONSOLE = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    credentials: { googleSiteVerificationToken: "google-site-verification=csodisha_live_token_2026", bingWebmasterAuthCode: "msvalidate.01=CSODISHA_BING_AUTH_9912", propertyType: "Domain Property (URL Prefix: https://csodisha.com)" },
+    items: [
+      { id: "GSC-01", provider: "Google Search Console", verificationMethod: "HTML Meta Tag + DNS TXT", verifiedStatus: "Connected & Verified", sitemapStatus: "Success (sitemap.xml)", indexCoverageRate: "98.4%", lastChecked: "2026-11-10", active: true },
+      { id: "GSC-02", provider: "Bing Webmaster Tools", verificationMethod: "Meta Tag", verifiedStatus: "Connected & Verified", sitemapStatus: "Success (sitemap.xml)", indexCoverageRate: "96.1%", lastChecked: "2026-11-09", active: true }
+    ]
+  };
+  SuperStore.getSearchConsoleConfig = function() {
+    return _hydrateConfig('cso_search_console_config', 'accounts', () => DEFAULT_SEARCH_CONSOLE);
+  };
+  SuperStore.saveSearchConsoleConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.accounts = cfg.items || cfg.accounts || []; cfg.items = cfg.accounts;
+    localStorage.setItem('cso_search_console_config', JSON.stringify(cfg));
+    this.logAudit('SEARCH_CONSOLE_UPDATED', 'SEO', `Search console accounts updated (${cfg.items.length} providers).`);
+    return true;
+  };
+  SuperStore.resetSearchConsoleConfig = function() {
+    localStorage.setItem('cso_search_console_config', JSON.stringify(DEFAULT_SEARCH_CONSOLE));
+    this.logAudit('SEARCH_CONSOLE_RESET', 'SEO', 'Search console accounts reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SEARCH_CONSOLE));
+  };
+  SuperStore.exportSearchConsoleManifest = function() {
+    const config = this.getSearchConsoleConfig();
+    const filename = "search_console_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SEARCH_CONSOLE_EXPORTED", "DATA_EXPORT", `Search console manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-009: Internal Search Manager ---
+  const DEFAULT_INTERNAL_SEARCH_MANAGER = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { fuzzyThreshold: 0.2, typoTolerance: true, minQueryLength: 2, defaultPageSize: 15, highlightSnippets: true },
+    items: [
+      { id: "SRM-01", paramKey: "TITLE_BOOST_FACTOR", paramTitle: "Exam Title Boosting Weight", value: "3.5x", context: "Prioritizes exact match in job or scheme title", active: true },
+      { id: "SRM-02", paramKey: "TAGS_BOOST_FACTOR", paramTitle: "District & Category Tag Weight", value: "2.0x", context: "Boosts matches against Balasore, Cuttack, OPSC tags", active: true },
+      { id: "SRM-03", paramKey: "CONTENT_BODY_WEIGHT", paramTitle: "Full Gazette Description Weight", value: "1.0x", context: "Baseline weight for long-form circular text", active: true },
+      { id: "SRM-04", paramKey: "SYNONYM_EXPANSION", paramTitle: "Odia/English Bidirectional Aliases", value: "Enabled", context: "Maps 'OAS' to 'Odisha Administrative Service'", active: true }
+    ]
+  };
+  SuperStore.getInternalSearchManagerConfig = function() {
+    return _hydrateConfig('cso_internal_search_manager_config', 'searchRules', () => DEFAULT_INTERNAL_SEARCH_MANAGER);
+  };
+  SuperStore.saveInternalSearchManagerConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.searchRules = cfg.items || cfg.searchRules || []; cfg.items = cfg.searchRules;
+    localStorage.setItem('cso_internal_search_manager_config', JSON.stringify(cfg));
+    this.logAudit('INTERNAL_SEARCH_MANAGER_UPDATED', 'SEARCH', `Internal search manager updated (${cfg.items.length} parameters).`);
+    return true;
+  };
+  SuperStore.resetInternalSearchManagerConfig = function() {
+    localStorage.setItem('cso_internal_search_manager_config', JSON.stringify(DEFAULT_INTERNAL_SEARCH_MANAGER));
+    this.logAudit('INTERNAL_SEARCH_MANAGER_RESET', 'SEARCH', 'Internal search manager reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_INTERNAL_SEARCH_MANAGER));
+  };
+  SuperStore.exportInternalSearchManagerManifest = function() {
+    const config = this.getInternalSearchManagerConfig();
+    const filename = "internal_search_manager_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("INTERNAL_SEARCH_MANAGER_EXPORTED", "DATA_EXPORT", `Internal search manager manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-010: Search Index ---
+  const DEFAULT_SEARCH_INDEX = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalIndexedDocuments: 486, indexSizeBytes: "412 KB (Compressed)", averageQueryLatencyMs: "12ms", lastFullReindex: "2026-11-10 06:30" },
+    items: [
+      { id: "IDX-01", indexNamespace: "jobs-careers", collectionName: "Recruitment Circulars & Gazettes", docCount: 184, memoryFootprint: "148 KB", reindexTrigger: "Automated on Publish", status: "Healthy", active: true },
+      { id: "IDX-02", indexNamespace: "schemes-benefits", collectionName: "Welfare Schemes & Scholarships", docCount: 92, memoryFootprint: "74 KB", reindexTrigger: "Automated on Publish", status: "Healthy", active: true },
+      { id: "IDX-03", indexNamespace: "study-library", collectionName: "Study Notes, PYQs & Mocks", docCount: 168, memoryFootprint: "152 KB", reindexTrigger: "Automated on Publish", status: "Healthy", active: true },
+      { id: "IDX-04", indexNamespace: "community-forum", collectionName: "District Discussion Threads", docCount: 42, memoryFootprint: "38 KB", reindexTrigger: "Hourly Cron", status: "Healthy", active: true }
+    ]
+  };
+  SuperStore.getSearchIndexConfig = function() {
+    return _hydrateConfig('cso_search_index_config', 'indices', () => DEFAULT_SEARCH_INDEX);
+  };
+  SuperStore.saveSearchIndexConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.indices = cfg.items || cfg.indices || []; cfg.items = cfg.indices;
+    localStorage.setItem('cso_search_index_config', JSON.stringify(cfg));
+    this.logAudit('SEARCH_INDEX_UPDATED', 'SEARCH', `Search index namespaces updated (${cfg.items.length} indices).`);
+    return true;
+  };
+  SuperStore.resetSearchIndexConfig = function() {
+    localStorage.setItem('cso_search_index_config', JSON.stringify(DEFAULT_SEARCH_INDEX));
+    this.logAudit('SEARCH_INDEX_RESET', 'SEARCH', 'Search index namespaces reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SEARCH_INDEX));
+  };
+  SuperStore.exportSearchIndexManifest = function() {
+    const config = this.getSearchIndexConfig();
+    const filename = "search_index_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SEARCH_INDEX_EXPORTED", "DATA_EXPORT", `Search index manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-011: Search Filters ---
+  const DEFAULT_SEARCH_FILTERS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    items: [
+      { id: "FLT-01", filterLabel: "District Jurisdiction", filterKey: "district", uiComponentType: "Multi-Select Dropdown", optionsCount: 30, displayOrder: 1, active: true },
+      { id: "FLT-02", filterLabel: "Recruiting Commission", filterKey: "commission", uiComponentType: "Pill Tags", optionsCount: 6, displayOrder: 2, active: true },
+      { id: "FLT-03", filterLabel: "Minimum Educational Qualification", filterKey: "qualification", uiComponentType: "Radio Group", optionsCount: 5, displayOrder: 3, active: true },
+      { id: "FLT-04", filterLabel: "Pay Scale & Grade Pay", filterKey: "salary_bracket", uiComponentType: "Range Slider", optionsCount: 4, displayOrder: 4, active: true },
+      { id: "FLT-05", filterLabel: "Target Beneficiary Category", filterKey: "beneficiary", uiComponentType: "Checkbox List", optionsCount: 8, displayOrder: 5, active: true }
+    ]
+  };
+  SuperStore.getSearchFiltersConfig = function() {
+    return _hydrateConfig('cso_search_filters_config', 'filters', () => DEFAULT_SEARCH_FILTERS);
+  };
+  SuperStore.saveSearchFiltersConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.filters = cfg.items || cfg.filters || []; cfg.items = cfg.filters;
+    localStorage.setItem('cso_search_filters_config', JSON.stringify(cfg));
+    this.logAudit('SEARCH_FILTERS_UPDATED', 'SEARCH', `Search filters updated (${cfg.items.length} facets).`);
+    return true;
+  };
+  SuperStore.resetSearchFiltersConfig = function() {
+    localStorage.setItem('cso_search_filters_config', JSON.stringify(DEFAULT_SEARCH_FILTERS));
+    this.logAudit('SEARCH_FILTERS_RESET', 'SEARCH', 'Search filters reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_SEARCH_FILTERS));
+  };
+  SuperStore.exportSearchFiltersManifest = function() {
+    const config = this.getSearchFiltersConfig();
+    const filename = "search_filters_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("SEARCH_FILTERS_EXPORTED", "DATA_EXPORT", `Search filters manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-012: Popular Searches ---
+  const DEFAULT_POPULAR_SEARCHES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalSearchesTracked: 184500, topTrendingCount: 10, pinnedQueriesCount: 3 },
+    items: [
+      { id: "POP-01", searchQuery: "OPSC OAS 2026 Notification", category: "Jobs & Careers", searchVolume7d: 28400, trendChange: "+42%", isPinned: true, active: true },
+      { id: "POP-02", searchQuery: "OSSC CGL Exam Date 2026", category: "Jobs & Careers", searchVolume7d: 19800, trendChange: "+28%", isPinned: true, active: true },
+      { id: "POP-03", searchQuery: "KALIA Yojana List 2026", category: "Schemes & Benefits", searchVolume7d: 14200, trendChange: "+15%", isPinned: true, active: true },
+      { id: "POP-04", searchQuery: "Odisha GK 30 Districts Capsule PDF", category: "Study Library", searchVolume7d: 12900, trendChange: "+64%", isPinned: false, active: true },
+      { id: "POP-05", searchQuery: "OSSSC Revenue Inspector Syllabus", category: "Jobs & Careers", searchVolume7d: 11400, trendChange: "+19%", isPinned: false, active: true }
+    ]
+  };
+  SuperStore.getPopularSearchesConfig = function() {
+    return _hydrateConfig('cso_popular_searches_config', 'queries', () => DEFAULT_POPULAR_SEARCHES);
+  };
+  SuperStore.savePopularSearchesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.queries = cfg.items || cfg.queries || []; cfg.items = cfg.queries;
+    localStorage.setItem('cso_popular_searches_config', JSON.stringify(cfg));
+    this.logAudit('POPULAR_SEARCHES_UPDATED', 'SEARCH', `Popular searches updated (${cfg.items.length} queries).`);
+    return true;
+  };
+  SuperStore.resetPopularSearchesConfig = function() {
+    localStorage.setItem('cso_popular_searches_config', JSON.stringify(DEFAULT_POPULAR_SEARCHES));
+    this.logAudit('POPULAR_SEARCHES_RESET', 'SEARCH', 'Popular searches reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_POPULAR_SEARCHES));
+  };
+  SuperStore.exportPopularSearchesManifest = function() {
+    const config = this.getPopularSearchesConfig();
+    const filename = "popular_searches_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("POPULAR_SEARCHES_EXPORTED", "DATA_EXPORT", `Popular searches manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-013: Zero-Result Searches ---
+  const DEFAULT_ZERO_RESULT_SEARCHES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalMissesLogged: 84, mappedToSynonymCount: 52, pendingEditorialAction: 32 },
+    items: [
+      { id: "ZRO-01", failedQuery: "OPSC OSAS Admit Card", attemptedCount: 412, mappedSynonym: "OPSC OAS Admit Card", resolvedStatus: "Mapped to Synonym", loggedDate: "2026-11-08", active: true },
+      { id: "ZRO-02", failedQuery: "Odisha Police Constable Running Date", attemptedCount: 290, mappedSynonym: "Pending Content Creation", resolvedStatus: "Content Ticket Filed", loggedDate: "2026-11-09", active: true },
+      { id: "ZRO-03", failedQuery: "SAMS Degree Spot Admission Merit List", attemptedCount: 185, mappedSynonym: "SAMS Odisha Merit List", resolvedStatus: "Mapped to Synonym", loggedDate: "2026-11-07", active: true },
+      { id: "ZRO-04", failedQuery: "Balasore High Court Clerk Exam", attemptedCount: 94, mappedSynonym: "Unresolved", resolvedStatus: "Needs Investigation", loggedDate: "2026-11-10", active: true }
+    ]
+  };
+  SuperStore.getZeroResultSearchesConfig = function() {
+    return _hydrateConfig('cso_zero_result_searches_config', 'misses', () => DEFAULT_ZERO_RESULT_SEARCHES);
+  };
+  SuperStore.saveZeroResultSearchesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.misses = cfg.items || cfg.misses || []; cfg.items = cfg.misses;
+    localStorage.setItem('cso_zero_result_searches_config', JSON.stringify(cfg));
+    this.logAudit('ZERO_RESULT_SEARCHES_UPDATED', 'SEARCH', `Zero-result searches updated (${cfg.items.length} records).`);
+    return true;
+  };
+  SuperStore.resetZeroResultSearchesConfig = function() {
+    localStorage.setItem('cso_zero_result_searches_config', JSON.stringify(DEFAULT_ZERO_RESULT_SEARCHES));
+    this.logAudit('ZERO_RESULT_SEARCHES_RESET', 'SEARCH', 'Zero-result searches reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_ZERO_RESULT_SEARCHES));
+  };
+  SuperStore.exportZeroResultSearchesManifest = function() {
+    const config = this.getZeroResultSearchesConfig();
+    const filename = "zero_result_searches_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ZERO_RESULT_SEARCHES_EXPORTED", "DATA_EXPORT", `Zero-result searches manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-014: URL Redirects ---
+  const DEFAULT_URL_REDIRECTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    settings: { enableAutoCloudflareRedirects: true, preserveQueryStrings: true, defaultRedirectCode: 301 },
+    items: [
+      { id: "RDR-01", sourcePath: "/jobs/opsc-oas-2025", targetUrl: "/jobs-careers/?filter=opsc", httpStatus: 301, redirectType: "Permanent (301)", totalHits: 4820, lastHitDate: "2026-11-09", active: true },
+      { id: "RDR-02", sourcePath: "/scholarships/medhabruti", targetUrl: "/schemes-benefits/?scheme=medhabruti", httpStatus: 301, redirectType: "Permanent (301)", totalHits: 2940, lastHitDate: "2026-11-08", active: true },
+      { id: "RDR-03", sourcePath: "/admit-card/latest", targetUrl: "/jobs-careers/?section=admit-cards", httpStatus: 302, redirectType: "Temporary (302)", totalHits: 6410, lastHitDate: "2026-11-10", active: true },
+      { id: "RDR-04", sourcePath: "/old-gazette/*", targetUrl: "/study-library/", httpStatus: 301, redirectType: "Wildcard Pattern (301)", totalHits: 1210, lastHitDate: "2026-11-07", active: true }
+    ]
+  };
+  SuperStore.getUrlRedirectsConfig = function() {
+    return _hydrateConfig('cso_url_redirects_config', 'redirects', () => DEFAULT_URL_REDIRECTS);
+  };
+  SuperStore.saveUrlRedirectsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.redirects = cfg.items || cfg.redirects || []; cfg.items = cfg.redirects;
+    localStorage.setItem('cso_url_redirects_config', JSON.stringify(cfg));
+    this.logAudit('URL_REDIRECTS_UPDATED', 'ROUTING', `URL redirects updated (${cfg.items.length} routes).`);
+    return true;
+  };
+  SuperStore.resetUrlRedirectsConfig = function() {
+    localStorage.setItem('cso_url_redirects_config', JSON.stringify(DEFAULT_URL_REDIRECTS));
+    this.logAudit('URL_REDIRECTS_RESET', 'ROUTING', 'URL redirects reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_URL_REDIRECTS));
+  };
+  SuperStore.exportUrlRedirectsManifest = function() {
+    const config = this.getUrlRedirectsConfig();
+    const filename = "url_redirects_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("URL_REDIRECTS_EXPORTED", "DATA_EXPORT", `URL redirects manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-015: Broken Links ---
+  const DEFAULT_BROKEN_LINKS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalLinksScanned: 563, totalBrokenCount: 2, totalWarnings: 1, lastFullAuditDate: "2026-11-10 07:15" },
+    items: [
+      { id: "BRL-01", brokenUrl: "https://odisha.gov.in/portal/old-scholarship-doc.pdf", sourcePage: "/schemes-benefits/?scheme=medhabruti", anchorText: "Download Official Guideline PDF", httpStatusCode: 404, errorType: "External Dead Link", detectedDate: "2026-11-08", status: "Unresolved", active: true },
+      { id: "BRL-02", brokenUrl: "/study-library/odisha-history-q48-solution", sourcePage: "/study-library/history-pyq-vault", anchorText: "Paika Rebellion Detailed Solution", httpStatusCode: 404, errorType: "Internal Missing Page", detectedDate: "2026-11-09", status: "Redirect Scheduled", active: true },
+      { id: "BRL-03", brokenUrl: "https://opsc.gov.in/notice-archive-2021", sourcePage: "/jobs-careers/?filter=opsc", anchorText: "View 2021 Precedent Circular", httpStatusCode: 503, errorType: "Commission Gateway Timeout", detectedDate: "2026-11-10", status: "Monitoring", active: true }
+    ]
+  };
+  SuperStore.getBrokenLinksConfig = function() {
+    return _hydrateConfig('cso_broken_links_config', 'brokenLinks', () => DEFAULT_BROKEN_LINKS);
+  };
+  SuperStore.saveBrokenLinksConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.brokenLinks = cfg.items || cfg.brokenLinks || []; cfg.items = cfg.brokenLinks;
+    localStorage.setItem('cso_broken_links_config', JSON.stringify(cfg));
+    this.logAudit('BROKEN_LINKS_UPDATED', 'ROUTING', `Broken links updated (${cfg.items.length} items).`);
+    return true;
+  };
+  SuperStore.resetBrokenLinksConfig = function() {
+    localStorage.setItem('cso_broken_links_config', JSON.stringify(DEFAULT_BROKEN_LINKS));
+    this.logAudit('BROKEN_LINKS_RESET', 'ROUTING', 'Broken links reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_BROKEN_LINKS));
+  };
+  SuperStore.exportBrokenLinksManifest = function() {
+    const config = this.getBrokenLinksConfig();
+    const filename = "broken_links_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("BROKEN_LINKS_EXPORTED", "DATA_EXPORT", `Broken links manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 13-016: 404 Reports ---
+  const DEFAULT_404_REPORTS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { total404Incidents24h: 38, uniqueMissingUrlsCount: 5, resolvedViaRedirect: 33 },
+    items: [
+      { id: "R404-01", missingPath: "/jobs/ossc-cgl-admit-card", requestHits: 412, referrer: "Direct Candidate Web / WhatsApp", userAgentCategory: "Mobile Android", firstSeen: "2026-11-07", lastSeen: "2026-11-10 07:30", resolutionStatus: "Unresolved", active: true },
+      { id: "R404-02", missingPath: "/scholarship-apply-portal", requestHits: 198, referrer: "Google Search", userAgentCategory: "Mobile Safari", firstSeen: "2026-11-06", lastSeen: "2026-11-09 21:15", resolutionStatus: "Unresolved", active: true },
+      { id: "R404-03", missingPath: "/study/odia-vyakaran-pdf", requestHits: 142, referrer: "Telegram Link", userAgentCategory: "Desktop Chrome", firstSeen: "2026-11-05", lastSeen: "2026-11-09 18:40", resolutionStatus: "Redirected (RDR-04)", active: true }
+    ]
+  };
+  SuperStore.get404ReportsConfig = function() {
+    return _hydrateConfig('cso_404_reports_config', 'incidents', () => DEFAULT_404_REPORTS);
+  };
+  SuperStore.save404ReportsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.incidents = cfg.items || cfg.incidents || []; cfg.items = cfg.incidents;
+    localStorage.setItem('cso_404_reports_config', JSON.stringify(cfg));
+    this.logAudit('404_REPORTS_UPDATED', 'ROUTING', `404 reports updated (${cfg.items.length} incidents).`);
+    return true;
+  };
+  SuperStore.reset404ReportsConfig = function() {
+    localStorage.setItem('cso_404_reports_config', JSON.stringify(DEFAULT_404_REPORTS));
+    this.logAudit('404_REPORTS_RESET', 'ROUTING', '404 reports reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_404_REPORTS));
+  };
+  SuperStore.export404ReportsManifest = function() {
+    const config = this.get404ReportsConfig();
+    const filename = "404_reports_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("404_REPORTS_EXPORTED", "DATA_EXPORT", `404 reports manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -13385,6 +13957,70 @@
     window.CSOSuperStore.saveAdvertisingReportsConfig = SuperStore.saveAdvertisingReportsConfig;
     window.CSOSuperStore.resetAdvertisingReportsConfig = SuperStore.resetAdvertisingReportsConfig;
     window.CSOSuperStore.exportAdvertisingReportsManifest = SuperStore.exportAdvertisingReportsManifest;
+    window.CSOSuperStore.getSeoOverviewConfig = SuperStore.getSeoOverviewConfig;
+    window.CSOSuperStore.saveSeoOverviewConfig = SuperStore.saveSeoOverviewConfig;
+    window.CSOSuperStore.resetSeoOverviewConfig = SuperStore.resetSeoOverviewConfig;
+    window.CSOSuperStore.exportSeoOverviewManifest = SuperStore.exportSeoOverviewManifest;
+    window.CSOSuperStore.getPageMetadataConfig = SuperStore.getPageMetadataConfig;
+    window.CSOSuperStore.savePageMetadataConfig = SuperStore.savePageMetadataConfig;
+    window.CSOSuperStore.resetPageMetadataConfig = SuperStore.resetPageMetadataConfig;
+    window.CSOSuperStore.exportPageMetadataManifest = SuperStore.exportPageMetadataManifest;
+    window.CSOSuperStore.getCanonicalUrlsConfig = SuperStore.getCanonicalUrlsConfig;
+    window.CSOSuperStore.saveCanonicalUrlsConfig = SuperStore.saveCanonicalUrlsConfig;
+    window.CSOSuperStore.resetCanonicalUrlsConfig = SuperStore.resetCanonicalUrlsConfig;
+    window.CSOSuperStore.exportCanonicalUrlsManifest = SuperStore.exportCanonicalUrlsManifest;
+    window.CSOSuperStore.getOpenGraphPreviewsConfig = SuperStore.getOpenGraphPreviewsConfig;
+    window.CSOSuperStore.saveOpenGraphPreviewsConfig = SuperStore.saveOpenGraphPreviewsConfig;
+    window.CSOSuperStore.resetOpenGraphPreviewsConfig = SuperStore.resetOpenGraphPreviewsConfig;
+    window.CSOSuperStore.exportOpenGraphPreviewsManifest = SuperStore.exportOpenGraphPreviewsManifest;
+    window.CSOSuperStore.getStructuredDataConfig = SuperStore.getStructuredDataConfig;
+    window.CSOSuperStore.saveStructuredDataConfig = SuperStore.saveStructuredDataConfig;
+    window.CSOSuperStore.resetStructuredDataConfig = SuperStore.resetStructuredDataConfig;
+    window.CSOSuperStore.exportStructuredDataManifest = SuperStore.exportStructuredDataManifest;
+    window.CSOSuperStore.getXmlSitemapConfig = SuperStore.getXmlSitemapConfig;
+    window.CSOSuperStore.saveXmlSitemapConfig = SuperStore.saveXmlSitemapConfig;
+    window.CSOSuperStore.resetXmlSitemapConfig = SuperStore.resetXmlSitemapConfig;
+    window.CSOSuperStore.exportXmlSitemapManifest = SuperStore.exportXmlSitemapManifest;
+    window.CSOSuperStore.getRobotsSettingsConfig = SuperStore.getRobotsSettingsConfig;
+    window.CSOSuperStore.saveRobotsSettingsConfig = SuperStore.saveRobotsSettingsConfig;
+    window.CSOSuperStore.resetRobotsSettingsConfig = SuperStore.resetRobotsSettingsConfig;
+    window.CSOSuperStore.exportRobotsSettingsManifest = SuperStore.exportRobotsSettingsManifest;
+    window.CSOSuperStore.getSearchConsoleConfig = SuperStore.getSearchConsoleConfig;
+    window.CSOSuperStore.saveSearchConsoleConfig = SuperStore.saveSearchConsoleConfig;
+    window.CSOSuperStore.resetSearchConsoleConfig = SuperStore.resetSearchConsoleConfig;
+    window.CSOSuperStore.exportSearchConsoleManifest = SuperStore.exportSearchConsoleManifest;
+    window.CSOSuperStore.getInternalSearchManagerConfig = SuperStore.getInternalSearchManagerConfig;
+    window.CSOSuperStore.saveInternalSearchManagerConfig = SuperStore.saveInternalSearchManagerConfig;
+    window.CSOSuperStore.resetInternalSearchManagerConfig = SuperStore.resetInternalSearchManagerConfig;
+    window.CSOSuperStore.exportInternalSearchManagerManifest = SuperStore.exportInternalSearchManagerManifest;
+    window.CSOSuperStore.getSearchIndexConfig = SuperStore.getSearchIndexConfig;
+    window.CSOSuperStore.saveSearchIndexConfig = SuperStore.saveSearchIndexConfig;
+    window.CSOSuperStore.resetSearchIndexConfig = SuperStore.resetSearchIndexConfig;
+    window.CSOSuperStore.exportSearchIndexManifest = SuperStore.exportSearchIndexManifest;
+    window.CSOSuperStore.getSearchFiltersConfig = SuperStore.getSearchFiltersConfig;
+    window.CSOSuperStore.saveSearchFiltersConfig = SuperStore.saveSearchFiltersConfig;
+    window.CSOSuperStore.resetSearchFiltersConfig = SuperStore.resetSearchFiltersConfig;
+    window.CSOSuperStore.exportSearchFiltersManifest = SuperStore.exportSearchFiltersManifest;
+    window.CSOSuperStore.getPopularSearchesConfig = SuperStore.getPopularSearchesConfig;
+    window.CSOSuperStore.savePopularSearchesConfig = SuperStore.savePopularSearchesConfig;
+    window.CSOSuperStore.resetPopularSearchesConfig = SuperStore.resetPopularSearchesConfig;
+    window.CSOSuperStore.exportPopularSearchesManifest = SuperStore.exportPopularSearchesManifest;
+    window.CSOSuperStore.getZeroResultSearchesConfig = SuperStore.getZeroResultSearchesConfig;
+    window.CSOSuperStore.saveZeroResultSearchesConfig = SuperStore.saveZeroResultSearchesConfig;
+    window.CSOSuperStore.resetZeroResultSearchesConfig = SuperStore.resetZeroResultSearchesConfig;
+    window.CSOSuperStore.exportZeroResultSearchesManifest = SuperStore.exportZeroResultSearchesManifest;
+    window.CSOSuperStore.getUrlRedirectsConfig = SuperStore.getUrlRedirectsConfig;
+    window.CSOSuperStore.saveUrlRedirectsConfig = SuperStore.saveUrlRedirectsConfig;
+    window.CSOSuperStore.resetUrlRedirectsConfig = SuperStore.resetUrlRedirectsConfig;
+    window.CSOSuperStore.exportUrlRedirectsManifest = SuperStore.exportUrlRedirectsManifest;
+    window.CSOSuperStore.getBrokenLinksConfig = SuperStore.getBrokenLinksConfig;
+    window.CSOSuperStore.saveBrokenLinksConfig = SuperStore.saveBrokenLinksConfig;
+    window.CSOSuperStore.resetBrokenLinksConfig = SuperStore.resetBrokenLinksConfig;
+    window.CSOSuperStore.exportBrokenLinksManifest = SuperStore.exportBrokenLinksManifest;
+    window.CSOSuperStore.get404ReportsConfig = SuperStore.get404ReportsConfig;
+    window.CSOSuperStore.save404ReportsConfig = SuperStore.save404ReportsConfig;
+    window.CSOSuperStore.reset404ReportsConfig = SuperStore.reset404ReportsConfig;
+    window.CSOSuperStore.export404ReportsManifest = SuperStore.export404ReportsManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
