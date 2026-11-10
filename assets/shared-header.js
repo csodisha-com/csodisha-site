@@ -193,6 +193,38 @@
   function renderAuth() {
     const authEl = document.getElementById('auth');
     if (!authEl) return;
+    let candidate = null;
+    try {
+      const raw = localStorage.getItem('cso_candidate_session_v1');
+      if (raw) candidate = JSON.parse(raw);
+    } catch(e) {}
+
+    if (candidate) {
+      authEl.innerHTML =
+        '<div class="cso-desktop-auth-buttons" style="display:flex;align-items:center;gap:8px;">' +
+          '<a href="/student-dashboard/" class="btn-dashboard" style="display:inline-flex;align-items:center;gap:5px;background:#0d9488;color:#ffffff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;text-decoration:none;transition:background 0.2s;"><span aria-hidden="true">👤</span><span>My Dashboard</span></a>' +
+          '<button type="button" id="cso-header-logout-btn" style="background:transparent;border:1px solid #475569;color:#94a3b8;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;">Logout</button>' +
+        '</div>' +
+        '<div class="cso-mobile-auth-wrapper">' +
+          '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
+            '<span class="auth-icon" aria-hidden="true">👤</span>' +
+            '<span class="auth-label">' + (candidate.name ? candidate.name.split(' ')[0] : 'Account') + '</span>' +
+            '<span class="auth-arrow" aria-hidden="true">▾</span>' +
+          '</button>' +
+          '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
+            '<a href="/student-dashboard/" class="cso-auth-item" style="color:#0d9488;font-weight:bold;">👤 My Dashboard</a>' +
+            '<a href="#" id="cso-header-mob-logout" class="cso-auth-item" style="color:#f43f5e;">Logout</a>' +
+          '</div>' +
+        '</div>';
+      setTimeout(() => {
+        const lo = document.getElementById('cso-header-logout-btn');
+        if (lo) lo.onclick = () => { localStorage.removeItem('cso_candidate_session_v1'); window.location.reload(); };
+        const mlo = document.getElementById('cso-header-mob-logout');
+        if (mlo) mlo.onclick = (e) => { e.preventDefault(); localStorage.removeItem('cso_candidate_session_v1'); window.location.reload(); };
+      }, 0);
+      return;
+    }
+
     if (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function') {
       const u = window.CSOAuthClient.getUser();
       if (u) {
@@ -449,5 +481,16 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+})();
+
+// Auto-load auth-modal.js for candidate login trigger
+(function() {
+  if (!document.getElementById('cso-auth-modal-script')) {
+    const s = document.createElement('script');
+    s.id = 'cso-auth-modal-script';
+    s.src = '/assets/js/auth-modal.js';
+    s.defer = true;
+    document.head.appendChild(s);
   }
 })();
