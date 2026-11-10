@@ -68,8 +68,20 @@ CREATE TABLE IF NOT EXISTS candidate_mock_scores (
   FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
 
+-- 1c. Pending Email Verifications & OTP Lifecycle
+CREATE TABLE IF NOT EXISTS email_verifications (
+  email TEXT PRIMARY KEY,
+  otp_code TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  candidate_data TEXT,
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
 -- Indexes for optimal lookup performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email);
+CREATE INDEX IF NOT EXISTS idx_email_verifications_email ON email_verifications(email);
 CREATE INDEX IF NOT EXISTS idx_candidate_checklists_cid ON candidate_checklists(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_candidate_mock_scores_cid ON candidate_mock_scores(candidate_id);

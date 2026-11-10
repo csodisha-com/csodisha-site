@@ -463,6 +463,9 @@
             return;
           }
 
+          const regController = new AbortController();
+          const regTimeoutId = setTimeout(() => regController.abort(), 10000);
+
           try {
             const res = await fetch('/api/auth/register', {
               method: 'POST',
@@ -476,8 +479,10 @@
                 state: 'Odisha',
                 district: districtVal,
                 targetStreams: checkedExams.length > 0 ? checkedExams : ['opsc', 'ossc']
-              })
+              }),
+              signal: regController.signal
             });
+            clearTimeout(regTimeoutId);
 
             const data = await res.json().catch(() => ({}));
 
@@ -488,6 +493,12 @@
               showError(data.error || 'Registration failed. Please check your details and try again.');
               submitBtn.disabled = false;
               submitBtn.textContent = originalBtnText;
+              return;
+            }
+
+            // If OTP verification required, redirect to signup.html with verification notice
+            if (data.message && data.message.includes('Verification code sent')) {
+              window.location.href = '/signup.html?email=' + encodeURIComponent(emailVal);
               return;
             }
 
@@ -517,7 +528,11 @@
             closeModal();
             window.location.href = '/student-dashboard/';
           } catch (err) {
-            showError('Unable to connect to the authentication server. Please try again.');
+            clearTimeout(regTimeoutId);
+            localStorage.removeItem('cso_auth_token');
+            localStorage.removeItem('cso_candidate_profile');
+            localStorage.removeItem('cso_candidate_session_v1');
+            showError(err.name === 'AbortError' ? 'Registration request timed out. Please try again.' : 'Unable to connect to the authentication server. Please try again.');
             submitBtn.disabled = false;
             submitBtn.textContent = originalBtnText;
           }
@@ -531,6 +546,9 @@
             return;
           }
 
+          const loginController = new AbortController();
+          const loginTimeoutId = setTimeout(() => loginController.abort(), 10000);
+
           try {
             const res = await fetch('/api/auth/login', {
               method: 'POST',
@@ -538,8 +556,10 @@
               body: JSON.stringify({
                 email: identifier,
                 password: passwordVal
-              })
+              }),
+              signal: loginController.signal
             });
+            clearTimeout(loginTimeoutId);
 
             const data = await res.json().catch(() => ({}));
 
@@ -567,10 +587,18 @@
               lastLoginAt: new Date().toISOString()
             });
 
+            if (data.token) {
+              localStorage.setItem('cso_auth_token', data.token);
+            }
+
             closeModal();
             window.location.href = '/student-dashboard/';
           } catch (err) {
-            showError('Unable to connect to the authentication server. Please try again.');
+            clearTimeout(loginTimeoutId);
+            localStorage.removeItem('cso_auth_token');
+            localStorage.removeItem('cso_candidate_profile');
+            localStorage.removeItem('cso_candidate_session_v1');
+            showError(err.name === 'AbortError' ? 'Login request timed out. Please try again.' : 'Unable to connect to the authentication server. Please try again.');
             submitBtn.disabled = false;
             submitBtn.textContent = originalBtnText;
           }

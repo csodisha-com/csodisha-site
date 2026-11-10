@@ -22,16 +22,21 @@
       ...options.headers
     };
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const response = await fetch(endpoint, {
         method: options.method || "GET",
         credentials: "same-origin",
         cache: "no-store",
         headers,
+        signal: controller.signal,
         ...(options.body ? {
           body: JSON.stringify(options.body)
         } : {})
       });
+      clearTimeout(timeoutId);
 
       let data;
 
@@ -62,15 +67,18 @@
 
       return {
         ...data,
-        ok: data.ok !== false,
+        ok: data.ok !== false && data.success !== false,
         status: response.status
       };
 
-    } catch {
+    } catch (err) {
+      clearTimeout(timeoutId);
       return {
         ok: false,
         status: 0,
-        error: "Unable to connect to the account service."
+        error: err.name === 'AbortError'
+          ? "Request timed out. Please try again."
+          : "Unable to connect to the account service."
       };
     }
   }

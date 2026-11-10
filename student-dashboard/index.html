@@ -32,7 +32,7 @@
       try {
         const raw = localStorage.getItem('cso_candidate_session_v1') || localStorage.getItem('cso_candidate_profile');
         if (!raw) {
-          window.location.replace('/login.html');
+          window.location.replace('/login.html?redirect=' + encodeURIComponent(window.location.pathname));
           return;
         }
         const session = JSON.parse(raw);
@@ -40,10 +40,10 @@
           localStorage.removeItem('cso_candidate_session_v1');
           localStorage.removeItem('cso_candidate_profile');
           localStorage.removeItem('cso_auth_token');
-          window.location.replace('/login.html');
+          window.location.replace('/login.html?redirect=' + encodeURIComponent(window.location.pathname));
         }
       } catch (e) {
-        window.location.replace('/login.html');
+        window.location.replace('/login.html?redirect=' + encodeURIComponent(window.location.pathname));
       }
     })();
   </script>

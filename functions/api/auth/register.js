@@ -76,65 +76,94 @@ export async function onRequestPost({ request, env }) {
 
     // In edge preview sandbox without D1 binding
     if (!env || !env.DB) {
-      const fallbackId = 'cso_usr_' + Date.now().toString(36);
-      return jsonResponse({
-        success: true,
-        mode: 'edge_simulated',
-        candidate: {
-          id: fallbackId,
-          fullName: cleanName,
-          email: cleanEmail,
-          district: cleanDistrict,
-          targetStreams: streamArray
-        }
-      }, 201);
-    }
-
-    // Account enumeration defense:
-    // Check if account already exists.
-    const existing = await env.DB.prepare(
-      'SELECT id FROM users WHERE email = ? UNION SELECT id FROM candidates WHERE email = ?'
-    ).bind(cleanEmail, cleanEmail).first();
-
-    if (existing) {
-      // Return a uniform status code and message if account already exists
       return jsonResponse({
         success: false,
-        error: 'An account with this email address already exists.'
+        error: 'Database service unavailable'
+      }, 500);
+    }
+
+    // Account check: Check if an active, already-verified account exists
+    const existingUser = await env.DB.prepare(
+      'SELECT id FROM users WHERE LOWER(email) = ?'
+    ).bind(cleanEmail).first();
+
+    if (existingUser) {
+      return jsonResponse({
+        success: false,
+        error: 'An account with this email address already exists. Please log in.'
       }, 409);
     }
+
+    // Generate secure 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Password hashing: Web Crypto PBKDF2 with SHA-256, 100,000 iterations (Cloudflare Workers runtime limit), 16-byte random salt
     const salt = generateSalt();
     const passwordHash = await hashPassword(passStr, salt, 100000);
-    const userId = 'cso_usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
     const nowUnix = Math.floor(Date.now() / 1000);
-    const nowIso = new Date().toISOString();
+    const expiresAt = nowUnix + 900; // 15-minute OTP expiration
 
-    // Atomic D1 execution via batch prepared statements across users and candidates tables
-    await env.DB.batch([
-      env.DB.prepare(`
-        INSERT INTO users (
-          id, email, password_hash, salt, failed_attempts, lockout_until, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, 0, 0, ?, ?)
-      `).bind(userId, cleanEmail, passwordHash, salt, nowUnix, nowUnix),
-      env.DB.prepare(`
-        INSERT INTO candidates (
-          id, full_name, email, district, password_hash, salt, failed_attempts, lockout_until, target_streams, created_at, last_login_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?)
-      `).bind(userId, cleanName, cleanEmail, cleanDistrict, passwordHash, salt, JSON.stringify(streamArray), nowIso, nowIso)
-    ]);
+    const candidateData = JSON.stringify({
+      fullName: cleanName,
+      district: cleanDistrict,
+      targetStreams: streamArray
+    });
 
+    // Store/replace pending record in 'email_verifications'
+    await env.DB.prepare(`
+      INSERT INTO email_verifications (
+        email, otp_code, password_hash, salt, candidate_data, expires_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(email) DO UPDATE SET
+        otp_code = excluded.otp_code,
+        password_hash = excluded.password_hash,
+        salt = excluded.salt,
+        candidate_data = excluded.candidate_data,
+        expires_at = excluded.expires_at,
+        created_at = excluded.created_at
+    `).bind(cleanEmail, otpCode, passwordHash, salt, candidateData, expiresAt, nowUnix).run();
+
+    // Dispatch OTP email via configured transactional provider if available
+    try {
+      if (env.RESEND_API_KEY) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Common Sense Odisha <noreply@csodisha.com>',
+            to: cleanEmail,
+            subject: 'Your Common Sense Odisha Verification Code: ' + otpCode,
+            html: `<p>Namaskar ${cleanName},</p><p>Your 6-digit candidate verification code is: <strong>${otpCode}</strong>.</p><p>This code expires in 15 minutes.</p>`
+          })
+        });
+      } else if (env.SENDGRID_API_KEY) {
+        await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: cleanEmail }] }],
+            from: { email: 'noreply@csodisha.com', name: 'Common Sense Odisha' },
+            subject: 'Your Common Sense Odisha Verification Code: ' + otpCode,
+            content: [{ type: 'text/html', value: `<p>Your verification code is: <strong>${otpCode}</strong></p>` }]
+          })
+        });
+      }
+    } catch (mailErr) {
+      console.warn('Transactional email dispatch notice:', mailErr);
+    }
+
+    // Return verification code sent response without inserting into users or candidates table
     return jsonResponse({
       success: true,
-      candidate: {
-        id: userId,
-        fullName: cleanName,
-        email: cleanEmail,
-        district: cleanDistrict,
-        targetStreams: streamArray
-      }
-    }, 201);
+      message: 'Verification code sent',
+      email: cleanEmail
+    }, 200);
 
   } catch (error) {
     console.error('Registration Edge Error:', error);

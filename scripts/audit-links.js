@@ -215,7 +215,7 @@ function auditJsFiles(jsFiles) {
       stats.fetchCallsChecked++;
 
       // If it's an API route handled by auth or backend, skip static file check
-      if (fetchUrl.startsWith('/api/') || fetchUrl.startsWith('api/')) {
+      if (fetchUrl.startsWith('/api/') || fetchUrl.startsWith('api/') || /^https?:\/\//i.test(fetchUrl)) {
         continue;
       }
 

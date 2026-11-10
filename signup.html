@@ -315,7 +315,10 @@
 
         // Prevent double submission
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating account...';
+        submitBtn.textContent = 'Sending verification code...';
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         try {
           const res = await fetch('/api/auth/register', {
@@ -327,12 +330,20 @@
               district,
               password,
               targetStreams: ['opsc', 'ossc']
-            })
+            }),
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
 
           const data = await res.json().catch(() => ({}));
 
           if (res.ok && data.success) {
+            // Check if OTP verification is requested
+            if (data.message && data.message.includes('Verification code sent')) {
+              renderOtpStep(email, fullName, district);
+              return;
+            }
+
             submitBtn.textContent = 'Account created! Redirecting...';
             if (data.candidate) {
               const sessionPayload = {
@@ -355,10 +366,114 @@
             submitBtn.textContent = 'Create Candidate Account';
           }
         } catch (err) {
-          showError('Unable to reach registration server. Please try again.');
+          clearTimeout(timeoutId);
+          localStorage.removeItem('cso_auth_token');
+          localStorage.removeItem('cso_candidate_profile');
+          localStorage.removeItem('cso_candidate_session_v1');
+          showError(err.name === 'AbortError' ? 'Registration request timed out. Please try again.' : 'Unable to reach registration server. Please try again.');
           submitBtn.disabled = false;
           submitBtn.textContent = 'Create Candidate Account';
         }
+      });
+
+      function renderOtpStep(email, fullName, district) {
+        form.innerHTML = `
+          <div style="text-align:center;margin-bottom:1.25rem;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">📩</div>
+            <h3 style="font-size:1.1rem;margin:0 0 0.5rem 0;color:var(--text, #f1f5f9);">Verify Your Email</h3>
+            <p style="font-size:0.85rem;color:var(--text-muted, #94a3b8);margin:0;line-height:1.4;">
+              We sent a 6-digit verification code to<br><strong style="color:var(--text, #f1f5f9);">${email}</strong>
+            </p>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1.25rem;">
+            <label for="otp-input" style="display:block;font-size:0.85rem;margin-bottom:0.35rem;font-weight:600;">6-Digit Verification Code</label>
+            <input
+              type="text"
+              id="otp-input"
+              class="form-input"
+              placeholder="123456"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              required
+              style="font-size:1.2rem;letter-spacing:0.25em;text-align:center;"
+            >
+            <span class="form-hint">Code expires in 15 minutes.</span>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btn-submit-otp" style="width:100%;">
+            Verify Code &amp; Complete Sign In
+          </button>
+        `;
+
+        const otpInput = document.getElementById('otp-input');
+        const submitOtpBtn = document.getElementById('btn-submit-otp');
+        otpInput.focus();
+
+        form.onsubmit = async function(ev) {
+          ev.preventDefault();
+          clearError();
+
+          const code = otpInput.value.trim();
+          if (!/^[0-9]{6}$/.test(code)) {
+            showError('Please enter a valid 6-digit numeric verification code.');
+            otpInput.focus();
+            return;
+          }
+
+          submitOtpBtn.disabled = true;
+          submitOtpBtn.textContent = 'Verifying code...';
+
+          const otpController = new AbortController();
+          const otpTimeoutId = setTimeout(() => otpController.abort(), 10000);
+
+          try {
+            const vRes = await fetch('/api/auth/verify-otp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, code }),
+              signal: otpController.signal
+            });
+            clearTimeout(otpTimeoutId);
+
+            const vData = await vRes.json().catch(() => ({}));
+
+            if (vRes.ok && vData.success) {
+              submitOtpBtn.textContent = 'Verification successful! Redirecting...';
+              if (vData.candidate) {
+                const sessionPayload = {
+                  ...vData.candidate,
+                  isAuthenticated: true
+                };
+                localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
+                localStorage.setItem('cso_candidate_profile', JSON.stringify(sessionPayload));
+              }
+              if (vData.token) {
+                localStorage.setItem('cso_auth_token', vData.token);
+              }
+
+              const urlParams = new URLSearchParams(window.location.search);
+              const redirectParam = urlParams.get('redirect');
+              const targetUrl = (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//'))
+                ? redirectParam
+                : '/student-dashboard/';
+
+              window.location.href = targetUrl;
+            } else {
+              showError(vData.error || 'Invalid or expired verification code.');
+              submitOtpBtn.disabled = false;
+              submitOtpBtn.textContent = 'Verify Code & Complete Sign In';
+            }
+          } catch (verErr) {
+            clearTimeout(otpTimeoutId);
+            showError(verErr.name === 'AbortError' ? 'Verification request timed out. Please try again.' : 'Unable to connect to verification server. Please try again.');
+            submitOtpBtn.disabled = false;
+            submitOtpBtn.textContent = 'Verify Code & Complete Sign In';
+          }
+        };
+      }
       });
     })();
   </script>

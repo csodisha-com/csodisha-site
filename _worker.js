@@ -5,6 +5,7 @@
 
 import { onRequestGet as handleHealthGet, onRequestOptions as handleHealthOptions } from './functions/api/health.js';
 import { onRequestPost as handleRegisterPost, onRequestOptions as handleRegisterOptions } from './functions/api/auth/register.js';
+import { onRequestPost as handleVerifyOtpPost, onRequestOptions as handleVerifyOtpOptions } from './functions/api/auth/verify-otp.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
 
 // Convert hex string to Uint8Array
@@ -153,7 +154,8 @@ async function handleStrictD1Login(request, env) {
         email: candidate.email,
         district: candidate.district,
         targetStreams
-      } : { id: user.id, email: user.email }
+      } : { id: user.id, email: user.email },
+      token: user.id
     }), {
       status: 200,
       headers: {
@@ -186,6 +188,12 @@ export default {
     if (pathname === '/api/auth/register' || (pathname === '/api/auth' && url.searchParams.get('action') === 'register')) {
       if (request.method === 'OPTIONS') return handleRegisterOptions();
       if (request.method === 'POST') return handleRegisterPost({ request, env, ctx });
+    }
+
+    // 2b. /api/auth/verify-otp or /api/auth?action=verify-otp
+    if (pathname === '/api/auth/verify-otp' || (pathname === '/api/auth' && url.searchParams.get('action') === 'verify-otp')) {
+      if (request.method === 'OPTIONS') return handleVerifyOtpOptions();
+      if (request.method === 'POST') return handleVerifyOtpPost({ request, env, ctx });
     }
 
     // 3. /api/auth/login or /api/auth?action=login (Strict D1)

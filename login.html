@@ -253,14 +253,19 @@
 
         // Prevent double submission
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Verifying credentials...';
+        submitBtn.textContent = 'Verifying...';
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         try {
           const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email, password }),
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
 
           const data = await res.json().catch(() => ({}));
 
@@ -277,7 +282,15 @@
             if (data.token) {
               localStorage.setItem('cso_auth_token', data.token);
             }
-            window.location.href = '/student-dashboard/';
+
+            // Respect relative ?redirect= param
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get('redirect');
+            const targetUrl = (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//'))
+              ? redirectParam
+              : '/student-dashboard/';
+
+            window.location.href = targetUrl;
           } else {
             localStorage.removeItem('cso_auth_token');
             localStorage.removeItem('cso_candidate_profile');
@@ -287,7 +300,14 @@
             submitBtn.textContent = 'Sign In to Portal';
           }
         } catch (err) {
-          showError('Unable to reach authentication server. Please try again.');
+          clearTimeout(timeoutId);
+          localStorage.removeItem('cso_auth_token');
+          localStorage.removeItem('cso_candidate_profile');
+          localStorage.removeItem('cso_candidate_session_v1');
+          showError(err.name === 'AbortError' ? 'Login request timed out. Please try again.' : 'Unable to reach authentication server. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In to Portal';
+        }
           submitBtn.disabled = false;
           submitBtn.textContent = 'Sign In to Portal';
         }
