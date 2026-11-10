@@ -13033,7 +13033,10 @@
           eventsScheduleTree: this.getEventsScheduleConfig ? this.getEventsScheduleConfig() : null,
           seoDiscoveryTree: this.getSeoDiscoveryTreeConfig ? this.getSeoDiscoveryTreeConfig() : null,
           securityRbacTree: this.getSecurityRbacTreeConfig ? this.getSecurityRbacTreeConfig() : null,
-          integrationsEdgeTree: this.getIntegrationsEdgeTreeConfig ? this.getIntegrationsEdgeTreeConfig() : null
+          integrationsEdgeTree: this.getIntegrationsEdgeTreeConfig ? this.getIntegrationsEdgeTreeConfig() : null,
+          operationsRecoveryTree: this.getOperationsRecoveryTreeConfig ? this.getOperationsRecoveryTreeConfig() : null,
+          communicationsAlertsTree: this.getCommunicationsAlertsTreeConfig ? this.getCommunicationsAlertsTreeConfig() : null,
+          analyticsTelemetryTree: this.getAnalyticsTelemetryTreeConfig ? this.getAnalyticsTelemetryTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -112167,6 +112170,1483 @@
   SuperStore.getIntegrationLogsDlqConfig = function() { return this.getIntegrationsEdgeTreeConfig(); };
   SuperStore.saveIntegrationLogsDlqConfig = function(cfg) { return this.saveIntegrationsEdgeTreeConfig(cfg); };
 
+
+  // =========================================================================
+  // OPERATIONS, BACKUPS & DISASTER RECOVERY SUITE
+  // Cache Key: cso_operations_recovery_tree_v1 (16 Modules)
+  // =========================================================================
+  const DEFAULT_OPERATIONS_DIRECTORY_TREE = {
+    meta: {
+      version: "2026.11",
+      updatedAt: new Date().toISOString(),
+      author: "Common Sense Odisha (CSO) Operations Architecture",
+      suite: "Operations, Backups & Disaster Recovery Suite",
+      folderId: "folder-operations-backups"
+    },
+    activeCategoryId: "cat-ops-01",
+    selectedNodeId: "OPS-NODE-01-01",
+    categories: [
+  {
+    "id": "cat-ops-01",
+    "moduleId": "module-ops-001",
+    "code": "01",
+    "title": "Automated Platform Snapshot & Global State Backup",
+    "titleOdia": "ସ୍ୱୟଂକ୍ରିୟ ପ୍ଲାଟଫର୍ମ ସ୍ନାପସଟ୍ ଓ ଗ୍ଲୋବାଲ ଷ୍ଟେଟ୍ ବ୍ୟାକଅପ୍",
+    "description": "Automated snapshot generation archiving all 8 platform master state trees",
+    "nodes": [
+      {
+        "id": "OPS-NODE-01-01",
+        "title": "Daily Scheduled Full Platform Snapshot Daemon",
+        "titleOdia": "ଦୈନିକ ସ୍ୱତଃ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ନାପସଟ୍ ଡେମନ୍",
+        "slug": "daily-platform-snapshot-daemon",
+        "categoryCode": "01",
+        "procedureType": "Snapshot Routine",
+        "targetKey": "PLATFORM_ALL_DOMAINS",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "cronSchedule": "0 0 * * * (Midnight UTC)",
+        "payloadSizeEstimate": "10.2 MB",
+        "description": "Serializes all hydrated master directories, RBAC rules, webhooks, and page layouts into verifiable JSON snapshots with SHA-256 integrity checksums.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "OPS-NODE-01-01-SUB-1",
+            "title": "Snapshot Encryption & Cloudflare Cold Storage Upload",
+            "titleOdia": "ସ୍ନାପସଟ୍ ଏନକ୍ରିପ୍ସନ ଓ କୋଲ୍ଡ ଷ୍ଟୋରେଜ୍",
+            "slug": "snapshot-encryption-upload",
+            "categoryCode": "01",
+            "procedureType": "Cold Storage Sync",
+            "status": "Verified / Restorable",
+            "enabled": true,
+            "description": "Encrypts snapshots with AES-256-GCM and transmits to immutable R2 backup bucket.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-02",
+    "moduleId": "module-ops-002",
+    "code": "02",
+    "title": "Disaster Recovery Drill & State Restorer Engine",
+    "titleOdia": "ବିପର୍ଯ୍ୟୟ ପୁନରୁଦ୍ଧାର ଡ୍ରିଲ୍ ଓ ଷ୍ଟେଟ୍ ପୁନଃସ୍ଥାପନ ଇଞ୍ଜିନ",
+    "description": "Interactive unpacking routines capable of parsing and verifying multi-tree payloads",
+    "nodes": [
+      {
+        "id": "OPS-NODE-02-01",
+        "title": "Disaster Recovery Simulation & Dry-Run Inspector",
+        "titleOdia": "ପୁନରୁଦ୍ଧାର ସିମ୍ୟୁଲେସନ ଓ ଟେଷ୍ଟ ରନ୍",
+        "slug": "dr-simulation-inspector",
+        "categoryCode": "02",
+        "procedureType": "Recovery Drill",
+        "targetKey": "cso_super_audit",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "rtoMinutes": 5,
+        "rpoMinutes": 60,
+        "description": "Executes automated mock recovery drills to verify that all serialized models unmarshal cleanly without memory leaks or syntax errors.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-03",
+    "moduleId": "module-ops-003",
+    "code": "03",
+    "title": "Point-in-Time Rollback & Granular Engine Restorer",
+    "titleOdia": "ନିର୍ଦ୍ଦିଷ୍ଟ ସମୟ ବିନ୍ଦୁ ରୋଲବ୍ୟାକ୍ ଓ ଇଞ୍ଜିନ ପୁନରୁଦ୍ଧାର",
+    "description": "Selective single-key rollback across all 8 master data storage keys",
+    "nodes": [
+      {
+        "id": "OPS-NODE-03-01",
+        "title": "8-Key Selective Granular Engine Restorer",
+        "titleOdia": "୮-କି ସିଲେକ୍ଟିଭ ଇଞ୍ଜିନ ରୋଲବ୍ୟାକ୍ କଣ୍ଟ୍ରୋଲର",
+        "slug": "selective-granular-restorer",
+        "categoryCode": "03",
+        "procedureType": "Rollback Engine",
+        "targetKeys": [
+          "cso_jobs_master_tree_config",
+          "cso_schemes_recursive_tree_v2",
+          "cso_study_recursive_tree_v1",
+          "cso_community_recursive_tree_v1",
+          "cso_events_schedule_tree_v1",
+          "cso_seo_discovery_tree_v1",
+          "cso_security_rbac_tree_v1",
+          "cso_integrations_edge_tree_v1"
+        ],
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "description": "Allows granular restoration of an individual suite (e.g. Schemes or Jobs) to any historical state without disrupting the other 7 engines.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "OPS-NODE-03-01-SUB-1",
+            "title": "Rollback Diff Preview & State Conflict Validator",
+            "titleOdia": "ରୋଲବ୍ୟାକ୍ ଡିଫ୍ ପ୍ରିଭ୍ୟୁ ଓ କନଫ୍ଲିକ୍ଟ ଯାଞ୍ଚ",
+            "slug": "rollback-diff-preview",
+            "categoryCode": "03",
+            "procedureType": "Conflict Validator",
+            "status": "Verified / Restorable",
+            "enabled": true,
+            "description": "Generates structured JSON diff before committing destructive rollback.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-04",
+    "moduleId": "module-ops-004",
+    "code": "04",
+    "title": "Cloudflare D1 Distributed Replica Switchover",
+    "titleOdia": "କ୍ଲାଉଡଫ୍ଲେୟାର D1 ରେପ୍ଲିକା ସୁଇଚଓଭର୍",
+    "description": "Failover orchestrator toggling between primary and edge regional SQLite replicas",
+    "nodes": [
+      {
+        "id": "OPS-NODE-04-01",
+        "title": "Edge D1 Global Failover Sentinel",
+        "titleOdia": "ଏଜ୍ D1 ଗ୍ଲୋବାଲ ଫେଲଓଭର୍ ସେଣ୍ଟିନେଲ",
+        "slug": "d1-failover-sentinel",
+        "categoryCode": "04",
+        "procedureType": "Failover Sentinel",
+        "targetHost": "cloudflare:d1:primary-replica-pair",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "failoverLatencyMs": 250,
+        "description": "Switches edge workers to read-only backup D1 replica during primary database write freezes or schema maintenance.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "OPS-NODE-04-01-SUB-1",
+            "title": "D1 Replica Health Prober",
+            "categoryCode": "04",
+            "procedureType": "Health Prober",
+            "status": "Verified / Restorable",
+            "enabled": true,
+            "description": "Verifies replication lag under 1 second.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-05",
+    "moduleId": "module-ops-005",
+    "code": "05",
+    "title": "Cloudflare R2 Immutable Storage Cold Vault",
+    "titleOdia": "କ୍ଲାଉଡଫ୍ଲେୟାର R2 କୋଲ୍ଡ ଭଲ୍ଟ ଆର୍କାଇଭ୍",
+    "description": "Write-Once-Read-Many (WORM) storage retention for gazette records and audit logs",
+    "nodes": [
+      {
+        "id": "OPS-NODE-05-01",
+        "title": "CSO Immutable Historical Gazette Archive Vault",
+        "titleOdia": "ଐତିହାସିକ ବିଜ୍ଞପ୍ତି ଆର୍କାଇଭ୍ ଭଲ୍ଟ",
+        "slug": "immutable-gazette-vault",
+        "categoryCode": "05",
+        "procedureType": "WORM Storage Vault",
+        "targetHost": "https://cold-vault.csodisha.com",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "retentionYears": 7,
+        "description": "Preserves state gazettes and government recruitment notices with immutable cryptographic object lock for legal verification.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "OPS-NODE-05-01-SUB-1",
+            "title": "R2 Cold Retention Policy Enforcer",
+            "categoryCode": "05",
+            "procedureType": "Policy Enforcer",
+            "status": "Verified / Restorable",
+            "enabled": true,
+            "description": "Audits object lock retention periods.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-06",
+    "moduleId": "module-ops-006",
+    "code": "06",
+    "title": "Database Migration Version & DDL Schema Journal",
+    "titleOdia": "ଡାଟାବେସ ମାଇଗ୍ରେସନ ଭର୍ସନ ଓ DDL ସ୍କିମା ଟ୍ରାକର",
+    "description": "Sequential tracking of database schema changes and automated rollback migrations",
+    "nodes": [
+      {
+        "id": "OPS-NODE-06-01",
+        "title": "D1/Supabase Transactional DDL Schema Journal",
+        "titleOdia": "ଟ୍ରାଞ୍ଜାକସନାଲ DDL ସ୍କିମା ଜର୍ଣ୍ଣାଲ",
+        "slug": "ddl-schema-journal",
+        "categoryCode": "06",
+        "procedureType": "Migration Controller",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "currentVersion": "2026.11.04",
+        "description": "Audits forward and reverse SQL schema migrations, verifying indexes and column consistency across production databases.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "OPS-NODE-06-01-SUB-1",
+            "title": "DDL Schema Version Lock",
+            "categoryCode": "06",
+            "procedureType": "Version Lock",
+            "status": "Verified / Restorable",
+            "enabled": true,
+            "description": "Guards against unreviewed migration scripts.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-07",
+    "moduleId": "module-ops-007",
+    "code": "07",
+    "title": "Edge Cache State Preservation & Warmer Daemon",
+    "titleOdia": "ଏଜ୍ କ୍ୟାଚ୍ ସଂରକ୍ଷଣ ଓ ୱାର୍ମର ଡେମନ୍",
+    "description": "Preheats edge PoPs across Odisha and India following snapshot restorations",
+    "nodes": [
+      {
+        "id": "OPS-NODE-07-01",
+        "title": "Regional Edge Cache Preheating Worker",
+        "titleOdia": "ଆଞ୍ଚଳିକ ଏଜ୍ କ୍ୟାଚ୍ ୱାର୍ମିଂ ୱାର୍କର୍",
+        "slug": "edge-cache-preheating-worker",
+        "categoryCode": "07",
+        "procedureType": "Cache Warmer",
+        "targetHost": "https://csodisha.com/warm",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "priorityUrls": [
+          "/jobs-careers/",
+          "/schemes-benefits/",
+          "/study-library/",
+          "/community/"
+        ],
+        "description": "Preheats key public HTML and API responses across Bhubaneswar, Kolkata, Mumbai, and Delhi Cloudflare PoPs.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-08",
+    "moduleId": "module-ops-008",
+    "code": "08",
+    "title": "Offline Air-Gapped Manifest & ZIP Bundle Packager",
+    "titleOdia": "ଅଫଲାଇନ୍ ମ୍ୟାନିଫେଷ୍ଟ ଓ ZIP ବଣ୍ଡଲ୍ ପ୍ୟାକେଜର୍",
+    "description": "Generates fully portable, standalone disaster recovery packages for offline archival",
+    "nodes": [
+      {
+        "id": "OPS-NODE-08-01",
+        "title": "Portable Air-Gapped Disaster Recovery Packager",
+        "titleOdia": "ଏୟାର-ଗ୍ୟାପ୍ ବିପର୍ଯ୍ୟୟ ପୁନରୁଦ୍ଧାର ପ୍ୟାକେଜ୍",
+        "slug": "air-gapped-dr-packager",
+        "categoryCode": "08",
+        "procedureType": "Offline Packager",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "bundleFormat": "Signed JSON / ZIP",
+        "description": "Packages all HTML, CSS, JS, database records, and public resources into an air-gapped recovery tarball for cold offline storage.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "OPS-NODE-08-01-SUB-1",
+            "title": "Offline Verification Self-Extractor Tool",
+            "titleOdia": "ଅଫଲାଇନ ଯାଞ୍ଚ ସେଲ୍ଫ-ଏକ୍ସଟ୍ରାକ୍ଟର",
+            "slug": "offline-self-extractor",
+            "categoryCode": "08",
+            "procedureType": "Self Extractor",
+            "status": "Verified / Restorable",
+            "enabled": true,
+            "description": "Enables offline inspection of candidate application records without internet connectivity.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-09",
+    "moduleId": "module-ops-009",
+    "code": "09",
+    "title": "Multi-Region Failover Sentinel & Health Heartbeat",
+    "titleOdia": "ମଲ୍ଟି-ରିଜିଅନ ଫେଲଓଭର୍ ସେଣ୍ଟିନେଲ",
+    "description": "Automated traffic routing during cloud provider outages",
+    "nodes": [
+      {
+        "id": "OPS-NODE-09-01",
+        "title": "Global Traffic Steering & Multi-Region Health Sentinel",
+        "titleOdia": "ଟ୍ରାଫିକ ଷ୍ଟିଅରିଂ ଓ ମଲ୍ଟି-ରିଜିଅନ ସ୍ୱାସ୍ଥ୍ୟ ସେଣ୍ଟିନେଲ",
+        "slug": "multi-region-health-sentinel",
+        "categoryCode": "09",
+        "procedureType": "Health Sentinel",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "primaryRegion": "ap-south-1 (Mumbai)",
+        "secondaryRegion": "ap-southeast-1 (Singapore)",
+        "description": "Monitors primary ingress health and dynamically steers candidate traffic to secondary regional endpoints upon failure.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-010",
+    "moduleId": "module-ops-010",
+    "code": "10",
+    "title": "Snapshot Integrity Hash & Cryptographic Signature Check",
+    "titleOdia": "ସ୍ନାପସଟ୍ ହାସ୍ ଓ କ୍ରିପ୍ଟୋଗ୍ରାଫିକ ସ୍ୱାକ୍ଷର ଯାଞ୍ଚ",
+    "description": "Verifies HMAC-SHA512 checksums before unmarshalling any imported snapshot bundle",
+    "nodes": [
+      {
+        "id": "OPS-NODE-010-01",
+        "title": "Cryptographic Snapshot Signature & Hash Validator",
+        "titleOdia": "କ୍ରିପ୍ଟୋଗ୍ରାଫିକ ସ୍ୱାକ୍ଷର ଓ ହାସ୍ ଭାଲିଡେଟର",
+        "slug": "snapshot-signature-validator",
+        "categoryCode": "10",
+        "procedureType": "Signature Validator",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "hashingAlgorithm": "SHA-512",
+        "description": "Rejects tampered, corrupt, or truncated state snapshots, protecting SuperStore localStorage from injection attacks.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-011",
+    "moduleId": "module-ops-011",
+    "code": "11",
+    "title": "Dead-Letter Message Vacuum & Retention Expiry Purge",
+    "titleOdia": "ଡେଡ୍-ଲେଟର ମେସେଜ୍ ଭାକ୍ୟୁମ୍ ଓ ପର୍ଜ୍ ନିୟମ",
+    "description": "Automated cleanup of expired telemetry logs and quarantined payloads",
+    "nodes": [
+      {
+        "id": "OPS-NODE-011-01",
+        "title": "Automated Quarantine Vacuum & Retention Purge",
+        "titleOdia": "ସ୍ୱୟଂକ୍ରିୟ କ୍ୱାରାଣ୍ଟାଇନ୍ ଭାକ୍ୟୁମ୍ ଓ ଲଗ୍ ପର୍ଜ୍",
+        "slug": "quarantine-vacuum-purge",
+        "categoryCode": "11",
+        "procedureType": "Vacuum Cleaner",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "retentionDays": 30,
+        "description": "Purges processed DLQ payloads, transient session hashes, and expired temporary tokens to optimize storage.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-012",
+    "moduleId": "module-ops-012",
+    "code": "12",
+    "title": "Emergency Read-Only Freeze & Outage Fallback Mode",
+    "titleOdia": "ଜରୁରୀକାଳୀନ ରିଡ୍-ଅନଲି ଫ୍ରିଜ୍ ଓ ଆଉଟେଜ୍ ଫଲବ୍ୟାକ୍",
+    "description": "Single-click mechanism disabling all state mutations during high-load result announcements",
+    "nodes": [
+      {
+        "id": "OPS-NODE-012-01",
+        "title": "High-Traffic Result Announcement Read-Only Shield",
+        "titleOdia": "ଫଳାଫଳ ଘୋଷଣା ସମୟରେ ରିଡ୍-ଅନଲି କବଚ",
+        "slug": "result-announcement-readonly-shield",
+        "categoryCode": "12",
+        "procedureType": "Read-Only Shield",
+        "status": "Verified / Restorable",
+        "enabled": false,
+        "shieldMode": "Standby",
+        "description": "Disables all administrative edit panels and switches candidate views to 100% edge-cached static pages during peak server loads.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-013",
+    "moduleId": "module-ops-013",
+    "code": "13",
+    "title": "Post-Incident Forensic Audit & State Diff Inspector",
+    "titleOdia": "ପୋଷ୍ଟ-ଇନସିଡେଣ୍ଟ ଫରେନସିକ୍ ଅଡିଟ୍ ଓ ଡିଫ୍ ନିରୀକ୍ଷକ",
+    "description": "Chronological diff comparison comparing pre- and post-incident platform snapshots",
+    "nodes": [
+      {
+        "id": "OPS-NODE-013-01",
+        "title": "Forensic State Diff & Mutation Timeline Reconstructor",
+        "titleOdia": "ଫରେନସିକ୍ ଷ୍ଟେଟ୍ ଡିଫ୍ ଓ ଟାଇମଲାଇନ ନିର୍ମାତା",
+        "slug": "forensic-diff-reconstructor",
+        "categoryCode": "13",
+        "procedureType": "Forensic Inspector",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "description": "Generates color-coded visual diffs pinpointing the exact microsecond and actor responsible for unauthorized state alterations.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-014",
+    "moduleId": "module-ops-014",
+    "code": "14",
+    "title": "Automated Daily Backup Schedule & Retention Policy",
+    "titleOdia": "ଦୈନିକ ସ୍ୱୟଂକ୍ରିୟ ବ୍ୟାକଅପ୍ ସିଡ୍ୟୁଲ୍ ଓ ନୀତି",
+    "description": "Grandfather-Father-Son (GFS) backup rotation preserving 30 daily, 12 monthly, and 7 annual archives",
+    "nodes": [
+      {
+        "id": "OPS-NODE-014-01",
+        "title": "GFS Retention Policy & Scheduled Archival Orchestrator",
+        "titleOdia": "GFS ବ୍ୟାକଅପ୍ ନୀତି ଓ ଆର୍କାଇଭ୍ ନିୟନ୍ତ୍ରକ",
+        "slug": "gfs-retention-orchestrator",
+        "categoryCode": "14",
+        "procedureType": "Archival Scheduler",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "retentionPolicy": "30D Daily / 12M Monthly / 7Y Annual",
+        "description": "Automates lifecycle expiration of cold backup tiers while preventing data loss of historical welfare scheme changes.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-015",
+    "moduleId": "module-ops-015",
+    "code": "15",
+    "title": "Zero-Downtime Deployment & Rolling Canary Health",
+    "titleOdia": "ଶୂନ୍ୟ-ଡାଉନଟାଇମ୍ ଡିପ୍ଲୟମେଣ୍ଟ ଓ କାନାରୀ ହେଲ୍ଥ ଯାଞ୍ଚ",
+    "description": "Blue/green deployment checks verifying worker script hash before traffic cutover",
+    "nodes": [
+      {
+        "id": "OPS-NODE-015-01",
+        "title": "Cloudflare Workers Rolling Canary Health Validator",
+        "titleOdia": "କ୍ଲାଉଡଫ୍ଲେୟାର ୱାର୍କର୍ସ କାନାରୀ ହେଲ୍ଥ ଯାଞ୍ଚ",
+        "slug": "canary-health-validator",
+        "categoryCode": "15",
+        "procedureType": "Canary Validator",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "canaryTrafficPercent": 10,
+        "description": "Routes 10% of candidate traffic to updated worker script version, automatically aborting rollout if 5xx errors exceed 0.01%.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ops-016",
+    "moduleId": "module-ops-016",
+    "code": "16",
+    "title": "Disaster Recovery Playbook, SOP & Runbook Studio",
+    "titleOdia": "ବିପର୍ଯ୍ୟୟ ପୁନରୁଦ୍ଧାର ପ୍ଲେ-ବୁକ୍ ଓ SOP ଷ୍ଟୁଡିଓ",
+    "description": "Executable emergency runbooks for major outage scenarios (DNS failure, database corruption, credential leaks)",
+    "nodes": [
+      {
+        "id": "OPS-NODE-016-01",
+        "title": "Comprehensive Disaster Recovery Standard Operating Procedures",
+        "titleOdia": "ବିପର୍ଯ୍ୟୟ ପୁନରୁଦ୍ଧାର ମାନକ କାର୍ଯ୍ୟପଦ୍ଧତି (SOP)",
+        "slug": "dr-standard-operating-procedures",
+        "categoryCode": "16",
+        "procedureType": "Runbook SOP",
+        "status": "Verified / Restorable",
+        "enabled": true,
+        "description": "Authoritative step-by-step guides for technical leads to restore platform operation from scratch in under 15 minutes.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  }
+]
+  };
+
+  SuperStore.getOperationsRecoveryTreeConfig = function() {
+    return _hydrateConfig('cso_operations_recovery_tree_v1', 'categories', () => DEFAULT_OPERATIONS_DIRECTORY_TREE);
+  };
+  SuperStore.saveOperationsRecoveryTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_operations_recovery_tree_v1', JSON.stringify(cfg));
+    this.logAudit('OPERATIONS_TREE_MUTATION', 'OPERATIONS_RECOVERY', 'Saved Operations & Recovery Suite updates (' + cfg.categories.length + ' modules).');
+    return true;
+  };
+  SuperStore.resetOperationsRecoveryTreeConfig = function() {
+    localStorage.setItem('cso_operations_recovery_tree_v1', JSON.stringify(DEFAULT_OPERATIONS_DIRECTORY_TREE));
+    this.logAudit('OPERATIONS_TREE_RESET', 'OPERATIONS_RECOVERY', 'Operations & Recovery Suite reset to authentic factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_OPERATIONS_DIRECTORY_TREE));
+  };
+  SuperStore.exportOperationsRecoveryManifest = function() {
+    const config = this.getOperationsRecoveryTreeConfig();
+    const filename = "operations_recovery_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("OPERATIONS_TREE_EXPORTED", "DATA_EXPORT", "Operations manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  // Rollback helper for the 8 core platform storage keys
+  SuperStore.rollbackEngineState = function(key, targetState) {
+    if (!key || !targetState) return false;
+    try {
+      localStorage.setItem(key, typeof targetState === 'string' ? targetState : JSON.stringify(targetState));
+      this.logAudit('ENGINE_POINT_IN_TIME_ROLLBACK', 'OPERATIONS_RECOVERY', 'Rolled back state for storage key: ' + key);
+      return true;
+    } catch (e) {
+      console.error('Failed to rollback engine state for ' + key, e);
+      return false;
+    }
+  };
+
+  // =========================================================================
+  // COMMUNICATIONS, ALERTS & CANDIDATE NOTIFICATIONS SUITE
+  // Cache Key: cso_communications_alerts_tree_v1 (12 Modules)
+  // =========================================================================
+  const DEFAULT_COMMUNICATIONS_DIRECTORY_TREE = {
+    meta: {
+      version: "2026.11",
+      updatedAt: new Date().toISOString(),
+      author: "Common Sense Odisha (CSO) Communications Architecture",
+      suite: "Communications, Alerts & Candidate Notifications Suite",
+      folderId: "folder-communications"
+    },
+    activeCategoryId: "cat-comms-01",
+    selectedNodeId: "COMMS-NODE-01-01",
+    categories: [
+  {
+    "id": "cat-comms-01",
+    "moduleId": "module-comms-001",
+    "code": "01",
+    "title": "Transactional SMS Gateway & TRAI DLT Template Manager",
+    "titleOdia": "ଟ୍ରାଞ୍ଜାକସନାଲ ଏସଏମଏସ ଗେଟୱେ ଓ TRAI DLT ଟେମ୍ପଲେଟ୍",
+    "description": "DLT approved header IDs and transactional SMS notification dispatchers",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-01-01",
+        "title": "OPSC/OSSC Exam Alert DLT SMS Notification",
+        "titleOdia": "ଓପିଏସସି/ଓଏସଏସସି ପରୀକ୍ଷା ଆଲର୍ଟ ଏସଏମଏସ",
+        "slug": "exam-alert-dlt-sms",
+        "categoryCode": "01",
+        "channel": "Transactional SMS",
+        "dltHeaderId": "CSODIS",
+        "dltTemplateId": "1707161829304918273",
+        "subjectEn": "Important Exam Notice: {{exam_title}}",
+        "subjectOr": "ଜରୁରୀ ପରୀକ୍ଷା ସୂଚନା: {{exam_title}}",
+        "bodyEn": "Dear Candidate, OPSC has confirmed date for {{exam_title}} on {{exam_date}}. Download hall ticket from csodisha.com. CSO Odisha",
+        "bodyOr": "ପ୍ରିୟ ପ୍ରାର୍ଥୀ, OPSC ପକ୍ଷରୁ {{exam_title}} ପରୀକ୍ଷା ତାରିଖ {{exam_date}} ଘୋଷଣା କରାଯାଇଛି। ଆଡମିଟ କାର୍ଡ ଡାଉନଲୋଡ କରନ୍ତୁ csodisha.com ରୁ। CSO Odisha",
+        "variables": [
+          "candidate_name",
+          "exam_title",
+          "exam_date",
+          "hall_ticket_url"
+        ],
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "High-priority transactional notification route delivering critical exam date announcements directly to candidate mobile phones.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-01-01-SUB-1",
+            "title": "Candidate Authentication 6-Digit OTP Template",
+            "titleOdia": "୬-ଅଙ୍କ ବିଶିଷ୍ଟ ଓଟିପି ପ୍ରେରଣ ଟେମ୍ପଲେଟ୍",
+            "slug": "candidate-auth-otp-template",
+            "categoryCode": "01",
+            "channel": "SMS OTP",
+            "dltTemplateId": "1707161829304918274",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Instant delivery OTP template for portal login and scheme application verification.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-02",
+    "moduleId": "module-comms-002",
+    "code": "02",
+    "title": "Multilingual Candidate Email Campaigns & HTML Authoring",
+    "titleOdia": "ବହୁଭାଷୀ ଇମେଲ କ୍ୟାମ୍ପେନ ଓ HTML ରଚନା",
+    "description": "Responsive HTML email authoring with bilingual Odia/English toggle and variable interpolation",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-02-01",
+        "title": "Weekly Odisha Employment & Scholarship Digest",
+        "titleOdia": "ସାପ୍ତାହିକ ନିଯୁକ୍ତି ଓ ବୃତ୍ତି ସୂଚନା ଇମେଲ୍",
+        "slug": "weekly-employment-scholarship-digest",
+        "categoryCode": "02",
+        "channel": "Email Campaign",
+        "subjectEn": "CSO Weekly Digest: 2,400+ Government Vacancies & Active Schemes",
+        "subjectOr": "ସିଏସଓ ସାପ୍ତାହିକ ସୂଚନା: ୨,୪୦୦+ ସରକାରୀ ନିଯୁକ୍ତି ଓ ଯୋଜନା",
+        "bodyEn": "Hello {{candidate_name}},\n\nHere is your verified summary of government recruitment notifications and welfare scholarships released this week across Odisha.\n\nVisit csodisha.com for direct links.",
+        "bodyOr": "ନମସ୍କାର {{candidate_name}},\n\nଏହି ସପ୍ତାହରେ ଓଡ଼ିଶାରେ ପ୍ରକାଶିତ ସମସ୍ତ ସରକାରୀ ନିଯୁକ୍ତି ଏବଂ ବୃତ୍ତି ଯୋଜନାର ନିର୍ଭୁଲ ତଥ୍ୟ।\n\nସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ପାଇଁ csodisha.com ପରିଦର୍ଶନ କରନ୍ତୁ।",
+        "variables": [
+          "candidate_name",
+          "digest_date",
+          "unsubscribe_url"
+        ],
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Automated weekly newsletter distributed to registered candidates with localized Odia job listings and syllabus updates.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-02-01-SUB-1",
+            "title": "Candidate Email Unsubscribe Worker",
+            "categoryCode": "02",
+            "channel": "Unsubscribe Worker",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Processes list-unsubscribe header requests.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-03",
+    "moduleId": "module-comms-003",
+    "code": "03",
+    "title": "Instant Exam Admit Card & Hall Ticket Push Alerts",
+    "titleOdia": "ଆଡମିଟ କାର୍ଡ ଓ ହଲ୍ ଟିକେଟ୍ ତ୍ୱରିତ ପୁସ୍ ଆଲର୍ଟ",
+    "description": "Multi-channel broadcast alerts triggering upon official hall ticket release",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-03-01",
+        "title": "OSSC CGL & Prelims Hall Ticket Instant Alert",
+        "titleOdia": "ଓଏସଏସସି ସିଜିଏଲ ଆଡମିଟ କାର୍ଡ ତତ୍କାଳ ଆଲର୍ଟ",
+        "slug": "ossc-cgl-hallticket-alert",
+        "categoryCode": "03",
+        "channel": "Push & Telegram",
+        "subjectEn": "Hall Ticket Released: {{exam_title}}",
+        "subjectOr": "ଆଡମିଟ କାର୍ଡ ଉପଲବ୍ଧ: {{exam_title}}",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Real-time alert pushed within 60 seconds of commission hall ticket portal activation.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-03-01-SUB-1",
+            "title": "Emergency Hall Ticket Push Dispatcher",
+            "categoryCode": "03",
+            "channel": "Push Dispatcher",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Pushes hall ticket mirror link to mobile devices.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-04",
+    "moduleId": "module-comms-004",
+    "code": "04",
+    "title": "Recruitment Application Deadline Countdown Broadcaster",
+    "titleOdia": "ନିଯୁକ୍ତି ଆବେଦନ ଶେଷ ତାରିଖ କାଉଣ୍ଟଡାଉନ୍ ସୂଚନା",
+    "description": "Automated 48-hour and 24-hour deadline reminders to prevent application dropouts",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-04-01",
+        "title": "Last 24 Hours Application Deadline Urgent Reminder",
+        "titleOdia": "ଆବେଦନ ଶେଷ ହେବାକୁ ୨୪ ଘଣ୍ଟା ବାକି: ଜରୁରୀ ସୂଚନା",
+        "slug": "last-24-hours-deadline-reminder",
+        "categoryCode": "04",
+        "channel": "Multi-Channel Broadcast",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Scheduled dispatch warning students of closing registration windows across OPSC, OSSC, and OSSSC.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-04-01-SUB-1",
+            "title": "OPSC 12-Hour Final Countdown Alert",
+            "categoryCode": "04",
+            "channel": "Countdown Alert",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Final countdown notification for major competitive exams.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-05",
+    "moduleId": "module-comms-005",
+    "code": "05",
+    "title": "State Welfare Scheme Sanction & Direct Benefit Alerts",
+    "titleOdia": "ରାଜ୍ୟ କଲ୍ୟାଣ ଯୋଜନା ମଞ୍ଜୁରୀ ଓ ହିତାଧିକାରୀ ଆଲର୍ଟ",
+    "description": "Notifications updating citizens on Subhadra, KALIA, and BSKY disbursement schedules",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-05-01",
+        "title": "Subhadra Yojana Installment Disbursement Notification",
+        "titleOdia": "ସୁଭଦ୍ରା ଯୋଜନା କିସ୍ତି ପ୍ରଦାନ ସୂଚନା",
+        "slug": "subhadra-disbursement-alert",
+        "categoryCode": "05",
+        "channel": "SMS & WhatsApp",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Direct notifications guiding women beneficiaries on Aadhaar link verification and bank account crediting.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-05-01-SUB-1",
+            "title": "Subhadra Beneficiary Bank Verification Guide",
+            "categoryCode": "05",
+            "channel": "Verification Guide",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Guides citizens on resolving DBT Aadhaar seeding issues.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-06",
+    "moduleId": "module-comms-006",
+    "code": "06",
+    "title": "WhatsApp Notification Templates & Meta WABA Registry",
+    "titleOdia": "ହ୍ୱାଟସଆପ୍ ଟେମ୍ପଲେଟ୍ ଓ ମେଟା WABA ରେଜିଷ୍ଟ୍ରି",
+    "description": "Meta pre-approved rich messaging templates with interactive call-to-action buttons",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-06-01",
+        "title": "WhatsApp Interactive Result Announcement Template",
+        "titleOdia": "ହ୍ୱାଟସଆପ୍ ପରୀକ୍ଷା ଫଳାଫଳ ଟେମ୍ପଲେଟ୍",
+        "slug": "whatsapp-result-template",
+        "categoryCode": "06",
+        "channel": "WhatsApp Business API",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Interactive WhatsApp message with 'Check Merit List' and 'View Cutoff Marks' quick action buttons.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-06-01-SUB-1",
+            "title": "WhatsApp Fallback SMS Dispatcher",
+            "categoryCode": "06",
+            "channel": "Fallback Route",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Reroutes undelivered WhatsApp notices to SMS automatically.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-07",
+    "moduleId": "module-comms-007",
+    "code": "07",
+    "title": "Telegram Community Broadcasting & Channel Automations",
+    "titleOdia": "ଟେଲିଗ୍ରାମ କମ୍ୟୁନିଟି ବ୍ରଡକାଷ୍ଟ ଓ ଚ୍ୟାନେଲ ଅଟୋମେସନ୍",
+    "description": "Direct markdown alert formatting for all verified CSO Telegram communities",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-07-01",
+        "title": "Telegram Daily Current Affairs & Quiz Dispatcher",
+        "titleOdia": "ଟେଲିଗ୍ରାମ ଦୈନିକ ସାମ୍ପ୍ରତିକ ଘଟଣାବଳୀ ଓ କୁଇଜ୍",
+        "slug": "telegram-current-affairs-quiz",
+        "categoryCode": "07",
+        "channel": "Telegram Bot API",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Morning competitive exam study digests sent automatically to Telegram groups.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-07-01-SUB-1",
+            "title": "Telegram Channel Anti-Spam Moderation Bot",
+            "categoryCode": "07",
+            "channel": "Moderation Bot",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Deletes unauthorized advertising links in community groups.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-08",
+    "moduleId": "module-comms-008",
+    "code": "08",
+    "title": "Candidate Notification Preferences & Frequency Caps",
+    "titleOdia": "ପ୍ରାର୍ଥୀ ସୂଚନା ପସନ୍ଦ ଓ ଆବୃତ୍ତି ସୀମା",
+    "description": "Fine-grained candidate subscription controls preventing message fatigue",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-08-01",
+        "title": "Candidate Category-Based Subscription Preferences",
+        "titleOdia": "ବିଭାଗ ଅନୁଯାୟୀ ପ୍ରାର୍ଥୀ ସୂଚନା ଚୟନ ନିୟମ",
+        "slug": "candidate-subscription-preferences",
+        "categoryCode": "08",
+        "channel": "Preference Center",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "maxAlertsPerDay": 3,
+        "description": "Allows aspirants to select specific categories (e.g. Only Teaching Jobs, Only Engineering) with strict daily caps.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "COMMS-NODE-08-01-SUB-1",
+            "title": "Quiet Hours Night Dispatch Suppressor",
+            "categoryCode": "08",
+            "channel": "Suppressor",
+            "status": "Active / Broadcast Ready",
+            "enabled": true,
+            "description": "Buffers nocturnal alerts until 7:00 AM.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-09",
+    "moduleId": "module-comms-009",
+    "code": "09",
+    "title": "DPDP Act Consent Revocation & Opt-Out Registry",
+    "titleOdia": "DPDP ଆଇନ ସମ୍ମତି ପ୍ରତ୍ୟାହାର ଓ ଅପ୍ଟ-ଆଉଟ୍ ରେଜିଷ୍ଟ୍ରି",
+    "description": "Immediate zero-friction opt-out mechanism respecting citizen privacy choices",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-09-01",
+        "title": "Automated Unsubscribe & Data Erasure Registry",
+        "titleOdia": "ସ୍ୱୟଂକ୍ରିୟ ଅନସବସ୍କ୍ରାଇବ୍ ଓ ତଥ୍ୟ ଅପସାରଣ ରେଜିଷ୍ଟ୍ରି",
+        "slug": "unsubscribe-erasure-registry",
+        "categoryCode": "09",
+        "channel": "Privacy Opt-Out",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "slaHours": 24,
+        "description": "Instant processing of STOP/UNSUBSCRIBE commands across SMS, email, and WhatsApp, logged for compliance audits.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-010",
+    "moduleId": "module-comms-010",
+    "code": "10",
+    "title": "Bilingual Odia & English Variable Tag Interpolator",
+    "titleOdia": "ଦ୍ୱିଭାଷୀ ଓଡ଼ିଆ ଓ ଇଂରାଜୀ ଭାରିଏବଲ୍ ଇଣ୍ଟରପୋଲେଟର",
+    "description": "Contextual placeholder engine supporting unicode Odia numeral and date formatting",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-010-01",
+        "title": "Native Odia Script Numerals & Date Parser",
+        "titleOdia": "ଓଡ଼ିଆ ଅଙ୍କ ଓ ତାରିଖ ପାର୍ସର",
+        "slug": "odia-numerals-date-parser",
+        "categoryCode": "10",
+        "channel": "Text Engine",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Translates standard ISO dates into formatted Odia script (e.g. ୨୦୨୬ ମାର୍ଚ୍ଚ ୧୫) for localized messages.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-011",
+    "moduleId": "module-comms-011",
+    "code": "11",
+    "title": "Delivery Receipts, Bounces & Telecom Carrier Diagnostics",
+    "titleOdia": "ବିତରଣ ରସିଦ, ବାଉନ୍ସ ଓ ଟେଲିକମ୍ କ୍ୟାରିଅର ଯାଞ୍ଚ",
+    "description": "Detailed delivery metrics, latency logs, and automated carrier route failover",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-011-01",
+        "title": "Telecom Carrier Delivery Latency & Bounce Inspector",
+        "titleOdia": "ଟେଲିକମ୍ ବିତରଣ ସମୟ ଓ ବାଉନ୍ସ ନିରୀକ୍ଷକ",
+        "slug": "carrier-latency-bounce-inspector",
+        "categoryCode": "11",
+        "channel": "Diagnostics",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Monitors Airtel, Jio, and BSNL delivery success rates across Odisha districts, rerouting traffic during localized network congestion.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-comms-012",
+    "moduleId": "module-comms-012",
+    "code": "12",
+    "title": "Scheduled Alert Calendar & Notification Broadcast Queue",
+    "titleOdia": "ସିଡ୍ୟୁଲ୍ଡ ଆଲର୍ଟ କ୍ୟାଲେଣ୍ଡର ଓ ବ୍ରଡକାଷ୍ଟ କ୍ୟୁ",
+    "description": "Centralized calendar planning notification dispatches around official exam dates",
+    "nodes": [
+      {
+        "id": "COMMS-NODE-012-01",
+        "title": "Statewide Recruitment Broadcast Calendar Queue",
+        "titleOdia": "ରାଜ୍ୟସ୍ତରୀୟ ନିଯୁକ୍ତି ସୂଚନା କ୍ୟାଲେଣ୍ଡର କ୍ୟୁ",
+        "slug": "broadcast-calendar-queue",
+        "categoryCode": "12",
+        "channel": "Queue Manager",
+        "status": "Active / Broadcast Ready",
+        "enabled": true,
+        "description": "Coordinates notification timing to prevent overlapping messages and respect candidate quiet hours (10 PM to 7 AM).",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  }
+]
+  };
+
+  SuperStore.getCommunicationsAlertsTreeConfig = function() {
+    return _hydrateConfig('cso_communications_alerts_tree_v1', 'categories', () => DEFAULT_COMMUNICATIONS_DIRECTORY_TREE);
+  };
+  SuperStore.saveCommunicationsAlertsTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_communications_alerts_tree_v1', JSON.stringify(cfg));
+    this.logAudit('COMMUNICATIONS_TREE_MUTATION', 'COMMUNICATIONS_ALERTS', 'Saved Communications & Alerts Suite updates (' + cfg.categories.length + ' modules).');
+    return true;
+  };
+  SuperStore.resetCommunicationsAlertsTreeConfig = function() {
+    localStorage.setItem('cso_communications_alerts_tree_v1', JSON.stringify(DEFAULT_COMMUNICATIONS_DIRECTORY_TREE));
+    this.logAudit('COMMUNICATIONS_TREE_RESET', 'COMMUNICATIONS_ALERTS', 'Communications & Alerts Suite reset to authentic defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_COMMUNICATIONS_DIRECTORY_TREE));
+  };
+  SuperStore.exportCommunicationsAlertsManifest = function() {
+    const config = this.getCommunicationsAlertsTreeConfig();
+    const filename = "communications_alerts_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("COMMUNICATIONS_TREE_EXPORTED", "DATA_EXPORT", "Communications manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  // =========================================================================
+  // ANALYTICS, TELEMETRY & USER FEEDBACK SUITE
+  // Cache Key: cso_analytics_telemetry_tree_v1 (14 Modules)
+  // =========================================================================
+  const DEFAULT_ANALYTICS_DIRECTORY_TREE = {
+    meta: {
+      version: "2026.11",
+      updatedAt: new Date().toISOString(),
+      author: "Common Sense Odisha (CSO) Telemetry Architecture",
+      suite: "Analytics, Telemetry & User Feedback Intelligence Suite",
+      folderId: "folder-analytics"
+    },
+    activeCategoryId: "cat-ana-01",
+    selectedNodeId: "ANA-NODE-01-01",
+    categories: [
+  {
+    "id": "cat-ana-01",
+    "moduleId": "module-ana-001",
+    "code": "01",
+    "title": "Zero-Cookie Edge Telemetry & Real-Time Pageview Counter",
+    "titleOdia": "କୁକି-ମୁକ୍ତ ଏଜ୍ ଟେଲିମେଟ୍ରି ଓ ପେଜ୍-ଭ୍ୟୁ କାଉଣ୍ଟର",
+    "description": "Privacy-preserving cookieless visitor analytics adhering to India DPDP Act 2023",
+    "nodes": [
+      {
+        "id": "ANA-NODE-01-01",
+        "title": "Daily Salted Hash Edge Unique Visitor Aggregator",
+        "titleOdia": "ଦୈନିକ ସଲ୍ଟେଡ୍ ହାସ୍ ଭିଜିଟର ଗଣନା ଇଞ୍ଜିନ",
+        "slug": "salted-hash-visitor-aggregator",
+        "categoryCode": "01",
+        "metricType": "Pageview Telemetry",
+        "targetPath": "/*",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "retentionPolicy": "Zero Persistent Cookies",
+        "dailyPageviewsSample": "148,290",
+        "uniqueVisitorsSample": "42,810",
+        "description": "Computes aggregated visitor counts using ephemeral daily salted hashes of IP and User-Agent, ensuring zero cross-site tracking and full compliance with privacy laws.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-01-01-SUB-1",
+            "title": "District Portal Active Reader Ingress Metric",
+            "titleOdia": "ଜିଲ୍ଲାସ୍ତରୀୟ ପାଠକ ସଂଖ୍ୟା ମେଟ୍ରିକ୍",
+            "slug": "district-reader-ingress-metric",
+            "categoryCode": "01",
+            "metricType": "Ingress Telemetry",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Measures concurrent readership across all 30 Odisha district portals in real time.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-02",
+    "moduleId": "module-ana-002",
+    "code": "02",
+    "title": "Top Search Intent, Trending Keywords & Discovery Ranks",
+    "titleOdia": "ସର୍ବାଧିକ ସର୍ଚ୍ଚ କରାଯାଉଥିବା କୀ-ୱାର୍ଡ ଓ ଟ୍ରେଣ୍ଡିଂ ତଥ୍ୟ",
+    "description": "Aggregated query frequency tracking popular state examinations and schemes",
+    "nodes": [
+      {
+        "id": "ANA-NODE-02-01",
+        "title": "Statewide Top Examination Search Query Tracker",
+        "titleOdia": "ରାଜ୍ୟସ୍ତରୀୟ ପରୀକ୍ଷା ସର୍ଚ୍ଚ ଟ୍ରାକର୍",
+        "slug": "statewide-search-query-tracker",
+        "categoryCode": "02",
+        "metricType": "Search Analytics",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "topTerms": [
+          "OPSC OCS 2026",
+          "OSSC CGL Mains Cutoff",
+          "Subhadra 3rd Phase List",
+          "OSSSC RI ARI Syllabus",
+          "Odisha B.Ed Answer Key"
+        ],
+        "description": "Ranks top user queries to guide editorial teams on creating high-priority briefings and exam guides.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-02-01-SUB-1",
+            "title": "Trending OPSC Recruitment Search Cluster",
+            "categoryCode": "02",
+            "metricType": "Search Cluster",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Tracks rising velocity of search terms.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-03",
+    "moduleId": "module-ana-003",
+    "code": "03",
+    "title": "Zero-Result Query Detector & Auto-Synonym Mapping",
+    "titleOdia": "ଫଳାଫଳହୀନ ସର୍ଚ୍ଚ ଡିଟେକ୍ଟର ଓ ସମାର୍ଥକ ଶବ୍ଦ ଲିଙ୍କିଂ",
+    "description": "Identifies queries returning zero results and suggests automatic synonym mappings",
+    "nodes": [
+      {
+        "id": "ANA-NODE-03-01",
+        "title": "Zero-Result Query Sentinel & Synonym Suggestion Engine",
+        "titleOdia": "ଜିରୋ-ରେଜଲ୍ଟ କ୍ୱେରୀ ସେଣ୍ଟିନେଲ ଓ ସିନୋନିମ୍ ଇଞ୍ଜିନ",
+        "slug": "zero-result-query-sentinel",
+        "categoryCode": "03",
+        "metricType": "Query Resolver",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "detectedQueries": [
+          "subhadra online form apply",
+          "cgl admit card link",
+          "forest guard merit list"
+        ],
+        "description": "Captures candidate searches that failed to match any records, allowing one-click alias mapping to existing verified content.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-03-01-SUB-1",
+            "title": "Auto-Synonym Vocabulary Dictionary Generator",
+            "categoryCode": "03",
+            "metricType": "Dictionary Generator",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Exports candidate search phrases into Meilisearch synonyms.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-04",
+    "moduleId": "module-ana-004",
+    "code": "04",
+    "title": "High-Demand PYQ, Syllabus & Material Download Metrics",
+    "titleOdia": "ସର୍ବାଧିକ ଡାଉନଲୋଡ୍ ହେଉଥିବା PYQ ଓ ପାଠ୍ୟକ୍ରମ ପିଡିଏଫ୍",
+    "description": "Download counters tracking study library resources and official gazette PDFs",
+    "nodes": [
+      {
+        "id": "ANA-NODE-04-01",
+        "title": "Past Year Question Paper Download Telemetry",
+        "titleOdia": "ବିଗତ ବର୍ଷ ପ୍ରଶ୍ନପତ୍ର ଡାଉନଲୋଡ୍ ଟ୍ରାକର୍",
+        "slug": "pyq-download-telemetry",
+        "categoryCode": "04",
+        "metricType": "Download Counter",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "topDownloads": [
+          "OPSC_OCS_Prelims_GS1_2024.pdf",
+          "OSSC_CGL_Arithmetic_PYQ.pdf",
+          "Subhadra_Yojana_Form_Odia.pdf"
+        ],
+        "description": "Monitors bandwidth consumption and popularity of educational resources to optimize Cloudflare edge caching.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-04-01-SUB-1",
+            "title": "High-Bandwidth PDF Egress Heatmap",
+            "categoryCode": "04",
+            "metricType": "Egress Heatmap",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Visualizes peak study material download hours.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-05",
+    "moduleId": "module-ana-005",
+    "code": "05",
+    "title": "District & Regional User Engagement Demographics",
+    "titleOdia": "ଜିଲ୍ଲାସ୍ତରୀୟ ବ୍ୟବହାରକାରୀ ସଂଖ୍ୟା ଓ ଆଞ୍ଚଳିକ ତଥ୍ୟ",
+    "description": "Regional distribution of candidate traffic across all 30 districts of Odisha",
+    "nodes": [
+      {
+        "id": "ANA-NODE-05-01",
+        "title": "30-District Regional Traffic Distribution Index",
+        "titleOdia": "୩୦ଟି ଜିଲ୍ଲାର ଟ୍ରାଫିକ୍ ବିତରଣ ଇଣ୍ଡେକ୍ସ",
+        "slug": "district-traffic-distribution-index",
+        "categoryCode": "05",
+        "metricType": "Geo Demographics",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "topDistricts": [
+          "Khordha (Bhubaneswar)",
+          "Cuttack",
+          "Ganjam (Berhampur)",
+          "Sambalpur",
+          "Balasore",
+          "Sundargarh (Rourkela)"
+        ],
+        "description": "Shows geographic coverage across urban and rural belts to ensure equal access to government employment information.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-05-01-SUB-1",
+            "title": "Rural vs Urban Aspirant Reach Metric",
+            "categoryCode": "05",
+            "metricType": "Reach Metric",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Ensures aspirational access outside capital region.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-06",
+    "moduleId": "module-ana-006",
+    "code": "06",
+    "title": "Candidate Device Breakdown, Edge Latency & Web Vitals",
+    "titleOdia": "ଡିଭାଇସ୍ ବିବରଣୀ, ଏଜ୍ ଲେଟେନ୍ସି ଓ କୋର୍ ୱେବ୍ ଭାଇଟାଲ୍ସ",
+    "description": "Monitors mobile responsiveness, 4G/5G latency, and Largest Contentful Paint (LCP)",
+    "nodes": [
+      {
+        "id": "ANA-NODE-06-01",
+        "title": "Mobile First Web Vitals & 4G Network Latency Sentinel",
+        "titleOdia": "ମୋବାଇଲ୍ ୱେବ୍ ଭାଇଟାଲ୍ସ ଓ ନେଟୱାର୍କ ଲେଟେନ୍ସି",
+        "slug": "mobile-web-vitals-sentinel",
+        "categoryCode": "06",
+        "metricType": "Performance Metrics",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "mobilePercent": "88.4%",
+        "avgLatencyMs": "185ms",
+        "lcpScore": "1.2s (Good)",
+        "description": "Ensures pages load in under 2 seconds on entry-level Android smartphones over low-bandwidth mobile networks.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-06-01-SUB-1",
+            "title": "Core Web Vitals Real-Time Alert Sentinel",
+            "categoryCode": "06",
+            "metricType": "Alert Sentinel",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Alerts when cumulative layout shift exceeds threshold.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-07",
+    "moduleId": "module-ana-007",
+    "code": "07",
+    "title": "Citizen Feedback Intake, CSAT & Sentiment Analysis",
+    "titleOdia": "ନାଗରିକ ମତାମତ, CSAT ସନ୍ତୋଷ ସୂଚକାଙ୍କ ଓ ସେଣ୍ଟିମେଣ୍ଟ",
+    "description": "Triage inbox collecting candidate ratings, clarity suggestions, and user sentiment",
+    "nodes": [
+      {
+        "id": "ANA-NODE-07-01",
+        "title": "Portal Helpfulness Rating & Feedback Sentiment Inbox",
+        "titleOdia": "ପୋର୍ଟାଲ ସନ୍ତୋଷ ସୂଚକାଙ୍କ ଓ ମତାମତ ଇନବକ୍ସ",
+        "slug": "portal-helpfulness-feedback-inbox",
+        "categoryCode": "07",
+        "metricType": "Feedback Triage",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "csatScore": "4.8 / 5.0 (96% Positive)",
+        "totalReviews": "18,420",
+        "description": "Aggregates candidate feedback on exam briefings and scheme eligibility checkers to drive continuous portal improvements.",
+        "lastUpdated": "2026-11-10",
+        "children": [
+          {
+            "id": "ANA-NODE-07-01-SUB-1",
+            "title": "Negative Sentiment Rapid Response Triage",
+            "categoryCode": "07",
+            "metricType": "Rapid Response",
+            "status": "Active Telemetry",
+            "enabled": true,
+            "description": "Escalates confusion over examination rules to editorial lead.",
+            "lastUpdated": "2026-11-10",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-08",
+    "moduleId": "module-ana-008",
+    "code": "08",
+    "title": "Broken Link & 404 Sentinel Triage Inbox",
+    "titleOdia": "ଭଙ୍ଗା ଲିଙ୍କ୍ ଓ 404 ଏରର୍ ସେଣ୍ଟିନେଲ୍ ଇନବକ୍ସ",
+    "description": "Automated detector catching outdated commission URLs and creating instant redirects",
+    "nodes": [
+      {
+        "id": "ANA-NODE-08-01",
+        "title": "Automated Broken Link Sentinel & Outbound URL Checker",
+        "titleOdia": "ସ୍ୱତଃ ଭଙ୍ଗା ଲିଙ୍କ୍ ଚେକର୍ ଓ ରିଡାଇରେକ୍ଟ ବିଲଡର୍",
+        "slug": "broken-link-sentinel",
+        "categoryCode": "08",
+        "metricType": "Link Health",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "brokenLinksCount": 0,
+        "description": "Continuously validates all outbound government portal links, alerting editors if an official commission changes its application URL.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-09",
+    "moduleId": "module-ana-009",
+    "code": "09",
+    "title": "Portal Outbound Referral & Official Commission Click Tracker",
+    "titleOdia": "ବାହ୍ୟ ସରକାରୀ ପୋର୍ଟାଲ ରେଫରାଲ୍ କ୍ଲିକ୍ ଟ୍ରାକର୍",
+    "description": "Tracks successful candidate handoffs to official commission registration sites",
+    "nodes": [
+      {
+        "id": "ANA-NODE-09-01",
+        "title": "Official Government Portal Outbound Click Sentinel",
+        "titleOdia": "ସରକାରୀ ୱେବସାଇଟ୍ ଆଉଟବାଉଣ୍ଡ କ୍ଲିକ୍ ସେଣ୍ଟିନେଲ",
+        "slug": "outbound-click-sentinel",
+        "categoryCode": "09",
+        "metricType": "Outbound Clicks",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "topDestinations": [
+          "opsc.gov.in",
+          "ossc.gov.in",
+          "osssc.gov.in",
+          "scholarship.odisha.gov.in"
+        ],
+        "description": "Measures actual candidate application conversions facilitated by CSO's verified portal guides.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-010",
+    "moduleId": "module-ana-010",
+    "code": "10",
+    "title": "Recruitment Funnel & Examination Milestone Drop-Offs",
+    "titleOdia": "ନିଯୁକ୍ତି ଫନେଲ୍ ଓ ପରୀକ୍ଷା ପର୍ଯ୍ୟାୟ ଡ୍ରପ୍-ଅଫ୍ ଆନାଲିଟିକ୍ସ",
+    "description": "Tracks student progression from notification discovery to syllabus download and admit card access",
+    "nodes": [
+      {
+        "id": "ANA-NODE-010-01",
+        "title": "Aspirant Examination Lifecycle Funnel Analysis",
+        "titleOdia": "ପ୍ରାର୍ଥୀ ପରୀକ୍ଷା ଯାତ୍ରା ଫନେଲ୍ ଆନାଲିସିସ୍",
+        "slug": "aspirant-lifecycle-funnel",
+        "categoryCode": "10",
+        "metricType": "Funnel Analysis",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "description": "Pinpoints where students drop off in their preparation journey to improve resource clarity and navigation.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-011",
+    "moduleId": "module-ana-011",
+    "code": "11",
+    "title": "Bilingual Content Usage (Odia vs English Preference)",
+    "titleOdia": "ଦ୍ୱିଭାଷୀ ବିଷୟବସ୍ତୁ ବ୍ୟବହାର (ଓଡ଼ିଆ ବନାମ ଇଂରାଜୀ ପସନ୍ଦ)",
+    "description": "Monitors toggle frequency between native Odia script and English articles",
+    "nodes": [
+      {
+        "id": "ANA-NODE-011-01",
+        "title": "Odia Script vs English Readership Telemetry",
+        "titleOdia": "ଓଡ଼ିଆ ଭାଷା ବନାମ ଇଂରାଜୀ ପାଠକୀୟତା ତଥ୍ୟ",
+        "slug": "odia-english-readership-telemetry",
+        "categoryCode": "11",
+        "metricType": "Language Telemetry",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "odiaPreferencePercent": "64.2%",
+        "englishPreferencePercent": "35.8%",
+        "description": "Validates high community adoption of regional Odia translations for welfare scheme eligibility guides.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-012",
+    "moduleId": "module-ana-012",
+    "code": "12",
+    "title": "Student Community Engagement & Forum Activity Index",
+    "titleOdia": "ଛାତ୍ର ସମ୍ପ୍ରଦାୟ ଯୋଗଦାନ ଓ ଫୋରମ୍ ସକ୍ରିୟତା ସୂଚକାଙ୍କ",
+    "description": "Measures question asking, peer mentoring, and community interaction volumes",
+    "nodes": [
+      {
+        "id": "ANA-NODE-012-01",
+        "title": "District Study Circle Community Activity Index",
+        "titleOdia": "ଜିଲ୍ଲା ଷ୍ଟଡି ସର୍କଲ କମ୍ୟୁନିଟି ସକ୍ରିୟତା",
+        "slug": "district-study-circle-activity",
+        "categoryCode": "12",
+        "metricType": "Community Activity",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "activeStudyCircles": "30 Districts",
+        "weeklyInteractions": "12,850",
+        "description": "Tracks peer-to-peer discussion volume and resolution rate of candidate queries.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-013",
+    "moduleId": "module-ana-013",
+    "code": "13",
+    "title": "DPDP Act Audit Telemetry & Privacy Verification Logs",
+    "titleOdia": "DPDP ଆଇନ ଅଡିଟ୍ ଟେଲିମେଟ୍ରି ଓ ଗୋପନୀୟତା ଯାଞ୍ଚ",
+    "description": "Verifies zero PII leakage into analytics pipelines and confirms consent state logs",
+    "nodes": [
+      {
+        "id": "ANA-NODE-013-01",
+        "title": "Zero-PII Analytics Scrubbing & Compliance Verifier",
+        "titleOdia": "ଜିରୋ-PII ଆନାଲିଟିକ୍ସ ସ୍କ୍ରବିଂ ଓ ଅନୁପାଳନ ଯାଞ୍ଚ",
+        "slug": "zero-pii-compliance-verifier",
+        "categoryCode": "13",
+        "metricType": "Privacy Audit",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "piiViolationsCount": 0,
+        "description": "Cryptographically scans analytics event payloads to ensure no Aadhaar or telephone numbers ever enter telemetry streams.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "cat-ana-014",
+    "moduleId": "module-ana-014",
+    "code": "14",
+    "title": "Executive Analytics Digest & Weekly Automated Briefings",
+    "titleOdia": "ଏକଜିକ୍ୟୁଟିଭ୍ ଆନାଲିଟିକ୍ସ ସାରାଂଶ ଓ ସାପ୍ତାହିକ ବ୍ରିଫିଂ",
+    "description": "Automated executive briefings summarizing portal reach and educational milestones",
+    "nodes": [
+      {
+        "id": "ANA-NODE-014-01",
+        "title": "Weekly Leadership Briefing & Statewide Impact Report",
+        "titleOdia": "ସାପ୍ତାହିକ ନେତୃତ୍ୱ ବ୍ରିଫିଂ ଓ ରାଜ୍ୟସ୍ତରୀୟ ପ୍ରଭାବ ରିପୋର୍ଟ",
+        "slug": "weekly-leadership-impact-report",
+        "categoryCode": "14",
+        "metricType": "Executive Digest",
+        "status": "Active Telemetry",
+        "enabled": true,
+        "weeklyAspirantsReached": "185,000+",
+        "description": "Generates high-level summaries of platform utility, resource downloads, and citizen empowerment impact across Odisha.",
+        "lastUpdated": "2026-11-10",
+        "children": []
+      }
+    ]
+  }
+]
+  };
+
+  SuperStore.getAnalyticsTelemetryTreeConfig = function() {
+    return _hydrateConfig('cso_analytics_telemetry_tree_v1', 'categories', () => DEFAULT_ANALYTICS_DIRECTORY_TREE);
+  };
+  SuperStore.saveAnalyticsTelemetryTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_analytics_telemetry_tree_v1', JSON.stringify(cfg));
+    this.logAudit('ANALYTICS_TREE_MUTATION', 'ANALYTICS_TELEMETRY', 'Saved Analytics & Telemetry Suite updates (' + cfg.categories.length + ' modules).');
+    return true;
+  };
+  SuperStore.resetAnalyticsTelemetryTreeConfig = function() {
+    localStorage.setItem('cso_analytics_telemetry_tree_v1', JSON.stringify(DEFAULT_ANALYTICS_DIRECTORY_TREE));
+    this.logAudit('ANALYTICS_TREE_RESET', 'ANALYTICS_TELEMETRY', 'Analytics & Telemetry Suite reset to authentic defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_ANALYTICS_DIRECTORY_TREE));
+  };
+  SuperStore.exportAnalyticsTelemetryManifest = function() {
+    const config = this.getAnalyticsTelemetryTreeConfig();
+    const filename = "analytics_telemetry_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ANALYTICS_TREE_EXPORTED", "DATA_EXPORT", "Analytics manifest exported (" + filename + ").");
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -112430,6 +113910,19 @@
     window.CSOSuperStore.saveHealthMonitorsConfig = SuperStore.saveHealthMonitorsConfig;
     window.CSOSuperStore.getIntegrationLogsDlqConfig = SuperStore.getIntegrationLogsDlqConfig;
     window.CSOSuperStore.saveIntegrationLogsDlqConfig = SuperStore.saveIntegrationLogsDlqConfig;
+    window.CSOSuperStore.getOperationsRecoveryTreeConfig = SuperStore.getOperationsRecoveryTreeConfig;
+    window.CSOSuperStore.saveOperationsRecoveryTreeConfig = SuperStore.saveOperationsRecoveryTreeConfig;
+    window.CSOSuperStore.resetOperationsRecoveryTreeConfig = SuperStore.resetOperationsRecoveryTreeConfig;
+    window.CSOSuperStore.exportOperationsRecoveryManifest = SuperStore.exportOperationsRecoveryManifest;
+    window.CSOSuperStore.rollbackEngineState = SuperStore.rollbackEngineState;
+    window.CSOSuperStore.getCommunicationsAlertsTreeConfig = SuperStore.getCommunicationsAlertsTreeConfig;
+    window.CSOSuperStore.saveCommunicationsAlertsTreeConfig = SuperStore.saveCommunicationsAlertsTreeConfig;
+    window.CSOSuperStore.resetCommunicationsAlertsTreeConfig = SuperStore.resetCommunicationsAlertsTreeConfig;
+    window.CSOSuperStore.exportCommunicationsAlertsManifest = SuperStore.exportCommunicationsAlertsManifest;
+    window.CSOSuperStore.getAnalyticsTelemetryTreeConfig = SuperStore.getAnalyticsTelemetryTreeConfig;
+    window.CSOSuperStore.saveAnalyticsTelemetryTreeConfig = SuperStore.saveAnalyticsTelemetryTreeConfig;
+    window.CSOSuperStore.resetAnalyticsTelemetryTreeConfig = SuperStore.resetAnalyticsTelemetryTreeConfig;
+    window.CSOSuperStore.exportAnalyticsTelemetryManifest = SuperStore.exportAnalyticsTelemetryManifest;
     window.CSOSuperStore.resetIncidentResponseConfig = SuperStore.resetIncidentResponseConfig;
     window.CSOSuperStore.exportIncidentResponseManifest = SuperStore.exportIncidentResponseManifest;
     window.CSOSuperStore.getSystemHealthConfig = SuperStore.getSystemHealthConfig;

@@ -729,155 +729,147 @@
     },
     {
       "id": "folder-10",
-      "title": "Communication & Support",
+      "title": "Analytics, Telemetry & User Feedback Intelligence",
       "modules": [
         {
-          "id": "module-10-001",
-          "title": "Contact Form Submissions",
+          "id": "module-ana-001",
+          "title": "Zero-Cookie Edge Telemetry & Real-Time Pageview Counter",
           "status": "active"
         },
         {
-          "id": "module-10-002",
-          "title": "Support Tickets",
+          "id": "module-ana-002",
+          "title": "Top Search Intent, Trending Keywords & Discovery Ranks",
           "status": "active"
         },
         {
-          "id": "module-10-003",
-          "title": "Feedback",
+          "id": "module-ana-003",
+          "title": "Zero-Result Query Detector & Auto-Synonym Mapping",
           "status": "active"
         },
         {
-          "id": "module-10-004",
-          "title": "Surveys & Polls",
+          "id": "module-ana-004",
+          "title": "High-Demand PYQ, Syllabus & Material Download Metrics",
           "status": "active"
         },
         {
-          "id": "module-10-005",
-          "title": "Email Templates",
+          "id": "module-ana-005",
+          "title": "District & Regional User Engagement Demographics",
           "status": "active"
         },
         {
-          "id": "module-10-006",
-          "title": "Email Campaigns",
+          "id": "module-ana-006",
+          "title": "Candidate Device Breakdown, Edge Latency & Web Vitals",
           "status": "active"
         },
         {
-          "id": "module-10-007",
-          "title": "Newsletter Subscribers",
+          "id": "module-ana-007",
+          "title": "Citizen Feedback Intake, CSAT & Sentiment Analysis",
           "status": "active"
         },
         {
-          "id": "module-10-008",
-          "title": "Notifications",
+          "id": "module-ana-008",
+          "title": "Broken Link & 404 Sentinel Triage Inbox",
           "status": "active"
         },
         {
-          "id": "module-10-009",
-          "title": "Push Notifications",
+          "id": "module-ana-009",
+          "title": "Portal Outbound Referral & Official Commission Click Tracker",
           "status": "active"
         },
         {
-          "id": "module-10-010",
-          "title": "In-App Messages",
+          "id": "module-ana-010",
+          "title": "Recruitment Funnel & Examination Milestone Drop-Offs",
           "status": "active"
         },
         {
-          "id": "module-10-011",
-          "title": "Announcement Banners",
+          "id": "module-ana-011",
+          "title": "Bilingual Content Usage (Odia vs English Preference)",
           "status": "active"
         },
         {
-          "id": "module-10-012",
-          "title": "Help Centre",
+          "id": "module-ana-012",
+          "title": "Student Community Engagement & Forum Activity Index",
           "status": "active"
         },
         {
-          "id": "module-10-013",
-          "title": "Support Categories",
+          "id": "module-ana-013",
+          "title": "DPDP Act Audit Telemetry & Privacy Verification Logs",
           "status": "active"
         },
         {
-          "id": "module-10-014",
-          "title": "Spam & Abuse Reports",
+          "id": "module-ana-014",
+          "title": "Executive Analytics Digest & Weekly Automated Briefings",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-11",
-      "title": "Website Appearance Studio",
+      "title": "Communications, Alerts & Candidate Notifications",
       "modules": [
         {
-          "id": "module-11-001",
-          "title": "Brand Identity",
+          "id": "module-comms-001",
+          "title": "Transactional SMS Gateway & TRAI DLT Template Manager",
           "status": "active"
         },
         {
-          "id": "module-11-002",
-          "title": "Logo & Favicon",
+          "id": "module-comms-002",
+          "title": "Multilingual Candidate Email Campaigns & HTML Authoring",
           "status": "active"
         },
         {
-          "id": "module-11-003",
-          "title": "Colors & Themes",
+          "id": "module-comms-003",
+          "title": "Instant Exam Admit Card & Hall Ticket Push Alerts",
           "status": "active"
         },
         {
-          "id": "module-11-004",
-          "title": "Typography",
+          "id": "module-comms-004",
+          "title": "Recruitment Application Deadline Countdown Broadcaster",
           "status": "active"
         },
         {
-          "id": "module-11-005",
-          "title": "Header Design",
+          "id": "module-comms-005",
+          "title": "State Welfare Scheme Sanction & Direct Benefit Alerts",
           "status": "active"
         },
         {
-          "id": "module-11-006",
-          "title": "Footer Design",
+          "id": "module-comms-006",
+          "title": "WhatsApp Notification Templates & Meta WABA Registry",
           "status": "active"
         },
         {
-          "id": "module-11-007",
-          "title": "Homepage Layout",
+          "id": "module-comms-007",
+          "title": "Telegram Community Broadcasting & Channel Automations",
           "status": "active"
         },
         {
-          "id": "module-11-008",
-          "title": "Banners & Sliders",
+          "id": "module-comms-008",
+          "title": "Candidate Notification Preferences & Frequency Caps",
           "status": "active"
         },
         {
-          "id": "module-11-009",
-          "title": "Buttons & Cards",
+          "id": "module-comms-009",
+          "title": "DPDP Act Consent Revocation & Opt-Out Registry",
           "status": "active"
         },
         {
-          "id": "module-11-010",
-          "title": "Reusable Components",
+          "id": "module-comms-010",
+          "title": "Bilingual Odia & English Variable Tag Interpolator",
           "status": "active"
         },
         {
-          "id": "module-11-011",
-          "title": "Desktop & Mobile Preview",
+          "id": "module-comms-011",
+          "title": "Delivery Receipts, Bounces & Telecom Carrier Diagnostics",
           "status": "active"
         },
         {
-          "id": "module-11-012",
-          "title": "Accessibility Styling",
-          "status": "active"
-        },
-        {
-          "id": "module-11-013",
-          "title": "Custom 404 Page",
-          "status": "active"
-        },
-        {
-          "id": "module-11-014",
-          "title": "Design Version History",
+          "id": "module-comms-012",
+          "title": "Scheduled Alert Calendar & Notification Broadcast Queue",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-12",
@@ -1210,89 +1202,90 @@
     },
     {
       "id": "folder-17",
-      "title": "Operations, Backups & Recovery",
+      "title": "Operations, Backups & Disaster Recovery Suite",
       "modules": [
         {
-          "id": "module-17-001",
-          "title": "System Health",
+          "id": "module-ops-001",
+          "title": "Automated Platform Snapshot & Global State Backup",
           "status": "active"
         },
         {
-          "id": "module-17-002",
-          "title": "Website Availability",
+          "id": "module-ops-002",
+          "title": "Disaster Recovery Drill & State Restorer Engine",
           "status": "active"
         },
         {
-          "id": "module-17-003",
-          "title": "API Diagnostics",
+          "id": "module-ops-003",
+          "title": "Point-in-Time Rollback & Granular Engine Restorer",
           "status": "active"
         },
         {
-          "id": "module-17-004",
-          "title": "Database Health",
+          "id": "module-ops-004",
+          "title": "Cloudflare D1 Distributed Replica Switchover",
           "status": "active"
         },
         {
-          "id": "module-17-005",
-          "title": "Storage Monitoring",
+          "id": "module-ops-005",
+          "title": "Cloudflare R2 Immutable Storage Cold Vault",
           "status": "active"
         },
         {
-          "id": "module-17-006",
-          "title": "Backup Centre",
+          "id": "module-ops-006",
+          "title": "Database Migration Version & DDL Schema Journal",
           "status": "active"
         },
         {
-          "id": "module-17-007",
-          "title": "Restore Centre",
+          "id": "module-ops-007",
+          "title": "Edge Cache State Preservation & Warmer Daemon",
           "status": "active"
         },
         {
-          "id": "module-17-008",
-          "title": "Revision Rollback",
+          "id": "module-ops-008",
+          "title": "Offline Air-Gapped Manifest & ZIP Bundle Packager",
           "status": "active"
         },
         {
-          "id": "module-17-009",
-          "title": "Error Logs",
+          "id": "module-ops-009",
+          "title": "Multi-Region Failover Sentinel & Health Heartbeat",
           "status": "active"
         },
         {
-          "id": "module-17-010",
-          "title": "Scheduled Jobs",
+          "id": "module-ops-010",
+          "title": "Snapshot Integrity Hash & Cryptographic Signature Check",
           "status": "active"
         },
         {
-          "id": "module-17-011",
-          "title": "Automation Rules",
+          "id": "module-ops-011",
+          "title": "Dead-Letter Message Vacuum & Retention Expiry Purge",
           "status": "active"
         },
         {
-          "id": "module-17-012",
-          "title": "Maintenance Mode",
+          "id": "module-ops-012",
+          "title": "Emergency Read-Only Freeze & Outage Fallback Mode",
           "status": "active"
         },
         {
-          "id": "module-17-013",
-          "title": "Cache Management",
+          "id": "module-ops-013",
+          "title": "Post-Incident Forensic Audit & State Diff Inspector",
           "status": "active"
         },
         {
-          "id": "module-17-014",
-          "title": "Deployment Status",
+          "id": "module-ops-014",
+          "title": "Automated Daily Backup Schedule & Retention Policy",
           "status": "active"
         },
         {
-          "id": "module-17-015",
-          "title": "Release History",
+          "id": "module-ops-015",
+          "title": "Zero-Downtime Deployment & Rolling Canary Health",
           "status": "active"
         },
         {
-          "id": "module-17-016",
-          "title": "Disaster Recovery",
+          "id": "module-ops-016",
+          "title": "Disaster Recovery Playbook, SOP & Runbook Studio",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-18",
