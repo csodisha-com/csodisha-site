@@ -605,6 +605,11 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-13-014') { renderUrlRedirectsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-13-015') { renderBrokenLinksWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-13-016') { render404ReportsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-001') { renderEventCalendarWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-002') { renderExamCalendarWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-003') { renderRecruitmentDeadlinesWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-004') { renderWebinarsSessionsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-14-005') { renderEventRegistrationsWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -997,6 +1002,16 @@ async function loadMasterNavigation() {
         renderBrokenLinksWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-13-016') {
         render404ReportsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-001') {
+        renderEventCalendarWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-002') {
+        renderExamCalendarWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-003') {
+        renderRecruitmentDeadlinesWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-004') {
+        renderWebinarsSessionsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-14-005') {
+        renderEventRegistrationsWorkspace(dom.workspaceRoot);
 
 
 
@@ -56031,6 +56046,1426 @@ async function loadMasterNavigation() {
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-13-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
+
+    // =========================================================================
+    // MODULE 14-001: Event Calendar
+    // =========================================================================
+    function renderEventCalendarWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getEventCalendarConfig();
+        let items = Array.isArray(config.events || config.items) ? [...(config.events || config.items)] : [];
+        let searchTerm = '';
+        let typeFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.eventTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.venueOrPlatform || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.status || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesType = typeFilter === 'ALL' || a.eventType === typeFilter;
+            return matchesSearch && matchesType;
+          });
+
+          const totalCapacity = items.reduce((sum, e) => sum + (Number(e.capacity) || 0), 0);
+          const totalRSVPs = items.reduce((sum, e) => sum + (Number(e.rsvpCount) || 0), 0);
+          const rsvpRate = totalCapacity > 0 ? Math.round((totalRSVPs / totalCapacity) * 100) : 0;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">CALENDAR &amp; CONFERENCES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-001</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Public Event Calendar</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage physical outreach seminars, mock test drives, offline workshops, and public aspirant summits</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddEvent" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Schedule Event
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Events</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">${items.filter(i => i.active).length} published live</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-indigo-400 uppercase tracking-wider">Total RSVPs / Registrations</div>
+                  <div class="text-2xl font-bold text-indigo-300 mt-1">${totalRSVPs.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Capacity: ${totalCapacity.toLocaleString('en-IN')}</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-teal-400 uppercase tracking-wider">Occupancy / Fill Rate</div>
+                  <div class="text-2xl font-bold text-teal-300 mt-1">${rsvpRate}%</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Across all open events</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Hybrid / Formats</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${new Set(items.map(e => e.eventType)).size} Modes</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Physical &amp; virtual channels</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoEventSearchInput" value="${searchTerm}" placeholder="Search events, venues, topics..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoEventTypeFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+                    <option value="ALL" ${typeFilter === 'ALL' ? 'selected' : ''}>All Event Types</option>
+                    <option value="In-Person Workshop" ${typeFilter === 'In-Person Workshop' ? 'selected' : ''}>In-Person Workshop</option>
+                    <option value="Live Virtual Webinar" ${typeFilter === 'Live Virtual Webinar' ? 'selected' : ''}>Live Virtual Webinar</option>
+                    <option value="Proctored Offline Mock" ${typeFilter === 'Proctored Offline Mock' ? 'selected' : ''}>Proctored Offline Mock</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Event Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">ID &amp; Title</th>
+                      <th class="py-3 px-4">Type</th>
+                      <th class="py-3 px-4">Venue / Platform</th>
+                      <th class="py-3 px-4">Dates &amp; Time</th>
+                      <th class="py-3 px-4">Capacity / RSVPs</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No events match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.eventTitle}</div>
+                          <div class="text-[11px] text-slate-400 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">${item.eventType}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="text-xs text-slate-200 truncate max-w-xs" title="${item.venueOrPlatform}">${item.venueOrPlatform}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px]">
+                          <div class="text-slate-300">${item.startDate}${item.endDate && item.endDate !== item.startDate ? ' → ' + item.endDate : ''}</div>
+                          <div class="text-slate-500 text-[10px]">${item.timeRange || 'All Day'}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="flex items-center gap-2">
+                            <span class="text-white font-medium">${item.rsvpCount || 0}</span>
+                            <span class="text-slate-500">/ ${item.capacity || 0}</span>
+                          </div>
+                          <div class="w-24 bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${Math.min(100, Math.round(((item.rsvpCount||0)/(item.capacity||1))*100))}%"></div>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.status === 'Open for RSVP' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Published' : 'Hidden'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoEventSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoEventTypeFilter')?.addEventListener('change', (e) => {
+            typeFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Event Calendar Schema', {
+              id: 'string (unique ID, e.g. EVT-01)',
+              eventTitle: 'string (full title of the workshop or event)',
+              eventType: 'string (In-Person Workshop, Live Virtual Webinar, Proctored Offline Mock)',
+              venueOrPlatform: 'string (physical hall address or webinar software URL)',
+              startDate: 'string (YYYY-MM-DD)',
+              endDate: 'string (YYYY-MM-DD)',
+              timeRange: 'string (e.g. 10:00 AM - 01:00 PM)',
+              capacity: 'number (maximum attendees quota)',
+              rsvpCount: 'number (registered candidates count)',
+              status: 'string (Confirmed, Open for RSVP, Filling Fast, Postponed)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportEventCalendarManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Event Calendar to factory defaults?')) {
+              store.resetEventCalendarConfig();
+              config = store.getEventCalendarConfig();
+              items = [...(config.events || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddEvent')?.addEventListener('click', () => {
+            const title = prompt('Event Title:');
+            if (!title) return;
+            const venue = prompt('Venue or Platform:', 'F.M. Autonomous College Hall, Balasore');
+            const date = prompt('Start Date (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
+            const newId = 'EVT-' + String(items.length + 1).padStart(2, '0');
+            const newEvt = {
+              id: newId,
+              eventTitle: title,
+              eventType: 'In-Person Workshop',
+              venueOrPlatform: venue || 'Auditorium Hall',
+              startDate: date || new Date().toISOString().slice(0, 10),
+              endDate: date || new Date().toISOString().slice(0, 10),
+              timeRange: '10:00 AM - 01:00 PM',
+              capacity: 200,
+              rsvpCount: 0,
+              status: 'Open for RSVP',
+              active: true
+            };
+            items.push(newEvt);
+            config.events = items;
+            config.items = items;
+            store.saveEventCalendarConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.events = items;
+                config.items = items;
+                store.saveEventCalendarConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newTitle = prompt('Edit Event Title:', item.eventTitle);
+              if (newTitle !== null && newTitle.trim()) {
+                item.eventTitle = newTitle.trim();
+                const newVenue = prompt('Edit Venue / Platform:', item.venueOrPlatform);
+                if (newVenue !== null) item.venueOrPlatform = newVenue.trim();
+                const newStatus = prompt('Edit Status (Confirmed, Open for RSVP, Filling Fast):', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.events = items;
+                config.items = items;
+                store.saveEventCalendarConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete event ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.events = items;
+                config.items = items;
+                store.saveEventCalendarConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-001', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-001</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-002: Exam Calendar
+    // =========================================================================
+    function renderExamCalendarWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getExamCalendarConfig();
+        let items = Array.isArray(config.exams || config.items) ? [...(config.exams || config.items)] : [];
+        let searchTerm = '';
+        let commissionFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.examName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.commission || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.gazetteNoticeRef || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesComm = commissionFilter === 'ALL' || a.commission === commissionFilter;
+            return matchesSearch && matchesComm;
+          });
+
+          const totalExams = items.length;
+          const confirmedExams = items.filter(e => (e.status || '').toLowerCase().includes('confirmed')).length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">STATE EXAMS TRACKER</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-002</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Official Exam Calendar</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track OPSC, OSSC, OSSSC examination schedules, shifts, admit card release windows, and official gazettes</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddExam" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-sky-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Exam Schedule
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Scheduled Exams</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalExams}</div>
+                  <div class="text-[10px] text-sky-400 mt-1">Across all commissions</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Date Confirmed</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${confirmedExams}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Official dates locked</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Tentative Gazette</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${totalExams - confirmedExams}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Awaiting notification</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-purple-400 uppercase tracking-wider">Commissions Tracked</div>
+                  <div class="text-2xl font-bold text-purple-300 mt-1">${new Set(items.map(e => e.commission)).size} Boards</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">OPSC, OSSC, OSSSC, DEPT</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoExamSearchInput" value="${searchTerm}" placeholder="Search exam name, commission, gazette ref..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoExamCommFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-sky-500">
+                    <option value="ALL" ${commissionFilter === 'ALL' ? 'selected' : ''}>All Commissions</option>
+                    <option value="OPSC" ${commissionFilter === 'OPSC' ? 'selected' : ''}>OPSC</option>
+                    <option value="OSSC" ${commissionFilter === 'OSSC' ? 'selected' : ''}>OSSC</option>
+                    <option value="OSSSC" ${commissionFilter === 'OSSSC' ? 'selected' : ''}>OSSSC</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Exam Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Exam &amp; Commission</th>
+                      <th class="py-3 px-4">Exam Date</th>
+                      <th class="py-3 px-4">Shift &amp; Timings</th>
+                      <th class="py-3 px-4">Admit Card Window</th>
+                      <th class="py-3 px-4">Gazette Ref</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No exam schedules match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.examName}</div>
+                          <div class="flex items-center gap-2 mt-0.5">
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-slate-800 text-sky-400 border border-sky-500/20">${item.commission}</span>
+                            <span class="text-[11px] text-slate-500 font-mono">${item.id}</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-medium text-amber-300 text-xs">
+                          ${item.examDate}
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="text-xs text-slate-300 truncate max-w-xs" title="${item.shiftTime}">${item.shiftTime}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.admitCardReleaseDate || 'TBA'}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.gazetteNoticeRef || 'N/A'}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Date Confirmed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.status === 'Tentative Gazette' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Archived'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoExamSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoExamCommFilter')?.addEventListener('change', (e) => {
+            commissionFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Exam Calendar Schema', {
+              id: 'string (unique ID, e.g. EXM-01)',
+              examName: 'string (official competitive exam name)',
+              commission: 'string (OPSC, OSSC, OSSSC, UPSC, etc.)',
+              examDate: 'string (YYYY-MM-DD)',
+              shiftTime: 'string (Paper 1 & Paper 2 shift slots)',
+              admitCardReleaseDate: 'string (expected download release date)',
+              gazetteNoticeRef: 'string (gazette or official notification reference #)',
+              status: 'string (Date Confirmed, Tentative Gazette, Scheduled, Postponed)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportExamCalendarManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Exam Calendar to factory defaults?')) {
+              store.resetExamCalendarConfig();
+              config = store.getExamCalendarConfig();
+              items = [...(config.exams || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddExam')?.addEventListener('click', () => {
+            const name = prompt('Exam Name:');
+            if (!name) return;
+            const comm = prompt('Commission (OPSC, OSSC, OSSSC):', 'OPSC');
+            const date = prompt('Exam Date (YYYY-MM-DD):', '2027-03-15');
+            const newId = 'EXM-' + String(items.length + 1).padStart(2, '0');
+            const newExam = {
+              id: newId,
+              examName: name,
+              commission: comm || 'OPSC',
+              examDate: date || '2027-03-15',
+              shiftTime: '10:00 AM - 01:00 PM',
+              admitCardReleaseDate: '2027-03-01',
+              gazetteNoticeRef: 'NOTIF-2027-' + String(items.length + 1),
+              status: 'Date Confirmed',
+              active: true
+            };
+            items.push(newExam);
+            config.exams = items;
+            config.items = items;
+            store.saveExamCalendarConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.exams = items;
+                config.items = items;
+                store.saveExamCalendarConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Exam Name:', item.examName);
+              if (newName !== null && newName.trim()) {
+                item.examName = newName.trim();
+                const newDate = prompt('Edit Exam Date (YYYY-MM-DD):', item.examDate);
+                if (newDate !== null) item.examDate = newDate.trim();
+                const newShift = prompt('Edit Shift / Time:', item.shiftTime);
+                if (newShift !== null) item.shiftTime = newShift.trim();
+                const newStatus = prompt('Edit Status (Date Confirmed, Tentative Gazette, Scheduled):', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.exams = items;
+                config.items = items;
+                store.saveExamCalendarConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete exam schedule ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.exams = items;
+                config.items = items;
+                store.saveExamCalendarConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-002', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-002</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-003: Recruitment Deadlines
+    // =========================================================================
+    function renderRecruitmentDeadlinesWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getRecruitmentDeadlinesConfig();
+        let items = Array.isArray(config.deadlines || config.items) ? [...(config.deadlines || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.recruitmentTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.commission || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'ALL' || a.status === statusFilter;
+            return matchesSearch && matchesStatus;
+          });
+
+          const totalDeadlines = items.length;
+          const closingSoonCount = items.filter(d => (d.daysRemaining <= 10) || d.status === 'Closing Soon').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">DEADLINES &amp; CUTOFFS</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-003</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Recruitment Application Deadlines</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Track online application start/end windows, fee payment cutoff dates, and application correction windows</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddDeadline" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-amber-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Register Deadline
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Active Windows</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalDeadlines}</div>
+                  <div class="text-[10px] text-amber-400 mt-1">Application processes open</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-rose-400 uppercase tracking-wider">Closing Soon (&le; 10 Days)</div>
+                  <div class="text-2xl font-bold text-rose-300 mt-1">${closingSoonCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">High priority for aspirants</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Average Window Length</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">32 Days</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Standard Odisha PSC duration</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoDeadlineSearchInput" value="${searchTerm}" placeholder="Search recruitment title, commission..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoDeadlineStatusFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-amber-500">
+                    <option value="ALL" ${statusFilter === 'ALL' ? 'selected' : ''}>All Statuses</option>
+                    <option value="Closing Soon" ${statusFilter === 'Closing Soon' ? 'selected' : ''}>Closing Soon</option>
+                    <option value="Active Window" ${statusFilter === 'Active Window' ? 'selected' : ''}>Active Window</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Deadline Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Recruitment &amp; Dept</th>
+                      <th class="py-3 px-4">Application Window</th>
+                      <th class="py-3 px-4">Fee Deadline</th>
+                      <th class="py-3 px-4">Correction Till</th>
+                      <th class="py-3 px-4">Countdown</th>
+                      <th class="py-3 px-4">Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No recruitment deadlines match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.recruitmentTitle}</div>
+                          <div class="flex items-center gap-2 mt-0.5">
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-slate-800 text-amber-400 border border-amber-500/20">${item.commission}</span>
+                            <span class="text-[11px] text-slate-500 font-mono">${item.id}</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px]">
+                          <div class="text-slate-200">${item.startDate}</div>
+                          <div class="text-amber-400 font-medium">→ ${item.closingDate}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.feePaymentDeadline || 'Same day'}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          ${item.correctionWindowTill || 'N/A'}
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-sm font-bold ${item.daysRemaining <= 10 ? 'text-rose-400' : 'text-emerald-400'}">${item.daysRemaining}</span>
+                            <span class="text-[11px] text-slate-500">days left</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.status === 'Closing Soon' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Closed'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoDeadlineSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoDeadlineStatusFilter')?.addEventListener('change', (e) => {
+            statusFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Recruitment Deadlines Schema', {
+              id: 'string (unique ID, e.g. DDL-01)',
+              recruitmentTitle: 'string (official examination / recruitment title)',
+              commission: 'string (OPSC, OSSC, OSSSC, Dept)',
+              startDate: 'string (YYYY-MM-DD)',
+              closingDate: 'string (YYYY-MM-DD)',
+              feePaymentDeadline: 'string (YYYY-MM-DD or Free)',
+              correctionWindowTill: 'string (YYYY-MM-DD)',
+              daysRemaining: 'number (countdown days)',
+              status: 'string (Active Window, Closing Soon, Closed)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportRecruitmentDeadlinesManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Recruitment Deadlines to factory defaults?')) {
+              store.resetRecruitmentDeadlinesConfig();
+              config = store.getRecruitmentDeadlinesConfig();
+              items = [...(config.deadlines || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddDeadline')?.addEventListener('click', () => {
+            const title = prompt('Recruitment Title:');
+            if (!title) return;
+            const comm = prompt('Commission:', 'OPSC');
+            const close = prompt('Closing Date (YYYY-MM-DD):', '2026-12-31');
+            const newId = 'DDL-' + String(items.length + 1).padStart(2, '0');
+            const newDdl = {
+              id: newId,
+              recruitmentTitle: title,
+              commission: comm || 'OPSC',
+              startDate: new Date().toISOString().slice(0, 10),
+              closingDate: close || '2026-12-31',
+              feePaymentDeadline: close || '2026-12-31',
+              correctionWindowTill: '2027-01-05',
+              daysRemaining: 45,
+              status: 'Active Window',
+              active: true
+            };
+            items.push(newDdl);
+            config.deadlines = items;
+            config.items = items;
+            store.saveRecruitmentDeadlinesConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.deadlines = items;
+                config.items = items;
+                store.saveRecruitmentDeadlinesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newTitle = prompt('Edit Title:', item.recruitmentTitle);
+              if (newTitle !== null && newTitle.trim()) {
+                item.recruitmentTitle = newTitle.trim();
+                const newClose = prompt('Edit Closing Date (YYYY-MM-DD):', item.closingDate);
+                if (newClose !== null) item.closingDate = newClose.trim();
+                const newDays = prompt('Edit Days Remaining:', item.daysRemaining);
+                if (newDays !== null && !isNaN(newDays)) item.daysRemaining = parseInt(newDays, 10);
+                const newStatus = prompt('Edit Status (Active Window, Closing Soon):', item.status);
+                if (newStatus !== null) item.status = newStatus.trim();
+                config.deadlines = items;
+                config.items = items;
+                store.saveRecruitmentDeadlinesConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete deadline ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.deadlines = items;
+                config.items = items;
+                store.saveRecruitmentDeadlinesConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-003', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-003</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-004: Webinars & Sessions
+    // =========================================================================
+    function renderWebinarsSessionsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getWebinarsSessionsConfig();
+        let items = Array.isArray(config.sessions || config.items) ? [...(config.sessions || config.items)] : [];
+        let searchTerm = '';
+        let tierFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.sessionTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.speakerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.platform || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesTier = tierFilter === 'ALL' || a.accessTier === tierFilter;
+            return matchesSearch && matchesTier;
+          });
+
+          const totalRegistered = items.reduce((sum, s) => sum + (Number(s.registeredCount) || 0), 0);
+          const totalDuration = items.reduce((sum, s) => sum + (Number(s.durationMinutes) || 0), 0);
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-violet-500/10 text-violet-400 border border-violet-500/20">VIRTUAL SESSIONS &amp; LECTURES</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-004</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Live Webinars &amp; Mentorship Sessions</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Organize live YouTube/Zoom masterclasses, faculty Q&amp;A sessions, topper interviews, and WebRTC workshops</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOAddWebinar" class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-violet-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Schedule Webinar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Upcoming Sessions</div>
+                  <div class="text-2xl font-bold text-white mt-1">${items.length}</div>
+                  <div class="text-[10px] text-violet-400 mt-1">Live masterclasses lined up</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Registered Aspirants</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${totalRegistered.toLocaleString('en-IN')}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Across active webinars</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-sky-400 uppercase tracking-wider">Scheduled Hours</div>
+                  <div class="text-2xl font-bold text-sky-300 mt-1">${(totalDuration / 60).toFixed(1)} hrs</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Total live instruction time</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-pink-400 uppercase tracking-wider">Access Modes</div>
+                  <div class="text-2xl font-bold text-pink-300 mt-1">${new Set(items.map(s => s.accessTier)).size} Tiers</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Free &amp; scholar club tiers</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoWebinarSearchInput" value="${searchTerm}" placeholder="Search session title, speaker, platform..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-violet-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoWebinarTierFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-violet-500">
+                    <option value="ALL" ${tierFilter === 'ALL' ? 'selected' : ''}>All Access Tiers</option>
+                    <option value="Free for All Aspirants" ${tierFilter === 'Free for All Aspirants' ? 'selected' : ''}>Free for All Aspirants</option>
+                    <option value="Scholar Club Members" ${tierFilter === 'Scholar Club Members' ? 'selected' : ''}>Scholar Club Members</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Webinar Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Session Title &amp; ID</th>
+                      <th class="py-3 px-4">Distinguished Speaker</th>
+                      <th class="py-3 px-4">Platform / Stream</th>
+                      <th class="py-3 px-4">Date &amp; Duration</th>
+                      <th class="py-3 px-4">Registered</th>
+                      <th class="py-3 px-4">Access Tier</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No webinars match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.sessionTitle}</div>
+                          <div class="text-[11px] text-slate-400 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-slate-200">${item.speakerName}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="text-xs text-slate-300">${item.platform}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px]">
+                          <div class="text-violet-300 font-medium">${item.sessionDateTime}</div>
+                          <div class="text-slate-500 text-[10px]">${item.durationMinutes} minutes</div>
+                        </td>
+                        <td class="py-3 px-4 font-medium text-emerald-400">
+                          ${(item.registeredCount || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-medium ${item.accessTier.includes('Free') ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-purple-500/10 text-purple-300 border border-purple-500/20'}">
+                            ${item.accessTier}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-active" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium ${item.active ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'}">
+                            ${item.active ? 'Active' : 'Archived'}
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoWebinarSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoWebinarTierFilter')?.addEventListener('change', (e) => {
+            tierFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Webinars & Sessions Schema', {
+              id: 'string (unique ID, e.g. WBN-01)',
+              sessionTitle: 'string (webinar topic title)',
+              speakerName: 'string (guest lecturer / ranker name)',
+              platform: 'string (YouTube Live, Zoom Meeting, WebRTC)',
+              sessionDateTime: 'string (YYYY-MM-DD HH:MM)',
+              durationMinutes: 'number (session length in minutes)',
+              registeredCount: 'number (total aspirant RSVPs)',
+              accessTier: 'string (Free for All Aspirants, Scholar Club Members)',
+              status: 'string (Upcoming, Scheduled, Live Now, Concluded)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportWebinarsSessionsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Webinars & Sessions to factory defaults?')) {
+              store.resetWebinarsSessionsConfig();
+              config = store.getWebinarsSessionsConfig();
+              items = [...(config.sessions || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOAddWebinar')?.addEventListener('click', () => {
+            const title = prompt('Webinar Title:');
+            if (!title) return;
+            const speaker = prompt('Speaker Name:', 'Guest Mentor');
+            const time = prompt('Session Date & Time (YYYY-MM-DD HH:MM):', '2026-12-10 18:00');
+            const newId = 'WBN-' + String(items.length + 1).padStart(2, '0');
+            const newWbn = {
+              id: newId,
+              sessionTitle: title,
+              speakerName: speaker || 'Guest Faculty',
+              platform: 'YouTube Live & WebRTC',
+              sessionDateTime: time || '2026-12-10 18:00',
+              durationMinutes: 90,
+              registeredCount: 0,
+              accessTier: 'Free for All Aspirants',
+              status: 'Upcoming',
+              active: true
+            };
+            items.push(newWbn);
+            config.sessions = items;
+            config.items = items;
+            store.saveWebinarsSessionsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-active"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.active = !item.active;
+                config.sessions = items;
+                config.items = items;
+                store.saveWebinarsSessionsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newTitle = prompt('Edit Title:', item.sessionTitle);
+              if (newTitle !== null && newTitle.trim()) {
+                item.sessionTitle = newTitle.trim();
+                const newSpeaker = prompt('Edit Speaker:', item.speakerName);
+                if (newSpeaker !== null) item.speakerName = newSpeaker.trim();
+                const newTime = prompt('Edit Date & Time:', item.sessionDateTime);
+                if (newTime !== null) item.sessionDateTime = newTime.trim();
+                const newTier = prompt('Edit Access Tier:', item.accessTier);
+                if (newTier !== null) item.accessTier = newTier.trim();
+                config.sessions = items;
+                config.items = items;
+                store.saveWebinarsSessionsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Delete webinar ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.sessions = items;
+                config.items = items;
+                store.saveWebinarsSessionsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-004', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-004</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // =========================================================================
+    // MODULE 14-005: Event Registration
+    // =========================================================================
+    function renderEventRegistrationsWorkspace(container) {
+      if (!container) return;
+      const store = window.CSOSuperStore;
+      if (!store) {
+        container.innerHTML = '<div class="p-6 text-rose-400 font-mono">SuperStore engine unavailable.</div>';
+        return;
+      }
+
+      try {
+        let config = store.getEventRegistrationsConfig();
+        let items = Array.isArray(config.registrations || config.items) ? [...(config.registrations || config.items)] : [];
+        let searchTerm = '';
+        let statusFilter = 'ALL';
+
+        function render() {
+          const filtered = items.filter(a => {
+            const matchesSearch = !searchTerm ||
+              (a.candidateName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.candidateEmail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.ticketCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.eventRef || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (a.district || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'ALL' || a.attendanceStatus === statusFilter;
+            return matchesSearch && matchesStatus;
+          });
+
+          const totalRegistrations = items.length;
+          const confirmedCount = items.filter(r => r.attendanceStatus === 'Confirmed').length;
+          const waitlistedCount = items.filter(r => r.attendanceStatus === 'Waitlisted').length;
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">RSVP &amp; TICKETING</span>
+                    <span class="text-xs text-slate-400 font-mono">module-14-005</span>
+                  </div>
+                  <h1 class="text-2xl font-bold text-white mt-1">Candidate Event Registrations &amp; Passes</h1>
+                  <p class="text-xs text-slate-400 mt-0.5">Manage attendee passes, ticket codes, candidate contact info, check-in status, and attendance audits</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button id="btnCSOInspectSchema" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Schema
+                  </button>
+                  <button id="btnCSOExportManifest" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="btnCSOResetDefaults" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="btnCSOIssueTicket" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Issue Pass / Ticket
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Registrations</div>
+                  <div class="text-2xl font-bold text-white mt-1">${totalRegistrations}</div>
+                  <div class="text-[10px] text-emerald-400 mt-1">Confirmed attendee database</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">Confirmed Attendance</div>
+                  <div class="text-2xl font-bold text-emerald-300 mt-1">${confirmedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Tickets active &amp; ready</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-amber-400 uppercase tracking-wider">Waitlisted Aspirants</div>
+                  <div class="text-2xl font-bold text-amber-300 mt-1">${waitlistedCount}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Pending seat opening</div>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                  <div class="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">Districts Represented</div>
+                  <div class="text-2xl font-bold text-cyan-300 mt-1">${new Set(items.map(r => r.district)).size} Districts</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">State-wide participation</div>
+                </div>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div class="relative flex-1 max-w-md">
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="csoRegSearchInput" value="${searchTerm}" placeholder="Search candidate, email, ticket code, district..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="csoRegStatusFilter" class="px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                    <option value="ALL" ${statusFilter === 'ALL' ? 'selected' : ''}>All RSVP Statuses</option>
+                    <option value="Confirmed" ${statusFilter === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                    <option value="Waitlisted" ${statusFilter === 'Waitlisted' ? 'selected' : ''}>Waitlisted</option>
+                    <option value="Attended" ${statusFilter === 'Attended' ? 'selected' : ''}>Attended</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Registration Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-800/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4">Candidate &amp; ID</th>
+                      <th class="py-3 px-4">Contact Info</th>
+                      <th class="py-3 px-4">Event Ref</th>
+                      <th class="py-3 px-4">Ticket Code</th>
+                      <th class="py-3 px-4">District</th>
+                      <th class="py-3 px-4">RSVP Status</th>
+                      <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    ${filtered.length === 0 ? `
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500">No candidate registrations match the criteria.</td>
+                      </tr>
+                    ` : filtered.map(item => `
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="font-medium text-white">${item.candidateName}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.id}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <div class="text-xs text-slate-200">${item.candidateEmail}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">${item.phone || 'N/A'}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-[11px]">
+                          <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 border border-sky-500/20">${item.eventRef}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-medium text-emerald-400 text-xs">
+                          ${item.ticketCode}
+                        </td>
+                        <td class="py-3 px-4 text-slate-300">
+                          ${item.district || 'Odisha'}
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.attendanceStatus === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : item.attendanceStatus === 'Waitlisted' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}">
+                            ${item.attendanceStatus}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                          <button data-action="toggle-status" data-id="${item.id}" class="px-2 py-1 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+                            Toggle Status
+                          </button>
+                          <button data-action="edit" data-id="${item.id}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-medium transition-colors">Edit</button>
+                          <button data-action="delete" data-id="${item.id}" class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-medium transition-colors">Cancel</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Bind event listeners
+          container.querySelector('#csoRegSearchInput')?.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            render();
+          });
+
+          container.querySelector('#csoRegStatusFilter')?.addEventListener('change', (e) => {
+            statusFilter = e.target.value;
+            render();
+          });
+
+          container.querySelector('#btnCSOInspectSchema')?.addEventListener('click', () => {
+            showSchemaModal('Event Registration Schema', {
+              id: 'string (unique ID, e.g. REG-EVT-01)',
+              candidateName: 'string (full name of aspirant)',
+              candidateEmail: 'string (email ID)',
+              phone: 'string (mobile contact)',
+              eventRef: 'string (associated event ID, e.g. EVT-01 or WBN-01)',
+              ticketCode: 'string (unique entrance code, e.g. TKT-BAL-0142)',
+              district: 'string (home district in Odisha)',
+              attendanceStatus: 'string (Confirmed, Waitlisted, Attended, Cancelled)',
+              registeredAt: 'string (YYYY-MM-DD HH:MM)',
+              active: 'boolean (active status flag)'
+            });
+          });
+
+          container.querySelector('#btnCSOExportManifest')?.addEventListener('click', () => {
+            store.exportEventRegistrationsManifest();
+          });
+
+          container.querySelector('#btnCSOResetDefaults')?.addEventListener('click', () => {
+            if (confirm('Reset Event Registrations to factory defaults?')) {
+              store.resetEventRegistrationsConfig();
+              config = store.getEventRegistrationsConfig();
+              items = [...(config.registrations || config.items)];
+              render();
+            }
+          });
+
+          container.querySelector('#btnCSOIssueTicket')?.addEventListener('click', () => {
+            const name = prompt('Candidate Name:');
+            if (!name) return;
+            const email = prompt('Candidate Email:', 'candidate@example.com');
+            const eventRef = prompt('Event ID Reference (e.g. EVT-01, WBN-01):', 'EVT-01');
+            const district = prompt('District:', 'Balasore');
+            const newId = 'REG-EVT-' + String(items.length + 1).padStart(2, '0');
+            const ticketCode = 'TKT-CSO-' + Math.floor(1000 + Math.random() * 9000);
+            const newReg = {
+              id: newId,
+              candidateName: name,
+              candidateEmail: email || 'candidate@example.com',
+              eventRef: eventRef || 'EVT-01',
+              district: district || 'Bhubaneswar',
+              phone: '+91 94370 XXXXX',
+              ticketCode: ticketCode,
+              attendanceStatus: 'Confirmed',
+              registeredAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+              active: true
+            };
+            items.push(newReg);
+            config.registrations = items;
+            config.items = items;
+            store.saveEventRegistrationsConfig(config);
+            render();
+          });
+
+          container.querySelectorAll('button[data-action="toggle-status"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (item) {
+                item.attendanceStatus = item.attendanceStatus === 'Confirmed' ? 'Attended' : item.attendanceStatus === 'Attended' ? 'Waitlisted' : 'Confirmed';
+                config.registrations = items;
+                config.items = items;
+                store.saveEventRegistrationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const item = items.find(i => i.id === id);
+              if (!item) return;
+              const newName = prompt('Edit Name:', item.candidateName);
+              if (newName !== null && newName.trim()) {
+                item.candidateName = newName.trim();
+                const newEmail = prompt('Edit Email:', item.candidateEmail);
+                if (newEmail !== null) item.candidateEmail = newEmail.trim();
+                const newDistrict = prompt('Edit District:', item.district);
+                if (newDistrict !== null) item.district = newDistrict.trim();
+                const newStatus = prompt('Edit Attendance Status (Confirmed, Waitlisted, Attended):', item.attendanceStatus);
+                if (newStatus !== null) item.attendanceStatus = newStatus.trim();
+                config.registrations = items;
+                config.items = items;
+                store.saveEventRegistrationsConfig(config);
+                render();
+              }
+            });
+          });
+
+          container.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              if (confirm('Cancel registration ' + id + '?')) {
+                items = items.filter(i => i.id !== id);
+                config.registrations = items;
+                config.items = items;
+                store.saveEventRegistrationsConfig(config);
+                render();
+              }
+            });
+          });
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-14-005', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-14-005</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
 
 
 

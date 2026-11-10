@@ -1028,7 +1028,7 @@
         {
           "id": "module-14-001",
           "title": "Event Calendar",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-14-002",
@@ -1043,12 +1043,12 @@
         {
           "id": "module-14-004",
           "title": "Webinars & Sessions",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-14-005",
           "title": "Event Registration",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-14-006",

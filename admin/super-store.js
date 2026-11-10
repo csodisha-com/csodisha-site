@@ -12940,7 +12940,12 @@
           zeroResultSearches: this.getZeroResultSearchesConfig ? this.getZeroResultSearchesConfig() : null,
           urlRedirects: this.getUrlRedirectsConfig ? this.getUrlRedirectsConfig() : null,
           brokenLinks: this.getBrokenLinksConfig ? this.getBrokenLinksConfig() : null,
-          reports404: this.get404ReportsConfig ? this.get404ReportsConfig() : null
+          reports404: this.get404ReportsConfig ? this.get404ReportsConfig() : null,
+          eventCalendar: this.getEventCalendarConfig ? this.getEventCalendarConfig() : null,
+          examCalendar: this.getExamCalendarConfig ? this.getExamCalendarConfig() : null,
+          recruitmentDeadlines: this.getRecruitmentDeadlinesConfig ? this.getRecruitmentDeadlinesConfig() : null,
+          webinarsSessions: this.getWebinarsSessionsConfig ? this.getWebinarsSessionsConfig() : null,
+          eventRegistrations: this.getEventRegistrationsConfig ? this.getEventRegistrationsConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -13914,6 +13919,176 @@
     return filename;
   };
 
+  // --- MODULE 14-001: Event Calendar ---
+  const DEFAULT_EVENT_CALENDAR = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalEventsCount: 24, upcomingThisMonth: 8, physicalEvents: 4, virtualEvents: 20 },
+    items: [
+      { id: "EVT-01", eventTitle: "Balasore District Aspirants Strategy & Mentorship Meet", eventType: "In-Person Workshop", venueOrPlatform: "F.M. Autonomous College Hall, Balasore", startDate: "2026-11-22", endDate: "2026-11-22", timeRange: "10:00 AM - 01:00 PM", capacity: 250, rsvpCount: 218, status: "Confirmed", active: true },
+      { id: "EVT-02", eventTitle: "Statewide OPSC OAS Prelims Strategy & Essay Guidance", eventType: "Live Virtual Webinar", venueOrPlatform: "Zoom / YouTube Live Stream", startDate: "2026-11-29", endDate: "2026-11-29", timeRange: "06:30 PM - 08:30 PM", capacity: 1000, rsvpCount: 842, status: "Open for RSVP", active: true },
+      { id: "EVT-03", eventTitle: "Free Odisha State Offline Mock Test Drive #04", eventType: "Proctored Offline Mock", venueOrPlatform: "Cuttack & Bhubaneswar Examination Centers", startDate: "2026-12-06", endDate: "2026-12-06", timeRange: "09:30 AM - 12:30 PM", capacity: 500, rsvpCount: 470, status: "Filling Fast", active: true }
+    ]
+  };
+  SuperStore.getEventCalendarConfig = function() {
+    return _hydrateConfig('cso_event_calendar_config', 'events', () => DEFAULT_EVENT_CALENDAR);
+  };
+  SuperStore.saveEventCalendarConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.events = cfg.items || cfg.events || []; cfg.items = cfg.events;
+    localStorage.setItem('cso_event_calendar_config', JSON.stringify(cfg));
+    this.logAudit('EVENT_CALENDAR_UPDATED', 'SCHEDULING', `Event calendar updated (${cfg.items.length} events).`);
+    return true;
+  };
+  SuperStore.resetEventCalendarConfig = function() {
+    localStorage.setItem('cso_event_calendar_config', JSON.stringify(DEFAULT_EVENT_CALENDAR));
+    this.logAudit('EVENT_CALENDAR_RESET', 'SCHEDULING', 'Event calendar reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_EVENT_CALENDAR));
+  };
+  SuperStore.exportEventCalendarManifest = function() {
+    const config = this.getEventCalendarConfig();
+    const filename = "event_calendar_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EVENT_CALENDAR_EXPORTED", "DATA_EXPORT", `Event calendar manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-002: Exam Calendar ---
+  const DEFAULT_EXAM_CALENDAR = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalScheduledExams: 18, examsNext30Days: 4, admitCardsReleased: 6 },
+    items: [
+      { id: "EXM-01", examName: "Odisha Civil Services (OAS/OFS) Preliminary Exam 2026", commission: "OPSC", examDate: "2026-12-20", shiftTime: "10:00 AM - 12:00 PM (Paper I) / 02:00 PM - 04:00 PM (Paper II)", admitCardReleaseDate: "2026-12-08", gazetteNoticeRef: "OPSC-OCS-2026-08", status: "Date Confirmed", active: true },
+      { id: "EXM-02", examName: "OSSC Combined Graduate Level (CGL) Preliminary Stage", commission: "OSSC", examDate: "2027-01-17", shiftTime: "09:30 AM - 12:00 PM (Single Shift)", admitCardReleaseDate: "2027-01-05", gazetteNoticeRef: "OSSC-CGL-2026-14", status: "Tentative Gazette", active: true },
+      { id: "EXM-03", examName: "OSSSC Revenue Inspector (RI) & Amin Combined Test", commission: "OSSSC", examDate: "2027-02-07", shiftTime: "10:00 AM - 01:00 PM", admitCardReleaseDate: "2027-01-25", gazetteNoticeRef: "OSSSC-RI-2026-22", status: "Scheduled", active: true }
+    ]
+  };
+  SuperStore.getExamCalendarConfig = function() {
+    return _hydrateConfig('cso_exam_calendar_config', 'exams', () => DEFAULT_EXAM_CALENDAR);
+  };
+  SuperStore.saveExamCalendarConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.exams = cfg.items || cfg.exams || []; cfg.items = cfg.exams;
+    localStorage.setItem('cso_exam_calendar_config', JSON.stringify(cfg));
+    this.logAudit('EXAM_CALENDAR_UPDATED', 'SCHEDULING', `Exam calendar updated (${cfg.items.length} exams).`);
+    return true;
+  };
+  SuperStore.resetExamCalendarConfig = function() {
+    localStorage.setItem('cso_exam_calendar_config', JSON.stringify(DEFAULT_EXAM_CALENDAR));
+    this.logAudit('EXAM_CALENDAR_RESET', 'SCHEDULING', 'Exam calendar reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_EXAM_CALENDAR));
+  };
+  SuperStore.exportExamCalendarManifest = function() {
+    const config = this.getExamCalendarConfig();
+    const filename = "exam_calendar_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EXAM_CALENDAR_EXPORTED", "DATA_EXPORT", `Exam calendar manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-003: Recruitment Deadlines ---
+  const DEFAULT_RECRUITMENT_DEADLINES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { activeWindows: 12, closingThisWeek: 3, extendedDeadlinesCount: 2 },
+    items: [
+      { id: "DDL-01", recruitmentTitle: "OPSC OAS 2026 Online Application Submission", commission: "OPSC", startDate: "2026-10-15", closingDate: "2026-11-20", feePaymentDeadline: "2026-11-23", correctionWindowTill: "2026-11-27", daysRemaining: 10, status: "Closing Soon", active: true },
+      { id: "DDL-02", recruitmentTitle: "Odisha State Scholarship Portal (SSP) Merit-Cum-Means", commission: "Higher Education Dept", startDate: "2026-09-01", closingDate: "2026-11-30", feePaymentDeadline: "N/A (Free)", correctionWindowTill: "2026-12-05", daysRemaining: 20, status: "Active Window", active: true },
+      { id: "DDL-03", recruitmentTitle: "OSSSC District Field Cadre (Amin/ARI) Registration", commission: "OSSSC", startDate: "2026-11-01", closingDate: "2026-12-10", feePaymentDeadline: "2026-12-12", correctionWindowTill: "2026-12-15", daysRemaining: 30, status: "Active Window", active: true }
+    ]
+  };
+  SuperStore.getRecruitmentDeadlinesConfig = function() {
+    return _hydrateConfig('cso_recruitment_deadlines_config', 'deadlines', () => DEFAULT_RECRUITMENT_DEADLINES);
+  };
+  SuperStore.saveRecruitmentDeadlinesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.deadlines = cfg.items || cfg.deadlines || []; cfg.items = cfg.deadlines;
+    localStorage.setItem('cso_recruitment_deadlines_config', JSON.stringify(cfg));
+    this.logAudit('RECRUITMENT_DEADLINES_UPDATED', 'SCHEDULING', `Recruitment deadlines updated (${cfg.items.length} entries).`);
+    return true;
+  };
+  SuperStore.resetRecruitmentDeadlinesConfig = function() {
+    localStorage.setItem('cso_recruitment_deadlines_config', JSON.stringify(DEFAULT_RECRUITMENT_DEADLINES));
+    this.logAudit('RECRUITMENT_DEADLINES_RESET', 'SCHEDULING', 'Recruitment deadlines reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_RECRUITMENT_DEADLINES));
+  };
+  SuperStore.exportRecruitmentDeadlinesManifest = function() {
+    const config = this.getRecruitmentDeadlinesConfig();
+    const filename = "recruitment_deadlines_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("RECRUITMENT_DEADLINES_EXPORTED", "DATA_EXPORT", `Recruitment deadlines manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-004: Webinars & Sessions ---
+  const DEFAULT_WEBINARS_SESSIONS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalWebinarsHosted: 42, activeUpcoming: 4, totalAttendedAspirants: 14850 },
+    items: [
+      { id: "WBN-01", sessionTitle: "Cracking OPSC OAS General Studies Paper II (CSAT Logic & Math)", speakerName: "Debabrata Nayak (Senior Faculty)", platform: "YouTube Live & WebRTC", sessionDateTime: "2026-11-18 19:00", durationMinutes: 90, registeredCount: 620, accessTier: "Free for All Aspirants", status: "Upcoming", active: true },
+      { id: "WBN-02", sessionTitle: "Odisha History Chronology & Tribal Movements Masterclass", speakerName: "Subhashree Mohanty (State Ranker)", platform: "Interactive Zoom Meeting", sessionDateTime: "2026-11-25 18:30", durationMinutes: 120, registeredCount: 450, accessTier: "Scholar Club Members", status: "Upcoming", active: true },
+      { id: "WBN-03", sessionTitle: "Revenue Inspector Computer Practical Test Blueprint", speakerName: "Platform IT Lead", platform: "Recorded + Live Q&A", sessionDateTime: "2026-12-02 20:00", durationMinutes: 60, registeredCount: 290, accessTier: "Free for All Aspirants", status: "Scheduled", active: true }
+    ]
+  };
+  SuperStore.getWebinarsSessionsConfig = function() {
+    return _hydrateConfig('cso_webinars_sessions_config', 'sessions', () => DEFAULT_WEBINARS_SESSIONS);
+  };
+  SuperStore.saveWebinarsSessionsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.sessions = cfg.items || cfg.sessions || []; cfg.items = cfg.sessions;
+    localStorage.setItem('cso_webinars_sessions_config', JSON.stringify(cfg));
+    this.logAudit('WEBINARS_SESSIONS_UPDATED', 'SCHEDULING', `Webinars & sessions updated (${cfg.items.length} sessions).`);
+    return true;
+  };
+  SuperStore.resetWebinarsSessionsConfig = function() {
+    localStorage.setItem('cso_webinars_sessions_config', JSON.stringify(DEFAULT_WEBINARS_SESSIONS));
+    this.logAudit('WEBINARS_SESSIONS_RESET', 'SCHEDULING', 'Webinars & sessions reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_WEBINARS_SESSIONS));
+  };
+  SuperStore.exportWebinarsSessionsManifest = function() {
+    const config = this.getWebinarsSessionsConfig();
+    const filename = "webinars_sessions_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("WEBINARS_SESSIONS_EXPORTED", "DATA_EXPORT", `Webinars & sessions manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 14-005: Event Registration ---
+  const DEFAULT_EVENT_REGISTRATIONS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { totalRegistrations: 2180, attendanceConfirmed: 1840, cancelledCount: 42 },
+    items: [
+      { id: "REG-EVT-01", candidateEmail: "ramesh.behera@gmail.com", candidateName: "Ramesh Chandra Behera", eventRef: "EVT-01", district: "Balasore", phone: "+91 94370 XXXXX", ticketCode: "TKT-BAL-0142", attendanceStatus: "Confirmed", registeredAt: "2026-11-04 14:20", active: true },
+      { id: "REG-EVT-02", candidateEmail: "subhashree.m@gmail.com", candidateName: "Subhashree Mohanty", eventRef: "EVT-02", district: "Cuttack", phone: "+91 98610 XXXXX", ticketCode: "TKT-WEB-0891", attendanceStatus: "Confirmed", registeredAt: "2026-11-06 18:45", active: true },
+      { id: "REG-EVT-03", candidateEmail: "chinmay.jena@gmail.com", candidateName: "Chinmay Jena", eventRef: "WBN-01", district: "Bhadrak", phone: "+91 70080 XXXXX", ticketCode: "TKT-CSAT-0312", attendanceStatus: "Waitlisted", registeredAt: "2026-11-09 11:10", active: true }
+    ]
+  };
+  SuperStore.getEventRegistrationsConfig = function() {
+    return _hydrateConfig('cso_event_registrations_config', 'registrations', () => DEFAULT_EVENT_REGISTRATIONS);
+  };
+  SuperStore.saveEventRegistrationsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.registrations = cfg.items || cfg.registrations || []; cfg.items = cfg.registrations;
+    localStorage.setItem('cso_event_registrations_config', JSON.stringify(cfg));
+    this.logAudit('EVENT_REGISTRATIONS_UPDATED', 'SCHEDULING', `Event registrations updated (${cfg.items.length} records).`);
+    return true;
+  };
+  SuperStore.resetEventRegistrationsConfig = function() {
+    localStorage.setItem('cso_event_registrations_config', JSON.stringify(DEFAULT_EVENT_REGISTRATIONS));
+    this.logAudit('EVENT_REGISTRATIONS_RESET', 'SCHEDULING', 'Event registrations reset to default.');
+    return JSON.parse(JSON.stringify(DEFAULT_EVENT_REGISTRATIONS));
+  };
+  SuperStore.exportEventRegistrationsManifest = function() {
+    const config = this.getEventRegistrationsConfig();
+    const filename = "event_registrations_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EVENT_REGISTRATIONS_EXPORTED", "DATA_EXPORT", `Event registrations manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -14021,6 +14196,26 @@
     window.CSOSuperStore.save404ReportsConfig = SuperStore.save404ReportsConfig;
     window.CSOSuperStore.reset404ReportsConfig = SuperStore.reset404ReportsConfig;
     window.CSOSuperStore.export404ReportsManifest = SuperStore.export404ReportsManifest;
+    window.CSOSuperStore.getEventCalendarConfig = SuperStore.getEventCalendarConfig;
+    window.CSOSuperStore.saveEventCalendarConfig = SuperStore.saveEventCalendarConfig;
+    window.CSOSuperStore.resetEventCalendarConfig = SuperStore.resetEventCalendarConfig;
+    window.CSOSuperStore.exportEventCalendarManifest = SuperStore.exportEventCalendarManifest;
+    window.CSOSuperStore.getExamCalendarConfig = SuperStore.getExamCalendarConfig;
+    window.CSOSuperStore.saveExamCalendarConfig = SuperStore.saveExamCalendarConfig;
+    window.CSOSuperStore.resetExamCalendarConfig = SuperStore.resetExamCalendarConfig;
+    window.CSOSuperStore.exportExamCalendarManifest = SuperStore.exportExamCalendarManifest;
+    window.CSOSuperStore.getRecruitmentDeadlinesConfig = SuperStore.getRecruitmentDeadlinesConfig;
+    window.CSOSuperStore.saveRecruitmentDeadlinesConfig = SuperStore.saveRecruitmentDeadlinesConfig;
+    window.CSOSuperStore.resetRecruitmentDeadlinesConfig = SuperStore.resetRecruitmentDeadlinesConfig;
+    window.CSOSuperStore.exportRecruitmentDeadlinesManifest = SuperStore.exportRecruitmentDeadlinesManifest;
+    window.CSOSuperStore.getWebinarsSessionsConfig = SuperStore.getWebinarsSessionsConfig;
+    window.CSOSuperStore.saveWebinarsSessionsConfig = SuperStore.saveWebinarsSessionsConfig;
+    window.CSOSuperStore.resetWebinarsSessionsConfig = SuperStore.resetWebinarsSessionsConfig;
+    window.CSOSuperStore.exportWebinarsSessionsManifest = SuperStore.exportWebinarsSessionsManifest;
+    window.CSOSuperStore.getEventRegistrationsConfig = SuperStore.getEventRegistrationsConfig;
+    window.CSOSuperStore.saveEventRegistrationsConfig = SuperStore.saveEventRegistrationsConfig;
+    window.CSOSuperStore.resetEventRegistrationsConfig = SuperStore.resetEventRegistrationsConfig;
+    window.CSOSuperStore.exportEventRegistrationsManifest = SuperStore.exportEventRegistrationsManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
