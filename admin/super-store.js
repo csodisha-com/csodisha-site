@@ -13002,7 +13002,11 @@
           emailSettings: this.getEmailSettingsConfig ? this.getEmailSettingsConfig() : null,
           uploadLimits: this.getUploadLimitsConfig ? this.getUploadLimitsConfig() : null,
           contentDefaults: this.getContentDefaultsConfig ? this.getContentDefaultsConfig() : null,
-          registrationSettings: this.getRegistrationSettingsConfig ? this.getRegistrationSettingsConfig() : null
+          registrationSettings: this.getRegistrationSettingsConfig ? this.getRegistrationSettingsConfig() : null,
+          commentSettings: this.getCommentSettingsConfig ? this.getCommentSettingsConfig() : null,
+          paymentSettings: this.getPaymentSettingsConfig ? this.getPaymentSettingsConfig() : null,
+          environmentStatus: this.getEnvironmentStatusConfig ? this.getEnvironmentStatusConfig() : null,
+          adminPreferences: this.getAdminPreferencesConfig ? this.getAdminPreferencesConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -16140,6 +16144,147 @@
     return filename;
   };
 
+
+  // --- MODULE 18-014: Comment Settings ---
+  const DEFAULT_COMMENT_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { autoModeration: true, holdFirstTimeComments: true, maxCommentNesting: 3, enableUpvoting: true },
+    items: [
+      { id: "SET-CMT-01", ruleKey: "MODERATION_QUEUE", ruleName: "First-Time Poster Moderation Queue", settingValue: "Enabled", description: "Comments from new aspirant accounts require moderator clearance", active: true },
+      { id: "SET-CMT-02", ruleKey: "PROFANITY_FILTER", ruleName: "Odia & English Profanity Guard", settingValue: "Strict Auto-Reject", description: "Automatically blocks abusive language, phone numbers, and spam links", active: true },
+      { id: "SET-CMT-03", ruleKey: "MAX_COMMENT_LENGTH", ruleName: "Maximum Allowed Character Length", settingValue: "1000 Characters", description: "Prevents spam pasting in community discussion threads", active: true },
+      { id: "SET-CMT-04", ruleKey: "ALLOW_ANONYMOUS_POSTING", ruleName: "Anonymous Guest Comments", settingValue: "Strictly Disabled", description: "Only verified aspirants with confirmed email can post questions", active: true }
+    ]
+  };
+  SuperStore.getCommentSettingsConfig = function() {
+    return _hydrateConfig('cso_comment_settings_config', 'rules', () => DEFAULT_COMMENT_SETTINGS);
+  };
+  SuperStore.saveCommentSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.rules = cfg.items || cfg.rules || []; cfg.items = cfg.rules;
+    localStorage.setItem('cso_comment_settings_config', JSON.stringify(cfg));
+    this.logAudit('COMMENT_SETTINGS_UPDATED', 'SETTINGS', `Comment settings updated (${cfg.items.length} rules).`);
+    return true;
+  };
+  SuperStore.resetCommentSettingsConfig = function() {
+    localStorage.setItem('cso_comment_settings_config', JSON.stringify(DEFAULT_COMMENT_SETTINGS));
+    this.logAudit('COMMENT_SETTINGS_RESET', 'SETTINGS', 'Comment settings reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_COMMENT_SETTINGS));
+  };
+  SuperStore.exportCommentSettingsManifest = function() {
+    const config = this.getCommentSettingsConfig();
+    const filename = "comment_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("COMMENT_SETTINGS_EXPORTED", "DATA_EXPORT", `Comment settings manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-015: Payment Settings ---
+  const DEFAULT_PAYMENT_SETTINGS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { defaultCurrency: "INR (₹)", activeGateway: "Razorpay Standard Live", gstNumber: "21AAAAA0000A1Z5", autoRefundWindowDays: 7 },
+    items: [
+      { id: "SET-PAY-01", settingKey: "MERCHANT_NAME", displayName: "Checkout Header Merchant Name", settingValue: "Common Sense Odisha Foundation", description: "Displayed on aspirant payment receipts and bank statements", active: true },
+      { id: "SET-PAY-02", settingKey: "DEFAULT_GATEWAY_RAIL", displayName: "Primary Payment Gateway Rail", settingValue: "Razorpay Live (UPI / Cards / NetBanking)", description: "Primary gateway used for premium mock test passes and subscriptions", active: true },
+      { id: "SET-PAY-03", settingKey: "CURRENCY_SETTING", displayName: "Settlement Currency Code", settingValue: "INR (Indian Rupee)", description: "Fixed platform currency notation (₹)", active: true },
+      { id: "SET-PAY-04", settingKey: "AUTO_INVOICE_GENERATION", displayName: "Automated GST Tax Invoice PDF", settingValue: "Enabled on Payment Success", description: "Generates downloadable receipt immediately upon successful transaction", active: true }
+    ]
+  };
+  SuperStore.getPaymentSettingsConfig = function() {
+    return _hydrateConfig('cso_payment_settings_config', 'paymentConfigs', () => DEFAULT_PAYMENT_SETTINGS);
+  };
+  SuperStore.savePaymentSettingsConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.paymentConfigs = cfg.items || cfg.paymentConfigs || []; cfg.items = cfg.paymentConfigs;
+    localStorage.setItem('cso_payment_settings_config', JSON.stringify(cfg));
+    this.logAudit('PAYMENT_SETTINGS_UPDATED', 'SETTINGS', `Payment settings updated (${cfg.items.length} configurations).`);
+    return true;
+  };
+  SuperStore.resetPaymentSettingsConfig = function() {
+    localStorage.setItem('cso_payment_settings_config', JSON.stringify(DEFAULT_PAYMENT_SETTINGS));
+    this.logAudit('PAYMENT_SETTINGS_RESET', 'SETTINGS', 'Payment settings reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_PAYMENT_SETTINGS));
+  };
+  SuperStore.exportPaymentSettingsManifest = function() {
+    const config = this.getPaymentSettingsConfig();
+    const filename = "payment_settings_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("PAYMENT_SETTINGS_EXPORTED", "DATA_EXPORT", `Payment settings manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-016: Environment Status ---
+  const DEFAULT_ENVIRONMENT_STATUS = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    runtime: { environmentName: "Production Live", hostProvider: "Cloudflare Pages + Workers", edgeRegion: "Bhubaneswar / Mumbai PoP", sslLevel: "TLS 1.3 / Strict Full", edgeLatencyMs: "14ms" },
+    items: [
+      { id: "ENV-01", componentKey: "EDGE_RUNTIME", componentName: "Cloudflare Edge Workers Engine", versionDetails: "V8 Isolated Workers (2026.11)", status: "Optimal", active: true },
+      { id: "ENV-02", componentKey: "STORAGE_GATEWAY", componentName: "Cloudflare R2 Object Storage", versionDetails: "S3 API v4 Compatible (Zero Egress)", status: "Optimal", active: true },
+      { id: "ENV-03", componentKey: "DATABASE_CLUSTER", componentName: "Supabase PostgreSQL Database", versionDetails: "PostgreSQL 16.2 on AWS ap-south-1", status: "Optimal", active: true },
+      { id: "ENV-04", componentKey: "WAF_SECURITY", componentName: "Cloudflare Web Application Firewall", versionDetails: "Managed OWASP RuleSet v2026", status: "Armed & Active", active: true }
+    ]
+  };
+  SuperStore.getEnvironmentStatusConfig = function() {
+    return _hydrateConfig('cso_environment_status_config', 'environments', () => DEFAULT_ENVIRONMENT_STATUS);
+  };
+  SuperStore.saveEnvironmentStatusConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.environments = cfg.items || cfg.environments || []; cfg.items = cfg.environments;
+    localStorage.setItem('cso_environment_status_config', JSON.stringify(cfg));
+    this.logAudit('ENVIRONMENT_STATUS_UPDATED', 'SETTINGS', `Environment status updated (${cfg.items.length} components).`);
+    return true;
+  };
+  SuperStore.resetEnvironmentStatusConfig = function() {
+    localStorage.setItem('cso_environment_status_config', JSON.stringify(DEFAULT_ENVIRONMENT_STATUS));
+    this.logAudit('ENVIRONMENT_STATUS_RESET', 'SETTINGS', 'Environment status reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_ENVIRONMENT_STATUS));
+  };
+  SuperStore.exportEnvironmentStatusManifest = function() {
+    const config = this.getEnvironmentStatusConfig();
+    const filename = "environment_status_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ENVIRONMENT_STATUS_EXPORTED", "DATA_EXPORT", `Environment status manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // --- MODULE 18-017: Administrative Preferences ---
+  const DEFAULT_ADMIN_PREFERENCES = {
+    meta: { version: "1.0", updatedAt: new Date().toISOString() },
+    summary: { defaultTablePageSize: 15, autoSaveIntervalSeconds: 30, enableSoundAlerts: false, rawJsonTheme: "Monokai Pro Dark" },
+    items: [
+      { id: "PREF-01", prefName: "Default Admin Table Page Size", prefValue: "15 Rows", context: "Controls pagination depth across all 241 module workspaces", active: true },
+      { id: "PREF-02", prefName: "Auto-Save Draft Interval", prefValue: "30 Seconds", context: "Silently caches unpublished changes in local workspace memory", active: true },
+      { id: "PREF-03", prefName: "Audible Incident Alerts", prefValue: "Disabled", context: "Plays alert chime when P1 security or outage incidents trigger", active: true },
+      { id: "PREF-04", prefName: "Developer Raw JSON Highlighting", prefValue: "Enabled (Monokai Theme)", context: "Formats schema modals with color-coded syntax formatting", active: true }
+    ]
+  };
+  SuperStore.getAdminPreferencesConfig = function() {
+    return _hydrateConfig('cso_admin_preferences_config', 'preferences', () => DEFAULT_ADMIN_PREFERENCES);
+  };
+  SuperStore.saveAdminPreferencesConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.preferences = cfg.items || cfg.preferences || []; cfg.items = cfg.preferences;
+    localStorage.setItem('cso_admin_preferences_config', JSON.stringify(cfg));
+    this.logAudit('ADMIN_PREFERENCES_UPDATED', 'SETTINGS', `Admin preferences updated (${cfg.items.length} settings).`);
+    return true;
+  };
+  SuperStore.resetAdminPreferencesConfig = function() {
+    localStorage.setItem('cso_admin_preferences_config', JSON.stringify(DEFAULT_ADMIN_PREFERENCES));
+    this.logAudit('ADMIN_PREFERENCES_RESET', 'SETTINGS', 'Admin preferences reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_ADMIN_PREFERENCES));
+  };
+  SuperStore.exportAdminPreferencesManifest = function() {
+    const config = this.getAdminPreferencesConfig();
+    const filename = "admin_preferences_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("ADMIN_PREFERENCES_EXPORTED", "DATA_EXPORT", `Admin preferences manifest exported (${filename}).`);
+    return filename;
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -16495,6 +16640,22 @@
     window.CSOSuperStore.saveRegistrationSettingsConfig = SuperStore.saveRegistrationSettingsConfig;
     window.CSOSuperStore.resetRegistrationSettingsConfig = SuperStore.resetRegistrationSettingsConfig;
     window.CSOSuperStore.exportRegistrationSettingsManifest = SuperStore.exportRegistrationSettingsManifest;
+    window.CSOSuperStore.getCommentSettingsConfig = SuperStore.getCommentSettingsConfig;
+    window.CSOSuperStore.saveCommentSettingsConfig = SuperStore.saveCommentSettingsConfig;
+    window.CSOSuperStore.resetCommentSettingsConfig = SuperStore.resetCommentSettingsConfig;
+    window.CSOSuperStore.exportCommentSettingsManifest = SuperStore.exportCommentSettingsManifest;
+    window.CSOSuperStore.getPaymentSettingsConfig = SuperStore.getPaymentSettingsConfig;
+    window.CSOSuperStore.savePaymentSettingsConfig = SuperStore.savePaymentSettingsConfig;
+    window.CSOSuperStore.resetPaymentSettingsConfig = SuperStore.resetPaymentSettingsConfig;
+    window.CSOSuperStore.exportPaymentSettingsManifest = SuperStore.exportPaymentSettingsManifest;
+    window.CSOSuperStore.getEnvironmentStatusConfig = SuperStore.getEnvironmentStatusConfig;
+    window.CSOSuperStore.saveEnvironmentStatusConfig = SuperStore.saveEnvironmentStatusConfig;
+    window.CSOSuperStore.resetEnvironmentStatusConfig = SuperStore.resetEnvironmentStatusConfig;
+    window.CSOSuperStore.exportEnvironmentStatusManifest = SuperStore.exportEnvironmentStatusManifest;
+    window.CSOSuperStore.getAdminPreferencesConfig = SuperStore.getAdminPreferencesConfig;
+    window.CSOSuperStore.saveAdminPreferencesConfig = SuperStore.saveAdminPreferencesConfig;
+    window.CSOSuperStore.resetAdminPreferencesConfig = SuperStore.resetAdminPreferencesConfig;
+    window.CSOSuperStore.exportAdminPreferencesManifest = SuperStore.exportAdminPreferencesManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;

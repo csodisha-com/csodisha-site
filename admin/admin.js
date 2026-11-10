@@ -667,6 +667,10 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-18-011') { renderUploadLimitsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-012') { renderContentDefaultsWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-18-013') { renderRegistrationSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-014') { renderCommentSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-015') { renderPaymentSettingsWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-016') { renderEnvironmentStatusWorkspace(dom.workspaceRoot); return; }
+      if (moduleId === 'module-18-017') { renderAdministrativePreferencesWorkspace(dom.workspaceRoot); return; }
 
 
 
@@ -1183,6 +1187,14 @@ async function loadMasterNavigation() {
         renderContentDefaultsWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-18-013') {
         renderRegistrationSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-014') {
+        renderCommentSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-015') {
+        renderPaymentSettingsWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-016') {
+        renderEnvironmentStatusWorkspace(dom.workspaceRoot);
+      } else if (moduleId === 'module-18-017') {
+        renderAdministrativePreferencesWorkspace(dom.workspaceRoot);
 
 
 
@@ -69066,6 +69078,534 @@ async function loadMasterNavigation() {
       } catch (err) {
         console.error('Render error in module-18-013', err);
         container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-013</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+
+    
+    // ==========================================
+    // MODULE 18-014: Comment Settings
+    // ==========================================
+    function renderCommentSettingsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getCommentSettingsConfig();
+
+        function render() {
+          const rules = config.rules || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Community Comment Rules & Discussion Moderation</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-014 • First-time poster queue, Odia/English profanity shield & threaded replies</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="cmt-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="cmt-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="cmt-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Rules
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Auto-Moderation</div>
+                  <div class="text-2xl font-bold text-emerald-400 mt-1">${summary.autoModeration ? 'ACTIVE' : 'OFF'}</div>
+                  <div class="text-xs text-teal-400 mt-1">AI Odia/English Keyword Filter</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">First-Time Queue</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${summary.holdFirstTimeComments ? 'ENFORCED' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Holds new aspirant comments</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Thread Nesting Depth</div>
+                  <div class="text-2xl font-bold text-white mt-1">${summary.maxCommentNesting || 3} Levels</div>
+                  <div class="text-xs text-slate-400 mt-1">Max Reply Indentation</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Aspirant Upvoting</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${summary.enableUpvoting ? 'ENABLED' : 'OFF'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">Helpful Answer Promotion</div>
+                </div>
+              </div>
+
+              <!-- Rules Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Moderation Rule</th>
+                      <th class="p-3">Setting Value</th>
+                      <th class="p-3">Policy Description</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${rules.map((r, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">
+                          <div>${r.ruleName}</div>
+                          <div class="text-[10px] text-teal-400 font-mono">${r.ruleKey}</div>
+                        </td>
+                        <td class="p-3">
+                          <input type="text" value="${r.settingValue}" class="cmt-val-input w-48 bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 text-slate-400">${r.description}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            Active
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#cmt-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.cmt-val-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                rules[idx].settingValue = input.value.trim();
+              });
+              config.rules = rules;
+              config.items = rules;
+              store.saveCommentSettingsConfig(config);
+              alert('Comment moderation rules saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#cmt-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportCommentSettingsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#cmt-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Comment Settings to factory defaults?')) {
+                config = store.resetCommentSettingsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-014', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-014</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-015: Payment Settings
+    // ==========================================
+    function renderPaymentSettingsWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getPaymentSettingsConfig();
+
+        function render() {
+          const configs = config.paymentConfigs || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Payment Rails, GST Billing & Merchant Directives</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-015 • Razorpay live credentials, GST invoice generation, refund windows & UPI settlement</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="pay-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="pay-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="pay-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Active Gateway Rail</div>
+                  <div class="text-sm font-bold text-teal-400 mt-2 truncate">${summary.activeGateway || 'Razorpay Live'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">UPI & NetBanking Active</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Platform Currency</div>
+                  <div class="text-2xl font-bold text-white mt-1">${summary.defaultCurrency || 'INR (₹)'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Fixed Indian Rupee</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Odisha GST Number</div>
+                  <div class="text-xs font-bold text-amber-400 font-mono mt-2 truncate">${summary.gstNumber || '21AAAAA0000A1Z5'}</div>
+                  <div class="text-xs text-slate-400 mt-1">State GST Registration</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Auto-Refund Window</div>
+                  <div class="text-2xl font-bold text-sky-400 mt-1">${summary.autoRefundWindowDays || 7} Days</div>
+                  <div class="text-xs text-emerald-400 mt-1">Automated Resolution</div>
+                </div>
+              </div>
+
+              <!-- Payment Configs Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Payment Directive</th>
+                      <th class="p-3">Configured Value</th>
+                      <th class="p-3">Application Scope</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${configs.map((c, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">
+                          <div>${c.displayName}</div>
+                          <div class="text-[10px] text-teal-400 font-mono">${c.settingKey}</div>
+                        </td>
+                        <td class="p-3">
+                          <input type="text" value="${c.settingValue}" class="pay-val-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 text-slate-400">${c.description}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#pay-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.pay-val-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                configs[idx].settingValue = input.value.trim();
+              });
+              config.paymentConfigs = configs;
+              config.items = configs;
+              store.savePaymentSettingsConfig(config);
+              alert('Payment settings updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#pay-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportPaymentSettingsManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#pay-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Payment Settings to factory defaults?')) {
+                config = store.resetPaymentSettingsConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-015', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-015</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-016: Environment Status
+    // ==========================================
+    function renderEnvironmentStatusWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getEnvironmentStatusConfig();
+
+        function render() {
+          const envs = config.environments || config.items || [];
+          const runtime = config.runtime || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Production Environment & Cloud Infrastructure</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-016 • Cloudflare Pages, V8 Workers runtime, TLS 1.3 encryption & Supabase cluster status</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="env-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="env-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Environment</div>
+                  <div class="text-lg font-bold text-emerald-400 mt-1">${runtime.environmentName || 'Production Live'}</div>
+                  <div class="text-xs text-slate-400 mt-1">${runtime.hostProvider || 'Cloudflare Pages'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Edge PoP Location</div>
+                  <div class="text-sm font-bold text-white mt-2 truncate">${runtime.edgeRegion || 'Bhubaneswar / Mumbai'}</div>
+                  <div class="text-xs text-teal-400 mt-1">Latency: ${runtime.edgeLatencyMs || '14ms'}</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">SSL / Encryption</div>
+                  <div class="text-lg font-bold text-sky-400 mt-1">${runtime.sslLevel || 'TLS 1.3 / Strict'}</div>
+                  <div class="text-xs text-emerald-400 mt-1">HSTS Preloaded</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Infrastructure Components</div>
+                  <div class="text-2xl font-bold text-violet-400 mt-1">${envs.length}</div>
+                  <div class="text-xs text-emerald-400 mt-1">100% Operational</div>
+                </div>
+              </div>
+
+              <!-- Components Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Component Name</th>
+                      <th class="p-3">Version & Architectural Details</th>
+                      <th class="p-3">Health Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${envs.map(e => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">
+                          <div>${e.componentName}</div>
+                          <div class="text-[10px] text-teal-400 font-mono">${e.componentKey}</div>
+                        </td>
+                        <td class="p-3 font-mono text-slate-300">${e.versionDetails}</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            ${e.status}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const exportBtn = container.querySelector('#env-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportEnvironmentStatusManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#env-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Environment Status to factory defaults?')) {
+                config = store.resetEnvironmentStatusConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-016', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-016</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
+      }
+    }
+
+    // ==========================================
+    // MODULE 18-017: Administrative Preferences
+    // ==========================================
+    function renderAdministrativePreferencesWorkspace(container) {
+      try {
+        const store = window.CSOSuperStore;
+        let config = store.getAdminPreferencesConfig();
+
+        function render() {
+          const prefs = config.preferences || config.items || [];
+          const summary = config.summary || {};
+
+          container.innerHTML = `
+            <div class="space-y-6">
+              <!-- Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-700/60">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Administrative Preferences & Console Ergonomics</h2>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">module-18-017 • Table page depths across all 241 modules, autosave intervals, themes & audio alerts</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="pref-btn-export-manifest" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export
+                  </button>
+                  <button id="pref-btn-reset-factory" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg border border-rose-500/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
+                  </button>
+                  <button id="pref-btn-save-all" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-teal-900/30 flex items-center gap-1.5 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Save Preferences
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stat Cards -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Default Page Size</div>
+                  <div class="text-2xl font-bold text-teal-400 mt-1">${summary.defaultTablePageSize || 15} Rows</div>
+                  <div class="text-xs text-slate-400 mt-1">241 Workspace Depth</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Auto-Save Drafts</div>
+                  <div class="text-2xl font-bold text-white mt-1">${summary.autoSaveIntervalSeconds || 30}s</div>
+                  <div class="text-xs text-emerald-400 mt-1">Silent Local Memory Cache</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Audible Alerts</div>
+                  <div class="text-2xl font-bold text-slate-300 mt-1">${summary.enableSoundAlerts ? 'ACTIVE' : 'OFF'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Incident Warning Chime</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400 font-medium">Raw JSON Syntax</div>
+                  <div class="text-sm font-bold text-amber-400 mt-2 truncate">${summary.rawJsonTheme || 'Monokai Dark'}</div>
+                  <div class="text-xs text-slate-400 mt-1">Schema Modal Inspector</div>
+                </div>
+              </div>
+
+              <!-- Preferences Table -->
+              <div class="bg-slate-900/60 rounded-xl border border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                    <tr>
+                      <th class="p-3">Preference Name</th>
+                      <th class="p-3">Current Preference Setting</th>
+                      <th class="p-3">Scope & Operational Context</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    ${prefs.map((p, idx) => `
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-white">${p.prefName}</td>
+                        <td class="p-3">
+                          <input type="text" value="${p.prefValue}" class="pref-val-input w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-teal-400 font-mono" data-index="${idx}">
+                        </td>
+                        <td class="p-3 text-slate-400">${p.context}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          // Handlers
+          const saveBtn = container.querySelector('#pref-btn-save-all');
+          if (saveBtn) {
+            saveBtn.onclick = () => {
+              container.querySelectorAll('.pref-val-input').forEach(input => {
+                const idx = parseInt(input.dataset.index, 10);
+                prefs[idx].prefValue = input.value.trim();
+              });
+              config.preferences = prefs;
+              config.items = prefs;
+              store.saveAdminPreferencesConfig(config);
+              alert('Administrative preferences updated and saved.');
+              render();
+            };
+          }
+
+          const exportBtn = container.querySelector('#pref-btn-export-manifest');
+          if (exportBtn) {
+            exportBtn.onclick = () => {
+              store.exportAdminPreferencesManifest();
+            };
+          }
+
+          const resetBtn = container.querySelector('#pref-btn-reset-factory');
+          if (resetBtn) {
+            resetBtn.onclick = () => {
+              if (confirm('Reset Administrative Preferences to factory defaults?')) {
+                config = store.resetAdminPreferencesConfig();
+                render();
+              }
+            };
+          }
+        }
+
+        render();
+      } catch (err) {
+        console.error('Render error in module-18-017', err);
+        container.innerHTML = `<div class="p-6 bg-red-950/50 border border-red-500/30 rounded-xl text-red-200"><h3 class="text-sm font-bold">Render Error in module-18-017</h3><pre class="mt-2 text-xs overflow-x-auto text-red-300">${err.stack || err.message}</pre></div>`;
       }
     }
 

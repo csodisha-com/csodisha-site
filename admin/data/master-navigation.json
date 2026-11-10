@@ -1362,12 +1362,12 @@
         {
           "id": "module-18-014",
           "title": "Comment Settings",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-18-015",
           "title": "Payment Settings",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-18-016",
@@ -1377,7 +1377,7 @@
         {
           "id": "module-18-017",
           "title": "Administrative Preferences",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },
