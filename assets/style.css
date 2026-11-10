@@ -6420,38 +6420,78 @@ html, body {
 }
 
 /* ==========================================================================
-   Mobile Responsive Layout Fix: Hero and Latest Updates Stacking (<= 768px)
+   Mobile Responsive Fix: Hero & Latest Updates Stacking
    ========================================================================== */
 @media (max-width: 768px) {
-  .g1,
-  .hero-grid,
-  .hero-layout,
-  .hero-container {
+  /* Force vertical stack for the main grid */
+  .g1 {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     gap: 1.25rem !important;
   }
 
-  /* Full width for both hero card and latest updates card */
+  /* Expand Hero section and Latest Updates aside to full width */
   .g1 > .hero,
   .g1 > .lu,
-  .g1 > .card.lu,
   .hero,
-  #cso-hero,
-  .hero-card,
-  .hero-left,
-  .hero-banner,
-  .card.lu,
-  .lu,
-  .latest-updates-wrapper,
-  .latest-updates-card,
-  .hero-right {
+  .card.lu {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     flex: 1 1 100% !important;
     box-sizing: border-box !important;
+  }
+
+  /* Prevent character stacking inside Latest Updates items */
+  .card.lu .it {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.35rem !important;
+    padding: 0.75rem 0.5rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .card.lu .it > div {
+    width: 100% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .card.lu .it .d {
+    text-align: left !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Wrap filter tabs cleanly */
+  .card.lu .tabs {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.35rem !important;
+    width: 100% !important;
+  }
+
+  .card.lu .tabs button {
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Flow search tag chips naturally */
+  .chips {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.4rem !important;
+    justify-content: center !important;
+  }
+
+  .search-chip {
+    font-size: 0.78rem !important;
+    padding: 0.3rem 0.6rem !important;
   }
 }
 
