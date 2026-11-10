@@ -6495,11 +6495,48 @@ html, body {
   }
 }
 
-
-
-
-
-
-
+@media screen and (max-width: 768px) {
+  .g1 {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 1.5rem !important;
+  }
+  .g1 > section.hero,
+  .g1 > #cso-hero,
+  .g1 > .hero {
+    order: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 0 0 100% !important;
+    box-sizing: border-box !important;
+  }
+  .g1 > aside.card.lu,
+  .g1 > aside.lu,
+  .g1 > .lu {
+    order: 2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 0 0 100% !important;
+    box-sizing: border-box !important;
+  }
+  .card.lu .it,
+  .lu .it {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  .card.lu .it > div,
+  .lu .it > div {
+    width: 100% !important;
+    white-space: normal !important;
+  }
+}
 
 
