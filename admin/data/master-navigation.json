@@ -1423,7 +1423,7 @@
         {
           "id": "module-19-008",
           "title": "Feature Dependencies",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-19-009",
@@ -1433,12 +1433,12 @@
         {
           "id": "module-19-010",
           "title": "Regression Test Coverage",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "module-19-011",
           "title": "Feature Documentation",
-          "status": "planned"
+          "status": "active"
         }
       ]
     },
