@@ -97,11 +97,11 @@ export async function onRequestPost({ request, env }) {
     }
 
     // Timing-attack defense:
-    // If the user does not exist in D1, run a dummy PBKDF2 derivation with identical 600,000 iteration count
+    // If the user does not exist in D1, run a dummy PBKDF2 derivation with identical 100,000 iteration count
     // before returning 401 Unauthorized
     if (!userRecord) {
       const dummySalt = generateSalt();
-      await hashPassword(passStr, dummySalt, 600000);
+      await hashPassword(passStr, dummySalt, 100000);
       return jsonResponse({
         success: false,
         error: 'Invalid email or password'
@@ -118,25 +118,12 @@ export async function onRequestPost({ request, env }) {
       }, 429, { 'Retry-After': String(remainingSeconds) });
     }
 
-    // Password verification with matching salt and 600,000 iterations
-    // (with backward compatibility fallback for 100,000 if legacy account)
+    // Password verification with matching salt and 100,000 iterations (Cloudflare Workers Web Crypto limit)
     let isMatch = false;
-    const computedHash600k = await hashPassword(passStr, userRecord.salt, 600000);
+    const computedHash100k = await hashPassword(passStr, userRecord.salt, 100000);
 
-    if (computedHash600k === userRecord.password_hash) {
+    if (computedHash100k === userRecord.password_hash) {
       isMatch = true;
-    } else {
-      // Check legacy 100k iteration hash
-      const computedHash100k = await hashPassword(passStr, userRecord.salt, 100000);
-      if (computedHash100k === userRecord.password_hash) {
-        isMatch = true;
-        // Upgrade user to 600,000 iterations seamlessly
-        try {
-          await env.DB.prepare(`
-            UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?
-          `).bind(computedHash600k, nowUnix, userRecord.id).run();
-        } catch(e) {}
-      }
     }
 
     // On failed password match:

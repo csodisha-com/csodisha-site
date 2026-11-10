@@ -49,7 +49,7 @@ export function generateSalt() {
 }
 
 // PBKDF2 Web Crypto Hash (600,000 iterations, SHA-256)
-export async function hashPassword(password, saltHex, iterations = 600000) {
+export async function hashPassword(password, saltHex, iterations = 100000) {
   const encoder = new TextEncoder();
   const passBuffer = encoder.encode(password);
   const saltBuffer = hexToBuf(saltHex);

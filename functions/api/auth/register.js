@@ -104,9 +104,9 @@ export async function onRequestPost({ request, env }) {
       }, 409);
     }
 
-    // Password hashing: Web Crypto PBKDF2 with SHA-256, 600,000 iterations, 16-byte random salt
+    // Password hashing: Web Crypto PBKDF2 with SHA-256, 100,000 iterations (Cloudflare Workers runtime limit), 16-byte random salt
     const salt = generateSalt();
-    const passwordHash = await hashPassword(passStr, salt, 600000);
+    const passwordHash = await hashPassword(passStr, salt, 100000);
     const userId = 'cso_usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
     const nowUnix = Math.floor(Date.now() / 1000);
     const nowIso = new Date().toISOString();
