@@ -1026,51 +1026,52 @@
       "title": "Events & Scheduling",
       "modules": [
         {
-          "id": "module-14-001",
-          "title": "Event Calendar",
+          "id": "module-es-001",
+          "title": "State Competitive Exam Calendar",
           "status": "active"
         },
         {
-          "id": "module-14-002",
-          "title": "Exam Calendar",
+          "id": "module-es-002",
+          "title": "Entrance & Admission Milestones",
           "status": "active"
         },
         {
-          "id": "module-14-003",
-          "title": "Recruitment Deadlines",
+          "id": "module-es-003",
+          "title": "Recruitment Application Deadlines & Countdown Engine",
           "status": "active"
         },
         {
-          "id": "module-14-004",
-          "title": "Webinars & Sessions",
+          "id": "module-es-004",
+          "title": "Admit Card, Hall Ticket & Center Allotment Alerts",
           "status": "active"
         },
         {
-          "id": "module-14-005",
-          "title": "Event Registration",
+          "id": "module-es-005",
+          "title": "Answer Key Challenges & Provisional Key Timelines",
           "status": "active"
         },
         {
-          "id": "module-14-006",
-          "title": "Scheduled Publications",
+          "id": "module-es-006",
+          "title": "Result Declarations & Document Verification (DV) Rosters",
           "status": "active"
         },
         {
-          "id": "module-14-007",
-          "title": "Expiry Rules",
+          "id": "module-es-007",
+          "title": "Offline Workshops & District Meetups",
           "status": "active"
         },
         {
-          "id": "module-14-008",
-          "title": "Reminder Configuration",
+          "id": "module-es-008",
+          "title": "Live Webinars & Virtual Counseling Sessions",
           "status": "active"
         },
         {
-          "id": "module-14-009",
-          "title": "Scheduled Maintenance",
+          "id": "module-es-009",
+          "title": "Calendar Sync, ICS Feeds & Push Notification Dispatcher",
           "status": "active"
         }
-      ]
+      ],
+      "status": "active"
     },
     {
       "id": "folder-15",

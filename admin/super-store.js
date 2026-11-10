@@ -13029,7 +13029,8 @@
           jobsDirectoryTree: this.getJobsDirectoryTreeConfig ? this.getJobsDirectoryTreeConfig() : null,
           schemesDirectoryTree: this.getSchemesDirectoryTreeConfig ? this.getSchemesDirectoryTreeConfig() : null,
           studyDirectoryTree: this.getStudyDirectoryTreeConfig ? this.getStudyDirectoryTreeConfig() : null,
-          communityDirectoryTree: this.getCommunityDirectoryTreeConfig ? this.getCommunityDirectoryTreeConfig() : null
+          communityDirectoryTree: this.getCommunityDirectoryTreeConfig ? this.getCommunityDirectoryTreeConfig() : null,
+          eventsScheduleTree: this.getEventsScheduleConfig ? this.getEventsScheduleConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -109879,6 +109880,467 @@
   SuperStore.saveSafetyGovernanceConfig = function(cfg) { return this.saveCommunityDirectoryTreeConfig(cfg); };
   SuperStore.resetSafetyGovernanceConfig = function() { return this.resetCommunityDirectoryTreeConfig(); };
   SuperStore.exportSafetyGovernanceManifest = function() { return this.exportCommunityDirectoryTreeManifest(); };
+
+  // =========================================================================
+  // EVENTS & SCHEDULING SUITE ENGINE
+  // =========================================================================
+  const DEFAULT_EVENTS_DIRECTORY_TREE = {
+  "meta": {
+    "version": "2.0",
+    "updatedAt": "2026-11-10T10:10:58.846Z"
+  },
+  "activeCategoryId": "cat-es-01",
+  "selectedNodeId": "ES-NODE-01-01",
+  "categories": [
+    {
+      "id": "cat-es-01",
+      "moduleId": "module-es-001",
+      "code": "01",
+      "title": "State Competitive Exam Calendar",
+      "titleOdia": "ରାଜ୍ୟ ପ୍ରତିଯୋଗିତାମୂଳକ ପରୀକ୍ଷା କ୍ୟାଲେଣ୍ଡର",
+      "description": "Annual and upcoming competitive exam timetables across OPSC, OSSC, OSSSC, Police, and Judicial services",
+      "nodes": [
+        {
+          "id": "ES-NODE-01-01",
+          "title": "Odisha Civil Services (OCS) Combined Preliminary Examination 2026",
+          "titleOdia": "ଓଡ଼ିଶା ପ୍ରଶାସନିକ ସେବା ପ୍ରାରମ୍ଭିକ ପରୀକ୍ଷା ୨୦୨୬",
+          "slug": "opsc-ocs-prelims-2026",
+          "categoryCode": "01",
+          "eventType": "Exam",
+          "targetCadre": "OPSC Group A & B (OAS, OPS, OFS)",
+          "eventStartDate": "2026-11-29",
+          "eventEndDate": "2026-11-29",
+          "venueDistrict": "All 30 Districts (Zonal Centers)",
+          "officialPortalUrl": "https://opsc.gov.in",
+          "hallTicketMirrorUrl": "/assets/pdf/opsc-ocs-exam-notice.pdf",
+          "stage": "Date Confirmed",
+          "articleTitle": "OPSC OCS Preliminary Examination 2026 Schedule & Guidelines",
+          "contentBody": "Comprehensive notification for OCS 2026 Prelims. Paper I (General Studies) will be held from 10:00 AM to 12:00 PM, and Paper II (CSAT) from 1:30 PM to 3:30 PM across designated zonal headquarters in Odisha.",
+          "tags": [
+            "OPSC",
+            "OCS",
+            "Exam Calendar",
+            "Preliminary"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": [
+            {
+              "id": "ES-NODE-01-01-SUB1",
+              "title": "Paper I: General Studies Detailed Syllabus & Timing",
+              "titleOdia": "ପ୍ରଥମ ପତ୍ର: ସାଧାରଣ ଅଧ୍ୟୟନ ପାଠ୍ୟକ୍ରମ",
+              "slug": "ocs-prelims-paper-1-syllabus",
+              "categoryCode": "01",
+              "eventType": "Exam Shift",
+              "targetCadre": "OAS/OPS Aspirants",
+              "eventStartDate": "2026-11-29T10:00",
+              "eventEndDate": "2026-11-29T12:00",
+              "venueDistrict": "Zonal Centers",
+              "officialPortalUrl": "https://opsc.gov.in",
+              "hallTicketMirrorUrl": "",
+              "stage": "Morning Session",
+              "articleTitle": "Paper 1 Examination Guidelines",
+              "contentBody": "100 Multiple Choice Questions covering History of Odisha, Indian Polity, Geography, General Science and Current Events.",
+              "tags": [
+                "OPSC",
+                "Paper 1"
+              ],
+              "status": "Published",
+              "active": true,
+              "lastUpdated": "2026-11-10",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ES-NODE-01-02",
+          "title": "OSSC Combined Graduate Level (CGL) Specialist Recruitment Examination 2026",
+          "titleOdia": "ଓଡ଼ିଶା କର୍ମଚାରୀ ଚୟନ ଆୟୋଗ ସିଜିଏଲ ମୁଖ୍ୟ ପରୀକ୍ଷା ୨୦୨୬",
+          "slug": "ossc-cgl-specialist-mains-2026",
+          "categoryCode": "01",
+          "eventType": "Exam",
+          "targetCadre": "OSSC Group B & C",
+          "eventStartDate": "2026-12-14",
+          "eventEndDate": "2026-12-15",
+          "venueDistrict": "Bhubaneswar & Cuttack Centers",
+          "officialPortalUrl": "https://ossc.gov.in",
+          "hallTicketMirrorUrl": "/assets/pdf/ossc-cgl-exam-date.pdf",
+          "stage": "Schedule Announced",
+          "articleTitle": "OSSC CGL Specialist Recruitment 2026 Mains Examination",
+          "contentBody": "OSSC has announced the examination dates for CGL Specialist posts. Computer-based recruitment examination (CBRE) scheduled for December 14-15 across official cyber examination centers.",
+          "tags": [
+            "OSSC",
+            "CGL",
+            "Mains Examination"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-02",
+      "moduleId": "module-es-002",
+      "code": "02",
+      "title": "Entrance & Admission Milestones",
+      "titleOdia": "ପ୍ରବେଶିକା ଏବଂ ନାମଲେଖା ସମୟସୀମା",
+      "description": "State level university entrance tests, OJEE, Odisha B.Ed, CPET, and diploma counseling schedules",
+      "nodes": [
+        {
+          "id": "ES-NODE-02-01",
+          "title": "Odisha State B.Ed / B.H.Ed Entrance Examination & Merit Counseling 2026",
+          "titleOdia": "ଓଡ଼ିଶା ବି.ଏଡ୍ ପ୍ରବେଶିକା ପରୀକ୍ଷା ୨୦୨୬",
+          "slug": "odisha-bed-entrance-exam-2026",
+          "categoryCode": "02",
+          "eventType": "Entrance",
+          "targetCadre": "Teacher Trainees (Arts & Science)",
+          "eventStartDate": "2026-11-22",
+          "eventEndDate": "2026-11-22",
+          "venueDistrict": "All District Headquarters",
+          "officialPortalUrl": "https://samsodisha.gov.in",
+          "hallTicketMirrorUrl": "/assets/pdf/bed-entrance-schedule.pdf",
+          "stage": "Hall Tickets Active",
+          "articleTitle": "Odisha B.Ed Entrance Test 2026 Date & Reporting Protocols",
+          "contentBody": "SAMS Odisha has scheduled the B.Ed / B.H.Ed entrance examination on November 22. Candidate reporting time is 8:30 AM at assigned district centers.",
+          "tags": [
+            "SAMS",
+            "B.Ed",
+            "Entrance"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-03",
+      "moduleId": "module-es-003",
+      "code": "03",
+      "title": "Recruitment Application Deadlines & Countdown Engine",
+      "titleOdia": "ଆବେଦନ ଶେଷ ତାରିଖ ଏବଂ କାଉଣ୍ଟଡାଉନ୍",
+      "description": "Critical registration closure countdowns, online fee payment cutoff dates, and application portals",
+      "nodes": [
+        {
+          "id": "ES-NODE-03-01",
+          "title": "OSSSC Combined Recruitment Examination (CRE-IV) Online Application Deadline",
+          "titleOdia": "ଓଡ଼ିଶା ସବ୍-ଅର୍ଡିନେଟ୍ ଚୟନ ଆୟୋଗ ଆବେଦନ ଶେଷ ତାରିଖ",
+          "slug": "osssc-cre-iv-application-deadline",
+          "categoryCode": "03",
+          "eventType": "Deadline",
+          "targetCadre": "RI, ARI, Amin, ICDS Supervisor",
+          "eventStartDate": "2026-11-25",
+          "eventEndDate": "2026-11-25",
+          "venueDistrict": "Statewide Online Portal",
+          "officialPortalUrl": "https://osssc.gov.in",
+          "hallTicketMirrorUrl": "",
+          "stage": "Closing Soon",
+          "articleTitle": "OSSSC CRE-IV Application Portal Closes November 25",
+          "contentBody": "Aspirants must finalize submission of user registration and online application form before 11:59 PM. No extension will be granted beyond the closing date.",
+          "tags": [
+            "OSSSC",
+            "Application Deadline",
+            "RI/ARI"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-04",
+      "moduleId": "module-es-004",
+      "code": "04",
+      "title": "Admit Card, Hall Ticket & Center Allotment Alerts",
+      "titleOdia": "ପ୍ରବେଶ ପତ୍ର ଏବଂ ପରୀକ୍ଷା କେନ୍ଦ୍ର ବିଜ୍ଞପ୍ତି",
+      "description": "Direct download mirrors for e-admission cards, test city allotment slips, and center instructions",
+      "nodes": [
+        {
+          "id": "ES-NODE-04-01",
+          "title": "OPSC OCS Preliminary e-Admission Certificate & Identity Verification Pass",
+          "titleOdia": "ଓପିଏସସି ପ୍ରବେଶ ପତ୍ର ଡାଉନଲୋଡ୍ ବିଜ୍ଞପ୍ତି",
+          "slug": "opsc-ocs-admit-card-download",
+          "categoryCode": "04",
+          "eventType": "Admit Card",
+          "targetCadre": "OPSC OCS Candidates",
+          "eventStartDate": "2026-11-18",
+          "eventEndDate": "2026-11-29",
+          "venueDistrict": "Online Download & 30 Districts",
+          "officialPortalUrl": "https://opsc.gov.in",
+          "hallTicketMirrorUrl": "/assets/pdf/opsc-admit-card-instruction.pdf",
+          "stage": "Download Live",
+          "articleTitle": "How to Download OPSC OCS Prelims e-Admission Letter",
+          "contentBody": "E-Admission certificates are available for download using PPSAN credentials. Carry printout along with original Photo ID card (Aadhaar, Voter ID, Passport) to the examination center.",
+          "tags": [
+            "Admit Card",
+            "OPSC",
+            "Hall Ticket"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-05",
+      "moduleId": "module-es-005",
+      "code": "05",
+      "title": "Answer Key Challenges & Provisional Key Timelines",
+      "titleOdia": "ଉତ୍ତର ସୂଚୀ ଆପତ୍ତି ଏବଂ ସଂଶୋଧନ ସମୟସୀମା",
+      "description": "Provisional question paper keys, objection challenge windows, and expert panel scrutiny timelines",
+      "nodes": [
+        {
+          "id": "ES-NODE-05-01",
+          "title": "OSSC Statistical Assistant Preliminary Answer Key Objection Filing Portal",
+          "titleOdia": "ଓଏସଏସସି ଉତ୍ତର ସୂଚୀ ଆପତ୍ତି ଦାଖଲ ସମୟସୀମା",
+          "slug": "ossc-statistical-assistant-answer-key",
+          "categoryCode": "05",
+          "eventType": "Answer Key",
+          "targetCadre": "Planning & Convergence Cadre",
+          "eventStartDate": "2026-11-12",
+          "eventEndDate": "2026-11-16",
+          "venueDistrict": "Online Portal",
+          "officialPortalUrl": "https://ossc.gov.in",
+          "hallTicketMirrorUrl": "/assets/pdf/ossc-answer-key-notice.pdf",
+          "stage": "Objection Window Open",
+          "articleTitle": "OSSC Statistical Assistant Answer Key: How to Raise Objections",
+          "contentBody": "Objection portal is open from November 12 to November 16. Candidates may submit documentary proofs for disputed questions via online candidate login with nominal representation fee.",
+          "tags": [
+            "Answer Key",
+            "OSSC",
+            "Objections"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-06",
+      "moduleId": "module-es-006",
+      "code": "06",
+      "title": "Result Declarations & Document Verification (DV) Rosters",
+      "titleOdia": "ଫଳାଫଳ ଘୋଷଣା ଏବଂ ପ୍ରମାଣପତ୍ର ଯାଞ୍ଚ ସୂଚୀ",
+      "description": "Merit lists, cut-off score alerts, bio-metric verification schedules, and physical test rosters",
+      "nodes": [
+        {
+          "id": "ES-NODE-06-01",
+          "title": "OSSSC Pharmacist & Multipurpose Health Worker (MPHW) Provisional Select List & DV Schedule",
+          "titleOdia": "ଓଏସଏସଏସସି ଫଳାଫଳ ଏବଂ ପ୍ରମାଣପତ୍ର ଯାଞ୍ଚ",
+          "slug": "osssc-mphw-result-dv-roster",
+          "categoryCode": "06",
+          "eventType": "Result",
+          "targetCadre": "Health & Family Welfare Directorate",
+          "eventStartDate": "2026-11-20",
+          "eventEndDate": "2026-11-24",
+          "venueDistrict": "OSSSC Commission Office, Unit-8, Bhubaneswar",
+          "officialPortalUrl": "https://osssc.gov.in",
+          "hallTicketMirrorUrl": "/assets/pdf/osssc-dv-roster.pdf",
+          "stage": "Select List Published",
+          "articleTitle": "OSSSC MPHW Merit List Declared: Document Verification Dates",
+          "contentBody": "Shortlisted candidates are required to attend physical verification with original certificates, caste credentials, registration council renewal cards, and two sets of self-attested photocopies.",
+          "tags": [
+            "Results",
+            "OSSSC",
+            "Document Verification"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-07",
+      "moduleId": "module-es-007",
+      "code": "07",
+      "title": "Offline Workshops & District Meetups",
+      "titleOdia": "ଅଫଲାଇନ୍ କର୍ମଶାଳା ଏବଂ ଜିଲ୍ଲା ସମ୍ମିଳନୀ",
+      "description": "District study circle interactions, library orientation workshops, and mock interview clinics",
+      "nodes": [
+        {
+          "id": "ES-NODE-07-01",
+          "title": "Khurda District Civil Services Aspirants Guidance Meet & Mock Interview Workshop",
+          "titleOdia": "ଖୋର୍ଦ୍ଧା ଜିଲ୍ଲା ପ୍ରଶାସନିକ ସେବା ପ୍ରସ୍ତୁତି କର୍ମଶାଳା",
+          "slug": "khurda-civil-services-meetup-2026",
+          "categoryCode": "07",
+          "eventType": "Meetup",
+          "targetCadre": "College Graduates & Aspirants",
+          "eventStartDate": "2026-11-21T10:00",
+          "eventEndDate": "2026-11-21T16:00",
+          "venueDistrict": "State Library Auditorium, PMG Square, Bhubaneswar",
+          "officialPortalUrl": "https://csodisha.com/community/",
+          "hallTicketMirrorUrl": "/assets/pdf/khurda-workshop-schedule.pdf",
+          "stage": "Registration Open",
+          "articleTitle": "Free Civil Services Orientation Workshop at Bhubaneswar State Library",
+          "contentBody": "Interactive session featuring senior serving OAS and OPS officers sharing strategy, answer writing techniques for Odisha specifics, and stress management methodologies.",
+          "tags": [
+            "Workshop",
+            "District Meetup",
+            "Bhubaneswar"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-08",
+      "moduleId": "module-es-008",
+      "code": "08",
+      "title": "Live Webinars & Virtual Counseling Sessions",
+      "titleOdia": "ଲାଇଭ୍ ୱେବିନାର ଏବଂ ପରାମର୍ଶ ଶିବିର",
+      "description": "Live streamed faculty Q&As, career orientation webinars, and subject masterclasses",
+      "nodes": [
+        {
+          "id": "ES-NODE-08-01",
+          "title": "Masterclass: OPSC GS Paper II Quantitative & Analytical Reasoning Strategy",
+          "titleOdia": "ସାଧାରଣ ଅଧ୍ୟୟନ ପତ୍ର ୨ ଲାଇଭ୍ ୱେବିନାର",
+          "slug": "opsc-gs2-analytical-reasoning-webinar",
+          "categoryCode": "08",
+          "eventType": "Webinar",
+          "targetCadre": "All Odisha Aspirants",
+          "eventStartDate": "2026-11-17T18:00",
+          "eventEndDate": "2026-11-17T20:00",
+          "venueDistrict": "Online (CSO Live Stream)",
+          "officialPortalUrl": "https://csodisha.com/webinars/",
+          "hallTicketMirrorUrl": "",
+          "stage": "Live Link Active",
+          "articleTitle": "Live Masterclass: Tackling CSAT & Logical Reasoning in OCS",
+          "contentBody": "Comprehensive 2-hour virtual counseling session covering shortcut techniques for reading comprehension, data interpretation, and quantitative speed drills.",
+          "tags": [
+            "Webinar",
+            "Online Masterclass",
+            "OPSC CSAT"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "cat-es-09",
+      "moduleId": "module-es-009",
+      "code": "09",
+      "title": "Calendar Sync, ICS Feeds & Push Notification Dispatcher",
+      "titleOdia": "କ୍ୟାଲେଣ୍ଡର ସିଙ୍କ୍, ଆଇସିଏସ୍ ଫିଡ୍ ଏବଂ ନୋଟିଫିକେସନ୍",
+      "description": "Automated iCal/Google calendar synchronization, RSS milestone feeds, and SMS/push broadcasts",
+      "nodes": [
+        {
+          "id": "ES-NODE-09-01",
+          "title": "CSO All-Odisha Competitive Milestones ICS Calendar Feed",
+          "titleOdia": "ଓଡ଼ିଶା ପ୍ରତିଯୋଗିତାମୂଳକ କ୍ୟାଲେଣ୍ଡର ଆଇସିଏସ୍ ଫିଡ୍",
+          "slug": "cso-all-odisha-exams-ics-feed",
+          "categoryCode": "09",
+          "eventType": "Feed",
+          "targetCadre": "Automated Device Sync",
+          "eventStartDate": "2026-11-01",
+          "eventEndDate": "2026-12-31",
+          "venueDistrict": "Cloud Feed Service",
+          "officialPortalUrl": "https://csodisha.com/calendar.ics",
+          "hallTicketMirrorUrl": "/assets/pdf/calendar-sync-instructions.pdf",
+          "stage": "Sync Active",
+          "articleTitle": "How to Subscribe to CSO Odisha Exam Calendar on Mobile",
+          "contentBody": "Subscribe directly to the auto-updating ICS calendar feed on Android Google Calendar, Apple iOS Calendar, or Microsoft Outlook to get automated push notifications 48 hours prior to examination dates and registration deadlines.",
+          "tags": [
+            "ICS Feed",
+            "Calendar Sync",
+            "Push Notifications"
+          ],
+          "status": "Published",
+          "active": true,
+          "lastUpdated": "2026-11-10",
+          "children": []
+        }
+      ]
+    }
+  ]
+};
+
+  SuperStore.getEventsScheduleConfig = function() {
+    return _hydrateConfig('cso_events_schedule_tree_v1', 'categories', () => DEFAULT_EVENTS_DIRECTORY_TREE);
+  };
+  SuperStore.saveEventsScheduleConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_events_schedule_tree_v1', JSON.stringify(cfg));
+    this.logAudit('EVENTS_SCHEDULE_MUTATION', 'EVENTS_SCHEDULING', 'Saved events and schedule directory updates (' + cfg.categories.length + ' categories).');
+    return true;
+  };
+  SuperStore.resetEventsScheduleConfig = function() {
+    localStorage.setItem('cso_events_schedule_tree_v1', JSON.stringify(DEFAULT_EVENTS_DIRECTORY_TREE));
+    this.logAudit('EVENTS_SCHEDULE_RESET', 'EVENTS_SCHEDULING', 'Events & scheduling suite reset to authentic defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_EVENTS_DIRECTORY_TREE));
+  };
+  SuperStore.exportEventsScheduleManifest = function() {
+    const config = this.getEventsScheduleConfig();
+    const filename = "events_schedule_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("EVENTS_SCHEDULE_EXPORTED", "DATA_EXPORT", "Events and schedule manifest exported (" + filename + ").");
+    return filename;
+  };
+
+  // Forwarding accessors for all 9 discrete event module routes:
+  SuperStore.getExamCalendarEventsConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveExamCalendarEventsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetExamCalendarEventsConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportExamCalendarEventsManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getEntranceMilestonesConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveEntranceMilestonesConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetEntranceMilestonesConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportEntranceMilestonesManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getRecruitmentDeadlinesConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveRecruitmentDeadlinesConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetRecruitmentDeadlinesConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportRecruitmentDeadlinesManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getAdmitCardAlertsConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveAdmitCardAlertsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetAdmitCardAlertsConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportAdmitCardAlertsManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getAnswerKeyTimelinesConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveAnswerKeyTimelinesConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetAnswerKeyTimelinesConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportAnswerKeyTimelinesManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getResultDeclarationsConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveResultDeclarationsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetResultDeclarationsConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportResultDeclarationsManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getDistrictMeetupsConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveDistrictMeetupsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetDistrictMeetupsConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportDistrictMeetupsManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getLiveWebinarsConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveLiveWebinarsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetLiveWebinarsConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportLiveWebinarsManifest = function() { return this.exportEventsScheduleManifest(); };
+
+  SuperStore.getCalendarSyncFeedsConfig = function() { return this.getEventsScheduleConfig(); };
+  SuperStore.saveCalendarSyncFeedsConfig = function(cfg) { return this.saveEventsScheduleConfig(cfg); };
+  SuperStore.resetCalendarSyncFeedsConfig = function() { return this.resetEventsScheduleConfig(); };
+  SuperStore.exportCalendarSyncFeedsManifest = function() { return this.exportEventsScheduleManifest(); };
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -110454,6 +110916,46 @@
     window.CSOSuperStore.saveSafetyGovernanceConfig = SuperStore.saveSafetyGovernanceConfig;
     window.CSOSuperStore.resetSafetyGovernanceConfig = SuperStore.resetSafetyGovernanceConfig;
     window.CSOSuperStore.exportSafetyGovernanceManifest = SuperStore.exportSafetyGovernanceManifest;
+    window.CSOSuperStore.getEventsScheduleConfig = SuperStore.getEventsScheduleConfig;
+    window.CSOSuperStore.saveEventsScheduleConfig = SuperStore.saveEventsScheduleConfig;
+    window.CSOSuperStore.resetEventsScheduleConfig = SuperStore.resetEventsScheduleConfig;
+    window.CSOSuperStore.exportEventsScheduleManifest = SuperStore.exportEventsScheduleManifest;
+    window.CSOSuperStore.getExamCalendarEventsConfig = SuperStore.getExamCalendarEventsConfig;
+    window.CSOSuperStore.saveExamCalendarEventsConfig = SuperStore.saveExamCalendarEventsConfig;
+    window.CSOSuperStore.resetExamCalendarEventsConfig = SuperStore.resetExamCalendarEventsConfig;
+    window.CSOSuperStore.exportExamCalendarEventsManifest = SuperStore.exportExamCalendarEventsManifest;
+    window.CSOSuperStore.getEntranceMilestonesConfig = SuperStore.getEntranceMilestonesConfig;
+    window.CSOSuperStore.saveEntranceMilestonesConfig = SuperStore.saveEntranceMilestonesConfig;
+    window.CSOSuperStore.resetEntranceMilestonesConfig = SuperStore.resetEntranceMilestonesConfig;
+    window.CSOSuperStore.exportEntranceMilestonesManifest = SuperStore.exportEntranceMilestonesManifest;
+    window.CSOSuperStore.getRecruitmentDeadlinesConfig = SuperStore.getRecruitmentDeadlinesConfig;
+    window.CSOSuperStore.saveRecruitmentDeadlinesConfig = SuperStore.saveRecruitmentDeadlinesConfig;
+    window.CSOSuperStore.resetRecruitmentDeadlinesConfig = SuperStore.resetRecruitmentDeadlinesConfig;
+    window.CSOSuperStore.exportRecruitmentDeadlinesManifest = SuperStore.exportRecruitmentDeadlinesManifest;
+    window.CSOSuperStore.getAdmitCardAlertsConfig = SuperStore.getAdmitCardAlertsConfig;
+    window.CSOSuperStore.saveAdmitCardAlertsConfig = SuperStore.saveAdmitCardAlertsConfig;
+    window.CSOSuperStore.resetAdmitCardAlertsConfig = SuperStore.resetAdmitCardAlertsConfig;
+    window.CSOSuperStore.exportAdmitCardAlertsManifest = SuperStore.exportAdmitCardAlertsManifest;
+    window.CSOSuperStore.getAnswerKeyTimelinesConfig = SuperStore.getAnswerKeyTimelinesConfig;
+    window.CSOSuperStore.saveAnswerKeyTimelinesConfig = SuperStore.saveAnswerKeyTimelinesConfig;
+    window.CSOSuperStore.resetAnswerKeyTimelinesConfig = SuperStore.resetAnswerKeyTimelinesConfig;
+    window.CSOSuperStore.exportAnswerKeyTimelinesManifest = SuperStore.exportAnswerKeyTimelinesManifest;
+    window.CSOSuperStore.getResultDeclarationsConfig = SuperStore.getResultDeclarationsConfig;
+    window.CSOSuperStore.saveResultDeclarationsConfig = SuperStore.saveResultDeclarationsConfig;
+    window.CSOSuperStore.resetResultDeclarationsConfig = SuperStore.resetResultDeclarationsConfig;
+    window.CSOSuperStore.exportResultDeclarationsManifest = SuperStore.exportResultDeclarationsManifest;
+    window.CSOSuperStore.getDistrictMeetupsConfig = SuperStore.getDistrictMeetupsConfig;
+    window.CSOSuperStore.saveDistrictMeetupsConfig = SuperStore.saveDistrictMeetupsConfig;
+    window.CSOSuperStore.resetDistrictMeetupsConfig = SuperStore.resetDistrictMeetupsConfig;
+    window.CSOSuperStore.exportDistrictMeetupsManifest = SuperStore.exportDistrictMeetupsManifest;
+    window.CSOSuperStore.getLiveWebinarsConfig = SuperStore.getLiveWebinarsConfig;
+    window.CSOSuperStore.saveLiveWebinarsConfig = SuperStore.saveLiveWebinarsConfig;
+    window.CSOSuperStore.resetLiveWebinarsConfig = SuperStore.resetLiveWebinarsConfig;
+    window.CSOSuperStore.exportLiveWebinarsManifest = SuperStore.exportLiveWebinarsManifest;
+    window.CSOSuperStore.getCalendarSyncFeedsConfig = SuperStore.getCalendarSyncFeedsConfig;
+    window.CSOSuperStore.saveCalendarSyncFeedsConfig = SuperStore.saveCalendarSyncFeedsConfig;
+    window.CSOSuperStore.resetCalendarSyncFeedsConfig = SuperStore.resetCalendarSyncFeedsConfig;
+    window.CSOSuperStore.exportCalendarSyncFeedsManifest = SuperStore.exportCalendarSyncFeedsManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
