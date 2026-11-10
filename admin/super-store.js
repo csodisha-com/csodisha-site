@@ -13021,7 +13021,9 @@
           jobsRecruitment: this.getJobsRecruitmentConfig ? this.getJobsRecruitmentConfig() : null,
           careerExplorer: this.getCareerExplorerConfig ? this.getCareerExplorerConfig() : null,
           eligibilityExplorer: this.getEligibilityExplorerConfig ? this.getEligibilityExplorerConfig() : null,
-          coursesEntrance: this.getCoursesEntranceConfig ? this.getCoursesEntranceConfig() : null
+          coursesEntrance: this.getCoursesEntranceConfig ? this.getCoursesEntranceConfig() : null,
+          scholarshipsSupport: this.getScholarshipsSupportConfig ? this.getScholarshipsSupportConfig() : null,
+          jobsDirectoryTree: this.getJobsDirectoryTreeConfig ? this.getJobsDirectoryTreeConfig() : null
         }
       };
       this.logAudit('PLATFORM_SNAPSHOT_CREATED', 'ALL_MODULES', 'Comprehensive platform state snapshot exported.');
@@ -16842,6 +16844,225 @@
     return filename;
   };
 
+
+  // =========================================================================
+  // RESTORED JOBS & CAREERS MASTER SELECTION DIRECTORY ENGINE
+  // =========================================================================
+  const DEFAULT_JOBS_DIRECTORY_TREE = {
+    meta: { version: "3.2", updatedAt: new Date().toISOString() },
+    activeCategoryId: "cat-jc-01",
+    selectedNodeId: "node-jc-01-01",
+    categories: [
+      {
+        id: "cat-jc-01",
+        moduleId: "module-jc-001",
+        code: "01",
+        title: "Jobs & Recruitment",
+        titleOdia: "ଚାକିରି ଏବଂ ନିଯୁକ୍ତି",
+        description: "State civil services, technical cadres, and subordinate recruitment circulars",
+        nodes: [
+          {
+            id: "node-jc-01-01",
+            title: "OPSC Odisha Civil Services (OAS, OPS, OFS)",
+            titleOdia: "ଓଡ଼ିଶା ପ୍ରଶାସନିକ ସେବା (ଓ.ଏ.ଏସ)",
+            categoryCode: "01",
+            officialUrl: "https://opsconline.gov.in",
+            mirrorUrl: "/media/gazettes/opsc-ocs-2026.pdf",
+            applyDeadline: "2026-12-15",
+            vacancies: 399,
+            stage: "Apply Window Open",
+            articleTitle: "OPSC OAS 2026 Comprehensive Notification & Syllabus Breakdown",
+            contentBody: "The Odisha Public Service Commission has officially notified 399 vacancies across Group A and Group B executive services. Preliminary examination consists of General Studies Paper-I and Paper-II (CSAT qualifying). Candidates must ensure Odia language eligibility at matriculation standard.",
+            tags: ["OPSC", "Civil Services", "Group A", "Gazette"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-10"
+          },
+          {
+            id: "node-jc-01-02",
+            title: "OSSC Combined Graduate Level (CGL)",
+            titleOdia: "ଓଡ଼ିଶା କର୍ମଚାରୀ ଚୟନ ଆୟୋଗ (ସି.ଜି.ଏଲ)",
+            categoryCode: "01",
+            officialUrl: "https://ossc.gov.in",
+            mirrorUrl: "/media/gazettes/ossc-cgl-2026.pdf",
+            applyDeadline: "2026-11-28",
+            vacancies: 586,
+            stage: "Admit Card Released",
+            articleTitle: "OSSC CGL 2026 Examination Schedule & Admit Card Guidelines",
+            contentBody: "Admit cards for OSSC Combined Graduate Level Tier-I Preliminary Examination are now live for download. Bring valid government photo identity and two passport size photographs to the examination center.",
+            tags: ["OSSC", "CGL", "Graduation", "State Cadre"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-09"
+          },
+          {
+            id: "node-jc-01-03",
+            title: "OSSSC Combined District Cadre (RI, ARI & Amin)",
+            titleOdia: "ଜିଲ୍ଲା କ୍ୟାଡର ରାଜସ୍ୱ ନିରୀକ୍ଷକ ଓ ଅମିନ",
+            categoryCode: "01",
+            officialUrl: "https://osssc.gov.in",
+            mirrorUrl: "/media/gazettes/osssc-cre-2026.pdf",
+            applyDeadline: "2026-12-05",
+            vacancies: 2840,
+            stage: "Detailed Advt Live",
+            articleTitle: "Revenue Inspector & Amin Recruitment Across 30 Districts of Odisha",
+            contentBody: "OSSSC has announced 2,840 district cadre vacancies under the Revenue & Disaster Management Department. Applications must be submitted through osssc.gov.in with district preference mapping.",
+            tags: ["OSSSC", "District Cadre", "RI", "Amin"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-08"
+          }
+        ]
+      },
+      {
+        id: "cat-jc-02",
+        moduleId: "module-jc-002",
+        code: "02",
+        title: "Career Explorer",
+        titleOdia: "କ୍ୟାରିୟର ବିଶ୍ଳେଷଣ ଓ ପଦୋନ୍ନତି",
+        description: "Pay matrix levels, 7th CPC compensation, and promotion ladders",
+        nodes: [
+          {
+            id: "node-jc-02-01",
+            title: "Odisha Administrative Service Hierarchy & Pay Matrix",
+            titleOdia: "ଓ.ଏ.ଏସ ପଦୋନ୍ନତି ତାଲିକା ଏବଂ ବେତନ ହାର",
+            categoryCode: "02",
+            officialUrl: "https://ga.odisha.gov.in",
+            mirrorUrl: "",
+            applyDeadline: "N/A",
+            vacancies: 0,
+            stage: "Career Reference",
+            articleTitle: "Career Progression Map: From OAS Junior Branch to IAS Induction",
+            contentBody: "Detailed analysis of service milestones: OAS (Junior Branch) Level 12 (Rs 56,100 basic), promotion to Senior Branch (Sub-Collector), Selection Grade (Additional Secretary), and subsequent induction into the Indian Administrative Service (IAS).",
+            tags: ["Pay Matrix", "7th CPC", "Career Ladder", "OAS"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-07"
+          }
+        ]
+      },
+      {
+        id: "cat-jc-03",
+        moduleId: "module-jc-003",
+        code: "03",
+        title: "Eligibility & Qualification Explorer",
+        titleOdia: "ଯୋଗ୍ୟତା ଏବଂ ବୟସସୀମା ନିୟମାବଳୀ",
+        description: "Age limit calculators, reservation relaxations, and Odia language requirements",
+        nodes: [
+          {
+            id: "node-jc-03-01",
+            title: "Odisha State Government Upper Age Limit & Reservation Matrix",
+            titleOdia: "ସରକାରୀ ଚାକିରି ବୟସସୀମା ଓ ସଂରକ୍ଷଣ ରିହାତି",
+            categoryCode: "03",
+            officialUrl: "https://odisha.gov.in",
+            mirrorUrl: "",
+            applyDeadline: "N/A",
+            vacancies: 0,
+            stage: "Statutory Guideline",
+            articleTitle: "Comprehensive Guide to Age Relaxations for SEBC, SC, ST, PwD & Women",
+            contentBody: "Statutory norms for government recruitments: Standard entry age 21 to 38 years. Upper age relaxation of 5 years granted to SC, ST, SEBC, and all Women candidates. PwD candidates receive 10 years relaxation (cumulative up to 15 years for reserved PwD).",
+            tags: ["Eligibility", "Age Limit", "Relaxation", "Reservation"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-06"
+          }
+        ]
+      },
+      {
+        id: "cat-jc-04",
+        moduleId: "module-jc-004",
+        code: "04",
+        title: "Courses, Entrance Exams & Certifications",
+        titleOdia: "ପ୍ରବେଶିକା ପରୀକ୍ଷା ଓ ପ୍ରମାଣପତ୍ର ପାଠ୍ୟକ୍ରମ",
+        description: "State entrance blueprints (CPET, OSSTET, OJEE, B.Ed) and academic schedules",
+        nodes: [
+          {
+            id: "node-jc-04-01",
+            title: "Odisha Common PG Entrance Test (CPET) 2026",
+            titleOdia: "ଓଡ଼ିଶା ସାଧାରଣ ସ୍ନାତକୋତ୍ତର ପ୍ରବେଶିକା ପରୀକ୍ଷା (ସି.ପି.ଇ.ଟି)",
+            categoryCode: "04",
+            officialUrl: "https://samsodisha.gov.in",
+            mirrorUrl: "/media/syllabus/cpet-2026-blueprint.pdf",
+            applyDeadline: "2026-05-30",
+            vacancies: 18500,
+            stage: "Annual Schedule",
+            articleTitle: "CPET 2026 Master Preparation Blueprint & State University Cutoffs",
+            contentBody: "Comprehensive coverage of CPET 2026 syllabus, question distribution (70 marks subject + 30 career marks), participating universities including Utkal, Ravenshaw, RD Women's, and FM University, with reservation criteria.",
+            tags: ["CPET", "Post Graduate", "SAMS", "Higher Education"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-05"
+          }
+        ]
+      },
+      {
+        id: "cat-jc-05",
+        moduleId: "module-jc-005",
+        code: "05",
+        title: "Scholarships & Financial Support",
+        titleOdia: "ଛାତ୍ରବୃତ୍ତି ଏବଂ ଆର୍ଥିକ ପ୍ରୋତ୍ସାହନ",
+        description: "State post-matric, e-Medhabruti, and technical training financial aids",
+        nodes: [
+          {
+            id: "node-jc-05-01",
+            title: "e-Medhabruti Scholarship (Higher Education)",
+            titleOdia: "ଇ-ମେଧାବୃତ୍ତି ଉଚ୍ଚଶିକ୍ଷା ସହାୟତା",
+            categoryCode: "05",
+            officialUrl: "https://scholarship.odisha.gov.in",
+            mirrorUrl: "",
+            applyDeadline: "2026-12-31",
+            vacancies: 25000,
+            stage: "Portal Open",
+            articleTitle: "e-Medhabruti 2026 Application Process, Income Slab & Disbursement Rules",
+            contentBody: "Detailed documentation guide for e-Medhabruti scholarship. Beneficiaries must possess family income under Rs 6,00,000 per annum with Aadhaar-seeded NPCI bank account active for DBT transfer.",
+            tags: ["Scholarship", "e-Medhabruti", "DBT", "Financial Aid"],
+            status: "Published",
+            active: true,
+            lastUpdated: "2026-11-08"
+          }
+        ]
+      }
+    ]
+  };
+
+  SuperStore.getJobsDirectoryTreeConfig = function() {
+    return _hydrateConfig('cso_jobs_master_tree_config', 'categories', () => DEFAULT_JOBS_DIRECTORY_TREE);
+  };
+  SuperStore.saveJobsDirectoryTreeConfig = function(cfg) {
+    if (!cfg) return false;
+    cfg.meta = cfg.meta || {}; cfg.meta.updatedAt = new Date().toISOString();
+    cfg.categories = cfg.items || cfg.categories || []; cfg.items = cfg.categories;
+    localStorage.setItem('cso_jobs_master_tree_config', JSON.stringify(cfg));
+    this.logAudit('JOBS_TREE_MUTATION', 'JOBS_CAREERS', `Saved directory content & node changes (${cfg.categories.length} categories).`);
+    return true;
+  };
+  SuperStore.resetJobsDirectoryTreeConfig = function() {
+    localStorage.setItem('cso_jobs_master_tree_config', JSON.stringify(DEFAULT_JOBS_DIRECTORY_TREE));
+    this.logAudit('JOBS_TREE_RESET', 'JOBS_CAREERS', 'Jobs master directory tree reset to factory defaults.');
+    return JSON.parse(JSON.stringify(DEFAULT_JOBS_DIRECTORY_TREE));
+  };
+  SuperStore.exportJobsDirectoryTreeManifest = function() {
+    const config = this.getJobsDirectoryTreeConfig();
+    const filename = "jobs_directory_tree_manifest_" + new Date().toISOString().slice(0, 10) + ".json";
+    this.downloadJson(filename, config);
+    this.logAudit("JOBS_TREE_EXPORTED", "DATA_EXPORT", `Jobs master directory tree manifest exported (${filename}).`);
+    return filename;
+  };
+
+  // Support scholarships accessor directly:
+  SuperStore.getScholarshipsSupportConfig = function() {
+    return this.getJobsDirectoryTreeConfig();
+  };
+  SuperStore.saveScholarshipsSupportConfig = function(cfg) {
+    return this.saveJobsDirectoryTreeConfig(cfg);
+  };
+  SuperStore.resetScholarshipsSupportConfig = function() {
+    return this.resetJobsDirectoryTreeConfig();
+  };
+  SuperStore.exportScholarshipsSupportManifest = function() {
+    return this.exportJobsDirectoryTreeManifest();
+  };
+
   // Attach directly so both this._hydrateConfig and standalone _hydrateConfig work
   if (typeof window !== 'undefined' && window.CSOSuperStore) {
     window.CSOSuperStore._hydrateConfig = _hydrateConfig;
@@ -17273,6 +17494,14 @@
     window.CSOSuperStore.saveCoursesEntranceConfig = SuperStore.saveCoursesEntranceConfig;
     window.CSOSuperStore.resetCoursesEntranceConfig = SuperStore.resetCoursesEntranceConfig;
     window.CSOSuperStore.exportCoursesEntranceManifest = SuperStore.exportCoursesEntranceManifest;
+    window.CSOSuperStore.getJobsDirectoryTreeConfig = SuperStore.getJobsDirectoryTreeConfig;
+    window.CSOSuperStore.saveJobsDirectoryTreeConfig = SuperStore.saveJobsDirectoryTreeConfig;
+    window.CSOSuperStore.resetJobsDirectoryTreeConfig = SuperStore.resetJobsDirectoryTreeConfig;
+    window.CSOSuperStore.exportJobsDirectoryTreeManifest = SuperStore.exportJobsDirectoryTreeManifest;
+    window.CSOSuperStore.getScholarshipsSupportConfig = SuperStore.getScholarshipsSupportConfig;
+    window.CSOSuperStore.saveScholarshipsSupportConfig = SuperStore.saveScholarshipsSupportConfig;
+    window.CSOSuperStore.resetScholarshipsSupportConfig = SuperStore.resetScholarshipsSupportConfig;
+    window.CSOSuperStore.exportScholarshipsSupportManifest = SuperStore.exportScholarshipsSupportManifest;
   }
   if (typeof CSOSuperStore !== 'undefined') {
     CSOSuperStore._hydrateConfig = _hydrateConfig;
