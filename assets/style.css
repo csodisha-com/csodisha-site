@@ -6391,6 +6391,35 @@ nav a.on,
   color: #ffffff;
 }
 
+/* Core Web Vitals & Layout Shift Optimization */
+#candidate-profile-hero {
+  min-height: 120px;
+  content-visibility: auto;
+  contain-intrinsic-size: 120px;
+}
+
+#candidate-milestones-list {
+  min-height: 180px;
+}
+
+#candidate-tracker-list {
+  min-height: 200px;
+}
+
+#candidate-jobs-shelf,
+#candidate-pyq-shelf,
+#candidate-schemes-list {
+  min-height: 140px;
+}
+
+/* Ensure smooth font rendering & avoid invisible text flashes */
+html, body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
 
 
 

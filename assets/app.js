@@ -2642,7 +2642,7 @@ function setupGlobalSearch() {
 setupGlobalSearch();
 
 const up=document.createElement('button');up.id='top';up.textContent='↑';up.hidden=true;up.setAttribute('aria-label','Back to top');up.onclick=()=>scrollTo({top:0,behavior:'smooth'});document.body.append(up);
-addEventListener('scroll',()=>{up.hidden=scrollY<400});
+addEventListener('scroll',()=>{up.hidden=scrollY<400},{passive:true});
 addEventListener('hashchange',route);route();csoLoadPublishedUpdates();if(location.hash==='#search'&&lastQ)csoLoadDirectories().then(()=>{if(location.hash==='#search')route()});localize();
 })();
 
