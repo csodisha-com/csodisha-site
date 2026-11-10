@@ -682,11 +682,7 @@ async function loadMasterNavigation() {
       if (moduleId === 'module-19-009' || moduleId === 'module-mfr-009') { renderImplementationStatusWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-19-010' || moduleId === 'module-mfr-010') { renderRegressionTestCoverageWorkspace(dom.workspaceRoot); return; }
       if (moduleId === 'module-19-011' || moduleId === 'module-mfr-011') { renderFeatureDocumentationWorkspace(dom.workspaceRoot); return; }
-      if (moduleId === 'module-jc-001' || moduleId === 'module-nav-jobs-01' ||
-          moduleId === 'module-jc-002' || moduleId === 'module-nav-jobs-02' ||
-          moduleId === 'module-jc-003' || moduleId === 'module-nav-jobs-03' ||
-          moduleId === 'module-jc-004' || moduleId === 'module-nav-jobs-04' ||
-          moduleId === 'module-jc-005' || moduleId === 'module-nav-jobs-05') {
+      if (moduleId.startsWith('module-jc-') || moduleId.startsWith('module-nav-jobs-')) {
         renderJobsCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
         return;
       }
@@ -1236,11 +1232,7 @@ async function loadMasterNavigation() {
         renderRegressionTestCoverageWorkspace(dom.workspaceRoot);
       } else if (moduleId === 'module-19-011' || moduleId === 'module-mfr-011') {
         renderFeatureDocumentationWorkspace(dom.workspaceRoot);
-      } else if (moduleId === 'module-jc-001' || moduleId === 'module-nav-jobs-01' ||
-                 moduleId === 'module-jc-002' || moduleId === 'module-nav-jobs-02' ||
-                 moduleId === 'module-jc-003' || moduleId === 'module-nav-jobs-03' ||
-                 moduleId === 'module-jc-004' || moduleId === 'module-nav-jobs-04' ||
-                 moduleId === 'module-jc-005' || moduleId === 'module-nav-jobs-05') {
+      } else if (moduleId.startsWith('module-jc-') || moduleId.startsWith('module-nav-jobs-')) {
         renderJobsCategoryTreeStudioWorkspace(dom.workspaceRoot, moduleId);
 
 
@@ -71701,37 +71693,81 @@ async function loadMasterNavigation() {
           'module-jc-002': 'cat-jc-02', 'module-nav-jobs-02': 'cat-jc-02',
           'module-jc-003': 'cat-jc-03', 'module-nav-jobs-03': 'cat-jc-03',
           'module-jc-004': 'cat-jc-04', 'module-nav-jobs-04': 'cat-jc-04',
-          'module-jc-005': 'cat-jc-05', 'module-nav-jobs-05': 'cat-jc-05'
+          'module-jc-005': 'cat-jc-05', 'module-nav-jobs-05': 'cat-jc-05',
+          'module-jc-006': 'cat-jc-06', 'module-nav-jobs-06': 'cat-jc-06',
+          'module-jc-007': 'cat-jc-07', 'module-nav-jobs-07': 'cat-jc-07',
+          'module-jc-008': 'cat-jc-08', 'module-nav-jobs-08': 'cat-jc-08'
         };
 
         if (targetModuleId && modToCat[targetModuleId]) {
           config.activeCategoryId = modToCat[targetModuleId];
-          const cat = (config.categories || []).find(c => c.id === config.activeCategoryId);
-          if (cat && cat.nodes && cat.nodes.length > 0) {
-            config.selectedNodeId = cat.nodes[0].id;
-          }
         }
 
         let activeCatId = config.activeCategoryId || 'cat-jc-01';
-        let selectedNodeId = config.selectedNodeId || 'node-jc-01-01';
         let searchTerm = '';
+
+        // Helper to flatten node tree with depth for hierarchical tree display
+        function flattenTree(nodes, depth = 0, parentTitle = 'Root') {
+          let list = [];
+          for (const n of nodes) {
+            list.push({ ...n, depth, parentTitle });
+            if (n.children && n.children.length > 0) {
+              list = list.concat(flattenTree(n.children, depth + 1, n.title));
+            }
+          }
+          return list;
+        }
+
+        // Helper to find node recursively by ID
+        function findNodeDeep(nodes, id) {
+          for (const n of nodes) {
+            if (n.id === id) return n;
+            if (n.children && n.children.length > 0) {
+              const found = findNodeDeep(n.children, id);
+              if (found) return found;
+            }
+          }
+          return null;
+        }
+
+        // Helper to delete node recursively
+        function deleteNodeDeep(nodes, id) {
+          const idx = nodes.findIndex(n => n.id === id);
+          if (idx !== -1) {
+            nodes.splice(idx, 1);
+            return true;
+          }
+          for (const n of nodes) {
+            if (n.children && n.children.length > 0) {
+              if (deleteNodeDeep(n.children, id)) return true;
+            }
+          }
+          return false;
+        }
 
         function render() {
           const categories = config.categories || [];
           const currentCat = categories.find(c => c.id === activeCatId) || categories[0] || { nodes: [] };
-          const nodes = currentCat.nodes || [];
+          const flatNodes = flattenTree(currentCat.nodes || []);
 
-          // Find selected node
-          let selectedNode = nodes.find(n => n.id === selectedNodeId);
-          if (!selectedNode && nodes.length > 0) {
-            selectedNode = nodes[0];
+          let selectedNodeId = config.selectedNodeId;
+          let selectedNode = selectedNodeId ? findNodeDeep(currentCat.nodes || [], selectedNodeId) : null;
+          if (!selectedNode && flatNodes.length > 0) {
+            selectedNode = flatNodes[0];
             selectedNodeId = selectedNode.id;
+            config.selectedNodeId = selectedNodeId;
           }
 
           // Filter nodes if search term present
-          const filteredNodes = searchTerm
-            ? nodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm))
-            : nodes;
+          const displayedNodes = searchTerm
+            ? flatNodes.filter(n => (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (n.titleOdia || '').includes(searchTerm) || (n.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
+            : flatNodes;
+
+          // Compute total statistics
+          let totalAllNodes = 0;
+          categories.forEach(c => {
+            totalAllNodes += flattenTree(c.nodes || []).length;
+          });
 
           container.innerHTML = `
             <div class="space-y-6">
@@ -71742,9 +71778,9 @@ async function loadMasterNavigation() {
                     <span class="p-2 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                     </span>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Jobs & Careers Directory Studio</h2>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Jobs & Careers Complete Directory Studio</h2>
                   </div>
-                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-jobs-careers • Interactive category hierarchy, node indexing & live authoring studio</p>
+                  <p class="text-xs text-slate-400 mt-1 font-mono">folder-jobs-careers • 8 Authentic Directories • ${totalAllNodes} Multi-tier Hierarchical Nodes</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <button id="jc-btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600/50 flex items-center gap-1.5 transition">
@@ -71762,10 +71798,11 @@ async function loadMasterNavigation() {
                 </div>
               </div>
 
-              <!-- Top Category Navigation Pills -->
+              <!-- Top Category Navigation Pills (All 8 Directories) -->
               <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
                 ${categories.map(cat => {
                   const isActive = cat.id === activeCatId;
+                  const catNodeCount = flattenTree(cat.nodes || []).length;
                   return `
                     <button class="jc-cat-pill px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-2 ${
                       isActive
@@ -71774,7 +71811,7 @@ async function loadMasterNavigation() {
                     }" data-cat-id="${cat.id}">
                       <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-700'}">${cat.code || ''}</span>
                       <span>${cat.title}</span>
-                      <span class="text-[10px] opacity-75 font-mono">(${cat.nodes ? cat.nodes.length : 0})</span>
+                      <span class="text-[10px] opacity-75 font-mono">(${catNodeCount})</span>
                     </button>
                   `;
                 }).join('')}
@@ -71783,65 +71820,72 @@ async function loadMasterNavigation() {
               <!-- Main Two-Column Studio Layout -->
               <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                <!-- Left Column: Category Hierarchy & Node Tree (4 Cols) -->
-                <div class="lg:col-span-4 space-y-4">
+                <!-- Left Column: Category Hierarchy & Node Tree (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
                   <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur">
                     <div class="flex items-center justify-between gap-2 mb-3">
                       <div>
                         <h3 class="text-sm font-bold text-white">${currentCat.title}</h3>
-                        <p class="text-xs text-slate-400">${currentCat.titleOdia || ''}</p>
+                        <p class="text-xs text-slate-400">${currentCat.titleOdia || currentCat.description || ''}</p>
                       </div>
                       <button id="jc-btn-add-node" class="px-2.5 py-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Add Node
+                        + Root Node
                       </button>
                     </div>
 
                     <!-- Search Input -->
                     <div class="mb-3">
-                      <input type="text" id="jc-tree-search" value="${searchTerm}" placeholder="Filter nodes..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
+                      <input type="text" id="jc-tree-search" value="${searchTerm}" placeholder="Filter ${flatNodes.length} nodes by title or ID..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500" />
                     </div>
 
-                    <!-- Node List -->
-                    <div class="space-y-2 max-h-[580px] overflow-y-auto pr-1">
-                      ${filteredNodes.map(node => {
+                    <!-- Node List (Hierarchical Indentation) -->
+                    <div class="space-y-1.5 max-h-[620px] overflow-y-auto pr-1">
+                      ${displayedNodes.map(node => {
                         const isSelected = node.id === selectedNodeId;
+                        const indentPx = Math.min((node.depth || 0) * 16, 64);
                         return `
-                          <div class="jc-node-card p-3 rounded-lg border cursor-pointer transition ${
+                          <div class="jc-node-card p-2.5 rounded-lg border cursor-pointer transition ${
                             isSelected
-                              ? 'bg-teal-950/40 border-teal-500/60 text-white shadow-sm'
+                              ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}">
+                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
-                              <h4 class="text-xs font-semibold ${isSelected ? 'text-teal-300' : 'text-white'} leading-snug line-clamp-2">${node.title}</h4>
-                              <span class="px-1.5 py-0.5 rounded text-[10px] font-mono whitespace-nowrap ${node.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-xs opacity-75">${node.depth > 0 ? '└' : '📁'}</span>
+                                <h4 class="text-xs font-semibold ${isSelected ? 'text-teal-300' : 'text-white'} truncate">${node.title}</h4>
+                              </div>
+                              <span class="px-1.5 py-0.5 rounded text-[9px] font-mono whitespace-nowrap ${node.status === 'Published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
                                 ${node.status || 'Draft'}
                               </span>
                             </div>
-                            ${node.titleOdia ? `<p class="text-[11px] text-slate-400 mt-1 truncate font-serif">${node.titleOdia}</p>` : ''}
-                            <div class="mt-2 flex items-center justify-between text-[10px] text-slate-500">
-                              <span class="font-mono">ID: ${node.id}</span>
-                              <span>${node.stage || 'Active'}</span>
+                            ${node.titleOdia ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate font-serif">${node.titleOdia}</p>` : ''}
+                            <div class="mt-1.5 flex items-center justify-between text-[9px] text-slate-500">
+                              <span class="font-mono">${node.id}</span>
+                              <span>${(node.children && node.children.length > 0) ? `${node.children.length} sub-nodes` : (node.stage || 'Leaf')}</span>
                             </div>
                           </div>
                         `;
                       }).join('')}
-                      ${filteredNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No nodes in this category. Click "+ Add Node" to create one.</div>' : ''}
+                      ${displayedNodes.length === 0 ? '<div class="p-6 text-center text-xs text-slate-500">No matching nodes found.</div>' : ''}
                     </div>
                   </div>
                 </div>
 
-                <!-- Right Column: Authoring & Publishing Studio (8 Cols) -->
-                <div class="lg:col-span-8">
+                <!-- Right Column: Authoring & Publishing Studio (7 Cols) -->
+                <div class="lg:col-span-7">
                   ${selectedNode ? `
-                    <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-5">
+                    <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700/60 backdrop-blur space-y-4">
                       <!-- Studio Top Bar -->
-                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-700/60">
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
                         <div>
                           <span class="text-[10px] uppercase font-bold tracking-wider text-teal-400 font-mono">Authoring & Content Studio</span>
                           <h3 class="text-base font-bold text-white mt-0.5">${selectedNode.title}</h3>
                         </div>
                         <div class="flex items-center gap-2">
+                          <button id="jc-btn-add-subnode" class="px-2.5 py-1.5 text-xs text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 border border-teal-500/30 rounded-lg transition">
+                            + Sub-node
+                          </button>
                           <button id="jc-btn-delete-node" class="px-2.5 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition">
                             Delete
                           </button>
@@ -71850,86 +71894,86 @@ async function loadMasterNavigation() {
                               ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
                               : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
                           }">
-                            ${selectedNode.status === 'Published' ? 'Unpublish (Draft)' : 'Publish Live'}
+                            ${selectedNode.status === 'Published' ? 'Unpublish' : 'Publish Live'}
                           </button>
-                          <button id="jc-btn-save-node" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
-                            Save Studio Node
+                          <button id="jc-btn-save-node" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg shadow-md transition">
+                            Save Node
                           </button>
                         </div>
                       </div>
 
                       <!-- Form Fields Grid -->
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <label class="block text-xs font-semibold text-slate-300 mb-1">Title (English)</label>
-                          <input type="text" id="jc-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500" />
+                          <input type="text" id="jc-form-title" value="${selectedNode.title || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
                         </div>
                         <div>
                           <label class="block text-xs font-semibold text-slate-300 mb-1">Title (Odia)</label>
-                          <input type="text" id="jc-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
+                          <input type="text" id="jc-form-title-odia" value="${selectedNode.titleOdia || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-serif" />
                         </div>
                       </div>
 
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Recruitment / Process Stage</label>
-                          <input type="text" id="jc-form-stage" value="${selectedNode.stage || ''}" placeholder="e.g. Apply Window Open" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500" />
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Type / Stage</label>
+                          <input type="text" id="jc-form-stage" value="${selectedNode.stage || selectedNode.type || ''}" placeholder="e.g. Directory / Notice" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500" />
                         </div>
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Application Deadline</label>
-                          <input type="text" id="jc-form-deadline" value="${selectedNode.applyDeadline || ''}" placeholder="YYYY-MM-DD or N/A" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Deadline / Date</label>
+                          <input type="text" id="jc-form-deadline" value="${selectedNode.applyDeadline || ''}" placeholder="YYYY-MM-DD or N/A" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
                         </div>
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Vacancies / Capacity</label>
-                          <input type="number" id="jc-form-vacancies" value="${selectedNode.vacancies ?? 0}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Vacancies / Quota</label>
+                          <input type="number" id="jc-form-vacancies" value="${selectedNode.vacancies ?? 0}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
                         </div>
                       </div>
 
                       <!-- URL Mirroring & Official Links -->
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Official Portal URL</label>
-                          <input type="text" id="jc-form-official-url" value="${selectedNode.officialUrl || ''}" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Official Portal / Route URL</label>
+                          <input type="text" id="jc-form-official-url" value="${selectedNode.officialUrl || ''}" placeholder="https://... or /jobs-careers/?..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
                         </div>
                         <div>
                           <label class="block text-xs font-semibold text-slate-300 mb-1">R2 Gazettes / PDF Mirror URL</label>
-                          <input type="text" id="jc-form-mirror-url" value="${selectedNode.mirrorUrl || ''}" placeholder="/media/gazettes/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          <input type="text" id="jc-form-mirror-url" value="${selectedNode.mirrorUrl || ''}" placeholder="/media/gazettes/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
                         </div>
                       </div>
 
                       <!-- Publishing Article Headline -->
                       <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1">Article / Editorial Headline</label>
-                        <input type="text" id="jc-form-article-title" value="${selectedNode.articleTitle || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
+                        <input type="text" id="jc-form-article-title" value="${selectedNode.articleTitle || ''}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-semibold" />
                       </div>
 
                       <!-- Rich Article Content Body -->
                       <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Detailed Content & Guidance</label>
-                        <textarea id="jc-form-content-body" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.contentBody || ''}</textarea>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Detailed Content & Guidance (Markdown)</label>
+                        <textarea id="jc-form-content-body" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans leading-relaxed">${selectedNode.contentBody || ''}</textarea>
                       </div>
 
                       <!-- Metadata & Tags -->
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Search Tags (Comma separated)</label>
-                          <input type="text" id="jc-form-tags" value="${(selectedNode.tags || []).join(', ')}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Tags (Comma separated)</label>
+                          <input type="text" id="jc-form-tags" value="${(selectedNode.tags || []).join(', ')}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-mono" />
                         </div>
                         <div>
-                          <label class="block text-xs font-semibold text-slate-300 mb-1">Active Status & Visibility</label>
-                          <div class="flex items-center gap-4 mt-2">
+                          <label class="block text-xs font-semibold text-slate-300 mb-1">Visibility & Audit</label>
+                          <div class="flex items-center gap-4 mt-1.5">
                             <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
                               <input type="checkbox" id="jc-form-active" ${selectedNode.active ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-0 cursor-pointer" />
                               Active in Directory
                             </label>
-                            <span class="text-xs text-slate-500 font-mono">Last Updated: ${selectedNode.lastUpdated || 'Today'}</span>
+                            <span class="text-xs text-slate-500 font-mono">Updated: ${selectedNode.lastUpdated || 'Today'}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   ` : `
                     <div class="p-12 text-center rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
-                      Select a node from the left tree or click "+ Add Node" to start authoring.
+                      Select a node from the tree on the left to start editing.
                     </div>
                   `}
                 </div>
@@ -71943,12 +71987,8 @@ async function loadMasterNavigation() {
               activeCatId = e.currentTarget.dataset.catId;
               config.activeCategoryId = activeCatId;
               const cat = categories.find(c => c.id === activeCatId);
-              if (cat && cat.nodes && cat.nodes.length > 0) {
-                selectedNodeId = cat.nodes[0].id;
-                config.selectedNodeId = selectedNodeId;
-              } else {
-                selectedNodeId = null;
-              }
+              const fl = flattenTree(cat ? cat.nodes || [] : []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
               render();
             });
           });
@@ -71956,8 +71996,7 @@ async function loadMasterNavigation() {
           // Node Card selection
           container.querySelectorAll('.jc-node-card').forEach(card => {
             card.addEventListener('click', (e) => {
-              selectedNodeId = e.currentTarget.dataset.nodeId;
-              config.selectedNodeId = selectedNodeId;
+              config.selectedNodeId = e.currentTarget.dataset.nodeId;
               render();
             });
           });
@@ -71971,14 +72010,16 @@ async function loadMasterNavigation() {
             });
           }
 
-          // Add Node Button
+          // Add Root Node Button
           document.getElementById('jc-btn-add-node')?.addEventListener('click', () => {
-            const newNodeId = `node-jc-${currentCat.code}-${Date.now().toString().slice(-4)}`;
+            const newNodeId = `JC-NODE-${Date.now().toString().slice(-4)}`;
             const newNode = {
               id: newNodeId,
               title: "New Directory Entry",
               titleOdia: "ନୂତନ ବିବରଣୀ",
+              slug: "new-directory-entry",
               categoryCode: currentCat.code,
+              type: "directory",
               officialUrl: "",
               mirrorUrl: "",
               applyDeadline: "N/A",
@@ -71989,23 +72030,55 @@ async function loadMasterNavigation() {
               tags: [currentCat.title],
               status: "Draft",
               active: true,
+              children: [],
               lastUpdated: new Date().toISOString().slice(0, 10)
             };
             currentCat.nodes = currentCat.nodes || [];
             currentCat.nodes.unshift(newNode);
-            selectedNodeId = newNodeId;
-            config.selectedNodeId = selectedNodeId;
+            config.selectedNodeId = newNodeId;
             store.saveJobsDirectoryTreeConfig(config);
             render();
-            store.showToast?.('New node created in category!', 'success');
+            store.showToast?.('New root node created in category!', 'success');
+          });
+
+          // Add Sub-node Button
+          document.getElementById('jc-btn-add-subnode')?.addEventListener('click', () => {
+            if (!selectedNode) return;
+            const subNodeId = `JC-NODE-${Date.now().toString().slice(-4)}`;
+            const subNode = {
+              id: subNodeId,
+              title: "New Sub-Section",
+              titleOdia: "",
+              slug: "new-sub-section",
+              categoryCode: currentCat.code,
+              type: "directory",
+              officialUrl: "",
+              mirrorUrl: "",
+              applyDeadline: "N/A",
+              vacancies: 0,
+              stage: "Sub-Directory",
+              articleTitle: "Sub-Section Information",
+              contentBody: "Detailed sub-section content.",
+              tags: [selectedNode.title],
+              status: "Draft",
+              active: true,
+              children: [],
+              lastUpdated: new Date().toISOString().slice(0, 10)
+            };
+            selectedNode.children = selectedNode.children || [];
+            selectedNode.children.unshift(subNode);
+            config.selectedNodeId = subNodeId;
+            store.saveJobsDirectoryTreeConfig(config);
+            render();
+            store.showToast?.('Sub-node added!', 'success');
           });
 
           // Delete Node Button
           document.getElementById('jc-btn-delete-node')?.addEventListener('click', () => {
             if (confirm(`Delete "${selectedNode.title}" from this directory?`)) {
-              currentCat.nodes = currentCat.nodes.filter(n => n.id !== selectedNode.id);
-              selectedNodeId = currentCat.nodes.length > 0 ? currentCat.nodes[0].id : null;
-              config.selectedNodeId = selectedNodeId;
+              deleteNodeDeep(currentCat.nodes || [], selectedNode.id);
+              const fl = flattenTree(currentCat.nodes || []);
+              config.selectedNodeId = fl.length > 0 ? fl[0].id : null;
               store.saveJobsDirectoryTreeConfig(config);
               render();
               store.showToast?.('Node deleted.', 'info');
@@ -72062,12 +72135,11 @@ async function loadMasterNavigation() {
 
           // Reset Factory
           document.getElementById('jc-btn-reset')?.addEventListener('click', () => {
-            if (confirm('Reset Jobs & Careers Master Selection Directory to factory defaults?')) {
+            if (confirm('Reset Jobs & Careers Directory to authentic factory defaults?')) {
               config = store.resetJobsDirectoryTreeConfig();
               activeCatId = config.activeCategoryId;
-              selectedNodeId = config.selectedNodeId;
               render();
-              store.showToast?.('Jobs directory tree reset to defaults.', 'info');
+              store.showToast?.('Jobs directory tree reset to authentic defaults.', 'info');
             }
           });
         }
@@ -72079,8 +72151,7 @@ async function loadMasterNavigation() {
       }
     }
 
-
-    // --- MODULE NAV-JOBS-01: Jobs & Recruitment ---
+        // --- MODULE NAV-JOBS-01: Jobs & Recruitment ---
     function renderJobsRecruitmentWorkspace(container) {
       try {
         const store = window.CSOSuperStore;
