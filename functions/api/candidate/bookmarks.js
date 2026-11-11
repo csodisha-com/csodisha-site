@@ -5,7 +5,7 @@
  * POST /api/candidate/bookmarks
  */
 
-import { CORS_HEADERS, jsonResponse } from '../auth/_utils.js';
+import { CORS_HEADERS, jsonResponse, getSessionFromRequest } from '../auth/_utils.js';
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -14,29 +14,20 @@ export async function onRequestOptions() {
   });
 }
 
-function getUserIdFromRequest(request) {
-  const cookieHeader = request.headers.get('Cookie') || '';
-  const match = cookieHeader.match(/cso_session=([^;]+)/);
-  if (match) return match[1].trim();
-
-  const authHeader = request.headers.get('Authorization') || '';
-  if (authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7).trim();
-  }
-
-  const url = new URL(request.url);
-  const param = url.searchParams.get('userId') || url.searchParams.get('candidateId');
-  if (param) return param.trim();
-
-  return null;
+// Identity is resolved exclusively from the server-side session (HttpOnly
+// cookie or Bearer token). Client-supplied userId/candidateId values are
+// never trusted.
+async function requireSession(request, env) {
+  return getSessionFromRequest(request, env);
 }
 
 export async function onRequestGet({ request, env }) {
   try {
-    const userId = getUserIdFromRequest(request);
-    if (!userId) {
-      return jsonResponse({ success: false, error: 'Unauthorized: Missing candidate session' }, 401);
+    const session = await requireSession(request, env);
+    if (!session) {
+      return jsonResponse({ success: false, error: 'Unauthorized: Missing or invalid candidate session' }, 401);
     }
+    const userId = session.userId;
 
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
@@ -63,10 +54,11 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   try {
-    const userId = getUserIdFromRequest(request);
-    if (!userId) {
-      return jsonResponse({ success: false, error: 'Unauthorized: Missing candidate session' }, 401);
+    const session = await requireSession(request, env);
+    if (!session) {
+      return jsonResponse({ success: false, error: 'Unauthorized: Missing or invalid candidate session' }, 401);
     }
+    const userId = session.userId;
 
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);

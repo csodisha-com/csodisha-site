@@ -7,6 +7,9 @@ import { onRequestGet as handleHealthGet, onRequestOptions as handleHealthOption
 import { onRequestPost as handleRegisterPost, onRequestOptions as handleRegisterOptions } from './functions/api/auth/register.js';
 import { onRequestPost as handleVerifyOtpPost, onRequestOptions as handleVerifyOtpOptions } from './functions/api/auth/verify-otp.js';
 import { onRequestGet as handleVerifyLinkGet, onRequestOptions as handleVerifyLinkOptions } from './functions/api/auth/verify-link.js';
+import { onRequestGet as handleMeGet, onRequestOptions as handleMeOptions } from './functions/api/auth/me.js';
+import { onRequestPost as handleLogoutPost, onRequestOptions as handleLogoutOptions } from './functions/api/auth/logout.js';
+import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -50,6 +53,18 @@ async function handleStrictD1Login(request, env) {
 
     // 1. Normalize email
     const cleanEmail = email.trim().toLowerCase();
+
+    // 1b. Rate limiting: 10 login attempts per IP per 15 minutes
+    const clientIP = request.headers.get('cf-connecting-ip') ||
+                     request.headers.get('x-forwarded-for') ||
+                     'unknown-ip';
+    const rateCheck = checkRateLimit(`login_${clientIP}`, 10, 15 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return new Response(JSON.stringify({ error: 'Too many authentication attempts. Please try again later.' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': String(rateCheck.retryAfter) }
+      });
+    }
 
     // 2. Query D1 strictly
     if (!env || !env.DB) {
@@ -139,9 +154,17 @@ async function handleStrictD1Login(request, env) {
       'UPDATE users SET failed_attempts = 0, lockout_until = 0 WHERE id = ?'
     ).bind(user.id).run();
 
-    // Fetch candidate profile from candidates table or return user session
+    // Create an active server session (opaque 256-bit token, 30-day TTL)
+    // instead of exposing the raw user id as the session token.
+    const { token: sessionToken } = await createSession(env, {
+      userId: user.id,
+      email: user.email,
+      role: 'candidate'
+    });
+
+    // Fetch candidate profile from candidates table for the response payload
     const candidate = await env.DB.prepare(
-      'SELECT id, full_name, email, district, target_streams FROM candidates WHERE id = ? OR email = ?'
+      'SELECT id, full_name, email, phone, district, target_streams FROM candidates WHERE id = ? OR email = ?'
     ).bind(user.id, cleanEmail).first();
 
     let targetStreams = ['opsc', 'ossc'];
@@ -154,16 +177,19 @@ async function handleStrictD1Login(request, env) {
       candidate: candidate ? {
         id: candidate.id,
         fullName: candidate.full_name,
+        name: candidate.full_name,
         email: candidate.email,
+        phone: candidate.phone || '',
         district: candidate.district,
-        targetStreams
-      } : { id: user.id, email: user.email },
-      token: user.id
+        targetStreams,
+        role: 'candidate'
+      } : { id: user.id, email: user.email, role: 'candidate' },
+      token: sessionToken
     }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Set-Cookie': 'cso_session=' + user.id + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800'
+        'Set-Cookie': buildSessionCookie(sessionToken)
       }
     });
 
@@ -212,7 +238,19 @@ export default {
       if (request.method === 'GET') return handleVerifyLinkGet({ request, env, ctx });
     }
 
-    // 3. /api/auth/login or /api/auth?action=login (Strict D1)
+    // 4. /api/auth/logout — revoke the active server session
+    if (pathname === '/api/auth/logout' || (pathname === '/api/auth' && url.searchParams.get('action') === 'logout')) {
+      if (request.method === 'OPTIONS') return handleLogoutOptions();
+      if (request.method === 'POST') return handleLogoutPost({ request, env, ctx });
+    }
+
+    // 5. /api/auth/me — session introspection for client restoration
+    if (pathname === '/api/auth/me' || (pathname === '/api/auth' && url.searchParams.get('action') === 'me')) {
+      if (request.method === 'OPTIONS') return handleMeOptions();
+      if (request.method === 'GET') return handleMeGet({ request, env, ctx });
+    }
+
+    // 6. /api/auth/login or /api/auth?action=login (Strict D1)
     if (pathname === '/api/auth/login' || (pathname === '/api/auth' && url.searchParams.get('action') === 'login')) {
       if (request.method === 'OPTIONS') {
         return new Response(null, {
@@ -227,21 +265,21 @@ export default {
       if (request.method === 'POST') return handleStrictD1Login(request, env);
     }
 
-    // 4. /api/sync
+    // 7. /api/sync
     if (pathname === '/api/sync') {
       if (request.method === 'OPTIONS') return handleSyncOptions();
       if (request.method === 'GET') return handleSyncGet({ request, env, ctx });
       if (request.method === 'POST') return handleSyncPost({ request, env, ctx });
     }
 
-    // 5. /api/candidate/bookmarks
+    // 8. /api/candidate/bookmarks
     if (pathname === '/api/candidate/bookmarks') {
       if (request.method === 'OPTIONS') return handleBookmarksOptions();
       if (request.method === 'GET') return handleBookmarksGet({ request, env, ctx });
       if (request.method === 'POST') return handleBookmarksPost({ request, env, ctx });
     }
 
-    // 6. /api/candidate/checklist
+    // 9. /api/candidate/checklist
     if (pathname === '/api/candidate/checklist') {
       if (request.method === 'OPTIONS') return handleChecklistOptions();
       if (request.method === 'GET') return handleChecklistGet({ request, env, ctx });

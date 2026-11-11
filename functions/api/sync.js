@@ -3,7 +3,12 @@
  * Route: /api/sync
  * GET: Aggregates candidate checklists, locker, notes, and mock scores from D1
  * POST: Atomic batch upsert for candidate workspace state
+ *
+ * Identity is resolved exclusively from the server-side session (HttpOnly
+ * cookie or Bearer token) — client-supplied candidateId values are ignored.
  */
+
+import { getSessionFromRequest } from './auth/_utils.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -28,15 +33,14 @@ export async function onRequestOptions() {
 
 export async function onRequestGet({ request, env }) {
   try {
-    const url = new URL(request.url);
-    const candidateId = url.searchParams.get('candidateId');
-
-    if (!candidateId) {
+    const session = await getSessionFromRequest(request, env);
+    if (!session) {
       return jsonResponse({
         success: false,
-        error: 'Missing required query parameter: candidateId'
-      }, 400);
+        error: 'Unauthorized: Missing or invalid candidate session'
+      }, 401);
     }
+    const candidateId = session.userId;
 
     if (!env || !env.DB) {
       return jsonResponse({
@@ -111,6 +115,14 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   try {
+    const session = await getSessionFromRequest(request, env);
+    if (!session) {
+      return jsonResponse({
+        success: false,
+        error: 'Unauthorized: Missing or invalid candidate session'
+      }, 401);
+    }
+
     let payload = {};
     try {
       payload = await request.json();
@@ -118,14 +130,8 @@ export async function onRequestPost({ request, env }) {
       return jsonResponse({ success: false, error: 'Invalid JSON request payload' }, 400);
     }
 
-    const { candidateId, checklists, locker, notes, mockScores } = payload;
-
-    if (!candidateId) {
-      return jsonResponse({
-        success: false,
-        error: 'Missing required field: candidateId'
-      }, 400);
-    }
+    const { checklists, locker, notes, mockScores } = payload;
+    const candidateId = session.userId;
 
     if (!env || !env.DB) {
       return jsonResponse({

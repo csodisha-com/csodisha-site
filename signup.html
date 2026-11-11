@@ -242,7 +242,13 @@
             aria-pressed="false"
           >Show</button>
         </div>
-        <span class="form-hint">Must be between 8 and 64 characters in length.</span>
+        <span class="form-hint">8–128 characters with at least one uppercase letter, one lowercase letter, one digit and one special character.</span>
+      </div>
+
+      <!-- Honeypot: hidden from humans, catnip for bots. Any value = silent reject. -->
+      <div style="position:absolute;left:-9999px;top:-9999px;height:0;overflow:hidden;" aria-hidden="true">
+        <label for="signup-website">Website</label>
+        <input type="text" id="signup-website" name="website" tabindex="-1" autocomplete="off">
       </div>
 
       <button type="submit" class="btn-submit" id="btn-submit-auth">
@@ -331,8 +337,13 @@
           return;
         }
 
-        if (!password || password.length < 8 || password.length > 64) {
-          showError('Password must be between 8 and 64 characters.');
+        if (!password || password.length < 8 || password.length > 128) {
+          showError('Password must be between 8 and 128 characters.');
+          pwInput.focus();
+          return;
+        }
+        if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+          showError('Password must include an uppercase letter, a lowercase letter, a digit and a special character.');
           pwInput.focus();
           return;
         }
@@ -353,7 +364,8 @@
               email,
               district,
               password,
-              targetStreams: ['opsc', 'ossc']
+              targetStreams: ['opsc', 'ossc'],
+              website: document.getElementById('signup-website')?.value || ''
             }),
             signal: controller.signal
           });
@@ -568,23 +580,33 @@
             if (vRes.ok && vData.success) {
               submitOtpBtn.textContent = 'Verification successful! Redirecting...';
               try { sessionStorage.removeItem('cso_signup_cache'); } catch(e) {}
-              if (vData.candidate) {
+
+              // Sync the verified user into the client-side session cache
+              const verifiedUser = vData.user || vData.candidate;
+              if (verifiedUser) {
                 const sessionPayload = {
-                  ...vData.candidate,
+                  id: verifiedUser.id,
+                  fullName: verifiedUser.name || verifiedUser.fullName,
+                  name: verifiedUser.name || verifiedUser.fullName,
+                  email: verifiedUser.email,
+                  phone: verifiedUser.phone || '',
+                  district: verifiedUser.district || '',
+                  role: verifiedUser.role || 'candidate',
                   isAuthenticated: true
                 };
                 localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
                 localStorage.setItem('cso_candidate_profile', JSON.stringify(sessionPayload));
               }
-              if (vData.token) {
-                localStorage.setItem('cso_auth_token', vData.token);
+              if (vData.sessionToken || vData.token) {
+                localStorage.setItem('cso_auth_token', vData.sessionToken || vData.token);
               }
 
+              // Redirect immediately to the verified dashboard
               const urlParams = new URLSearchParams(window.location.search);
               const redirectParam = urlParams.get('redirect');
               const targetUrl = (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//'))
                 ? redirectParam
-                : '/student-dashboard/?verified=1';
+                : (vData.redirect || '/student-dashboard/?verified=1');
 
               window.location.href = targetUrl;
             } else {

@@ -416,14 +416,14 @@
         }
 
         if (isSignUpMode) {
-          if (passwordVal.length < 8 || passwordVal.length > 64) {
-            showError('Password must contain between 8 and 64 characters.');
+          if (passwordVal.length < 8 || passwordVal.length > 128) {
+            showError('Password must contain between 8 and 128 characters.');
             submitBtn.disabled = false;
             submitBtn.textContent = originalBtnText;
             return;
           }
-          if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]*[@#][A-Za-z0-9]*$/.test(passwordVal)) {
-            showError('Password must use letters, numbers and exactly one @ or # special symbol.');
+          if (!/[A-Z]/.test(passwordVal) || !/[a-z]/.test(passwordVal) || !/[0-9]/.test(passwordVal) || !/[^A-Za-z0-9]/.test(passwordVal)) {
+            showError('Password must include an uppercase letter, a lowercase letter, a digit and a special character.');
             submitBtn.disabled = false;
             submitBtn.textContent = originalBtnText;
             return;

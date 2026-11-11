@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS candidates (
   id TEXT PRIMARY KEY,
   full_name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
+  phone TEXT,
   district TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   salt TEXT NOT NULL,
@@ -27,6 +28,23 @@ CREATE TABLE IF NOT EXISTS candidates (
   target_streams TEXT NOT NULL, -- JSON array (e.g. ["opsc", "ossc"])
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_login_at DATETIME
+);
+
+-- MIGRATION (pre-phone deployments): add the phone column, then apply the
+-- unique partial index at the bottom of this file. Run once per database:
+--   ALTER TABLE candidates ADD COLUMN phone TEXT;
+-- (Safe to run only if the column does not already exist.)
+
+-- 1d. Active Server Sessions (opaque 256-bit tokens, 30-day TTL)
+-- Identity is resolved exclusively from this table — never from client input.
+CREATE TABLE IF NOT EXISTS sessions (
+  token TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'candidate',
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- 2. Syllabus & Milestone Checklists
@@ -112,3 +130,10 @@ CREATE INDEX IF NOT EXISTS idx_verifications_token ON email_verifications(token)
 CREATE INDEX IF NOT EXISTS idx_candidate_checklists_cid ON candidate_checklists(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_candidate_mock_scores_cid ON candidate_mock_scores(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON candidate_bookmarks(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+
+-- Strict 1-to-1 phone uniqueness: at most one verified candidate per mobile
+-- number. Partial index keeps legacy/NULL rows out of the constraint.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_candidates_phone
+ON candidates(phone)
+WHERE phone IS NOT NULL AND phone != '';

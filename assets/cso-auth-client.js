@@ -94,15 +94,25 @@
   }
 
   async function register(data) {
+    const passwordPolicyError = (function (pw) {
+      if (typeof pw !== "string" || pw.length < 8 || pw.length > 128) {
+        return "Invalid registration information. Password must be between 8 and 128 characters.";
+      }
+      if (!/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/[0-9]/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) {
+        return "Password must include an uppercase letter, a lowercase letter, a digit and a special character.";
+      }
+      return null;
+    })(data ? data.password : "");
+
     if (
       !validCredentials(data) ||
       typeof data.fullName !== "string" ||
-      data.password.length < 8 ||
-      data.password.length > 64
+      passwordPolicyError
     ) {
       return {
         ok: false,
-        error: "Invalid registration information. Password must be between 8 and 64 characters."
+        error: passwordPolicyError ||
+          "Invalid registration information. Password must be between 8 and 128 characters."
       };
     }
 

@@ -825,9 +825,36 @@ function authForm(mode) {
               if (verified.ok) {
                 feedback.textContent = 'Account activated. Preparing your dashboard...';
 
-                const session = await window.CSOAuth.getCurrentUser();
+                // Fast path: the verification response carries the verified
+                // user and session token directly — no round-trip needed.
+                const verifiedUser = verified.user || verified.candidate;
+                let session = null;
 
-                if (!session.ok || !session.authenticated || !session.user) {
+                if (verifiedUser && verifiedUser.id) {
+                  session = { ok: true, authenticated: true, user: verifiedUser };
+                  try {
+                    const sessionPayload = {
+                      id: verifiedUser.id,
+                      fullName: verifiedUser.name || verifiedUser.fullName || '',
+                      name: verifiedUser.name || verifiedUser.fullName || '',
+                      email: verifiedUser.email,
+                      phone: verifiedUser.phone || '',
+                      district: verifiedUser.district || '',
+                      role: verifiedUser.role || 'candidate',
+                      isAuthenticated: true
+                    };
+                    localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
+                    localStorage.setItem('cso_candidate_profile', JSON.stringify(sessionPayload));
+                    if (verified.sessionToken || verified.token) {
+                      localStorage.setItem('cso_auth_token', verified.sessionToken || verified.token);
+                    }
+                  } catch (storeErr) { /* non-fatal */ }
+                } else {
+                  // Fallback: introspect the session cookie via /api/auth/me
+                  session = await window.CSOAuth.getCurrentUser();
+                }
+
+                if (!session || !session.ok || !session.authenticated || !session.user) {
                   feedback.textContent =
                     'Your account is activated, but your session could not be restored. Please log in.';
                   return;

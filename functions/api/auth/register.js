@@ -2,26 +2,42 @@
  * Cloudflare Pages Functions — Hardened Registration Edge Handler
  * Dual-channel candidate verification: 6-digit OTP + one-click Magic Link
  * Route: POST /api/auth/register (also serves POST /api/auth/resend-otp via _worker.js)
+ *
+ * Production rules: honeypot bot trap, disposable-email blocklist, password
+ * policy, name/phone/stream sanitization, verified-account duplicate checks,
+ * 1-to-1 mobile uniqueness, and IP rate limiting.
  */
 
 import {
-  CORS_HEADERS,
   jsonResponse,
   generateSalt,
   hashPassword,
   generateOtpCode,
   generateVerificationToken,
   checkRateLimit,
-  EMAIL_REGEX
+  EMAIL_REGEX,
+  isDisposableEmail,
+  normalizeEmail,
+  validatePasswordStrength,
+  sanitizeFullName,
+  normalizeIndianPhone,
+  sanitizeTargetStreams
 } from './_utils.js';
 
 const OTP_TTL_SECONDS = 15 * 60;     // 15-minute dual-channel expiry window
 const RESEND_COOLDOWN_SECONDS = 60;  // Minimum gap between email dispatches
+const RATE_LIMIT_MAX = 5;            // Max registration attempts...
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // ...per IP per 10 minutes
 
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
-    headers: CORS_HEADERS
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Content-Type': 'application/json; charset=utf-8'
+    }
   });
 }
 
@@ -31,8 +47,8 @@ export async function onRequestPost({ request, env, ctx }) {
                      request.headers.get('x-forwarded-for') ||
                      'unknown-ip';
 
-    // Rate limiting: 5 attempts per 15 min per client IP
-    const rateCheck = checkRateLimit(`reg_${clientIP}`, 5, 15 * 60 * 1000);
+    // Rate limiting: 5 attempts per IP per 10 minutes
+    const rateCheck = checkRateLimit(`reg_${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
     if (!rateCheck.allowed) {
       return jsonResponse({
         success: false,
@@ -47,7 +63,17 @@ export async function onRequestPost({ request, env, ctx }) {
       return jsonResponse({ success: false, error: 'Invalid JSON request payload' }, 400);
     }
 
-    const { email, password, fullName, district, targetStreams } = body;
+    // Honeypot trap: hidden fields (CSS-invisible on signup.html). Any value
+    // means a bot filled the form — respond like success, touch nothing.
+    if (String(body.website || body.confirm_email_address || '').trim() !== '') {
+      return jsonResponse({
+        success: true,
+        message: 'Verification code sent',
+        email: normalizeEmail(body.email)
+      }, 200);
+    }
+
+    const { email, password, fullName, district, targetStreams, phone } = body;
 
     // Passwordless requests are resends (the pending verification supplies the
     // staged credentials); a fresh registration requires email + password.
@@ -58,26 +84,58 @@ export async function onRequestPost({ request, env, ctx }) {
       }, 400);
     }
 
-    // Input sanitization: Trim and normalize email to lowercase
-    const cleanEmail = String(email).trim().toLowerCase();
-
-    // Input validation: Strict email regex
+    // Email normalization + RFC-compliant validation + disposable blocklist
+    const cleanEmail = normalizeEmail(email);
     if (!EMAIL_REGEX.test(cleanEmail) || cleanEmail.length > 254) {
       return jsonResponse({
         success: false,
         error: 'Please enter a valid email address.'
       }, 400);
     }
+    if (isDisposableEmail(cleanEmail)) {
+      return jsonResponse({
+        success: false,
+        error: 'Disposable or temporary email addresses are not allowed. Please use a permanent email address.'
+      }, 400);
+    }
 
     const passStr = password === undefined || password === null ? '' : String(password);
 
-    // Password validation: Length between 8 and 64 characters (allowing symbols, spaces, ASCII, UTF-8)
-    if (passStr && (passStr.length < 8 || passStr.length > 64)) {
-      return jsonResponse({
-        success: false,
-        error: 'Password must be between 8 and 64 characters.'
-      }, 400);
+    // Password policy: 8-128 chars, mixed case + digit + symbol, no common
+    // passwords, nothing derived from the candidate's own name/email.
+    if (passStr) {
+      const policyError = validatePasswordStrength(passStr, { name: fullName, email: cleanEmail });
+      if (policyError) {
+        return jsonResponse({ success: false, error: policyError }, 400);
+      }
     }
+
+    // Profile sanitization (fresh registrations only; resends reuse staged data)
+    let cleanName = 'Candidate Aspirant';
+    let cleanDistrict = 'Balasore (Baleswar)';
+    let cleanPhone = '';
+    let streamArray = ['opsc', 'ossc'];
+
+    if (fullName !== undefined && String(fullName).trim() !== '') {
+      const nameResult = sanitizeFullName(fullName);
+      if (nameResult.error) {
+        return jsonResponse({ success: false, error: nameResult.error }, 400);
+      }
+      cleanName = nameResult.value;
+    }
+    if (district !== undefined && district !== null && String(district).trim() !== '') {
+      cleanDistrict = String(district).trim().slice(0, 64);
+    }
+
+    // Strict 1-to-1 Indian mobile normalization (optional field)
+    const phoneResult = normalizeIndianPhone(phone || (body.candidate && body.candidate.phone));
+    if (phoneResult.error) {
+      return jsonResponse({ success: false, error: phoneResult.error }, 400);
+    }
+    cleanPhone = phoneResult.value;
+
+    // Target exam streams: strict enum validation
+    streamArray = sanitizeTargetStreams(targetStreams);
 
     // In edge preview sandbox without D1 binding
     if (!env || !env.DB) {
@@ -87,16 +145,31 @@ export async function onRequestPost({ request, env, ctx }) {
       }, 500);
     }
 
-    // Account check: Check if an active, already-verified account exists
-    const existingUser = await env.DB.prepare(
+    // Duplicate check strictly against the verified `users` table — staged,
+    // unverified emails must never block re-registration.
+    const existingVerifiedUser = await env.DB.prepare(
       'SELECT id FROM users WHERE LOWER(email) = ?'
     ).bind(cleanEmail).first();
 
-    if (existingUser) {
+    if (existingVerifiedUser) {
       return jsonResponse({
         success: false,
         error: 'An account with this email address already exists. Please log in.'
       }, 409);
+    }
+
+    // Strict 1-to-1 mobile uniqueness against verified candidate accounts
+    if (cleanPhone) {
+      const existingPhone = await env.DB.prepare(
+        'SELECT id FROM candidates WHERE phone = ?'
+      ).bind(cleanPhone).first();
+
+      if (existingPhone) {
+        return jsonResponse({
+          success: false,
+          error: 'This mobile number is already registered with an existing candidate account.'
+        }, 409);
+      }
     }
 
     const nowUnix = Math.floor(Date.now() / 1000);
@@ -115,7 +188,7 @@ export async function onRequestPost({ request, env, ctx }) {
         const remaining = RESEND_COOLDOWN_SECONDS - diff;
         return jsonResponse({
           success: false,
-          error: `Please wait ${remaining}s before requesting a new code.`
+          error: `Please wait ${remaining} seconds before requesting a new code.`
         }, 429, { 'Retry-After': String(remaining) });
       }
     }
@@ -144,15 +217,12 @@ export async function onRequestPost({ request, env, ctx }) {
       salt = pendingRecord.salt;
       candidateData = pendingRecord.candidate_data;
     } else {
-      const cleanName = String(fullName || 'Candidate Aspirant').trim();
-      const cleanDistrict = String(district || 'Balasore (Baleswar)').trim();
-      const streamArray = Array.isArray(targetStreams) ? targetStreams : ['opsc', 'ossc'];
-
       salt = generateSalt();
       passwordHash = await hashPassword(passStr, salt, 100000);
       candidateData = JSON.stringify({
         fullName: cleanName,
         district: cleanDistrict,
+        phone: cleanPhone,
         targetStreams: streamArray
       });
     }

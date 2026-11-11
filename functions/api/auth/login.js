@@ -9,7 +9,8 @@ import {
   generateSalt,
   hashPassword,
   checkRateLimit,
-  createSessionToken
+  createSession,
+  buildSessionCookie
 } from './_utils.js';
 
 export async function onRequestOptions() {
@@ -159,18 +160,15 @@ export async function onRequestPost({ request, env }) {
       `).bind(userRecord.id)
     ]).catch(() => {});
 
-    // Standard session claims
-    const sessionClaims = {
-      sub: userRecord.id,
+    // Create an active server session (opaque 256-bit token, 30-day TTL)
+    const { token: sessionToken } = await createSession(env, {
+      userId: userRecord.id,
       email: userRecord.email,
-      iat: nowUnix,
-      exp: nowUnix + (7 * 24 * 60 * 60) // 7 days expiration
-    };
+      role: 'candidate'
+    });
 
-    const sessionToken = await createSessionToken(sessionClaims);
-
-    // Issue Secure, HttpOnly, SameSite=Lax cookie
-    const cookieHeader = `cso_session=${sessionToken}; Path=/; Max-Age=604800; HttpOnly; Secure; SameSite=Lax`;
+    // Issue Secure, HttpOnly, SameSite=Lax cookie (30-day session)
+    const cookieHeader = buildSessionCookie(sessionToken);
 
     let targetStreams = ['opsc', 'ossc'];
     if (candidateMeta && candidateMeta.target_streams) {
