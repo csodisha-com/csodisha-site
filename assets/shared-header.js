@@ -234,8 +234,8 @@
     }
     authEl.innerHTML =
       '<div class="cso-desktop-auth-buttons">' +
-        '<a href="' + root + '#login" class="cso-auth-item-link cso-login-link login-btn">Login</a>' +
-        '<a href="' + root + '#signup" class="cso-signup-pill signup-btn">Sign Up</a>' +
+        '<a href="/login.html" class="cso-auth-item-link cso-login-link login-btn">Login</a>' +
+        '<a href="/signup.html" class="cso-signup-pill signup-btn">Sign Up</a>' +
       '</div>' +
       '<div class="cso-mobile-auth-wrapper">' +
         '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
@@ -244,8 +244,8 @@
           '<span class="auth-arrow" aria-hidden="true">▾</span>' +
         '</button>' +
         '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
-          '<a href="' + root + '#login" class="cso-auth-item">Login</a>' +
-          '<a href="' + root + '#signup" class="cso-auth-item">Sign Up</a>' +
+          '<a href="/login.html" class="cso-auth-item">Login</a>' +
+          '<a href="/signup.html" class="cso-auth-item">Sign Up</a>' +
         '</div>' +
       '</div>';
   }
@@ -481,16 +481,5 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
-  }
-})();
-
-// Auto-load auth-modal.js for candidate login trigger
-(function() {
-  if (!document.getElementById('cso-auth-modal-script')) {
-    const s = document.createElement('script');
-    s.id = 'cso-auth-modal-script';
-    s.src = '/assets/js/auth-modal.js';
-    s.defer = true;
-    document.head.appendChild(s);
   }
 })();

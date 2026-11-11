@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v8';
+const CACHE_NAME = 'cso-candidate-cache-v9';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
@@ -36,7 +36,6 @@ const PRECACHE_URLS = [
   '/assets/js/cso-countdown.js',
   '/assets/js/cso-idb.js',
   '/assets/js/candidate-sync.js',
-  '/assets/js/auth-modal.js',
   '/assets/js/student-dashboard.js',
   '/assets/js/pwa-install.js',
   '/admin/super-store.js'
