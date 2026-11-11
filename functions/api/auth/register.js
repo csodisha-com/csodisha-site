@@ -1,6 +1,7 @@
 /**
  * Cloudflare Pages Functions — Hardened Registration Edge Handler
- * Route: POST /api/auth/register
+ * Dual-channel candidate verification: 6-digit OTP + one-click Magic Link
+ * Route: POST /api/auth/register (also serves POST /api/auth/resend-otp via _worker.js)
  */
 
 import {
@@ -8,9 +9,14 @@ import {
   jsonResponse,
   generateSalt,
   hashPassword,
+  generateOtpCode,
+  generateVerificationToken,
   checkRateLimit,
   EMAIL_REGEX
 } from './_utils.js';
+
+const OTP_TTL_SECONDS = 15 * 60;     // 15-minute dual-channel expiry window
+const RESEND_COOLDOWN_SECONDS = 60;  // Minimum gap between email dispatches
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -19,7 +25,7 @@ export async function onRequestOptions() {
   });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, ctx }) {
   try {
     const clientIP = request.headers.get('cf-connecting-ip') ||
                      request.headers.get('x-forwarded-for') ||
@@ -43,10 +49,12 @@ export async function onRequestPost({ request, env }) {
 
     const { email, password, fullName, district, targetStreams } = body;
 
-    if (!email || !password) {
+    // Passwordless requests are resends (the pending verification supplies the
+    // staged credentials); a fresh registration requires email + password.
+    if (!email) {
       return jsonResponse({
         success: false,
-        error: 'Email and password are required.'
+        error: 'Email is required.'
       }, 400);
     }
 
@@ -61,18 +69,15 @@ export async function onRequestPost({ request, env }) {
       }, 400);
     }
 
+    const passStr = password === undefined || password === null ? '' : String(password);
+
     // Password validation: Length between 8 and 64 characters (allowing symbols, spaces, ASCII, UTF-8)
-    const passStr = String(password);
-    if (passStr.length < 8 || passStr.length > 64) {
+    if (passStr && (passStr.length < 8 || passStr.length > 64)) {
       return jsonResponse({
         success: false,
         error: 'Password must be between 8 and 64 characters.'
       }, 400);
     }
-
-    const cleanName = String(fullName || 'Candidate Aspirant').trim();
-    const cleanDistrict = String(district || 'Balasore (Baleswar)').trim();
-    const streamArray = Array.isArray(targetStreams) ? targetStreams : ['opsc', 'ossc'];
 
     // In edge preview sandbox without D1 binding
     if (!env || !env.DB) {
@@ -94,55 +99,132 @@ export async function onRequestPost({ request, env }) {
       }, 409);
     }
 
-    // Generate secure 6-digit OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Password hashing: Web Crypto PBKDF2 with SHA-256, 100,000 iterations (Cloudflare Workers runtime limit), 16-byte random salt
-    const salt = generateSalt();
-    const passwordHash = await hashPassword(passStr, salt, 100000);
     const nowUnix = Math.floor(Date.now() / 1000);
-    const expiresAt = nowUnix + 900; // 15-minute OTP expiration
 
-    const candidateData = JSON.stringify({
-      fullName: cleanName,
-      district: cleanDistrict,
-      targetStreams: streamArray
-    });
+    // Check if email already has a pending (dual-channel) verification
+    const pendingRecord = await env.DB.prepare(
+      'SELECT email, password_hash, salt, candidate_data, expires_at, created_at FROM email_verifications WHERE LOWER(email) = ?'
+    ).bind(cleanEmail).first();
 
-    // Store/replace pending record in 'email_verifications'
+    let isResume = false;
+    if (pendingRecord) {
+      isResume = true;
+      // Dispatch cooldown: 'created_at' is refreshed every time a new code is issued
+      const diff = nowUnix - (pendingRecord.created_at || 0);
+      if (diff < RESEND_COOLDOWN_SECONDS) {
+        const remaining = RESEND_COOLDOWN_SECONDS - diff;
+        return jsonResponse({
+          success: false,
+          error: `Please wait ${remaining}s before requesting a new code.`
+        }, 429, { 'Retry-After': String(remaining) });
+      }
+    }
+
+    // Channel secrets: unbiased 6-digit OTP + 192-bit magic-link token
+    const otpCode = generateOtpCode();
+    const magicToken = generateVerificationToken();
+
+    // Credential materialization:
+    // - Fresh registration: PBKDF2-SHA256 (100,000 iterations — Cloudflare Workers
+    //   runtime limit) with a fresh 16-byte random salt
+    // - Resend/resume (no password in payload): reuse the pending password hash so a
+    //   re-dispatched code never clobbers the credentials captured at sign-up time
+    let passwordHash;
+    let salt;
+    let candidateData;
+
+    if (!passStr) {
+      if (!pendingRecord) {
+        return jsonResponse({
+          success: false,
+          error: 'No pending registration found for this email. Please submit the registration form again.'
+        }, 400);
+      }
+      passwordHash = pendingRecord.password_hash;
+      salt = pendingRecord.salt;
+      candidateData = pendingRecord.candidate_data;
+    } else {
+      const cleanName = String(fullName || 'Candidate Aspirant').trim();
+      const cleanDistrict = String(district || 'Balasore (Baleswar)').trim();
+      const streamArray = Array.isArray(targetStreams) ? targetStreams : ['opsc', 'ossc'];
+
+      salt = generateSalt();
+      passwordHash = await hashPassword(passStr, salt, 100000);
+      candidateData = JSON.stringify({
+        fullName: cleanName,
+        district: cleanDistrict,
+        targetStreams: streamArray
+      });
+    }
+
+    // Greeting name comes from the stored profile data on resends
+    let displayName = 'Candidate Aspirant';
+    try {
+      const parsed = JSON.parse(candidateData);
+      if (parsed && typeof parsed.fullName === 'string' && parsed.fullName.trim()) {
+        displayName = parsed.fullName.trim();
+      }
+    } catch (e) {}
+
+    const expiresAt = nowUnix + OTP_TTL_SECONDS;
+
+    // Store/replace pending record with a fresh OTP + magic token and attempts reset to 0
     await env.DB.prepare(`
       INSERT INTO email_verifications (
-        email, otp_code, password_hash, salt, candidate_data, expires_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        email, otp_code, token, password_hash, salt, candidate_data, attempts, expires_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
       ON CONFLICT(email) DO UPDATE SET
         otp_code = excluded.otp_code,
+        token = excluded.token,
         password_hash = excluded.password_hash,
         salt = excluded.salt,
         candidate_data = excluded.candidate_data,
+        attempts = 0,
         expires_at = excluded.expires_at,
         created_at = excluded.created_at
-    `).bind(cleanEmail, otpCode, passwordHash, salt, candidateData, expiresAt, nowUnix).run();
+    `).bind(cleanEmail, otpCode, magicToken, passwordHash, salt, candidateData, expiresAt, nowUnix).run();
 
-    // Dispatch OTP email via configured transactional provider
+    // Lazy pruning of expired verifications in background
+    if (ctx && typeof ctx.waitUntil === 'function') {
+      ctx.waitUntil(
+        env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ?').bind(nowUnix).run().catch(() => {})
+      );
+    }
+
+    // Magic link URL (channel 2)
+    const appOrigin = env.APP_ORIGIN || new URL(request.url).origin;
+    const magicLink = `${appOrigin}/api/auth/verify-link?email=${encodeURIComponent(cleanEmail)}&token=${magicToken}`;
+
+    // Dispatch OTP + Magic Link email via configured transactional provider
     const emailSubject = 'Your Verification Code - Common Sense Odisha';
     const emailHtml = `
-      <div style="font-family:system-ui,-apple-system,sans-serif;max-width:540px;margin:0 auto;padding:24px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
-        <h2 style="color:#093824;margin-top:0;">Common Sense Odisha</h2>
-        <p>Namaskar <strong>${cleanName}</strong>,</p>
-        <p>Your verification code is:</p>
-        <div style="font-size:32px;font-weight:700;letter-spacing:6px;padding:16px 24px;background:#f8fafc;border:2px dashed #093824;border-radius:8px;text-align:center;color:#093824;margin:20px 0;">
+      <div style="font-family:system-ui,-apple-system,sans-serif;max-width:540px;margin:0 auto;padding:28px 24px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
+        <h2 style="color:#093824;margin-top:0;font-size:22px;margin-bottom:8px;">Common Sense Odisha</h2>
+        <p style="font-size:15px;line-height:1.5;">Namaskar <strong>${displayName}</strong>,</p>
+        <p style="font-size:14px;color:#475569;margin-bottom:16px;">
+          Use either the 6-digit code or the one-click sign-in button below to activate your candidate dashboard:
+        </p>
+
+        <div style="font-size:32px;font-weight:800;letter-spacing:6px;padding:16px 20px;background:#f8fafc;border:2px dashed #093824;border-radius:10px;text-align:center;color:#093824;margin:20px 0;">
           ${otpCode}
         </div>
-        <p style="font-size:14px;color:#64748b;line-height:1.5;">
-          It will expire in 15 minutes. If you did not request this, please ignore this email.
+
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${magicLink}" style="display:inline-block;background:#093824;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 28px;border-radius:8px;font-size:14px;">
+            Verify with Magic Link &rarr;
+          </a>
+        </div>
+
+        <p style="font-size:13px;color:#64748b;line-height:1.5;margin-bottom:0;">
+          This verification code and link will expire in 15 minutes. If you did not request this account, you can safely ignore this email.
         </p>
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
-        <p style="font-size:12px;color:#94a3b8;margin-bottom:0;">
+        <p style="font-size:12px;color:#94a3b8;margin-bottom:0;text-align:center;">
           Common Sense Odisha (csodisha.com) — Independent Candidate Workspace
         </p>
       </div>
     `;
-    const emailText = `Namaskar ${cleanName},\n\nYour verification code is: ${otpCode}.\nIt will expire in 15 minutes. If you did not request this, please ignore this email.\n\n— Common Sense Odisha`;
+    const emailText = `Namaskar ${displayName},\n\nYour verification code is: ${otpCode}\n\nOr click the magic link to verify instantly:\n${magicLink}\n\nThis expires in 15 minutes.\n\n— Common Sense Odisha`;
 
     if (env.RESEND_API_KEY) {
       try {
@@ -217,7 +299,8 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({
       success: true,
       message: 'Verification code sent',
-      email: cleanEmail
+      email: cleanEmail,
+      isResume
     }, 200);
 
   } catch (error) {

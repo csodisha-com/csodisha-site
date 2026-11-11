@@ -6,6 +6,7 @@
 import { onRequestGet as handleHealthGet, onRequestOptions as handleHealthOptions } from './functions/api/health.js';
 import { onRequestPost as handleRegisterPost, onRequestOptions as handleRegisterOptions } from './functions/api/auth/register.js';
 import { onRequestPost as handleVerifyOtpPost, onRequestOptions as handleVerifyOtpOptions } from './functions/api/auth/verify-otp.js';
+import { onRequestGet as handleVerifyLinkGet, onRequestOptions as handleVerifyLinkOptions } from './functions/api/auth/verify-link.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -192,10 +193,23 @@ export default {
       if (request.method === 'POST') return handleRegisterPost({ request, env, ctx });
     }
 
+    // 2a. /api/auth/resend-otp — dual-channel code re-dispatch (delegates to the
+    // register handler, which preserves the pending password hash on resends)
+    if (pathname === '/api/auth/resend-otp' || (pathname === '/api/auth' && url.searchParams.get('action') === 'resend-otp')) {
+      if (request.method === 'OPTIONS') return handleRegisterOptions();
+      if (request.method === 'POST') return handleRegisterPost({ request, env, ctx });
+    }
+
     // 2b. /api/auth/verify-otp or /api/auth?action=verify-otp
     if (pathname === '/api/auth/verify-otp' || (pathname === '/api/auth' && url.searchParams.get('action') === 'verify-otp')) {
       if (request.method === 'OPTIONS') return handleVerifyOtpOptions();
       if (request.method === 'POST') return handleVerifyOtpPost({ request, env, ctx });
+    }
+
+    // 2c. /api/auth/verify-link or /api/auth?action=verify-link
+    if (pathname === '/api/auth/verify-link' || (pathname === '/api/auth' && url.searchParams.get('action') === 'verify-link')) {
+      if (request.method === 'OPTIONS') return handleVerifyLinkOptions();
+      if (request.method === 'GET') return handleVerifyLinkGet({ request, env, ctx });
     }
 
     // 3. /api/auth/login or /api/auth?action=login (Strict D1)

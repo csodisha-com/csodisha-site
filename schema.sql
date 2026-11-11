@@ -80,21 +80,35 @@ CREATE TABLE IF NOT EXISTS candidate_mock_scores (
   FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
 
--- 1c. Pending Email Verifications & OTP Lifecycle
+-- 1c. Pending Email Verifications & Dual-Channel Auth Lifecycle
+-- One row per pending candidate: the 6-digit OTP (channel 1) and the magic-link
+-- token (channel 2) share a single 15-minute expiry window. 'attempts' tracks
+-- failed OTP submissions (row is invalidated after 5 misses); 'created_at' is
+-- refreshed on every dispatch and doubles as the resend-cooldown timestamp.
 CREATE TABLE IF NOT EXISTS email_verifications (
   email TEXT PRIMARY KEY,
   otp_code TEXT NOT NULL,
+  token TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   salt TEXT NOT NULL,
   candidate_data TEXT,
+  attempts INTEGER DEFAULT 0,
   expires_at INTEGER NOT NULL,
   created_at INTEGER NOT NULL
 );
+
+-- MIGRATION (v1 -> v2): the legacy 'magic_token' column was renamed to 'token'
+-- (now NOT NULL) and 'last_requested_at' was folded into 'created_at'. Rows in
+-- this table expire after 15 minutes, so already-deployed D1 databases can
+-- drop and recreate it safely (candidates simply request a fresh code):
+--   wrangler d1 execute cso-database --remote --command "DROP TABLE IF EXISTS email_verifications;"
+--   wrangler d1 execute cso-database --remote --file schema.sql
 
 -- Indexes for optimal lookup performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_email ON email_verifications(email);
+CREATE INDEX IF NOT EXISTS idx_verifications_token ON email_verifications(token);
 CREATE INDEX IF NOT EXISTS idx_candidate_checklists_cid ON candidate_checklists(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_candidate_mock_scores_cid ON candidate_mock_scores(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON candidate_bookmarks(user_id);

@@ -40,13 +40,42 @@ export async function onRequestPost({ request, env }) {
 
     // Look up pending row in email_verifications
     const pending = await env.DB.prepare(
-      'SELECT email, otp_code, password_hash, salt, candidate_data, expires_at FROM email_verifications WHERE LOWER(email) = ? AND otp_code = ?'
-    ).bind(cleanEmail, otpCode).first();
+      'SELECT email, otp_code, token, password_hash, salt, candidate_data, attempts, expires_at FROM email_verifications WHERE LOWER(email) = ?'
+    ).bind(cleanEmail).first();
 
-    if (!pending || pending.expires_at < nowUnix) {
+    if (!pending) {
       return jsonResponse({
         success: false,
-        error: 'Invalid or expired verification code'
+        error: 'No pending registration found for this email. Please request a new code.'
+      }, 400);
+    }
+
+    if (pending.expires_at < nowUnix) {
+      return jsonResponse({
+        success: false,
+        error: 'Verification code has expired. Please request a new code.'
+      }, 400);
+    }
+
+    // Check code match
+    if (pending.otp_code !== otpCode) {
+      const nextAttempts = (pending.attempts || 0) + 1;
+      if (nextAttempts >= 5) {
+        await env.DB.prepare('DELETE FROM email_verifications WHERE LOWER(email) = ?').bind(cleanEmail).run();
+        return jsonResponse({
+          success: false,
+          error: 'Too many invalid attempts. Please request a new verification code.'
+        }, 429);
+      }
+
+      await env.DB.prepare('UPDATE email_verifications SET attempts = ? WHERE LOWER(email) = ?')
+        .bind(nextAttempts, cleanEmail)
+        .run();
+
+      const remainingAttempts = 5 - nextAttempts;
+      return jsonResponse({
+        success: false,
+        error: `Incorrect verification code. ${remainingAttempts} attempt(s) remaining.`
       }, 400);
     }
 

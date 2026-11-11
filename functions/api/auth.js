@@ -5,6 +5,7 @@
  */
 
 import { onRequestPost as handleRegister } from './auth/register.js';
+import { onRequestPost as handleVerifyOtp } from './auth/verify-otp.js';
 import { onRequestPost as handleLogin } from './auth/login.js';
 import { CORS_HEADERS, jsonResponse } from './auth/_utils.js';
 
@@ -19,8 +20,14 @@ export async function onRequestPost(context) {
   const url = new URL(context.request.url);
   const action = url.searchParams.get('action');
 
-  if (action === 'register') {
+  if (action === 'register' || action === 'resend-otp') {
+    // resend-otp re-dispatches the dual-channel code while preserving the
+    // pending password hash captured at sign-up time
     return handleRegister(context);
+  }
+
+  if (action === 'verify-otp') {
+    return handleVerifyOtp(context);
   }
 
   if (action === 'login') {

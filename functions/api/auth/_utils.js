@@ -48,6 +48,29 @@ export function generateSalt() {
   return bufToHex(array.buffer);
 }
 
+// Generate a cryptographically secure, unbiased 6-digit OTP (100000-999999).
+// Rejection sampling over crypto.getRandomValues removes modulo bias so every
+// code in the range is exactly equally likely.
+export function generateOtpCode() {
+  const OTP_RANGE = 900000; // codes span 100000..999999
+  const UINT32_LIMIT = Math.floor(4294967296 / OTP_RANGE) * OTP_RANGE;
+  const buf = new Uint32Array(1);
+  let value = 0;
+  do {
+    crypto.getRandomValues(buf);
+    value = buf[0];
+  } while (value >= UINT32_LIMIT);
+  return String(100000 + (value % OTP_RANGE));
+}
+
+// Generate a cryptographically secure magic-link verification token
+// (24 random bytes, hex-encoded to 48 characters)
+export function generateVerificationToken() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return bufToHex(bytes.buffer);
+}
+
 // PBKDF2 Web Crypto Hash (600,000 iterations, SHA-256)
 export async function hashPassword(password, saltHex, iterations = 100000) {
   const encoder = new TextEncoder();
