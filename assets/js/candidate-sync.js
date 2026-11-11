@@ -61,7 +61,6 @@
       } catch(e) {}
 
       const payload = {
-        candidateId: session.id,
         checklists: checklists,
         locker: locker,
         notes: notes,
@@ -99,12 +98,14 @@
   }
 
   async function pullCloudStateToLocal(candidateId) {
-    if (!candidateId || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+    // candidateId is accepted for backward compatibility but never trusted —
+    // the server resolves identity from the HttpOnly session cookie.
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/sync?candidateId=${encodeURIComponent(candidateId)}`);
+      const response = await fetch('/api/sync');
       if (response.ok) {
         const data = await response.json();
         if (data.success) {

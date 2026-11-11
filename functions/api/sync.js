@@ -9,6 +9,11 @@
  */
 
 import { getSessionFromRequest } from './auth/_utils.js';
+import {
+  flattenChecklistPayload,
+  upsertStatement,
+  fetchChecklistTree
+} from './candidate/_state-keys.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -53,20 +58,8 @@ export async function onRequestGet({ request, env }) {
       });
     }
 
-    // 1. Fetch Checklists
-    const checklistResults = await env.DB.prepare(`
-      SELECT exam_stream, topic_id, is_completed
-      FROM candidate_checklists
-      WHERE candidate_id = ?
-    `).bind(candidateId).all();
-
-    const checklists = {};
-    if (checklistResults && checklistResults.results) {
-      checklistResults.results.forEach(row => {
-        if (!checklists[row.exam_stream]) checklists[row.exam_stream] = {};
-        checklists[row.exam_stream][row.topic_id] = !!row.is_completed;
-      });
-    }
+    // 1. Fetch Checklists (nested canonical shape: {exam: {stage: {topic: bool}}})
+    const checklists = await fetchChecklistTree(env, candidateId);
 
     // 2. Fetch Document Locker
     const lockerRow = await env.DB.prepare(`
@@ -130,7 +123,7 @@ export async function onRequestPost({ request, env }) {
       return jsonResponse({ success: false, error: 'Invalid JSON request payload' }, 400);
     }
 
-    const { checklists, locker, notes, mockScores } = payload;
+    const { locker, notes, mockScores } = payload;
     const candidateId = session.userId;
 
     if (!env || !env.DB) {
@@ -143,39 +136,13 @@ export async function onRequestPost({ request, env }) {
 
     const batchStatements = [];
 
-    // 1. Batch Upsert Checklists
-    if (checklists && typeof checklists === 'object') {
-      Object.entries(checklists).forEach(([examStream, topics]) => {
-        if (typeof topics === 'object') {
-          // Check if topics contains stage objects or flat topic booleans
-          Object.entries(topics).forEach(([stageOrTopic, val]) => {
-            if (typeof val === 'object' && val !== null) {
-              // Nested stage format: { stageId: { topicId: true } }
-              Object.entries(val).forEach(([tId, isDone]) => {
-                batchStatements.push(
-                  env.DB.prepare(`
-                    INSERT INTO candidate_checklists (candidate_id, exam_stream, topic_id, is_completed, updated_at)
-                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-                    ON CONFLICT(candidate_id, exam_stream, topic_id) DO UPDATE SET
-                      is_completed = excluded.is_completed,
-                      updated_at = CURRENT_TIMESTAMP
-                  `).bind(candidateId, examStream, tId, isDone ? 1 : 0)
-                );
-              });
-            } else {
-              // Flat topic format: { topicId: true }
-              batchStatements.push(
-                env.DB.prepare(`
-                  INSERT INTO candidate_checklists (candidate_id, exam_stream, topic_id, is_completed, updated_at)
-                  VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-                  ON CONFLICT(candidate_id, exam_stream, topic_id) DO UPDATE SET
-                    is_completed = excluded.is_completed,
-                    updated_at = CURRENT_TIMESTAMP
-                `).bind(candidateId, examStream, stageOrTopic, val ? 1 : 0)
-              );
-            }
-          });
-        }
+    // 1. Batch Upsert Checklists (accepts nested {exam:{stage:{topic}}} or
+    // legacy flat {exam:{topic}} payloads — see _state-keys.js)
+    const checklistTuples = flattenChecklistPayload(payload);
+    if (checklistTuples.length > 0) {
+      const nowIso = new Date().toISOString().replace('T', ' ').split('.')[0];
+      checklistTuples.forEach(tuple => {
+        batchStatements.push(upsertStatement(env, candidateId, tuple, nowIso));
       });
     }
 

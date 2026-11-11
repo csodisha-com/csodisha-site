@@ -216,13 +216,11 @@
           try {
             const rawSession = localStorage.getItem(SESSION_KEY);
             if (!rawSession) return;
-            const session = JSON.parse(rawSession);
-            if (!session || !session.id) return;
 
             await fetch('/api/candidate/checklist', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ checklists: obj, userId: session.id })
+              body: JSON.stringify({ checklists: obj })
             });
           } catch (err) {
             console.warn('Checklists cloud sync notice:', err.message);
@@ -238,10 +236,8 @@
     try {
       const rawSession = localStorage.getItem(SESSION_KEY);
       if (!rawSession) return;
-      const session = JSON.parse(rawSession);
-      if (!session || !session.id) return;
 
-      const res = await fetch(`/api/candidate/checklist?userId=${encodeURIComponent(session.id)}`);
+      const res = await fetch('/api/candidate/checklist');
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.success && data.checklists && typeof data.checklists === 'object') {
@@ -250,9 +246,21 @@
 
         for (const [examKey, topics] of Object.entries(data.checklists)) {
           if (!local[examKey]) local[examKey] = {};
-          for (const [topicId, isCompleted] of Object.entries(topics)) {
-            if (local[examKey][topicId] === undefined) {
-              local[examKey][topicId] = isCompleted;
+          for (const [stageOrTopic, val] of Object.entries(topics)) {
+            if (val !== null && typeof val === 'object') {
+              // Staged entry: { stageId: { topicId: bool } }
+              if (!local[examKey][stageOrTopic] || typeof local[examKey][stageOrTopic] !== 'object') {
+                local[examKey][stageOrTopic] = {};
+              }
+              for (const [topicId, isCompleted] of Object.entries(val)) {
+                if (local[examKey][stageOrTopic][topicId] === undefined) {
+                  local[examKey][stageOrTopic][topicId] = isCompleted;
+                  changed = true;
+                }
+              }
+            } else if (local[examKey][stageOrTopic] === undefined) {
+              // Legacy flat entry: { topicId: bool }
+              local[examKey][stageOrTopic] = val;
               changed = true;
             }
           }

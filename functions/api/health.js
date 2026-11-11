@@ -39,7 +39,7 @@ export async function onRequestGet({ env }) {
     const tablesFound = result && result.results ? result.results.map(r => r.name) : [];
     const requiredTables = [
       'candidates',
-      'candidate_checklists',
+      'candidate_checklist',
       'candidate_lockers',
       'candidate_notes',
       'candidate_mock_scores'

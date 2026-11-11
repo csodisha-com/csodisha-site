@@ -3,9 +3,23 @@
  * Routes:
  * GET  /api/candidate/checklist
  * POST /api/candidate/checklist
+ *
+ * Progress persists in `candidate_checklist` keyed by (candidate_id,
+ * exam_code, milestone_key). Identity is resolved exclusively from the
+ * server-side session (HttpOnly cookie or Bearer token) — client-supplied
+ * user IDs are never trusted.
  */
 
-import { CORS_HEADERS, jsonResponse, getSessionFromRequest } from '../auth/_utils.js';
+import {
+  CORS_HEADERS,
+  jsonResponse,
+  getSessionFromRequest
+} from '../auth/_utils.js';
+import {
+  flattenChecklistPayload,
+  upsertStatement,
+  fetchChecklistTree
+} from './_state-keys.js';
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -14,9 +28,8 @@ export async function onRequestOptions() {
   });
 }
 
-// Identity is resolved exclusively from the server-side session (HttpOnly
-// cookie or Bearer token). Client-supplied userId/candidateId values are
-// never trusted.
+// Identity is resolved exclusively from the server-side session. Client
+// userId/candidateId values are ignored.
 async function requireSession(request, env) {
   return getSessionFromRequest(request, env);
 }
@@ -27,30 +40,13 @@ export async function onRequestGet({ request, env }) {
     if (!session) {
       return jsonResponse({ success: false, error: 'Unauthorized: Missing or invalid candidate session' }, 401);
     }
-    const userId = session.userId;
-
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
 
-    const { results } = await env.DB.prepare(`
-      SELECT exam_stream, topic_id, is_completed, updated_at
-      FROM candidate_checklists
-      WHERE candidate_id = ?
-    `).bind(userId).all();
-
-    const checklists = {};
-    if (results) {
-      results.forEach(row => {
-        if (!checklists[row.exam_stream]) checklists[row.exam_stream] = {};
-        checklists[row.exam_stream][row.topic_id] = !!row.is_completed;
-      });
-    }
-
     return jsonResponse({
       success: true,
-      userId,
-      checklists
+      checklists: await fetchChecklistTree(env, session.userId)
     }, 200);
 
   } catch (err) {
@@ -65,8 +61,6 @@ export async function onRequestPost({ request, env }) {
     if (!session) {
       return jsonResponse({ success: false, error: 'Unauthorized: Missing or invalid candidate session' }, 401);
     }
-    const userId = session.userId;
-
     if (!env || !env.DB) {
       return jsonResponse({ success: false, error: 'Database service unavailable' }, 500);
     }
@@ -78,84 +72,22 @@ export async function onRequestPost({ request, env }) {
       return jsonResponse({ success: false, error: 'Invalid JSON request payload' }, 400);
     }
 
-    const { examStream, stream, topicId, completed, isCompleted, updates, checklists } = body;
-    const nowIso = new Date().toISOString();
+    const tuples = flattenChecklistPayload(body);
+    if (tuples.length > 0) {
+      const nowIso = new Date().toISOString().replace('T', ' ').split('.')[0];
+      const stmts = tuples.map(t => upsertStatement(env, session.userId, t, nowIso));
 
-    // 1. Full batch dictionary: { opsc: { topic1: true }, ossc: { ... } }
-    if (checklists && typeof checklists === 'object') {
-      const stmts = [];
-      for (const [sKey, topics] of Object.entries(checklists)) {
-        if (topics && typeof topics === 'object') {
-          for (const [tId, val] of Object.entries(topics)) {
-            stmts.push(
-              env.DB.prepare(`
-                INSERT INTO candidate_checklists (candidate_id, exam_stream, topic_id, is_completed, updated_at)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(candidate_id, exam_stream, topic_id) DO UPDATE SET
-                  is_completed = excluded.is_completed,
-                  updated_at = excluded.updated_at
-              `).bind(userId, sKey, tId, val ? 1 : 0, nowIso)
-            );
-          }
-        }
+      // D1 batch limit guard
+      const CHUNK_SIZE = 50;
+      for (let i = 0; i < stmts.length; i += CHUNK_SIZE) {
+        await env.DB.batch(stmts.slice(i, i + CHUNK_SIZE));
       }
-
-      if (stmts.length > 0) {
-        // Chunk statements if needed (D1 allows up to 100 in batch)
-        const CHUNK_SIZE = 50;
-        for (let i = 0; i < stmts.length; i += CHUNK_SIZE) {
-          await env.DB.batch(stmts.slice(i, i + CHUNK_SIZE));
-        }
-      }
-    } else if (Array.isArray(updates)) {
-      // 2. Array of updates: [{ examStream, topicId, completed }]
-      const stmts = updates.map(u => {
-        const str = u.examStream || u.stream || 'opsc';
-        const tId = u.topicId || u.id;
-        const comp = (u.completed !== undefined ? u.completed : u.isCompleted) ? 1 : 0;
-        return env.DB.prepare(`
-          INSERT INTO candidate_checklists (candidate_id, exam_stream, topic_id, is_completed, updated_at)
-          VALUES (?, ?, ?, ?, ?)
-          ON CONFLICT(candidate_id, exam_stream, topic_id) DO UPDATE SET
-            is_completed = excluded.is_completed,
-            updated_at = excluded.updated_at
-        `).bind(userId, str, tId, comp, nowIso);
-      });
-
-      if (stmts.length > 0) {
-        await env.DB.batch(stmts);
-      }
-    } else if (topicId) {
-      // 3. Single topic toggle
-      const str = examStream || stream || 'opsc';
-      const comp = (completed !== undefined ? completed : isCompleted) ? 1 : 0;
-      await env.DB.prepare(`
-        INSERT INTO candidate_checklists (candidate_id, exam_stream, topic_id, is_completed, updated_at)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(candidate_id, exam_stream, topic_id) DO UPDATE SET
-          is_completed = excluded.is_completed,
-          updated_at = excluded.updated_at
-      `).bind(userId, str, topicId, comp, nowIso).run();
     }
 
     // Return reconciled state
-    const { results } = await env.DB.prepare(`
-      SELECT exam_stream, topic_id, is_completed, updated_at
-      FROM candidate_checklists
-      WHERE candidate_id = ?
-    `).bind(userId).all();
-
-    const reconciled = {};
-    if (results) {
-      results.forEach(row => {
-        if (!reconciled[row.exam_stream]) reconciled[row.exam_stream] = {};
-        reconciled[row.exam_stream][row.topic_id] = !!row.is_completed;
-      });
-    }
-
     return jsonResponse({
       success: true,
-      checklists: reconciled
+      checklists: await fetchChecklistTree(env, session.userId)
     }, 200);
 
   } catch (err) {

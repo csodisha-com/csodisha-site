@@ -47,28 +47,45 @@ CREATE TABLE IF NOT EXISTS sessions (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 2. Syllabus & Milestone Checklists
-CREATE TABLE IF NOT EXISTS candidate_checklists (
+-- 2. Syllabus & Preparation Checklist Progress
+-- Key conventions:
+--   exam_code     = uppercase exam key, e.g. 'OPSC', 'OSSC', 'OSSSC', 'TEACHING', 'POLICE'
+--   milestone_key = '<stageId>::<topicId>' when the syllabus stage is known
+--                   (e.g. 'opsc-prelims::opsc-p-gs1-hist'), otherwise the raw
+--                   milestone/topic key for legacy or flat entries.
+-- is_completed: 0 = pending, 1 = completed (rows persist for progress history).
+CREATE TABLE IF NOT EXISTS candidate_checklist (
+  id TEXT PRIMARY KEY,
   candidate_id TEXT NOT NULL,
-  exam_stream TEXT NOT NULL,
-  topic_id TEXT NOT NULL,
-  is_completed INTEGER DEFAULT 0,
+  exam_code TEXT NOT NULL,          -- e.g., 'OPSC_OCS', 'OSSC_CGL'
+  milestone_key TEXT NOT NULL,      -- e.g., 'prelims_gs1_odisha_history'
+  is_completed INTEGER DEFAULT 0,  -- 0 = pending, 1 = completed
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (candidate_id, exam_stream, topic_id),
   FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_checklist_candidate_milestone
+ON candidate_checklist(candidate_id, exam_code, milestone_key);
+CREATE INDEX IF NOT EXISTS idx_checklist_candidate_id
+ON candidate_checklist(candidate_id);
 
--- 2b. Candidate Bookmarks (State Sync)
+-- 2b. Candidate Bookmarks for Recruitment Posts
+-- category is a strict enum; deadline_date (ISO 'YYYY-MM-DD') powers the
+-- dashboard countdown widgets. post_id is unique per candidate.
 CREATE TABLE IF NOT EXISTS candidate_bookmarks (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  article_id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  url TEXT NOT NULL,
-  category TEXT,
-  created_at INTEGER NOT NULL,
-  UNIQUE(user_id, article_id)
+  candidate_id TEXT NOT NULL,
+  post_id TEXT NOT NULL,
+  category TEXT NOT NULL CHECK(category IN ('OPSC', 'OSSC', 'OSSSC', 'TEACHING', 'OTHER')),
+  post_title TEXT NOT NULL,
+  post_url TEXT,
+  deadline_date TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_candidate_post
+ON candidate_bookmarks(candidate_id, post_id);
+CREATE INDEX IF NOT EXISTS idx_bookmarks_candidate_id
+ON candidate_bookmarks(candidate_id);
 
 -- 3. Document Locker Statuses
 CREATE TABLE IF NOT EXISTS candidate_lockers (
@@ -97,6 +114,23 @@ CREATE TABLE IF NOT EXISTS candidate_mock_scores (
   tested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
+
+-- MIGRATION (v2 -> v3): legacy checklist/bookmark tables rebuilt to the new
+-- spec shapes. The legacy `candidate_checklists` (exam_stream/topic_id PK) and
+-- the old `candidate_bookmarks` (user_id/article_id/title/url) are renamed,
+-- recreated per spec above, and their rows copied across. Run per database:
+--   ALTER TABLE candidate_bookmarks RENAME TO candidate_bookmarks_legacy;
+--   ALTER TABLE candidate_checklists RENAME TO candidate_checklists_legacy;
+--   wrangler d1 execute cso-database --remote --file schema.sql
+--   INSERT INTO candidate_bookmarks (id, candidate_id, post_id, category, post_title, post_url, deadline_date, created_at)
+--     SELECT id, user_id, article_id, 'OTHER', title, url, NULL, datetime(created_at, 'unixepoch')
+--     FROM candidate_bookmarks_legacy;
+--   INSERT INTO candidate_checklist (id, candidate_id, exam_code, milestone_key, is_completed, updated_at)
+--     SELECT 'chk_' || candidate_id || '_' || UPPER(exam_stream) || '_' || topic_id,
+--            candidate_id, UPPER(exam_stream), topic_id, is_completed, updated_at
+--     FROM candidate_checklists_legacy;
+--   DROP TABLE candidate_bookmarks_legacy;
+--   DROP TABLE candidate_checklists_legacy;
 
 -- 1c. Pending Email Verifications & Dual-Channel Auth Lifecycle
 -- One row per pending candidate: the 6-digit OTP (channel 1) and the magic-link
@@ -127,9 +161,7 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_email ON email_verifications(email);
 CREATE INDEX IF NOT EXISTS idx_verifications_token ON email_verifications(token);
-CREATE INDEX IF NOT EXISTS idx_candidate_checklists_cid ON candidate_checklists(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_candidate_mock_scores_cid ON candidate_mock_scores(candidate_id);
-CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON candidate_bookmarks(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 
 -- Strict 1-to-1 phone uniqueness: at most one verified candidate per mobile

@@ -55,17 +55,21 @@
         const session = JSON.parse(rawSession);
         if (!session || !session.id) return;
 
-        // Flatten bookmarks array for cloud API
+        // Flatten bookmarks array for cloud API. post_id is prefixed with the
+        // shelf type ('jobs:'/'schemes:'/'study:') so shelf placement survives
+        // the server's strict category enum round-trip; the server treats
+        // post_id as an opaque key.
         const all = bookmarks || getAllBookmarks();
         const flatList = [];
         ['jobs', 'schemes', 'study'].forEach(cat => {
           if (Array.isArray(all[cat])) {
             all[cat].forEach(item => {
               flatList.push({
-                articleId: item.id,
-                title: item.title,
-                url: item.url || item.pdfUrl || '',
-                category: cat
+                postId: `${cat}:${item.id}`,
+                postTitle: item.title,
+                postUrl: item.url || item.pdfUrl || '',
+                category: item.badge || cat,
+                deadlineDate: item.deadline || item.deadlineDate || null
               });
             });
           }
@@ -74,7 +78,7 @@
         await fetch('/api/candidate/bookmarks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bookmarks: flatList, userId: session.id })
+          body: JSON.stringify({ bookmarks: flatList })
         });
       } catch (err) {
         console.warn('Bookmarks cloud sync notice:', err.message);
@@ -86,12 +90,7 @@
   async function reconcileBookmarksFromCloud() {
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     try {
-      const rawSession = localStorage.getItem('cso_candidate_session_v1');
-      if (!rawSession) return;
-      const session = JSON.parse(rawSession);
-      if (!session || !session.id) return;
-
-      const res = await fetch(`/api/candidate/bookmarks?userId=${encodeURIComponent(session.id)}`);
+      const res = await fetch('/api/candidate/bookmarks');
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.success && Array.isArray(data.bookmarks) && data.bookmarks.length > 0) {
@@ -99,16 +98,36 @@
         let changed = false;
 
         data.bookmarks.forEach(bm => {
-          const cat = bm.category || 'study';
-          if (!current[cat]) current[cat] = [];
-          const exists = current[cat].some(x => String(x.id) === String(bm.article_id));
+          // New spec shape (postId/postTitle/postUrl/deadlineDate) with legacy
+          // aliases (article_id/title/url) still honoured.
+          const rawPostId = bm.postId || bm.post_id || bm.article_id || '';
+          const title = bm.postTitle || bm.post_title || bm.title || 'Saved Item';
+          const url = bm.postUrl || bm.post_url || bm.url || '';
+          const deadline = bm.deadlineDate || bm.deadline_date || null;
+
+          // Decode the shelf type from the post_id prefix; recruitment-post
+          // categories default to the jobs shelf, everything else to study.
+          let shelf = null;
+          const prefixMatch = /^(jobs|schemes|study):/.exec(String(rawPostId));
+          if (prefixMatch) {
+            shelf = prefixMatch[1];
+          } else if (['OPSC', 'OSSC', 'OSSSC', 'TEACHING'].includes(bm.category)) {
+            shelf = 'jobs';
+          } else {
+            shelf = 'study';
+          }
+          const itemId = prefixMatch ? String(rawPostId).slice(prefixMatch[0].length) : String(rawPostId);
+
+          if (!current[shelf]) current[shelf] = [];
+          const exists = current[shelf].some(x => String(x.id) === String(itemId));
           if (!exists) {
-            current[cat].unshift({
-              id: bm.article_id,
-              title: bm.title,
-              url: bm.url,
-              badge: cat.toUpperCase(),
-              savedAt: new Date(bm.created_at * 1000).toISOString()
+            current[shelf].unshift({
+              id: itemId,
+              title: title,
+              url: url,
+              deadline: deadline || undefined,
+              badge: shelf.toUpperCase(),
+              savedAt: bm.createdAt ? new Date(bm.createdAt).toISOString() : new Date().toISOString()
             });
             changed = true;
           }
@@ -155,6 +174,7 @@
         badge: item.badge || item.category || type.toUpperCase(),
         url: item.url || '',
         pdfUrl: item.pdfUrl || item.link || '',
+        deadline: item.deadline || item.deadlineDate || undefined,
         savedAt: new Date().toISOString()
       });
       added = true;
@@ -207,8 +227,9 @@
       const badge = btn.dataset.bookmarkBadge || btn.dataset.bookmarkCat || '';
       const url = btn.dataset.bookmarkUrl || window.location.href;
       const pdfUrl = btn.dataset.bookmarkPdf || '';
+      const deadline = btn.dataset.bookmarkDeadline || '';
 
-      const isNowBookmarked = toggleBookmark(type, { id, title, badge, url, pdfUrl });
+      const isNowBookmarked = toggleBookmark(type, { id, title, badge, url, pdfUrl, deadline });
 
       // Toast feedback if available
       if (window.CSOSuperStore && typeof window.CSOSuperStore.showToast === 'function') {
