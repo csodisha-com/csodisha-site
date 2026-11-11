@@ -182,6 +182,24 @@
 
     saveAllBookmarks(all);
     updateBookmarkButtonsUI();
+
+    // Offline-first dispatch: mirror into IndexedDB and dispatch/queue the
+    // single mutation through the sync engine (falls back silently when the
+    // engine isn't present, e.g. on pages without the dashboard scripts).
+    if (window.CSOSync && typeof window.CSOSync.saveBookmarkAction === 'function') {
+      const prefixedId = `${type}:${String(item.id)}`;
+      if (added) {
+        window.CSOSync.saveBookmarkAction('save', {
+          postId: prefixedId,
+          postTitle: item.title,
+          postUrl: item.url || item.pdfUrl || '',
+          category: item.badge || type.toUpperCase(),
+          deadlineDate: item.deadline || item.deadlineDate || null
+        });
+      } else {
+        window.CSOSync.saveBookmarkAction('remove', { postId: prefixedId });
+      }
+    }
     return added;
   }
 

@@ -21,6 +21,39 @@
   const NOTES_KEY = 'cso_candidate_notes_v1';
   const SCORES_KEY = 'cso_candidate_mock_scores_v1';
   const LOCKER_KEY = 'cso_candidate_locker_v1';
+  const BOOKMARKS_KEY = 'cso_candidate_bookmarks_v1';
+  const AUTH_TOKEN_KEY = 'cso_auth_token';
+
+  // All local candidate state keys cleared on secure sign-out.
+  const CLEARED_KEYS = [
+    SESSION_KEY, CHECKLIST_KEY, VAULT_KEY, NOTES_KEY, SCORES_KEY,
+    LOCKER_KEY, BOOKMARKS_KEY, AUTH_TOKEN_KEY
+  ];
+
+  // Default state-exam trackers for the countdown grid (Official vs Tentative).
+  const DEFAULT_TRACKERS = [
+    {
+      id: 'opsc-ocs-2026',
+      exam: 'OPSC Odisha Civil Services (OCS)',
+      badgeType: 'official',
+      target: '2026-11-29',
+      url: '/jobs-careers/'
+    },
+    {
+      id: 'ossc-cgl-2026',
+      exam: 'OSSC Combined Graduate Level (CGL)',
+      badgeType: 'official',
+      target: '2026-12-14',
+      url: '/jobs-careers/'
+    },
+    {
+      id: 'osssc-jc-peo-2027',
+      exam: 'OSSSC Junior Clerk / Panchayat Executive Officers',
+      badgeType: 'tentative',
+      target: '2027-01-18',
+      url: '/jobs-careers/'
+    }
+  ];
 
   const ODISHA_DISTRICTS = [
     "Angul", "Balangir", "Balasore (Baleswar)", "Bargarh", "Bhadrak", "Boudh",
@@ -353,18 +386,9 @@
     if (tabSettingsDistrict) tabSettingsDistrict.textContent = candidateDistrict;
   }
 
-  // Handle Logout
+  // Handle Logout (topbar action → secure server session teardown)
   function handleCandidateLogout() {
-    try {
-      localStorage.removeItem(SESSION_KEY);
-    } catch(e) {}
-
-    showToast('Logged out successfully.');
-
-    // Redirect to home or trigger clean state
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 600);
+    performSecureSignOut();
   }
 
   // Calculate Progress Stats for an Exam
@@ -483,9 +507,7 @@
 
         updateExamCards();
         renderChecklistTracker();
-        if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
-          window.CSOSync.pushLocalStateToCloud();
-        }
+        syncChecklistChange(exam, stage, topic, isChecked);
       });
     });
 
@@ -596,9 +618,7 @@
         updateExamCards();
         renderUpcomingLessons();
         renderChecklistTracker();
-        if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
-          window.CSOSync.pushLocalStateToCloud();
-        }
+        syncChecklistChange(exam, stage, topic, isChecked);
       });
     });
   }
@@ -1582,10 +1602,314 @@
     renderQuestion();
   }
 
+  // ==================================================================
+  // Auth Handshake & Candidate Profile Card (fed by /api/auth/me)
+  // ==================================================================
+
+  // Map a candidate's target stream keys onto display labels.
+  function streamBadgeLabel(streams) {
+    const list = Array.isArray(streams) ? streams
+      : (typeof streams === 'string' ? streams.split(',') : []);
+    const key = String(list[0] || '').trim().toLowerCase();
+    const map = {
+      opsc: 'OPSC Civil Services',
+      ossc: 'Combined Graduate Level',
+      osssc: 'OSSSC Recruitment',
+      teaching: 'Teaching (B.Ed / CT)',
+      police: 'Police Recruitment'
+    };
+    return map[key] || (list[0] ? String(list[0]).toUpperCase() : 'General Aspirant');
+  }
+
+  // Render the profile card from a /api/auth/me user payload (or a local
+  // session fallback while offline).
+  function renderProfileCard(user) {
+    const skeleton = document.getElementById('cso-profile-skeleton');
+    const details = document.getElementById('cso-profile-details');
+    if (!details) return;
+
+    const fullName = user.fullName || user.name || 'Candidate';
+    const candidateId = user.id || user.candidateId || '';
+    const streams = user.targetStreams || user.targetExams || user.streams;
+
+    const nameEl = document.getElementById('cso-profile-name');
+    const idEl = document.getElementById('cso-profile-id');
+    const badgeEl = document.getElementById('cso-profile-stream-badge');
+    const avatarEl = document.getElementById('cso-profile-avatar');
+
+    if (nameEl) nameEl.textContent = fullName;
+    if (idEl) idEl.textContent = candidateId || '—';
+    if (badgeEl) badgeEl.textContent = streamBadgeLabel(streams);
+    if (avatarEl) avatarEl.textContent = (fullName.charAt(0) || '?').toUpperCase();
+
+    if (skeleton) skeleton.style.display = 'none';
+    details.style.display = 'flex';
+  }
+
+  // End the session server-side, clear every local cache and redirect.
+  async function performSecureSignOut() {
+    showToast('Signing out securely…', 'success');
+
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      // Offline: local teardown still proceeds.
+      console.warn('Sign-out logout call skipped:', err.message);
+    }
+
+    CLEARED_KEYS.forEach(key => {
+      try { localStorage.removeItem(key); } catch (e) {}
+    });
+
+    // Best-effort IndexedDB wipe of the offline mirrors/queue.
+    if (window.CSOIdb) {
+      try {
+        const db = await window.CSOIdb.getDb();
+        if (db && db.close) {
+          db.close();
+          window.CSOIdb.dbPromise = null;
+        }
+        await indexedDB.deleteDatabase('CSO_LOCAL_DB');
+      } catch (err) {
+        console.warn('IDB cleanup skipped:', err.message);
+      }
+    }
+
+    setTimeout(() => {
+      window.location.href = '/login.html';
+    }, 500);
+  }
+
+  /**
+   * Dashboard entry handshake:
+   *  1. Resolve the session via /api/auth/me (skeleton shown meanwhile).
+   *  2. Verified → render the profile card; expired/invalid → redirect to
+   *     /login.html?redirect=/student-dashboard/.
+   *  3. Offline → fall back to the cached local session instead of
+   *     bouncing the candidate off the app.
+   */
+  async function initAuthHandshake() {
+    const readLocalSession = () => {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.user) {
+          // Refresh the local session snapshot for the offline fallback path.
+          const local = readLocalSession();
+          try {
+            localStorage.setItem(SESSION_KEY, JSON.stringify({
+              ...(local || {}),
+              id: data.user.id,
+              fullName: data.user.name || data.user.fullName,
+              name: data.user.name || data.user.fullName,
+              email: data.user.email,
+              role: data.user.role,
+              targetStreams: (local && local.targetStreams) || [],
+              verifiedAt: new Date().toISOString()
+            }));
+          } catch (e) {}
+          renderProfileCard({ ...data.user, targetStreams: (readLocalSession() || {}).targetStreams });
+          return;
+        }
+      }
+
+      // 401 / invalid → redirect, unless we're offline with a cached session.
+      if (typeof navigator !== 'undefined' && !navigator.onLine && readLocalSession()) {
+        renderProfileCard(readLocalSession());
+        return;
+      }
+      window.location.href = '/login.html?redirect=/student-dashboard/';
+      return;
+    } catch (err) {
+      // Network failure (offline): cached session keeps the dashboard usable.
+      const local = readLocalSession();
+      if (local && local.id) {
+        renderProfileCard(local);
+        return;
+      }
+      window.location.href = '/login.html?redirect=/student-dashboard/';
+      return;
+    }
+  }
+
+  // ==================================================================
+  // Dual-Source Exam Countdown Grid
+  // ==================================================================
+
+  // Collect countdown cards: 3 default trackers + bookmark deadlines that
+  // are still open (deadline_date >= today).
+  function buildCountdownCards() {
+    const todayIso = new Date().toISOString().slice(0, 10);
+
+    const cards = DEFAULT_TRACKERS.map(t => ({
+      kind: 'tracker',
+      id: t.id,
+      exam: t.exam,
+      badge: t.badgeType,
+      target: t.target,
+      url: t.url
+    }));
+
+    try {
+      const raw = localStorage.getItem(BOOKMARKS_KEY);
+      const shelves = raw ? JSON.parse(raw) : null;
+      if (shelves) {
+        ['jobs', 'schemes', 'study'].forEach(shelf => {
+          (Array.isArray(shelves[shelf]) ? shelves[shelf] : []).forEach(item => {
+            const deadline = item.deadline || item.deadlineDate;
+            if (!deadline || String(deadline) < todayIso) return; // past deadlines excluded
+            cards.push({
+              kind: 'bookmark',
+              id: `${shelf}:${item.id}`,
+              shelf,
+              exam: item.title || 'Bookmarked Deadline',
+              badge: 'bookmark',
+              target: String(deadline).slice(0, 10),
+              url: item.url || ''
+            });
+          });
+        });
+      }
+    } catch (e) {}
+
+    return cards;
+  }
+
+  function countdownCardHtml(card) {
+    const badgeClass = card.badge === 'official'
+      ? 'cso-badge-official'
+      : (card.badge === 'tentative' ? 'cso-badge-tentative' : 'cso-badge-bookmark');
+    const badgeText = card.badge === 'official'
+      ? 'OFFICIAL'
+      : (card.badge === 'tentative' ? 'TENTATIVE' : 'BOOKMARK');
+
+    const actions = card.kind === 'bookmark'
+      ? `<div style="display:flex;align-items:center;gap:6px;">
+           <button type="button" class="cso-countdown-remove" data-bm-id="${card.id}" title="Remove this bookmark">✕ Remove</button>
+         </div>`
+      : '';
+
+    return `
+      <div class="cso-countdown-card" data-cd-id="${card.id}" data-target="${card.target}">
+        <div class="cso-countdown-card-top">
+          <h3 class="cso-countdown-exam">${card.exam}</h3>
+          <span class="cso-countdown-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="cso-countdown-timer">
+          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="days">--</span><span class="cso-cd-label">Days</span></div>
+          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="hours">--</span><span class="cso-cd-label">Hrs</span></div>
+          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="minutes">--</span><span class="cso-cd-label">Min</span></div>
+          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="seconds">--</span><span class="cso-cd-label">Sec</span></div>
+        </div>
+        <div class="cso-countdown-footer">
+          <span class="cso-countdown-date" data-slot="date"></span>
+          <span class="cso-countdown-status" data-slot="status"></span>
+        </div>
+        ${card.kind === 'bookmark' && card.url
+          ? `<a class="cso-countdown-link" href="${card.url}" target="_blank" rel="noopener">View post →</a>`
+          : ''}
+        ${actions}
+      </div>
+    `;
+  }
+
+  function tickCountdownGrid(now) {
+    const grid = document.getElementById('cso-countdown-grid');
+    if (!grid || !window.CSOCountdown) return;
+
+    grid.querySelectorAll('.cso-countdown-card[data-target]').forEach(cardEl => {
+      const cd = window.CSOCountdown.computeCountdown(cardEl.dataset.target, now);
+      if (!cd) return;
+
+      // Urgency class transitions live too (crosses the 30/7-day borders).
+      cardEl.classList.remove('cd-normal', 'cd-warning', 'cd-critical', 'cd-concluded');
+      cardEl.classList.add(cd.urgencyClass);
+
+      const statusEl = cardEl.querySelector('[data-slot="status"]');
+      if (statusEl) statusEl.textContent = cd.label;
+
+      const valueEls = {
+        days: cardEl.querySelector('[data-unit="days"]'),
+        hours: cardEl.querySelector('[data-unit="hours"]'),
+        minutes: cardEl.querySelector('[data-unit="minutes"]'),
+        seconds: cardEl.querySelector('[data-unit="seconds"]')
+      };
+      if (valueEls.days) valueEls.days.textContent = cd.days;
+      if (valueEls.hours) valueEls.hours.textContent = String(cd.hours).padStart(2, '0');
+      if (valueEls.minutes) valueEls.minutes.textContent = String(cd.minutes).padStart(2, '0');
+      if (valueEls.seconds) valueEls.seconds.textContent = String(cd.seconds).padStart(2, '0');
+    });
+  }
+
+  function renderCountdownGrid() {
+    const grid = document.getElementById('cso-countdown-grid');
+    if (!grid || !window.CSOCountdown) return;
+
+    const now = new Date();
+    const cards = window.CSOCountdown.sortCountdowns(buildCountdownCards(), now);
+    grid.innerHTML = cards.length > 0
+      ? cards.map(countdownCardHtml).join('')
+      : '<p style="font-size:12px;color:#64748b;">No active deadlines tracked.</p>';
+
+    grid.querySelectorAll('[data-slot="date"]').forEach(el => {
+      const cardEl = el.closest('.cso-countdown-card');
+      if (cardEl) el.textContent = window.CSOCountdown.formatTargetDate(cardEl.dataset.target);
+    });
+
+    tickCountdownGrid(now);
+
+    // Bookmark quick-remove → optimistic offline-first sync engine.
+    grid.querySelectorAll('.cso-countdown-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const prefixedId = btn.dataset.bmId || '';
+        const sep = prefixedId.indexOf(':');
+        const shelf = sep > -1 ? prefixedId.slice(0, sep) : 'jobs';
+        const itemId = sep > -1 ? prefixedId.slice(sep + 1) : prefixedId;
+
+        if (window.CSOBookmarks) {
+          window.CSOBookmarks.removeBookmark(shelf, itemId);
+        }
+        if (window.CSOSync && typeof window.CSOSync.saveBookmarkAction === 'function') {
+          window.CSOSync.saveBookmarkAction('remove', { postId: prefixedId });
+        }
+        renderCountdownGrid();
+        showToast('Bookmark removed — deadline tracker cleared.');
+      });
+    });
+  }
+
+  function initCountdownGrid() {
+    renderCountdownGrid();
+    // 1s live tick; full re-render only when the card set can have changed
+    // (bookmark events), value updates every tick.
+    setInterval(() => tickCountdownGrid(new Date()), 1000);
+  }
+
+  // Optimistic checklist toggle: mirrors to IndexedDB + dispatches/queues.
+  function syncChecklistChange(exam, stage, topic, isChecked) {
+    if (!window.CSOSync || typeof window.CSOSync.recordChecklistChange !== 'function') return;
+    const milestoneKey = stage ? `${stage}::${topic}` : topic;
+    window.CSOSync.recordChecklistChange(exam, milestoneKey, isChecked);
+  }
+
   // Initialization
   function init() {
     const session = getSession();
     renderUserProfile(session);
+    initAuthHandshake();
     initSidebar();
     initUniversalSearch();
     updateExamCards();
@@ -1595,6 +1919,7 @@
     renderJobsShelf();
     renderStudyShelf();
     renderSchemes(session);
+    initCountdownGrid();
     initScratchpad();
     initMockScoreLogger();
     initDocumentLocker();
@@ -1607,10 +1932,14 @@
     window.addEventListener('cso:bookmarks-updated', () => {
       renderJobsShelf();
       renderStudyShelf();
+      renderCountdownGrid();
     });
 
     // Reconcile checklist from cloud
     reconcileChecklistsFromCloud();
+
+    // Wire the topbar profile sign-out (secure session teardown).
+    document.getElementById('cso-profile-signout-btn')?.addEventListener('click', performSecureSignOut);
   }
 
   if (document.readyState === 'loading') {

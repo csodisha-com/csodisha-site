@@ -1052,3 +1052,232 @@ body.cso-student-dashboard-page {
     padding: 0 16px;
   }
 }
+
+/* ============================================================
+   CSO — Candidate Profile Card (fed by /api/auth/me)
+   ============================================================ */
+.cso-profile-card {
+  background: linear-gradient(135deg, rgba(13,148,136,0.12), rgba(9,56,36,0.35));
+  border: 1px solid rgba(13,148,136,0.35);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  min-height: 92px;
+}
+.cso-profile-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+.cso-profile-avatar {
+  width: 54px; height: 54px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+  color: #fff;
+  font-size: 22px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 16px rgba(13,148,136,0.35);
+}
+.cso-profile-meta { flex: 1; min-width: 0; }
+.cso-profile-name-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.cso-profile-name {
+  font-size: 18px; font-weight: 800; color: #f8fafc;
+  margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cso-profile-stream-badge {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px;
+  color: #7dd3fc; background: rgba(56,189,248,0.12);
+  border: 1px solid rgba(56,189,248,0.35);
+  padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+}
+.cso-profile-session-badge {
+  font-size: 10.5px; font-weight: 700;
+  color: #6ee7b7; background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.4);
+  padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+}
+.cso-profile-id-line {
+  margin: 6px 0 0; font-size: 12px; color: #94a3b8;
+}
+.cso-profile-id-line code {
+  color: #a5f3fc; font-size: 11.5px; background: rgba(15,23,42,0.5);
+  padding: 2px 7px; border-radius: 6px;
+}
+.cso-profile-actions { flex-shrink: 0; }
+.cso-profile-signout {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(239,68,68,0.12); color: #fca5a5;
+  border: 1px solid rgba(239,68,68,0.4);
+  padding: 9px 16px; border-radius: 10px;
+  font-size: 12.5px; font-weight: 700; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.cso-profile-signout:hover { background: rgba(239,68,68,0.28); color: #fff; }
+
+/* Skeleton loader while /api/auth/me resolves */
+.cso-profile-skeleton { display: flex; align-items: center; gap: 16px; width: 100%; }
+.cso-profile-skel-avatar {
+  width: 54px; height: 54px; border-radius: 14px; flex-shrink: 0;
+  background: linear-gradient(90deg, rgba(148,163,184,0.12) 25%, rgba(148,163,184,0.22) 50%, rgba(148,163,184,0.12) 75%);
+  background-size: 200% 100%;
+  animation: cso-skel-shimmer 1.3s infinite;
+}
+.cso-skel-line {
+  height: 12px; border-radius: 6px; margin-bottom: 10px;
+  background: linear-gradient(90deg, rgba(148,163,184,0.12) 25%, rgba(148,163,184,0.22) 50%, rgba(148,163,184,0.12) 75%);
+  background-size: 200% 100%;
+  animation: cso-skel-shimmer 1.3s infinite;
+}
+.cso-skel-lg { width: 220px; }
+.cso-skel-sm { width: 150px; margin-bottom: 0; }
+@keyframes cso-skel-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================================
+   CSO — Dual-Source Exam Countdown Grid
+   ============================================================ */
+.cso-countdown-section { margin-bottom: 26px; }
+.cso-countdown-header { margin-bottom: 14px; }
+.cso-countdown-title {
+  font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0 0 4px;
+}
+.cso-countdown-subtitle {
+  font-size: 12px; color: #94a3b8; margin: 0;
+}
+.cso-countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+.cso-countdown-card {
+  position: relative;
+  background: rgba(15,23,42,0.55);
+  border: 1px solid rgba(148,163,184,0.18);
+  border-left: 4px solid var(--cd-accent, #0d9488);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: transform 0.2s, border-color 0.3s;
+}
+.cso-countdown-card:hover { transform: translateY(-2px); }
+.cso-countdown-card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+}
+.cso-countdown-exam {
+  font-size: 13px; font-weight: 800; color: #f8fafc;
+  line-height: 1.3; margin: 0;
+}
+.cso-countdown-badge {
+  flex-shrink: 0;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.6px;
+  padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+}
+.cso-badge-official { color: #6ee7b7; background: rgba(16,185,129,0.14); border: 1px solid rgba(16,185,129,0.4); }
+.cso-badge-tentative { color: #fcd34d; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); }
+.cso-badge-bookmark { color: #7dd3fc; background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); }
+.cso-countdown-timer {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+}
+.cso-cd-unit {
+  background: rgba(2,6,23,0.6);
+  border: 1px solid rgba(148,163,184,0.12);
+  border-radius: 9px;
+  padding: 7px 2px;
+  text-align: center;
+}
+.cso-cd-value {
+  display: block;
+  font-size: 18px; font-weight: 800; color: var(--cd-accent, #0d9488);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.cso-cd-label {
+  display: block;
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.8px;
+  color: #64748b; text-transform: uppercase; margin-top: 3px;
+}
+.cso-countdown-footer {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.cso-countdown-date { font-size: 11px; color: #94a3b8; }
+.cso-countdown-status {
+  font-size: 10.5px; font-weight: 700;
+  color: var(--cd-accent, #0d9488);
+}
+.cso-countdown-link {
+  font-size: 11px; font-weight: 700; color: #38bdf8;
+  text-decoration: none;
+}
+.cso-countdown-link:hover { text-decoration: underline; }
+.cso-countdown-remove {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: #94a3b8; padding: 2px 4px;
+}
+.cso-countdown-remove:hover { color: #fca5a5; }
+
+/* Urgency accents */
+.cso-countdown-card.cd-normal { --cd-accent: #0d9488; }
+.cso-countdown-card.cd-warning { --cd-accent: #f59e0b; }
+.cso-countdown-card.cd-critical {
+  --cd-accent: #ef4444;
+  border-color: rgba(239,68,68,0.55);
+  background: rgba(127,29,29,0.18);
+  animation: cso-cd-pulse 1.6s ease-in-out infinite;
+}
+.cso-countdown-card.cd-concluded {
+  --cd-accent: #64748b;
+  opacity: 0.65;
+  border-left-color: #64748b;
+}
+.cso-countdown-card.cd-concluded .cso-countdown-exam { color: #cbd5e1; }
+@keyframes cso-cd-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(239,68,68,0.12); }
+}
+
+/* ============================================================
+   CSO — Offline Sync Status Pill
+   ============================================================ */
+.cso-sync-pill {
+  position: fixed;
+  left: 50%; bottom: 20px;
+  transform: translate(-50%, 16px);
+  z-index: 999990;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.cso-sync-pill.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.cso-sync-pill[data-kind="offline"] {
+  background: #1e293b; color: #fcd34d;
+  border: 1px solid rgba(251,191,36,0.45);
+}
+.cso-sync-pill[data-kind="success"] {
+  background: #064e3b; color: #6ee7b7;
+  border: 1px solid rgba(16,185,129,0.5);
+}
+.cso-sync-pill[data-kind="info"] {
+  background: #0c4a6e; color: #7dd3fc;
+  border: 1px solid rgba(56,189,248,0.45);
+}
+
+@media (max-width: 640px) {
+  .cso-profile-card { padding: 14px; }
+  .cso-profile-details { flex-wrap: wrap; }
+  .cso-profile-name { font-size: 16px; }
+}

@@ -252,7 +252,47 @@
            TAB VIEW: OVERVIEW (Default)
            ==================================================================== -->
       <div id="tab-overview" class="bp-tab-view active">
-        
+
+        <!-- Candidate Profile Card (fed live by /api/auth/me) -->
+        <section class="cso-profile-card" id="cso-profile-card" aria-live="polite">
+          <div class="cso-profile-skeleton" id="cso-profile-skeleton">
+            <div class="cso-profile-skel-avatar"></div>
+            <div class="cso-profile-skel-lines">
+              <div class="cso-skel-line cso-skel-lg"></div>
+              <div class="cso-skel-line cso-skel-sm"></div>
+            </div>
+          </div>
+          <div class="cso-profile-details" id="cso-profile-details" style="display:none;">
+            <div class="cso-profile-avatar" id="cso-profile-avatar">?</div>
+            <div class="cso-profile-meta">
+              <div class="cso-profile-name-row">
+                <h2 class="cso-profile-name" id="cso-profile-name">Loading…</h2>
+                <span class="cso-profile-stream-badge" id="cso-profile-stream-badge">—</span>
+                <span class="cso-profile-session-badge" id="cso-profile-session-badge" title="Server-verified active session">● Active Session</span>
+              </div>
+              <p class="cso-profile-id-line">Candidate ID: <code id="cso-profile-id">…</code></p>
+            </div>
+            <div class="cso-profile-actions">
+              <button type="button" class="cso-profile-signout" id="cso-profile-signout-btn" title="End this session securely">
+                <span>⎋</span><span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Dual-Source Exam Countdown Grid -->
+        <section class="cso-countdown-section" aria-label="Exam application deadline countdowns">
+          <div class="cso-countdown-header">
+            <div>
+              <h2 class="cso-countdown-title">⏳ Exam Deadline Countdowns</h2>
+              <p class="cso-countdown-subtitle">Official &amp; tentative application windows plus your bookmarked recruitment deadlines</p>
+            </div>
+          </div>
+          <div class="cso-countdown-grid" id="cso-countdown-grid" aria-live="off">
+            <!-- Cards rendered by cso-countdown.js + student-dashboard.js -->
+          </div>
+        </section>
+
         <!-- Filter Row & Header -->
         <div class="bp-filter-row">
           <div>
@@ -813,6 +853,8 @@
 </div>
 
 <script src="/assets/js/bookmark-manager.js" defer></script>
+<script src="/assets/js/cso-countdown.js" defer></script>
+<script src="/assets/js/cso-idb.js" defer></script>
 <script src="/assets/js/candidate-sync.js" defer></script>
 <script src="/assets/js/pwa-install.js" defer></script>
 <script src="/assets/js/auth-modal.js" defer></script>
