@@ -30,6 +30,43 @@
     if (embedded) { curPath = path; route(); } else location.hash = '#/' + path.replace(/^\//, '');
   }
   function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+  function renderSanitizedHtml(container, htmlString) {
+    clear(container);
+    var raw = String(htmlString || '').trim();
+    if (!raw) return;
+    if (typeof DOMParser === 'undefined') {
+      container.appendChild(el('p', { text: raw.replace(/<[^>]*>/g, '') }));
+      return;
+    }
+    var ALLOWED = { P: 1, H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, UL: 1, OL: 1, LI: 1, BLOCKQUOTE: 1, PRE: 1, CODE: 1, STRONG: 1, EM: 1, BR: 1, HR: 1, A: 1 };
+    var DROP = { SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, SVG: 1, MATH: 1, FORM: 1 };
+    function walk(node) {
+      if (!node) return null;
+      if (node.nodeType === 3) return document.createTextNode(node.nodeValue || '');
+      if (node.nodeType !== 1) return null;
+      var tag = node.tagName.toUpperCase();
+      if (DROP[tag]) return null;
+      if (!ALLOWED[tag]) {
+        var frag = document.createDocumentFragment();
+        Array.prototype.forEach.call(node.childNodes, function (c) { var x = walk(c); if (x) frag.appendChild(x); });
+        return frag;
+      }
+      if (tag === 'BR' || tag === 'HR') return document.createElement(tag.toLowerCase());
+      if (tag === 'A') {
+        var href = node.getAttribute('href') || '';
+        var safe = (/^\/(?!\/)/.test(href) || /^https?:\/\//i.test(href)) ? href : null;
+        var outA = document.createElement(safe ? 'a' : 'span');
+        if (safe) { outA.setAttribute('href', safe); outA.setAttribute('target', '_blank'); outA.setAttribute('rel', 'noopener noreferrer'); }
+        Array.prototype.forEach.call(node.childNodes, function (c) { var x = walk(c); if (x) outA.appendChild(x); });
+        return outA;
+      }
+      var out = document.createElement(tag.toLowerCase());
+      Array.prototype.forEach.call(node.childNodes, function (c) { var x = walk(c); if (x) out.appendChild(x); });
+      return out;
+    }
+    var doc = new DOMParser().parseFromString(raw, 'text/html');
+    Array.prototype.forEach.call(doc.body.childNodes, function (n) { var clean = walk(n); if (clean) container.appendChild(clean); });
+  }
   function toast(msg, bad) {
     var t = el('div', { class: 'toast' + (bad ? ' bad' : ''), text: msg });
     if (embedded && typeof window.showToast === 'function') { window.showToast(msg, bad ? 'crimson' : 'success'); return; }
@@ -153,7 +190,7 @@
 
   /* ---------- dashboard / telemetry ---------- */
   function fmtBytes(n) { n = Number(n) || 0; return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
-  function stat(label, value, sub) { return el('div', { class: 'card' }, [el('div', { class: 'muted', text: label }), el('div', { class: 'num', text: String(value) }), sub ? el('div', { class: 'muted', text: sub }) : null]); }
+  function stat(label, value, sub) { return el('div', { class: 'card' }, [el('div', { class: 'muted', text: label }), el('div', { class: 'num cso-tabular', text: String(value) }), sub ? el('div', { class: 'muted', text: sub }) : null]); }
   async function viewDashboard() {
     setTitle('Overview');
     var s = await api('GET', 'stats');
@@ -217,7 +254,7 @@
         el('td', { text: (a.target_type || '') + (a.target_id ? ' ' + String(a.target_id).slice(0, 8) : '') }), el('td', { text: a.metadata_json || '' })]));
     });
     if (!items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '5', class: 'muted', text: 'No activity yet.' })));
-    return el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: 'Audit log' }),
+    return el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: 'Audit log' }),
       el('thead', {}, el('tr', {}, ['When', 'Who', 'Action', 'Target', 'Details'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb]));
   }
   async function viewAudit(kind) {
@@ -266,7 +303,7 @@
       });
       if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '5', class: 'muted', text: 'No incidents logged.' })));
       clear(box).appendChild(el('p', { class: d.open ? 'bad' : 'muted', text: d.open + ' open incident(s)' }));
-      box.appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: 'Incident stream' }),
+      box.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: 'Incident stream' }),
         el('thead', {}, el('tr', {}, ['When', 'Severity', 'Incident', 'Reported by', 'Status'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
       box.appendChild(pager(st, d.total, load));
     }
@@ -330,7 +367,7 @@
       });
       if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '5', class: 'muted', text: 'No files uploaded yet.' })));
       clear(box).appendChild(el('p', { class: 'muted', text: d.total + ' files · ' + fmtBytes(d.total_bytes) + ' stored in R2' }));
-      box.appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['File', 'Type', 'Size', 'Uploaded', 'Key'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+      box.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['File', 'Type', 'Size', 'Uploaded', 'Key'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
       box.appendChild(pager(st, d.total, load));
     }
     await load();
@@ -383,7 +420,7 @@
             el('button', { class: 'btn sm danger', text: 'Delete', 'aria-label': 'Delete ' + r.title, onclick: function () { del(r); } })]))]));
       });
       if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '6', class: 'muted', text: 'Nothing here yet.' })));
-      clear(box).appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: label }),
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: label }),
         el('thead', {}, el('tr', {}, ['Title', 'Exam', 'Year', 'Status', 'Updated', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
       box.appendChild(pager(st, d.total, load));
     }
@@ -434,7 +471,7 @@
           tb.appendChild(el('tr', {}, cells));
         });
         if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '6', class: 'muted', text: 'Nothing here yet.' })));
-        clear(box).appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: T.label }),
+        clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: T.label }),
           el('thead', {}, el('tr', {}, T.cols.concat(['Actions']).map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
         box.appendChild(pager(st, d.total, load));
       } catch (e) { toast(e.message, true); }
@@ -474,7 +511,7 @@
       } else if (type === 'md') {
         var ta = el('textarea', { id: fid, class: 'tall' }); ta.value = val || '';
         var prev = el('div', { class: 'preview', 'aria-live': 'polite' }); var t;
-        function render() { api('POST', 'preview', { markdown: ta.value }).then(function (d) { prev.innerHTML = d.html; }).catch(function () {}); }
+        function render() { api('POST', 'preview', { markdown: ta.value }).then(function (d) { renderSanitizedHtml(prev, d.html); }).catch(function () {}); }
         ta.addEventListener('input', function () { clearTimeout(t); t = setTimeout(render, 400); });
         getters[name] = function () { return ta.value; }; render();
         left.appendChild(el('div', {}, [el('label', { for: fid, text: f[1] }), el('div', { class: 'grid2' }, [ta, prev]), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
@@ -616,7 +653,7 @@
         var tb = el('tbody');
         d.invalid.forEach(function (x) { tb.appendChild(el('tr', {}, [el('td', { text: String(x.row) }), el('td', { text: 'Error' }), el('td', { text: Object.keys(x.errors).map(function (k) { return k + ': ' + x.errors[k]; }).join('; ') })])); });
         d.preview.forEach(function (x) { tb.appendChild(el('tr', {}, [el('td', { text: String(x.row) }), el('td', { text: 'OK' }), el('td', { text: x.question_en + ' → ' + x.correct_option })])); });
-        out.appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['Row', 'Result', 'Details'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+        out.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['Row', 'Result', 'Details'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
         if (d.valid_count > 50) out.appendChild(el('p', { class: 'hint', text: 'Showing first 50 valid rows.' }));
         commit.disabled = d.valid_count === 0; commit.dataset.skip = d.invalid_count ? '1' : '';
       } catch (e) { out.appendChild(el('div', { class: 'alert', text: e.message })); }
@@ -653,20 +690,217 @@
           el('td', { text: u.created_at ? new Date(u.created_at * 1000).toLocaleDateString() : '—' }), el('td', { text: u.last_login_at ? fmtDate(String(u.last_login_at)) : '—' })]));
       });
       if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '6', class: 'muted', text: 'No accounts match.' })));
-      clear(box).appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['Candidate', 'Phone', 'District', 'Role', 'Joined', 'Last login'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['Candidate', 'Phone', 'District', 'Role', 'Joined', 'Last login'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
       box.appendChild(pager(st, d.total, load));
     }
     await load();
   }
 
+  /* ---------- operations, backups, diagnostics & registry ---------- */
+  async function viewOperations() {
+    setTitle('Operations & Backups');
+    var s = await api('GET', 'stats');
+    var cr = s.last_cron_run || {};
+    var cronCard = el('div', { class: 'panel' }, [
+      el('h2', { text: 'Cron Lifecycle & D1 Maintenance' }),
+      el('p', { class: 'muted', text: cr.ran_at ? ('Last run: ' + fmtDate(cr.ran_at) + ' · Promoted: ' + (cr.promoted || 0) + ' · Expired: ' + (cr.expired || 0) + ' · Cleaned: ' + (cr.cleaned || 0)) : 'No maintenance run recorded yet (Schedule: */15 * * * *)' })
+    ]);
+    if (me && me.role === 'admin') {
+      var runBtn = el('button', {
+        type: 'button',
+        class: 'btn primary',
+        text: 'Run maintenance now',
+        onclick: async function () {
+          runBtn.disabled = true;
+          runBtn.textContent = 'Running…';
+          try {
+            var res = await api('POST', 'maintenance/run', {});
+            toast('Maintenance complete: ' + (res.promoted || 0) + ' promoted, ' + (res.expired || 0) + ' expired');
+            clear(main);
+            await viewOperations();
+          } catch (err) {
+            toast(err.message, true);
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run maintenance now';
+          }
+        }
+      });
+      cronCard.appendChild(el('div', { class: 'actions' }, runBtn));
+    }
+    main.appendChild(cronCard);
+
+    var healthBox = el('div', { class: 'panel' }, [
+      el('h2', { text: 'Content Health Audit' }),
+      el('p', { class: 'muted', text: 'Scans live D1 jobs, current affairs, mock tests, and resources for drafts, expired jobs, or missing metadata.' })
+    ]);
+    var healthList = el('div', { class: 'actions' });
+    healthBox.appendChild(healthList);
+    main.appendChild(healthBox);
+
+    var backupBtn = el('button', {
+      type: 'button',
+      class: 'btn primary',
+      text: 'Export Live D1 JSON Backup',
+      onclick: async function () {
+        backupBtn.disabled = true;
+        backupBtn.textContent = 'Exporting…';
+        try {
+          var [stats, ca, jobs, tests, syl, pyq, banner] = await Promise.all([
+            api('GET', 'stats'),
+            api('GET', 'current-affairs?limit=100'),
+            api('GET', 'jobs?limit=100'),
+            api('GET', 'mock-tests?limit=100'),
+            api('GET', 'resources?kind=syllabus&limit=100'),
+            api('GET', 'resources?kind=pyq&limit=100'),
+            api('GET', 'banner')
+          ]);
+          var payload = {
+            exported_at: new Date().toISOString(),
+            exported_by: me ? me.email : 'staff',
+            stats: stats,
+            banner: banner,
+            current_affairs: ca.items || [],
+            jobs: jobs.items || [],
+            mock_tests: tests.items || [],
+            syllabus: syl.items || [],
+            pyq: pyq.items || []
+          };
+          var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'csodisha-d1-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          toast('Live D1 JSON backup downloaded');
+        } catch (err) {
+          toast(err.message, true);
+        }
+        backupBtn.disabled = false;
+        backupBtn.textContent = 'Export Live D1 JSON Backup';
+      }
+    });
+
+    main.appendChild(el('div', { class: 'panel' }, [
+      el('h2', { text: 'Live D1 JSON Backup Export' }),
+      el('p', { class: 'muted', text: 'Downloads a full JSON snapshot of live D1 tables (stats, banner, jobs, current affairs, mock tests, syllabus, and PYQs).' }),
+      el('div', { class: 'actions' }, backupBtn)
+    ]));
+
+    try {
+      var [jRes, mRes] = await Promise.all([api('GET', 'jobs?limit=50'), api('GET', 'mock-tests?limit=50')]);
+      var warnings = [];
+      (jRes.items || []).forEach(function (j) {
+        if (j.status === 'expired') warnings.push('Expired job: ' + j.title);
+      });
+      (mRes.items || []).forEach(function (m) {
+        if (!m.question_count) warnings.push('Mock test with 0 questions: ' + m.title);
+      });
+      if (s.open_incidents > 0) warnings.push(s.open_incidents + ' open incident(s) require resolution');
+      if (!warnings.length) {
+        healthList.appendChild(el('div', { class: 'alert ok', text: 'All content health checks passed with zero warnings.' }));
+      } else {
+        warnings.slice(0, 10).forEach(function (w) {
+          healthList.appendChild(el('div', { class: 'alert', text: w }));
+        });
+      }
+    } catch (_) {}
+  }
+
+  async function viewDiagnostics() {
+    setTitle('Live Site Health');
+    var box = el('div');
+    var probeBtn = el('button', { type: 'button', class: 'btn primary', text: 'Run Live Endpoint Probes', onclick: runProbes });
+    main.appendChild(el('div', { class: 'toolbar' }, [probeBtn]));
+    main.appendChild(box);
+
+    async function runProbes() {
+      probeBtn.disabled = true;
+      probeBtn.textContent = 'Probing…';
+      var endpoints = [
+        ['Public Homepage', '/'],
+        ['Jobs & Careers Portal', '/jobs-careers/'],
+        ['Current Affairs Portal', '/current-affairs/'],
+        ['Mock Tests Portal', '/mock-tests/'],
+        ['Resources Portal', '/resources/'],
+        ['Admin Stats API', '/api/admin/stats'],
+        ['Public Banner API', '/api/content/banner']
+      ];
+      var tb = el('tbody');
+      for (var i = 0; i < endpoints.length; i++) {
+        var ep = endpoints[i];
+        var t0 = performance.now();
+        var statusTxt = 'FAILED', okFlag = false, rtt = 0;
+        try {
+          var r = await fetch(ep[1], { method: 'GET', credentials: 'same-origin', cache: 'no-store' });
+          rtt = Math.round(performance.now() - t0);
+          statusTxt = r.status + ' ' + (r.statusText || 'OK');
+          okFlag = r.ok;
+        } catch (err) {
+          rtt = Math.round(performance.now() - t0);
+          statusTxt = 'Network Error';
+        }
+        tb.appendChild(el('tr', {}, [
+          el('td', { text: ep[0] }),
+          el('td', {}, el('code', { text: ep[1] })),
+          el('td', {}, el('span', { class: 'badge ' + (okFlag ? 'published' : 'expired'), text: statusTxt })),
+          el('td', { class: 'cso-tabular', text: rtt + ' ms' })
+        ]));
+      }
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('thead', {}, el('tr', {}, ['Endpoint', 'Path', 'HTTP Status', 'Latency'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      probeBtn.disabled = false;
+      probeBtn.textContent = 'Run Live Endpoint Probes';
+    }
+    await runProbes();
+  }
+
+  async function viewRegistry() {
+    setTitle('241-Module Registry');
+    var schema = window.CSOStudio && window.CSOStudio.getSchema ? window.CSOStudio.getSchema() : null;
+    if (!schema || !Array.isArray(schema.folders)) {
+      main.appendChild(el('div', { class: 'alert', text: 'Navigation schema not loaded.' }));
+      return;
+    }
+    var tb = el('tbody');
+    schema.folders.forEach(function (f) {
+      (f.modules || []).forEach(function (m) {
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, el('code', { text: m.id })),
+          el('td', { text: m.title }),
+          el('td', { text: f.title }),
+          el('td', {}, el('button', {
+            type: 'button',
+            class: 'btn sm',
+            text: 'Open',
+            onclick: function () {
+              if (typeof window.selectModule === 'function') window.selectModule(f.id, m.id);
+            }
+          }))
+        ]));
+      });
+    });
+    main.appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+      el('thead', {}, el('tr', {}, ['Module ID', 'Title', 'Domain', 'Action'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+      tb
+    ])));
+  }
+
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
+    operations: function () { return viewOperations(); },
+    diagnostics: function () { return viewDiagnostics(); },
+    registry: function () { return viewRegistry(); },
     audit: function (parts) { return viewAudit(parts[1]); },
     incidents: function () { return viewIncidents(); },
     banner: function () { return viewBanner(); },
