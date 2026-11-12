@@ -694,7 +694,13 @@
           cells.push(el('td', { text: fmtDate(r.updated_at) })); cells.push(el('td', {}, el('div', { class: 'actions' }, a)));
           tb.appendChild(el('tr', {}, cells));
         });
-        if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '7', class: 'muted', text: 'Nothing here yet.' })));
+        if (!d.items.length) {
+          var singularLabel = T.label.replace(/s$/, '');
+          tb.appendChild(el('tr', {}, el('td', { colspan: '7', class: 'muted' }, el('div', { class: 'cso-empty-state' }, [
+            el('div', { text: 'No ' + T.label.toLowerCase() + ' found matching the current filter.' }),
+            el('a', { class: 'btn sm primary', href: '#/' + key + '/new', text: '+ Create New ' + singularLabel })
+          ]))));
+        }
         allCheck.checked = d.items.length > 0 && d.items.every(function (item) { return !!selectedIds[item.id]; });
         updateBulkBar();
         clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: T.label }),

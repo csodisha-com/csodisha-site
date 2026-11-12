@@ -380,6 +380,7 @@
 }
 
 .cso-nav-folder {
+  flex-shrink: 0;
   border: 1px solid rgba(30, 46, 74, 0.7);
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.5);
@@ -388,7 +389,8 @@
 
 .cso-nav-folder-btn {
   width: 100%;
-  min-height: 44px;
+  min-height: 40px;
+  flex-shrink: 0;
   padding: 8px 10px;
   border: 0;
   background: transparent;
@@ -1095,6 +1097,43 @@
   border-radius: 10px;
   background: rgba(15, 169, 104, 0.1);
   border: 1px solid rgba(15, 169, 104, 0.35);
+}
+
+.cso-bulk-bar[hidden],
+.cso-bulk-bar:empty {
+  display: none;
+}
+
+/* Checkboxes: prevent inheriting full-width text input rules */
+.cms-embed input[type="checkbox"],
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  margin: 0;
+  accent-color: var(--studio-accent);
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Table caption alignment & empty state */
+.cms-embed table caption {
+  text-align: left;
+  padding: 10px 14px 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--studio-muted);
+}
+
+.cso-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px 8px;
 }
 
 .cso-sticky-modal-actions {
