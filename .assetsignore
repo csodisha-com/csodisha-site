@@ -1,5 +1,14 @@
+.aider*
+docs
+functions
 .git
 .github
-.aider*
-node_modules
+.gitignore
 *.log
+migrations
+node_modules
+schema.sql
+scripts
+_worker.js
+.wrangler
+wrangler.json
