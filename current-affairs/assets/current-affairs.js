@@ -155,8 +155,8 @@
 
     if (pc && typeof pc.createBookmarkButton === 'function') {
       footer.appendChild(pc.createBookmarkButton({
-        type: 'study',
-        id: `ca-${item.slug || item.id}`,
+        type: 'current-affair',
+        id: item.slug || item.id,
         title: item.title,
         badge: item.category ? `Current Affairs · ${item.category}` : 'Current Affairs',
         url: `/current-affairs/?slug=${encodeURIComponent(item.slug)}`
@@ -293,8 +293,8 @@
 
       if (pc && typeof pc.createBookmarkButton === 'function') {
         articleActionsEl.appendChild(pc.createBookmarkButton({
-          type: 'study',
-          id: `ca-${art.slug || art.id}`,
+          type: 'current-affair',
+          id: art.slug || art.id,
           title: art.title,
           badge: art.category ? `Current Affairs · ${art.category}` : 'Current Affairs',
           url: `/current-affairs/?slug=${encodeURIComponent(art.slug)}`

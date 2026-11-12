@@ -16,6 +16,7 @@ import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handle
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { handleContent } from './functions/api/content/_public.js';
+import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
@@ -232,8 +233,9 @@ export default {
       return handleAdminApi(request, env);
     }
 
-    // 0d. CMS: public content API + R2 media delivery
+    // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API
     if (pathname.startsWith('/api/content/')) return handleContent(request, env);
+    if (pathname === '/api/user' || pathname.startsWith('/api/user/')) return handleUserApi(request, env);
     if (pathname.startsWith('/api/media/')) return handleMedia(request, env, ctx);
 
     // 1. /api/health

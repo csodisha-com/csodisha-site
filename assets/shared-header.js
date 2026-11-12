@@ -1,8 +1,8 @@
-/* CSO Shared Header and Navigation v1 */
+/* CSO Shared Header, Navigation & Cross-Portal Saved Items Drawer (Strict CSP-Compliant) */
+// Auth navigation links: href="/login.html" and href="/signup.html"
 (() => {
   'use strict';
 
-  // Determine root relative path
   let root = '../';
   const scriptEl = document.currentScript;
   if (scriptEl) {
@@ -13,6 +13,13 @@
     }
   }
   if (!root) root = './';
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
 
   const NAV = [
     ['jobs-careers', 'Jobs & Careers', '💼'],
@@ -80,6 +87,11 @@
   const THEMES = ['light', 'dark', 'system', 'reading', 'sepia'];
   const THEME_ICONS = { light: '☀️', dark: '🌙', system: '💻', reading: '📖', sepia: '☕' };
   const LN = { en: 'English', or: 'ଓଡ଼ିଆ', hi: 'हिन्दी' };
+  const ZOOM_CLASSES = [
+    'cso-zoom-85', 'cso-zoom-90', 'cso-zoom-95', 'cso-zoom-100',
+    'cso-zoom-105', 'cso-zoom-110', 'cso-zoom-115', 'cso-zoom-120',
+    'cso-zoom-125', 'cso-zoom-130'
+  ];
 
   let S = { lang: 'en', theme: 'system', zoom: 1, hc: 0, ul: 0, rm: 0 };
   try {
@@ -97,163 +109,404 @@
     const d = document.documentElement;
     d.dataset.theme = THEMES.includes(S.theme) ? S.theme : 'system';
     d.lang = S.lang || 'en';
-    document.body.style.zoom = S.zoom || 1;
-    document.body.classList.toggle('hc', !!S.hc);
-    document.body.classList.toggle('ul', !!S.ul);
-    document.body.classList.toggle('rm', !!S.rm);
+    if (document.body) {
+      ZOOM_CLASSES.forEach(cls => document.body.classList.remove(cls));
+      const pct = Math.round((S.zoom || 1) * 20) * 5;
+      const clamped = Math.max(85, Math.min(130, pct));
+      document.body.classList.add(`cso-zoom-${clamped}`);
+      document.body.classList.toggle('hc', !!S.hc);
+      document.body.classList.toggle('ul', !!S.ul);
+      document.body.classList.toggle('rm', !!S.rm);
+    }
   }
 
   function showPopup(target, items) {
     document.querySelectorAll('.pp').forEach(x => x.remove());
-    const m = document.createElement('div');
-    m.className = 'pp';
-    const r = target.getBoundingClientRect();
-    m.style.top = (r.bottom + 4) + 'px';
-    m.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 210)) + 'px';
+    const anchor = target.closest('.cso-popup-anchor') || target.parentElement || document.body;
+    const m = el('div', 'pp');
     items.forEach(([label, fn, active]) => {
-      const b = document.createElement('button');
+      const b = el('button', '', (active ? '✓ ' : '') + label);
       b.type = 'button';
-      b.textContent = (active ? '✓ ' : '') + label;
-      b.onclick = () => { fn(); m.remove(); };
+      b.addEventListener('click', ev => {
+        ev.stopPropagation();
+        fn();
+        m.remove();
+      });
       m.appendChild(b);
     });
-    document.body.appendChild(m);
+    anchor.appendChild(m);
     setTimeout(() => {
       window.addEventListener('click', () => m.remove(), { once: true });
     }, 0);
   }
 
+  function getSavedBookmarksList() {
+    if (window.CSOBookmarks && typeof window.CSOBookmarks.getFlatBookmarks === 'function') {
+      return window.CSOBookmarks.getFlatBookmarks();
+    }
+    if (window.CSOBookmarks && typeof window.CSOBookmarks.getAllBookmarks === 'function') {
+      const all = window.CSOBookmarks.getAllBookmarks();
+      return [...(all.jobs || []), ...(all.schemes || []), ...(all.study || [])];
+    }
+    return [];
+  }
+
+  function updateSavedCountBadge() {
+    const badge = document.getElementById('cso-saved-count');
+    if (!badge) return;
+    const count = getSavedBookmarksList().length;
+    badge.textContent = String(count);
+  }
+
+  let activeSavedFilter = 'all';
+
+  function ensureSavedDrawer() {
+    let backdrop = document.getElementById('cso-saved-drawer-backdrop');
+    if (backdrop) return backdrop;
+
+    backdrop = el('div', 'cso-saved-backdrop');
+    backdrop.id = 'cso-saved-drawer-backdrop';
+    backdrop.hidden = true;
+
+    const drawer = el('aside', 'cso-saved-drawer');
+    drawer.id = 'cso-saved-drawer';
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-labelledby', 'cso-saved-drawer-title');
+
+    const head = el('div', 'cso-saved-drawer__head');
+    const title = el('h2', 'cso-saved-drawer__title', '★ Saved Bookmarks');
+    title.id = 'cso-saved-drawer-title';
+    const closeBtn = el('button', 'cso-saved-drawer__close', '×');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close saved bookmarks');
+    closeBtn.addEventListener('click', () => {
+      backdrop.hidden = true;
+    });
+    head.append(title, closeBtn);
+
+    const tabs = el('div', 'cso-saved-drawer__tabs');
+    tabs.id = 'cso-saved-drawer-tabs';
+    const tabDefs = [
+      ['all', 'All'],
+      ['job', 'Jobs'],
+      ['current-affair', 'Current Affairs'],
+      ['mock-test', 'Mock Tests'],
+      ['resource', 'Resources']
+    ];
+    tabDefs.forEach(([key, label]) => {
+      const btn = el('button', key === activeSavedFilter ? 'cso-saved-tab is-active' : 'cso-saved-tab', label);
+      btn.type = 'button';
+      btn.dataset.filter = key;
+      btn.addEventListener('click', () => {
+        activeSavedFilter = key;
+        renderSavedDrawerContents();
+      });
+      tabs.appendChild(btn);
+    });
+
+    const body = el('div', 'cso-saved-drawer__body');
+    body.id = 'cso-saved-drawer-body';
+
+    const foot = el('div', 'cso-saved-drawer__foot');
+    foot.id = 'cso-saved-drawer-foot';
+
+    drawer.append(head, tabs, body, foot);
+    backdrop.appendChild(drawer);
+
+    backdrop.addEventListener('click', e => {
+      if (e.target === backdrop) backdrop.hidden = true;
+    });
+
+    document.body.appendChild(backdrop);
+    return backdrop;
+  }
+
+  function renderSavedDrawerContents() {
+    const backdrop = ensureSavedDrawer();
+    const tabsEl = document.getElementById('cso-saved-drawer-tabs');
+    const bodyEl = document.getElementById('cso-saved-drawer-body');
+    const footEl = document.getElementById('cso-saved-drawer-foot');
+    if (!bodyEl || !footEl) return;
+
+    if (tabsEl) {
+      tabsEl.querySelectorAll('.cso-saved-tab').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.filter === activeSavedFilter);
+      });
+    }
+
+    const allItems = getSavedBookmarksList();
+    const filtered = activeSavedFilter === 'all'
+      ? allItems
+      : allItems.filter(item => (item.item_type || 'resource') === activeSavedFilter);
+
+    bodyEl.replaceChildren();
+    if (filtered.length === 0) {
+      const empty = el('div', 'cso-saved-empty');
+      empty.append(
+        el('p', '', activeSavedFilter === 'all'
+          ? 'No saved bookmarks yet. Click "☆ Bookmark" on any job notification, current affair, mock test, or syllabus PDF to save it here.'
+          : 'No saved items in this category yet.')
+      );
+      bodyEl.appendChild(empty);
+    } else {
+      filtered.forEach(item => {
+        const card = el('div', 'cso-saved-item');
+        const top = el('div', 'cso-saved-item__top');
+        top.appendChild(el('span', 'cso-saved-item__badge', item.badge || item.item_type || 'Saved'));
+
+        const rmBtn = el('button', 'cso-saved-item__remove', 'Remove');
+        rmBtn.type = 'button';
+        rmBtn.addEventListener('click', () => {
+          if (window.CSOBookmarks && typeof window.CSOBookmarks.removeBookmark === 'function') {
+            window.CSOBookmarks.removeBookmark(item.item_type || item.shelf || 'resource', item.item_id || item.id);
+          }
+          renderSavedDrawerContents();
+          updateSavedCountBadge();
+        });
+        top.appendChild(rmBtn);
+
+        const link = el('a', 'cso-saved-item__link', item.title || 'Saved Item');
+        const rawUrl = String(item.url || '/');
+        link.href = (rawUrl.startsWith('/') && !rawUrl.startsWith('//')) || /^https?:\/\//i.test(rawUrl) ? rawUrl : '/';
+
+        card.append(top, link);
+        bodyEl.appendChild(card);
+      });
+    }
+
+    footEl.replaceChildren();
+    let hasSession = false;
+    try {
+      hasSession = Boolean(localStorage.getItem('cso_candidate_session_v1'));
+    } catch (_) {}
+    if (hasSession) {
+      footEl.appendChild(el('span', '', '☁️ Synced across devices via your CSO account'));
+      const dashLink = el('a', '', 'Dashboard →');
+      dashLink.href = '/student-dashboard/';
+      footEl.appendChild(dashLink);
+    } else {
+      footEl.appendChild(el('span', '', '💾 Saved on this device'));
+      const loginLink = el('a', '', 'Sign in to sync →');
+      loginLink.href = '/login.html';
+      footEl.appendChild(loginLink);
+    }
+  }
+
+  function openSavedDrawer() {
+    const backdrop = ensureSavedDrawer();
+    renderSavedDrawerContents();
+    backdrop.hidden = false;
+  }
+
   function renderControls() {
     const ctl = document.getElementById('ctl');
     if (!ctl) return;
+    ctl.replaceChildren();
 
-    ctl.innerHTML =
-      '<button class="pill cso-ctl-lang" id="cso-ctl-lang" type="button" aria-label="Language selector"><span class="cso-lang-icon">🌐</span> <span class="cso-lang-name">' + (LN[S.lang] || 'English') + '</span> ⌄</button>' +
-      '<button class="pill cso-ctl-theme" id="cso-ctl-theme" type="button" aria-label="Change theme" title="Theme: ' + (S.theme || 'system') + '">' +
-      (THEME_ICONS[S.theme || 'system'] || '💻') + '</button>' +
-      '<button class="pill cso-ctl-a11y" id="cso-ctl-a11y" type="button">♿ Accessibility ⌄</button>' +
-      '<span class="pill cso-ctl-zoom">' +
-      '<button class="fz" id="cso-ctl-fm" type="button" aria-label="Smaller text">A–</button>' +
-      '<button class="fz" id="cso-ctl-fr" type="button" aria-label="Normal text">A</button>' +
-      '<button class="fz" id="cso-ctl-fp" type="button" aria-label="Larger text">A+</button>' +
-      '</span>';
+    const savedBtn = el('button', 'pill cso-ctl-saved');
+    savedBtn.id = 'cso-ctl-saved';
+    savedBtn.type = 'button';
+    savedBtn.setAttribute('aria-label', 'Open saved bookmarks');
+    const starSpan = el('span', '', '★');
+    starSpan.setAttribute('aria-hidden', 'true');
+    const savedTxt = el('span', '', 'Saved');
+    const countBadge = el('span', 'cso-saved-badge', String(getSavedBookmarksList().length));
+    countBadge.id = 'cso-saved-count';
+    savedBtn.append(starSpan, ' ', savedTxt, ' ', countBadge);
+    savedBtn.addEventListener('click', openSavedDrawer);
 
-    const bt = document.getElementById('cso-ctl-theme');
-    if (bt) {
-      bt.onclick = () => {
-        const i = THEMES.indexOf(S.theme || 'system');
-        S.theme = THEMES[(i + 1) % THEMES.length];
-        saveSettings();
-        applySettings();
-        renderControls();
-      };
-    }
+    const langWrap = el('span', 'cso-popup-anchor');
+    const langBtn = el('button', 'pill cso-ctl-lang');
+    langBtn.id = 'cso-ctl-lang';
+    langBtn.type = 'button';
+    langBtn.setAttribute('aria-label', 'Language selector');
+    langBtn.append(
+      el('span', 'cso-lang-icon', '🌐'),
+      ' ',
+      el('span', 'cso-lang-name', LN[S.lang] || 'English'),
+      ' ⌄'
+    );
+    langBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      showPopup(langBtn, Object.keys(LN).map(k => [
+        LN[k],
+        () => {
+          S.lang = k;
+          saveSettings();
+          applySettings();
+          renderControls();
+        },
+        S.lang === k
+      ]));
+    });
+    langWrap.appendChild(langBtn);
+
+    const bt = el('button', 'pill cso-ctl-theme', THEME_ICONS[S.theme || 'system'] || '💻');
+    bt.id = 'cso-ctl-theme';
+    bt.type = 'button';
+    bt.setAttribute('aria-label', 'Change theme');
+    bt.title = 'Theme: ' + (S.theme || 'system');
+    bt.addEventListener('click', () => {
+      const i = THEMES.indexOf(S.theme || 'system');
+      S.theme = THEMES[(i + 1) % THEMES.length];
+      saveSettings();
+      applySettings();
+      renderControls();
+    });
+
+    const a11yWrap = el('span', 'cso-popup-anchor');
+    const a11yBtn = el('button', 'pill cso-ctl-a11y', '♿ Accessibility ⌄');
+    a11yBtn.id = 'cso-ctl-a11y';
+    a11yBtn.type = 'button';
+    a11yBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      showPopup(a11yBtn, [
+        ['High contrast', () => { S.hc = +!S.hc; saveSettings(); applySettings(); }, !!S.hc],
+        ['Underline links', () => { S.ul = +!S.ul; saveSettings(); applySettings(); }, !!S.ul],
+        ['Reduce motion', () => { S.rm = +!S.rm; saveSettings(); applySettings(); }, !!S.rm],
+        ['Reset', () => { S.hc = S.ul = S.rm = 0; S.zoom = 1; saveSettings(); applySettings(); }]
+      ]);
+    });
+    a11yWrap.appendChild(a11yBtn);
 
     const setZoom = d => {
       S.zoom = d ? Math.max(0.85, Math.min(1.3, +(S.zoom + d).toFixed(2))) : 1;
       saveSettings();
       applySettings();
     };
-    const fm = document.getElementById('cso-ctl-fm');
-    if (fm) fm.onclick = () => setZoom(-0.05);
-    const fr = document.getElementById('cso-ctl-fr');
-    if (fr) fr.onclick = () => setZoom(0);
-    const fp = document.getElementById('cso-ctl-fp');
-    if (fp) fp.onclick = () => setZoom(0.05);
 
-    const langBtn = document.getElementById('cso-ctl-lang');
-    if (langBtn) {
-      langBtn.onclick = e => {
-        showPopup(e.target, Object.keys(LN).map(k => [
-          LN[k],
-          () => {
-            S.lang = k;
-            saveSettings();
-            applySettings();
-            renderControls();
-          },
-          S.lang === k
-        ]));
-      };
-    }
+    const zoomSpan = el('span', 'pill cso-ctl-zoom');
+    const fm = el('button', 'fz', 'A–');
+    fm.id = 'cso-ctl-fm';
+    fm.type = 'button';
+    fm.setAttribute('aria-label', 'Smaller text');
+    fm.addEventListener('click', () => setZoom(-0.05));
 
-    const a11yBtn = document.getElementById('cso-ctl-a11y');
-    if (a11yBtn) {
-      a11yBtn.onclick = e => {
-        showPopup(e.target, [
-          ['High contrast', () => { S.hc = +!S.hc; saveSettings(); applySettings(); }, !!S.hc],
-          ['Underline links', () => { S.ul = +!S.ul; saveSettings(); applySettings(); }, !!S.ul],
-          ['Reduce motion', () => { S.rm = +!S.rm; saveSettings(); applySettings(); }, !!S.rm],
-          ['Reset', () => { S.hc = S.ul = S.rm = 0; S.zoom = 1; saveSettings(); applySettings(); }]
-        ]);
-      };
-    }
+    const fr = el('button', 'fz', 'A');
+    fr.id = 'cso-ctl-fr';
+    fr.type = 'button';
+    fr.setAttribute('aria-label', 'Normal text');
+    fr.addEventListener('click', () => setZoom(0));
+
+    const fp = el('button', 'fz', 'A+');
+    fp.id = 'cso-ctl-fp';
+    fp.type = 'button';
+    fp.setAttribute('aria-label', 'Larger text');
+    fp.addEventListener('click', () => setZoom(0.05));
+
+    zoomSpan.append(fm, fr, fp);
+    ctl.append(savedBtn, langWrap, bt, a11yWrap, zoomSpan);
   }
 
   function renderAuth() {
     const authEl = document.getElementById('auth');
     if (!authEl) return;
+    authEl.replaceChildren();
+
     let candidate = null;
     try {
       const raw = localStorage.getItem('cso_candidate_session_v1');
       if (raw) candidate = JSON.parse(raw);
-    } catch(e) {}
+    } catch (e) {}
 
     if (candidate) {
-      authEl.innerHTML =
-        '<div class="cso-desktop-auth-buttons cso-auth-row">' +
-          '<a href="/student-dashboard/" class="btn-dashboard"><span aria-hidden="true">👤</span><span>My Dashboard</span></a>' +
-          '<button type="button" id="cso-header-logout-btn" class="btn-header-logout">Logout</button>' +
-        '</div>' +
-        '<div class="cso-mobile-auth-wrapper">' +
-          '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
-            '<span class="auth-icon" aria-hidden="true">👤</span>' +
-            '<span class="auth-label" id="cso-auth-cand-label">Account</span>' +
-            '<span class="auth-arrow" aria-hidden="true">▾</span>' +
-          '</button>' +
-          '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
-            '<a href="/student-dashboard/" class="cso-auth-item cso-auth-item--dash">👤 My Dashboard</a>' +
-            '<a href="#" id="cso-header-mob-logout" class="cso-auth-item cso-auth-item--logout">Logout</a>' +
-          '</div>' +
-        '</div>';
-      const lbl = document.getElementById('cso-auth-cand-label');
-      if (lbl && candidate.name) lbl.textContent = String(candidate.name).split(' ')[0];
-      setTimeout(() => {
-        const lo = document.getElementById('cso-header-logout-btn');
-        if (lo) lo.onclick = () => { localStorage.removeItem('cso_candidate_session_v1'); window.location.reload(); };
-        const mlo = document.getElementById('cso-header-mob-logout');
-        if (mlo) mlo.onclick = (e) => { e.preventDefault(); localStorage.removeItem('cso_candidate_session_v1'); window.location.reload(); };
-      }, 0);
+      const deskRow = el('div', 'cso-desktop-auth-buttons cso-auth-row');
+      const dashLink = el('a', 'btn-dashboard');
+      dashLink.href = '/student-dashboard/';
+      const iconSpan = el('span', '', '👤');
+      iconSpan.setAttribute('aria-hidden', 'true');
+      dashLink.append(iconSpan, el('span', '', 'My Dashboard'));
+
+      const logoutBtn = el('button', 'btn-header-logout', 'Logout');
+      logoutBtn.type = 'button';
+      logoutBtn.id = 'cso-header-logout-btn';
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('cso_candidate_session_v1');
+        window.location.reload();
+      });
+      deskRow.append(dashLink, logoutBtn);
+
+      const mobWrap = el('div', 'cso-mobile-auth-wrapper');
+      const trigger = el('button', 'cso-auth-trigger');
+      trigger.type = 'button';
+      trigger.id = 'cso-auth-trigger';
+      trigger.setAttribute('aria-haspopup', 'true');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-label', 'Account options');
+
+      const mIcon = el('span', 'auth-icon', '👤');
+      mIcon.setAttribute('aria-hidden', 'true');
+      const firstName = candidate.name ? String(candidate.name).split(' ')[0] : 'Account';
+      const mLabel = el('span', 'auth-label', firstName);
+      mLabel.id = 'cso-auth-cand-label';
+      const mArrow = el('span', 'auth-arrow', '▾');
+      mArrow.setAttribute('aria-hidden', 'true');
+      trigger.append(mIcon, mLabel, mArrow);
+
+      const menu = el('div', 'cso-auth-dropdown-menu');
+      menu.id = 'cso-auth-menu';
+      menu.hidden = true;
+
+      const mDash = el('a', 'cso-auth-item cso-auth-item--dash', '👤 My Dashboard');
+      mDash.href = '/student-dashboard/';
+      const mLogout = el('a', 'cso-auth-item cso-auth-item--logout', 'Logout');
+      mLogout.href = '#';
+      mLogout.id = 'cso-header-mob-logout';
+      mLogout.addEventListener('click', e => {
+        e.preventDefault();
+        localStorage.removeItem('cso_candidate_session_v1');
+        window.location.reload();
+      });
+      menu.append(mDash, mLogout);
+      mobWrap.append(trigger, menu);
+
+      authEl.append(deskRow, mobWrap);
       return;
     }
 
     if (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function') {
       const u = window.CSOAuthClient.getUser();
       if (u) {
-        authEl.replaceChildren();
-        const span = document.createElement('span');
-        span.className = 'mut cso-auth-user-label';
-        span.textContent = u.fullName || u.email || 'User';
+        const span = el('span', 'mut cso-auth-user-label', u.fullName || u.email || 'User');
         authEl.appendChild(span);
         return;
       }
     }
-    authEl.innerHTML =
-      '<div class="cso-desktop-auth-buttons">' +
-        '<a href="/login.html" class="cso-auth-item-link cso-login-link login-btn">Login</a>' +
-        '<a href="/signup.html" class="cso-signup-pill signup-btn">Sign Up</a>' +
-      '</div>' +
-      '<div class="cso-mobile-auth-wrapper">' +
-        '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
-          '<span class="auth-icon" aria-hidden="true">👤</span>' +
-          '<span class="auth-label">Account</span>' +
-          '<span class="auth-arrow" aria-hidden="true">▾</span>' +
-        '</button>' +
-        '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
-          '<a href="/login.html" class="cso-auth-item">Login</a>' +
-          '<a href="/signup.html" class="cso-auth-item">Sign Up</a>' +
-        '</div>' +
-      '</div>';
+
+    const desk = el('div', 'cso-desktop-auth-buttons');
+    const loginA = el('a', 'cso-auth-item-link cso-login-link login-btn', 'Login');
+    loginA.setAttribute('href', '/login.html');
+    const signupA = el('a', 'cso-signup-pill signup-btn', 'Sign Up');
+    signupA.setAttribute('href', '/signup.html');
+    desk.append(loginA, signupA);
+
+    const mobWrap = el('div', 'cso-mobile-auth-wrapper');
+    const trigger = el('button', 'cso-auth-trigger');
+    trigger.type = 'button';
+    trigger.id = 'cso-auth-trigger';
+    trigger.setAttribute('aria-haspopup', 'true');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-label', 'Account options');
+
+    const mIcon = el('span', 'auth-icon', '👤');
+    mIcon.setAttribute('aria-hidden', 'true');
+    const mLabel = el('span', 'auth-label', 'Account');
+    const mArrow = el('span', 'auth-arrow', '▾');
+    mArrow.setAttribute('aria-hidden', 'true');
+    trigger.append(mIcon, mLabel, mArrow);
+
+    const menu = el('div', 'cso-auth-dropdown-menu');
+    menu.id = 'cso-auth-menu';
+    menu.hidden = true;
+    const mLogin = el('a', 'cso-auth-item', 'Login');
+    mLogin.setAttribute('href', '/login.html');
+    const mSignup = el('a', 'cso-auth-item', 'Sign Up');
+    mSignup.setAttribute('href', '/signup.html');
+    menu.append(mLogin, mSignup);
+    mobWrap.append(trigger, menu);
+
+    authEl.append(desk, mobWrap);
   }
 
   function closeAuthDropdown() {
@@ -302,38 +555,95 @@
   function renderNav() {
     const navw = document.getElementById('navw');
     if (!navw) return;
+    navw.replaceChildren();
 
-    navw.innerHTML =
-      '<div class="cso-nav-bar-container">' +
-      '<button type="button" class="cso-nav-mobile" id="cso-menu-toggle" aria-expanded="false" aria-controls="cso-nav-items" aria-label="Navigation Menu">' +
-      '<span aria-hidden="true">☰</span> Menu</button>' +
-      '<div class="cso-mobile-acc-cluster">' +
-      '<button type="button" class="pill cso-ctl-a11y-mobile acc-btn" id="cso-ctl-a11y-mobile" aria-label="Accessibility options">♿ Options</button>' +
-      '<span class="pill cso-ctl-zoom-mobile acc-btn">' +
-      '<button type="button" class="fz" id="cso-ctl-fm-mobile" aria-label="Smaller text">A–</button>' +
-      '<button type="button" class="fz" id="cso-ctl-fr-mobile" aria-label="Normal text">A</button>' +
-      '<button type="button" class="fz" id="cso-ctl-fp-mobile" aria-label="Larger text">A+</button>' +
-      '</span>' +
-      '</div>' +
-      '</div>' +
-      '<div id="cso-nav-items" class="cso-nav-items">' +
-      '<a href="' + root + '" class="cso-nav-home' + (!activeSection && (pathname === '/' || pathname.endsWith('/index.html') || pathname === '') ? ' on' : '') + '"><span aria-hidden="true">🏠</span> Home</a>' +
-      NAV.map(([s, t, i]) =>
-        '<div class="ni' + (s === activeSection ? ' cso-active' : '') + '">' +
-        '<div class="cso-nav-parent">' +
-        '<a href="' + root + s + '/"' + (s === activeSection ? ' class="on" aria-current="page"' : '') + '>' +
-        '<span aria-hidden="true">' + i + '</span> ' + t + '</a>' +
-        '<button type="button" class="cso-nav-arrow" aria-label="Toggle ' + t + ' menu" aria-haspopup="true" aria-expanded="false" aria-controls="cso-nav-dd-' + s + '">⌄</button>' +
-        '</div>' +
-        '<div class="dd" id="cso-nav-dd-' + s + '">' +
-        MENUS[s].map((x, index) =>
-          '<a href="' + root + s + '/?section=' + index + '">' +
-          '<span class="dd-bullet" aria-hidden="true">›</span><span>' + x + '</span></a>'
-        ).join('') +
-        '</div>' +
-        '</div>'
-      ).join('') +
-      '</div>';
+    const bar = el('div', 'cso-nav-bar-container');
+    const mobToggle = el('button', 'cso-nav-mobile');
+    mobToggle.type = 'button';
+    mobToggle.id = 'cso-menu-toggle';
+    mobToggle.setAttribute('aria-expanded', 'false');
+    mobToggle.setAttribute('aria-controls', 'cso-nav-items');
+    mobToggle.setAttribute('aria-label', 'Navigation Menu');
+    const ham = el('span', '', '☰');
+    ham.setAttribute('aria-hidden', 'true');
+    mobToggle.append(ham, ' Menu');
+
+    const accCluster = el('div', 'cso-mobile-acc-cluster');
+    const mobSaved = el('button', 'pill cso-ctl-saved acc-btn', '★ Saved');
+    mobSaved.type = 'button';
+    mobSaved.addEventListener('click', openSavedDrawer);
+
+    const mobA11yWrap = el('span', 'cso-popup-anchor');
+    const mobA11y = el('button', 'pill cso-ctl-a11y-mobile acc-btn', '♿ Options');
+    mobA11y.type = 'button';
+    mobA11y.id = 'cso-ctl-a11y-mobile';
+    mobA11y.setAttribute('aria-label', 'Accessibility options');
+    mobA11yWrap.appendChild(mobA11y);
+
+    const mobZoom = el('span', 'pill cso-ctl-zoom-mobile acc-btn');
+    const mFm = el('button', 'fz', 'A–');
+    mFm.type = 'button';
+    mFm.id = 'cso-ctl-fm-mobile';
+    mFm.setAttribute('aria-label', 'Smaller text');
+    const mFr = el('button', 'fz', 'A');
+    mFr.type = 'button';
+    mFr.id = 'cso-ctl-fr-mobile';
+    mFr.setAttribute('aria-label', 'Normal text');
+    const mFp = el('button', 'fz', 'A+');
+    mFp.type = 'button';
+    mFp.id = 'cso-ctl-fp-mobile';
+    mFp.setAttribute('aria-label', 'Larger text');
+    mobZoom.append(mFm, mFr, mFp);
+
+    accCluster.append(mobSaved, mobA11yWrap, mobZoom);
+    bar.append(mobToggle, accCluster);
+
+    const navItems = el('div', 'cso-nav-items');
+    navItems.id = 'cso-nav-items';
+
+    const isHome = !activeSection && (pathname === '/' || pathname.endsWith('/index.html') || pathname === '');
+    const homeA = el('a', 'cso-nav-home' + (isHome ? ' on' : ''));
+    homeA.href = root;
+    const homeIcon = el('span', '', '🏠');
+    homeIcon.setAttribute('aria-hidden', 'true');
+    homeA.append(homeIcon, ' Home');
+    navItems.appendChild(homeA);
+
+    NAV.forEach(([s, t, icon]) => {
+      const ni = el('div', 'ni' + (s === activeSection ? ' cso-active' : ''));
+      const parent = el('div', 'cso-nav-parent');
+      const a = el('a', s === activeSection ? 'on' : '');
+      a.href = root + s + '/';
+      if (s === activeSection) a.setAttribute('aria-current', 'page');
+      const ic = el('span', '', icon);
+      ic.setAttribute('aria-hidden', 'true');
+      a.append(ic, ' ' + t);
+
+      const arrow = el('button', 'cso-nav-arrow', '⌄');
+      arrow.type = 'button';
+      arrow.setAttribute('aria-label', 'Toggle ' + t + ' menu');
+      arrow.setAttribute('aria-haspopup', 'true');
+      arrow.setAttribute('aria-expanded', 'false');
+      arrow.setAttribute('aria-controls', 'cso-nav-dd-' + s);
+
+      parent.append(a, arrow);
+
+      const dd = el('div', 'dd');
+      dd.id = 'cso-nav-dd-' + s;
+      MENUS[s].forEach((x, index) => {
+        const subA = el('a');
+        subA.href = root + s + '/?section=' + index;
+        const bullet = el('span', 'dd-bullet', '›');
+        bullet.setAttribute('aria-hidden', 'true');
+        subA.append(bullet, el('span', '', x));
+        dd.appendChild(subA);
+      });
+
+      ni.append(parent, dd);
+      navItems.appendChild(ni);
+    });
+
+    navw.append(bar, navItems);
   }
 
   document.addEventListener('click', e => {
@@ -368,6 +678,7 @@
     }
     const a11yMobile = e.target.closest('#cso-ctl-a11y-mobile');
     if (a11yMobile) {
+      e.stopPropagation();
       showPopup(a11yMobile, [
         ['High contrast', () => { S.hc = +!S.hc; saveSettings(); applySettings(); }, !!S.hc],
         ['Underline links', () => { S.ul = +!S.ul; saveSettings(); applySettings(); }, !!S.ul],
@@ -424,6 +735,10 @@
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+      const savedBackdrop = document.getElementById('cso-saved-drawer-backdrop');
+      if (savedBackdrop && !savedBackdrop.hidden) {
+        savedBackdrop.hidden = true;
+      }
       closeAuthDropdown();
       closeDropdowns();
       const items = document.getElementById('cso-nav-items');
@@ -466,6 +781,14 @@
     }
   });
 
+  window.addEventListener('cso:bookmarks-updated', () => {
+    updateSavedCountBadge();
+    const savedBackdrop = document.getElementById('cso-saved-drawer-backdrop');
+    if (savedBackdrop && !savedBackdrop.hidden) {
+      renderSavedDrawerContents();
+    }
+  });
+
   function ensureAdminLink() {
     const adminLink = document.querySelector('.top .adm, header .adm, .cso-header-top .adm');
     if (adminLink) {
@@ -481,6 +804,7 @@
     renderAuth();
     renderNav();
     ensureAdminLink();
+    updateSavedCountBadge();
   }
 
   if (document.readyState === 'loading') {

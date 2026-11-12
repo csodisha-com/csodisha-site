@@ -101,7 +101,11 @@ Errors: `{ "error": "message", "code": "CODE" }` (+ `fields` for `VALIDATION_ERR
 |---|---|
 | `GET /api/content/current-affairs[/:slug]` | `page, limit, category, q` |
 | `GET /api/content/jobs[/:slug]` | `+ state` |
-| `GET /api/content/mock-tests[/:slug-or-id]` | detail **omits correct answers/explanations** (a future test engine should grade server-side) |
+| `GET /api/content/mock-tests[/:slug-or-id]` | detail **omits correct answers/explanations** |
+| `POST /api/content/mock-tests/:id/submit` | server-side CBT grading (`X-CSO-CSRF: 1` required); persists to `test_attempts` & computes rank/percentile when signed in |
+| `GET /api/content/mock-tests/:id/leaderboard` | top 10 users (best score per user, tie-broken by lowest `time_taken_sec`) with masked display names |
+| `GET /api/user/attempts` | authenticated user's recent CBT attempts joined with mock test title & target exam |
+| `GET/POST /api/user/bookmarks`, `DELETE /api/user/bookmarks/:type/:id`, `POST /api/user/bookmarks/sync` | authenticated cross-device D1 bookmarks (`job`, `current-affair`, `mock-test`, `resource`) + guest localStorage sync |
 | `GET /api/content/banner` | `{active:false}` or the live banner; `max-age=15` |
 | `GET /api/content/resources?kind&exam` | published syllabus/PYQ with `file_url` |
 | `GET /api/media/:uuid.ext` | `Cache-Control: public, max-age=31536000, immutable` |

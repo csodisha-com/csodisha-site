@@ -104,11 +104,11 @@
 
     if (pc && typeof pc.createBookmarkButton === 'function') {
       footer.appendChild(pc.createBookmarkButton({
-        type: 'study',
-        id: `res-${item.id}`,
+        type: 'resource',
+        id: item.id,
         title: item.title,
         badge: isPyq ? `PYQ${item.exam ? ' · ' + item.exam : ''}` : `Syllabus${item.exam ? ' · ' + item.exam : ''}`,
-        url: '/resources/',
+        url: item.file_url || '/resources/',
         pdfUrl: item.file_url || ''
       }));
     }

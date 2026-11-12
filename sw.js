@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v10';
+const CACHE_NAME = 'cso-candidate-cache-v11';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
@@ -50,7 +50,7 @@ const NETWORK_FIRST_API_ROUTES = [
 ];
 
 function isNetworkFirstApi(url) {
-  if (url.pathname.startsWith('/api/content/')) return true;
+  if (url.pathname.startsWith('/api/content/') || url.pathname.startsWith('/api/user/')) return true;
   return NETWORK_FIRST_API_ROUTES.some(route => url.pathname === route || url.pathname === route + '/');
 }
 

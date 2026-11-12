@@ -1,13 +1,15 @@
 /**
- * Common Sense Odisha (CSO) — Candidate Bookmark Manager
- * Manages saved jobs, welfare schemes, and study materials across portals.
- * Storage Key: cso_candidate_bookmarks_v1
- * Dispatches: 'cso:bookmarks-updated' CustomEvent
+ * Common Sense Odisha (CSO) — Cross-Device Candidate Bookmark Manager
+ * Authenticated users read/write directly to D1 via /api/user/bookmarks
+ * (and auto-sync guest localStorage bookmarks on sign-in via /api/user/bookmarks/sync).
+ * Guests seamlessly fall back to localStorage (cso_candidate_bookmarks_v1).
+ * Strict CSP-compliant: zero inline styles, zero innerHTML.
  */
-(function(window) {
+(function (window) {
   'use strict';
 
   const STORAGE_KEY = 'cso_candidate_bookmarks_v1';
+  const SYNCED_FLAG_KEY = 'cso_bookmarks_d1_synced_v1';
 
   const DEFAULT_BOOKMARKS = {
     jobs: [],
@@ -15,10 +17,37 @@
     study: []
   };
 
+  const VALID_API_TYPES = ['job', 'current-affair', 'mock-test', 'resource'];
+
+  function toShelfType(type) {
+    const t = String(type || '').toLowerCase();
+    if (t === 'job' || t === 'jobs') return 'jobs';
+    if (t === 'scheme' || t === 'schemes') return 'schemes';
+    return 'study';
+  }
+
+  function toApiItemType(type, item) {
+    const t = String(type || '').toLowerCase();
+    if (VALID_API_TYPES.includes(t)) return t;
+    if (t === 'jobs') return 'job';
+    if (item && VALID_API_TYPES.includes(item.item_type)) return item.item_type;
+    const idStr = String((item && (item.item_id || item.id)) || '');
+    if (idStr.startsWith('ca-')) return 'current-affair';
+    if (idStr.startsWith('mock-')) return 'mock-test';
+    return 'resource';
+  }
+
+  function typeLabel(apiType) {
+    if (apiType === 'job') return 'Job Alert';
+    if (apiType === 'current-affair') return 'Current Affairs';
+    if (apiType === 'mock-test') return 'Mock Test';
+    return 'Resource';
+  }
+
   function getAllBookmarks() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { ...DEFAULT_BOOKMARKS };
+      if (!raw) return { jobs: [], schemes: [], study: [] };
       const parsed = JSON.parse(raw);
       return {
         jobs: Array.isArray(parsed.jobs) ? parsed.jobs : [],
@@ -26,27 +55,65 @@
         study: Array.isArray(parsed.study) ? parsed.study : []
       };
     } catch (e) {
-      console.warn('Failed to load candidate bookmarks', e);
-      return { ...DEFAULT_BOOKMARKS };
+      return { ...DEFAULT_BOOKMARKS, jobs: [], schemes: [], study: [] };
+    }
+  }
+
+  function getFlatBookmarks(bookmarksObj) {
+    const all = bookmarksObj || getAllBookmarks();
+    const list = [];
+    ['jobs', 'schemes', 'study'].forEach(shelf => {
+      const arr = Array.isArray(all[shelf]) ? all[shelf] : [];
+      arr.forEach(item => {
+        if (!item || !item.id) return;
+        const apiType = toApiItemType(item.item_type || shelf, item);
+        list.push({
+          id: String(item.id),
+          item_id: String(item.item_id || item.id),
+          item_type: apiType,
+          shelf,
+          title: item.title || 'Saved Item',
+          url: item.url || item.pdfUrl || '/',
+          badge: item.badge || typeLabel(apiType),
+          pdfUrl: item.pdfUrl || '',
+          deadline: item.deadline || '',
+          meta: item.meta || {
+            badge: item.badge || typeLabel(apiType),
+            pdfUrl: item.pdfUrl || '',
+            deadline: item.deadline || '',
+            shelf
+          },
+          savedAt: item.savedAt || item.created_at || new Date().toISOString()
+        });
+      });
+    });
+    return list;
+  }
+
+  function writeLocalBookmarks(bookmarks) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+      window.dispatchEvent(new CustomEvent('cso:bookmarks-updated', {
+        detail: {
+          ...bookmarks,
+          flat: getFlatBookmarks(bookmarks)
+        }
+      }));
+    } catch (e) {
+      // Ignore storage quota errors in restricted contexts
     }
   }
 
   function saveAllBookmarks(bookmarks) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
-      window.dispatchEvent(new CustomEvent('cso:bookmarks-updated', { detail: bookmarks }));
-
-      // Trigger cloud sync if online and candidate session active
-      syncBookmarksWithCloud(bookmarks);
-    } catch (e) {
-      console.error('Failed to save candidate bookmarks', e);
-    }
+    writeLocalBookmarks(bookmarks);
+    syncLegacyCandidateBookmarks(bookmarks);
   }
 
-  // Background sync bookmarks with Cloudflare D1
+  // Maintain compatibility with legacy /api/candidate/bookmarks endpoint
   let bmSyncTimeout = null;
-  async function syncBookmarksWithCloud(bookmarks) {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+  function syncLegacyCandidateBookmarks(bookmarks) {
+    if (typeof fetch !== 'function') return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
     clearTimeout(bmSyncTimeout);
     bmSyncTimeout = setTimeout(async () => {
       try {
@@ -55,10 +122,6 @@
         const session = JSON.parse(rawSession);
         if (!session || !session.id) return;
 
-        // Flatten bookmarks array for cloud API. post_id is prefixed with the
-        // shelf type ('jobs:'/'schemes:'/'study:') so shelf placement survives
-        // the server's strict category enum round-trip; the server treats
-        // post_id as an opaque key.
         const all = bookmarks || getAllBookmarks();
         const flatList = [];
         ['jobs', 'schemes', 'study'].forEach(cat => {
@@ -78,122 +141,235 @@
         await fetch('/api/candidate/bookmarks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({ bookmarks: flatList })
         });
-      } catch (err) {
-        console.warn('Bookmarks cloud sync notice:', err.message);
-      }
+      } catch (_) {}
     }, 1200);
   }
 
-  // Initial cloud reconciliation on startup
-  async function reconcileBookmarksFromCloud() {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+  async function pushD1Upsert(record) {
+    if (typeof fetch !== 'function') return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
     try {
-      const res = await fetch('/api/candidate/bookmarks');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data && data.success && Array.isArray(data.bookmarks) && data.bookmarks.length > 0) {
-        const current = getAllBookmarks();
-        let changed = false;
-
-        data.bookmarks.forEach(bm => {
-          // New spec shape (postId/postTitle/postUrl/deadlineDate) with legacy
-          // aliases (article_id/title/url) still honoured.
-          const rawPostId = bm.postId || bm.post_id || bm.article_id || '';
-          const title = bm.postTitle || bm.post_title || bm.title || 'Saved Item';
-          const url = bm.postUrl || bm.post_url || bm.url || '';
-          const deadline = bm.deadlineDate || bm.deadline_date || null;
-
-          // Decode the shelf type from the post_id prefix; recruitment-post
-          // categories default to the jobs shelf, everything else to study.
-          let shelf = null;
-          const prefixMatch = /^(jobs|schemes|study):/.exec(String(rawPostId));
-          if (prefixMatch) {
-            shelf = prefixMatch[1];
-          } else if (['OPSC', 'OSSC', 'OSSSC', 'TEACHING'].includes(bm.category)) {
-            shelf = 'jobs';
-          } else {
-            shelf = 'study';
+      await fetch('/api/user/bookmarks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSO-CSRF': '1'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          item_type: record.item_type,
+          item_id: record.item_id,
+          title: record.title,
+          url: record.url || '/',
+          meta: record.meta || {
+            badge: record.badge || '',
+            pdfUrl: record.pdfUrl || '',
+            deadline: record.deadline || '',
+            shelf: record.shelf || toShelfType(record.item_type)
           }
-          const itemId = prefixMatch ? String(rawPostId).slice(prefixMatch[0].length) : String(rawPostId);
+        })
+      });
+    } catch (_) {}
+  }
 
-          if (!current[shelf]) current[shelf] = [];
-          const exists = current[shelf].some(x => String(x.id) === String(itemId));
-          if (!exists) {
-            current[shelf].unshift({
-              id: itemId,
-              title: title,
-              url: url,
-              deadline: deadline || undefined,
-              badge: shelf.toUpperCase(),
-              savedAt: bm.createdAt ? new Date(bm.createdAt).toISOString() : new Date().toISOString()
-            });
-            changed = true;
-          }
+  async function pushD1Delete(apiType, itemId) {
+    if (typeof fetch !== 'function') return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+    try {
+      await fetch(`/api/user/bookmarks/${encodeURIComponent(apiType)}/${encodeURIComponent(itemId)}`, {
+        method: 'DELETE',
+        headers: { 'X-CSO-CSRF': '1' },
+        credentials: 'same-origin'
+      });
+    } catch (_) {}
+  }
+
+  function applyServerItemsToLocal(serverItems) {
+    if (!Array.isArray(serverItems)) return;
+    const next = { jobs: [], schemes: [], study: [] };
+
+    serverItems.forEach(row => {
+      if (!row) return;
+      const itemType = VALID_API_TYPES.includes(row.item_type) ? row.item_type : 'resource';
+      const itemId = String(row.item_id || row.id || '');
+      if (!itemId) return;
+      const meta = (row.meta && typeof row.meta === 'object') ? row.meta : {};
+      const shelf = meta.shelf && ['jobs', 'schemes', 'study'].includes(meta.shelf)
+        ? meta.shelf
+        : toShelfType(itemType);
+
+      if (!next[shelf].some(x => String(x.id) === itemId && (x.item_type || toApiItemType(shelf, x)) === itemType)) {
+        next[shelf].push({
+          id: itemId,
+          item_id: itemId,
+          item_type: itemType,
+          title: row.title || 'Saved Item',
+          titleOdia: meta.titleOdia || '',
+          badge: meta.badge || typeLabel(itemType),
+          url: row.url || '/',
+          pdfUrl: meta.pdfUrl || '',
+          deadline: meta.deadline || undefined,
+          meta,
+          savedAt: row.created_at || row.createdAt || new Date().toISOString()
         });
-
-        if (changed) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-          updateBookmarkButtonsUI();
-          window.dispatchEvent(new CustomEvent('cso:bookmarks-updated', { detail: current }));
-        }
       }
-    } catch (err) {
-      console.warn('Bookmarks cloud reconcile notice:', err.message);
+    });
+
+    writeLocalBookmarks(next);
+    updateBookmarkButtonsUI();
+  }
+
+  // Reconcile & auto-sync localStorage guest bookmarks with D1 /api/user/bookmarks
+  async function reconcileBookmarksFromCloud() {
+    if (typeof fetch !== 'function') return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+
+    try {
+      const res = await fetch('/api/user/bookmarks', { credentials: 'same-origin' });
+      if (res.ok) {
+        const data = await res.json();
+        const serverItems = Array.isArray(data && data.items) ? data.items : [];
+        const localFlat = getFlatBookmarks();
+        const alreadySynced = sessionStorageSafeGet(SYNCED_FLAG_KEY);
+
+        if (localFlat.length > 0 && !alreadySynced) {
+          const syncPayload = localFlat.map(b => ({
+            item_type: b.item_type,
+            item_id: b.item_id,
+            title: b.title,
+            url: b.url || '/',
+            meta: b.meta
+          }));
+          const syncRes = await fetch('/api/user/bookmarks/sync', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSO-CSRF': '1'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ items: syncPayload })
+          });
+          if (syncRes.ok) {
+            const syncData = await syncRes.json();
+            sessionStorageSafeSet(SYNCED_FLAG_KEY, '1');
+            if (Array.isArray(syncData && syncData.items)) {
+              applyServerItemsToLocal(syncData.items);
+              return;
+            }
+          }
+        }
+
+        sessionStorageSafeSet(SYNCED_FLAG_KEY, '1');
+        applyServerItemsToLocal(serverItems);
+        return;
+      }
+    } catch (_) {}
+  }
+
+  function sessionStorageSafeGet(k) {
+    try {
+      return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(k) : null;
+    } catch (_) {
+      return null;
     }
+  }
+
+  function sessionStorageSafeSet(k, v) {
+    try {
+      if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(k, v);
+    } catch (_) {}
   }
 
   function getBookmarksByType(type) {
     const all = getAllBookmarks();
-    return all[type] || [];
+    if (type === 'jobs' || type === 'schemes' || type === 'study') {
+      return all[type] || [];
+    }
+    const apiType = toApiItemType(type);
+    return getFlatBookmarks(all).filter(item => item.item_type === apiType);
   }
 
   function isBookmarked(type, id) {
     if (!type || !id) return false;
-    const list = getBookmarksByType(type);
-    return list.some(item => String(item.id) === String(id));
+    const targetId = String(id);
+    const all = getAllBookmarks();
+    if (type === 'jobs' || type === 'schemes' || type === 'study') {
+      return (all[type] || []).some(item => String(item.id) === targetId);
+    }
+    const apiType = toApiItemType(type);
+    const shelf = toShelfType(apiType);
+    return (all[shelf] || []).some(item => {
+      if (String(item.id) !== targetId) return false;
+      return !item.item_type || item.item_type === apiType;
+    });
   }
 
   function toggleBookmark(type, item) {
     if (!type || !item || !item.id) return false;
-    const all = getAllBookmarks();
-    all[type] = all[type] || [];
+    const shelf = toShelfType(type);
+    const apiType = toApiItemType(type, item);
+    const itemId = String(item.id);
 
-    const existingIndex = all[type].findIndex(b => String(b.id) === String(item.id));
+    const all = getAllBookmarks();
+    all[shelf] = all[shelf] || [];
+
+    const existingIndex = all[shelf].findIndex(b => {
+      if (String(b.id) !== itemId) return false;
+      if (VALID_API_TYPES.includes(String(type))) {
+        return !b.item_type || b.item_type === apiType;
+      }
+      return true;
+    });
+
     let added = false;
 
     if (existingIndex !== -1) {
-      all[type].splice(existingIndex, 1);
+      const removed = all[shelf][existingIndex];
+      all[shelf].splice(existingIndex, 1);
       added = false;
+      pushD1Delete(toApiItemType(removed.item_type || type, removed), itemId);
     } else {
-      all[type].unshift({
-        id: String(item.id),
+      const cleanUrl = (item.url && String(item.url).startsWith('/')) || /^https?:\/\//i.test(String(item.url || ''))
+        ? String(item.url)
+        : (typeof window.location === 'object' && window.location.pathname ? window.location.pathname : '/');
+      const record = {
+        id: itemId,
+        item_id: itemId,
+        item_type: apiType,
+        shelf,
         title: item.title || 'Saved Item',
         titleOdia: item.titleOdia || '',
-        badge: item.badge || item.category || type.toUpperCase(),
-        url: item.url || '',
+        badge: item.badge || item.category || typeLabel(apiType),
+        url: cleanUrl,
         pdfUrl: item.pdfUrl || item.link || '',
         deadline: item.deadline || item.deadlineDate || undefined,
+        meta: item.meta || {
+          badge: item.badge || item.category || typeLabel(apiType),
+          pdfUrl: item.pdfUrl || item.link || '',
+          deadline: item.deadline || item.deadlineDate || '',
+          shelf
+        },
         savedAt: new Date().toISOString()
-      });
+      };
+      all[shelf].unshift(record);
       added = true;
+      pushD1Upsert(record);
     }
 
     saveAllBookmarks(all);
     updateBookmarkButtonsUI();
 
-    // Offline-first dispatch: mirror into IndexedDB and dispatch/queue the
-    // single mutation through the sync engine (falls back silently when the
-    // engine isn't present, e.g. on pages without the dashboard scripts).
     if (window.CSOSync && typeof window.CSOSync.saveBookmarkAction === 'function') {
-      const prefixedId = `${type}:${String(item.id)}`;
+      const prefixedId = `${shelf}:${itemId}`;
       if (added) {
         window.CSOSync.saveBookmarkAction('save', {
           postId: prefixedId,
           postTitle: item.title,
           postUrl: item.url || item.pdfUrl || '',
-          category: item.badge || type.toUpperCase(),
+          category: item.badge || shelf.toUpperCase(),
           deadlineDate: item.deadline || item.deadlineDate || null
         });
       } else {
@@ -204,16 +380,27 @@
   }
 
   function removeBookmark(type, id) {
+    if (!type || !id) return;
+    const shelf = toShelfType(type);
+    const apiType = toApiItemType(type, { id });
+    const targetId = String(id);
     const all = getAllBookmarks();
-    if (all[type]) {
-      all[type] = all[type].filter(item => String(item.id) !== String(id));
+    if (all[shelf]) {
+      all[shelf] = all[shelf].filter(item => {
+        if (String(item.id) !== targetId) return true;
+        if (VALID_API_TYPES.includes(String(type)) && item.item_type) {
+          return item.item_type !== apiType;
+        }
+        return false;
+      });
       saveAllBookmarks(all);
       updateBookmarkButtonsUI();
+      pushD1Delete(apiType, targetId);
     }
   }
 
-  // Updates all visible bookmark buttons on current page to match active state
   function updateBookmarkButtonsUI() {
+    if (typeof document.querySelectorAll !== 'function') return;
     const buttons = document.querySelectorAll('.cso-bookmark-btn');
     buttons.forEach(btn => {
       const type = btn.dataset.bookmarkType;
@@ -236,35 +423,34 @@
     });
   }
 
-  // Global click delegator for bookmark triggers
   function initBookmarkDelegator() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
+      if (!e.target || typeof e.target.closest !== 'function') return;
       const btn = e.target.closest('.cso-bookmark-btn');
       if (!btn) return;
       e.preventDefault();
       e.stopPropagation();
 
-      const type = btn.dataset.bookmarkType;
+      const type = btn.dataset.bookmarkType || 'resource';
       const id = btn.dataset.bookmarkId;
-      const title = btn.dataset.bookmarkTitle || btn.closest('.card, .cso-card, [data-id]')?.querySelector('h2, h3, h4, .title')?.textContent?.trim() || id;
+      const title = btn.dataset.bookmarkTitle || btn.closest('.card, .cso-card, .pc-card, .live-job-card, [data-id]')?.querySelector('h2, h3, h4, .title')?.textContent?.trim() || id;
       const badge = btn.dataset.bookmarkBadge || btn.dataset.bookmarkCat || '';
-      const url = btn.dataset.bookmarkUrl || window.location.href;
+      const url = btn.dataset.bookmarkUrl || (window.location ? window.location.pathname + window.location.search : '/');
       const pdfUrl = btn.dataset.bookmarkPdf || '';
       const deadline = btn.dataset.bookmarkDeadline || '';
 
       const isNowBookmarked = toggleBookmark(type, { id, title, badge, url, pdfUrl, deadline });
 
-      // Toast feedback if available
       if (window.CSOSuperStore && typeof window.CSOSuperStore.showToast === 'function') {
         window.CSOSuperStore.showToast(
-          isNowBookmarked ? '★ Saved to your Student Dashboard!' : 'Removed from bookmarks.',
+          isNowBookmarked ? '★ Saved to your Bookmarks!' : 'Removed from bookmarks.',
           isNowBookmarked ? 'success' : 'info'
         );
       }
     });
 
-    window.addEventListener('storage', function(e) {
-      if (e.key === STORAGE_KEY) {
+    window.addEventListener('storage', function (e) {
+      if (e && e.key === STORAGE_KEY) {
         updateBookmarkButtonsUI();
       }
     });
@@ -284,11 +470,12 @@
 
   window.CSOBookmarks = {
     getAllBookmarks,
+    getFlatBookmarks,
     getBookmarksByType,
     isBookmarked,
     toggleBookmark,
     removeBookmark,
+    reconcileFromCloud: reconcileBookmarksFromCloud,
     updateUI: updateBookmarkButtonsUI
   };
-
 })(window);

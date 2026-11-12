@@ -172,6 +172,171 @@ d = await j(await call(admin, 'GET', '/api/admin/users?q=cand'));
 ok(d.items.length >= 1 && 'full_name' in d.items[0] && 'district' in d.items[0], 'candidate accounts include profile fields from D1');
 d = await j(await call(admin, 'GET', '/api/admin/users?role=admin')); ok(d.items.length >= 1 && d.items.every(u => u.role === 'admin'), 'accounts role filter');
 
+console.log('CBT grading, persistent attempts & leaderboards');
+const cbtRes = await call(editor, 'POST', '/api/admin/mock-tests', {
+  title: 'OPSC OCS Prelims GS Mock',
+  target_exam: 'OPSC',
+  duration_minutes: 30,
+  total_marks: 5,
+  negative_marking: 0.25
+});
+const cbtTest = await j(cbtRes);
+ok(cbtRes.status === 201 && cbtTest.id, 'create CBT grading mock test');
+const cbtQuestions = [
+  { section: 'Polity', question_en: 'Capital of Odisha?', option_a: 'Cuttack', option_b: 'Bhubaneswar', option_c: 'Puri', option_d: 'Sambalpur', correct_option: 'B', marks: 2, explanation: 'Bhubaneswar became capital in 1948.' },
+  { section: 'Geography', question_en: 'Longest river of Odisha?', option_a: 'Mahanadi', option_b: 'Brahmani', option_c: 'Baitarani', option_d: 'Rushikulya', correct_option: 'A', marks: 2, explanation: 'Mahanadi is the longest river in Odisha.' },
+  { section: 'History', question_en: 'Builder of Konark Sun Temple?', option_a: 'Kharavela', option_b: 'Anantavarman', option_c: 'Narasimhadeva I', option_d: 'Kapilendra Deva', correct_option: 'C', marks: 1, explanation: 'Built by King Narasimhadeva I of Eastern Ganga dynasty.' }
+];
+await call(editor, 'POST', `/api/admin/mock-tests/${cbtTest.id}/import`, { rows: cbtQuestions, dry_run: false });
+await call(editor, 'POST', `/api/admin/mock-tests/${cbtTest.id}/status`, { status: 'published' });
+
+const pubTest = await j(await call(null, 'GET', `/api/content/mock-tests/${cbtTest.slug}`));
+ok(
+  pubTest.questions && pubTest.questions.length === 3 &&
+  pubTest.questions.every(q => !('correct_option' in q) && !('explanation' in q)),
+  'public test payload conceals correct_option and explanation before submit'
+);
+const [q1, q2, q3] = pubTest.questions;
+
+const cbtNoCsrf = await fetch(`${BASE}/api/content/mock-tests/${cbtTest.slug}/submit`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ answers: { [q1.id]: 'B' }, timeTakenSec: 30 })
+});
+ok(cbtNoCsrf.status === 403 && (await j(cbtNoCsrf)).code === 'CSRF_REJECTED', 'CBT submit enforces CSRF protection');
+
+// Guest submission: Q1 correct (+2), Q2 wrong (-0.25), Q3 unanswered (0) => 1.75 / 5, accuracy 50%
+const guestSubRes = await call(null, 'POST', `/api/content/mock-tests/${cbtTest.slug}/submit`, {
+  answers: { [q1.id]: 'B', [q2.id]: 'D' },
+  timeTakenSec: 95,
+  score: 999 // server must ignore client-supplied score
+});
+const guestSub = await j(guestSubRes);
+ok(
+  guestSubRes.status === 200 &&
+  guestSub.persisted === false &&
+  guestSub.score === 1.75 &&
+  guestSub.maxScore === 5 &&
+  guestSub.correctCount === 1 &&
+  guestSub.wrongCount === 1 &&
+  guestSub.unansweredCount === 1 &&
+  guestSub.accuracy === 50 &&
+  guestSub.breakdown.length === 3 &&
+  guestSub.breakdown[0].correctOption === 'B' &&
+  guestSub.breakdown[0].explanation.includes('1948'),
+  'guest CBT submission grades server-side (+marks / -negative) without persisting'
+);
+
+// Authenticated candidate submission #1: 1.75 / 5 in 80s
+const candSub1 = await j(await call(cand, 'POST', `/api/content/mock-tests/${cbtTest.slug}/submit`, {
+  answers: { [q1.id]: 'B', [q2.id]: 'D' },
+  timeTakenSec: 80
+}));
+ok(
+  candSub1.persisted === true &&
+  typeof candSub1.attemptId === 'string' &&
+  candSub1.score === 1.75 &&
+  candSub1.rank === 1 &&
+  candSub1.totalAttempts === 1,
+  'authenticated candidate CBT attempt persists to D1 and computes rank #1'
+);
+
+// Second user (editor) submits perfect score 5 / 5 in 45s -> claims rank #1
+const edSub = await j(await call(editor, 'POST', `/api/content/mock-tests/${cbtTest.slug}/submit`, {
+  answers: { [q1.id]: 'B', [q2.id]: 'A', [q3.id]: 'C' },
+  timeTakenSec: 45
+}));
+ok(edSub.persisted === true && edSub.score === 5 && edSub.accuracy === 100 && edSub.rank === 1, 'higher score claims rank #1');
+
+// Candidate submits improved attempt: Q1 correct (+2), Q2 correct (+2), Q3 wrong (-0.25) => 3.75 in 60s -> rank #2
+const candSub2 = await j(await call(cand, 'POST', `/api/content/mock-tests/${cbtTest.slug}/submit`, {
+  answers: { [q1.id]: 'B', [q2.id]: 'A', [q3.id]: 'D' },
+  timeTakenSec: 60
+}));
+ok(candSub2.persisted === true && candSub2.score === 3.75 && candSub2.rank === 2 && candSub2.totalAttempts === 3, 'candidate improved attempt updates rank (#2 behind 5.0)');
+
+// Leaderboard returns top 10 best-score-per-user (1 row per user, ordered by score DESC, time_taken_sec ASC)
+const lbRes = await call(null, 'GET', `/api/content/mock-tests/${cbtTest.slug}/leaderboard`);
+const lb = await j(lbRes);
+ok(
+  lbRes.status === 200 &&
+  Array.isArray(lb.items) &&
+  lb.items.length === 2 &&
+  lb.items[0].rank === 1 && lb.items[0].score === 5 &&
+  lb.items[1].rank === 2 && lb.items[1].score === 3.75 &&
+  lb.items.every(row => row.displayName && !row.displayName.includes('@')),
+  'leaderboard deduplicates best score per user and masks email PII'
+);
+
+// User attempts history endpoint
+ok((await call(null, 'GET', '/api/user/attempts')).status === 401, 'anonymous /api/user/attempts → 401');
+const attHist = await j(await call(cand, 'GET', '/api/user/attempts'));
+ok(
+  Array.isArray(attHist.items) &&
+  attHist.items.length >= 2 &&
+  attHist.items[0].score === 3.75 &&
+  attHist.items[0].title === 'OPSC OCS Prelims GS Mock' &&
+  attHist.items[0].target_exam === 'OPSC',
+  'authenticated /api/user/attempts returns user attempts joined with test title & exam'
+);
+
+console.log('Cross-device D1 bookmarks & user isolation');
+ok((await call(null, 'GET', '/api/user/bookmarks')).status === 401, 'anonymous /api/user/bookmarks → 401');
+const bmNoCsrf = await fetch(`${BASE}/api/user/bookmarks`, {
+  method: 'POST',
+  headers: { Cookie: cand, 'Content-Type': 'application/json' },
+  body: JSON.stringify({ item_type: 'job', item_id: 'j1', title: 'Job 1', url: '/jobs-careers/' })
+});
+ok(bmNoCsrf.status === 403, 'POST /api/user/bookmarks enforces CSRF');
+ok((await call(cand, 'POST', '/api/user/bookmarks', { item_type: 'bogus', item_id: 'x', title: 'T', url: '/jobs-careers/' })).status === 422, 'bookmark item_type validated');
+ok((await call(cand, 'POST', '/api/user/bookmarks', { item_type: 'job', item_id: 'x', title: 'T', url: 'javascript:alert(1)' })).status === 422, 'bookmark rejects javascript: URL');
+
+r = await call(cand, 'POST', '/api/user/bookmarks', {
+  item_type: 'job',
+  item_id: 'opsc-ocs-2026',
+  title: 'OPSC OCS 2026 Notification',
+  url: '/jobs-careers/?job=opsc-ocs-2026',
+  meta: { badge: 'OPSC', deadline: '2027-01-31' }
+});
+ok(r.status === 201, 'candidate saves job bookmark to D1');
+
+r = await call(cand, 'POST', '/api/user/bookmarks', {
+  item_type: 'mock-test',
+  item_id: cbtTest.slug,
+  title: cbtTest.title || 'OPSC OCS Prelims GS Mock',
+  url: `/mock-tests/?test=${cbtTest.slug}`,
+  meta: { badge: 'Mock Test · OPSC' }
+});
+ok(r.status === 201, 'candidate saves mock-test bookmark to D1');
+
+d = await j(await call(cand, 'GET', '/api/user/bookmarks'));
+ok(d.total === 2 && d.items.some(b => b.item_type === 'job' && b.item_id === 'opsc-ocs-2026' && b.meta.badge === 'OPSC'), 'GET /api/user/bookmarks lists candidate bookmarks');
+
+// Bulk sync guest localStorage bookmarks
+const syncRes = await call(cand, 'POST', '/api/user/bookmarks/sync', {
+  items: [
+    { item_type: 'current-affair', item_id: 'odisha-budget-2026', title: 'Odisha Budget Highlights', url: '/current-affairs/?slug=odisha-budget-2026', meta: { badge: 'Economy' } },
+    { item_type: 'resource', item_id: 'ossc-cgl-syllabus', title: 'OSSC CGL Official Syllabus', url: '/resources/', meta: { badge: 'Syllabus' } }
+  ]
+});
+const syncData = await j(syncRes);
+ok(syncRes.status === 200 && syncData.synced === 2 && syncData.total === 4, 'POST /api/user/bookmarks/sync merges guest bookmarks into D1');
+
+// Cross-user isolation: editor cannot read or delete cand's bookmarks
+const edBmList = await j(await call(editor, 'GET', '/api/user/bookmarks'));
+ok(edBmList.total === 0, 'cross-user isolation: editor sees 0 of candidate bookmarks');
+const edDel = await j(await call(editor, 'DELETE', '/api/user/bookmarks/job/opsc-ocs-2026'));
+ok(edDel.deleted === false, 'cross-user isolation: editor cannot delete candidate bookmark');
+ok((await j(await call(cand, 'GET', '/api/user/bookmarks'))).total === 4, 'candidate bookmarks remain intact after other user delete attempt');
+
+// Candidate deletes own bookmark
+const candDel = await j(await call(cand, 'DELETE', '/api/user/bookmarks/job/opsc-ocs-2026'));
+ok(candDel.deleted === true && (await j(await call(cand, 'GET', '/api/user/bookmarks'))).total === 3, 'candidate deletes own bookmark from D1');
+
+// Admin stats telemetry includes attempts_total and bookmarks_total
+const statsAfter = await j(await call(editor, 'GET', '/api/admin/stats'));
+ok(statsAfter.attempts_total >= 3 && statsAfter.bookmarks_total >= 3, 'GET /api/admin/stats includes live attempts_total and bookmarks_total');
+
 console.log('Wired public frontend pages + strict CSP');
 for (const [pagePath, scriptPath, apiEndpoint] of [
   ['/jobs-careers/', '/jobs-careers/assets/dashboard.js', '/api/content/jobs'],
@@ -186,7 +351,13 @@ for (const [pagePath, scriptPath, apiEndpoint] of [
   ok(!/<style|<script(?![^>]*\bsrc=)|\son[a-z]+=|\sstyle=/i.test(pHtml), `${pagePath} has no inline scripts, styles, or handlers`);
   const sr = await call(null, 'GET', scriptPath);
   const sCode = await sr.text();
-  ok(sr.status === 200 && sCode.includes(apiEndpoint) && !/\.innerHTML\s*=/.test(sCode), `${scriptPath} wired to ${apiEndpoint} with safe DOM rendering`);
+  ok(sr.status === 200 && sCode.includes(apiEndpoint) && !/\.innerHTML\s*=/.test(sCode) && !/\.style\./.test(sCode), `${scriptPath} wired to ${apiEndpoint} with safe DOM rendering and zero inline style mutations`);
+}
+
+for (const sharedScript of ['/assets/js/public-content.js', '/assets/js/bookmark-manager.js', '/assets/shared-header.js']) {
+  const sr = await call(null, 'GET', sharedScript);
+  const sCode = await sr.text();
+  ok(sr.status === 200 && !/\.innerHTML\s*=/.test(sCode) && !/\.style\./.test(sCode), `${sharedScript} has zero innerHTML and zero inline style assignments`);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

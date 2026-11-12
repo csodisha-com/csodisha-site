@@ -788,3 +788,145 @@ body.pc-page {
     grid-template-columns: 1fr;
   }
 }
+
+/* Server-Verified CBT Scorecard, Answer Key Review, Leaderboard & Attempt History */
+.cbt-banner {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--pc-border);
+  background: var(--pc-bg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.cbt-banner--rank {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.cbt-banner--guest {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.cbt-section-block {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--pc-border);
+}
+
+.cbt-section-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--pc-text);
+}
+
+.cbt-leaderboard-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--pc-border);
+  border-radius: 12px;
+  background: var(--pc-bg);
+}
+
+.cbt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.cbt-table th,
+.cbt-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--pc-border);
+}
+
+.cbt-table th {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pc-muted);
+  background: var(--pc-surface);
+}
+
+.cbt-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cbt-breakdown-list {
+  display: grid;
+  gap: 12px;
+}
+
+.cbt-review-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--pc-border);
+  background: var(--pc-bg);
+}
+
+.cbt-review-card--correct {
+  border-left: 4px solid #10b981;
+}
+
+.cbt-review-card--wrong {
+  border-left: 4px solid #ef4444;
+}
+
+.cbt-review-card--unanswered {
+  border-left: 4px solid #f59e0b;
+}
+
+.cbt-review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cbt-review-ans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cbt-review-exp {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--pc-muted);
+}
+
+.mt-drawer-panel {
+  margin: 0 0 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.mt-drawer-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+

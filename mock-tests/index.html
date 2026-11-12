@@ -69,8 +69,27 @@
 
     <div class="pc-meta-bar">
       <span id="mt-count-label" role="status" aria-live="polite">Loading mock tests…</span>
-      <button id="mt-reset-btn" type="button" class="pc-btn" hidden>Reset Filters</button>
+      <div class="pc-filters">
+        <button id="mt-history-toggle-btn" type="button" class="pc-btn">📊 My Attempt History</button>
+        <button id="mt-reset-btn" type="button" class="pc-btn" hidden>Reset Filters</button>
+      </div>
     </div>
+
+    <section id="mt-history-panel" class="mt-drawer-panel" aria-labelledby="mt-history-title" hidden>
+      <div class="mt-drawer-head">
+        <h2 id="mt-history-title" class="pc-card__title">📊 My Recent CBT Attempts</h2>
+        <button id="mt-history-close-btn" type="button" class="pc-btn">✕ Close</button>
+      </div>
+      <div id="mt-history-body"></div>
+    </section>
+
+    <section id="mt-leaderboard-panel" class="mt-drawer-panel" aria-labelledby="mt-leaderboard-title" hidden>
+      <div class="mt-drawer-head">
+        <h2 id="mt-leaderboard-title" class="pc-card__title">🏆 Top-10 Leaderboard</h2>
+        <button id="mt-leaderboard-close-btn" type="button" class="pc-btn">✕ Close</button>
+      </div>
+      <div id="mt-leaderboard-body"></div>
+    </section>
 
     <div id="mt-status" class="pc-status-card" role="status" aria-live="polite">
       <h3>Loading Mock Tests…</h3>
@@ -125,12 +144,23 @@
         </div>
 
         <div id="mt-summary-pane" hidden>
-          <h3>Practice Session Complete</h3>
+          <h3 id="mt-summary-heading">Server-Verified Scorecard</h3>
           <p id="mt-summary-subtitle" class="pc-card__summary"></p>
+          <div id="mt-summary-banner"></div>
           <div id="mt-summary-stats" class="cbt-summary-grid"></div>
           <div class="pc-filters">
-            <button id="mt-btn-review" type="button" class="pc-btn">← Review Questions</button>
+            <button id="mt-btn-retake" type="button" class="pc-btn">↻ Retake Test</button>
             <button id="mt-btn-back-list" type="button" class="pc-btn pc-btn--primary">Back to All Mock Tests</button>
+          </div>
+
+          <div class="cbt-section-block">
+            <h4 class="cbt-section-title">🏆 Live Top-10 Leaderboard</h4>
+            <div id="mt-cbt-leaderboard"></div>
+          </div>
+
+          <div class="cbt-section-block">
+            <h4 class="cbt-section-title">📋 Answer Key &amp; Detailed Solutions</h4>
+            <div id="mt-cbt-breakdown" class="cbt-breakdown-list"></div>
           </div>
         </div>
       </div>

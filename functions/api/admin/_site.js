@@ -193,7 +193,7 @@ export async function handleIncidents(request, env, actor, id, sub) {
 export async function extraStats(env) {
   const one = async (sql, ...b) => (await env.DB.prepare(sql).bind(...b).first());
   const now = Math.floor(Date.now() / 1000);
-  const [users, staff, new7, new1, sessions, audit24, media, res, incidents, banner] = await Promise.all([
+  const [users, staff, new7, new1, sessions, audit24, media, res, incidents, attempts, bookmarks, banner] = await Promise.all([
     one('SELECT COUNT(*) AS n FROM users'),
     one("SELECT COUNT(*) AS n FROM users WHERE role IN ('editor','admin')"),
     one('SELECT COUNT(*) AS n FROM users WHERE created_at >= ?', now - 7 * 86400),
@@ -204,6 +204,8 @@ export async function extraStats(env) {
     one("SELECT COUNT(*) AS n, SUM(status = 'published') AS live FROM resources WHERE deleted_at IS NULL"),
     one(`SELECT COUNT(*) AS n FROM audit_log a WHERE a.action LIKE 'incident.%' AND a.action != 'incident.resolved'
          AND NOT EXISTS (SELECT 1 FROM audit_log r WHERE r.action = 'incident.resolved' AND r.target_id = CAST(a.id AS TEXT))`),
+    one('SELECT COUNT(*) AS n FROM test_attempts').catch(() => ({ n: 0 })),
+    one('SELECT COUNT(*) AS n FROM user_bookmarks').catch(() => ({ n: 0 })),
     readBanner(env)
   ]);
   return {
@@ -212,6 +214,8 @@ export async function extraStats(env) {
     media: { total: media.n, bytes: media.bytes },
     resources: { total: res.n, live: res.live || 0 },
     open_incidents: incidents.n,
+    attempts_total: attempts ? attempts.n : 0,
+    bookmarks_total: bookmarks ? bookmarks.n : 0,
     banner: { active: banner.active, headline: banner.headline, severity: banner.severity, updated_at: banner.updatedAt }
   };
 }

@@ -1226,7 +1226,7 @@
 
     if (pc && typeof pc.createBookmarkButton === 'function') {
       footer.appendChild(pc.createBookmarkButton({
-        type: 'jobs',
+        type: 'job',
         id: job.slug || job.id,
         title: job.title,
         badge: job.organisation || job.category || 'Job Alert',
@@ -1359,7 +1359,7 @@
 
       if (pc && typeof pc.createBookmarkButton === 'function') {
         liveDetailActionsEl.appendChild(pc.createBookmarkButton({
-          type: 'jobs',
+          type: 'job',
           id: job.slug || job.id,
           title: job.title,
           badge: job.organisation || job.category || 'Job Alert',
