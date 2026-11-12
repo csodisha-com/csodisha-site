@@ -170,7 +170,7 @@
     const diffMs = target.getTime() - now.getTime();
     const formatted = formatDate(isoDate);
     if (diffMs < 0) {
-      return { label: `Closed (${formatted})`, statusClass: 'cso-dl-closed', isClosed: true };
+      return { label: `Application Closed (${formatted})`, statusClass: 'cso-dl-closed', isClosed: true };
     }
     const days = Math.floor(diffMs / 86400000);
     if (days === 0) {

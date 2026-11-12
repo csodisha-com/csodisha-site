@@ -23,8 +23,12 @@
     'module-09-001': ['users'],
     'module-09-006': ['users'],
     'module-10-011': ['banner'],
+    'module-14-006': ['current-affairs', CONTENT],
+    'module-14-007': ['jobs', CONTENT],
+    'module-14-009': ['dashboard'],
     'module-16-012': ['audit/security'],
-    'module-16-013': ['incidents']
+    'module-16-013': ['incidents'],
+    'module-17-010': ['dashboard']
   };
 
   function render(folderId, moduleId, root, actions) {

@@ -45,6 +45,8 @@ tr:last-child td{border-bottom:0}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line)}
 .badge.published{color:#6ee7b7;border-color:#065f46}
 .badge.scheduled{color:var(--amb);border-color:#92400e}
+.badge.expired{color:#fca5a5;border-color:var(--red)}
+.badge.archived{color:var(--mut);border-color:var(--line)}
 .badge.draft{color:var(--mut)}
 .actions{display:flex;flex-wrap:wrap;gap:6px}
 .pager{display:flex;gap:10px;align-items:center;margin-top:12px}

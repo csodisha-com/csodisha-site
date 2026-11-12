@@ -11,18 +11,22 @@ const notFound = () => json({ error: 'Not found', code: 'NOT_FOUND' }, 404, { 'C
 const media = k => (k ? `/api/media/${k}` : null);
 
 function postSummary(r) {
+  const isExpired = r.type === 'job' && (r.status === 'expired' || Boolean(r.last_date && r.last_date < new Date().toISOString().slice(0, 10)));
   return {
     id: r.id, slug: r.slug, title: r.title, title_or: r.title_or, summary: r.summary, summary_or: r.summary_or,
     category: r.category, tags: JSON.parse(r.tags || '[]'), cover_url: media(r.cover_media_key),
+    status: r.status === 'scheduled' ? 'published' : r.status,
     published_at: r.published_at, event_date: r.event_date,
     ...(r.type === 'job' ? {
       organisation: r.organisation, vacancies: r.vacancies, qualification: r.qualification, last_date: r.last_date,
-      apply_url: r.apply_url, notification_url: media(r.notification_media_key), state: r.state
+      apply_url: r.apply_url, notification_url: media(r.notification_media_key), state: r.state,
+      expired: isExpired,
+      badge: isExpired ? 'Application Closed' : 'Active'
     } : {})
   };
 }
 
-const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, category, tags, cover_media_key, published_at, event_date,
+const LIST_COLS = `id, type, slug, title, title_or, summary, summary_or, category, tags, cover_media_key, status, published_at, event_date,
   organisation, vacancies, qualification, last_date, apply_url, notification_media_key, state`;
 
 async function listPosts(env, request, type, orderBy) {

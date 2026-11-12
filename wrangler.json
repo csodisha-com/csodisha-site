@@ -20,5 +20,10 @@
       "binding": "MEDIA",
       "bucket_name": "cso-media"
     }
-  ]
+  ],
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  }
 }

@@ -1164,7 +1164,11 @@
     if (job.category) {
       frag.appendChild(el('span', 'live-badge', job.category));
     }
-    if (job.last_date && pc && typeof pc.deadlineInfo === 'function') {
+    if (job.status === 'expired' || job.expired) {
+      const formatted = (job.last_date && pc && typeof pc.formatDate === 'function') ? pc.formatDate(job.last_date) : '';
+      const label = formatted ? `Application Closed (${formatted})` : 'Application Closed';
+      frag.appendChild(el('span', 'live-badge cso-dl-closed', label));
+    } else if (job.last_date && pc && typeof pc.deadlineInfo === 'function') {
       const dl = pc.deadlineInfo(job.last_date);
       if (dl) {
         frag.appendChild(el('span', `live-badge ${dl.statusClass}`, dl.label));

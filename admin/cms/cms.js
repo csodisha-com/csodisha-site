@@ -173,6 +173,39 @@
     main.appendChild(el('div', { class: 'card' }, [
       el('div', {}, [badge(b.active ? 'published' : 'draft'), ' ', el('strong', { text: b.active ? b.headline : 'No banner is live on the homepage' })]),
       el('div', { class: 'actions' }, [el('a', { class: 'btn sm', href: '#/banner', text: b.active ? 'Edit / deactivate banner' : 'Compose banner' })])]));
+    var cr = s.last_cron_run || {};
+    var cronSub = cr.ran_at
+      ? 'Last run: ' + fmtDate(cr.ran_at) + ' · Promoted: ' + (cr.promoted || 0) + ' · Expired jobs: ' + (cr.expired || 0) + ' · Cleaned rows: ' + (cr.cleaned || 0)
+      : 'No maintenance run recorded yet (Cron schedule: */15 * * * *)';
+    var cronActions = [];
+    if (me && me.role === 'admin') {
+      var runBtn = el('button', {
+        type: 'button',
+        class: 'btn sm primary',
+        text: 'Run maintenance now',
+        onclick: async function () {
+          runBtn.disabled = true;
+          runBtn.textContent = 'Running…';
+          try {
+            var res = await api('POST', 'maintenance/run', {});
+            toast('Maintenance complete: ' + (res.promoted || 0) + ' promoted, ' + (res.expired || 0) + ' expired, ' + (res.cleaned || 0) + ' cleaned');
+            clear(main);
+            await viewDashboard();
+          } catch (err) {
+            toast(err.message, true);
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run maintenance now';
+          }
+        }
+      });
+      cronActions.push(runBtn);
+    }
+    main.appendChild(el('h2', { text: 'Cron lifecycle & D1 maintenance' }));
+    main.appendChild(el('div', { class: 'card' }, [
+      el('div', {}, [badge(cr.ran_at ? 'published' : 'scheduled'), ' ', el('strong', { text: 'Automated 15-minute Worker Cron Trigger (*/15 * * * *)' })]),
+      el('div', { class: 'muted', text: cronSub }),
+      cronActions.length ? el('div', { class: 'actions' }, cronActions) : null
+    ]));
     main.appendChild(el('h2', { text: 'Recent activity' }));
     main.appendChild(auditTable(s.recent_audit));
   }
@@ -367,7 +400,7 @@
     var T = TYPES[key]; setTitle(T.label);
     var st = { page: 1, limit: 20, q: '', status: '' };
     var q = el('input', { type: 'search', placeholder: 'Search…', 'aria-label': 'Search' });
-    var sel = el('select', { 'aria-label': 'Filter by status' }, [['', 'All statuses'], ['draft', 'Draft'], ['published', 'Published'], ['scheduled', 'Scheduled']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var sel = el('select', { 'aria-label': 'Filter by status' }, [['', 'All statuses'], ['draft', 'Draft'], ['published', 'Published'], ['scheduled', 'Scheduled'], ['expired', 'Expired'], ['archived', 'Archived']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
     var box = el('div');
     var t;
     q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = q.value; st.page = 1; load(); }, 300); });

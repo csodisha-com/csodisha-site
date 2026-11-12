@@ -281,6 +281,9 @@ ok(
 );
 
 console.log('Cross-device D1 bookmarks & user isolation');
+for (const b of ((await j(await call(cand, 'GET', '/api/user/bookmarks'))).items || [])) {
+  await call(cand, 'DELETE', `/api/user/bookmarks/${encodeURIComponent(b.item_type)}/${encodeURIComponent(b.item_id)}`);
+}
 ok((await call(null, 'GET', '/api/user/bookmarks')).status === 401, 'anonymous /api/user/bookmarks → 401');
 const bmNoCsrf = await fetch(`${BASE}/api/user/bookmarks`, {
   method: 'POST',
@@ -487,6 +490,125 @@ ok(
   !schedDeepHtml.includes('Test &lt;b&gt;Update&lt;/b&gt;') &&
   schedDeepHtml.includes('<title>Current Affairs &amp; Daily Updates | Common Sense Odisha</title>'),
   'GET /current-affairs/?slug=<draft-or-scheduled> does not leak unpublished titles and serves default page HTML'
+);
+
+console.log('Cron lifecycle engine: scheduled post promotion, expired job handling & D1 maintenance');
+// 1. Access control & CSRF protection on POST /api/admin/maintenance/run
+ok((await call(null, 'POST', '/api/admin/maintenance/run', {})).status === 401, 'anonymous POST /api/admin/maintenance/run → 401');
+ok((await call(cand, 'POST', '/api/admin/maintenance/run', {})).status === 403, 'candidate POST /api/admin/maintenance/run → 403');
+ok((await call(editor, 'POST', '/api/admin/maintenance/run', {})).status === 403, 'editor POST /api/admin/maintenance/run → 403 (admin-only)');
+const maintNoCsrf = await fetch(`${BASE}/api/admin/maintenance/run`, {
+  method: 'POST',
+  headers: { Cookie: admin, 'Content-Type': 'application/json' },
+  body: '{}'
+});
+ok(maintNoCsrf.status === 403 && (await j(maintNoCsrf)).code === 'CSRF_REJECTED', 'POST /api/admin/maintenance/run enforces CSRF protection');
+ok((await call(admin, 'GET', '/api/admin/maintenance/run')).status === 405, 'GET /api/admin/maintenance/run → 405 Method Not Allowed');
+
+// 2. Create due scheduled current affair & due scheduled job (publish time ~1.5s in future), plus a far-future scheduled item
+const dueIso = new Date(Date.now() + 1500).toISOString();
+const futureIso = new Date(Date.now() + 7200e3).toISOString();
+const schedCaDueRes = await call(editor, 'POST', '/api/admin/current-affairs', {
+  title: 'Cron Promoted Current Affair 2026',
+  summary: 'Automatically promoted by lifecycle maintenance engine.',
+  category: 'Governance',
+  status: 'scheduled',
+  published_at: dueIso
+});
+const schedCaDue = await j(schedCaDueRes);
+const schedJobDueRes = await call(editor, 'POST', '/api/admin/jobs', {
+  title: 'Cron Promoted Junior Assistant 2026',
+  organisation: 'OSSSC',
+  vacancies: 45,
+  last_date: '2027-06-30',
+  status: 'scheduled',
+  published_at: dueIso
+});
+const schedJobDue = await j(schedJobDueRes);
+const schedCaFuture = await j(await call(editor, 'POST', '/api/admin/current-affairs', {
+  title: 'Far Future Scheduled Post',
+  status: 'scheduled',
+  published_at: futureIso
+}));
+ok(
+  schedCaDueRes.status === 201 && schedJobDueRes.status === 201 &&
+  (await j(await call(editor, 'GET', `/api/admin/current-affairs/${schedCaDue.id}`))).status === 'scheduled' &&
+  (await j(await call(editor, 'GET', `/api/admin/jobs/${schedJobDue.id}`))).status === 'scheduled',
+  'scheduled current affair and job created with status=scheduled'
+);
+
+// 3. Create active published job whose application deadline has already passed
+const pastJobRes = await call(editor, 'POST', '/api/admin/jobs', {
+  title: 'Past Deadline Excise Constable 2024',
+  organisation: 'OSSC',
+  vacancies: 80,
+  last_date: '2024-05-15',
+  status: 'published'
+});
+const pastJob = await j(pastJobRes);
+ok(
+  pastJobRes.status === 201 &&
+  (await j(await call(editor, 'GET', `/api/admin/jobs/${pastJob.id}`))).status === 'published',
+  'active job with past last_date created with initial status=published'
+);
+
+// Wait for dueIso (1.5s) to pass so published_at <= datetime('now') in D1
+await new Promise(resolve => setTimeout(resolve, 2200));
+
+// 4. Trigger lifecycle maintenance as admin
+const maintRes = await call(admin, 'POST', '/api/admin/maintenance/run', {});
+const maintData = await j(maintRes);
+ok(
+  maintRes.status === 200 &&
+  maintData.ok === true &&
+  maintData.promoted >= 2 &&
+  maintData.expired >= 1 &&
+  typeof maintData.cleaned === 'number' &&
+  typeof maintData.ran_at === 'string' &&
+  !Number.isNaN(Date.parse(maintData.ran_at)),
+  'POST /api/admin/maintenance/run promotes due scheduled posts, flags expired jobs, and returns telemetry counts'
+);
+
+// 5. Verify scheduled posts transitioned to status='published' in D1 while future post stayed 'scheduled'
+const promotedCaRow = await j(await call(editor, 'GET', `/api/admin/current-affairs/${schedCaDue.id}`));
+const promotedJobRow = await j(await call(editor, 'GET', `/api/admin/jobs/${schedJobDue.id}`));
+const stillFutureRow = await j(await call(editor, 'GET', `/api/admin/current-affairs/${schedCaFuture.id}`));
+ok(
+  promotedCaRow.status === 'published' &&
+  promotedJobRow.status === 'published' &&
+  stillFutureRow.status === 'scheduled',
+  'due scheduled current_affair and job transitioned to status=published while future-scheduled row remained scheduled'
+);
+
+// 6. Verify past-deadline job transitioned to status='expired', displays Application Closed badge, and preserves SEO visibility
+const expiredJobAdmin = await j(await call(editor, 'GET', `/api/admin/jobs/${pastJob.id}`));
+const expiredJobFilter = await j(await call(editor, 'GET', '/api/admin/jobs?status=expired'));
+const expiredJobPublic = await j(await call(null, 'GET', `/api/content/jobs/${pastJob.slug}`));
+const smAfterCron = await (await call(null, 'GET', '/sitemap.xml')).text();
+const expiredJobOgHtml = await (await call(null, 'GET', `/jobs-careers/?job=${encodeURIComponent(pastJob.slug)}`, null, { Accept: 'text/html' })).text();
+ok(
+  expiredJobAdmin.status === 'expired' &&
+  expiredJobFilter.items.some(i => i.id === pastJob.id) &&
+  expiredJobPublic.status === 'expired' &&
+  expiredJobPublic.expired === true &&
+  expiredJobPublic.badge === 'Application Closed' &&
+  smAfterCron.includes(`https://csodisha.com/jobs-careers/?job=${encodeURIComponent(pastJob.slug)}`) &&
+  expiredJobOgHtml.includes('<meta property="og:title" content="Past Deadline Excise Constable 2024">'),
+  'expired job transitions to status=expired, exposes Application Closed badge on /jobs-careers/, and preserves SEO visibility'
+);
+
+// 7. Verify last_cron_run telemetry in GET /api/admin/stats and audit_log entry
+const statsCron = await j(await call(editor, 'GET', '/api/admin/stats'));
+const auditCron = await j(await call(editor, 'GET', '/api/admin/audit?q=maintenance.run'));
+ok(
+  statsCron.last_cron_run &&
+  statsCron.last_cron_run.ran_at === maintData.ran_at &&
+  statsCron.last_cron_run.promoted === maintData.promoted &&
+  statsCron.last_cron_run.expired === maintData.expired &&
+  typeof statsCron.last_cron_run.cleaned === 'number' &&
+  statsCron.jobs && statsCron.jobs.expired >= 1 &&
+  auditCron.items.some(a => a.action === 'maintenance.run' && a.target_id === 'last_cron_run'),
+  'GET /api/admin/stats exposes last_cron_run telemetry and audit_log records maintenance.run summary'
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);

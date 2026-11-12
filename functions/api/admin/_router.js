@@ -1,5 +1,5 @@
 // /api/admin/* dispatcher. Every route is gated by requireRole() (and CSRF for writes).
-import { HttpError, json, errorResponse, readJson, validationError } from '../../_lib/http.js';
+import { HttpError, json, errorResponse, readJson, validationError, clientIp } from '../../_lib/http.js';
 import { requireRole, rateLimit, audit, STAFF_ROLES, ALL_ROLES } from '../../_lib/rbac.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { parsePaging, likeEscape } from '../../_lib/validate.js';
@@ -7,6 +7,7 @@ import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
 import { handleUpload } from './_media.js';
 import { handleBanner, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
+import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
 
 export async function handleAdminApi(request, env) {
   try {
@@ -22,6 +23,22 @@ export async function handleAdminApi(request, env) {
       const actor = await requireRole(request, env, ['admin']);
       if (write) await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
       return await handleUsers(request, env, actor, id, sub);
+    }
+
+    // Admin-only: manual lifecycle & D1 maintenance trigger.
+    if (resource === 'maintenance') {
+      if (id === 'run') {
+        if (method !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+        const actor = await requireRole(request, env, ['admin']);
+        await rateLimit(env, `admin-write:${actor.userId}`, 120, 300);
+        const summary = await runLifecycleMaintenance(env, { actorId: actor.userId, ipAddress: clientIp(request) });
+        return json({ ok: true, ...summary, last_cron_run: summary });
+      }
+      if (!id && method === 'GET') {
+        await requireRole(request, env, STAFF_ROLES);
+        return json({ last_cron_run: await readLastCronRun(env) });
+      }
+      throw new HttpError(404, 'NOT_FOUND', 'Unknown admin route');
     }
 
     const actor = await requireRole(request, env, STAFF_ROLES);
@@ -71,11 +88,12 @@ export async function handleAdminApi(request, env) {
 
 async function handleStats(env) {
   const one = async sql => (await env.DB.prepare(sql).first()).n;
-  const [ca, caPub, jobs, jobsPub, tests, testsPub, scheduled] = await Promise.all([
+  const [ca, caPub, jobs, jobsPub, jobsExp, tests, testsPub, scheduled] = await Promise.all([
     one("SELECT COUNT(*) AS n FROM posts WHERE type='current_affair' AND deleted_at IS NULL"),
     one("SELECT COUNT(*) AS n FROM posts WHERE type='current_affair' AND deleted_at IS NULL AND (status='published' OR (status='scheduled' AND published_at <= datetime('now')))"),
     one("SELECT COUNT(*) AS n FROM posts WHERE type='job' AND deleted_at IS NULL"),
     one("SELECT COUNT(*) AS n FROM posts WHERE type='job' AND deleted_at IS NULL AND (status='published' OR (status='scheduled' AND published_at <= datetime('now')))"),
+    one("SELECT COUNT(*) AS n FROM posts WHERE type='job' AND deleted_at IS NULL AND status='expired'"),
     one('SELECT COUNT(*) AS n FROM mock_tests WHERE deleted_at IS NULL'),
     one("SELECT COUNT(*) AS n FROM mock_tests WHERE deleted_at IS NULL AND (status='published' OR (status='scheduled' AND published_at <= datetime('now')))"),
     one("SELECT (SELECT COUNT(*) FROM posts WHERE status='scheduled' AND published_at > datetime('now') AND deleted_at IS NULL) + (SELECT COUNT(*) FROM mock_tests WHERE status='scheduled' AND published_at > datetime('now') AND deleted_at IS NULL) AS n")
@@ -87,7 +105,7 @@ async function handleStats(env) {
   const extra = await extraStats(env);
   return json({
     ...extra,
-    current_affairs: { total: ca, live: caPub }, jobs: { total: jobs, live: jobsPub },
+    current_affairs: { total: ca, live: caPub }, jobs: { total: jobs, live: jobsPub, expired: jobsExp },
     mock_tests: { total: tests, live: testsPub }, scheduled_pending: scheduled, recent_audit: results
   });
 }

@@ -3,6 +3,7 @@
 import { HttpError, json, readJson, validationError } from '../../_lib/http.js';
 import { audit } from '../../_lib/rbac.js';
 import { cleanStr, parsePaging, likeEscape } from '../../_lib/validate.js';
+import { readLastCronRun } from './_cron.js';
 
 const MEDIA_KEY_RE = /^[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
 export const BANNER_KEY = 'homepage_banner';
@@ -193,7 +194,7 @@ export async function handleIncidents(request, env, actor, id, sub) {
 export async function extraStats(env) {
   const one = async (sql, ...b) => (await env.DB.prepare(sql).bind(...b).first());
   const now = Math.floor(Date.now() / 1000);
-  const [users, staff, new7, new1, sessions, audit24, media, res, incidents, attempts, bookmarks, banner] = await Promise.all([
+  const [users, staff, new7, new1, sessions, audit24, media, res, incidents, attempts, bookmarks, banner, lastCronRun] = await Promise.all([
     one('SELECT COUNT(*) AS n FROM users'),
     one("SELECT COUNT(*) AS n FROM users WHERE role IN ('editor','admin')"),
     one('SELECT COUNT(*) AS n FROM users WHERE created_at >= ?', now - 7 * 86400),
@@ -206,7 +207,8 @@ export async function extraStats(env) {
          AND NOT EXISTS (SELECT 1 FROM audit_log r WHERE r.action = 'incident.resolved' AND r.target_id = CAST(a.id AS TEXT))`),
     one('SELECT COUNT(*) AS n FROM test_attempts').catch(() => ({ n: 0 })),
     one('SELECT COUNT(*) AS n FROM user_bookmarks').catch(() => ({ n: 0 })),
-    readBanner(env)
+    readBanner(env),
+    readLastCronRun(env)
   ]);
   return {
     accounts: { total: users.n, staff: staff.n, new_7d: new7.n, new_24h: new1.n, active_sessions: sessions.n },
@@ -216,6 +218,7 @@ export async function extraStats(env) {
     open_incidents: incidents.n,
     attempts_total: attempts ? attempts.n : 0,
     bookmarks_total: bookmarks ? bookmarks.n : 0,
-    banner: { active: banner.active, headline: banner.headline, severity: banner.severity, updated_at: banner.updatedAt }
+    banner: { active: banner.active, headline: banner.headline, severity: banner.severity, updated_at: banner.updatedAt },
+    last_cron_run: lastCronRun
   };
 }

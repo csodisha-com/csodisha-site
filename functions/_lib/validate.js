@@ -1,5 +1,5 @@
 // Input normalisation helpers. Everything returns cleaned values or records a field error.
-export const STATUSES = ['draft', 'published', 'scheduled'];
+export const STATUSES = ['draft', 'published', 'scheduled', 'expired', 'archived'];
 
 export function cleanStr(v, max, { required = false, multiline = false } = {}) {
   if (v === undefined || v === null) return required ? null : '';
@@ -40,7 +40,7 @@ export function nowSql() {
 // Resolve status + published_at. Returns { status, published_at } or sets errors.
 export function resolveStatus(body, existing, errors) {
   const status = body.status === undefined ? (existing ? existing.status : 'draft') : String(body.status);
-  if (!STATUSES.includes(status)) { errors.status = 'Status must be draft, published or scheduled'; return {}; }
+  if (!STATUSES.includes(status)) { errors.status = 'Status must be draft, published, scheduled, expired or archived'; return {}; }
   let published_at = existing ? existing.published_at : null;
   if (body.published_at !== undefined && body.published_at !== null && body.published_at !== '') {
     published_at = toUtcSql(body.published_at);
@@ -48,16 +48,16 @@ export function resolveStatus(body, existing, errors) {
   }
   if (status === 'scheduled') {
     if (!published_at || published_at <= nowSql()) { errors.published_at = 'Scheduled posts need a future publish date/time'; return {}; }
-  } else if (status === 'published') {
-    if (!published_at || (existing && existing.status !== 'published' && body.published_at === undefined)) published_at = nowSql();
+  } else if (status === 'published' || status === 'expired') {
+    if (!published_at || (existing && existing.status !== 'published' && existing.status !== 'expired' && body.published_at === undefined)) published_at = nowSql();
   } else if (body.published_at === '' || body.published_at === null) {
     published_at = null;
   }
   return { status, published_at };
 }
 
-// Public-visibility SQL fragment (scheduled items go live at query time; no cron).
-export const PUBLIC_VISIBLE_SQL = `deleted_at IS NULL AND (status = 'published' OR (status = 'scheduled' AND published_at <= datetime('now')))`;
+// Public-visibility SQL fragment (scheduled items go live at query time; expired jobs stay visible for SEO with closed badge).
+export const PUBLIC_VISIBLE_SQL = `deleted_at IS NULL AND (status IN ('published', 'expired') OR (status = 'scheduled' AND published_at <= datetime('now')))`;
 
 export function likeEscape(q) {
   return '%' + String(q).replace(/[\\%_]/g, m => '\\' + m) + '%';

@@ -15,6 +15,7 @@ import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleRes
 import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
+import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
 import { handleSitemapXml, handleRssFeed, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
 import { handleUserApi } from './functions/api/user/_router.js';
@@ -369,5 +370,13 @@ export default {
     }
 
     return new Response('Not Found', { status: 404 });
+  },
+
+  async scheduled(event, env, ctx) {
+    const task = runLifecycleMaintenance(env, { actorId: 'system:cron' });
+    if (ctx && typeof ctx.waitUntil === 'function') {
+      ctx.waitUntil(task);
+    }
+    return await task;
   }
 };

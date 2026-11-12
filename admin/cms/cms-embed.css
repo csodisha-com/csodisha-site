@@ -46,6 +46,8 @@
 .cms-embed .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line)}
 .cms-embed .badge.published{color:#6ee7b7;border-color:#065f46}
 .cms-embed .badge.scheduled{color:var(--amb);border-color:#92400e}
+.cms-embed .badge.expired{color:#fca5a5;border-color:var(--red)}
+.cms-embed .badge.archived{color:var(--mut);border-color:var(--line)}
 .cms-embed .badge.draft{color:var(--mut)}
 .cms-embed .actions{display:flex;flex-wrap:wrap;gap:6px}
 .cms-embed .pager{display:flex;gap:10px;align-items:center;margin-top:12px}
