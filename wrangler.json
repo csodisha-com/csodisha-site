@@ -11,7 +11,14 @@
     {
       "binding": "DB",
       "database_name": "cso-database",
-      "database_id": "aa11da6a-754f-4ece-a18d-5080cd333aed"
+      "database_id": "aa11da6a-754f-4ece-a18d-5080cd333aed",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "cso-media"
     }
   ]
 }

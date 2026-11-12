@@ -1,6 +1,4 @@
 /api/auth/me /api/auth/me.json 200
-/api/admin/verify /api/admin/verify.json 200
-/api/admin/submissions /api/admin/submissions.json 200
 /contact /contact.html 200
 /dashboard /student-dashboard/ 301
 /dashboard/ /student-dashboard/ 301

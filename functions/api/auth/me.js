@@ -43,6 +43,9 @@ export async function onRequestGet({ request, env }) {
       try { targetStreams = JSON.parse(profile.target_streams); } catch (e) {}
     }
 
+    // users.role is authoritative (sessions.role may be stale)
+    const roleRow = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(session.userId).first().catch(() => null);
+
     const user = {
       id: session.userId,
       email: session.email,
@@ -51,7 +54,7 @@ export async function onRequestGet({ request, env }) {
       phone: profile && profile.phone ? profile.phone : '',
       district: profile ? profile.district : 'Balasore (Baleswar)',
       targetStreams,
-      role: session.role || 'candidate'
+      role: (roleRow && roleRow.role) || 'candidate'
     };
 
     return jsonResponse({

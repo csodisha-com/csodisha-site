@@ -1,0 +1,128 @@
+// Integration test for the CMS against a LOCAL `wrangler dev` (default http://localhost:8799).
+// Prereqs: local migrations applied + `node scripts/seed-local-users.mjs | wrangler d1 execute cso-database --local --file /dev/stdin`
+const BASE = process.env.BASE || 'http://localhost:8799';
+let pass = 0, fail = 0;
+const ok = (c, m) => { if (c) { pass++; console.log('  ✓', m); } else { fail++; console.log('  ✗ FAIL:', m); } };
+async function login(email) {
+  const r = await fetch(BASE + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: 'Test-Pass-12345' }) });
+  const c = (r.headers.get('set-cookie') || '').match(/cso_session=[^;]+/);
+  if (!c) throw new Error('login failed for ' + email + ' ' + r.status);
+  return c[0];
+}
+const call = (cookie, method, path, body, extra = {}) => fetch(BASE + path, {
+  method, redirect: 'manual',
+  headers: { ...(cookie ? { Cookie: cookie } : {}), ...(body && !(body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+    ...(method !== 'GET' ? { Origin: BASE, 'X-CSO-CSRF': '1' } : {}), ...extra },
+  body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined
+});
+const j = async r => { try { return await r.json(); } catch { return {}; } };
+
+const admin = await login('admin@test.local'), editor = await login('editor@test.local'), cand = await login('cand@test.local');
+
+console.log('Access control');
+ok((await call(null, 'GET', '/api/admin/stats')).status === 401, 'anonymous → 401');
+ok((await call(cand, 'GET', '/api/admin/stats')).status === 403, 'candidate → 403 on stats');
+ok((await call(cand, 'POST', '/api/admin/current-affairs', { title: 'x' })).status === 403, 'candidate → 403 on create');
+ok((await call(editor, 'GET', '/api/admin/stats')).status === 200, 'editor → 200 on stats');
+ok((await call(editor, 'GET', '/api/admin/users')).status === 403, 'editor → 403 on users (admin-only)');
+ok((await call(admin, 'GET', '/api/admin/users')).status === 200, 'admin → 200 on users');
+const noCsrf = await fetch(BASE + '/api/admin/current-affairs', { method: 'POST', headers: { Cookie: editor, 'Content-Type': 'application/json' }, body: '{"title":"t"}' });
+ok(noCsrf.status === 403 && (await j(noCsrf)).code === 'CSRF_REJECTED', 'missing CSRF header/origin → 403');
+const badOrigin = await call(editor, 'POST', '/api/admin/current-affairs', { title: 't' }, { Origin: 'https://evil.example' });
+ok(badOrigin.status === 403, 'cross-origin → 403');
+
+console.log('Admin pages');
+let r = await call(null, 'GET', '/admin/', null, { Accept: 'text/html' });
+ok(r.status === 302 && r.headers.get('location').startsWith('/admin/login'), 'anonymous /admin/ → redirect to login');
+r = await call(cand, 'GET', '/admin/', null, { Accept: 'text/html' });
+ok(r.status === 403, 'candidate /admin/ → 403');
+r = await call(editor, 'GET', '/admin/', null, { Accept: 'text/html' });
+ok(r.status === 200 && /noindex/.test(r.headers.get('x-robots-tag') || '') && /script-src 'self'/.test(r.headers.get('content-security-policy') || ''), 'editor /admin/ → 200 + noindex + strict CSP');
+r = await call(editor, 'GET', '/admin/legacy', null, { Accept: 'text/html' });
+ok(r.status === 403, 'editor legacy console → 403');
+r = await call(admin, 'GET', '/admin/legacy', null, { Accept: 'text/html' });
+ok(r.status === 200, 'admin legacy console → 200');
+r = await call(null, 'GET', '/admin/login');
+ok(r.status === 200, 'login page is public');
+ok((await call(null, 'GET', '/migrations/0001_baseline.sql')).status === 404, 'migrations not publicly served');
+ok((await call(null, 'GET', '/schema.sql')).status === 404, 'schema.sql not publicly served');
+
+console.log('Current affairs lifecycle');
+r = await call(editor, 'POST', '/api/admin/current-affairs', { title: '' });
+ok(r.status === 422 && (await j(r)).fields.title, 'validation error with field details');
+r = await call(editor, 'POST', '/api/admin/current-affairs', { title: 'Test <b>Update</b>', body_md: '# Hi\n<script>alert(1)</script> [x](javascript:alert(1)) **bold**', category: 'State', tags: 'a, b' });
+const ca = await j(r); ok(r.status === 201 && ca.slug.startsWith('test-b-update-b'), 'create draft + auto slug');
+r = await call(null, 'GET', '/api/content/current-affairs/' + ca.slug); ok(r.status === 404, 'draft not public');
+r = await call(editor, 'POST', `/api/admin/current-affairs/${ca.id}/status`, { status: 'published' });
+ok(r.status === 200, 'publish');
+r = await call(null, 'GET', '/api/content/current-affairs/' + ca.slug); let d = await j(r);
+ok(r.status === 200 && !/<script/i.test(d.body_html) && !/javascript:/i.test(d.body_html) && /<strong>bold<\/strong>/.test(d.body_html), 'public detail sanitised');
+ok(/s-maxage=300/.test(r.headers.get('cache-control')), 'public cache headers');
+r = await call(editor, 'POST', `/api/admin/current-affairs/${ca.id}/status`, { status: 'scheduled', published_at: new Date(Date.now() - 1000).toISOString() });
+ok(r.status === 422, 'scheduling in the past rejected');
+r = await call(editor, 'POST', `/api/admin/current-affairs/${ca.id}/status`, { status: 'scheduled', published_at: new Date(Date.now() + 3600e3).toISOString() });
+ok(r.status === 200, 'schedule in future');
+ok((await call(null, 'GET', '/api/content/current-affairs/' + ca.slug)).status === 404, 'scheduled-future not public');
+const ca2 = await j(await call(editor, 'POST', '/api/admin/current-affairs', { title: 'Goes live', status: 'draft' }));
+await call(editor, 'POST', `/api/admin/current-affairs/${ca2.id}/status`, { status: 'published' });
+r = await call(null, 'GET', '/api/content/current-affairs?limit=5'); d = await j(r);
+ok(d.items.some(i => i.id === ca2.id) && !d.items.some(i => i.id === ca.id), 'list shows only live items');
+r = await call(editor, 'DELETE', `/api/admin/current-affairs/${ca2.id}`);
+ok(r.status === 200 && (await call(null, 'GET', '/api/content/current-affairs/' + ca2.slug)).status === 404, 'soft delete hides item');
+
+console.log('Jobs + media');
+const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+let fd = new FormData(); fd.append('file', new Blob([png], { type: 'image/png' }), 'c.png');
+r = await call(editor, 'POST', '/api/admin/media/upload', fd); const up = await j(r);
+ok(r.status === 201 && /^\/api\/media\/[0-9a-f-]{36}\.png$/.test(up.url), 'image upload');
+fd = new FormData(); fd.append('file', new Blob([new Uint8Array([1, 2, 3, 4, 5, 6])], { type: 'image/png' }), 'fake.png');
+r = await call(editor, 'POST', '/api/admin/media/upload', fd); ok(r.status === 415, 'magic-byte mismatch rejected');
+fd = new FormData(); fd.append('file', new Blob(['hello'], { type: 'text/html' }), 'x.html');
+r = await call(editor, 'POST', '/api/admin/media/upload', fd); ok(r.status === 415, 'disallowed MIME rejected');
+fd = new FormData(); fd.append('file', new Blob([png], { type: 'image/png' }), 'c.png');
+ok((await call(cand, 'POST', '/api/admin/media/upload', fd)).status === 403, 'candidate cannot upload');
+r = await call(null, 'GET', up.url);
+ok(r.status === 200 && /immutable/.test(r.headers.get('cache-control')) && r.headers.get('content-type') === 'image/png', 'public media served with immutable cache');
+const pdf = new Blob(['%PDF-1.4\n%test'], { type: 'application/pdf' });
+fd = new FormData(); fd.append('file', pdf, 'n.pdf'); const up2 = await j(await call(editor, 'POST', '/api/admin/media/upload', fd));
+r = await call(editor, 'POST', '/api/admin/jobs', { title: 'Odisha Police SI', organisation: 'OSSC', vacancies: 100, last_date: '2027-01-31', apply_url: 'https://example.org/apply', notification_media_key: up2.key, cover_media_key: up.key, status: 'published' });
+const job = await j(r); ok(r.status === 201, 'create published job with media');
+r = await call(editor, 'POST', '/api/admin/jobs', { title: 'Bad', organisation: 'X', apply_url: 'javascript:alert(1)' });
+ok(r.status === 422, 'non-http apply URL rejected');
+d = await j(await call(null, 'GET', '/api/content/jobs')); ok(d.items.some(i => i.id === job.id && i.notification_url === '/api/media/' + up2.key && i.cover_url === up.url), 'job in public list with media URLs');
+
+console.log('Mock tests + import');
+r = await call(editor, 'POST', '/api/admin/mock-tests', { title: 'OSSC CGL Mock 1', target_exam: 'OSSC', duration_minutes: 60, total_marks: 100, negative_marking: 0.25 });
+const t = await j(r); ok(r.status === 201, 'create mock test');
+r = await call(editor, 'POST', `/api/admin/mock-tests/${t.id}/status`, { status: 'published' });
+ok(r.status === 422, 'cannot publish test without questions');
+const rows = [
+  { question_en: 'Capital of Odisha?', option_a: 'Cuttack', option_b: 'Bhubaneswar', option_c: 'Puri', option_d: 'Sambalpur', correct_option: 'B', explanation: 'Bhubaneswar.' },
+  { question_en: 'Bad row', option_a: 'a', option_b: 'b', option_c: 'c', option_d: 'd', correct_option: 'Z' }
+];
+r = await call(editor, 'POST', `/api/admin/mock-tests/${t.id}/import`, { rows }); d = await j(r);
+ok(r.status === 200 && d.dry_run && d.valid_count === 1 && d.invalid_count === 1 && d.invalid[0].errors.correct_option, 'import dry-run report');
+r = await call(editor, 'POST', `/api/admin/mock-tests/${t.id}/import`, { rows, dry_run: false });
+ok(r.status === 422, 'commit with invalid rows rejected');
+r = await call(editor, 'POST', `/api/admin/mock-tests/${t.id}/import`, { rows, dry_run: false, skip_invalid: true }); d = await j(r);
+ok(r.status === 200 && d.imported === 1, 'import skipping invalid rows');
+ok((await call(editor, 'POST', `/api/admin/mock-tests/${t.id}/status`, { status: 'published' })).status === 200, 'publish test with questions');
+d = await j(await call(null, 'GET', '/api/content/mock-tests/' + 'ossc-cgl-mock-1'));
+ok(d.questions && d.questions.length === 1 && !('correct_option' in d.questions[0]) && !('explanation' in d.questions[0]), 'public test hides answers');
+
+console.log('Roles + audit');
+const users = await j(await call(admin, 'GET', '/api/admin/users?q=cand'));
+const cu = users.items[0];
+r = await call(admin, 'PUT', `/api/admin/users/${cu.id}/role`, { role: 'editor' }); ok(r.status === 200, 'admin promotes candidate → editor');
+ok((await call(cand, 'GET', '/api/admin/stats')).status === 200, 'promotion applies immediately (live role lookup)');
+r = await call(admin, 'PUT', `/api/admin/users/${cu.id}/role`, { role: 'candidate' }); ok(r.status === 200, 'demoted again');
+ok((await call(cand, 'GET', '/api/admin/stats')).status === 403, 'demotion applies immediately');
+r = await call(admin, 'PUT', '/api/admin/users/u-admin/role', { role: 'editor' }); ok(r.status === 409, 'cannot demote self');
+d = await j(await call(admin, 'GET', '/api/admin/audit')); ok(d.items.length > 5 && d.items.some(a => a.action === 'user.role_change'), 'audit log records actions');
+r = await call(admin, 'POST', '/api/admin/preview', { markdown: '<img src=x onerror=alert(1)>' }); d = await j(r);
+ok(!/<img/i.test(d.html), 'preview escapes raw HTML');
+r = await call(null, 'GET', '/api/auth/me'); ok(r.status === 401, 'auth/me unaffected for anonymous');
+d = await j(await call(editor, 'GET', '/api/auth/me')); ok(d.user && d.user.role === 'editor', 'auth/me reports live role');
+
+console.log(`\n${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

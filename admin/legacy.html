@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#081220] text-slate-100">
+<head>
+  <script src="./admin-guard-v2.js?v=20261109"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS Odisha — Master Super Admin Console (241 Modules)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#081220',
+              slate: '#0f172a',
+              card: '#131f36',
+              border: '#1e2e4a',
+              emerald: '#0fa968',
+              emeraldHover: '#0d9259',
+              amber: '#f59e0b',
+              crimson: '#ef4444',
+              cyan: '#06b6d4',
+              indigo: '#6366f1'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #081220; }
+    ::-webkit-scrollbar-thumb { background: #1e2e4a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0fa968; }
+    .badge-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden font-sans antialiased bg-[#081220] selection:bg-brand-emerald selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- TOP TELEMETRY & COMMAND BAR                                               -->
+  <!-- ========================================================================= -->
+  <header class="h-16 flex-shrink-0 bg-brand-slate border-b border-brand-border px-4 lg:px-6 flex items-center justify-between z-30 shadow-lg">
+    <!-- Brand & Mobile Toggle -->
+    <div class="flex items-center gap-3">
+      <button id="btnToggleSidebar" class="lg:hidden p-2 text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-emerald rounded-lg" aria-label="Toggle Navigation Drawer">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-emerald to-emerald-800 flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-brand-emerald/20 border border-emerald-400/30">
+          CSO
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-100 tracking-tight text-sm lg:text-base leading-none">Common Sense Odisha</span>
+            <span class="px-1.5 py-0.5 text-[10px] uppercase font-mono font-bold tracking-wider bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded">v1.0 Pro</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">Master Command Suite (241 Modules)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Edge & Session Telemetry -->
+    <div class="hidden xl:flex items-center gap-6 text-xs font-mono">
+      <!-- Edge Health -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081220] border border-brand-border">
+        <span class="relative flex h-2 w-2">
+          <span class="badge-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-emerald"></span>
+        </span>
+        <span class="text-slate-300">CF Edge: <strong class="text-brand-emerald font-semibold">SIN (Singapore)</strong></span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-400">RTT: <strong class="text-slate-200">14ms</strong></span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-400">D1: <strong class="text-cyan-400">Synced</strong></span>
+      </div>
+
+      <!-- Live Session Duration Counter -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#081220] border border-brand-border">
+        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-slate-400">Session:</span>
+        <span id="sessionTimer" class="text-brand-emerald font-semibold">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- Right Panic Actions & Admin Profile -->
+    <div class="flex items-center gap-2.5">
+      <!-- Quick Action: Purge Cache -->
+      <button id="btnPurgeCache" title="Purge Cloudflare Edge CDN Cache" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Purge CDN</span>
+      </button>
+
+      <!-- Quick Action: Maintenance Switch -->
+      <button id="btnMaintenanceToggle" title="Toggle Maintenance Mode" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+        <span class="w-2 h-2 rounded-full bg-slate-500" id="maintenanceStatusDot"></span>
+        <span id="maintenanceStatusText">Maint: OFF</span>
+      </button>
+
+      <!-- Super Admin Identity Pill -->
+      <div class="flex items-center gap-2 pl-2 border-l border-brand-border">
+        <div class="w-8 h-8 rounded-full bg-brand-emerald/20 border border-brand-emerald/50 flex items-center justify-center text-brand-emerald font-bold text-xs">
+          SA
+        </div>
+        <div class="hidden sm:block text-left text-xs">
+          <p class="font-bold text-slate-200 leading-tight">admin@csodisha.com</p>
+          <span class="text-[10px] text-brand-emerald uppercase font-mono font-semibold">Super Admin</span>
+        </div>
+      </div>
+
+      <button id="btnSignOut" title="Sign Out Securely" class="p-2 text-slate-400 hover:text-brand-crimson hover:bg-brand-crimson/10 rounded-lg transition" aria-label="Sign Out">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE LAYOUT (SIDEBAR + CONTENT)                                  -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- Mobile Overlay Backdrop -->
+    <div id="mobileDrawerBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+    <!-- SIDEBAR: 19 FOLDERS & 241 MODULES ACCORDION -->
+    <aside id="sidebarConsole" class="w-72 lg:w-80 flex-shrink-0 bg-[#0b1628] border-r border-brand-border flex flex-col z-50 fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+      
+      <!-- Module Quick Search -->
+      <div class="p-3 border-b border-brand-border bg-brand-slate">
+        <div class="relative">
+          <input type="text" id="moduleSearchInput" placeholder="Filter 241 modules..." class="w-full bg-[#081220] border border-brand-border rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-emerald focus:ring-1 focus:ring-brand-emerald transition" autocomplete="off" />
+          <svg class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span id="searchCountBadge" class="hidden absolute right-2 top-2 px-1.5 py-0.5 text-[9px] font-mono bg-brand-emerald text-white font-bold rounded">0</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tree Container -->
+      <nav id="accordionNav" class="flex-1 overflow-y-auto px-2 py-3 space-y-1.5 text-xs" aria-label="19 Folders Master Tree">
+        <!-- Folders & Modules will be rendered here via JavaScript from master-navigation.json data -->
+      </nav>
+
+      <!-- Sidebar Footer Stats -->
+      <div class="p-3 bg-brand-slate border-t border-brand-border text-[11px] font-mono text-slate-400 flex items-center justify-between">
+        <div>
+          <span>Coverage: </span>
+          <strong class="text-brand-emerald">241 / 241</strong>
+        </div>
+        <span class="text-slate-500">100% Mapped</span>
+      </div>
+    </aside>
+
+    <!-- CONTENT CANVAS -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#081220] overflow-y-auto">
+      
+      <!-- Dynamic Breadcrumb & Module Heading Bar -->
+      <div class="bg-brand-slate/60 border-b border-brand-border px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
+        <div>
+          <nav class="flex items-center gap-1.5 text-xs text-slate-400 mb-1" aria-label="Breadcrumbs">
+            <span class="text-slate-500">Console</span>
+            <span class="text-slate-600">/</span>
+            <span id="breadcrumbFolder" class="font-medium text-slate-300">Dashboard & Command Centre</span>
+            <span class="text-slate-600">/</span>
+            <span id="breadcrumbModule" class="font-semibold text-brand-emerald">Overview</span>
+          </nav>
+          <h1 id="activeModuleHeading" class="text-lg lg:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            Overview
+            <span id="activeModuleIdPill" class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">module-01-001</span>
+          </h1>
+        </div>
+
+        <!-- Dynamic Action Buttons Header -->
+        <div id="moduleHeaderActions" class="flex items-center gap-2">
+          <!-- Populated by view controllers -->
+        </div>
+      </div>
+
+      <!-- Live Dynamic Workspace Canvas Container -->
+      <div id="workspaceRoot" class="p-4 lg:p-6 flex-1 space-y-6">
+        <!-- Dynamic content injected here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS & TOAST NOTIFICATION CONTAINER                                      -->
+  <!-- ========================================================================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- Generic Global Action Modal -->
+  <div id="globalModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-slate border border-brand-border rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-5 py-4 border-b border-brand-border flex items-center justify-between">
+        <h3 id="modalTitle" class="font-bold text-white text-base">Modal Window</h3>
+        <button id="btnModalClose" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <div id="modalBody" class="p-5 overflow-y-auto space-y-4 text-xs text-slate-300 flex-1"></div>
+      <div id="modalFooter" class="px-5 py-3 border-t border-brand-border bg-[#081220] flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+    <!-- Client-Side State & Controller Scripts -->
+  <script src="./data/fallback-trees.js?v=20261109"></script>
+  <script src="./super-store.js?v=20261109_v2"></script>
+  <script src="./admin.js?v=20261109_v2"></script>
+</body>
+</html>

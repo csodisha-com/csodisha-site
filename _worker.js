@@ -14,6 +14,10 @@ import { onRequestPost as handleVerifyResetOtpPost, onRequestOptions as handleVe
 import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleResetPasswordOptions } from './functions/api/auth/reset-password.js';
 import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
+import { handleAdminApi } from './functions/api/admin/_router.js';
+import { handleContent } from './functions/api/content/_public.js';
+import { handleMedia } from './functions/api/media/_serve.js';
+import { handleAdminPage } from './functions/_lib/admin-pages.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
 import { onRequestGet as handleSyncGet, onRequestPost as handleSyncPost, onRequestOptions as handleSyncOptions } from './functions/api/sync.js';
@@ -79,7 +83,7 @@ async function handleStrictD1Login(request, env) {
     }
 
     const user = await env.DB.prepare(
-      'SELECT id, email, password_hash, salt, failed_attempts, lockout_until FROM users WHERE email = ?'
+      'SELECT id, email, password_hash, salt, failed_attempts, lockout_until, role FROM users WHERE email = ?'
     ).bind(cleanEmail).first();
 
     // 3. If user does not exist: Execute dummy PBKDF2 derivation with static salt to prevent timing leaks
@@ -163,7 +167,7 @@ async function handleStrictD1Login(request, env) {
     const { token: sessionToken } = await createSession(env, {
       userId: user.id,
       email: user.email,
-      role: 'candidate'
+      role: user.role || 'candidate'
     });
 
     // Fetch candidate profile from candidates table for the response payload
@@ -186,8 +190,8 @@ async function handleStrictD1Login(request, env) {
         phone: candidate.phone || '',
         district: candidate.district,
         targetStreams,
-        role: 'candidate'
-      } : { id: user.id, email: user.email, role: 'candidate' },
+        role: user.role || 'candidate'
+      } : { id: user.id, email: user.email, role: user.role || 'candidate' },
       token: sessionToken
     }), {
       status: 200,
@@ -210,6 +214,27 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const pathname = url.pathname;
+
+    // 0a. Never serve server source / schema / config files from the static asset bucket
+    //     (the assets directory is the repo root).
+    if (/^\/(functions|migrations|scripts|docs|\.wrangler|\.git)(\/|$)/i.test(pathname) ||
+        /^\/(_worker\.js|schema\.sql|wrangler\.(json|toml|jsonc)|package(-lock)?\.json)$/i.test(pathname)) {
+      return new Response('Not Found', { status: 404 });
+    }
+
+    // 0b. CMS: server-enforced admin pages (role from D1; noindex + CSP headers)
+    if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+      return handleAdminPage(request, env);
+    }
+
+    // 0c. CMS: admin JSON API (requireRole + CSRF + rate limits live in the router)
+    if (pathname === '/api/admin' || pathname.startsWith('/api/admin/')) {
+      return handleAdminApi(request, env);
+    }
+
+    // 0d. CMS: public content API + R2 media delivery
+    if (pathname.startsWith('/api/content/')) return handleContent(request, env);
+    if (pathname.startsWith('/api/media/')) return handleMedia(request, env, ctx);
 
     // 1. /api/health
     if (pathname === '/api/health') {
