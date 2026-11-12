@@ -1358,14 +1358,142 @@
     ])));
   }
 
+  /* ---------- real site pages & portals inventory ---------- */
+  async function viewSitePages(filterCategory) {
+    setTitle(filterCategory ? 'Site Pages — ' + filterCategory : 'All Pages & Portals');
+    var manifest = { total: 0, pages: [] };
+    try {
+      if (window.CSOLive && typeof window.CSOLive.getSiteManifest === 'function') {
+        manifest = await window.CSOLive.getSiteManifest();
+      }
+    } catch (_) {}
+
+    var allPages = Array.isArray(manifest.pages) ? manifest.pages : [];
+    var st = { q: '', cat: filterCategory || '' };
+    var q = el('input', { type: 'search', placeholder: 'Search route, title, or file…', 'aria-label': 'Search site pages' });
+    var sel = el('select', { 'aria-label': 'Filter by category' }, [
+      ['', 'All categories (' + allPages.length + ')'],
+      ['Core Portal', 'Core Portal'],
+      ['Candidate Workspace', 'Candidate Workspace'],
+      ['Information & Legal', 'Information & Legal']
+    ].map(function (o) { return el('option', { value: o[0], text: o[1], selected: st.cat === o[0] }); }));
+
+    var summaryRow = el('div', { class: 'cards' }, [
+      stat('Total live pages', allPages.length, 'on csodisha.com'),
+      stat('Core Portals', allPages.filter(function (p) { return p.category === 'Core Portal'; }).length),
+      stat('Candidate Workspace', allPages.filter(function (p) { return p.category === 'Candidate Workspace'; }).length),
+      stat('Information & Legal', allPages.filter(function (p) { return p.category === 'Information & Legal'; }).length)
+    ]);
+    main.appendChild(summaryRow);
+    main.appendChild(el('div', { class: 'toolbar' }, [
+      q,
+      sel,
+      el('span', { class: 'spacer' }),
+      el('a', { class: 'btn primary', href: '#/banner', text: 'Homepage & Banner Studio' })
+    ]));
+
+    var box = el('div');
+    main.appendChild(box);
+
+    function seoState(p) {
+      var tLen = (p.title || '').length;
+      var dLen = (p.description || '').length;
+      if (dLen >= 40 && dLen <= 170 && tLen > 0 && tLen <= 75) return ['published', 'SEO Ready'];
+      if (dLen > 0) return ['scheduled', 'Check length'];
+      return ['draft', 'Missing meta'];
+    }
+
+    function catBadge(cat) {
+      var cls = cat === 'Core Portal' ? 'published' : (cat === 'Candidate Workspace' ? 'scheduled' : 'draft');
+      return el('span', { class: 'badge ' + cls, text: cat });
+    }
+
+    function renderTable() {
+      var term = st.q.toLowerCase().trim();
+      var rows = allPages.filter(function (p) {
+        if (st.cat && p.category !== st.cat) return false;
+        if (!term) return true;
+        return (p.title || '').toLowerCase().includes(term) ||
+          (p.route || '').toLowerCase().includes(term) ||
+          (p.file || '').toLowerCase().includes(term) ||
+          (p.description || '').toLowerCase().includes(term);
+      });
+
+      var tb = el('tbody');
+      rows.forEach(function (p) {
+        var seo = seoState(p);
+        var fullUrl = 'https://csodisha.com' + p.route;
+        tb.appendChild(el('tr', {}, [
+          el('td', {}, [
+            el('strong', { text: p.title }),
+            el('div', {}, el('code', { text: p.route }))
+          ]),
+          el('td', {}, catBadge(p.category)),
+          el('td', {}, [
+            el('div', { class: 'hint', text: p.description ? p.description.slice(0, 110) + (p.description.length > 110 ? '…' : '') : 'No meta description tag found.' }),
+            el('div', { class: 'actions' }, [el('span', { class: 'badge ' + seo[0], text: seo[1] })])
+          ]),
+          el('td', {}, el('div', { class: 'actions' }, [
+            el('a', { class: 'btn sm', href: p.route, target: '_blank', rel: 'noopener', text: 'Open Live ↗' }),
+            el('button', { type: 'button', class: 'btn sm', text: 'Copy URL', onclick: function () {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(fullUrl).then(function () { toast('Copied ' + fullUrl); }).catch(function () { toast(fullUrl); });
+              } else { toast(fullUrl); }
+            } }),
+            el('a', { class: 'btn sm', href: '#/banner', text: 'Edit Banner / SEO' })
+          ]))
+        ]));
+      });
+      if (!rows.length) {
+        tb.appendChild(el('tr', {}, el('td', { colspan: '4', class: 'muted', text: 'No matching pages found in site-manifest.json.' })));
+      }
+
+      var mainScrollEl = document.querySelector('.cso-main');
+      var prevMainScroll = mainScrollEl ? mainScrollEl.scrollTop : 0;
+      clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [
+        el('caption', { class: 'muted', text: 'Live pages on csodisha.com (' + rows.length + ' of ' + allPages.length + ')' }),
+        el('thead', {}, el('tr', {}, ['Page & Route', 'Category', 'Meta Description & SEO', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        tb
+      ])));
+      if (mainScrollEl) mainScrollEl.scrollTop = prevMainScroll;
+    }
+
+    var t;
+    q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = q.value; renderTable(); }, 180); });
+    sel.addEventListener('change', function () { st.cat = sel.value; renderTable(); });
+    renderTable();
+  }
+
+  async function viewSeoDiscovery() {
+    setTitle('SEO, Sitemap & Discovery');
+    main.appendChild(el('div', { class: 'cards' }, [
+      stat('XML Sitemap', '/sitemap.xml', 'Dynamic D1 + static portals'),
+      stat('RSS 2.0 Feed', '/feed.xml', 'Live published alerts'),
+      stat('Robots Policy', '/robots.txt', 'Crawl directives')
+    ]));
+    main.appendChild(el('div', { class: 'panel' }, [
+      el('h2', { text: 'Live Discovery Endpoints' }),
+      el('p', { class: 'muted', text: 'Inspect live Cloudflare Worker SEO feeds and OpenGraph metadata.' }),
+      el('div', { class: 'actions' }, [
+        el('a', { class: 'btn sm', href: '/sitemap.xml', target: '_blank', rel: 'noopener', text: 'Open /sitemap.xml ↗' }),
+        el('a', { class: 'btn sm', href: '/feed.xml', target: '_blank', rel: 'noopener', text: 'Open /feed.xml ↗' }),
+        el('a', { class: 'btn sm', href: '/robots.txt', target: '_blank', rel: 'noopener', text: 'Open /robots.txt ↗' }),
+        el('a', { class: 'btn sm primary', href: '#/pages', text: 'Audit All 44 Site Pages' }),
+        el('a', { class: 'btn sm', href: '#/banner', text: 'Google Snippet & Banner Studio' })
+      ])
+    ]));
+  }
+
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
+    [['#/', 'Overview'], ['#/pages', 'All Pages'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/operations', 'Operations & Backups'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
   var VIEWS = {
     dashboard: function () { return viewDashboard(); },
+    pages: function (parts) { return viewSitePages(parts[1] === 'legal' ? 'Information & Legal' : (parts[1] === 'workspace' ? 'Candidate Workspace' : '')); },
+    seo: function () { return viewSeoDiscovery(); },
     operations: function () { return viewOperations(); },
     diagnostics: function () { return viewDiagnostics(); },
     registry: function () { return viewRegistry(); },

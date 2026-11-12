@@ -1,0 +1,358 @@
+{
+  "generatedAt": "2026-11-12T23:44:14.108Z",
+  "total": 44,
+  "pages": [
+    {
+      "route": "/about.html",
+      "file": "about.html",
+      "title": "About Us | Common Sense Odisha",
+      "description": "About Common Sense Odisha - Dedicated digital gateway providing verified syllabi, state exam patterns, and scholarship navigation.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T06:02:48.995Z"
+    },
+    {
+      "route": "/about/",
+      "file": "about/index.html",
+      "title": "About CSO Explorer | Common Sense Odisha",
+      "description": "",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T05:37:20.267Z"
+    },
+    {
+      "route": "/accessibility.html",
+      "file": "accessibility.html",
+      "title": "Accessibility Statement | Common Sense Odisha",
+      "description": "Web Accessibility Statement for Common Sense Odisha (csodisha.com) - WCAG 2.1 Level AA conformance, RPwD Act 2016 compliance, and assistive tech support.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:52:40.535Z"
+    },
+    {
+      "route": "/career-guidance/",
+      "file": "career-guidance/index.html",
+      "title": "Career Guidance | Common Sense Odisha",
+      "description": "Explore career pathways, education choices and practical skills with Common Sense Odisha.",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T11:09:20.016Z"
+    },
+    {
+      "route": "/community-guidelines.html",
+      "file": "community-guidelines.html",
+      "title": "Community Guidelines | Common Sense Odisha",
+      "description": "Community Guidelines & Forum Code of Conduct for Common Sense Odisha (csodisha.com) - Candidate mutual respect, zero-tolerance exam leaks, anti-malpractice rules.",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-09T08:01:16.330Z"
+    },
+    {
+      "route": "/community/",
+      "file": "community/index.html",
+      "title": "Community Explorer | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T11:09:20.018Z"
+    },
+    {
+      "route": "/community/join/",
+      "file": "community/join/index.html",
+      "title": "Join the CSO Community | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T11:09:20.018Z"
+    },
+    {
+      "route": "/contact.html",
+      "file": "contact.html",
+      "title": "Contact Admin Desk | Common Sense Odisha",
+      "description": "Contact the Common Sense Odisha admin desk. Submit inquiries, feedback, and questions.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T06:09:36.746Z"
+    },
+    {
+      "route": "/cookie-policy.html",
+      "file": "cookie-policy.html",
+      "title": "Cookie Policy | Common Sense Odisha",
+      "description": "Cookie Policy & Token Consent Governance for Common Sense Odisha (csodisha.com) - Essential tokens, functional cookies, and privacy compliance.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:30:53.237Z"
+    },
+    {
+      "route": "/copyright-policy/",
+      "file": "copyright-policy/index.html",
+      "title": "Copyright Policy | Common Sense Odisha",
+      "description": "Copyright Policy for Common Sense Odisha.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-08T09:39:23.485Z"
+    },
+    {
+      "route": "/copyright.html",
+      "file": "copyright.html",
+      "title": "Copyright &amp; DMCA Policy | Common Sense Odisha",
+      "description": "Copyright Notice, Fair Dealing & DMCA Grievance Policy for Common Sense Odisha (csodisha.com) - Educational intelligence and copyright governance.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:40:42.542Z"
+    },
+    {
+      "route": "/corrections-policy.html",
+      "file": "corrections-policy.html",
+      "title": "Corrections &amp; Retractions Policy | Common Sense Odisha",
+      "description": "Corrections, Corrigenda & Retraction Policy for Common Sense Odisha (csodisha.com) - 24-hour turnaround, transparent candidate error reporting, and audit trail.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:52:09.379Z"
+    },
+    {
+      "route": "/current-affairs/",
+      "file": "current-affairs/index.html",
+      "title": "Current Affairs &amp; Daily Updates | Common Sense Odisha",
+      "description": "Daily Odisha and National Current Affairs, Editorials, and Exam Updates on Common Sense Odisha.",
+      "category": "Core Portal",
+      "lastModified": "2026-11-12T16:23:39.164Z"
+    },
+    {
+      "route": "/delivery-policy.html",
+      "file": "delivery-policy.html",
+      "title": "Shipping &amp; Digital Delivery Policy | Common Sense Odisha",
+      "description": "Shipping & Digital Delivery Policy for Common Sense Odisha (csodisha.com) - Instant Cloudflare Anycast edge CDN delivery, offline caching and paperless materials.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T08:00:44.057Z"
+    },
+    {
+      "route": "/disclaimer.html",
+      "file": "disclaimer.html",
+      "title": "Disclaimer | Common Sense Odisha",
+      "description": "Official Disclaimer & Statutory Disclosure for Common Sense Odisha (csodisha.com) - Non-affiliation notice, examination accuracy disclosures, and gazette precedence.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:23:25.995Z"
+    },
+    {
+      "route": "/disclaimer/",
+      "file": "disclaimer/index.html",
+      "title": "Disclaimer | Common Sense Odisha",
+      "description": "Disclaimer for Common Sense Odisha.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-08T09:39:23.456Z"
+    },
+    {
+      "route": "/editorial-policy.html",
+      "file": "editorial-policy.html",
+      "title": "Editorial Policy &amp; Standards | Common Sense Odisha",
+      "description": "Editorial Integrity, Verification Standards & Fact-Checking Policy for Common Sense Odisha (csodisha.com) - Official gazette reconciliation and pedagogical independence.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:51:38.287Z"
+    },
+    {
+      "route": "/education-explorer/",
+      "file": "education-explorer/index.html",
+      "title": "Redirecting to Examination Hub | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T05:58:15.094Z"
+    },
+    {
+      "route": "/faqs.html",
+      "file": "faqs.html",
+      "title": "Frequently Asked Questions (FAQs) | Common Sense Odisha",
+      "description": "Candidate Frequently Asked Questions (FAQs) for Common Sense Odisha (csodisha.com) - Verified knowledgebase covering OPSC, OSSC, free syllabus downloads, and gazette verification.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T08:11:09.864Z"
+    },
+    {
+      "route": "/",
+      "file": "index.html",
+      "title": "Common Sense Odisha",
+      "description": "Common Sense Odisha - Jobs, schemes, study library, and independent candidate preparation workspace for Odisha competitive exams.",
+      "category": "Core Portal",
+      "lastModified": "2026-11-12T14:09:47.468Z"
+    },
+    {
+      "route": "/job-opportunity-finder/",
+      "file": "job-opportunity-finder/index.html",
+      "title": "Job Opportunity Finder | Common Sense Odisha",
+      "description": "Explore job directions based on education, interests and employment preferences.",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T11:09:20.018Z"
+    },
+    {
+      "route": "/jobs-careers/",
+      "file": "jobs-careers/index.html",
+      "title": "Jobs &amp; Careers Explorer | Common Sense Odisha",
+      "description": "",
+      "category": "Core Portal",
+      "lastModified": "2026-11-12T16:13:56.976Z"
+    },
+    {
+      "route": "/legal-revisions.html",
+      "file": "legal-revisions.html",
+      "title": "Legal Page Revision History | Common Sense Odisha",
+      "description": "Legal, Statutory & Compliance Revision History Log for Common Sense Odisha (csodisha.com) - Full chronological audit trail of all Folder 03 policies and statutory amendments.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T08:11:42.897Z"
+    },
+    {
+      "route": "/login.html",
+      "file": "login.html",
+      "title": "Candidate Sign In | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-11T05:06:51.442Z"
+    },
+    {
+      "route": "/mock-tests/",
+      "file": "mock-tests/index.html",
+      "title": "Mock Tests &amp; Practice Series | Common Sense Odisha",
+      "description": "Practice free online CBT Mock Tests for OPSC, OSSC, OSSSC, OTET, OSSTET, CTET, and Odisha competitive examinations on Common Sense Odisha.",
+      "category": "Core Portal",
+      "lastModified": "2026-11-12T17:01:27.478Z"
+    },
+    {
+      "route": "/opportunity-compass/",
+      "file": "opportunity-compass/index.html",
+      "title": "Opportunity Compass | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T11:09:20.020Z"
+    },
+    {
+      "route": "/privacy-policy/",
+      "file": "privacy-policy/index.html",
+      "title": "Privacy Policy | Common Sense Odisha",
+      "description": "Privacy Policy for Common Sense Odisha.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-08T09:39:23.458Z"
+    },
+    {
+      "route": "/privacy.html",
+      "file": "privacy.html",
+      "title": "Privacy Policy | Common Sense Odisha",
+      "description": "Privacy Policy for Common Sense Odisha (CSO) - Statutory compliance and candidate data protection.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T06:14:30.418Z"
+    },
+    {
+      "route": "/refund-policy.html",
+      "file": "refund-policy.html",
+      "title": "Refund &amp; Cancellation Policy | Common Sense Odisha",
+      "description": "Refund, Cancellation & Non-Commercial Public Resource Policy for Common Sense Odisha (csodisha.com) - 100% free candidate access guarantee and anti-fraud advisory.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T08:00:16.165Z"
+    },
+    {
+      "route": "/reset-password.html",
+      "file": "reset-password.html",
+      "title": "Set New Password | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-11T05:07:21.399Z"
+    },
+    {
+      "route": "/resources/",
+      "file": "resources/index.html",
+      "title": "Syllabus &amp; Previous Year Papers (PYQs) | Common Sense Odisha",
+      "description": "Download official exam syllabi and Previous Year Question Papers (PYQs) for OPSC, OSSC, OSSSC, OTET, OSSTET, CTET, and OAVS on Common Sense Odisha.",
+      "category": "Core Portal",
+      "lastModified": "2026-11-12T16:29:23.926Z"
+    },
+    {
+      "route": "/scheme-opportunity-finder/",
+      "file": "scheme-opportunity-finder/index.html",
+      "title": "Scheme Opportunity Finder | Common Sense Odisha",
+      "description": "Explore government schemes, benefits, scholarships and support through Common Sense Odisha.",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T11:09:20.021Z"
+    },
+    {
+      "route": "/schemes-benefits/",
+      "file": "schemes-benefits/index.html",
+      "title": "Schemes & Benefits Explorer | Common Sense Odisha",
+      "description": "",
+      "category": "Core Portal",
+      "lastModified": "2026-11-10T11:24:06.462Z"
+    },
+    {
+      "route": "/scholarship-guidance/",
+      "file": "scholarship-guidance/index.html",
+      "title": "Redirecting to Schemes &amp; Benefits | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T05:58:08.871Z"
+    },
+    {
+      "route": "/signup.html",
+      "file": "signup.html",
+      "title": "Candidate Registration | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-11T03:33:33.847Z"
+    },
+    {
+      "route": "/student-dashboard/",
+      "file": "student-dashboard/index.html",
+      "title": "CSO Candidate Hub — OPSC, OSSC &amp; Odisha B.Ed Preparation Workspace",
+      "description": "Free, independent candidate preparation workspace for Odisha competitive exams. Track OPSC OCS, OSSC CGL, and Odisha B.Ed syllabus milestones, practice daily notes, and access official PYQs.",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-11T04:36:37.656Z"
+    },
+    {
+      "route": "/study-library/",
+      "file": "study-library/index.html",
+      "title": "Study Library Explorer | Common Sense Odisha",
+      "description": "",
+      "category": "Core Portal",
+      "lastModified": "2026-11-10T11:24:10.183Z"
+    },
+    {
+      "route": "/study-path-finder/",
+      "file": "study-path-finder/index.html",
+      "title": "Redirecting to Career Guidance | Common Sense Odisha",
+      "description": "",
+      "category": "Candidate Workspace",
+      "lastModified": "2026-11-08T05:58:20.756Z"
+    },
+    {
+      "route": "/study/examinations/",
+      "file": "study/examinations/index.html",
+      "title": "Examination Hub | Common Sense Odisha",
+      "description": "CS Odisha Examination Hub - Comprehensive syllabuses, papers, and study resources for OTET, OSSTET, CTET, and OAVS.",
+      "category": "Core Portal",
+      "lastModified": "2026-11-08T09:39:36.417Z"
+    },
+    {
+      "route": "/study/",
+      "file": "study/index.html",
+      "title": "I Want to Study — Common Sense Odisha",
+      "description": "Find study pathways, explore courses and career prospects, browse learning resources and view education updates with Common Sense Odisha.",
+      "category": "Core Portal",
+      "lastModified": "2026-11-10T14:00:38.878Z"
+    },
+    {
+      "route": "/support/",
+      "file": "support/index.html",
+      "title": "Help &amp; Support | Common Sense Odisha",
+      "description": "Help, FAQs, error reporting guidance, resource suggestions and contact information for Common Sense Odisha.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T01:40:30.403Z"
+    },
+    {
+      "route": "/terms-of-use/",
+      "file": "terms-of-use/index.html",
+      "title": "Terms of Use | Common Sense Odisha",
+      "description": "Terms of Use for Common Sense Odisha.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-08T09:39:23.463Z"
+    },
+    {
+      "route": "/terms.html",
+      "file": "terms.html",
+      "title": "Terms & Conditions | Common Sense Odisha",
+      "description": "Terms and Conditions of Use for Common Sense Odisha (csodisha.com) - Candidate agreement, fair use policies, and platform legal boundaries.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-09T07:18:28.565Z"
+    },
+    {
+      "route": "/trust-layer/",
+      "file": "trust-layer/index.html",
+      "title": "CSO Trust Layer | Common Sense Odisha",
+      "description": "Official sources, verification, deadlines and corrections at Common Sense Odisha.",
+      "category": "Information & Legal",
+      "lastModified": "2026-11-08T11:09:20.024Z"
+    }
+  ]
+}
