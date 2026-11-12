@@ -9,6 +9,10 @@ import { onRequestPost as handleVerifyOtpPost, onRequestOptions as handleVerifyO
 import { onRequestGet as handleVerifyLinkGet, onRequestOptions as handleVerifyLinkOptions } from './functions/api/auth/verify-link.js';
 import { onRequestGet as handleMeGet, onRequestOptions as handleMeOptions } from './functions/api/auth/me.js';
 import { onRequestPost as handleLogoutPost, onRequestOptions as handleLogoutOptions } from './functions/api/auth/logout.js';
+import { onRequestPost as handleForgotPasswordPost, onRequestOptions as handleForgotPasswordOptions } from './functions/api/auth/forgot-password.js';
+import { onRequestPost as handleVerifyResetOtpPost, onRequestOptions as handleVerifyResetOtpOptions } from './functions/api/auth/verify-reset-otp.js';
+import { onRequestPost as handleResetPasswordPost, onRequestOptions as handleResetPasswordOptions } from './functions/api/auth/reset-password.js';
+import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handleVerifyResetTokenOptions } from './functions/api/auth/verify-reset-token.js';
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { onRequestGet as handleBookmarksGet, onRequestPost as handleBookmarksPost, onRequestOptions as handleBookmarksOptions } from './functions/api/candidate/bookmarks.js';
 import { onRequestGet as handleChecklistGet, onRequestPost as handleChecklistPost, onRequestOptions as handleChecklistOptions } from './functions/api/candidate/checklist.js';
@@ -236,6 +240,30 @@ export default {
     if (pathname === '/api/auth/verify-link' || (pathname === '/api/auth' && url.searchParams.get('action') === 'verify-link')) {
       if (request.method === 'OPTIONS') return handleVerifyLinkOptions();
       if (request.method === 'GET') return handleVerifyLinkGet({ request, env, ctx });
+    }
+
+    // 2d. /api/auth/forgot-password — dual-channel recovery request
+    if (pathname === '/api/auth/forgot-password' || (pathname === '/api/auth' && url.searchParams.get('action') === 'forgot-password')) {
+      if (request.method === 'OPTIONS') return handleForgotPasswordOptions();
+      if (request.method === 'POST') return handleForgotPasswordPost({ request, env, ctx });
+    }
+
+    // 2e. /api/auth/verify-reset-otp — in-page OTP verification
+    if (pathname === '/api/auth/verify-reset-otp' || (pathname === '/api/auth' && url.searchParams.get('action') === 'verify-reset-otp')) {
+      if (request.method === 'OPTIONS') return handleVerifyResetOtpOptions();
+      if (request.method === 'POST') return handleVerifyResetOtpPost({ request, env, ctx });
+    }
+
+    // 2f. /api/auth/reset-password — consumes OTP grant or magic link
+    if (pathname === '/api/auth/reset-password' || (pathname === '/api/auth' && url.searchParams.get('action') === 'reset-password')) {
+      if (request.method === 'OPTIONS') return handleResetPasswordOptions();
+      if (request.method === 'POST') return handleResetPasswordPost({ request, env, ctx });
+    }
+
+    // 2g. /api/auth/verify-reset-token — magic-link validity check
+    if (pathname === '/api/auth/verify-reset-token' || (pathname === '/api/auth' && url.searchParams.get('action') === 'verify-reset-token')) {
+      if (request.method === 'OPTIONS') return handleVerifyResetTokenOptions();
+      if (request.method === 'POST') return handleVerifyResetTokenPost({ request, env, ctx });
     }
 
     // 4. /api/auth/logout — revoke the active server session

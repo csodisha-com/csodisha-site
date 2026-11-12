@@ -47,6 +47,36 @@ CREATE TABLE IF NOT EXISTS sessions (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 1e. Password Reset Requests (dual-channel recovery)
+-- Dual-channel: one row powers BOTH recovery channels.
+--   otp_hash    = SHA-256 of the 6-digit email OTP (in-page verification)
+--   token_hash  = SHA-256 of the 256-bit magic-link token
+--                 (/reset-password.html?token=<token>)
+--   grant_hash  = SHA-256 of the one-time reset grant minted after a
+--                 successful in-page OTP verification
+-- Plaintext OTP/token/grant values are NEVER stored — only their hashes.
+-- attempts counts failed OTP verifications (max 5, then the row is
+-- invalidated). used flags consumption (single-use for every channel).
+-- expires_at is stored as unix seconds (15-minute TTL) to match the
+-- sessions/email_verifications convention.
+CREATE TABLE IF NOT EXISTS password_resets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,       -- SHA-256 hash of the 256-bit magic link token
+  otp_hash TEXT NOT NULL,                 -- SHA-256 hash of the 6-digit OTP
+  grant_hash TEXT,                        -- SHA-256 hash of the post-OTP reset grant
+  attempts INTEGER DEFAULT 0,            -- Failed OTP attempts counter
+  expires_at INTEGER NOT NULL,
+  used INTEGER DEFAULT 0,
+  ip_address TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_resets_token_hash ON password_resets(token_hash);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_grant_hash ON password_resets(grant_hash);
+
 -- 2. Syllabus & Preparation Checklist Progress
 -- Key conventions:
 --   exam_code     = uppercase exam key, e.g. 'OPSC', 'OSSC', 'OSSSC', 'TEACHING', 'POLICE'

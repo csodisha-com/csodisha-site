@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
   '/student-dashboard/',
   '/student-dashboard/index.html',
   '/login.html',
+  '/reset-password.html',
   '/jobs-careers/',
   '/jobs-careers/index.html',
   '/schemes-benefits/',

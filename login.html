@@ -47,6 +47,18 @@
       color: #94a3b8;
       margin: 0;
     }
+    .flash-banner {
+      display: none;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #6ee7b7;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
     .form-group {
       margin-bottom: 1.25rem;
       text-align: left;
@@ -78,6 +90,13 @@
     }
     .form-input:focus {
       border-color: #0d9488;
+    }
+    .form-input.otp-input {
+      font-size: 1.5rem;
+      letter-spacing: 0.55rem;
+      text-align: center;
+      font-weight: 700;
+      padding: 0 0.5rem;
     }
     .btn-toggle-pw {
       position: absolute;
@@ -127,6 +146,52 @@
       opacity: 0.65;
       cursor: not-allowed;
     }
+    .auth-links {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .auth-links a, .auth-links button {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .auth-links a:hover, .auth-links button:hover {
+      text-decoration: underline;
+    }
+    .auth-links .back-home {
+      color: #94a3b8;
+    }
+    .resend-row {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: -0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .resend-row button {
+      background: none;
+      border: none;
+      color: #38bdf8;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+    .resend-row button:disabled {
+      color: #475569;
+      cursor: not-allowed;
+    }
     .auth-footer {
       text-align: center;
       margin-top: 1.5rem;
@@ -141,6 +206,14 @@
     .auth-footer a:hover {
       text-decoration: underline;
     }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .pw-hint {
+      display: block;
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 0.3rem;
+    }
   </style>
 </head>
 <body>
@@ -149,56 +222,181 @@
       <a href="/" class="auth-logo" title="Common Sense Odisha">
         <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="110" height="38">
       </a>
-      <h1 class="auth-title">Candidate Sign In</h1>
-      <p class="auth-subtitle">Access your verified syllabus checklists and study desk</p>
+      <h1 class="auth-title" id="auth-screen-title">Candidate Sign In</h1>
+      <p class="auth-subtitle" id="auth-screen-subtitle">Access your verified syllabus checklists and study desk</p>
     </div>
 
-    <form id="candidate-login-form" novalidate>
-      <div class="error-box" id="auth-error-msg" role="alert" aria-live="assertive"></div>
+    <div class="flash-banner" id="flash-banner" role="status" aria-live="polite">
+      Password reset successfully! Please sign in with your new credentials.
+    </div>
 
-      <div class="form-group">
-        <label for="login-email" class="form-label">Email Address *</label>
-        <div class="input-wrapper">
-          <input
-            type="email"
-            id="login-email"
-            name="email"
-            class="form-input"
-            placeholder="aspirant@example.com"
-            autocomplete="email"
-            required
-          >
+    <!-- ===================== Screen: Sign In ===================== -->
+    <div class="screen active" id="screen-signin">
+      <form id="candidate-login-form" novalidate>
+        <div class="error-box" id="auth-error-msg" role="alert" aria-live="assertive"></div>
+
+        <div class="form-group">
+          <label for="login-email" class="form-label">Email Address *</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="login-email"
+              name="email"
+              class="form-input"
+              placeholder="aspirant@example.com"
+              autocomplete="email"
+              required
+            >
+          </div>
         </div>
+
+        <div class="form-group">
+          <label for="login-password" class="form-label">Password *</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              class="form-input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            >
+            <button
+              type="button"
+              class="btn-toggle-pw"
+              id="btn-toggle-pw"
+              aria-label="Show password"
+              aria-pressed="false"
+            >Show</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-submit-auth">
+          Sign In to Portal
+        </button>
+      </form>
+
+      <div class="auth-links">
+        <button type="button" id="forgot-password-link">Forgot password?</button>
+        <a href="/" class="back-home">← Back to Home</a>
+      </div>
+    </div>
+
+    <!-- ===================== Screen: Recovery — Email ===================== -->
+    <div class="screen" id="screen-recovery-email">
+      <form id="recovery-email-form" novalidate>
+        <div class="error-box" id="recovery-email-error" role="alert" aria-live="assertive"></div>
+
+        <div class="form-group">
+          <label for="recovery-email" class="form-label">Account Email Address *</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="recovery-email"
+              class="form-input"
+              placeholder="aspirant@example.com"
+              autocomplete="email"
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-send-recovery">
+          Send Recovery Email
+        </button>
+      </form>
+
+      <div class="auth-links">
+        <button type="button" data-back-to="signin">← Back to sign in</button>
+      </div>
+    </div>
+
+    <!-- ===================== Screen: Recovery — OTP ===================== -->
+    <div class="screen" id="screen-recovery-otp">
+      <form id="recovery-otp-form" novalidate>
+        <div class="error-box" id="recovery-otp-error" role="alert" aria-live="assertive"></div>
+
+        <div class="form-group">
+          <label for="recovery-otp" class="form-label">6-Digit Verification Code *</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="recovery-otp"
+              class="form-input otp-input"
+              placeholder="••••••"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-verify-otp">
+          Verify Code
+        </button>
+      </form>
+
+      <div class="resend-row">
+        Didn't receive it? <button type="button" id="resend-recovery-btn" disabled>Resend email</button>
+        <span id="resend-timer"></span>
       </div>
 
-      <div class="form-group">
-        <label for="login-password" class="form-label">Password *</label>
-        <div class="input-wrapper">
-          <input
-            type="password"
-            id="login-password"
-            name="password"
-            class="form-input"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-          >
-          <button
-            type="button"
-            class="btn-toggle-pw"
-            id="btn-toggle-pw"
-            aria-label="Show password"
-            aria-pressed="false"
-          >Show</button>
-        </div>
+      <div class="auth-links">
+        <button type="button" data-back-to="recovery-email">← Use a different email</button>
       </div>
+    </div>
 
-      <button type="submit" class="btn-submit" id="btn-submit-auth">
-        Sign In to Portal
-      </button>
-    </form>
+    <!-- ===================== Screen: Recovery — New Password ===================== -->
+    <div class="screen" id="screen-recovery-newpw">
+      <form id="recovery-newpw-form" novalidate>
+        <div class="error-box" id="recovery-newpw-error" role="alert" aria-live="assertive"></div>
 
-    <div class="auth-footer">
+        <div class="form-group">
+          <label for="new-password" class="form-label">New Password *</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="new-password"
+              class="form-input"
+              placeholder="••••••••"
+              autocomplete="new-password"
+              required
+            >
+            <button
+              type="button"
+              class="btn-toggle-pw"
+              id="btn-toggle-newpw"
+              aria-label="Show password"
+              aria-pressed="false"
+            >Show</button>
+          </div>
+          <span class="pw-hint">Min 8 chars with upper &amp; lower case, a digit and a special character.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password" class="form-label">Confirm New Password *</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="confirm-password"
+              class="form-input"
+              placeholder="••••••••"
+              autocomplete="new-password"
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-reset-password">
+          Set New Password
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-footer" id="auth-footer">
       Don't have an account? <a href="/signup.html">Create Account</a>
     </div>
   </div>
@@ -206,6 +404,63 @@
   <script src="/assets/cso-auth-client.js"></script>
   <script>
     (function() {
+      // ---------------- Screen router ----------------
+      const SCREENS = ['signin', 'recovery-email', 'recovery-otp', 'recovery-newpw'];
+      const TITLES = {
+        'signin': ['Candidate Sign In', 'Access your verified syllabus checklists and study desk'],
+        'recovery-email': ['Recover Your Password', 'We will email you a 6-digit code and a one-click reset link'],
+        'recovery-otp': ['Enter Verification Code', 'Check your inbox for the 6-digit recovery code'],
+        'recovery-newpw': ['Set New Password', 'Choose a strong new password for your account']
+      };
+      let recoveryEmail = '';
+      let resetGrant = null;
+      let resendCooldownTimer = null;
+
+      function showScreen(name) {
+        SCREENS.forEach(s => {
+          const el = document.getElementById('screen-' + s);
+          if (el) el.classList.toggle('active', s === name);
+        });
+        const meta = TITLES[name] || TITLES['signin'];
+        document.getElementById('auth-screen-title').textContent = meta[0];
+        document.getElementById('auth-screen-subtitle').textContent = meta[1];
+        document.getElementById('auth-footer').style.display = name === 'signin' ? 'block' : 'none';
+        const firstInput = document.querySelector('#screen-' + name + ' input');
+        if (firstInput) setTimeout(() => firstInput.focus(), 30);
+      }
+
+      function showError(id, msg) {
+        const box = document.getElementById(id);
+        box.textContent = msg;
+        box.style.display = 'block';
+      }
+      function clearError(id) {
+        const box = document.getElementById(id);
+        box.textContent = '';
+        box.style.display = 'none';
+      }
+      function busy(btn, text) {
+        btn.disabled = true;
+        btn.dataset.label = btn.textContent;
+        btn.textContent = text;
+      }
+      function unbusy(btn) {
+        btn.disabled = false;
+        if (btn.dataset.label) btn.textContent = btn.dataset.label;
+      }
+
+      // Flash banner after a successful reset (set by the reset flow itself
+      // or by /reset-password.html before redirecting here).
+      try {
+        if (sessionStorage.getItem('cso_password_reset_flash') === '1') {
+          sessionStorage.removeItem('cso_password_reset_flash');
+          const banner = document.getElementById('flash-banner');
+          banner.style.display = 'block';
+          setTimeout(() => { banner.style.display = 'none'; }, 7000);
+        }
+      } catch (e) {}
+
+      // ---------------- Sign-in screen ----------------
       const form = document.getElementById('candidate-login-form');
       const emailInput = document.getElementById('login-email');
       const pwInput = document.getElementById('login-password');
@@ -213,47 +468,36 @@
       const errorBox = document.getElementById('auth-error-msg');
       const submitBtn = document.getElementById('btn-submit-auth');
 
-      // Password toggle
-      togglePwBtn.addEventListener('click', function() {
-        const isPw = pwInput.type === 'password';
-        pwInput.type = isPw ? 'text' : 'password';
-        this.textContent = isPw ? 'Hide' : 'Show';
-        this.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
-        this.setAttribute('aria-pressed', isPw ? 'true' : 'false');
-      });
-
-      function showError(msg) {
-        errorBox.textContent = msg;
-        errorBox.style.display = 'block';
+      function wirePwToggle(btn, input) {
+        btn.addEventListener('click', function() {
+          const isPw = input.type === 'password';
+          input.type = isPw ? 'text' : 'password';
+          btn.textContent = isPw ? 'Hide' : 'Show';
+          btn.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+          btn.setAttribute('aria-pressed', isPw ? 'true' : 'false');
+        });
       }
-
-      function clearError() {
-        errorBox.textContent = '';
-        errorBox.style.display = 'none';
-      }
+      wirePwToggle(togglePwBtn, pwInput);
 
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        clearError();
+        clearError('auth-error-msg');
 
         const email = emailInput.value.trim().toLowerCase();
         const password = pwInput.value;
 
         if (!email || !email.includes('@')) {
-          showError('Please enter a valid candidate email address.');
+          showError('auth-error-msg', 'Please enter a valid candidate email address.');
           emailInput.focus();
           return;
         }
-
         if (!password) {
-          showError('Please enter your password.');
+          showError('auth-error-msg', 'Please enter your password.');
           pwInput.focus();
           return;
         }
 
-        // Prevent double submission
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Verifying...';
+        busy(submitBtn, 'Verifying...');
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -272,10 +516,7 @@
           if (res.ok && data.success) {
             submitBtn.textContent = 'Access granted! Redirecting...';
             if (data.candidate) {
-              const sessionPayload = {
-                ...data.candidate,
-                isAuthenticated: true
-              };
+              const sessionPayload = { ...data.candidate, isAuthenticated: true };
               localStorage.setItem('cso_candidate_session_v1', JSON.stringify(sessionPayload));
               localStorage.setItem('cso_candidate_profile', JSON.stringify(sessionPayload));
             }
@@ -291,22 +532,222 @@
               : '/student-dashboard/';
 
             window.location.href = targetUrl;
-          } else {
-            localStorage.removeItem('cso_auth_token');
-            localStorage.removeItem('cso_candidate_profile');
-            localStorage.removeItem('cso_candidate_session_v1');
-            showError(data.error || 'Invalid email or password');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Sign In to Portal';
+            return;
           }
+
+          localStorage.removeItem('cso_auth_token');
+          localStorage.removeItem('cso_candidate_profile');
+          localStorage.removeItem('cso_candidate_session_v1');
+          showError('auth-error-msg', data.error || 'Invalid email or password');
+          unbusy(submitBtn);
         } catch (err) {
           clearTimeout(timeoutId);
           localStorage.removeItem('cso_auth_token');
           localStorage.removeItem('cso_candidate_profile');
           localStorage.removeItem('cso_candidate_session_v1');
-          showError(err.name === 'AbortError' ? 'Login request timed out. Please try again.' : 'Unable to reach authentication server. Please try again.');
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Sign In to Portal';
+          showError('auth-error-msg', err.name === 'AbortError'
+            ? 'Login request timed out. Please try again.'
+            : 'Unable to reach authentication server. Please try again.');
+          unbusy(submitBtn);
+        }
+      });
+
+      // ---------------- Recovery navigation ----------------
+      document.getElementById('forgot-password-link').addEventListener('click', () => {
+        clearError('recovery-email-error');
+        const prefill = emailInput.value.trim();
+        if (prefill) document.getElementById('recovery-email').value = prefill;
+        showScreen('recovery-email');
+      });
+
+      document.querySelectorAll('[data-back-to]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          clearError('recovery-otp-error');
+          clearError('recovery-email-error');
+          showScreen(btn.dataset.backTo);
+        });
+      });
+
+      // ---------------- Recovery: request dual-channel email ----------------
+      const emailForm = document.getElementById('recovery-email-form');
+      const sendBtn = document.getElementById('btn-send-recovery');
+
+      emailForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearError('recovery-email-error');
+
+        const email = document.getElementById('recovery-email').value.trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+          showError('recovery-email-error', 'Please enter a valid email address.');
+          return;
+        }
+
+        busy(sendBtn, 'Sending...');
+
+        try {
+          const res = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+          const data = await res.json().catch(() => ({}));
+
+          // Anti-enumeration: unknown emails get the same generic success —
+          // the OTP screen is shown either way.
+          if (res.status === 429) {
+            showError('recovery-email-error', data.error || 'Too many recovery requests. Please try again later.');
+            unbusy(sendBtn);
+            return;
+          }
+          if (!res.ok || !data.success) {
+            showError('recovery-email-error', data.error || 'Unable to send the recovery email. Please try again.');
+            unbusy(sendBtn);
+            return;
+          }
+
+          recoveryEmail = email;
+          document.getElementById('recovery-otp').value = '';
+          clearError('recovery-otp-error');
+          showScreen('recovery-otp');
+          startResendCooldown();
+        } catch (err) {
+          showError('recovery-email-error', 'Unable to reach the server. Please try again.');
+        } finally {
+          unbusy(sendBtn);
+        }
+      });
+
+      function startResendCooldown() {
+        const btn = document.getElementById('resend-recovery-btn');
+        const timer = document.getElementById('resend-timer');
+        let remaining = 60;
+        btn.disabled = true;
+        clearInterval(resendCooldownTimer);
+        resendCooldownTimer = setInterval(() => {
+          remaining--;
+          if (remaining <= 0) {
+            clearInterval(resendCooldownTimer);
+            btn.disabled = false;
+            timer.textContent = '';
+          } else {
+            timer.textContent = ' (available in ' + remaining + 's)';
+          }
+        }, 1000);
+      }
+
+      document.getElementById('resend-recovery-btn').addEventListener('click', async function() {
+        if (this.disabled || !recoveryEmail) return;
+        this.disabled = true;
+        try {
+          await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: recoveryEmail })
+          });
+        } catch (e) { /* silent — the server enforces its own cooldown */ }
+        startResendCooldown();
+      });
+
+      // ---------------- Recovery: verify OTP in-page ----------------
+      const otpForm = document.getElementById('recovery-otp-form');
+      const verifyBtn = document.getElementById('btn-verify-otp');
+
+      otpForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearError('recovery-otp-error');
+
+        const otp = document.getElementById('recovery-otp').value.trim();
+        if (!/^\d{6}$/.test(otp)) {
+          showError('recovery-otp-error', 'Please enter the 6-digit code from your email.');
+          return;
+        }
+
+        busy(verifyBtn, 'Verifying...');
+
+        try {
+          const res = await fetch('/api/auth/verify-reset-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: recoveryEmail, otp })
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok || !data.success) {
+            const left = typeof data.attemptsLeft === 'number'
+              ? ' (' + data.attemptsLeft + ' attempt' + (data.attemptsLeft === 1 ? '' : 's') + ' remaining)'
+              : '';
+            showError('recovery-otp-error', (data.error || 'Invalid or expired verification code.') + left);
+            document.getElementById('recovery-otp').value = '';
+            document.getElementById('recovery-otp').focus();
+            unbusy(verifyBtn);
+            return;
+          }
+
+          // Valid OTP — unlock the new-password fields immediately, no redirect.
+          resetGrant = data.resetToken;
+          document.getElementById('new-password').value = '';
+          document.getElementById('confirm-password').value = '';
+          clearError('recovery-newpw-error');
+          showScreen('recovery-newpw');
+        } catch (err) {
+          showError('recovery-otp-error', 'Unable to reach the server. Please try again.');
+          unbusy(verifyBtn);
+        }
+      });
+
+      // ---------------- Recovery: set new password ----------------
+      const newpwForm = document.getElementById('recovery-newpw-form');
+      const resetBtn = document.getElementById('btn-reset-password');
+      wirePwToggle(document.getElementById('btn-toggle-newpw'), document.getElementById('new-password'));
+
+      newpwForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearError('recovery-newpw-error');
+
+        const pw = document.getElementById('new-password').value;
+        const confirm = document.getElementById('confirm-password').value;
+
+        if (pw.length < 8) {
+          showError('recovery-newpw-error', 'Password must be at least 8 characters long.');
+          return;
+        }
+        if (pw !== confirm) {
+          showError('recovery-newpw-error', 'Passwords do not match.');
+          return;
+        }
+        if (!resetGrant) {
+          showError('recovery-newpw-error', 'Your verification session expired. Please start the recovery again.');
+          return;
+        }
+
+        busy(resetBtn, 'Updating password...');
+
+        try {
+          const res = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: recoveryEmail, grant: resetGrant, password: pw })
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok || !data.success) {
+            showError('recovery-newpw-error', data.error || 'Unable to reset the password. Please try again.');
+            unbusy(resetBtn);
+            return;
+          }
+
+          // Flash alert on /login after redirect; stale sessions were
+          // revoked server-side, so clear any local remnants.
+          try {
+            sessionStorage.setItem('cso_password_reset_flash', '1');
+            localStorage.removeItem('cso_auth_token');
+            localStorage.removeItem('cso_candidate_session_v1');
+            localStorage.removeItem('cso_candidate_profile');
+          } catch (err) {}
+          window.location.href = '/login.html';
+        } catch (err) {
+          showError('recovery-newpw-error', 'Unable to reach the server. Please try again.');
+          unbusy(resetBtn);
         }
       });
     })();
