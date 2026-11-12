@@ -193,7 +193,21 @@
   function stat(label, value, sub) { return el('div', { class: 'card' }, [el('div', { class: 'muted', text: label }), el('div', { class: 'num cso-tabular', text: String(value) }), sub ? el('div', { class: 'muted', text: sub }) : null]); }
   async function viewDashboard() {
     setTitle('Overview');
-    var s = await api('GET', 'stats');
+    var res = await Promise.all([
+      api('GET', 'stats'),
+      api('GET', 'jobs?limit=100').catch(function () { return { items: [] }; }),
+      api('GET', 'current-affairs?limit=100').catch(function () { return { items: [] }; }),
+      api('GET', 'mock-tests?limit=100').catch(function () { return { items: [] }; }),
+      api('GET', 'resources?limit=100').catch(function () { return { items: [] }; }),
+      api('GET', 'audit?limit=100').catch(function () { return { items: [] }; })
+    ]);
+    var s = res[0] || {};
+    var jobsList = (res[1] && res[1].items) || [];
+    var caList = (res[2] && res[2].items) || [];
+    var mockList = (res[3] && res[3].items) || [];
+    var resList = (res[4] && res[4].items) || [];
+    var auditList = (res[5] && res[5].items) || [];
+
     function card(label, o) { return stat(label, o.live, 'live of ' + o.total + ' total'); }
     var acc = s.accounts || {};
     main.appendChild(el('h2', { text: 'Live D1 telemetry' }));
@@ -205,6 +219,108 @@
       stat('Syllabus / PYQ', (s.resources || {}).live, 'live of ' + (s.resources || {}).total),
       stat('Audit events (24h)', s.audit_24h),
       stat('Open incidents', s.open_incidents, s.open_incidents ? 'needs attention' : 'all clear')]));
+
+    if (window.CSOCharts) {
+      main.appendChild(el('h2', { text: 'Content analytics & engagement' }));
+      var chartsGrid = el('div', { class: 'cso-charts-grid' });
+      var pipeCard = el('div', { class: 'panel cso-chart-panel' });
+      var actCard = el('div', { class: 'panel cso-chart-panel' });
+      var catCard = el('div', { class: 'panel cso-chart-panel' });
+      chartsGrid.appendChild(pipeCard);
+      chartsGrid.appendChild(actCard);
+      chartsGrid.appendChild(catCard);
+      main.appendChild(chartsGrid);
+
+      var allContent = jobsList.concat(caList, mockList);
+      var pipeCounts = { published: 0, scheduled: 0, draft: 0, expired: 0, archived: 0 };
+      allContent.forEach(function (item) {
+        var k = String(item.status || 'draft').toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(pipeCounts, k)) pipeCounts[k] += 1;
+        else pipeCounts.draft += 1;
+      });
+      window.CSOCharts.renderContentPipeline(pipeCard, pipeCounts, function () {
+        location.hash = '#/jobs';
+      });
+
+      var now = Date.now();
+      var dayBuckets = [];
+      for (var dIdx = 6; dIdx >= 0; dIdx -= 1) {
+        var dt = new Date(now - dIdx * 86400000);
+        dayBuckets.push({
+          key: dt.toISOString().slice(0, 10),
+          label: dt.toLocaleDateString('en-IN', { weekday: 'short' }),
+          posts: 0,
+          audits: 0
+        });
+      }
+      var bucketByKey = {};
+      dayBuckets.forEach(function (bk) { bucketByKey[bk.key] = bk; });
+      allContent.concat(resList).forEach(function (item) {
+        var ts = String(item.updated_at || item.created_at || '').slice(0, 10);
+        if (bucketByKey[ts]) bucketByKey[ts].posts += 1;
+      });
+      auditList.forEach(function (ev) {
+        var ts = String(ev.created_at || '').slice(0, 10);
+        if (bucketByKey[ts]) bucketByKey[ts].audits += 1;
+      });
+      window.CSOCharts.renderActivityAndCbtChart(actCard, {
+        days: dayBuckets,
+        attemptsTotal: s.attempts_total || 0,
+        bookmarksTotal: s.bookmarks_total || 0,
+        audit24h: s.audit_24h || 0,
+        newCandidates7d: acc.new_7d || 0
+      });
+
+      var tracks = { OPSC: 0, OSSC: 0, OSSSC: 0, Teaching: 0, Banking: 0, SSC: 0, 'Police/Defence': 0 };
+      allContent.concat(resList).forEach(function (item) {
+        var txt = [item.title, item.organization, item.category, item.exam, item.tags].filter(Boolean).join(' ');
+        var track = window.CSOCharts.classifyExamTrack(txt);
+        tracks[track] = (tracks[track] || 0) + 1;
+      });
+      window.CSOCharts.renderExamCategoryChart(catCard, tracks, function () {
+        location.hash = '#/jobs';
+      });
+    }
+
+    var attentionItems = [];
+    var nowMs = Date.now();
+    var in72h = nowMs + 72 * 3600000;
+    jobsList.forEach(function (j) {
+      if (j.status === 'published' && j.last_date) {
+        var exp = Date.parse(j.last_date);
+        if (!isNaN(exp) && exp >= nowMs - 86400000 && exp <= in72h) {
+          attentionItems.push({ kind: 'Expiring soon', label: j.title, meta: 'Deadline: ' + fmtDate(j.last_date), href: '#/jobs/' + j.id, badge: 'scheduled' });
+        }
+      }
+      if (j.status === 'draft') {
+        attentionItems.push({ kind: 'Draft job', label: j.title, meta: j.organization || 'Needs review', href: '#/jobs/' + j.id, badge: 'draft' });
+      }
+    });
+    mockList.forEach(function (m) {
+      if (Number(m.question_count || 0) === 0) {
+        attentionItems.push({ kind: 'Empty mock test', label: m.title, meta: '0 questions added', href: '#/mock-tests/' + m.id, badge: 'draft' });
+      }
+    });
+    if ((s.open_incidents || 0) > 0) {
+      attentionItems.unshift({ kind: 'Open incidents', label: s.open_incidents + ' active operational incident(s)', meta: 'Inspect Ops Health & Diagnostics', href: '#/operations', badge: 'expired' });
+    }
+
+    main.appendChild(el('h2', { text: 'Needs attention' }));
+    if (!attentionItems.length) {
+      main.appendChild(el('div', { class: 'card' }, [el('p', { class: 'muted', text: 'All clear — no drafts, expiring deadlines, or empty mock tests require action.' })]));
+    } else {
+      var attGrid = el('div', { class: 'cso-attention-grid' });
+      attentionItems.slice(0, 6).forEach(function (it) {
+        attGrid.appendChild(el('div', { class: 'card cso-attention-item' }, [
+          el('div', { class: 'cso-attention-head' }, [badge(it.badge), el('span', { class: 'hint', text: it.kind })]),
+          el('strong', { text: it.label }),
+          el('div', { class: 'hint', text: it.meta }),
+          el('div', { class: 'actions' }, [el('a', { class: 'btn sm', href: it.href, text: 'Review' })])
+        ]));
+      });
+      main.appendChild(attGrid);
+    }
+
     var b = s.banner || {};
     main.appendChild(el('h2', { text: 'Homepage broadcast banner' }));
     main.appendChild(el('div', { class: 'card' }, [
@@ -338,7 +454,31 @@
     form.appendChild(field('Context (optional)', context, 'f-context'));
     form.appendChild(el('div', { class: 'grid2' }, [field('Severity', sev, 'f-severity'), el('div')]));
     form.appendChild(el('div', { class: 'grid2' }, [field('Button text', ctaText, 'f-ctaText'), field('Button link', ctaUrl, 'f-ctaUrl')]));
-    form.appendChild(el('h2', { text: 'Preview' })); form.appendChild(preview);
+    form.appendChild(el('h2', { text: 'Live banner preview' })); form.appendChild(preview);
+
+    var seoTitle = el('input', { id: 'f-seo-title', type: 'text', maxlength: '90', placeholder: 'CSOdisha — Odisha Exam & Job Alerts Portal' });
+    seoTitle.value = headline.value ? headline.value + ' | CSOdisha' : 'CSOdisha — Odisha Exam & Job Alerts Portal';
+    var seoDesc = el('textarea', { id: 'f-seo-desc', maxlength: '220', placeholder: 'Official Odisha govt job notifications, OPSC/OSSC/OSSSC mock tests, daily current affairs & syllabus PDFs.' });
+    seoDesc.value = context.value || 'Official Odisha govt job notifications, OPSC/OSSC/OSSSC mock tests, daily current affairs & syllabus PDFs.';
+    var seoCount = el('div', { class: 'hint' });
+    var seoSnippet = el('div', { class: 'cso-seo-snippet' });
+    function renderSeoPreview() {
+      var tVal = (seoTitle.value || '').trim();
+      var dVal = (seoDesc.value || '').trim();
+      seoCount.textContent = 'Title: ' + tVal.length + '/60 chars · Meta description: ' + dVal.length + '/160 chars';
+      seoCount.className = (tVal.length > 60 || dVal.length > 160) ? 'hint cso-warn-text' : 'hint';
+      clear(seoSnippet);
+      seoSnippet.appendChild(el('div', { class: 'cso-seo-url', text: 'https://csodisha.com › ' + (ctaUrl.value ? ctaUrl.value.replace(/^\/+/, '') : '') }));
+      seoSnippet.appendChild(el('div', { class: 'cso-seo-title', text: tVal || 'CSOdisha — Odisha Exam Portal' }));
+      seoSnippet.appendChild(el('div', { class: 'cso-seo-desc', text: dVal || 'Live Odisha exam alerts, mock tests, and daily current affairs.' }));
+    }
+    [seoTitle, seoDesc, ctaUrl].forEach(function (inp) { inp.addEventListener('input', renderSeoPreview); });
+    renderSeoPreview();
+    form.appendChild(el('h2', { text: 'Google search snippet preview' }));
+    form.appendChild(el('div', { class: 'grid2' }, [field('SEO Title preview', seoTitle, 'f-seo-title'), field('Meta description preview', seoDesc, 'f-seo-desc')]));
+    form.appendChild(seoCount);
+    form.appendChild(seoSnippet);
+
     form.appendChild(el('p', { class: 'hint', text: b.updatedAt ? 'Last saved ' + fmtDate(b.updatedAt) + ' (UTC server time). Visitors see changes within ~15 seconds.' : 'Never published.' }));
     form.appendChild(el('div', { class: 'actions' }, [save, el('a', { class: 'btn', href: '/', target: '_blank', rel: 'noopener', text: 'Open homepage' })]));
     form.addEventListener('submit', async function (e) {
@@ -390,13 +530,37 @@
       var year = el('input', { id: 'f-year', type: 'number', min: '1990', max: '2100' }); year.value = item && item.year ? item.year : '';
       var desc = el('textarea', { id: 'f-description' }); desc.value = item ? item.description || '' : '';
       var st2 = el('select', { id: 'f-status' }, ['draft', 'published'].map(function (x) { return el('option', { value: x, text: x[0].toUpperCase() + x.slice(1), selected: item && item.status === x }); }));
+      var resPrev = el('div', { class: 'cso-preview-card', 'aria-live': 'polite' });
+      var r2Status = el('div', { class: 'hint', text: key ? 'R2 key: ' + key : 'No file uploaded yet' });
+      function updateResPrev() {
+        clear(resPrev);
+        resPrev.appendChild(el('div', { class: 'cso-preview-kicker', text: (kind === 'syllabus' ? 'SYLLABUS' : 'PYQ PAPER') + (exam.value ? ' · ' + exam.value : '') + (year.value ? ' (' + year.value + ')' : '') }));
+        resPrev.appendChild(el('strong', { text: title.value || 'Untitled resource' }));
+        if (desc.value) resPrev.appendChild(el('p', { class: 'muted', text: desc.value }));
+        resPrev.appendChild(el('div', { class: 'actions' }, [badge(st2.value), key ? el('span', { class: 'hint', text: 'PDF/Scan attached' }) : el('span', { class: 'hint', text: 'Attach a file above' })]));
+      }
+      async function checkR2Url(url) {
+        if (!url) { r2Status.textContent = 'No file URL yet (save or upload first)'; return; }
+        r2Status.textContent = 'Checking R2 file availability…';
+        try {
+          var r = await fetch(url, { method: 'HEAD', credentials: 'same-origin' });
+          r2Status.textContent = r.ok ? 'R2 file reachable (HTTP ' + r.status + ')' : 'R2 check returned HTTP ' + r.status;
+        } catch (e) {
+          r2Status.textContent = 'R2 file check unavailable offline';
+        }
+      }
+      [title, exam, year, desc, st2].forEach(function (inp) { inp.addEventListener('input', updateResPrev); inp.addEventListener('change', updateResPrev); });
+      updateResPrev();
+      if (item && item.file_url) checkR2Url(item.file_url);
       var save = el('button', { type: 'submit', class: 'btn primary', text: 'Save' });
       var ov;
       f.appendChild(el('h2', { text: (isNew ? 'Add ' : 'Edit ') + (kind === 'syllabus' ? 'syllabus' : 'question paper') }));
       f.appendChild(field('Title', title, 'f-title')); f.appendChild(el('div', { class: 'grid2' }, [field('Exam', exam, 'f-exam'), field('Year', year, 'f-year')]));
       f.appendChild(field('Description', desc, 'f-description'));
-      f.appendChild(el('div', {}, [el('label', { text: 'File (PDF, or image scan)' }), uploader('f-media_key-up', 'any', key, function (k) { key = k; }), el('div', { class: 'err', 'data-err': 'f-media_key', hidden: true })]));
+      f.appendChild(el('div', {}, [el('label', { text: 'File (PDF, or image scan)' }), uploader('f-media_key-up', 'any', key, function (k) { key = k; r2Status.textContent = k ? 'Uploaded R2 key: ' + k : 'No file'; updateResPrev(); }), el('div', { class: 'err', 'data-err': 'f-media_key', hidden: true }), r2Status]));
       f.appendChild(field('Status', st2, 'f-status'));
+      f.appendChild(el('h3', { text: 'Live candidate resource card preview' }));
+      f.appendChild(resPrev);
       f.appendChild(el('div', { class: 'actions' }, [save, el('button', { type: 'button', class: 'btn', text: 'Cancel', onclick: function () { ov.remove(); } })]));
       f.addEventListener('submit', async function (e) {
         e.preventDefault(); save.disabled = true; showErrors(f, {});
@@ -439,11 +603,60 @@
     var q = el('input', { type: 'search', placeholder: 'Search…', 'aria-label': 'Search' });
     var sel = el('select', { 'aria-label': 'Filter by status' }, [['', 'All statuses'], ['draft', 'Draft'], ['published', 'Published'], ['scheduled', 'Scheduled'], ['expired', 'Expired'], ['archived', 'Archived']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
     var box = el('div');
+    var bulkBar = el('div', { class: 'cso-bulk-bar', hidden: true });
+    var selectedIds = {};
     var t;
     q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = q.value; st.page = 1; load(); }, 300); });
     sel.addEventListener('change', function () { st.status = sel.value; st.page = 1; load(); });
     main.appendChild(el('div', { class: 'toolbar' }, [q, sel, el('span', { class: 'spacer' }), el('a', { class: 'btn primary', href: '#/' + key + '/new', text: '+ New' })]));
+    main.appendChild(bulkBar);
     main.appendChild(box);
+    function updateBulkBar() {
+      var ids = Object.keys(selectedIds).filter(function (id) { return selectedIds[id]; });
+      clear(bulkBar);
+      bulkBar.hidden = ids.length === 0;
+      if (!ids.length) return;
+      bulkBar.appendChild(el('strong', { text: ids.length + ' selected' }));
+      bulkBar.appendChild(el('button', { type: 'button', class: 'btn sm primary', text: 'Bulk Publish', onclick: function () { bulkStatus(ids, 'published'); } }));
+      bulkBar.appendChild(el('button', { type: 'button', class: 'btn sm', text: 'Bulk Archive', onclick: function () { bulkStatus(ids, 'archived'); } }));
+      bulkBar.appendChild(el('button', { type: 'button', class: 'btn sm', text: 'Clear', onclick: function () { selectedIds = {}; load(); } }));
+    }
+    async function bulkStatus(ids, status) {
+      try {
+        await Promise.all(ids.map(function (id) { return api('POST', T.path + '/' + id + '/status', { status: status }); }));
+        toast(ids.length + ' item(s) marked ' + status);
+        selectedIds = {};
+        load();
+      } catch (e) { toast(e.message, true); }
+    }
+    async function duplicateRow(r) {
+      try {
+        var full = await api('GET', T.path + '/' + r.id);
+        var copy = Object.assign({}, full);
+        delete copy.id;
+        delete copy.created_at;
+        delete copy.updated_at;
+        copy.title = (copy.title || 'Untitled') + ' (Copy)';
+        copy.slug = (copy.slug || 'copy') + '-copy-' + String(Date.now()).slice(-4);
+        copy.status = 'draft';
+        await api('POST', T.path, copy);
+        toast('Duplicated as draft');
+        load();
+      } catch (e) { toast(e.message, true); }
+    }
+    async function extendDeadline(r) {
+      try {
+        var full = await api('GET', T.path + '/' + r.id);
+        var base = full.last_date ? new Date(full.last_date) : new Date();
+        if (isNaN(base.getTime())) base = new Date();
+        base.setDate(base.getDate() + 7);
+        full.last_date = base.toISOString().slice(0, 10);
+        if (full.status === 'expired') full.status = 'published';
+        await api('PUT', T.path + '/' + r.id, full);
+        toast('Deadline extended to ' + full.last_date);
+        load();
+      } catch (e) { toast(e.message, true); }
+    }
     async function act(r, status) {
       try {
         var body = { status: status };
@@ -459,20 +672,33 @@
       try {
         var d = await api('GET', T.path + '?page=' + st.page + '&limit=' + st.limit + '&q=' + encodeURIComponent(st.q) + '&status=' + st.status);
         var tb = el('tbody');
+        var allCheck = el('input', { type: 'checkbox', 'aria-label': 'Select all rows' });
+        allCheck.addEventListener('change', function () {
+          d.items.forEach(function (item) { selectedIds[item.id] = allCheck.checked; });
+          load();
+        });
         d.items.forEach(function (r) {
+          var cb = el('input', { type: 'checkbox', 'aria-label': 'Select ' + r.title });
+          cb.checked = !!selectedIds[r.id];
+          cb.addEventListener('change', function () { selectedIds[r.id] = cb.checked; updateBulkBar(); });
           var a = [el('a', { class: 'btn sm', href: '#/' + key + '/' + r.id, text: 'Edit' })];
           if (r.status !== 'published') a.push(el('button', { class: 'btn sm', text: 'Publish', onclick: function () { act(r, 'published'); } }));
           if (r.status === 'published') a.push(el('button', { class: 'btn sm', text: 'Unpublish', onclick: function () { act(r, 'draft'); } }));
+          if (key === 'jobs') a.push(el('button', { class: 'btn sm', text: '+7d Deadline', onclick: function () { extendDeadline(r); } }));
+          a.push(el('button', { class: 'btn sm', text: 'Duplicate', onclick: function () { duplicateRow(r); } }));
           a.push(el('button', { class: 'btn sm', text: 'Schedule', onclick: function () { act(r, 'scheduled'); } }));
+          if (r.status !== 'archived') a.push(el('button', { class: 'btn sm', text: 'Archive', onclick: function () { act(r, 'archived'); } }));
           a.push(el('button', { class: 'btn sm danger', text: 'Delete', 'aria-label': 'Delete ' + r.title, onclick: function () { del(r); } }));
-          var cells = T.row(r).map(function (c, i) { return el('td', { text: c }); });
+          var cells = [el('td', {}, cb)].concat(T.row(r).map(function (c) { return el('td', { text: c }); }));
           cells.push(el('td', {}, [badge(r.status), r.status === 'scheduled' ? el('div', { class: 'hint', text: fmtDate(r.published_at) }) : null]));
           cells.push(el('td', { text: fmtDate(r.updated_at) })); cells.push(el('td', {}, el('div', { class: 'actions' }, a)));
           tb.appendChild(el('tr', {}, cells));
         });
-        if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '6', class: 'muted', text: 'Nothing here yet.' })));
+        if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '7', class: 'muted', text: 'Nothing here yet.' })));
+        allCheck.checked = d.items.length > 0 && d.items.every(function (item) { return !!selectedIds[item.id]; });
+        updateBulkBar();
         clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: T.label }),
-          el('thead', {}, el('tr', {}, T.cols.concat(['Actions']).map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+          el('thead', {}, el('tr', {}, [el('th', { scope: 'col' }, allCheck)].concat(T.cols.concat(['Actions']).map(function (h) { return el('th', { scope: 'col', text: h }); })))), tb])));
         box.appendChild(pager(st, d.total, load));
       } catch (e) { toast(e.message, true); }
     }
@@ -496,39 +722,164 @@
     'current-affairs': [['title', 'Title', 'text'], ['title_or', 'Title (Odia, optional)', 'text'], ['slug', 'Slug', 'text', 'Leave blank to generate from the title'], ['event_date', 'Date', 'date'], ['category', 'Category', 'text'], ['tags', 'Tags', 'tags', 'Comma-separated, max 10'], ['summary', 'Summary', 'area'], ['summary_or', 'Summary (Odia)', 'area'], ['body_md', 'Body (Markdown)', 'md'], ['body_md_or', 'Body (Odia, Markdown)', 'md'], ['cover_media_key', 'Cover image', 'image']],
     jobs: [['title', 'Title', 'text'], ['title_or', 'Title (Odia, optional)', 'text'], ['slug', 'Slug', 'text', 'Leave blank to generate from the title'], ['organisation', 'Organisation', 'text', 'e.g. OPSC, OSSC, OSSSC'], ['vacancies', 'Total vacancies', 'number'], ['qualification', 'Qualification', 'area'], ['last_date', 'Last date to apply', 'date'], ['apply_url', 'Official apply URL', 'url'], ['category', 'Category', 'text'], ['state', 'State', 'text'], ['tags', 'Tags', 'tags'], ['summary', 'Summary', 'area'], ['body_md', 'Details (Markdown)', 'md'], ['body_md_or', 'Details (Odia, Markdown)', 'md'], ['cover_media_key', 'Cover image', 'image'], ['notification_media_key', 'Notification PDF', 'pdf']]
   };
+  function parseImportantDates(md) {
+    var rows = [];
+    var m = String(md || '').match(/## Important Dates\s*\n([\s\S]*?)(?=\n## |\s*$)/);
+    if (!m) return rows;
+    m[1].split('\n').forEach(function (line) {
+      var lm = line.match(/^-\s*\*\*([^*]+)\*\*:\s*(.+)$/);
+      if (lm) rows.push({ label: lm[1].trim(), date: lm[2].trim() });
+    });
+    return rows;
+  }
+  function syncImportantDatesMd(md, rows) {
+    var clean = String(md || '').replace(/\n?## Important Dates\s*\n[\s\S]*?(?=\n## |\s*$)/, '').trim();
+    var valid = rows.filter(function (r) { return r.label.trim() || r.date.trim(); });
+    if (!valid.length) return clean;
+    var sec = '## Important Dates\n' + valid.map(function (r) { return '- **' + (r.label.trim() || 'Milestone') + '**: ' + (r.date.trim() || 'TBA'); }).join('\n');
+    return clean ? clean + '\n\n' + sec : sec;
+  }
+
   async function viewPostForm(key, id) {
     var T = TYPES[key]; var isNew = id === 'new';
     var item = isNew ? { tags: [], state: key === 'jobs' ? 'Odisha' : '', status: 'draft' } : await api('GET', T.path + '/' + id);
     setTitle((isNew ? 'New ' : 'Edit ') + T.label.replace(/s$/, ''));
     var form = el('form', { novalidate: true }); var getters = {};
     var left = el('div', { class: 'panel' });
+    var previewPane = el('aside', { class: 'panel cso-preview-pane', 'aria-live': 'polite' });
+    var splitWrap = el('div', { class: 'cso-split-editor' }, [left, previewPane]);
+    var previewVisible = true;
+    var toggleBtn = el('button', { type: 'button', class: 'btn sm', text: 'Hide Live Preview', onclick: function () {
+      previewVisible = !previewVisible;
+      previewPane.hidden = !previewVisible;
+      toggleBtn.textContent = previewVisible ? 'Hide Live Preview' : 'Show Live Preview';
+    } });
+
+    var dateRows = key === 'jobs' ? parseImportantDates(item.body_md) : [];
+    var schedulePreviewRender = function () {};
+
     POST_FIELDS[key].forEach(function (f) {
       var name = f[0], type = f[2], fid = 'f-' + name, val = item[name];
       if (type === 'image' || type === 'pdf') {
         var cur = val || '';
         getters[name] = function () { return cur; };
-        left.appendChild(el('div', {}, [el('label', { text: f[1] }), uploader(fid, type, cur, function (k) { cur = k; }), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
+        left.appendChild(el('div', {}, [el('label', { text: f[1] }), uploader(fid, type, cur, function (k) { cur = k; schedulePreviewRender(); }), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
       } else if (type === 'md') {
         var ta = el('textarea', { id: fid, class: 'tall' }); ta.value = val || '';
         var prev = el('div', { class: 'preview', 'aria-live': 'polite' }); var t;
         function render() { api('POST', 'preview', { markdown: ta.value }).then(function (d) { renderSanitizedHtml(prev, d.html); }).catch(function () {}); }
-        ta.addEventListener('input', function () { clearTimeout(t); t = setTimeout(render, 400); });
+        ta.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { render(); schedulePreviewRender(); }, 350); });
         getters[name] = function () { return ta.value; }; render();
         left.appendChild(el('div', {}, [el('label', { for: fid, text: f[1] }), el('div', { class: 'grid2' }, [ta, prev]), el('div', { class: 'err', 'data-err': fid, hidden: true })]));
       } else {
         var inp = type === 'area' ? el('textarea', { id: fid }) : el('input', { id: fid, type: type === 'tags' ? 'text' : type });
         inp.value = type === 'tags' ? (val || []).join(', ') : (val === null || val === undefined ? '' : val);
+        inp.addEventListener('input', function () { schedulePreviewRender(); });
+        inp.addEventListener('change', function () { schedulePreviewRender(); });
         getters[name] = function () { return inp.value; };
         left.appendChild(field(f[1], inp, fid, f[3]));
       }
     });
+
+    if (key === 'jobs') {
+      var datesList = el('div', { class: 'cso-repeat-list' });
+      function renderDateRows() {
+        clear(datesList);
+        if (!dateRows.length) {
+          datesList.appendChild(el('div', { class: 'hint', text: 'No important dates added yet. Use "+ Add Date Row" to build structured timelines without raw Markdown.' }));
+        }
+        dateRows.forEach(function (row, idx) {
+          var lbl = el('input', { type: 'text', placeholder: 'e.g. Application Start / Exam Date', 'aria-label': 'Date label ' + (idx + 1) });
+          lbl.value = row.label;
+          lbl.addEventListener('input', function () { row.label = lbl.value; schedulePreviewRender(); });
+          var dt = el('input', { type: 'date', 'aria-label': 'Date value ' + (idx + 1) });
+          dt.value = row.date;
+          dt.addEventListener('input', function () { row.date = dt.value; schedulePreviewRender(); });
+          var upBtn = el('button', { type: 'button', class: 'btn sm', text: '↑', 'aria-label': 'Move date row up', disabled: idx === 0, onclick: function () {
+            var tmp = dateRows[idx - 1]; dateRows[idx - 1] = dateRows[idx]; dateRows[idx] = tmp; renderDateRows(); schedulePreviewRender();
+          } });
+          var dnBtn = el('button', { type: 'button', class: 'btn sm', text: '↓', 'aria-label': 'Move date row down', disabled: idx === dateRows.length - 1, onclick: function () {
+            var tmp = dateRows[idx + 1]; dateRows[idx + 1] = dateRows[idx]; dateRows[idx] = tmp; renderDateRows(); schedulePreviewRender();
+          } });
+          var rmBtn = el('button', { type: 'button', class: 'btn sm danger', text: '×', 'aria-label': 'Remove date row', onclick: function () {
+            dateRows.splice(idx, 1); renderDateRows(); schedulePreviewRender();
+          } });
+          datesList.appendChild(el('div', { class: 'cso-repeat-row' }, [lbl, dt, upBtn, dnBtn, rmBtn]));
+        });
+      }
+      renderDateRows();
+      left.appendChild(el('div', { class: 'cso-repeat-wrap' }, [
+        el('div', { class: 'cso-repeat-head' }, [
+          el('label', { text: 'Important Dates (Repeatable Rows)' }),
+          el('button', { type: 'button', class: 'btn sm', text: '+ Add Date Row', onclick: function () { dateRows.push({ label: '', date: '' }); renderDateRows(); } })
+        ]),
+        datesList
+      ]));
+    }
+
     var sb = statusBlock(isNew ? null : item); left.appendChild(sb.node);
+
+    var livePrevTimer;
+    function renderLivePreview() {
+      var snap = {};
+      Object.keys(getters).forEach(function (k) { snap[k] = getters[k](); });
+      Object.assign(snap, sb.get());
+      clear(previewPane);
+      previewPane.appendChild(el('h3', { text: key === 'jobs' ? 'Live Job Alert Preview' : 'Live Article Reader Preview' }));
+      var card = el('div', { class: 'cso-preview-card' });
+      var tagsArr = String(snap.tags || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+
+      if (key === 'jobs') {
+        var dlText = snap.last_date ? 'Last date: ' + snap.last_date : 'Deadline: TBA';
+        card.appendChild(el('div', { class: 'cso-preview-kicker', text: (snap.organisation || 'Odisha Govt') + ' · ' + (snap.state || 'Odisha') }));
+        card.appendChild(el('h4', { text: snap.title || 'Untitled Job Notification' }));
+        card.appendChild(el('div', { class: 'actions' }, [
+          badge(snap.status || 'draft'),
+          el('span', { class: 'badge scheduled', text: dlText }),
+          snap.vacancies ? el('span', { class: 'badge published', text: snap.vacancies + ' vacancies' }) : null
+        ]));
+        if (snap.qualification) card.appendChild(el('p', { class: 'hint', text: 'Qualification: ' + snap.qualification }));
+        if (snap.summary) card.appendChild(el('p', { text: snap.summary }));
+        if (dateRows.length) {
+          var ul = el('ul', { class: 'cso-preview-dates' });
+          dateRows.forEach(function (r) { if (r.label || r.date) ul.appendChild(el('li', { text: (r.label || 'Date') + ': ' + (r.date || 'TBA') })); });
+          card.appendChild(ul);
+        }
+        if (snap.apply_url) card.appendChild(el('div', { class: 'actions' }, [el('span', { class: 'btn sm primary', text: 'Official Apply Link →' })]));
+        card.appendChild(el('div', { class: 'hint', text: 'JobPosting schema: ' + (snap.organisation || 'CSOdisha') + ' · ' + (snap.category || 'General') }));
+      } else {
+        card.appendChild(el('div', { class: 'cso-preview-kicker', text: (snap.category || 'Current Affairs') + (snap.event_date ? ' · ' + snap.event_date : '') }));
+        card.appendChild(el('h4', { text: snap.title || 'Untitled Current Affairs Article' }));
+        card.appendChild(el('div', { class: 'actions' }, [
+          badge(snap.status || 'draft'),
+          snap.published_at ? el('span', { class: 'hint', text: 'Scheduled: ' + fmtDate(snap.published_at) }) : null
+        ]));
+        if (snap.summary) card.appendChild(el('p', { text: snap.summary }));
+      }
+      if (tagsArr.length) {
+        card.appendChild(el('div', { class: 'cso-preview-tags' }, tagsArr.map(function (tg) { return el('span', { class: 'badge draft', text: '#' + tg }); })));
+      }
+      var bodyPrev = el('div', { class: 'preview cso-preview-body' });
+      var mdSource = key === 'jobs' ? syncImportantDatesMd(snap.body_md, dateRows) : (snap.body_md || '');
+      if (mdSource.trim()) {
+        api('POST', 'preview', { markdown: mdSource }).then(function (d) { renderSanitizedHtml(bodyPrev, d.html); }).catch(function () {});
+      } else {
+        bodyPrev.appendChild(el('span', { class: 'muted', text: 'Markdown body preview appears here…' }));
+      }
+      card.appendChild(bodyPrev);
+      previewPane.appendChild(card);
+    }
+    schedulePreviewRender = function () { clearTimeout(livePrevTimer); livePrevTimer = setTimeout(renderLivePreview, 250); };
+    renderLivePreview();
+
     var save = el('button', { type: 'submit', class: 'btn primary', text: 'Save' });
-    form.appendChild(left);
+    form.appendChild(el('div', { class: 'toolbar' }, [el('span', { class: 'hint', text: 'Changes update the live candidate preview in real time.' }), el('span', { class: 'spacer' }), toggleBtn]));
+    form.appendChild(splitWrap);
     form.appendChild(el('div', { class: 'actions' }, [save, el('a', { class: 'btn', href: '#/' + key, text: 'Cancel' })]));
     form.addEventListener('submit', async function (e) {
       e.preventDefault(); save.disabled = true;
       var body = {}; Object.keys(getters).forEach(function (k) { body[k] = getters[k](); });
+      if (key === 'jobs') body.body_md = syncImportantDatesMd(body.body_md, dateRows);
       Object.assign(body, sb.get());
       try {
         showErrors(form, {});
@@ -563,22 +914,128 @@
       save.disabled = false;
     });
     main.appendChild(form);
-    if (!isNew) { var qbox = el('div'); main.appendChild(qbox); await questionsPanel(id, qbox); }
+    if (!isNew) { var qbox = el('div'); main.appendChild(qbox); await questionsPanel(id, qbox, item); }
     else main.appendChild(el('p', { class: 'muted', text: 'Save the test first, then add questions.' }));
   }
 
-  async function questionsPanel(testId, box) {
+  function studentPreviewModal(testItem, questions) {
+    if (!questions.length) { toast('Add at least one question before previewing as student', true); return; }
+    var idx = 0;
+    var answers = {};
+    var submitted = false;
+    var box = el('div', { class: 'cso-student-sim' });
+    var ov = el('div', { class: 'overlay' }, el('div', { class: 'modal wide', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Preview as Student' }, box));
+
+    function renderStep() {
+      clear(box);
+      var q = questions[idx];
+      box.appendChild(el('div', { class: 'cso-sim-head' }, [
+        el('div', {}, [el('strong', { text: testItem.title || 'Mock Test Preview' }), el('div', { class: 'hint', text: 'Duration: ' + (testItem.duration_minutes || 60) + ' min · Negative: -' + (testItem.negative_marking || 0) + ' · Question ' + (idx + 1) + ' of ' + questions.length })]),
+        el('button', { type: 'button', class: 'btn sm', text: 'Close', onclick: function () { ov.remove(); } })
+      ]));
+      var qCard = el('div', { class: 'card' }, [
+        el('div', { class: 'hint', text: (q.section ? q.section + ' · ' : '') + (q.marks || 1) + ' mark(s)' }),
+        el('p', {}, el('strong', { text: (idx + 1) + '. ' + q.question_en })),
+        q.question_or ? el('p', { class: 'muted', text: q.question_or }) : null
+      ]);
+      var optsWrap = el('div', { class: 'cso-sim-opts' });
+      Q_OPTS.forEach(function (opt) {
+        var isSel = answers[idx] === opt;
+        var isRight = submitted && q.correct_option === opt;
+        var isWrong = submitted && isSel && q.correct_option !== opt;
+        var cls = 'btn cso-sim-opt' + (isSel ? ' primary' : '') + (isRight ? ' cso-opt-ok' : '') + (isWrong ? ' danger' : '');
+        optsWrap.appendChild(el('button', {
+          type: 'button',
+          class: cls,
+          text: opt + '. ' + (q['option_' + opt.toLowerCase()] || ''),
+          disabled: submitted,
+          onclick: function () { answers[idx] = opt; renderStep(); }
+        }));
+      });
+      qCard.appendChild(optsWrap);
+      if (submitted) {
+        qCard.appendChild(el('div', { class: 'hint', text: 'Correct answer: ' + q.correct_option + (q.explanation ? ' — ' + q.explanation : '') }));
+      }
+      box.appendChild(qCard);
+
+      if (submitted) {
+        var score = 0; var right = 0; var wrong = 0;
+        var neg = Number(testItem.negative_marking || 0);
+        questions.forEach(function (item, qIdx) {
+          if (!answers[qIdx]) return;
+          if (answers[qIdx] === item.correct_option) { score += Number(item.marks || 1); right += 1; }
+          else { score -= neg; wrong += 1; }
+        });
+        box.appendChild(el('div', { class: 'card' }, [
+          el('strong', { text: 'Simulated Student Score: ' + score.toFixed(2) + ' / ' + (testItem.total_marks || questions.length) }),
+          el('div', { class: 'hint', text: right + ' correct · ' + wrong + ' wrong · ' + (questions.length - right - wrong) + ' unattempted' })
+        ]));
+      }
+
+      box.appendChild(el('div', { class: 'actions' }, [
+        el('button', { type: 'button', class: 'btn sm', text: '← Previous', disabled: idx === 0, onclick: function () { idx -= 1; renderStep(); } }),
+        el('button', { type: 'button', class: 'btn sm', text: 'Next →', disabled: idx === questions.length - 1, onclick: function () { idx += 1; renderStep(); } }),
+        el('span', { class: 'spacer' }),
+        !submitted
+          ? el('button', { type: 'button', class: 'btn primary', text: 'Submit & Check Score', onclick: function () { submitted = true; renderStep(); } })
+          : el('button', { type: 'button', class: 'btn', text: 'Reset Simulator', onclick: function () { answers = {}; submitted = false; idx = 0; renderStep(); } })
+      ]));
+    }
+    renderStep();
+    overlayHost().appendChild(ov);
+  }
+
+  async function questionsPanel(testId, box, testItem) {
+    function qPayload(q) {
+      return {
+        section: q.section || '',
+        question_en: q.question_en || '',
+        question_or: q.question_or || '',
+        option_a: q.option_a || '',
+        option_b: q.option_b || '',
+        option_c: q.option_c || '',
+        option_d: q.option_d || '',
+        correct_option: q.correct_option || 'A',
+        marks: q.marks || 1,
+        explanation: q.explanation || '',
+        image_media_key: q.image_media_key || ''
+      };
+    }
     async function load() {
       var d = await api('GET', 'mock-tests/' + testId + '/questions');
       clear(box);
       box.appendChild(el('h2', { text: 'Questions (' + d.total + ')' }));
-      box.appendChild(el('div', { class: 'toolbar' }, [el('button', { class: 'btn primary', text: '+ Add question', onclick: function () { questionModal(testId, null, load); } }),
-        el('button', { class: 'btn', text: 'Bulk import (CSV / JSON)', onclick: function () { importModal(testId, load); } })]));
+      box.appendChild(el('div', { class: 'toolbar' }, [
+        el('button', { class: 'btn primary', text: '+ Add question', onclick: function () { questionModal(testId, null, load); } }),
+        el('button', { class: 'btn', text: 'Bulk import (CSV / JSON)', onclick: function () { importModal(testId, load); } }),
+        el('button', { class: 'btn', text: 'Preview as Student', onclick: function () { studentPreviewModal(testItem || {}, d.items || []); } })
+      ]));
       d.items.forEach(function (q, i) {
         box.appendChild(el('div', { class: 'qrow' }, [el('div', { class: 'q' }, [el('strong', { text: (i + 1) + '. ' + q.question_en }),
           el('div', { class: 'muted', text: (q.section ? q.section + ' · ' : '') + q.marks + ' mark(s)' }),
           el('div', {}, Q_OPTS.map(function (o) { return el('div', { class: q.correct_option === o ? 'ok-opt' : '', text: o + '. ' + q['option_' + o.toLowerCase()] }); }))]),
-          el('div', { class: 'actions' }, [el('button', { class: 'btn sm', text: 'Edit', onclick: function () { questionModal(testId, q, load); } }),
+          el('div', { class: 'actions' }, [
+            el('button', { class: 'btn sm', text: '↑', 'aria-label': 'Move question ' + (i + 1) + ' up', disabled: i === 0, onclick: async function () {
+              try {
+                var prevQ = d.items[i - 1];
+                await api('PUT', 'questions/' + prevQ.id, qPayload(q));
+                await api('PUT', 'questions/' + q.id, qPayload(prevQ));
+                load();
+              } catch (e) { toast(e.message, true); }
+            } }),
+            el('button', { class: 'btn sm', text: '↓', 'aria-label': 'Move question ' + (i + 1) + ' down', disabled: i === d.items.length - 1, onclick: async function () {
+              try {
+                var nextQ = d.items[i + 1];
+                await api('PUT', 'questions/' + nextQ.id, qPayload(q));
+                await api('PUT', 'questions/' + q.id, qPayload(nextQ));
+                load();
+              } catch (e) { toast(e.message, true); }
+            } }),
+            el('button', { class: 'btn sm', text: 'Duplicate', onclick: async function () {
+              try { await api('POST', 'mock-tests/' + testId + '/questions', qPayload(q)); toast('Question duplicated'); load(); }
+              catch (e) { toast(e.message, true); }
+            } }),
+            el('button', { class: 'btn sm', text: 'Edit', onclick: function () { questionModal(testId, q, load); } }),
             el('button', { class: 'btn sm danger', text: 'Delete', 'aria-label': 'Delete question ' + (i + 1), onclick: async function () {
               if (!(await confirmModal('Delete question ' + (i + 1) + '?', 'This cannot be undone from the UI.', 'Delete', true))) return;
               try { await api('DELETE', 'questions/' + q.id); load(); } catch (e) { toast(e.message, true); } } })])]));
