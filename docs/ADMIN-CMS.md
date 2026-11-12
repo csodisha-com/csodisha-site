@@ -109,6 +109,8 @@ Errors: `{ "error": "message", "code": "CODE" }` (+ `fields` for `VALIDATION_ERR
 | `GET /api/content/banner` | `{active:false}` or the live banner; `max-age=15` |
 | `GET /api/content/resources?kind&exam` | published syllabus/PYQ with `file_url` |
 | `GET /api/media/:uuid.ext` | `Cache-Control: public, max-age=31536000, immutable` |
+| `GET /sitemap.xml` | dynamic XML sitemap covering static routes + live D1 jobs, current affairs, and mock tests |
+| `GET /feed.xml` (`/rss.xml`) | dynamic RSS 2.0 feed of the 30 most recent live jobs and current affairs |
 
 List/detail: `Cache-Control: public, max-age=60, s-maxage=300`.
 

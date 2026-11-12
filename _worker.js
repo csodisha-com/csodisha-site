@@ -16,6 +16,7 @@ import { onRequestPost as handleVerifyResetTokenPost, onRequestOptions as handle
 import { checkRateLimit, createSession, buildSessionCookie } from './functions/api/auth/_utils.js';
 import { handleAdminApi } from './functions/api/admin/_router.js';
 import { handleContent } from './functions/api/content/_public.js';
+import { handleSitemapXml, handleRssFeed, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
 import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
@@ -233,7 +234,9 @@ export default {
       return handleAdminApi(request, env);
     }
 
-    // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API
+    // 0d. CMS: public content API + R2 media delivery + authenticated user progress/bookmarks API + Dynamic SEO
+    if (pathname === '/sitemap.xml') return handleSitemapXml(request, env);
+    if (pathname === '/feed.xml' || pathname === '/rss.xml') return handleRssFeed(request, env);
     if (pathname.startsWith('/api/content/')) return handleContent(request, env);
     if (pathname === '/api/user' || pathname.startsWith('/api/user/')) return handleUserApi(request, env);
     if (pathname.startsWith('/api/media/')) return handleMedia(request, env, ctx);
@@ -353,7 +356,14 @@ export default {
         headers.set('X-Content-Type-Options', 'nosniff');
         headers.set('X-Frame-Options', 'SAMEORIGIN');
         headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+        const securedRes = new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+        if ((request.method === 'GET' || request.method === 'HEAD') && res.status === 200) {
+          const meta = await resolveDeepLinkMeta(url, env);
+          if (meta) {
+            return rewriteHtmlWithMeta(securedRes, meta);
+          }
+        }
+        return securedRes;
       }
       return res;
     }

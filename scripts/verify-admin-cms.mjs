@@ -360,5 +360,134 @@ for (const sharedScript of ['/assets/js/public-content.js', '/assets/js/bookmark
   ok(sr.status === 200 && !/\.innerHTML\s*=/.test(sCode) && !/\.style\./.test(sCode), `${sharedScript} has zero innerHTML and zero inline style assignments`);
 }
 
+console.log('Dynamic sitemap.xml, feed.xml (RSS 2.0) & HTMLRewriter OpenGraph meta injection');
+// Publish a live current affair & create a draft current affair for SEO verification
+const seoLiveCa = await j(await call(editor, 'POST', '/api/admin/current-affairs', {
+  title: 'Odisha Solar Policy & Green Grid 2026',
+  summary: 'State cabinet approves <b>5000 MW</b> solar expansion & green hydrogen corridor across Odisha.',
+  body_md: 'Detailed coverage of the **5000 MW** clean energy target.',
+  category: 'Economy & Energy',
+  cover_media_key: up.key,
+  status: 'published'
+}));
+const seoDraftCa = await j(await call(editor, 'POST', '/api/admin/current-affairs', {
+  title: 'Confidential Draft Policy Do Not Index',
+  summary: 'Draft summary secret',
+  status: 'draft'
+}));
+
+// 1. Dynamic /sitemap.xml
+const smRes = await call(null, 'GET', '/sitemap.xml');
+const smXml = await smRes.text();
+ok(
+  smRes.status === 200 &&
+  /application\/xml/i.test(smRes.headers.get('content-type') || '') &&
+  /max-age=300/.test(smRes.headers.get('cache-control') || ''),
+  'GET /sitemap.xml returns 200 application/xml with cache headers'
+);
+ok(
+  smXml.includes('<loc>https://csodisha.com/</loc>') &&
+  smXml.includes('<loc>https://csodisha.com/jobs-careers/</loc>') &&
+  smXml.includes('<loc>https://csodisha.com/current-affairs/</loc>') &&
+  smXml.includes('<loc>https://csodisha.com/mock-tests/</loc>') &&
+  smXml.includes('<loc>https://csodisha.com/resources/</loc>') &&
+  smXml.includes(`https://csodisha.com/jobs-careers/?job=${encodeURIComponent(job.slug)}`) &&
+  smXml.includes(`https://csodisha.com/current-affairs/?slug=${encodeURIComponent(seoLiveCa.slug)}`) &&
+  smXml.includes(`https://csodisha.com/mock-tests/?test=${encodeURIComponent(cbtTest.slug)}`),
+  'sitemap.xml includes static portals + live published jobs, current affairs, and mock tests'
+);
+ok(
+  !smXml.includes(seoDraftCa.slug) &&
+  !smXml.includes(ca.slug) &&
+  !smXml.includes(ca2.slug),
+  'sitemap.xml excludes drafts, future-scheduled posts, and soft-deleted posts'
+);
+
+// 2. Dynamic /feed.xml & /rss.xml (RSS 2.0)
+const feedRes = await call(null, 'GET', '/feed.xml');
+const feedXml = await feedRes.text();
+ok(
+  feedRes.status === 200 &&
+  /application\/rss\+xml/i.test(feedRes.headers.get('content-type') || '') &&
+  feedXml.includes('<rss version="2.0"') &&
+  /<pubDate>[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT<\/pubDate>/.test(feedXml),
+  'GET /feed.xml returns 200 application/rss+xml with valid RSS 2.0 structure and RFC-822 pubDate'
+);
+ok(
+  feedXml.includes('Odisha Solar Policy &amp; Green Grid 2026') &&
+  feedXml.includes(`https://csodisha.com/jobs-careers/?job=${encodeURIComponent(job.slug)}`) &&
+  !feedXml.includes('<b>5000 MW</b>') &&
+  feedXml.includes('5000 MW') &&
+  !feedXml.includes(seoDraftCa.slug) &&
+  !feedXml.includes(ca.slug) &&
+  !feedXml.includes(ca2.slug),
+  'feed.xml strips HTML tags from descriptions, escapes XML entities (&amp;), and excludes unpublished items'
+);
+ok((await call(null, 'GET', '/rss.xml')).status === 200, 'GET /rss.xml alias returns 200');
+
+// 3. robots.txt verification
+const robRes = await call(null, 'GET', '/robots.txt');
+const robTxt = await robRes.text();
+ok(
+  robRes.status === 200 &&
+  robTxt.includes('Sitemap: https://csodisha.com/sitemap.xml') &&
+  robTxt.includes('Disallow: /admin/') &&
+  robTxt.includes('Disallow: /api/'),
+  'robots.txt advertises Sitemap and disallows /admin/ and /api/'
+);
+
+// 4. Server-Side HTMLRewriter OpenGraph / Twitter Card Meta Injection
+const jobDeepRes = await call(null, 'GET', `/jobs-careers/?job=${encodeURIComponent(job.slug)}`, null, { Accept: 'text/html' });
+const jobDeepHtml = await jobDeepRes.text();
+ok(
+  jobDeepRes.status === 200 &&
+  jobDeepHtml.includes('<title>Odisha Police SI | CS Odisha</title>') &&
+  jobDeepHtml.includes(`<link rel="canonical" href="https://csodisha.com/jobs-careers/?job=${encodeURIComponent(job.slug)}">`) &&
+  jobDeepHtml.includes('<meta property="og:type" content="article">') &&
+  jobDeepHtml.includes('<meta property="og:site_name" content="CS Odisha">') &&
+  jobDeepHtml.includes('<meta property="og:title" content="Odisha Police SI">') &&
+  jobDeepHtml.includes(`<meta property="og:url" content="https://csodisha.com/jobs-careers/?job=${encodeURIComponent(job.slug)}">`) &&
+  jobDeepHtml.includes(`<meta property="og:image" content="https://csodisha.com/api/media/${up.key}">`) &&
+  jobDeepHtml.includes('<meta name="twitter:card" content="summary_large_image">') &&
+  jobDeepHtml.includes('<meta name="twitter:title" content="Odisha Police SI">') &&
+  !/<style|<script(?![^>]*\bsrc=)|\son[a-z]+=|\sstyle=/i.test(jobDeepHtml) &&
+  /script-src 'self'/.test(jobDeepRes.headers.get('content-security-policy') || ''),
+  'GET /jobs-careers/?job=<slug> injects title, canonical, OpenGraph (with R2 image), and Twitter meta while preserving strict CSP'
+);
+
+const caDeepRes = await call(null, 'GET', `/current-affairs/?slug=${encodeURIComponent(seoLiveCa.slug)}`, null, { Accept: 'text/html' });
+const caDeepHtml = await caDeepRes.text();
+ok(
+  caDeepRes.status === 200 &&
+  caDeepHtml.includes('<title>Odisha Solar Policy &amp; Green Grid 2026 | CS Odisha</title>') &&
+  caDeepHtml.includes('<meta property="og:title" content="Odisha Solar Policy &amp; Green Grid 2026">') &&
+  caDeepHtml.includes('5000 MW solar expansion &amp; green hydrogen corridor') &&
+  !caDeepHtml.includes('<b>5000 MW</b>') &&
+  caDeepHtml.includes('<meta name="twitter:card" content="summary_large_image">') &&
+  !/<style|<script(?![^>]*\bsrc=)|\son[a-z]+=|\sstyle=/i.test(caDeepHtml),
+  'GET /current-affairs/?slug=<slug> injects sanitized & escaped OpenGraph/Twitter meta and preserves strict CSP'
+);
+
+const mtDeepRes = await call(null, 'GET', `/mock-tests/?test=${encodeURIComponent(cbtTest.slug)}`, null, { Accept: 'text/html' });
+const mtDeepHtml = await mtDeepRes.text();
+ok(
+  mtDeepRes.status === 200 &&
+  mtDeepHtml.includes('<title>OPSC OCS Prelims GS Mock | CS Odisha</title>') &&
+  mtDeepHtml.includes('<meta property="og:title" content="OPSC OCS Prelims GS Mock">') &&
+  mtDeepHtml.includes(`<meta property="og:url" content="https://csodisha.com/mock-tests/?test=${encodeURIComponent(cbtTest.slug)}">`),
+  'GET /mock-tests/?test=<slug> injects mock test OpenGraph/Twitter meta'
+);
+
+// Draft and future-scheduled items must NEVER leak into HTMLRewriter meta tags
+const draftDeepHtml = await (await call(null, 'GET', `/current-affairs/?slug=${encodeURIComponent(seoDraftCa.slug)}`, null, { Accept: 'text/html' })).text();
+const schedDeepHtml = await (await call(null, 'GET', `/current-affairs/?slug=${encodeURIComponent(ca.slug)}`, null, { Accept: 'text/html' })).text();
+ok(
+  !draftDeepHtml.includes('Confidential Draft Policy') &&
+  draftDeepHtml.includes('<title>Current Affairs &amp; Daily Updates | Common Sense Odisha</title>') &&
+  !schedDeepHtml.includes('Test &lt;b&gt;Update&lt;/b&gt;') &&
+  schedDeepHtml.includes('<title>Current Affairs &amp; Daily Updates | Common Sense Odisha</title>'),
+  'GET /current-affairs/?slug=<draft-or-scheduled> does not leak unpublished titles and serves default page HTML'
+);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
