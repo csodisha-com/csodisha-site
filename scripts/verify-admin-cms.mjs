@@ -172,5 +172,22 @@ d = await j(await call(admin, 'GET', '/api/admin/users?q=cand'));
 ok(d.items.length >= 1 && 'full_name' in d.items[0] && 'district' in d.items[0], 'candidate accounts include profile fields from D1');
 d = await j(await call(admin, 'GET', '/api/admin/users?role=admin')); ok(d.items.length >= 1 && d.items.every(u => u.role === 'admin'), 'accounts role filter');
 
+console.log('Wired public frontend pages + strict CSP');
+for (const [pagePath, scriptPath, apiEndpoint] of [
+  ['/jobs-careers/', '/jobs-careers/assets/dashboard.js', '/api/content/jobs'],
+  ['/current-affairs/', '/current-affairs/assets/current-affairs.js', '/api/content/current-affairs'],
+  ['/mock-tests/', '/mock-tests/assets/mock-tests.js', '/api/content/mock-tests'],
+  ['/resources/', '/resources/assets/resources.js', '/api/content/resources']
+]) {
+  const pr = await call(null, 'GET', pagePath, null, { Accept: 'text/html' });
+  const pHtml = await pr.text();
+  const csp = pr.headers.get('content-security-policy') || '';
+  ok(pr.status === 200 && /script-src 'self'/.test(csp) && /style-src 'self'/.test(csp) && !/unsafe-(inline|eval)/.test(csp), `${pagePath} returns 200 with strict CSP`);
+  ok(!/<style|<script(?![^>]*\bsrc=)|\son[a-z]+=|\sstyle=/i.test(pHtml), `${pagePath} has no inline scripts, styles, or handlers`);
+  const sr = await call(null, 'GET', scriptPath);
+  const sCode = await sr.text();
+  ok(sr.status === 200 && sCode.includes(apiEndpoint) && !/\.innerHTML\s*=/.test(sCode), `${scriptPath} wired to ${apiEndpoint} with safe DOM rendering`);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

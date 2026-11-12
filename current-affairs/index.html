@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#093824">
+  <meta name="description" content="Daily Odisha and National Current Affairs, Editorials, and Exam Updates on Common Sense Odisha.">
+  <title>Current Affairs &amp; Daily Updates | Common Sense Odisha</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/css/public-content.css">
+  <script src="../assets/js/public-content.js" defer></script>
+  <script src="./assets/current-affairs.js" defer></script>
+</head>
+<body class="pc-page">
+<div id="csoPublicAnnouncementMount"></div>
+
+<header class="top">
+  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+    <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
+  </a>
+  <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+  <span id="ctl" class="cso-contents"></span>
+  <span class="sp"></span>
+  <div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
+</header>
+<nav aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
+
+<main class="pc-shell" id="main-content">
+  <nav aria-label="Breadcrumb">
+    <ol class="pc-breadcrumb" id="ca-breadcrumb">
+      <li><a href="../index.html">Home</a></li>
+      <li aria-current="page"><strong>Current Affairs</strong></li>
+    </ol>
+  </nav>
+
+  <section class="pc-hero" aria-labelledby="ca-page-title">
+    <div>
+      <p class="pc-hero__eyebrow">📰 CSO Exam Preparation · Live D1 Feed</p>
+      <h1 id="ca-page-title" class="pc-hero__title">Current Affairs &amp; Daily Updates</h1>
+      <p class="pc-hero__desc">Verified Odisha state news, national policy developments, economy, science &amp; environment digests curated for OPSC, OSSC, OSSSC, and teaching aspirants.</p>
+    </div>
+    <div class="pc-hero__nav" aria-label="Quick portal navigation">
+      <a class="pc-nav-pill" href="../jobs-careers/">💼 Jobs &amp; Careers</a>
+      <a class="pc-nav-pill is-active" href="./" aria-current="page">📰 Current Affairs</a>
+      <a class="pc-nav-pill" href="../mock-tests/">📝 Mock Tests</a>
+      <a class="pc-nav-pill" href="../resources/">📚 Syllabus &amp; PYQs</a>
+    </div>
+  </section>
+
+  <section id="ca-list-view" aria-label="Current affairs articles">
+    <div class="pc-toolbar">
+      <div class="pc-search-wrap" role="search">
+        <span aria-hidden="true">🔍</span>
+        <input id="ca-search" class="pc-search-input" type="search" placeholder="Search current affairs topics, schemes, events…" aria-label="Search current affairs">
+        <button id="ca-search-clear" class="pc-search-clear" type="button" aria-label="Clear search" hidden>×</button>
+      </div>
+      <div class="pc-filters" id="ca-categories" role="group" aria-label="Filter by category">
+        <button type="button" class="pc-chip is-active" data-category="">All</button>
+        <button type="button" class="pc-chip" data-category="State">Odisha</button>
+        <button type="button" class="pc-chip" data-category="National">National</button>
+        <button type="button" class="pc-chip" data-category="Economy">Economy</button>
+        <button type="button" class="pc-chip" data-category="Polity">Polity &amp; Governance</button>
+        <button type="button" class="pc-chip" data-category="Science">Science &amp; Tech</button>
+        <button type="button" class="pc-chip" data-category="Environment">Environment</button>
+      </div>
+      <div class="pc-filters">
+        <button id="ca-lang-btn" type="button" class="pc-chip" aria-pressed="false" title="Toggle English / Odia content">🌐 English / ଓଡ଼ିଆ</button>
+      </div>
+    </div>
+
+    <div class="pc-meta-bar">
+      <span id="ca-count-label" role="status" aria-live="polite">Loading updates…</span>
+      <button id="ca-reset-btn" type="button" class="pc-btn" hidden>Reset Filters</button>
+    </div>
+
+    <div id="ca-status" class="pc-status-card" role="status" aria-live="polite">
+      <h3>Loading Current Affairs…</h3>
+      <p>Fetching the latest published updates from Common Sense Odisha.</p>
+    </div>
+
+    <div id="ca-grid" class="pc-grid" aria-live="polite"></div>
+    <div id="ca-pagination" class="pc-pagination" hidden></div>
+  </section>
+
+  <article id="ca-article-view" class="pc-article" aria-labelledby="ca-article-title" hidden>
+    <div class="pc-article__top">
+      <button id="ca-back-btn" type="button" class="pc-btn">← All Current Affairs</button>
+      <div id="ca-article-actions" class="pc-filters"></div>
+    </div>
+    <header>
+      <div id="ca-article-badges" class="pc-badges"></div>
+      <h2 id="ca-article-title" class="pc-article__title"></h2>
+      <p id="ca-article-title-or" class="pc-article__subtitle" hidden></p>
+      <div id="ca-article-tags" class="pc-tags"></div>
+    </header>
+    <img id="ca-article-cover" class="pc-article__cover" alt="" hidden>
+    <div id="ca-article-summary" class="pc-article__lead" hidden></div>
+    <div id="ca-article-body" class="pc-prose"></div>
+  </article>
+</main>
+
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-footer-logo" width="96" height="34">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="../jobs-careers/">Jobs &amp; Careers</a>
+      <a href="../current-affairs/">Current Affairs</a>
+      <a href="../mock-tests/">Mock Tests</a>
+      <a href="../resources/">Syllabus &amp; PYQs</a>
+      <a href="../schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="../study-library/">Study Library</a>
+      <a href="../community/">Community</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="../about/">About CSO</a>
+      <a href="../support/#faqs">Help &amp; FAQs</a>
+      <a href="../support/#report-error">Report an Error</a>
+      <a href="../support/#suggest-resource">Suggest Resource</a>
+      <a href="../privacy-policy/">Privacy Policy</a>
+      <a href="../terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+    <div class="cso-footer-lang-pills">
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+    </div>
+  </div>
+</div></footer>
+
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js" defer></script>
+<script src="../assets/js/bookmark-manager.js" defer></script>
+</body>
+</html>

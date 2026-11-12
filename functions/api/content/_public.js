@@ -82,8 +82,13 @@ export async function handleContent(request, env) {
       const where = ["deleted_at IS NULL AND status = 'published'"]; const binds = [];
       const kind = url.searchParams.get('kind');
       if (kind === 'syllabus' || kind === 'pyq') { where.push('kind = ?'); binds.push(kind); }
-      const exam = (url.searchParams.get('exam') || '').slice(0, 100);
+      const exam = (url.searchParams.get('exam') || '').trim().slice(0, 100);
       if (exam) { where.push('exam = ?'); binds.push(exam); }
+      const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
+      if (q) {
+        where.push(`(title LIKE ? ESCAPE '\\' OR exam LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\')`);
+        const l = likeEscape(q); binds.push(l, l, l);
+      }
       const w = where.join(' AND ');
       const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM resources WHERE ${w}`).bind(...binds).first()).n;
       const { results } = await env.DB.prepare(
@@ -95,8 +100,13 @@ export async function handleContent(request, env) {
       if (!key) {
         const { page, limit, offset } = parsePaging(url);
         const where = [PUBLIC_VISIBLE_SQL]; const binds = [];
-        const exam = (url.searchParams.get('exam') || '').slice(0, 100);
+        const exam = (url.searchParams.get('exam') || '').trim().slice(0, 100);
         if (exam) { where.push('target_exam = ?'); binds.push(exam); }
+        const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
+        if (q) {
+          where.push(`(title LIKE ? ESCAPE '\\' OR title_or LIKE ? ESCAPE '\\' OR target_exam LIKE ? ESCAPE '\\')`);
+          const l = likeEscape(q); binds.push(l, l, l);
+        }
         const w = where.join(' AND ');
         const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM mock_tests WHERE ${w}`).bind(...binds).first()).n;
         const { results } = await env.DB.prepare(

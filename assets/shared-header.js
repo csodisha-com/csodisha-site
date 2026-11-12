@@ -201,21 +201,23 @@
 
     if (candidate) {
       authEl.innerHTML =
-        '<div class="cso-desktop-auth-buttons" style="display:flex;align-items:center;gap:8px;">' +
-          '<a href="/student-dashboard/" class="btn-dashboard" style="display:inline-flex;align-items:center;gap:5px;background:#0d9488;color:#ffffff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;text-decoration:none;transition:background 0.2s;"><span aria-hidden="true">👤</span><span>My Dashboard</span></a>' +
-          '<button type="button" id="cso-header-logout-btn" style="background:transparent;border:1px solid #475569;color:#94a3b8;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;">Logout</button>' +
+        '<div class="cso-desktop-auth-buttons cso-auth-row">' +
+          '<a href="/student-dashboard/" class="btn-dashboard"><span aria-hidden="true">👤</span><span>My Dashboard</span></a>' +
+          '<button type="button" id="cso-header-logout-btn" class="btn-header-logout">Logout</button>' +
         '</div>' +
         '<div class="cso-mobile-auth-wrapper">' +
           '<button type="button" class="cso-auth-trigger" id="cso-auth-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account options">' +
             '<span class="auth-icon" aria-hidden="true">👤</span>' +
-            '<span class="auth-label">' + (candidate.name ? candidate.name.split(' ')[0] : 'Account') + '</span>' +
+            '<span class="auth-label" id="cso-auth-cand-label">Account</span>' +
             '<span class="auth-arrow" aria-hidden="true">▾</span>' +
           '</button>' +
           '<div class="cso-auth-dropdown-menu" id="cso-auth-menu" hidden>' +
-            '<a href="/student-dashboard/" class="cso-auth-item" style="color:#0d9488;font-weight:bold;">👤 My Dashboard</a>' +
-            '<a href="#" id="cso-header-mob-logout" class="cso-auth-item" style="color:#f43f5e;">Logout</a>' +
+            '<a href="/student-dashboard/" class="cso-auth-item cso-auth-item--dash">👤 My Dashboard</a>' +
+            '<a href="#" id="cso-header-mob-logout" class="cso-auth-item cso-auth-item--logout">Logout</a>' +
           '</div>' +
         '</div>';
+      const lbl = document.getElementById('cso-auth-cand-label');
+      if (lbl && candidate.name) lbl.textContent = String(candidate.name).split(' ')[0];
       setTimeout(() => {
         const lo = document.getElementById('cso-header-logout-btn');
         if (lo) lo.onclick = () => { localStorage.removeItem('cso_candidate_session_v1'); window.location.reload(); };
@@ -228,7 +230,11 @@
     if (window.CSOAuthClient && typeof window.CSOAuthClient.getUser === 'function') {
       const u = window.CSOAuthClient.getUser();
       if (u) {
-        authEl.innerHTML = '<span class="mut" style="font-size:13px;font-weight:600">' + (u.fullName || u.email || 'User') + '</span>';
+        authEl.replaceChildren();
+        const span = document.createElement('span');
+        span.className = 'mut cso-auth-user-label';
+        span.textContent = u.fullName || u.email || 'User';
+        authEl.appendChild(span);
         return;
       }
     }

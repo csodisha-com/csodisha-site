@@ -341,7 +341,19 @@ export default {
 
     // Fall back to static asset binding
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
-      return env.ASSETS.fetch(request);
+      const res = await env.ASSETS.fetch(request);
+      if (/^\/(jobs-careers|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
+        const headers = new Headers(res.headers);
+        headers.set(
+          'Content-Security-Policy',
+          "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'"
+        );
+        headers.set('X-Content-Type-Options', 'nosniff');
+        headers.set('X-Frame-Options', 'SAMEORIGIN');
+        headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+      }
+      return res;
     }
 
     return new Response('Not Found', { status: 404 });

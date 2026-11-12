@@ -222,11 +222,16 @@
         const bookmarked = isBookmarked(type, id);
         btn.classList.toggle('bookmarked', bookmarked);
         btn.setAttribute('aria-pressed', String(bookmarked));
-        btn.innerHTML = bookmarked
-          ? '<span style="color:#f59e0b;" aria-hidden="true">★</span> <span class="cso-bm-text">Saved</span>'
-          : '<span style="color:#94a3b8;" aria-hidden="true">☆</span> <span class="cso-bm-text">Bookmark</span>';
-        btn.style.borderColor = bookmarked ? '#f59e0b' : '#334155';
-        btn.style.color = bookmarked ? '#fbbf24' : '#94a3b8';
+        if (typeof document.createElement === 'function' && typeof btn.replaceChildren === 'function') {
+          const star = document.createElement('span');
+          star.className = bookmarked ? 'cso-bm-star is-saved' : 'cso-bm-star';
+          star.setAttribute('aria-hidden', 'true');
+          star.textContent = bookmarked ? '★' : '☆';
+          const text = document.createElement('span');
+          text.className = 'cso-bm-text';
+          text.textContent = bookmarked ? 'Saved' : 'Bookmark';
+          btn.replaceChildren(star, ' ', text);
+        }
       }
     });
   }

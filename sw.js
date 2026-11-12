@@ -50,6 +50,7 @@ const NETWORK_FIRST_API_ROUTES = [
 ];
 
 function isNetworkFirstApi(url) {
+  if (url.pathname.startsWith('/api/content/')) return true;
   return NETWORK_FIRST_API_ROUTES.some(route => url.pathname === route || url.pathname === route + '/');
 }
 
@@ -158,6 +159,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (url.pathname === '/admin' || url.pathname.startsWith('/admin/') || url.pathname.startsWith('/api/admin')) {
     return;
   }
 

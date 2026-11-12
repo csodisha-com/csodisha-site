@@ -108,8 +108,13 @@ Errors: `{ "error": "message", "code": "CODE" }` (+ `fields` for `VALIDATION_ERR
 
 List/detail: `Cache-Control: public, max-age=60, s-maxage=300`.
 
-## Wiring public pages (TODO)
-Not wired yet to keep risk low. Example: `fetch('/api/content/jobs?limit=10').then(r => r.json())`; render `items[].title`, `organisation`, `last_date`, `apply_url`, `notification_url`.
+## Wired public pages
+All four public content portals are wired to `/api/content/*` and served with strict CSP (`script-src 'self'; style-src 'self'`, no inline scripts/styles):
+- `/jobs-careers/` (`jobs-careers/index.html`, `jobs-careers/assets/dashboard.js`) → `GET /api/content/jobs` + `GET /api/content/jobs/:slug`
+- `/current-affairs/` (`current-affairs/index.html`, `current-affairs/assets/current-affairs.js`) → `GET /api/content/current-affairs` + `GET /api/content/current-affairs/:slug`
+- `/mock-tests/` (`mock-tests/index.html`, `mock-tests/assets/mock-tests.js`) → `GET /api/content/mock-tests` + `GET /api/content/mock-tests/:slug-or-id` (interactive CBT practice workspace)
+- `/resources/` (`resources/index.html`, `resources/assets/resources.js`) → `GET /api/content/resources` (official syllabi & PYQ PDFs served from `/api/media/*`)
+- Shared CSP-safe DOM & allowlist HTML renderer: `assets/js/public-content.js` + `assets/css/public-content.css`. Plain fields use `textContent`; server-sanitised Markdown HTML (`body_html`) is parsed via `DOMParser` and reconstructed through an explicit tag/attribute allowlist without `innerHTML`.
 
 ## Manual verification checklist
 - [ ] Anonymous `/admin/` redirects to `/admin/login`; candidate account gets 403.

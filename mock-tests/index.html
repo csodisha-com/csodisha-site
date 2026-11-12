@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#093824">
+  <meta name="description" content="Practice free online CBT Mock Tests for OPSC, OSSC, OSSSC, OTET, OSSTET, CTET, and Odisha competitive examinations on Common Sense Odisha.">
+  <title>Mock Tests &amp; Practice Series | Common Sense Odisha</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/css/public-content.css">
+  <script src="../assets/js/public-content.js" defer></script>
+  <script src="./assets/mock-tests.js" defer></script>
+</head>
+<body class="pc-page">
+<div id="csoPublicAnnouncementMount"></div>
+
+<header class="top">
+  <a href="/" class="cso-brand-link" aria-label="Common Sense Odisha Home">
+    <img src="/assets/images/cso-logo.svg" alt="CSO - Common Sense Odisha" class="cso-brand-logo" width="112" height="40">
+  </a>
+  <a class="adm" href="/admin/" role="button" aria-label="Admin Portal - Authorised Access Only">🛡 Admin Portal<br><small>Authorised Access Only</small></a>
+  <span id="ctl" class="cso-contents"></span>
+  <span class="sp"></span>
+  <div class="acct"><span class="cso-acct-icon" aria-hidden="true">👤</span><span id="auth" class="cso-contents"></span></div>
+</header>
+<nav aria-label="Main Navigation"><div class="w" id="navw"></div></nav>
+
+<main class="pc-shell" id="main-content">
+  <nav aria-label="Breadcrumb">
+    <ol class="pc-breadcrumb" id="mt-breadcrumb">
+      <li><a href="../index.html">Home</a></li>
+      <li aria-current="page"><strong>Mock Tests</strong></li>
+    </ol>
+  </nav>
+
+  <section class="pc-hero" aria-labelledby="mt-page-title">
+    <div>
+      <p class="pc-hero__eyebrow">📝 CSO Practice Engine · Live D1 Question Bank</p>
+      <h1 id="mt-page-title" class="pc-hero__title">Mock Tests &amp; CBT Practice Series</h1>
+      <p class="pc-hero__desc">Full-length and sectional practice tests for OPSC OCS, OSSC CGL, OSSSC RI/ARI/Amin, OTET, OSSTET, CTET, and OAVS examinations in English and Odia.</p>
+    </div>
+    <div class="pc-hero__nav" aria-label="Quick portal navigation">
+      <a class="pc-nav-pill" href="../jobs-careers/">💼 Jobs &amp; Careers</a>
+      <a class="pc-nav-pill" href="../current-affairs/">📰 Current Affairs</a>
+      <a class="pc-nav-pill is-active" href="./" aria-current="page">📝 Mock Tests</a>
+      <a class="pc-nav-pill" href="../resources/">📚 Syllabus &amp; PYQs</a>
+    </div>
+  </section>
+
+  <section id="mt-list-view" aria-label="Available mock tests">
+    <div class="pc-toolbar">
+      <div class="pc-search-wrap" role="search">
+        <span aria-hidden="true">🔍</span>
+        <input id="mt-search" class="pc-search-input" type="search" placeholder="Search mock tests by title or exam (OPSC, OSSC CGL, OTET…)" aria-label="Search mock tests">
+        <button id="mt-search-clear" class="pc-search-clear" type="button" aria-label="Clear search" hidden>×</button>
+      </div>
+      <div class="pc-filters" id="mt-exams" role="group" aria-label="Filter by target exam">
+        <button type="button" class="pc-chip is-active" data-exam="">All Exams</button>
+        <button type="button" class="pc-chip" data-exam="OPSC">OPSC</button>
+        <button type="button" class="pc-chip" data-exam="OSSC">OSSC</button>
+        <button type="button" class="pc-chip" data-exam="OSSSC">OSSSC</button>
+        <button type="button" class="pc-chip" data-exam="OTET">OTET</button>
+        <button type="button" class="pc-chip" data-exam="OSSTET">OSSTET</button>
+        <button type="button" class="pc-chip" data-exam="CTET">CTET</button>
+        <button type="button" class="pc-chip" data-exam="OAVS">OAVS</button>
+      </div>
+    </div>
+
+    <div class="pc-meta-bar">
+      <span id="mt-count-label" role="status" aria-live="polite">Loading mock tests…</span>
+      <button id="mt-reset-btn" type="button" class="pc-btn" hidden>Reset Filters</button>
+    </div>
+
+    <div id="mt-status" class="pc-status-card" role="status" aria-live="polite">
+      <h3>Loading Mock Tests…</h3>
+      <p>Fetching published practice tests and question sets.</p>
+    </div>
+
+    <div id="mt-grid" class="pc-grid" aria-live="polite"></div>
+    <div id="mt-pagination" class="pc-pagination" hidden></div>
+  </section>
+
+  <section id="mt-cbt-view" aria-labelledby="mt-cbt-title" hidden>
+    <div class="cbt-workspace">
+      <div class="cbt-main">
+        <div class="cbt-header">
+          <div>
+            <span id="mt-cbt-exam" class="pc-badge">Exam</span>
+            <h2 id="mt-cbt-title" class="pc-card__title"></h2>
+          </div>
+          <div class="pc-filters">
+            <span id="mt-cbt-timer" class="cbt-timer" role="timer" aria-live="off">00:00</span>
+            <button id="mt-cbt-lang" type="button" class="pc-btn">🌐 English + ଓଡ଼ିଆ</button>
+            <button id="mt-cbt-exit" type="button" class="pc-btn">✕ Exit Test</button>
+          </div>
+        </div>
+
+        <div id="mt-cbt-question-pane">
+          <div class="cbt-q-meta">
+            <strong id="mt-q-number">Question 1</strong>
+            <div class="pc-badges">
+              <span id="mt-q-section" class="pc-badge" hidden></span>
+              <span id="mt-q-marks" class="pc-badge pc-badge--green"></span>
+              <span id="mt-q-neg" class="pc-badge pc-badge--amber" hidden></span>
+            </div>
+          </div>
+
+          <p id="mt-q-stem-en" class="cbt-q-stem"></p>
+          <p id="mt-q-stem-or" class="cbt-q-stem-or" hidden></p>
+          <img id="mt-q-image" class="cbt-q-image" alt="Question diagram" hidden>
+
+          <div id="mt-q-options" class="cbt-options" role="radiogroup" aria-label="Answer options"></div>
+
+          <div class="cbt-controls">
+            <div class="pc-filters">
+              <button id="mt-btn-prev" type="button" class="pc-btn">← Previous</button>
+              <button id="mt-btn-flag" type="button" class="pc-btn">⚑ Flag for Review</button>
+              <button id="mt-btn-clear" type="button" class="pc-btn">Clear Choice</button>
+            </div>
+            <div class="pc-filters">
+              <button id="mt-btn-next" type="button" class="pc-btn pc-btn--primary">Save &amp; Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="mt-summary-pane" hidden>
+          <h3>Practice Session Complete</h3>
+          <p id="mt-summary-subtitle" class="pc-card__summary"></p>
+          <div id="mt-summary-stats" class="cbt-summary-grid"></div>
+          <div class="pc-filters">
+            <button id="mt-btn-review" type="button" class="pc-btn">← Review Questions</button>
+            <button id="mt-btn-back-list" type="button" class="pc-btn pc-btn--primary">Back to All Mock Tests</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="cbt-sidebar" aria-label="Question navigator">
+        <h3 class="pc-card__title">Question Palette</h3>
+        <p id="mt-palette-summary" class="pc-card__summary"></p>
+        <div id="mt-palette" class="cbt-palette"></div>
+        <button id="mt-btn-submit" type="button" class="pc-btn pc-btn--green">Finish &amp; Submit Test</button>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer><div class="w cso-footer-grid">
+  <div class="cso-footer-zone1">
+    <div class="cso-footer-brand-header">
+      <img src="/assets/images/cso-logo.svg" alt="CSO" class="cso-footer-logo" width="96" height="34">
+      <div class="cso-footer-title">Common Sense Odisha</div>
+    </div>
+    <p class="cso-footer-desc">Independent, open-access public resource platform.</p>
+    <p class="cso-footer-copy">© 2026 Common Sense Odisha. All rights reserved.</p>
+  </div>
+  <div class="cso-footer-zone2">
+    <div class="cso-footer-col">
+      <h4>Explore</h4>
+      <a href="../jobs-careers/">Jobs &amp; Careers</a>
+      <a href="../current-affairs/">Current Affairs</a>
+      <a href="../mock-tests/">Mock Tests</a>
+      <a href="../resources/">Syllabus &amp; PYQs</a>
+      <a href="../schemes-benefits/">Schemes &amp; Benefits</a>
+      <a href="../study-library/">Study Library</a>
+      <a href="../community/">Community</a>
+    </div>
+    <div class="cso-footer-col">
+      <h4>Support &amp; Legal</h4>
+      <a href="../about/">About CSO</a>
+      <a href="../support/#faqs">Help &amp; FAQs</a>
+      <a href="../support/#report-error">Report an Error</a>
+      <a href="../support/#suggest-resource">Suggest Resource</a>
+      <a href="../privacy-policy/">Privacy Policy</a>
+      <a href="../terms-of-use/">Terms of Use</a>
+    </div>
+  </div>
+  <div class="cso-footer-zone3">
+    <img class="cso-footer-odisha-map" src="../assets/odisha-footer-map.svg" alt="Odisha vector outline" loading="lazy">
+    <div class="cso-footer-motto">Be Self-Reliant · Build a Better Tomorrow</div>
+    <div class="cso-footer-lang-pills">
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="en">English</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="or">ଓଡ଼ିଆ</button>
+      <span class="cso-footer-lang-sep" aria-hidden="true">·</span>
+      <button type="button" class="cso-footer-lang-pill" data-cso-lang="hi">हिन्दी</button>
+    </div>
+  </div>
+</div></footer>
+
+<script src="../assets/cso-auth-client.js" defer></script>
+<script src="../assets/shared-header.js" defer></script>
+<script src="../assets/js/bookmark-manager.js" defer></script>
+</body>
+</html>

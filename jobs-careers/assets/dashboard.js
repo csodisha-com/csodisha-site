@@ -555,7 +555,7 @@
       content.append(el('span', 'card-title', entry.text));
       item.append(content);
 
-      // Bookmark action button
+      // Bookmark action button (CSP-safe, no inline styles/innerHTML)
       const bmId = 'job-' + (entry.id || entry.text.substring(0, 32).toLowerCase().replace(/[^a-z0-9]+/g, '-'));
       const bmBtn = el('button', 'cso-bookmark-btn');
       bmBtn.type = 'button';
@@ -565,8 +565,10 @@
       bmBtn.dataset.bookmarkBadge = 'Jobs & Careers';
       bmBtn.dataset.bookmarkUrl = window.location.href;
       bmBtn.title = 'Bookmark this job entry';
-      bmBtn.style.cssText = 'background:transparent;border:1px solid #334155;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#94a3b8;flex-shrink:0;margin-left:auto;';
-      bmBtn.innerHTML = '<span style="color:#94a3b8;" aria-hidden="true">☆</span> <span class="cso-bm-text">Bookmark</span>';
+      const star = el('span', 'cso-bm-star', '☆');
+      star.setAttribute('aria-hidden', 'true');
+      const bmText = el('span', 'cso-bm-text', 'Bookmark');
+      bmBtn.append(star, ' ', bmText);
       item.append(bmBtn);
 
       explorerItems.append(item);
@@ -1058,7 +1060,6 @@
       syncFromUrl(false);
       if (loadStatus) {
         loadStatus.hidden = true;
-        loadStatus.style.display = 'none';
       }
       return;
     }
@@ -1089,7 +1090,6 @@
 
         if (loadStatus) {
           loadStatus.hidden = true;
-          loadStatus.style.display = 'none';
         }
       })
       .catch(error => {
@@ -1104,4 +1104,396 @@
   }
 
   tryFetch(0);
+
+  // =========================================================================
+  // Live Recruitment & Job Notifications (/api/content/jobs)
+  // =========================================================================
+  const liveCountEl = $('live-jobs-count');
+  const liveSearchEl = $('live-jobs-search');
+  const liveStateEl = $('live-jobs-state');
+  const liveCategoryEl = $('live-jobs-category');
+  const liveResetBtn = $('live-jobs-reset');
+  const liveStatusEl = $('live-jobs-status');
+  const liveGridEl = $('live-jobs-grid');
+  const livePaginationEl = $('live-jobs-pagination');
+  const liveDetailEl = $('live-job-detail');
+  const liveDetailCloseBtn = $('live-job-detail-close');
+  const liveDetailActionsEl = $('live-job-detail-actions');
+  const liveDetailBadgesEl = $('live-job-detail-badges');
+  const liveDetailTitleEl = $('live-job-detail-title');
+  const liveDetailTitleOrEl = $('live-job-detail-title-or');
+  const liveDetailMetaEl = $('live-job-detail-meta');
+  const liveDetailSummaryEl = $('live-job-detail-summary');
+  const liveDetailBodyEl = $('live-job-detail-body');
+
+  const pc = window.CSOPublicContent;
+  const knownCategories = new Set(['OPSC', 'OSSC', 'OSSSC', 'Teaching', 'Police & Defence', 'Banking & PSU', 'Railway']);
+  let liveState = { page: 1, limit: 12, q: '', state: '', category: '' };
+  let liveSearchTimer = null;
+
+  function syncCategoryDropdown(items) {
+    if (!liveCategoryEl) return;
+    let added = false;
+    (items || []).forEach(item => {
+      if (item.category && !knownCategories.has(item.category)) {
+        knownCategories.add(item.category);
+        added = true;
+      }
+    });
+    if (liveCategoryEl.options.length <= 1 || added) {
+      const current = liveCategoryEl.value;
+      liveCategoryEl.replaceChildren(el('option', '', 'All Categories'));
+      liveCategoryEl.options[0].value = '';
+      Array.from(knownCategories).sort().forEach(cat => {
+        const opt = el('option', '', cat);
+        opt.value = cat;
+        liveCategoryEl.appendChild(opt);
+      });
+      liveCategoryEl.value = current;
+    }
+  }
+
+  function buildJobBadges(job) {
+    const frag = document.createDocumentFragment();
+    if (job.organisation) {
+      frag.appendChild(el('span', 'live-badge live-badge--org', job.organisation));
+    }
+    if (job.state) {
+      frag.appendChild(el('span', 'live-badge live-badge--state', job.state));
+    }
+    if (job.category) {
+      frag.appendChild(el('span', 'live-badge', job.category));
+    }
+    if (job.last_date && pc && typeof pc.deadlineInfo === 'function') {
+      const dl = pc.deadlineInfo(job.last_date);
+      if (dl) {
+        frag.appendChild(el('span', `live-badge ${dl.statusClass}`, dl.label));
+      }
+    }
+    return frag;
+  }
+
+  function renderJobCard(job) {
+    const card = el('article', 'live-job-card');
+    const top = el('div', 'live-job-card__top');
+
+    const badges = el('div', 'live-job-card__badges');
+    badges.appendChild(buildJobBadges(job));
+    top.appendChild(badges);
+
+    top.appendChild(el('h3', 'live-job-card__title', job.title || 'Untitled Notification'));
+    if (job.title_or) {
+      top.appendChild(el('p', 'live-job-card__title-or', job.title_or));
+    }
+    if (job.summary) {
+      top.appendChild(el('p', 'live-job-card__summary', job.summary));
+    }
+
+    const meta = el('div', 'live-job-card__meta');
+    if (job.vacancies !== null && job.vacancies !== undefined && job.vacancies !== '') {
+      meta.appendChild(el('span', '', `👥 Vacancies: ${Number(job.vacancies).toLocaleString('en-IN')}`));
+    }
+    if (job.qualification) {
+      meta.appendChild(el('span', '', `🎓 ${job.qualification}`));
+    }
+    if (job.published_at && pc) {
+      meta.appendChild(el('span', '', `📅 Published: ${pc.formatDate(job.published_at)}`));
+    }
+    top.appendChild(meta);
+    card.appendChild(top);
+
+    const footer = el('div', 'live-job-card__footer');
+    const detailBtn = el('button', 'live-btn live-btn--primary', 'View Details');
+    detailBtn.type = 'button';
+    detailBtn.addEventListener('click', () => openJobDetail(job.slug));
+    footer.appendChild(detailBtn);
+
+    if (job.notification_url && pc && pc.safeMediaSrc(job.notification_url)) {
+      const pdfLink = el('a', 'live-btn live-btn--pdf', '📄 Official PDF');
+      pdfLink.href = job.notification_url;
+      pdfLink.target = '_blank';
+      pdfLink.rel = 'noopener noreferrer';
+      footer.appendChild(pdfLink);
+    }
+
+    if (job.apply_url && pc && pc.safeHref(job.apply_url)) {
+      const applyLink = el('a', 'live-btn', 'Apply Online ↗');
+      applyLink.href = job.apply_url;
+      applyLink.target = '_blank';
+      applyLink.rel = 'noopener noreferrer nofollow';
+      footer.appendChild(applyLink);
+    }
+
+    if (pc && typeof pc.createBookmarkButton === 'function') {
+      footer.appendChild(pc.createBookmarkButton({
+        type: 'jobs',
+        id: job.slug || job.id,
+        title: job.title,
+        badge: job.organisation || job.category || 'Job Alert',
+        url: `/jobs-careers/?job=${encodeURIComponent(job.slug || job.id)}`,
+        pdfUrl: job.notification_url || '',
+        deadline: job.last_date || ''
+      }));
+    }
+
+    card.appendChild(footer);
+    return card;
+  }
+
+  function renderLivePagination(page, limit, total) {
+    if (!livePaginationEl) return;
+    livePaginationEl.replaceChildren();
+    const totalPages = Math.ceil((total || 0) / (limit || 12));
+    if (totalPages <= 1) {
+      livePaginationEl.hidden = true;
+      return;
+    }
+    livePaginationEl.hidden = false;
+
+    const prev = el('button', 'live-btn', '← Previous');
+    prev.type = 'button';
+    prev.disabled = page <= 1;
+    prev.addEventListener('click', () => {
+      if (liveState.page > 1) {
+        liveState.page--;
+        loadLiveJobs();
+      }
+    });
+
+    const info = el('span', 'live-count-badge', `Page ${page} of ${totalPages}`);
+
+    const next = el('button', 'live-btn', 'Next →');
+    next.type = 'button';
+    next.disabled = page >= totalPages;
+    next.addEventListener('click', () => {
+      if (liveState.page < totalPages) {
+        liveState.page++;
+        loadLiveJobs();
+      }
+    });
+
+    livePaginationEl.append(prev, info, next);
+  }
+
+  function closeJobDetail(pushUrl = true) {
+    if (!liveDetailEl) return;
+    liveDetailEl.hidden = true;
+    if (liveGridEl) liveGridEl.hidden = false;
+    if (pushUrl) {
+      try {
+        const u = new URL(window.location.href);
+        if (u.searchParams.has('job')) {
+          u.searchParams.delete('job');
+          window.history.replaceState(window.history.state, '', u.toString());
+        }
+      } catch (_) {}
+    }
+  }
+
+  async function openJobDetail(slug, pushUrl = true) {
+    if (!slug || !liveDetailEl) return;
+    if (liveGridEl) liveGridEl.hidden = true;
+    if (livePaginationEl) livePaginationEl.hidden = true;
+    liveDetailEl.hidden = false;
+    liveDetailBadgesEl.replaceChildren();
+    liveDetailTitleEl.textContent = 'Loading notification details…';
+    liveDetailTitleOrEl.hidden = true;
+    liveDetailMetaEl.replaceChildren();
+    liveDetailSummaryEl.hidden = true;
+    liveDetailActionsEl.replaceChildren();
+    liveDetailBodyEl.replaceChildren(el('p', '', 'Fetching official recruitment details…'));
+
+    if (pushUrl) {
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.set('job', slug);
+        window.history.pushState({ jobSlug: slug }, '', u.toString());
+      } catch (_) {}
+    }
+
+    try {
+      const res = await fetch(`/api/content/jobs/${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(res.status === 404 ? 'Job notification not found or no longer active.' : `HTTP ${res.status}`);
+      const job = await res.json();
+
+      liveDetailBadgesEl.appendChild(buildJobBadges(job));
+      liveDetailTitleEl.textContent = job.title || 'Job Notification';
+      if (job.title_or) {
+        liveDetailTitleOrEl.textContent = job.title_or;
+        liveDetailTitleOrEl.hidden = false;
+      }
+
+      if (job.vacancies !== null && job.vacancies !== undefined && job.vacancies !== '') {
+        liveDetailMetaEl.appendChild(el('span', '', `👥 Vacancies: ${Number(job.vacancies).toLocaleString('en-IN')}`));
+      }
+      if (job.qualification) {
+        liveDetailMetaEl.appendChild(el('span', '', `🎓 Qualification: ${job.qualification}`));
+      }
+      if (job.last_date && pc) {
+        liveDetailMetaEl.appendChild(el('span', '', `⏰ Last Date: ${pc.formatDate(job.last_date)}`));
+      }
+      if (job.published_at && pc) {
+        liveDetailMetaEl.appendChild(el('span', '', `📅 Published: ${pc.formatDate(job.published_at)}`));
+      }
+
+      if (job.summary) {
+        liveDetailSummaryEl.textContent = job.summary;
+        liveDetailSummaryEl.hidden = false;
+      }
+
+      if (job.notification_url && pc && pc.safeMediaSrc(job.notification_url)) {
+        const pdfLink = el('a', 'live-btn live-btn--pdf', '📄 Download Notification PDF');
+        pdfLink.href = job.notification_url;
+        pdfLink.target = '_blank';
+        pdfLink.rel = 'noopener noreferrer';
+        liveDetailActionsEl.appendChild(pdfLink);
+      }
+
+      if (job.apply_url && pc && pc.safeHref(job.apply_url)) {
+        const applyLink = el('a', 'live-btn live-btn--primary', 'Apply Online ↗');
+        applyLink.href = job.apply_url;
+        applyLink.target = '_blank';
+        applyLink.rel = 'noopener noreferrer nofollow';
+        liveDetailActionsEl.appendChild(applyLink);
+      }
+
+      if (pc && typeof pc.createBookmarkButton === 'function') {
+        liveDetailActionsEl.appendChild(pc.createBookmarkButton({
+          type: 'jobs',
+          id: job.slug || job.id,
+          title: job.title,
+          badge: job.organisation || job.category || 'Job Alert',
+          url: `/jobs-careers/?job=${encodeURIComponent(job.slug || job.id)}`,
+          pdfUrl: job.notification_url || '',
+          deadline: job.last_date || ''
+        }));
+      }
+
+      if (job.body_html && pc && typeof pc.renderSanitizedHtml === 'function') {
+        pc.renderSanitizedHtml(liveDetailBodyEl, job.body_html);
+      } else {
+        liveDetailBodyEl.replaceChildren(
+          el('p', '', job.summary || 'Refer to the official notification PDF or application link above for complete recruitment guidelines.')
+        );
+      }
+
+      if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+        window.CSOBookmarks.updateUI();
+      }
+    } catch (err) {
+      liveDetailTitleEl.textContent = 'Unable to load notification';
+      liveDetailBodyEl.replaceChildren(el('p', '', err.message || 'Please try again later.'));
+    }
+  }
+
+  async function loadLiveJobs() {
+    if (!liveGridEl || !liveStatusEl) return;
+    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category);
+    if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
+
+    liveStatusEl.hidden = false;
+    liveStatusEl.replaceChildren(el('span', '', 'Loading live recruitment notifications…'));
+    liveGridEl.replaceChildren();
+
+    const params = new URLSearchParams();
+    params.set('page', String(liveState.page));
+    params.set('limit', String(liveState.limit));
+    if (liveState.q) params.set('q', liveState.q);
+    if (liveState.state) params.set('state', liveState.state);
+    if (liveState.category) params.set('category', liveState.category);
+
+    try {
+      const res = await fetch(`/api/content/jobs?${params.toString()}`, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const items = Array.isArray(data.items) ? data.items : [];
+      const total = Number(data.total) || items.length;
+
+      syncCategoryDropdown(items);
+      if (liveCountEl) {
+        liveCountEl.textContent = `${total.toLocaleString('en-IN')} ${total === 1 ? 'Active Notice' : 'Active Notices'}`;
+      }
+
+      if (items.length === 0) {
+        liveStatusEl.hidden = false;
+        liveStatusEl.replaceChildren(
+          el('p', '', hasFilter
+            ? 'No published job notifications match your current filters.'
+            : 'No live recruitment notifications are published right now. Explore the career categories below or check back soon.')
+        );
+        if (livePaginationEl) livePaginationEl.hidden = true;
+        return;
+      }
+
+      liveStatusEl.hidden = true;
+      const frag = document.createDocumentFragment();
+      items.forEach(job => frag.appendChild(renderJobCard(job)));
+      liveGridEl.appendChild(frag);
+      renderLivePagination(data.page || liveState.page, data.limit || liveState.limit, total);
+
+      if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
+        window.CSOBookmarks.updateUI();
+      }
+    } catch (err) {
+      if (liveCountEl) liveCountEl.textContent = 'Unavailable';
+      liveStatusEl.hidden = false;
+      liveStatusEl.replaceChildren();
+      const msg = el('p', '', 'Unable to load live job notifications right now.');
+      const retry = el('button', 'live-btn', 'Retry');
+      retry.type = 'button';
+      retry.addEventListener('click', loadLiveJobs);
+      liveStatusEl.append(msg, retry);
+    }
+  }
+
+  if (liveSearchEl) {
+    liveSearchEl.addEventListener('input', () => {
+      clearTimeout(liveSearchTimer);
+      liveSearchTimer = setTimeout(() => {
+        liveState.q = liveSearchEl.value.trim();
+        liveState.page = 1;
+        closeJobDetail(false);
+        loadLiveJobs();
+      }, 220);
+    });
+  }
+  if (liveStateEl) {
+    liveStateEl.addEventListener('change', () => {
+      liveState.state = liveStateEl.value;
+      liveState.page = 1;
+      closeJobDetail(false);
+      loadLiveJobs();
+    });
+  }
+  if (liveCategoryEl) {
+    liveCategoryEl.addEventListener('change', () => {
+      liveState.category = liveCategoryEl.value;
+      liveState.page = 1;
+      closeJobDetail(false);
+      loadLiveJobs();
+    });
+  }
+  if (liveResetBtn) {
+    liveResetBtn.addEventListener('click', () => {
+      liveState = { page: 1, limit: 12, q: '', state: '', category: '' };
+      if (liveSearchEl) liveSearchEl.value = '';
+      if (liveStateEl) liveStateEl.value = '';
+      if (liveCategoryEl) liveCategoryEl.value = '';
+      closeJobDetail(true);
+      loadLiveJobs();
+    });
+  }
+  if (liveDetailCloseBtn) {
+    liveDetailCloseBtn.addEventListener('click', () => closeJobDetail(true));
+  }
+
+  syncCategoryDropdown([]);
+  loadLiveJobs();
+
+  try {
+    const initialJobSlug = new URLSearchParams(window.location.search).get('job');
+    if (initialJobSlug) {
+      openJobDetail(initialJobSlug, false);
+    }
+  } catch (_) {}
 })();
