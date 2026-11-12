@@ -703,9 +703,14 @@
         }
         allCheck.checked = d.items.length > 0 && d.items.every(function (item) { return !!selectedIds[item.id]; });
         updateBulkBar();
+        var mainScrollEl = document.querySelector('.cso-main');
+        var prevMainScroll = mainScrollEl ? mainScrollEl.scrollTop : 0;
+        var prevWinY = window.scrollY;
         clear(box).appendChild(el('div', { class: 'table-wrap cso-table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: T.label }),
           el('thead', {}, el('tr', {}, [el('th', { scope: 'col' }, allCheck)].concat(T.cols.concat(['Actions']).map(function (h) { return el('th', { scope: 'col', text: h }); })))), tb])));
         box.appendChild(pager(st, d.total, load));
+        if (mainScrollEl) mainScrollEl.scrollTop = prevMainScroll;
+        if (window.scrollY !== prevWinY) window.scrollTo(window.scrollX, prevWinY);
       } catch (e) { toast(e.message, true); }
     }
     await load();
@@ -1393,7 +1398,7 @@
     });
     document.getElementById('nav').classList.remove('open'); document.getElementById('navToggle').setAttribute('aria-expanded', 'false');
     await renderPath(parts);
-    main.focus();
+    if (main && main.focus) main.focus({ preventScroll: true });
   }
   /* Embedded mode: the Master Command Suite mounts a section into its workspace. */
   async function mount(container, path, group) {

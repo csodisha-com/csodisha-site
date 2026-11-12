@@ -472,8 +472,9 @@
 .cso-nav-mod-btn {
   width: 100%;
   min-height: 40px;
-  padding: 6px 10px;
+  padding: 7px 10px 7px 12px;
   border: 0;
+  border-left: 3px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: var(--studio-muted);
@@ -484,6 +485,7 @@
   gap: 8px;
   cursor: pointer;
   text-align: left;
+  transition: background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
 }
 
 .cso-nav-mod-btn:hover {
@@ -492,8 +494,9 @@
 }
 
 .cso-nav-mod-btn.is-active {
-  background: var(--studio-accent);
-  color: #fff;
+  background: rgba(15, 169, 104, 0.16);
+  border-left-color: var(--studio-accent);
+  color: #ecfdf5;
   font-weight: 600;
 }
 
@@ -1316,4 +1319,34 @@ input[type="checkbox"] {
   border-color: #16a34a;
   background: #f0fdf4;
   color: #166534;
+}
+
+/* Micro-interaction & Elevation Polish */
+.cso-nav-folder.is-current {
+  border-color: rgba(15, 169, 104, 0.45);
+}
+
+.cms-embed .card,
+.cms-embed .panel {
+  box-shadow: 0 1px 2px rgba(2, 6, 23, 0.25);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cms-embed input:not([type="checkbox"]):not([type="radio"]):focus,
+.cms-embed select:focus,
+.cms-embed textarea:focus {
+  outline: none;
+  border-color: var(--studio-accent);
+  box-shadow: 0 0 0 3px rgba(15, 169, 104, 0.2);
+}
+
+.cms-embed .modal h2 {
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--studio-border);
+}
+
+.cso-preview-pane {
+  border: 1px solid rgba(15, 169, 104, 0.3);
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.22);
 }

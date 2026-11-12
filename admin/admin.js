@@ -133,6 +133,7 @@
 
   function renderNavigationTree() {
     if (!dom.accordionNav || !masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
+    var prevNavScroll = dom.accordionNav.scrollTop;
     var query = CSOState.searchQuery.toLowerCase().trim();
     var matchCount = 0;
     clearNode(dom.accordionNav);
@@ -198,6 +199,7 @@
         dom.searchCountBadge.hidden = true;
       }
     }
+    dom.accordionNav.scrollTop = prevNavScroll;
   }
 
   function selectModule(folderId, moduleId) {
