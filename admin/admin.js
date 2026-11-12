@@ -20,6 +20,19 @@ if (typeof window !== 'undefined') {
   window.escapeHtml = escapeHtml;
 }
 
+/** Global fallback relative-time formatter (some module renderers call it without a local copy). */
+if (typeof window !== 'undefined' && typeof window.formatTimeAgo !== 'function') {
+  window.formatTimeAgo = function (ts) {
+    const t = typeof ts === 'number' ? ts : Date.parse(ts);
+    if (!t || isNaN(t)) return 'just now';
+    const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    return Math.floor(s / 86400) + 'd ago';
+  };
+}
+
 /**
  * Universal Controlled Modal Dialog Engine
  * Dynamically builds validated form modals for record creation & editing across modules.
@@ -462,6 +475,9 @@ async function loadMasterNavigation() {
     function renderWorkspaceView(folderId, moduleId) {
       dom.workspaceRoot.innerHTML = '';
       dom.moduleHeaderActions.innerHTML = '';
+
+      // --- LIVE D1/R2-BACKED MODULES (suite-live.js) take precedence over localStorage demos ---
+      if (window.CSOLive && window.CSOLive.render(folderId, moduleId, dom.workspaceRoot, dom.moduleHeaderActions)) return;
 
       // --- PRIORITY DISPATCH FOR FOLDER 05 (EDUCATIONAL RESOURCES) ---
       if (moduleId === 'module-05-001') { renderDigitalLibraryWorkspace(dom.workspaceRoot); return; }
@@ -1513,7 +1529,7 @@ async function loadMasterNavigation() {
                     <strong class="text-brand-emerald">${data.deviceBreakdown?.mobile || 68}%</strong>
                   </div>
                   <div class="w-full bg-[#081220] h-2 rounded-full overflow-hidden">
-                    <div class="bg-brand-emerald h-full rounded-full" style="width: ${data.deviceBreakdown?.mobile || 68}%"></div>
+                    <div class="bg-brand-emerald h-full rounded-full" data-style="width: ${data.deviceBreakdown?.mobile || 68}%"></div>
                   </div>
                 </div>
 
@@ -1523,7 +1539,7 @@ async function loadMasterNavigation() {
                     <strong class="text-cyan-400">${data.deviceBreakdown?.desktop || 32}%</strong>
                   </div>
                   <div class="w-full bg-[#081220] h-2 rounded-full overflow-hidden">
-                    <div class="bg-cyan-400 h-full rounded-full" style="width: ${data.deviceBreakdown?.desktop || 32}%"></div>
+                    <div class="bg-cyan-400 h-full rounded-full" data-style="width: ${data.deviceBreakdown?.desktop || 32}%"></div>
                   </div>
                 </div>
               </div>
@@ -1559,7 +1575,7 @@ async function loadMasterNavigation() {
               <p class="text-slate-300">Are you sure you want to clear current telemetry logs?</p>
             </div>
           `, `
-            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
             <button id="btnConfirmResetAnalytics" class="px-3 py-1.5 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white transition">Confirm & Reset</button>
           `);
 
@@ -1794,7 +1810,7 @@ async function loadMasterNavigation() {
                 ` : ''}
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
               ${item.status === 'PENDING' ? `
                 <button id="modalBtnApprove" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover">Approve & Publish</button>
               ` : ''}
@@ -1831,7 +1847,7 @@ async function loadMasterNavigation() {
                 <textarea id="inputRejectReason" rows="3" placeholder="e.g. Duplicate syllabus document, low-resolution scan, or unverified claims..." class="w-full bg-[#081220] border border-brand-border rounded-lg px-3 py-2 text-white text-xs focus:ring-1 focus:ring-brand-emerald"></textarea>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmRejectModal" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-crimson text-white hover:bg-red-600 transition">Confirm Rejection</button>
             `);
 
@@ -1993,7 +2009,7 @@ async function loadMasterNavigation() {
                 <span class="text-emerald-400 font-bold">${stats.activeCount} / ${stats.totalModules} Modules (${stats.completionPercentage}%)</span>
               </div>
               <div class="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
-                <div class="h-full bg-gradient-to-r from-teal-500 to-emerald-400 transition-all duration-500" style="width: ${stats.completionPercentage}%"></div>
+                <div class="h-full bg-gradient-to-r from-teal-500 to-emerald-400 transition-all duration-500" data-style="width: ${stats.completionPercentage}%"></div>
               </div>
             </div>
           </div>
@@ -3193,7 +3209,7 @@ async function loadMasterNavigation() {
             <p class="text-slate-300">Are you sure you want to clear the entire page canvas? This will remove all blocks from the active buffer.</p>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnConfirmClearCanvas" class="px-3 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Clear All</button>
         `);
 
@@ -3794,7 +3810,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to delete this landing page campaign record? This action cannot be undone.</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmDeleteLpModal" class="px-3 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Confirm Delete</button>
             `);
 
@@ -3884,7 +3900,7 @@ async function loadMasterNavigation() {
             </div>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnSubmitNewLpModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Create Campaign</button>
         `);
 
@@ -4069,7 +4085,7 @@ async function loadMasterNavigation() {
               </div>
             </div>
           `, `
-            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+            <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
           `);
         });
       });
@@ -4087,7 +4103,7 @@ async function loadMasterNavigation() {
               <textarea id="textareaEditTmplCode" rows="12" class="w-full bg-[#050a14] border border-brand-border rounded-lg p-3 text-slate-200 text-xs font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-brand-emerald">${tmpl.boilerplate}</textarea>
             </div>
           `, `
-            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
             <button id="btnSaveTmplCodeModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Save Changes</button>
           `);
 
@@ -4275,7 +4291,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
             `);
           });
         });
@@ -4300,7 +4316,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmSaveSecModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Save Changes</button>
             `);
 
@@ -4331,7 +4347,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to delete this reusable section component? Any pages referencing its embed tag will need manual adjustment.</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmDeleteSecModal" class="px-3 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Confirm Delete</button>
             `);
 
@@ -4408,7 +4424,7 @@ async function loadMasterNavigation() {
             </div>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnSubmitNewSecModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Create Component</button>
         `);
 
@@ -4618,7 +4634,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
             `);
           });
         });
@@ -4638,7 +4654,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to proceed with this rollback?</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmRollbackModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white transition">Confirm Rollback</button>
             `);
 
@@ -4693,7 +4709,7 @@ async function loadMasterNavigation() {
             </div>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnSubmitSnapshotModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Capture Snapshot</button>
         `);
 
@@ -4810,7 +4826,7 @@ async function loadMasterNavigation() {
                     <th class="py-2.5 px-4 font-semibold">Draft ID</th>
                     <th class="py-2.5 px-4 font-semibold">Title & Proposed Route</th>
                     <th class="py-2.5 px-4 font-semibold">Author</th>
-                    <th class="py-2.5 px-4 font-semibold" style="width: 140px;">Progress</th>
+                    <th class="py-2.5 px-4 font-semibold" data-style="width: 140px;">Progress</th>
                     <th class="py-2.5 px-4 font-semibold text-center">Status</th>
                     <th class="py-2.5 px-4 font-semibold">Last Saved</th>
                     <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
@@ -4886,7 +4902,7 @@ async function loadMasterNavigation() {
               <td class="py-2.5 px-4">
                 <div class="flex items-center gap-2">
                   <div class="w-20 bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
-                    <div class="${progressColor} h-full rounded-full" style="width: ${d.progress || 50}%"></div>
+                    <div class="${progressColor} h-full rounded-full" data-style="width: ${d.progress || 50}%"></div>
                   </div>
                   <span class="text-[10px] font-mono text-slate-400">${d.progress || 50}%</span>
                 </div>
@@ -4928,7 +4944,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
             `);
           });
         });
@@ -4948,7 +4964,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you ready to make this content live for all candidates across Odisha?</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmPromoteModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Publish Live</button>
             `);
 
@@ -4977,7 +4993,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to permanently delete this staged draft? All uncommitted markup will be removed.</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmDeleteDraftModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Delete Draft</button>
             `);
 
@@ -5049,7 +5065,7 @@ async function loadMasterNavigation() {
             </div>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnSubmitNewDraftModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Create Staged Draft</button>
         `);
 
@@ -5313,7 +5329,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
             `);
           });
         });
@@ -5333,7 +5349,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to bypass the remaining timer countdown?</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmPublishSchNow" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Publish Live Now</button>
             `);
 
@@ -5375,7 +5391,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to remove this scheduled release from the pipeline?</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmDeleteSchModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Delete Entry</button>
             `);
 
@@ -5475,7 +5491,7 @@ async function loadMasterNavigation() {
             </div>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnSubmitNewSchModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Schedule Release</button>
         `);
 
@@ -5737,7 +5753,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
             `);
           });
         });
@@ -5757,7 +5773,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to restore this asset?</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmRestoreModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white transition">Restore Now</button>
             `);
 
@@ -5789,7 +5805,7 @@ async function loadMasterNavigation() {
                 <p class="text-slate-300">Are you sure you want to proceed with permanent destruction?</p>
               </div>
             `, `
-              <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+              <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
               <button id="btnConfirmPurgeModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Purge Permanently</button>
             `);
 
@@ -5849,7 +5865,7 @@ async function loadMasterNavigation() {
             <p class="text-slate-300">This action is irreversible. Are you sure you wish to empty the trash?</p>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
           <button id="btnConfirmEmptyTrashModal" class="px-3.5 py-1.5 text-xs font-bold rounded bg-rose-600 hover:bg-rose-500 text-white transition">Empty Trash</button>
         `);
 
@@ -6023,7 +6039,7 @@ async function loadMasterNavigation() {
                 <div class="p-4 rounded-xl border border-slate-800 bg-[#040810] space-y-3 shadow-inner">
                   <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
                     <div class="flex items-center gap-2.5">
-                      <div id="previewLogoDot" class="w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] text-white" style="background-color: ${brand.primaryColor || '#0fa968'};">
+                      <div id="previewLogoDot" class="w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] text-white" data-style="background-color: ${brand.primaryColor || '#0fa968'};">
                         O
                       </div>
                       <span id="previewSiteName" class="font-bold text-white text-sm">${brand.siteName || 'Common Sense Odisha'}</span>
@@ -6046,13 +6062,13 @@ async function loadMasterNavigation() {
                 <div class="space-y-2 pt-2">
                   <span class="text-xs font-mono font-bold text-slate-400 block">Active Swatch Tokens:</span>
                   <div class="grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
-                    <div class="p-2 rounded-lg border border-slate-700" id="swatchPrimaryBox" style="background-color: ${brand.primaryColor || '#0fa968'};">
+                    <div class="p-2 rounded-lg border border-slate-700" id="swatchPrimaryBox" data-style="background-color: ${brand.primaryColor || '#0fa968'};">
                       <span class="font-bold text-white shadow-sm" id="swatchPrimaryHex">${brand.primaryColor || '#0fa968'}</span>
                     </div>
-                    <div class="p-2 rounded-lg border border-slate-700" id="swatchNavyBox" style="background-color: ${brand.navyColor || '#081220'};">
+                    <div class="p-2 rounded-lg border border-slate-700" id="swatchNavyBox" data-style="background-color: ${brand.navyColor || '#081220'};">
                       <span class="font-bold text-slate-200" id="swatchNavyHex">${brand.navyColor || '#081220'}</span>
                     </div>
-                    <div class="p-2 rounded-lg border border-slate-700" id="swatchSlateBox" style="background-color: ${brand.slateColor || '#0f172a'};">
+                    <div class="p-2 rounded-lg border border-slate-700" id="swatchSlateBox" data-style="background-color: ${brand.slateColor || '#0f172a'};">
                       <span class="font-bold text-slate-200" id="swatchSlateHex">${brand.slateColor || '#0f172a'}</span>
                     </div>
                   </div>
@@ -16019,7 +16035,7 @@ async function loadMasterNavigation() {
               <div class="flex flex-wrap items-center gap-2 p-3 bg-slate-950/60 border border-slate-800/80 rounded-lg">
                 <span class="text-xs text-slate-400 font-mono mr-2">Preview Cloud:</span>
                 ${tags.filter(t => t.active !== false).map(t => `
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border" style="background-color: ${escapeHtml(t.color || '#0ea5e9')}20; border-color: ${escapeHtml(t.color || '#0ea5e9')}50; color: ${escapeHtml(t.color || '#0ea5e9')};">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border" data-style="background-color: ${escapeHtml(t.color || '#0ea5e9')}20; border-color: ${escapeHtml(t.color || '#0ea5e9')}50; color: ${escapeHtml(t.color || '#0ea5e9')};">
                     #${escapeHtml(t.name || '')}
                     <span class="text-[10px] opacity-75 font-mono">(${t.usageCount || 0})</span>
                   </span>
@@ -16641,7 +16657,7 @@ async function loadMasterNavigation() {
               <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-2">
                 ${stages.map((stg) => `
                   <div class="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-xl relative overflow-hidden flex flex-col justify-between">
-                    <div class="w-1.5 h-full absolute left-0 top-0 bottom-0" style="background-color: ${escapeHtml(stg.color || '#64748b')}"></div>
+                    <div class="w-1.5 h-full absolute left-0 top-0 bottom-0" data-style="background-color: ${escapeHtml(stg.color || '#64748b')}"></div>
                     <div class="pl-2">
                       <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Step 0${stg.order}</span>
                       <h4 class="text-sm font-semibold text-white mt-0.5 truncate">${escapeHtml(stg.name)}</h4>
@@ -18354,7 +18370,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '📁' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -18861,7 +18877,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '📁' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -19339,7 +19355,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '📁' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -19816,7 +19832,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '📅' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -20329,7 +20345,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '🔍' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -20867,7 +20883,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '🛡️' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -21434,7 +21450,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '🔌' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -21947,7 +21963,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm ring-1 ring-teal-500/40'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75 font-mono">${node.depth === 0 ? '🔄' : (node.depth === 1 ? '└' : '└ └')}</span>
@@ -22218,7 +22234,7 @@ async function loadMasterNavigation() {
                       ${displayedNodes.map(node => `
                         <div class="comms-node-card p-2.5 rounded-lg border cursor-pointer transition ${
                           node.id === selectedNodeId ? 'bg-teal-950/50 border-teal-500/60 text-white ring-1 ring-teal-500/40' : 'bg-slate-900/60 border-slate-800 text-slate-300'
-                        }" data-node-id="${node.id}" style="margin-left: ${Math.min((node.depth||0)*16, 64)}px;">
+                        }" data-node-id="${node.id}" data-style="margin-left: ${Math.min((node.depth||0)*16, 64)}px;">
                           <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold text-white truncate">${node.title}</span>
                             <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">${node.channel || 'SMS'}</span>
@@ -22444,7 +22460,7 @@ async function loadMasterNavigation() {
                       ${displayedNodes.map(node => `
                         <div class="ana-node-card p-2.5 rounded-lg border cursor-pointer transition ${
                           node.id === selectedNodeId ? 'bg-teal-950/50 border-teal-500/60 text-white ring-1 ring-teal-500/40' : 'bg-slate-900/60 border-slate-800 text-slate-300'
-                        }" data-node-id="${node.id}" style="margin-left: ${Math.min((node.depth||0)*16, 64)}px;">
+                        }" data-node-id="${node.id}" data-style="margin-left: ${Math.min((node.depth||0)*16, 64)}px;">
                           <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold text-white truncate">${node.title}</span>
                             <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">${node.metricType || 'Metric'}</span>
@@ -22695,7 +22711,7 @@ async function loadMasterNavigation() {
                       return `
                         <tr class="hover:bg-slate-800/40 transition-colors tree-node-row" data-id="${escapeHtml(item.id)}" data-title="${escapeHtml(item.title.toLowerCase())}">
                           <td class="px-4 py-3">
-                            <div style="padding-left: ${indentPx}px;" class="flex items-center gap-2">
+                            <div data-style="padding-left: ${indentPx}px;" class="flex items-center gap-2">
                               ${item.depth > 0 ? '<span class="text-slate-600 font-mono">└─</span>' : ''}
                               <span class="text-base">${item.type === 'directory' ? '📁' : item.type === 'redirect' ? '🔗' : '📄'}</span>
                               <div>
@@ -30418,7 +30434,7 @@ async function loadMasterNavigation() {
                           </td>
                           <td class="py-3 px-4 font-semibold text-white">
                             <div class="flex items-center gap-2">
-                              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${escapeHtml(item.color || '#38bdf8')}"></span>
+                              <span class="w-2.5 h-2.5 rounded-full" data-style="background-color: ${escapeHtml(item.color || '#38bdf8')}"></span>
                               <span>${escapeHtml(item.name)}</span>
                             </div>
                           </td>
@@ -30429,7 +30445,7 @@ async function loadMasterNavigation() {
                             ${item.orderWeight || 1}
                           </td>
                           <td class="py-3 px-4 text-center font-mono text-[11px]">
-                            <span class="px-2 py-0.5 rounded border border-slate-700 bg-slate-800" style="color: ${escapeHtml(item.color || '#38bdf8')}">
+                            <span class="px-2 py-0.5 rounded border border-slate-700 bg-slate-800" data-style="color: ${escapeHtml(item.color || '#38bdf8')}">
                               ${escapeHtml(item.color || '#38bdf8')}
                             </span>
                           </td>
@@ -31089,7 +31105,7 @@ async function loadMasterNavigation() {
                             ${escapeHtml(item.id)}
                           </td>
                           <td class="py-3 px-4 font-semibold text-white">
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs" style="background-color: ${escapeHtml(item.color || '#14b8a6')}20; color: ${escapeHtml(item.color || '#14b8a6')}; border: 1px solid ${escapeHtml(item.color || '#14b8a6')}40">
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs" data-style="background-color: ${escapeHtml(item.color || '#14b8a6')}20; color: ${escapeHtml(item.color || '#14b8a6')}; border: 1px solid ${escapeHtml(item.color || '#14b8a6')}40">
                               #${escapeHtml(item.name)}
                             </span>
                           </td>
@@ -31102,7 +31118,7 @@ async function loadMasterNavigation() {
                             ${escapeHtml(item.slug)}
                           </td>
                           <td class="py-3 px-4 text-center font-mono text-[11px]">
-                            <span class="px-2 py-0.5 rounded border border-slate-700 bg-slate-800" style="color: ${escapeHtml(item.color || '#14b8a6')}">
+                            <span class="px-2 py-0.5 rounded border border-slate-700 bg-slate-800" data-style="color: ${escapeHtml(item.color || '#14b8a6')}">
                               ${escapeHtml(item.color || '#14b8a6')}
                             </span>
                           </td>
@@ -33837,7 +33853,7 @@ async function loadMasterNavigation() {
                           <td class="py-3.5 px-4 font-mono font-medium text-blue-400">${escapeHtml(link.id)}</td>
                           <td class="py-3.5 px-4 font-semibold text-white">
                             <div class="flex items-center gap-2">
-                              <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${escapeHtml(link.badgeColor || '#0284c7')}"></span>
+                              <span class="w-3 h-3 rounded-full flex-shrink-0" data-style="background-color: ${escapeHtml(link.badgeColor || '#0284c7')}"></span>
                               <span>${escapeHtml(link.platform)}</span>
                             </div>
                           </td>
@@ -34480,7 +34496,7 @@ async function loadMasterNavigation() {
                         <td class="py-3.5 px-4">
                           <div class="flex items-center gap-2">
                             <div class="flex-1 bg-slate-800 rounded-full h-2 overflow-hidden">
-                              <div class="h-full ${b.status === 'Completed' ? 'bg-emerald-500' : b.status === 'Processing' ? 'bg-cyan-500' : 'bg-slate-600'}" style="width: ${b.progressPercent || 0}%"></div>
+                              <div class="h-full ${b.status === 'Completed' ? 'bg-emerald-500' : b.status === 'Processing' ? 'bg-cyan-500' : 'bg-slate-600'}" data-style="width: ${b.progressPercent || 0}%"></div>
                             </div>
                             <span class="font-mono text-[10px] text-slate-400">${b.progressPercent || 0}%</span>
                           </div>
@@ -35393,7 +35409,7 @@ async function loadMasterNavigation() {
                           <span class="font-mono text-cyan-300">${p.quotaGb} GB Quota</span>
                         </div>
                         <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                          <div class="h-full bg-cyan-500" style="width: ${(p.usedGb / p.quotaGb * 100).toFixed(1)}%"></div>
+                          <div class="h-full bg-cyan-500" data-style="width: ${(p.usedGb / p.quotaGb * 100).toFixed(1)}%"></div>
                         </div>
                       </div>
                     </div>
@@ -37871,7 +37887,7 @@ async function loadMasterNavigation() {
                           <td class="py-3 px-4 text-slate-200">${Number(m.memberCount || 0).toLocaleString('en-IN')}</td>
                           <td class="py-3 px-4 font-sans">
                             <div class="flex items-center gap-1.5">
-                              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background-color: ${m.badgeColor || '#38bdf8'}"></span>
+                              <span class="w-3.5 h-3.5 rounded-full border border-white/20" data-style="background-color: ${m.badgeColor || '#38bdf8'}"></span>
                               <span class="text-[11px] text-slate-400 font-mono">${m.badgeColor || '#38bdf8'}</span>
                             </div>
                           </td>
@@ -49967,7 +49983,7 @@ async function loadMasterNavigation() {
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 ${palette.map(c => `
                   <div class="p-3 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg border border-slate-700 shadow-inner flex-shrink-0" style="background-color: ${c.hexCode};"></div>
+                    <div class="w-10 h-10 rounded-lg border border-slate-700 shadow-inner flex-shrink-0" data-style="background-color: ${c.hexCode};"></div>
                     <div class="min-w-0">
                       <div class="text-xs font-bold text-white truncate">${c.label}</div>
                       <div class="text-[10px] font-mono text-emerald-400">${c.hexCode}</div>
@@ -50010,7 +50026,7 @@ async function loadMasterNavigation() {
                     ` : filtered.map(item => `
                       <tr class="hover:bg-slate-800/30 transition-colors">
                         <td class="px-4 py-3">
-                          <div class="w-6 h-6 rounded-md border border-slate-700 shadow-sm" style="background-color: ${item.hexCode};"></div>
+                          <div class="w-6 h-6 rounded-md border border-slate-700 shadow-sm" data-style="background-color: ${item.hexCode};"></div>
                         </td>
                         <td class="px-4 py-3 font-mono text-emerald-400 font-semibold">${item.tokenName}</td>
                         <td class="px-4 py-3 font-medium text-white">${item.label}</td>
@@ -52121,7 +52137,7 @@ async function loadMasterNavigation() {
                 </div>
 
                 <!-- Device Shell Mockup -->
-                <div class="rounded-3xl border-4 border-slate-700 bg-slate-900 shadow-2xl p-2 transition-all flex flex-col items-center" style="max-width: 100%; width: ${Math.min(selectedDevice.widthPx, 840)}px;">
+                <div class="rounded-3xl border-4 border-slate-700 bg-slate-900 shadow-2xl p-2 transition-all flex flex-col items-center" data-style="max-width: 100%; width: ${Math.min(selectedDevice.widthPx, 840)}px;">
                   <div class="w-16 h-3 rounded-full bg-slate-800 mb-2"></div>
                   <div class="w-full bg-slate-950 rounded-2xl p-4 border border-slate-800 space-y-4 text-left">
                     <div class="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -60849,7 +60865,7 @@ async function loadMasterNavigation() {
                             <span class="text-slate-500">/ ${item.capacity || 0}</span>
                           </div>
                           <div class="w-24 bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
-                            <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${Math.min(100, Math.round(((item.rsvpCount||0)/(item.capacity||1))*100))}%"></div>
+                            <div class="bg-indigo-500 h-1.5 rounded-full" data-style="width: ${Math.min(100, Math.round(((item.rsvpCount||0)/(item.capacity||1))*100))}%"></div>
                           </div>
                         </td>
                         <td class="py-3 px-4">
@@ -71860,7 +71876,7 @@ async function loadMasterNavigation() {
                 <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
                   <div class="text-xs text-slate-400 font-medium">Primary Brand</div>
                   <div class="flex items-center gap-2 mt-2">
-                    <span class="w-5 h-5 rounded border border-white/20" style="background-color: ${branding.primaryColorHex || '#0F766E'}"></span>
+                    <span class="w-5 h-5 rounded border border-white/20" data-style="background-color: ${branding.primaryColorHex || '#0F766E'}"></span>
                     <span class="text-sm font-mono font-bold text-white">${branding.primaryColorHex || '#0F766E'}</span>
                   </div>
                   <div class="text-xs text-teal-400 mt-1">Deep Teal 700</div>
@@ -71868,7 +71884,7 @@ async function loadMasterNavigation() {
                 <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
                   <div class="text-xs text-slate-400 font-medium">Accent Amber</div>
                   <div class="flex items-center gap-2 mt-2">
-                    <span class="w-5 h-5 rounded border border-white/20" style="background-color: ${branding.accentColorHex || '#F59E0B'}"></span>
+                    <span class="w-5 h-5 rounded border border-white/20" data-style="background-color: ${branding.accentColorHex || '#F59E0B'}"></span>
                     <span class="text-sm font-mono font-bold text-white">${branding.accentColorHex || '#F59E0B'}</span>
                   </div>
                   <div class="text-xs text-amber-400 mt-1">Konark Gold / Amber</div>
@@ -71876,7 +71892,7 @@ async function loadMasterNavigation() {
                 <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
                   <div class="text-xs text-slate-400 font-medium">Dark Canvas</div>
                   <div class="flex items-center gap-2 mt-2">
-                    <span class="w-5 h-5 rounded border border-white/20" style="background-color: ${branding.darkBgHex || '#042F2E'}"></span>
+                    <span class="w-5 h-5 rounded border border-white/20" data-style="background-color: ${branding.darkBgHex || '#042F2E'}"></span>
                     <span class="text-sm font-mono font-bold text-white">${branding.darkBgHex || '#042F2E'}</span>
                   </div>
                   <div class="text-xs text-slate-400 mt-1">Night Slate Backdrop</div>
@@ -76284,7 +76300,7 @@ async function loadMasterNavigation() {
                             isSelected
                               ? 'bg-teal-950/50 border-teal-500/60 text-white shadow-sm'
                               : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/60 text-slate-300'
-                          }" data-node-id="${node.id}" style="margin-left: ${indentPx}px;">
+                          }" data-node-id="${node.id}" data-style="margin-left: ${indentPx}px;">
                             <div class="flex items-start justify-between gap-2">
                               <div class="flex items-center gap-1.5 min-w-0">
                                 <span class="text-xs opacity-75">${node.depth > 0 ? '└' : '📁'}</span>
@@ -77523,7 +77539,7 @@ async function loadMasterNavigation() {
               </div>
             </div>
           `, `
-            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
             <button id="btnSubmitNoticeModal" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover transition">Publish Notice</button>
           `);
 
@@ -77758,7 +77774,7 @@ async function loadMasterNavigation() {
               <p class="text-xs text-slate-300">Are you sure you want to prune older records?</p>
             </div>
           `, `
-            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
             <button id="btnConfirmPruneAudit" class="px-3 py-1.5 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white transition">Confirm & Prune</button>
           `);
 
@@ -77993,24 +78009,14 @@ async function loadMasterNavigation() {
       // Card 4: Flash Admit Card Broadcast
       const btnFlash = document.getElementById('btnQaPublishFlash');
       if (btnFlash) {
-        btnFlash.addEventListener('click', () => {
-          let flash;
-          if (window.CSOSuperStore && typeof window.CSOSuperStore.publishEmergencyFlash === 'function') {
-            flash = window.CSOSuperStore.publishEmergencyFlash('admit_card');
-          } else {
-            flash = {
-              headline: "Urgent: Odisha OSSC CGL 2026 Official Hall Ticket Download Released",
-              context: "Official examination portal has issued hall tickets. Download links and instructions verified.",
-              severity: "emerald",
-              ctaText: "Check Hall Ticket Link",
-              ctaUrl: "/resources.html#ossc-cgl",
-              active: true,
-              updatedAt: Date.now()
-            };
-            localStorage.setItem('cso_active_announcement', JSON.stringify(flash));
+        btnFlash.addEventListener('click', async () => {
+          try {
+            const flash = await window.CSOLive.publishFlash();
+            CSOState.broadcast = flash;
+            showToast("Flash Hall Ticket Alert published live to homepage (D1)!", "success");
+          } catch (err) {
+            showToast(err.message || 'Could not publish the banner', 'crimson');
           }
-          CSOState.broadcast = flash;
-          showToast("Flash Hall Ticket Alert published live to homepage!", "success");
         });
       }
 
@@ -78026,7 +78032,7 @@ async function loadMasterNavigation() {
               <p class="text-xs text-slate-300">You will need to re-verify credentials and pass Cloudflare Turnstile challenge to regain access.</p>
             </div>
           `, `
-            <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+            <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
             <button id="btnConfirmLockModal" class="px-3 py-1.5 text-xs font-bold rounded bg-brand-crimson text-white hover:bg-red-600 transition">Confirm & Lock Console</button>
           `);
 
@@ -78485,19 +78491,19 @@ async function loadMasterNavigation() {
               <h3 class="font-bold text-white text-sm mb-3">Administrative Hotkeys</h3>
               <p class="text-xs text-slate-400 mb-4">Direct shortcuts to high-frequency maintenance modules.</p>
               <div class="space-y-2 text-xs">
-                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-02', 'module-02-002')">
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" data-onclick="selectModule('folder-02', 'module-02-002')">
                   <span>+ Create New Page</span>
                   <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
                 </button>
-                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-05', 'module-05-010')">
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" data-onclick="selectModule('folder-05', 'module-05-010')">
                   <span>Publish Syllabus & PYQ</span>
                   <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
                 </button>
-                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-10', 'module-10-001')">
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" data-onclick="selectModule('folder-10', 'module-10-001')">
                   <span>Triage Contact Inquiries (18)</span>
                   <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
                 </button>
-                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" onclick="selectModule('folder-17', 'module-17-016')">
+                <button class="w-full px-3 py-2.5 rounded-lg bg-brand-card hover:bg-slate-700 text-left font-medium text-slate-200 flex items-center justify-between border border-brand-border" data-onclick="selectModule('folder-17', 'module-17-016')">
                   <span>Disaster Recovery & Snapshots</span>
                   <span class="text-slate-500 font-mono text-[10px]">&rarr;</span>
                 </button>
@@ -78880,8 +78886,8 @@ async function loadMasterNavigation() {
             </div>
           </div>
         `, `
-          <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
-          <button onclick="closeModal(); showToast('Resource successfully registered and indexed!', 'success');" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Publish Resource</button>
+          <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button data-onclick="closeModal(); showToast('Resource successfully registered and indexed!', 'success');" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Publish Resource</button>
         `);
       });
     }
@@ -78996,7 +79002,7 @@ async function loadMasterNavigation() {
                       <span class="px-2 py-0.5 rounded text-[10px] font-mono ${u.status === 'Verified' ? 'bg-emerald-500/10 text-brand-emerald' : u.status === 'Pending' ? 'bg-amber-500/10 text-amber-300' : 'bg-red-500/10 text-brand-crimson'}">${u.status}</span>
                     </td>
                     <td class="py-2.5 px-3 text-right font-mono">
-                      <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] mr-1" onclick="toggleUserStatus('${u.id}')">${u.status === 'Suspended' ? 'Reinstate' : 'Suspend'}</button>
+                      <button class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] mr-1" data-onclick="toggleUserStatus('${u.id}')">${u.status === 'Suspended' ? 'Reinstate' : 'Suspend'}</button>
                     </td>
                   </tr>
                 `).join('')}
@@ -79056,8 +79062,8 @@ async function loadMasterNavigation() {
                     <span>Phone: </span><span class="text-slate-300">${inq.phone}</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-sans" onclick="resolveInquiry('${inq.id}')">Mark Resolved</button>
-                    <button class="px-2.5 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-sans font-bold" onclick="launchReplyModal('${inq.id}')">Send SMTP Reply &rarr;</button>
+                    <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-sans" data-onclick="resolveInquiry('${inq.id}')">Mark Resolved</button>
+                    <button class="px-2.5 py-1 rounded bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-sans font-bold" data-onclick="launchReplyModal('${inq.id}')">Send SMTP Reply &rarr;</button>
                   </div>
                 </div>
               </div>
@@ -79098,8 +79104,8 @@ async function loadMasterNavigation() {
           </div>
         </div>
       `, `
-        <button onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
-        <button onclick="closeModal(); showToast('Email reply dispatched via smtp.gmail.com:587', 'success');" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Dispatch Email</button>
+        <button data-onclick="closeModal()" class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+        <button data-onclick="closeModal(); showToast('Email reply dispatched via smtp.gmail.com:587', 'success');" class="px-3 py-1.5 text-xs font-semibold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover font-bold">Dispatch Email</button>
       `);
     };
 
@@ -79134,7 +79140,7 @@ async function loadMasterNavigation() {
                 </div>
               </div>
             </div>
-            <button onclick="showToast('Theme tokens synchronized across public site assets!', 'success')" class="px-3 py-1.5 text-xs font-bold bg-brand-emerald text-white rounded hover:bg-brand-emeraldHover transition">Publish CSS Variables</button>
+            <button data-onclick="showToast('Theme tokens synchronized across public site assets!', 'success')" class="px-3 py-1.5 text-xs font-bold bg-brand-emerald text-white rounded hover:bg-brand-emeraldHover transition">Publish CSS Variables</button>
           </div>
 
           <div class="p-5 rounded-xl bg-brand-slate border border-brand-border space-y-4">
@@ -79210,7 +79216,7 @@ async function loadMasterNavigation() {
             <div>
               <h3 class="font-bold text-brand-crimson text-sm mb-2">Zero-Trust Panic Revocation</h3>
               <p class="text-xs text-slate-400 mb-4">Instantly terminate all other active admin sessions and force global credential challenge.</p>
-              <button onclick="showToast('All remote admin sessions terminated immediately!', 'crimson')" class="w-full py-2.5 px-3 rounded-lg bg-red-950/80 hover:bg-red-900 border border-brand-crimson text-red-200 text-xs font-bold transition">
+              <button data-onclick="showToast('All remote admin sessions terminated immediately!', 'crimson')" class="w-full py-2.5 px-3 rounded-lg bg-red-950/80 hover:bg-red-900 border border-brand-crimson text-red-200 text-xs font-bold transition">
                 Revoke All Remote Sessions
               </button>
             </div>
@@ -79252,7 +79258,7 @@ async function loadMasterNavigation() {
             <textarea rows="3" class="w-full bg-[#081220] border border-brand-border rounded-lg p-3 text-cyan-400 font-mono text-xs">SELECT id, title, category, downloads FROM educational_resources ORDER BY downloads DESC LIMIT 5;</textarea>
             <div class="flex items-center justify-between">
               <span class="text-[11px] text-slate-400 font-mono">Read-Only Safe Mode Enabled</span>
-              <button onclick="showToast('Query executed in 6.4ms across D1 replicas', 'success')" class="px-3 py-1.5 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white transition">Run SQL Query</button>
+              <button data-onclick="showToast('Query executed in 6.4ms across D1 replicas', 'success')" class="px-3 py-1.5 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white transition">Run SQL Query</button>
             </div>
           </div>
         </div>
@@ -79310,7 +79316,7 @@ async function loadMasterNavigation() {
                       <span class="px-2 py-0.5 rounded text-[10px] font-mono ${m.status === 'active' ? 'bg-emerald-500/10 text-brand-emerald font-bold' : 'bg-slate-800 text-slate-400'}">${m.status}</span>
                     </td>
                     <td class="py-2.5 px-3 text-right">
-                      <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]" onclick="selectModule('${m.folderId}', '${m.id}')">Open View &rarr;</button>
+                      <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-brand-emerald font-semibold text-[11px]" data-onclick="selectModule('${m.folderId}', '${m.id}')">Open View &rarr;</button>
                     </td>
                   </tr>
                 `).join('')}
@@ -79343,8 +79349,8 @@ async function loadMasterNavigation() {
               <p class="text-xs text-slate-400 mt-1">Operational records and state schema for ${module?.id}.</p>
             </div>
             <div class="flex items-center gap-2">
-              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700" onclick="showToast('Exporting module records...', 'info')">Export CSV</button>
-              <button class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover" onclick="showToast('New entry schema initialized', 'success')">+ New Entry</button>
+              <button class="px-3 py-1.5 text-xs font-semibold rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700" data-onclick="showToast('Exporting module records...', 'info')">Export CSV</button>
+              <button class="px-3 py-1.5 text-xs font-bold rounded bg-brand-emerald text-white hover:bg-brand-emeraldHover" data-onclick="showToast('New entry schema initialized', 'success')">+ New Entry</button>
             </div>
           </div>
 
@@ -79367,7 +79373,7 @@ async function loadMasterNavigation() {
                   <td class="py-2.5 px-3 text-slate-400">config_val_active</td>
                   <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-brand-emerald">Synced</span></td>
                   <td class="py-2.5 px-3 text-right font-sans">
-                    <button class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px]" onclick="showToast('Record updated successfully', 'success')">Configure</button>
+                    <button class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px]" data-onclick="showToast('Record updated successfully', 'success')">Configure</button>
                   </td>
                 </tr>
                 <tr class="hover:bg-brand-card/40 transition">
@@ -79376,7 +79382,7 @@ async function loadMasterNavigation() {
                   <td class="py-2.5 px-3 text-slate-400">cso_d1_schema_v1</td>
                   <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-brand-emerald">Verified</span></td>
                   <td class="py-2.5 px-3 text-right font-sans">
-                    <button class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px]" onclick="showToast('Record updated successfully', 'success')">Configure</button>
+                    <button class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px]" data-onclick="showToast('Record updated successfully', 'success')">Configure</button>
                   </td>
                 </tr>
               </tbody>

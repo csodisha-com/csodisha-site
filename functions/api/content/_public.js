@@ -1,6 +1,7 @@
 // Public read-only content API. Visibility is evaluated at query time so scheduled
 // items go live automatically — no cron worker required.
 import { json } from '../../_lib/http.js';
+import { readBanner } from '../admin/_site.js';
 import { renderMarkdown } from '../../_lib/markdown.js';
 import { PUBLIC_VISIBLE_SQL, parsePaging, likeEscape } from '../../_lib/validate.js';
 
@@ -69,6 +70,26 @@ export async function handleContent(request, env) {
     if (resource === 'jobs') {
       return key ? await postDetail(env, 'job', key)
         : await listPosts(env, request, 'job', "(last_date IS NULL OR last_date < date('now')) ASC, last_date ASC, published_at DESC");
+    }
+    if (resource === 'banner') {
+      const b = await readBanner(env);
+      const live = b.active && b.headline;
+      return json(live ? { active: true, headline: b.headline, context: b.context, severity: b.severity, ctaText: b.ctaText, ctaUrl: b.ctaUrl, updatedAt: b.updatedAt } : { active: false },
+        200, { 'Cache-Control': 'public, max-age=15, s-maxage=15' });
+    }
+    if (resource === 'resources') {
+      const { page, limit, offset } = parsePaging(url);
+      const where = ["deleted_at IS NULL AND status = 'published'"]; const binds = [];
+      const kind = url.searchParams.get('kind');
+      if (kind === 'syllabus' || kind === 'pyq') { where.push('kind = ?'); binds.push(kind); }
+      const exam = (url.searchParams.get('exam') || '').slice(0, 100);
+      if (exam) { where.push('exam = ?'); binds.push(exam); }
+      const w = where.join(' AND ');
+      const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM resources WHERE ${w}`).bind(...binds).first()).n;
+      const { results } = await env.DB.prepare(
+        `SELECT id, kind, title, exam, year, description, media_key, published_at FROM resources WHERE ${w} ORDER BY year DESC, published_at DESC LIMIT ? OFFSET ?`
+      ).bind(...binds, limit, offset).all();
+      return json({ items: results.map(({ media_key, ...r }) => ({ ...r, file_url: media(media_key) })), page, limit, total }, 200, { 'Cache-Control': CACHE });
     }
     if (resource === 'mock-tests') {
       if (!key) {

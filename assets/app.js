@@ -2059,17 +2059,20 @@ function initPublicBroadcastBanner() {
   const linkEl = document.getElementById('broadcast-link');
   const closeBtn = document.getElementById('broadcast-close');
 
-  try {
-    const raw = localStorage.getItem('cso_active_announcement');
-    if (!raw) return;
+  // Source of truth is D1 (/api/content/banner), edited from the admin suite.
+  fetch('/api/content/banner', { credentials: 'same-origin' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { if (d) renderBannerData(d); })
+    .catch(function () {});
 
-    const data = JSON.parse(raw);
+  function renderBannerData(data) {
+  try {
     const isActive = data && (data.isActive === true || data.active === true);
     const alertText = data && (data.headline || data.text);
     if (!data || !isActive || !alertText) return;
 
     // Check if dismissed in this session
-    const dismissedKey = 'cso_dismissed_announcement_' + (data.id || data.publishedAt || data.timestamp || alertText);
+    const dismissedKey = 'cso_dismissed_announcement_' + (data.id || data.updatedAt || data.publishedAt || data.timestamp || alertText);
     if (sessionStorage.getItem(dismissedKey) || sessionStorage.getItem('cso_dismissed_' + (data.timestamp || alertText))) return;
 
     const sev = (data.severity || data.type || 'info').toLowerCase();
@@ -2094,7 +2097,7 @@ function initPublicBroadcastBanner() {
     }
 
     if (linkEl) {
-      const targetLink = data.link || data.ctaLink || data.url;
+      const targetLink = data.link || data.ctaLink || data.ctaUrl || data.url;
       if (targetLink && typeof targetLink === 'string' && targetLink.trim() !== '' && targetLink !== '#') {
         linkEl.href = targetLink.trim();
         linkEl.textContent = data.ctaText || 'View details →';
@@ -2117,6 +2120,7 @@ function initPublicBroadcastBanner() {
     }
   } catch (err) {
     console.warn('Error rendering broadcast banner', err);
+  }
   }
 }
 

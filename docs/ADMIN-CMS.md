@@ -1,11 +1,35 @@
-# Admin CMS & Content Portal
+# Admin CMS & Master Command Suite
 
-Protected `/admin/` portal for publishing **current affairs**, **job alerts** and **mock tests** to D1, with media in R2.
+`/admin/` is the **Master Command Suite (241 modules)**. A set of its modules is wired to the real D1/R2 backend (listed below); the remaining modules are still the original localStorage-backed workspaces. The lightweight single-purpose portal that preceded it is kept at `/admin/portal` (same APIs).
+
+## Live (D1/R2-backed) modules
+Routing lives in `admin/suite-live.js` (`ROUTES`); views are in `admin/cms/cms.js` (mounted via `window.CSOCms.mount`). `renderWorkspaceView()` in `admin/admin.js` calls `CSOLive.render()` first.
+
+| Suite module | Backend |
+|---|---|
+| 01-001 Overview | `GET /api/admin/stats` (content, accounts, sessions, media, resources, audit 24h, open incidents, banner) |
+| 01-004 Recent Activity, 16-012 Security Audit Logs | `GET /api/admin/audit?kind=all|content|security|incident&q=` |
+| 04-001 / 04-004 Current Affairs, 05-008 Recruitment & Jobs (Job Alerts) | `/api/admin/current-affairs`, `/api/admin/jobs`, `/api/admin/preview` (Markdown), `/api/admin/media/upload` (R2 cover image / notification PDF) |
+| 05-010 Syllabus, 05-011 PYQ | `/api/admin/resources` (table `resources`) + R2 upload |
+| 05-012 / 05-014 Mock Tests | `/api/admin/mock-tests` (+ questions, CSV/JSON dry-run import) |
+| 07-001 / 07-004 / 07-005 Files, PDFs, Images | `GET /api/admin/media`, upload |
+| 09-001 / 09-006 Accounts & Registrations (admin only) | `GET /api/admin/users` (joins `candidates`), `PUT /api/admin/users/:id/role` |
+| 04-005 / 10-011 Announcement Banners, Quick Actions → Flash broadcast | `GET/PUT /api/admin/banner` → `site_settings` → public `GET /api/content/banner` |
+| 16-013 Incident Response | `/api/admin/incidents` (stored in `audit_log` as `incident.<severity>`; `…/:id/resolve`) |
+
+The public homepage (`index.html`) and `assets/app.js` read the banner from `/api/content/banner` (cache 15 s, re-polled every 60 s). Banner text is rendered with `textContent` (never `innerHTML`). The old `cso_active_announcement` localStorage key is no longer read by the public site.
+
+## CSP compliance of the suite
+`/admin/**` is served with one strict policy (`script-src 'self'; style-src 'self'`, no CDN, no `unsafe-*`). To get there:
+- Tailwind is **compiled** (`admin/suite.css`) instead of the CDN runtime; fonts fall back to the system stack. Rebuild after changing classes: `node scripts/build-admin-css.mjs` (also regenerates `admin/cms/cms-embed.css`, the scoped copy of `cms.css`). Tailwind scans `admin/index.html`, `admin/admin.js`, `admin/cms/cms.js`, `admin/suite-live.js`.
+- `admin.js` templates emit `data-onclick="fn('x')"` / `data-style="margin-left: 8px"` instead of the blocked native attributes. `admin/suite-boot.js` applies `data-style` through the CSSOM and dispatches `data-onclick` to a **whitelist** of globals (no `eval`). New templates must use the `data-*` forms.
+- Inline `<script>`/`<style>` blocks were moved to files; the old client-side token guard was removed.
+Static assets under `/admin/` use `Cache-Control: private, no-cache` (revalidated through the role gate); HTML and API stay `no-store`.
 
 ## Architecture
 - Worker `_worker.js` dispatches: `/admin/*` → `functions/_lib/admin-pages.js` (server-side role gate + headers), `/api/admin/*` → `functions/api/admin/_router.js`, `/api/content/*` → `functions/api/content/_public.js`, `/api/media/*` → `functions/api/media/_serve.js`.
 - Roles live in `users.role` (`candidate` default, `editor`, `admin`) and are re-read on every request (demotion is immediate). `sessions.role` is ignored.
-- `/admin/` and `/admin/cms/*`: editor + admin, strict CSP (`script-src 'self'`). The pre-existing console (`/admin/legacy`, `/admin/admin.js`, …) is **admin-only** with a looser CSP (it needs inline scripts + Tailwind CDN). TODO: migrate it to the strict CSP.
+- Everything under `/admin/` (suite, assets, portal): editor + admin, strict CSP. Only `/admin/data/legacy-api/` (old static fixtures) is admin-only. Per-feature rights are enforced by the API (`/api/admin/users` is admin-only, so editors see a notice in the accounts module). `/admin/legacy` 301-redirects to `/admin/`.
 - The old client-side token guard and the hard-coded login in `admin/login.html` were removed; `/admin/login` now uses the normal `/api/auth/login` and then checks `/api/admin/session`. The static fake API (`api/admin/*`) moved to `admin/data/legacy-api/` (admin-only); `api/admin/index.js` was deleted.
 - The Worker now returns 404 for `/functions`, `/migrations`, `/scripts`, `/docs`, `schema.sql`, `wrangler.*` (the assets directory is the repo root).
 - Mutations require same-origin `Origin`/`Referer` **and** header `X-CSO-CSRF: 1`. Writes are rate-limited in D1 (120/5 min per user; uploads 30/10 min). Every change is written to `audit_log`.
@@ -18,7 +42,8 @@ wrangler r2 bucket create cso-media          # name must match wrangler.json "ME
 # 2. Migrations — LOCAL
 wrangler d1 migrations apply cso-database --local
 
-# 3. Migrations — REMOTE (only with approval; run BEFORE deploying the new Worker,
+# 3. Migrations — REMOTE (0004 adds site_settings + resources; no ALTERs, safe to re-run)
+#     (only with approval; run BEFORE deploying the new Worker,
 #    because login now selects users.role)
 wrangler d1 migrations list cso-database --remote
 wrangler d1 migrations apply cso-database --remote
@@ -38,7 +63,7 @@ Use `--local` for local testing. Afterwards, admins can promote editors in **Use
 ```bash
 wrangler dev --local --port 8799 --compatibility-date 2026-10-19
 node scripts/seed-local-users.mjs > /tmp/seed.sql && wrangler d1 execute cso-database --local --file /tmp/seed.sql   # admin@/editor@/cand@test.local, pw Test-Pass-12345
-node scripts/verify-admin-cms.mjs        # 51 integration checks
+node scripts/verify-admin-cms.mjs        # 84 integration checks
 ```
 
 ## Statuses & scheduling
@@ -64,7 +89,12 @@ Errors: `{ "error": "message", "code": "CODE" }` (+ `fields` for `VALIDATION_ERR
 | `PUT/DELETE /api/admin/questions/:id` | |
 | `POST /api/admin/mock-tests/:id/import` | `{rows, dry_run (default true), skip_invalid}`; max 500 rows |
 | `POST /api/admin/media/upload` | multipart `file`; JPEG/PNG/WebP ≤ 5 MB, PDF ≤ 15 MB; magic bytes verified |
-| `GET /api/admin/users`, `PUT /api/admin/users/:id/role` | **admin only** |
+| `GET /api/admin/users?q&role`, `PUT /api/admin/users/:id/role` | **admin only**; list joins candidate profile (name, phone, district, last login) |
+| `GET/PUT /api/admin/banner` | homepage broadcast banner `{active, headline, context, severity: info\|notice\|urgent, ctaText, ctaUrl}` |
+| `GET/POST/PUT/DELETE /api/admin/resources[/:id]` | syllabus / PYQ (`kind`, `title`, `exam`, `year`, `media_key`, `status` draft\|published) |
+| `GET /api/admin/media?kind&page` | R2 asset library |
+| `GET/POST /api/admin/incidents`, `POST …/:id/resolve` | incident stream (audit_log based) |
+| `GET /api/admin/audit?kind&q` | `kind` = all, content, security, incident |
 
 ### Public
 | Path | Notes |
@@ -72,6 +102,8 @@ Errors: `{ "error": "message", "code": "CODE" }` (+ `fields` for `VALIDATION_ERR
 | `GET /api/content/current-affairs[/:slug]` | `page, limit, category, q` |
 | `GET /api/content/jobs[/:slug]` | `+ state` |
 | `GET /api/content/mock-tests[/:slug-or-id]` | detail **omits correct answers/explanations** (a future test engine should grade server-side) |
+| `GET /api/content/banner` | `{active:false}` or the live banner; `max-age=15` |
+| `GET /api/content/resources?kind&exam` | published syllabus/PYQ with `file_url` |
 | `GET /api/media/:uuid.ext` | `Cache-Control: public, max-age=31536000, immutable` |
 
 List/detail: `Cache-Control: public, max-age=60, s-maxage=300`.
@@ -86,7 +118,8 @@ Not wired yet to keep risk low. Example: `fetch('/api/content/jobs?limit=10').th
 - [ ] Cover image and PDF upload (drag-drop and click); a renamed `.exe` → `.png` is rejected.
 - [ ] Mock test: add a question, bulk-import a CSV with one bad row, see the preview, import valid rows, publish.
 - [ ] Scheduled item stays hidden, then appears in `/api/content/*` after its time.
-- [ ] Editor cannot open Users & roles or the legacy console; admin can.
+- [ ] Editor sees a notice (and the API returns 403) in Candidate Accounts; admin can list accounts and change roles.
+- [ ] Banner saved in the suite appears on the homepage within ~15 s and disappears when deactivated.
 - [ ] Audit log lists each action with actor and IP.
 - [ ] Keyboard-only: skip link, nav, modals (Esc closes), upload zone (Enter/Space).
 - [ ] Existing login, password reset, dashboard sync and offline mode still work.

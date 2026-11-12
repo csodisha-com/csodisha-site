@@ -6,6 +6,7 @@ import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
 import { handleUpload } from './_media.js';
+import { handleBanner, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
 
 export async function handleAdminApi(request, env) {
   try {
@@ -46,7 +47,16 @@ export async function handleAdminApi(request, env) {
       case 'questions':
         if (id && !sub) return await handleQuestion(request, env, actor, id);
         break;
+      case 'banner':
+        if (!id) return await handleBanner(request, env, actor);
+        break;
+      case 'resources':
+        if (!sub) return await handleResources(request, env, actor, id);
+        break;
+      case 'incidents':
+        return await handleIncidents(request, env, actor, id, sub);
       case 'media':
+        if (!id && method === 'GET') return await handleMediaList(request, env);
         if (id === 'upload' && method === 'POST') {
           await rateLimit(env, `admin-upload:${actor.userId}`, 30, 600);
           return await handleUpload(request, env, actor);
@@ -74,7 +84,9 @@ async function handleStats(env) {
     `SELECT a.id, a.action, a.target_type, a.target_id, a.metadata_json, a.created_at, u.email AS actor_email
      FROM audit_log a LEFT JOIN users u ON u.id = a.actor_user_id ORDER BY a.id DESC LIMIT 10`
   ).all();
+  const extra = await extraStats(env);
   return json({
+    ...extra,
     current_affairs: { total: ca, live: caPub }, jobs: { total: jobs, live: jobsPub },
     mock_tests: { total: tests, live: testsPub }, scheduled_pending: scheduled, recent_audit: results
   });
@@ -83,11 +95,21 @@ async function handleStats(env) {
 async function handleAudit(request, env) {
   const url = new URL(request.url);
   const { page, limit, offset } = parsePaging(url, 25, 100);
-  const total = (await env.DB.prepare('SELECT COUNT(*) AS n FROM audit_log').first()).n;
+  const kind = url.searchParams.get('kind') || 'all';
+  const KINDS = {
+    all: '1=1', incident: "a.action LIKE 'incident.%'", security: "(a.action LIKE 'incident.%' OR a.action LIKE 'user.%')",
+    content: "a.action NOT LIKE 'incident.%' AND a.action NOT LIKE 'user.%'"
+  };
+  if (!KINDS[kind]) throw validationError({ kind: 'Unknown filter' });
+  const where = [KINDS[kind]]; const binds = [];
+  const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
+  if (q) { where.push("(a.action LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\')"); const l = likeEscape(q); binds.push(l, l); }
+  const w = where.join(' AND ');
+  const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log a LEFT JOIN users u ON u.id = a.actor_user_id WHERE ${w}`).bind(...binds).first()).n;
   const { results } = await env.DB.prepare(
     `SELECT a.id, a.action, a.target_type, a.target_id, a.metadata_json, a.ip_address, a.created_at, u.email AS actor_email
-     FROM audit_log a LEFT JOIN users u ON u.id = a.actor_user_id ORDER BY a.id DESC LIMIT ? OFFSET ?`
-  ).bind(limit, offset).all();
+     FROM audit_log a LEFT JOIN users u ON u.id = a.actor_user_id WHERE ${w} ORDER BY a.id DESC LIMIT ? OFFSET ?`
+  ).bind(...binds, limit, offset).all();
   return json({ items: results, page, limit, total });
 }
 
@@ -98,15 +120,21 @@ async function handleUsers(request, env, actor, id, sub) {
     const q = (url.searchParams.get('q') || '').trim().slice(0, 100);
     const role = url.searchParams.get('role');
     const where = []; const binds = [];
-    if (q) { where.push("email LIKE ? ESCAPE '\\'"); binds.push(likeEscape(q)); }
+    if (q) {
+      where.push("(u.email LIKE ? ESCAPE '\\' OR c.full_name LIKE ? ESCAPE '\\' OR c.phone LIKE ? ESCAPE '\\' OR c.district LIKE ? ESCAPE '\\')");
+      const l = likeEscape(q); binds.push(l, l, l, l);
+    }
     if (role) {
       if (!ALL_ROLES.includes(role)) throw validationError({ role: 'Unknown role' });
-      where.push('role = ?'); binds.push(role);
+      where.push('u.role = ?'); binds.push(role);
     }
     const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
-    const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM users ${w}`).bind(...binds).first()).n;
+    const from = 'FROM users u LEFT JOIN candidates c ON c.id = u.id OR c.email = u.email';
+    const total = (await env.DB.prepare(`SELECT COUNT(DISTINCT u.id) AS n ${from} ${w}`).bind(...binds).first()).n;
     const { results } = await env.DB.prepare(
-      `SELECT id, email, role, created_at FROM users ${w} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      `SELECT u.id, u.email, u.role, u.created_at, MAX(c.full_name) AS full_name, MAX(c.phone) AS phone, MAX(c.district) AS district,
+         MAX(c.last_login_at) AS last_login_at
+       ${from} ${w} GROUP BY u.id ORDER BY u.created_at DESC LIMIT ? OFFSET ?`
     ).bind(...binds, limit, offset).all();
     return json({ items: results, page, limit, total });
   }

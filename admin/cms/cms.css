@@ -78,3 +78,16 @@ tr:last-child td{border-bottom:0}
   .grid2,.grid3{grid-template-columns:1fr}
   .who{display:none}
 }
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tab{padding:6px 14px;border-radius:8px;border:1px solid var(--line);color:var(--txt);text-decoration:none;font-size:13px}
+.tab[aria-selected=true]{background:var(--em);border-color:var(--em);color:#fff}
+.bad{color:#fca5a5}
+.check{display:flex;align-items:center;gap:8px;font-weight:600}
+.check input{width:auto}
+.banner-preview{border-radius:8px;padding:10px 14px;border:1px solid #10b981;background:#064e3b;color:#ecfdf5}
+.banner-preview.sev-notice{background:#78350f;border-color:#f59e0b;color:#fffbeb}
+.banner-preview.sev-urgent{background:#7f1d1d;border-color:#ef4444;color:#fef2f2}
+.banner-preview .cta{font-weight:700;text-decoration:underline}
+.badge.sev-low{color:#6ee7b7;border-color:#065f46}
+.badge.sev-medium{color:var(--amb);border-color:#92400e}
+.badge.sev-high,.badge.sev-critical{color:#fca5a5;border-color:var(--red)}

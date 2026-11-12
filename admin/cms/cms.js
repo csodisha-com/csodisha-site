@@ -2,6 +2,9 @@
   'use strict';
   var main = document.getElementById('main');
   var me = null;
+  var embedded = false;          // true when mounted inside the Master Command Suite
+  var curPath = '';              // embedded-mode route (standalone uses location.hash)
+  var embedGroup = null;         // optional tab group for embedded views
 
   /* ---------- helpers ---------- */
   function el(tag, attrs, kids) {
@@ -17,9 +20,19 @@
     [].concat(kids || []).forEach(function (c) { if (c !== null && c !== undefined && c !== false) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
     return n;
   }
+  function overlayHost() {
+    if (!embedded) return document.body;
+    var h = document.getElementById('cmsOverlayHost');
+    if (!h) { h = el('div', { id: 'cmsOverlayHost', class: 'cms-embed' }); document.body.appendChild(h); }
+    return h;
+  }
+  function go(path) {
+    if (embedded) { curPath = path; route(); } else location.hash = '#/' + path.replace(/^\//, '');
+  }
   function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
   function toast(msg, bad) {
     var t = el('div', { class: 'toast' + (bad ? ' bad' : ''), text: msg });
+    if (embedded && typeof window.showToast === 'function') { window.showToast(msg, bad ? 'crimson' : 'success'); return; }
     document.getElementById('toasts').appendChild(t);
     setTimeout(function () { t.remove(); }, 4500);
   }
@@ -58,7 +71,7 @@
         el('div', { class: 'actions' }, [el('button', { class: 'btn', text: 'Cancel', onclick: function () { done(false); } }), ok])
       ]));
       document.addEventListener('keydown', onKey);
-      document.body.appendChild(ov); ok.focus();
+      overlayHost().appendChild(ov); ok.focus();
     });
   }
   function scheduleModal() {
@@ -71,7 +84,7 @@
           el('button', { class: 'btn', text: 'Cancel', onclick: function () { done(null); } }),
           el('button', { class: 'btn primary', text: 'Schedule', onclick: function () { done(inp.value ? new Date(inp.value).toISOString() : null); } })])
       ]));
-      document.body.appendChild(ov); inp.focus();
+      overlayHost().appendChild(ov); inp.focus();
     });
   }
   function field(label, input, id, hint) {
@@ -97,11 +110,23 @@
       el('button', { class: 'btn sm', text: 'Next →', disabled: state.page >= pages, onclick: function () { state.page++; onChange(); } })
     ]);
   }
-  function setTitle(t) { main.appendChild(el('h1', { text: t })); document.title = t + ' — CS Odisha Admin'; }
+  function setTitle(t) {
+    if (embedded) { main.appendChild(embedTabs()); return; }
+    main.appendChild(el('h1', { text: t })); document.title = t + ' — CS Odisha Admin';
+  }
+  function embedTabs() {
+    var wrap = el('div', { class: 'tabs', role: 'tablist' });
+    if (!embedGroup) return wrap;
+    var cur = curPath.replace(/^\//, '').split('/')[0];
+    embedGroup.forEach(function (t) {
+      wrap.appendChild(el('a', { class: 'tab', role: 'tab', href: '#/' + t[0], 'aria-selected': String(t[0] === cur), text: t[1] }));
+    });
+    return wrap;
+  }
 
   /* ---------- uploader ---------- */
   function uploader(id, kind, current, onChange) {
-    var accept = kind === 'pdf' ? 'application/pdf' : 'image/jpeg,image/png,image/webp';
+    var accept = kind === 'pdf' ? 'application/pdf' : kind === 'any' ? 'application/pdf,image/jpeg,image/png,image/webp' : 'image/jpeg,image/png,image/webp';
     var status = el('div', { class: 'hint', text: current ? 'Current file: ' + current : 'No file selected' });
     var input = el('input', { type: 'file', accept: accept, id: id });
     async function send(file) {
@@ -114,42 +139,221 @@
         onChange(d.key);
       } catch (e) { status.textContent = e.message; toast(e.message, true); }
     }
-    var zone = el('div', { class: 'drop', tabindex: '0', role: 'button', 'aria-label': 'Upload ' + (kind === 'pdf' ? 'PDF' : 'image') + ': click or drop a file',
+    var zone = el('div', { class: 'drop', tabindex: '0', role: 'button', 'aria-label': 'Upload ' + (kind === 'pdf' ? 'PDF' : kind === 'any' ? 'file' : 'image') + ': click or drop a file',
       onclick: function () { input.click(); },
       onkeydown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } },
       ondragover: function (e) { e.preventDefault(); zone.classList.add('over'); },
       ondragleave: function () { zone.classList.remove('over'); },
       ondrop: function (e) { e.preventDefault(); zone.classList.remove('over'); send(e.dataTransfer.files[0]); }
-    }, [kind === 'pdf' ? 'Drop a PDF here or click to browse (max 15 MB)' : 'Drop an image here or click to browse (JPEG/PNG/WebP, max 5 MB)', input]);
+    }, [kind === 'any' ? 'Drop a PDF or image here or click to browse (PDF ≤ 15 MB, images ≤ 5 MB)' : kind === 'pdf' ? 'Drop a PDF here or click to browse (max 15 MB)' : 'Drop an image here or click to browse (JPEG/PNG/WebP, max 5 MB)', input]);
     input.addEventListener('change', function () { send(input.files[0]); });
     var clearBtn = el('button', { type: 'button', class: 'btn sm', text: 'Remove file', onclick: function () { onChange(''); status.textContent = 'No file selected'; } });
     return el('div', {}, [zone, status, clearBtn]);
   }
 
-  /* ---------- dashboard ---------- */
+  /* ---------- dashboard / telemetry ---------- */
+  function fmtBytes(n) { n = Number(n) || 0; return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
+  function stat(label, value, sub) { return el('div', { class: 'card' }, [el('div', { class: 'muted', text: label }), el('div', { class: 'num', text: String(value) }), sub ? el('div', { class: 'muted', text: sub }) : null]); }
   async function viewDashboard() {
     setTitle('Overview');
     var s = await api('GET', 'stats');
-    function card(label, o) { return el('div', { class: 'card' }, [el('div', { class: 'muted', text: label }), el('div', { class: 'num', text: String(o.live) }), el('div', { class: 'muted', text: 'live of ' + o.total + ' total' })]); }
+    function card(label, o) { return stat(label, o.live, 'live of ' + o.total + ' total'); }
+    var acc = s.accounts || {};
+    main.appendChild(el('h2', { text: 'Live D1 telemetry' }));
     main.appendChild(el('div', { class: 'cards' }, [card('Current affairs', s.current_affairs), card('Job alerts', s.jobs), card('Mock tests', s.mock_tests),
-      el('div', { class: 'card' }, [el('div', { class: 'muted', text: 'Scheduled (pending)' }), el('div', { class: 'num', text: String(s.scheduled_pending) })])]));
+      stat('Scheduled (pending)', s.scheduled_pending),
+      stat('Candidate accounts', acc.total, '+' + acc.new_24h + ' today · +' + acc.new_7d + ' this week'),
+      stat('Staff accounts', acc.staff, acc.active_sessions + ' active sessions'),
+      stat('Media in R2', (s.media || {}).total, fmtBytes((s.media || {}).bytes)),
+      stat('Syllabus / PYQ', (s.resources || {}).live, 'live of ' + (s.resources || {}).total),
+      stat('Audit events (24h)', s.audit_24h),
+      stat('Open incidents', s.open_incidents, s.open_incidents ? 'needs attention' : 'all clear')]));
+    var b = s.banner || {};
+    main.appendChild(el('h2', { text: 'Homepage broadcast banner' }));
+    main.appendChild(el('div', { class: 'card' }, [
+      el('div', {}, [badge(b.active ? 'published' : 'draft'), ' ', el('strong', { text: b.active ? b.headline : 'No banner is live on the homepage' })]),
+      el('div', { class: 'actions' }, [el('a', { class: 'btn sm', href: '#/banner', text: b.active ? 'Edit / deactivate banner' : 'Compose banner' })])]));
     main.appendChild(el('h2', { text: 'Recent activity' }));
     main.appendChild(auditTable(s.recent_audit));
   }
   function auditTable(items) {
     var tb = el('tbody');
     items.forEach(function (a) {
-      tb.appendChild(el('tr', {}, [el('td', { text: fmtDate(a.created_at) }), el('td', { text: a.actor_email || '—' }), el('td', { text: a.action }),
+      var sev = /^incident\.(high|critical)/.test(a.action) ? 'bad' : '';
+      tb.appendChild(el('tr', {}, [el('td', { text: fmtDate(a.created_at) }), el('td', { text: a.actor_email || '—' }), el('td', { class: sev, text: a.action }),
         el('td', { text: (a.target_type || '') + (a.target_id ? ' ' + String(a.target_id).slice(0, 8) : '') }), el('td', { text: a.metadata_json || '' })]));
     });
     if (!items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '5', class: 'muted', text: 'No activity yet.' })));
     return el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: 'Audit log' }),
       el('thead', {}, el('tr', {}, ['When', 'Who', 'Action', 'Target', 'Details'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb]));
   }
-  async function viewAudit() {
+  async function viewAudit(kind) {
     setTitle('Audit log');
-    var st = { page: 1, limit: 25 }; var box = el('div'); main.appendChild(box);
-    async function load() { var d = await api('GET', 'audit?page=' + st.page + '&limit=' + st.limit); clear(box).appendChild(auditTable(d.items)); box.appendChild(pager(st, d.total, load)); }
+    var st = { page: 1, limit: 25, kind: kind || 'all', q: '' }; var box = el('div'); var t;
+    var sel = el('select', { 'aria-label': 'Event type' }, [['all', 'All events'], ['content', 'Content & media'], ['security', 'Security (roles + incidents)'], ['incident', 'Incidents only']]
+      .map(function (o) { return el('option', { value: o[0], text: o[1], selected: o[0] === st.kind }); }));
+    var q = el('input', { type: 'search', placeholder: 'Filter by action or actor…', 'aria-label': 'Filter audit events' });
+    sel.addEventListener('change', function () { st.kind = sel.value; st.page = 1; load(); });
+    q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = q.value; st.page = 1; load(); }, 300); });
+    var live = el('button', { class: 'btn sm', text: 'Refresh', onclick: function () { load(); } });
+    main.appendChild(el('div', { class: 'toolbar' }, [sel, q, live])); main.appendChild(box);
+    async function load() {
+      var d = await api('GET', 'audit?page=' + st.page + '&limit=' + st.limit + '&kind=' + st.kind + '&q=' + encodeURIComponent(st.q));
+      clear(box).appendChild(auditTable(d.items)); box.appendChild(pager(st, d.total, load));
+    }
+    await load();
+  }
+
+  /* ---------- incidents ---------- */
+  async function viewIncidents() {
+    setTitle('Incidents');
+    var st = { page: 1, limit: 20 }; var box = el('div'); var form = el('form', { novalidate: true, class: 'panel' });
+    var sev = el('select', { id: 'f-severity' }, ['low', 'medium', 'high', 'critical'].map(function (x) { return el('option', { value: x, text: x }); }));
+    var title = el('input', { id: 'f-title', type: 'text', maxlength: '150' });
+    var details = el('textarea', { id: 'f-details' });
+    var save = el('button', { type: 'submit', class: 'btn primary', text: 'Log incident' });
+    form.appendChild(el('h2', { text: 'Log a new incident' }));
+    form.appendChild(el('div', { class: 'grid2' }, [field('Severity', sev, 'f-severity'), field('Title', title, 'f-title')]));
+    form.appendChild(field('Details', details, 'f-details'));
+    form.appendChild(el('div', { class: 'actions' }, save));
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault(); save.disabled = true; showErrors(form, {});
+      try { await api('POST', 'incidents', { severity: sev.value, title: title.value, details: details.value }); toast('Incident logged'); title.value = ''; details.value = ''; st.page = 1; await load(); }
+      catch (err) { showErrors(form, err.fields); toast(err.message, true); }
+      save.disabled = false;
+    });
+    main.appendChild(form); main.appendChild(box);
+    async function load() {
+      var d = await api('GET', 'incidents?page=' + st.page + '&limit=' + st.limit); var tb = el('tbody');
+      d.items.forEach(function (i) {
+        var act = i.resolved ? el('span', { class: 'muted', text: 'Resolved' }) : el('button', { class: 'btn sm', text: 'Mark resolved', onclick: async function () {
+          try { await api('POST', 'incidents/' + i.id + '/resolve', {}); toast('Incident resolved'); load(); } catch (e) { toast(e.message, true); } } });
+        tb.appendChild(el('tr', {}, [el('td', { text: fmtDate(i.created_at) }), el('td', {}, el('span', { class: 'badge sev-' + i.severity, text: i.severity })),
+          el('td', {}, [el('strong', { text: i.title }), i.details ? el('div', { class: 'hint', text: i.details }) : null]), el('td', { text: i.actor_email || '—' }), el('td', {}, act)]));
+      });
+      if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '5', class: 'muted', text: 'No incidents logged.' })));
+      clear(box).appendChild(el('p', { class: d.open ? 'bad' : 'muted', text: d.open + ' open incident(s)' }));
+      box.appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: 'Incident stream' }),
+        el('thead', {}, el('tr', {}, ['When', 'Severity', 'Incident', 'Reported by', 'Status'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+      box.appendChild(pager(st, d.total, load));
+    }
+    await load();
+  }
+
+  /* ---------- homepage live broadcast banner ---------- */
+  async function viewBanner() {
+    setTitle('Homepage banner');
+    var b = await api('GET', 'banner');
+    var form = el('form', { novalidate: true, class: 'panel' });
+    var active = el('input', { id: 'f-active', type: 'checkbox' }); active.checked = !!b.active;
+    var headline = el('input', { id: 'f-headline', type: 'text', maxlength: '160' }); headline.value = b.headline || '';
+    var context = el('textarea', { id: 'f-context' }); context.value = b.context || '';
+    var sev = el('select', { id: 'f-severity' }, [['info', 'Info (green)'], ['notice', 'Notice (amber)'], ['urgent', 'Urgent (red)']].map(function (o) { return el('option', { value: o[0], text: o[1], selected: b.severity === o[0] }); }));
+    var ctaText = el('input', { id: 'f-ctaText', type: 'text', maxlength: '40' }); ctaText.value = b.ctaText || '';
+    var ctaUrl = el('input', { id: 'f-ctaUrl', type: 'text', maxlength: '500', placeholder: '/jobs-careers/ or https://…' }); ctaUrl.value = b.ctaUrl || '';
+    var preview = el('div', { class: 'banner-preview', 'aria-live': 'polite' });
+    function renderPreview() {
+      clear(preview);
+      if (!headline.value) { preview.appendChild(el('span', { class: 'muted', text: 'Preview appears here' })); return; }
+      preview.className = 'banner-preview sev-' + sev.value;
+      preview.appendChild(el('strong', { text: headline.value }));
+      if (context.value) preview.appendChild(el('span', { text: ' ' + context.value }));
+      if (ctaText.value) preview.appendChild(el('span', { class: 'cta', text: ' ' + ctaText.value + ' →' }));
+    }
+    [headline, context, sev, ctaText].forEach(function (i) { i.addEventListener('input', renderPreview); i.addEventListener('change', renderPreview); });
+    renderPreview();
+    var save = el('button', { type: 'submit', class: 'btn primary', text: 'Save & publish to homepage' });
+    form.appendChild(el('div', {}, [el('label', { class: 'check' }, [active, ' Banner is live on csodisha.com'])]));
+    form.appendChild(field('Headline', headline, 'f-headline'));
+    form.appendChild(field('Context (optional)', context, 'f-context'));
+    form.appendChild(el('div', { class: 'grid2' }, [field('Severity', sev, 'f-severity'), el('div')]));
+    form.appendChild(el('div', { class: 'grid2' }, [field('Button text', ctaText, 'f-ctaText'), field('Button link', ctaUrl, 'f-ctaUrl')]));
+    form.appendChild(el('h2', { text: 'Preview' })); form.appendChild(preview);
+    form.appendChild(el('p', { class: 'hint', text: b.updatedAt ? 'Last saved ' + fmtDate(b.updatedAt) + ' (UTC server time). Visitors see changes within ~15 seconds.' : 'Never published.' }));
+    form.appendChild(el('div', { class: 'actions' }, [save, el('a', { class: 'btn', href: '/', target: '_blank', rel: 'noopener', text: 'Open homepage' })]));
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault(); save.disabled = true; showErrors(form, {});
+      try { await api('PUT', 'banner', { active: active.checked, headline: headline.value, context: context.value, severity: sev.value, ctaText: ctaText.value, ctaUrl: ctaUrl.value }); toast(active.checked ? 'Banner is live' : 'Banner saved (inactive)'); }
+      catch (err) { showErrors(form, err.fields); toast(err.message, true); }
+      save.disabled = false;
+    });
+    main.appendChild(form);
+  }
+
+  /* ---------- media library (R2) ---------- */
+  async function viewMedia() {
+    setTitle('Media');
+    var st = { page: 1, limit: 24, kind: '' }; var box = el('div');
+    var sel = el('select', { 'aria-label': 'Filter by type' }, [['', 'All files'], ['image', 'Images'], ['pdf', 'PDFs']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    sel.addEventListener('change', function () { st.kind = sel.value; st.page = 1; load(); });
+    main.appendChild(el('div', { class: 'panel' }, [el('label', { text: 'Upload to R2' }),
+      uploader('f-media-up', 'any', '', function (k) { if (k) { toast('Uploaded'); load(); } })]));
+    main.appendChild(el('div', { class: 'toolbar' }, sel)); main.appendChild(box);
+    async function load() {
+      var d = await api('GET', 'media?page=' + st.page + '&limit=' + st.limit + (st.kind ? '&kind=' + st.kind : '')); var tb = el('tbody');
+      d.items.forEach(function (m) {
+        tb.appendChild(el('tr', {}, [el('td', {}, el('a', { href: m.url, target: '_blank', rel: 'noopener', text: m.original_name || m.object_key })), el('td', { text: m.kind }), el('td', { text: fmtBytes(m.size_bytes) }), el('td', { text: fmtDate(m.created_at) }),
+          el('td', {}, el('code', { text: m.object_key.slice(0, 13) + '…' }))]));
+      });
+      if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '5', class: 'muted', text: 'No files uploaded yet.' })));
+      clear(box).appendChild(el('p', { class: 'muted', text: d.total + ' files · ' + fmtBytes(d.total_bytes) + ' stored in R2' }));
+      box.appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['File', 'Type', 'Size', 'Uploaded', 'Key'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+      box.appendChild(pager(st, d.total, load));
+    }
+    await load();
+  }
+
+  /* ---------- syllabus & PYQ resources (R2 PDF / image) ---------- */
+  async function viewResources(kind) {
+    var label = kind === 'syllabus' ? 'Syllabus & exam patterns' : 'Previous-year questions (PYQ)';
+    setTitle(label);
+    var st = { page: 1, limit: 20, q: '' }; var box = el('div'); var t;
+    var q = el('input', { type: 'search', placeholder: 'Search title or exam…', 'aria-label': 'Search' });
+    q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.q = q.value; st.page = 1; load(); }, 300); });
+    main.appendChild(el('div', { class: 'toolbar' }, [q, el('span', { class: 'spacer' }), el('button', { class: 'btn primary', text: '+ Add ' + (kind === 'syllabus' ? 'syllabus' : 'question paper'), onclick: function () { form(null); } })]));
+    main.appendChild(box);
+    function form(item) {
+      var isNew = !item; var key = item ? item.media_key : '';
+      var f = el('form', { novalidate: true });
+      var title = el('input', { id: 'f-title', type: 'text' }); title.value = item ? item.title : '';
+      var exam = el('input', { id: 'f-exam', type: 'text', placeholder: 'e.g. OSSC CGL' }); exam.value = item ? item.exam || '' : '';
+      var year = el('input', { id: 'f-year', type: 'number', min: '1990', max: '2100' }); year.value = item && item.year ? item.year : '';
+      var desc = el('textarea', { id: 'f-description' }); desc.value = item ? item.description || '' : '';
+      var st2 = el('select', { id: 'f-status' }, ['draft', 'published'].map(function (x) { return el('option', { value: x, text: x[0].toUpperCase() + x.slice(1), selected: item && item.status === x }); }));
+      var save = el('button', { type: 'submit', class: 'btn primary', text: 'Save' });
+      var ov;
+      f.appendChild(el('h2', { text: (isNew ? 'Add ' : 'Edit ') + (kind === 'syllabus' ? 'syllabus' : 'question paper') }));
+      f.appendChild(field('Title', title, 'f-title')); f.appendChild(el('div', { class: 'grid2' }, [field('Exam', exam, 'f-exam'), field('Year', year, 'f-year')]));
+      f.appendChild(field('Description', desc, 'f-description'));
+      f.appendChild(el('div', {}, [el('label', { text: 'File (PDF, or image scan)' }), uploader('f-media_key-up', 'any', key, function (k) { key = k; }), el('div', { class: 'err', 'data-err': 'f-media_key', hidden: true })]));
+      f.appendChild(field('Status', st2, 'f-status'));
+      f.appendChild(el('div', { class: 'actions' }, [save, el('button', { type: 'button', class: 'btn', text: 'Cancel', onclick: function () { ov.remove(); } })]));
+      f.addEventListener('submit', async function (e) {
+        e.preventDefault(); save.disabled = true; showErrors(f, {});
+        var body = { kind: kind, title: title.value, exam: exam.value, year: year.value, description: desc.value, media_key: key, status: st2.value };
+        try { if (isNew) await api('POST', 'resources', body); else await api('PUT', 'resources/' + item.id, body); toast('Saved'); ov.remove(); load(); }
+        catch (err) { showErrors(f, err.fields); toast(err.message, true); }
+        save.disabled = false;
+      });
+      ov = el('div', { class: 'overlay' }, el('div', { class: 'modal wide', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Resource' }, f));
+      overlayHost().appendChild(ov); title.focus();
+    }
+    async function del(r) {
+      if (!(await confirmModal('Delete "' + r.title + '"?', 'It will be removed from the site.', 'Delete', true))) return;
+      try { await api('DELETE', 'resources/' + r.id); toast('Deleted'); load(); } catch (e) { toast(e.message, true); }
+    }
+    async function load() {
+      var d = await api('GET', 'resources?kind=' + kind + '&page=' + st.page + '&limit=' + st.limit + '&q=' + encodeURIComponent(st.q)); var tb = el('tbody');
+      d.items.forEach(function (r) {
+        tb.appendChild(el('tr', {}, [el('td', { text: r.title }), el('td', { text: r.exam || '—' }), el('td', { text: r.year || '—' }), el('td', {}, badge(r.status)), el('td', { text: fmtDate(r.updated_at) }),
+          el('td', {}, el('div', { class: 'actions' }, [el('a', { class: 'btn sm', href: r.file_url, target: '_blank', rel: 'noopener', text: 'Open file' }), el('button', { class: 'btn sm', text: 'Edit', onclick: function () { form(r); } }),
+            el('button', { class: 'btn sm danger', text: 'Delete', 'aria-label': 'Delete ' + r.title, onclick: function () { del(r); } })]))]));
+      });
+      if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '6', class: 'muted', text: 'Nothing here yet.' })));
+      clear(box).appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('caption', { class: 'muted', text: label }),
+        el('thead', {}, el('tr', {}, ['Title', 'Exam', 'Year', 'Status', 'Updated', 'Actions'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+      box.appendChild(pager(st, d.total, load));
+    }
     await load();
   }
 
@@ -259,7 +463,7 @@
       try {
         showErrors(form, {});
         var r = isNew ? await api('POST', T.path, body) : await api('PUT', T.path + '/' + id, body);
-        toast('Saved'); if (isNew) location.hash = '#/' + key + '/' + r.id; else { clear(main); await viewPostForm(key, id); return; }
+        toast('Saved'); if (isNew) go('/' + key + '/' + r.id); else { clear(main); await viewPostForm(key, id); return; }
       } catch (err) { showErrors(form, err.fields); toast(err.message, true); }
       save.disabled = false;
     });
@@ -284,7 +488,7 @@
     form.addEventListener('submit', async function (e) {
       e.preventDefault(); save.disabled = true; showErrors(form, {});
       var body = {}; Object.keys(inputs).forEach(function (k) { body[k] = inputs[k].value; }); Object.assign(body, sb.get());
-      try { var r = isNew ? await api('POST', 'mock-tests', body) : await api('PUT', 'mock-tests/' + id, body); toast('Saved'); if (isNew) location.hash = '#/mock-tests/' + r.id; }
+      try { var r = isNew ? await api('POST', 'mock-tests', body) : await api('PUT', 'mock-tests/' + id, body); toast('Saved'); if (isNew) go('/mock-tests/' + r.id); }
       catch (err) { showErrors(form, err.fields); toast(err.message, true); }
       save.disabled = false;
     });
@@ -336,7 +540,7 @@
       save.disabled = false;
     });
     var ov = el('div', { class: 'overlay' }, el('div', { class: 'modal wide', role: 'dialog', 'aria-modal': 'true', 'aria-label': isNew ? 'Add question' : 'Edit question' }, [el('h2', { text: isNew ? 'Add question' : 'Edit question' }), form]));
-    document.body.appendChild(ov); inputs.question_en.focus();
+    overlayHost().appendChild(ov); inputs.question_en.focus();
   }
 
   /* CSV/JSON import with validation preview */
@@ -392,26 +596,31 @@
     var ov = el('div', { class: 'overlay' }, el('div', { class: 'modal wide', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Bulk import' }, [
       el('h2', { text: 'Bulk import questions' }), el('label', { for: 'imp-text', text: 'CSV or JSON' }), ta, el('div', { class: 'toolbar' }, [file, el('button', { class: 'btn', text: 'Validate', onclick: validate })]), out,
       el('div', { class: 'actions' }, [el('button', { class: 'btn', text: 'Close', onclick: function () { ov.remove(); } }), commit])]));
-    document.body.appendChild(ov);
+    overlayHost().appendChild(ov);
   }
 
-  /* ---------- users (admin only) ---------- */
+  /* ---------- candidate accounts (admin only) ---------- */
   async function viewUsers() {
-    setTitle('Users & roles');
-    var q = el('input', { type: 'search', placeholder: 'Search email…', 'aria-label': 'Search users' }); var box = el('div'); var st = { page: 1, limit: 20 }; var t;
+    setTitle('Candidate accounts');
+    var q = el('input', { type: 'search', placeholder: 'Search email, name, phone, district…', 'aria-label': 'Search accounts' });
+    var roleSel = el('select', { 'aria-label': 'Filter by role' }, [['', 'All roles'], ['candidate', 'Candidates'], ['editor', 'Editors'], ['admin', 'Admins']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    var box = el('div'); var st = { page: 1, limit: 20 }; var t;
     q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { st.page = 1; load(); }, 300); });
-    main.appendChild(el('div', { class: 'toolbar' }, q)); main.appendChild(box);
+    roleSel.addEventListener('change', function () { st.page = 1; load(); });
+    main.appendChild(el('div', { class: 'toolbar' }, [q, roleSel])); main.appendChild(box);
     async function load() {
-      var d = await api('GET', 'users?page=' + st.page + '&limit=' + st.limit + '&q=' + encodeURIComponent(q.value)); var tb = el('tbody');
+      var d = await api('GET', 'users?page=' + st.page + '&limit=' + st.limit + '&q=' + encodeURIComponent(q.value) + (roleSel.value ? '&role=' + roleSel.value : '')); var tb = el('tbody');
       d.items.forEach(function (u) {
         var sel = el('select', { 'aria-label': 'Role for ' + u.email }, ['candidate', 'editor', 'admin'].map(function (r) { return el('option', { value: r, text: r, selected: u.role === r }); }));
         sel.addEventListener('change', async function () {
           if (!(await confirmModal('Change role?', u.email + ' → ' + sel.value, 'Change'))) { sel.value = u.role; return; }
           try { await api('PUT', 'users/' + u.id + '/role', { role: sel.value }); u.role = sel.value; toast('Role updated'); } catch (e) { toast(e.message, true); sel.value = u.role; }
         });
-        tb.appendChild(el('tr', {}, [el('td', { text: u.email }), el('td', {}, sel), el('td', { text: u.created_at ? new Date(u.created_at * 1000).toLocaleDateString() : '—' })]));
+        tb.appendChild(el('tr', {}, [el('td', {}, [el('strong', { text: u.full_name || '—' }), el('div', { class: 'hint', text: u.email })]), el('td', { text: u.phone || '—' }), el('td', { text: u.district || '—' }), el('td', {}, sel),
+          el('td', { text: u.created_at ? new Date(u.created_at * 1000).toLocaleDateString() : '—' }), el('td', { text: u.last_login_at ? fmtDate(String(u.last_login_at)) : '—' })]));
       });
-      clear(box).appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['Email', 'Role', 'Joined'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
+      if (!d.items.length) tb.appendChild(el('tr', {}, el('td', { colspan: '6', class: 'muted', text: 'No accounts match.' })));
+      clear(box).appendChild(el('div', { class: 'table-wrap' }, el('table', {}, [el('thead', {}, el('tr', {}, ['Candidate', 'Phone', 'District', 'Role', 'Joined', 'Last login'].map(function (h) { return el('th', { scope: 'col', text: h }); }))), tb])));
       box.appendChild(pager(st, d.total, load));
     }
     await load();
@@ -420,28 +629,57 @@
   /* ---------- router ---------- */
   function buildNav() {
     var nav = clear(document.getElementById('nav'));
-    [['#/', 'Overview'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/audit', 'Audit log']].concat(me.role === 'admin' ? [['#/users', 'Users & roles'], ['/admin/legacy', 'Legacy console']] : [])
+    [['#/', 'Overview'], ['#/current-affairs', 'Current Affairs'], ['#/jobs', 'Job Alerts'], ['#/mock-tests', 'Mock Tests'], ['#/syllabus', 'Syllabus'], ['#/pyq', 'PYQs'], ['#/media', 'Media'], ['#/banner', 'Homepage banner'], ['#/audit', 'Audit log'], ['#/incidents', 'Incidents']].concat(me.role === 'admin' ? [['#/users', 'Candidate accounts'], ['/admin/', 'Master Command Suite']] : [['/admin/', 'Master Command Suite']])
       .forEach(function (l) { nav.appendChild(el('a', { href: l[0] }, l[1])); });
   }
+  var VIEWS = {
+    dashboard: function () { return viewDashboard(); },
+    audit: function (parts) { return viewAudit(parts[1]); },
+    incidents: function () { return viewIncidents(); },
+    banner: function () { return viewBanner(); },
+    media: function () { return viewMedia(); },
+    syllabus: function () { return viewResources('syllabus'); },
+    pyq: function () { return viewResources('pyq'); },
+    users: function (parts) { return me.role === 'admin' ? viewUsers(parts[1]) : Promise.resolve(forbidden('Candidate accounts are visible to administrators only.')); }
+  };
+  function forbidden(msg) { main.appendChild(el('div', { class: 'alert', text: msg })); }
+  async function renderPath(parts) {
+    clear(main);
+    try {
+      var k = parts[0];
+      if (!k) await viewDashboard();
+      else if (VIEWS[k]) await VIEWS[k](parts);
+      else if (k === 'mock-tests') await (parts[1] ? viewMockForm(parts[1]) : viewList(k));
+      else if (TYPES[k]) await (parts[1] ? viewPostForm(k, parts[1]) : viewList(k));
+      else main.appendChild(el('p', { text: 'Page not found.' }));
+    } catch (e) { main.appendChild(el('div', { class: 'alert', text: e.message })); }
+  }
   async function route() {
+    if (embedded) { await renderPath(curPath.replace(/^\//, '').split('/').filter(Boolean)); return; }
     var h = location.hash.replace(/^#\/?/, ''); var parts = h.split('/').filter(Boolean);
     document.querySelectorAll('#nav a').forEach(function (a) {
       var href = a.getAttribute('href'); var on = href === '#/' + (parts[0] || '') || (href === '#/' && !parts[0]);
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
     document.getElementById('nav').classList.remove('open'); document.getElementById('navToggle').setAttribute('aria-expanded', 'false');
-    clear(main);
-    try {
-      var k = parts[0];
-      if (!k) await viewDashboard();
-      else if (k === 'audit') await viewAudit();
-      else if (k === 'users' && me.role === 'admin') await viewUsers();
-      else if (k === 'mock-tests') await (parts[1] ? viewMockForm(parts[1]) : viewList(k));
-      else if (TYPES[k]) await (parts[1] ? viewPostForm(k, parts[1]) : viewList(k));
-      else main.appendChild(el('p', { text: 'Page not found.' }));
-    } catch (e) { main.appendChild(el('div', { class: 'alert', text: e.message })); }
+    await renderPath(parts);
     main.focus();
   }
+  /* Embedded mode: the Master Command Suite mounts a section into its workspace. */
+  async function mount(container, path, group) {
+    if (main !== container) {
+      embedded = true; main = container;
+      container.classList.add('cms-embed');
+      container.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[href^="#/"]');
+        if (a) { e.preventDefault(); go(a.getAttribute('href').slice(1)); }
+      });
+    }
+    embedGroup = group || null; curPath = path || '';
+    if (!me) { try { me = (await api('GET', 'session')).user; } catch (e) { clear(container).appendChild(el('div', { class: 'alert', text: e.message })); return; } }
+    await route();
+  }
+  window.CSOCms = { mount: mount };
   async function init() {
     try { me = (await api('GET', 'session')).user; } catch (e) { return; }
     document.getElementById('who').textContent = me.email + ' (' + me.role + ')';
@@ -450,5 +688,5 @@
     document.getElementById('signOut').addEventListener('click', async function () { try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } finally { location.replace('/admin/login?reason=out'); } });
     window.addEventListener('hashchange', route); route();
   }
-  init();
+  if (document.getElementById('nav')) init();
 })();

@@ -38,10 +38,14 @@ r = await call(cand, 'GET', '/admin/', null, { Accept: 'text/html' });
 ok(r.status === 403, 'candidate /admin/ → 403');
 r = await call(editor, 'GET', '/admin/', null, { Accept: 'text/html' });
 ok(r.status === 200 && /noindex/.test(r.headers.get('x-robots-tag') || '') && /script-src 'self'/.test(r.headers.get('content-security-policy') || ''), 'editor /admin/ → 200 + noindex + strict CSP');
+ok(/script-src 'self'/.test(r.headers.get('content-security-policy') || '') && !/unsafe-(inline|eval)/.test(r.headers.get('content-security-policy') || ''), 'suite CSP has no unsafe-inline / unsafe-eval');
+const html = await (await call(editor, 'GET', '/admin/', null, { Accept: 'text/html' })).text();
+ok(/241 Modules/.test(html) && !/cdn\.tailwindcss|<style|<script>|\sonclick=|\sstyle=/.test(html), '/admin/ is the 241-module suite with no inline script/style/CDN');
 r = await call(editor, 'GET', '/admin/legacy', null, { Accept: 'text/html' });
-ok(r.status === 403, 'editor legacy console → 403');
-r = await call(admin, 'GET', '/admin/legacy', null, { Accept: 'text/html' });
-ok(r.status === 200, 'admin legacy console → 200');
+ok(r.status === 301 && r.headers.get('location') === '/admin/', '/admin/legacy redirects to the suite');
+ok((await call(editor, 'GET', '/admin/admin.js')).status === 200 && (await call(cand, 'GET', '/admin/admin.js')).status === 403 && (await call(null, 'GET', '/admin/admin.js')).status === 401, 'suite assets are role-gated');
+ok((await call(editor, 'GET', '/admin/data/legacy-api/verify.json')).status === 403, 'legacy fixtures stay admin-only');
+ok((await call(admin, 'GET', '/admin/data/legacy-api/verify.json')).status === 200, 'admin can read legacy fixtures');
 r = await call(null, 'GET', '/admin/login');
 ok(r.status === 200, 'login page is public');
 ok((await call(null, 'GET', '/migrations/0001_baseline.sql')).status === 404, 'migrations not publicly served');
@@ -123,6 +127,50 @@ r = await call(admin, 'POST', '/api/admin/preview', { markdown: '<img src=x oner
 ok(!/<img/i.test(d.html), 'preview escapes raw HTML');
 r = await call(null, 'GET', '/api/auth/me'); ok(r.status === 401, 'auth/me unaffected for anonymous');
 d = await j(await call(editor, 'GET', '/api/auth/me')); ok(d.user && d.user.role === 'editor', 'auth/me reports live role');
+
+
+console.log('Suite telemetry, banner, resources, incidents, accounts');
+d = await j(await call(editor, 'GET', '/api/admin/stats'));
+ok(d.accounts && d.accounts.total >= 3 && typeof d.audit_24h === 'number' && d.media && d.resources && 'open_incidents' in d && d.banner, 'stats exposes D1 telemetry (accounts, audit, media, resources, incidents, banner)');
+d = await j(await call(null, 'GET', '/api/content/banner')); ok(d.active === false, 'banner inactive by default');
+r = await call(editor, 'PUT', '/api/admin/banner', { active: true, headline: '', severity: 'info' }); ok(r.status === 422, 'cannot activate banner without headline');
+r = await call(editor, 'PUT', '/api/admin/banner', { active: true, headline: 'x', ctaText: 'Go', ctaUrl: 'javascript:alert(1)' }); ok(r.status === 422, 'banner rejects javascript: link');
+r = await call(editor, 'PUT', '/api/admin/banner', { active: true, headline: 'Hall ticket <b>out</b>', context: 'Download now', severity: 'urgent', ctaText: 'Open', ctaUrl: '/jobs-careers/' });
+ok(r.status === 200, 'editor publishes banner');
+r = await call(null, 'GET', '/api/content/banner'); d = await j(r);
+ok(d.active === true && d.headline === 'Hall ticket <b>out</b>' && d.severity === 'urgent' && /max-age=15/.test(r.headers.get('cache-control')), 'public banner reflects D1 (raw text; client renders with textContent)');
+ok((await call(cand, 'PUT', '/api/admin/banner', { active: false })).status === 403, 'candidate cannot edit banner');
+ok((await call(null, 'PUT', '/api/admin/banner', { active: false })).status === 401, 'anonymous cannot edit banner');
+r = await call(editor, 'PUT', '/api/admin/banner', { active: false, headline: '' }); ok(r.status === 200 && (await j(await call(null, 'GET', '/api/content/banner'))).active === false, 'banner deactivates');
+
+const pdfRes = new Blob(['%PDF-1.4\n%syl'], { type: 'application/pdf' });
+fd = new FormData(); fd.append('file', pdfRes, 'syl.pdf'); const up3 = await j(await call(editor, 'POST', '/api/admin/media/upload', fd));
+r = await call(editor, 'POST', '/api/admin/resources', { kind: 'syllabus', title: 'OSSC CGL syllabus', exam: 'OSSC CGL', year: 2026, media_key: 'ffffffff-ffff-ffff-ffff-ffffffffffff.pdf' });
+ok(r.status === 422, 'resource must reference an uploaded media asset');
+r = await call(editor, 'POST', '/api/admin/resources', { kind: 'bogus', title: 'x', media_key: up3.key }); ok(r.status === 422, 'resource kind validated');
+r = await call(editor, 'POST', '/api/admin/resources', { kind: 'pyq', title: 'OSSC CGL 2024 paper', exam: 'OSSC CGL', year: 2024, media_key: up3.key, status: 'draft' }); const res1 = await j(r);
+ok(r.status === 201, 'create PYQ resource');
+d = await j(await call(null, 'GET', '/api/content/resources?kind=pyq')); ok(!d.items.some(i => i.id === res1.id), 'draft resource not public');
+ok((await call(editor, 'PUT', `/api/admin/resources/${res1.id}`, { status: 'published' })).status === 200, 'publish resource');
+d = await j(await call(null, 'GET', '/api/content/resources?kind=pyq')); ok(d.items.some(i => i.id === res1.id && i.file_url === '/api/media/' + up3.key && !('media_key' in i)), 'published resource is public with R2 url');
+d = await j(await call(editor, 'GET', '/api/admin/resources?kind=pyq&q=2024')); ok(d.total >= 1, 'resource list + search');
+ok((await call(editor, 'DELETE', `/api/admin/resources/${res1.id}`)).status === 200 && !(await j(await call(null, 'GET', '/api/content/resources?kind=pyq'))).items.some(i => i.id === res1.id), 'resource soft delete hides it');
+d = await j(await call(editor, 'GET', '/api/admin/media?kind=pdf')); ok(d.total >= 1 && d.items[0].url.startsWith('/api/media/'), 'media library lists R2 assets');
+ok((await call(cand, 'GET', '/api/admin/media')).status === 403, 'candidate cannot list media');
+
+r = await call(editor, 'POST', '/api/admin/incidents', { severity: 'bogus', title: 'x' }); ok(r.status === 422, 'incident severity validated');
+r = await call(editor, 'POST', '/api/admin/incidents', { severity: 'high', title: 'OTP provider timeout', details: 'Resend latency > 10s' }); const inc = await j(r);
+ok(r.status === 201 && inc.id, 'log incident');
+d = await j(await call(editor, 'GET', '/api/admin/incidents')); ok(d.open >= 1 && d.items.some(i => i.id === inc.id && i.severity === 'high' && !i.resolved), 'incident stream shows open incident');
+ok((await call(editor, 'POST', `/api/admin/incidents/${inc.id}/resolve`, {})).status === 200, 'resolve incident');
+d = await j(await call(editor, 'GET', '/api/admin/incidents')); ok(d.items.some(i => i.id === inc.id && i.resolved), 'incident marked resolved');
+d = await j(await call(editor, 'GET', '/api/admin/audit?kind=incident')); ok(d.items.length >= 2 && d.items.every(a => a.action.startsWith('incident.')), 'audit filter: incidents');
+d = await j(await call(editor, 'GET', '/api/admin/audit?kind=content')); ok(d.items.length > 0 && d.items.every(a => !/^(incident|user)\./.test(a.action)), 'audit filter: content');
+ok((await call(editor, 'GET', '/api/admin/audit?kind=nope')).status === 422, 'audit filter validated');
+
+d = await j(await call(admin, 'GET', '/api/admin/users?q=cand'));
+ok(d.items.length >= 1 && 'full_name' in d.items[0] && 'district' in d.items[0], 'candidate accounts include profile fields from D1');
+d = await j(await call(admin, 'GET', '/api/admin/users?role=admin')); ok(d.items.length >= 1 && d.items.every(u => u.role === 'admin'), 'accounts role filter');
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
