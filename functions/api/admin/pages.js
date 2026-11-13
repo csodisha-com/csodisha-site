@@ -157,9 +157,55 @@ export async function handlePages(request, env, actor, id) {
       return restorePage(request, env, actor, await readJson(request, 2_000_000));
     }
     if (id === 'revisions' && m === 'GET') {
-      const route = normalizeRoute(new URL(request.url).searchParams.get('route'));
+      const u = new URL(request.url);
+      const rawRoute = u.searchParams.get('route');
+      if (!rawRoute || u.searchParams.get('all') === '1') {
+        const { results } = await env.DB.prepare('SELECT id, route, snapshot_json, editor_email, note, created_at FROM site_page_revisions ORDER BY id DESC LIMIT 40').all();
+        return json({ revisions: results || [] });
+      }
+      const route = normalizeRoute(rawRoute);
       const { results } = await env.DB.prepare('SELECT id, route, snapshot_json, editor_email, note, created_at FROM site_page_revisions WHERE route = ? ORDER BY id DESC LIMIT 25').bind(route).all();
       return json({ revisions: results || [] });
+    }
+    if (id === 'prune-revisions' && m === 'POST') {
+      const body = await readJson(request, 64_000);
+      const route = normalizeRoute(body.route);
+      const keep = Math.max(1, Math.min(50, Number(body.keep) || 10));
+      await env.DB.prepare('DELETE FROM site_page_revisions WHERE route = ? AND id NOT IN (SELECT id FROM site_page_revisions WHERE route = ? ORDER BY id DESC LIMIT ?)').bind(route, route, keep).run();
+      await audit(env, request, actor, 'page.prune_revisions', 'site_page_revisions', route, { keep });
+      return json({ ok: true, route, keep });
+    }
+    if (id === 'redirects') {
+      if (m === 'GET') {
+        const { results } = await env.DB.prepare('SELECT old_route, new_route, created_by, created_at FROM site_redirects ORDER BY created_at DESC').all();
+        return json({ redirects: results || [] });
+      }
+      if (m === 'POST') {
+        const body = await readJson(request, 64_000);
+        const oldR = normalizeRoute(body.old_route);
+        if (body.action === 'delete') {
+          await env.DB.prepare('DELETE FROM site_redirects WHERE old_route = ?').bind(oldR).run();
+          await audit(env, request, actor, 'page.redirect_delete', 'site_redirects', oldR, {});
+          return json({ ok: true, deleted: oldR });
+        }
+        const newR = normalizeRoute(body.new_route || '/');
+        await env.DB.prepare('INSERT OR REPLACE INTO site_redirects (old_route, new_route, created_by) VALUES (?,?,?)').bind(oldR, newR, actor.email).run();
+        await audit(env, request, actor, 'page.redirect', 'site_redirects', oldR, { to: newR });
+        return json({ ok: true, old_route: oldR, new_route: newR });
+      }
+      throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+    }
+    if (m === 'DELETE') {
+      const body = await readJson(request, 64_000);
+      const route = normalizeRoute(body.route);
+      await env.DB.prepare('DELETE FROM site_pages WHERE route = ?').bind(route).run();
+      await env.DB.prepare('DELETE FROM site_page_revisions WHERE route = ?').bind(route).run();
+      if (body.redirect_to) {
+        const target = normalizeRoute(body.redirect_to);
+        await env.DB.prepare('INSERT OR REPLACE INTO site_redirects (old_route, new_route, created_by) VALUES (?,?,?)').bind(route, target, actor.email).run();
+      }
+      await audit(env, request, actor, 'page.purge', 'site_pages', route, { redirect_to: body.redirect_to || null });
+      return json({ ok: true, purged: route });
     }
     if (m === 'GET' && id === 'sitewide') { const r = await env.DB.prepare("SELECT reusable_sections_json FROM site_pages WHERE route = '/__sitewide'").first(); return json({ sections: JSON.parse(r?.reusable_sections_json || '[]') }); }
     if (m === 'GET') { const pages = await listPages(request, env); return json({ total: pages.length, pages }); }
