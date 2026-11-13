@@ -7,42 +7,54 @@
   var togglePw = document.getElementById('togglePw');
   var capsHint = document.getElementById('capsHint');
   var rememberMe = document.getElementById('rememberMe');
-  var themeToggleBtn = document.getElementById('themeToggleBtn');
+  var themeSelect = document.getElementById('themeSelect');
+  var THEME_ORDER = ['apex', 'volt', 'cobalt', 'lime'];
+
+  function normalizeTheme(raw) {
+    if (raw === 'apex' || raw === 'volt' || raw === 'cobalt' || raw === 'lime') return raw;
+    if (raw === 'light') return 'cobalt';
+    return 'apex';
+  }
 
   function readStoredTheme() {
     try {
-      return localStorage.getItem('cso_studio_theme') === 'light' ? 'light' : 'dark';
+      return normalizeTheme(localStorage.getItem('cso_studio_theme'));
     } catch (_e) {
-      return 'dark';
+      return 'apex';
     }
   }
 
   function applyTheme(theme) {
-    var safe = theme === 'light' ? 'light' : 'dark';
+    var safe = normalizeTheme(theme);
     document.documentElement.dataset.theme = safe;
-    if (themeToggleBtn) {
-      var isLight = safe === 'light';
-      themeToggleBtn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
-      themeToggleBtn.setAttribute('aria-label', isLight ? 'Switch to Dark Theme' : 'Switch to Light Theme');
-      themeToggleBtn.textContent = isLight ? '🌙 Dark' : '☀ Light';
-    }
+    if (themeSelect) themeSelect.value = safe;
     return safe;
   }
 
-  function toggleTheme() {
-    var next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    try { localStorage.setItem('cso_studio_theme', next); } catch (_e) {}
+  function setTheme(theme) {
+    var safe = applyTheme(theme);
+    try { localStorage.setItem('cso_studio_theme', safe); } catch (_e) {}
+    return safe;
+  }
+
+  function cycleTheme() {
+    var cur = normalizeTheme(document.documentElement.dataset.theme);
+    var idx = THEME_ORDER.indexOf(cur);
+    return setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length]);
   }
 
   applyTheme(readStoredTheme());
-  if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+  if (themeSelect) {
+    themeSelect.addEventListener('change', function () {
+      setTheme(themeSelect.value);
+    });
+  }
   document.addEventListener('keydown', function (e) {
     if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T')) {
       var tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
       e.preventDefault();
-      toggleTheme();
+      cycleTheme();
     }
   });
 

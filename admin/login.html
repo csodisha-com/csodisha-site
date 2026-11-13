@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Staff sign-in — CS Odisha Admin</title>
-  <link rel="stylesheet" href="/admin/cms/cms.css">
+  <link rel="stylesheet" href="/admin/cms/cms.css?v=20261113-4themes">
 </head>
 <body class="login-body">
   <main class="login-card" aria-labelledby="t">
@@ -13,7 +13,12 @@
       <a href="/" class="cso-login-logo-link" aria-label="Return to Common Sense Odisha Home" title="Return to Common Sense Odisha Home">
         <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="44">
       </a>
-      <button type="button" id="themeToggleBtn" class="cso-login-theme-btn" aria-pressed="false" aria-label="Switch to Light Theme" title="Switch Light / Dark Theme (Alt+T)">☀ Light</button>
+      <select id="themeSelect" class="cso-login-theme-select" aria-label="Studio Workspace Theme" title="Switch Studio Theme (Alt+T)">
+        <option value="apex">Apex Carbon (Dark)</option>
+        <option value="volt">Volt Noir (Dark)</option>
+        <option value="cobalt">Cobalt Enterprise (Light)</option>
+        <option value="lime">Botanical Light (Light)</option>
+      </select>
     </div>
     <h1 id="t">Staff sign-in</h1>
     <p class="muted">Editors and administrators only. Use your CS Odisha account.</p>

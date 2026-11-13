@@ -3,16 +3,16 @@
 
 :root {
   color-scheme: dark;
-  --studio-bg: #081220;
-  --studio-surface: #0f172a;
-  --studio-card: #131f36;
-  --studio-card-elev: #172540;
-  --studio-border: #1e2e4a;
-  --studio-border-strong: #2b4166;
-  --studio-text: #f1f5f9;
+  --studio-bg: #070a09;
+  --studio-surface: #090d0b;
+  --studio-card: #0d1210;
+  --studio-card-elev: #121916;
+  --studio-border: #1f2926;
+  --studio-border-strong: #2c3b36;
+  --studio-text: #f8fafc;
   --studio-muted: #94a3b8;
-  --studio-accent: #0fa968;
-  --studio-accent-hover: #0d9259;
+  --studio-accent: #10b981;
+  --studio-accent-hover: #059669;
   --studio-blue: #38bdf8;
   --studio-amber: #f59e0b;
   --studio-red: #ef4444;
@@ -146,9 +146,25 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.cso-pill-btn:hover {
+.cso-pill-btn:hover,
+.cso-pill-select:hover {
   border-color: var(--studio-blue);
   background: rgba(56, 189, 248, 0.14);
+}
+
+.cso-pill-select {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-card);
+  color: var(--studio-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .cso-brand-mark {
@@ -1942,10 +1958,125 @@ input[type="checkbox"] {
 .cso-pin-btn.is-pinned { border-color: var(--studio-amber); background: rgba(245, 158, 11, 0.16); color: var(--studio-amber); font-weight: 700; }
 .cso-create-divider { border-top: 1px solid var(--studio-border); margin: 6px 0; padding: 4px 10px 2px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--studio-amber); }
 
-/* ---------- WCAG AA+ Daylight Theme (html[data-theme="light"]) ---------- */
-html[data-theme="light"] {
+/* ---------- 4 Pure Color-Palette Studio Themes (Zero Layout Changes) ---------- */
+
+/* 1. Apex Carbon Emerald (Default Dark) */
+html[data-theme="apex"] {
+  color-scheme: dark;
+  --studio-bg: #070a09;
+  --studio-surface: #090d0b;
+  --studio-card: #0d1210;
+  --studio-card-elev: #121916;
+  --studio-border: #1f2926;
+  --studio-border-strong: #2c3b36;
+  --studio-text: #f8fafc;
+  --studio-muted: #94a3b8;
+  --studio-accent: #10b981;
+  --studio-accent-hover: #059669;
+  --studio-blue: #38bdf8;
+  --studio-amber: #f59e0b;
+  --studio-red: #ef4444;
+  --studio-indigo: #818cf8;
+}
+
+html[data-theme="apex"] #sidebarConsole.cso-sidebar {
+  background: #090d0b;
+  border-color: #1f2926;
+}
+
+html[data-theme="apex"] #accordionNav.cso-nav-tree,
+html[data-theme="apex"] #sidebarConsole .cso-nav-modules {
+  background: #070a09;
+}
+
+html[data-theme="apex"] #sidebarConsole .cso-nav-folder {
+  background: #0d1210;
+  border-color: #1f2926;
+}
+
+html[data-theme="apex"] .cso-subheader {
+  background: rgba(9, 13, 11, 0.94);
+  border-bottom-color: #1f2926;
+}
+
+/* 2. Volt Olive Noir (Dark) */
+html[data-theme="volt"] {
+  color-scheme: dark;
+  --studio-bg: #0b0d09;
+  --studio-surface: #11140e;
+  --studio-card: #151911;
+  --studio-card-elev: #1b2016;
+  --studio-border: #282e21;
+  --studio-border-strong: #39422f;
+  --studio-text: #f8fafc;
+  --studio-muted: #a3ad98;
+  --studio-accent: #a3e635;
+  --studio-accent-hover: #bef264;
+  --studio-blue: #bef264;
+  --studio-amber: #f59e0b;
+  --studio-red: #ef4444;
+  --studio-indigo: #a3e635;
+}
+
+html[data-theme="volt"] .cso-topbar,
+html[data-theme="volt"] #sidebarConsole.cso-sidebar {
+  background: #11140e;
+  border-color: #282e21;
+}
+
+html[data-theme="volt"] #sidebarConsole .cso-sidebar-search,
+html[data-theme="volt"] #sidebarConsole .cso-sidebar-footer {
+  background: #11140e;
+  border-color: #282e21;
+}
+
+html[data-theme="volt"] #accordionNav.cso-nav-tree,
+html[data-theme="volt"] #sidebarConsole .cso-nav-modules {
+  background: #0b0d09;
+}
+
+html[data-theme="volt"] #sidebarConsole .cso-nav-folder {
+  background: #151911;
+  border-color: #282e21;
+}
+
+html[data-theme="volt"] #sidebarConsole .cso-nav-folder-btn:hover,
+html[data-theme="volt"] #sidebarConsole .cso-nav-folder-btn.is-active {
+  background: rgba(190, 242, 100, 0.12);
+  color: #bef264;
+}
+
+html[data-theme="volt"] #sidebarConsole .cso-nav-mod-btn.is-active {
+  background: rgba(190, 242, 100, 0.14);
+  border-left-color: #bef264;
+  color: #bef264;
+}
+
+html[data-theme="volt"] #sidebarConsole .cso-nav-mod-tag.is-live,
+html[data-theme="volt"] #sidebarConsole .cso-nav-mod-btn.is-active .cso-nav-mod-tag,
+html[data-theme="volt"] .cso-btn-create,
+html[data-theme="volt"] .cso-btn-primary,
+html[data-theme="volt"] #sidebarConsole .cso-search-badge,
+html[data-theme="volt"] .cso-live-pill {
+  background: #bef264;
+  color: #0b0d09;
+  border-color: #a3e635;
+}
+
+html[data-theme="volt"] .cso-subheader {
+  background: rgba(17, 20, 14, 0.94);
+  border-bottom-color: #282e21;
+}
+
+html[data-theme="volt"] .cso-text-accent,
+html[data-theme="volt"] #breadcrumbModule {
+  color: #bef264;
+}
+
+/* 3. Cobalt Enterprise Light (Light) */
+html[data-theme="cobalt"] {
   color-scheme: light;
-  --studio-bg: #f8fafc;
+  --studio-bg: #eef3f9;
   --studio-surface: #ffffff;
   --studio-card: #ffffff;
   --studio-card-elev: #f1f5f9;
@@ -1953,261 +2084,326 @@ html[data-theme="light"] {
   --studio-border-strong: #94a3b8;
   --studio-text: #0f172a;
   --studio-muted: #334155;
-  --studio-accent: #047857;
-  --studio-accent-hover: #059669;
-  --studio-blue: #0284c7;
+  --studio-accent: #0d9488;
+  --studio-accent-hover: #0f766e;
+  --studio-blue: #1e56a0;
   --studio-amber: #b45309;
   --studio-red: #dc2626;
-  --studio-indigo: #4f46e5;
+  --studio-indigo: #1e56a0;
 }
 
-html[data-theme="light"] .cso-topbar,
-html[data-theme="light"] #sidebarConsole.cso-sidebar {
+html[data-theme="cobalt"] .cso-topbar {
   background: #ffffff;
   border-color: #cbd5e1;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-sidebar-search,
-html[data-theme="light"] #sidebarConsole .cso-sidebar-footer {
+html[data-theme="cobalt"] #sidebarConsole.cso-sidebar {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="cobalt"] #sidebarConsole .cso-sidebar-search,
+html[data-theme="cobalt"] #sidebarConsole .cso-sidebar-footer {
   background: #f8fafc;
   border-color: #cbd5e1;
   color: #334155;
 }
 
-html[data-theme="light"] #accordionNav.cso-nav-tree {
-  background: #f8fafc;
+html[data-theme="cobalt"] #accordionNav.cso-nav-tree,
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-modules {
+  background: #f1f5f9;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-folder {
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-folder {
   background: #ffffff;
   border-color: #cbd5e1;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-folder.is-current {
-  background: #ffffff;
-  border-color: #6ee7b7;
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-folder-btn {
+  background: transparent;
+  color: #0f172a;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-modules {
-  background: #f8fafc;
-  border-top-color: #e2e8f0;
-}
-
-html[data-theme="light"] #sidebarConsole .cso-search-badge {
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-folder-btn:hover,
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-mod-btn:hover {
   background: #e2e8f0;
   color: #0f172a;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-folder-btn,
-html[data-theme="light"] .cso-nav-group-hdr {
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-folder-btn.is-active {
+  background: #e0ecff;
+  color: #1e56a0;
+}
+
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-mod-btn {
+  color: #334155;
+}
+
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-mod-btn.is-active {
+  background: #e0ecff;
+  color: #1e56a0;
+  border-left-color: #1e56a0;
+}
+
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-count,
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-mod-tag {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-mod-tag.is-live,
+html[data-theme="cobalt"] #sidebarConsole .cso-nav-mod-btn.is-active .cso-nav-mod-tag {
+  background: #1e56a0;
+  color: #ffffff;
+  border-color: #1e56a0;
+}
+
+html[data-theme="cobalt"] .cso-subheader {
+  background: #1e56a0;
+  border-bottom-color: #164078;
+}
+
+html[data-theme="cobalt"] .cso-page-title,
+html[data-theme="cobalt"] .cso-breadcrumbs,
+html[data-theme="cobalt"] .cso-breadcrumb-btn,
+html[data-theme="cobalt"] #breadcrumbModule {
+  color: #ffffff;
+}
+
+html[data-theme="cobalt"] .cso-breadcrumb-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+html[data-theme="cobalt"] .cso-module-pill {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+html[data-theme="cobalt"] .cso-live-pill,
+html[data-theme="cobalt"] #moduleEndpointPill {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0d9488;
+}
+
+html[data-theme="cobalt"] .cso-btn-create,
+html[data-theme="cobalt"] .cso-btn-primary {
+  background: #0d9488;
+  border-color: #0d9488;
+  color: #ffffff;
+}
+
+html[data-theme="cobalt"] .cso-btn-create:hover,
+html[data-theme="cobalt"] .cso-btn-primary:hover {
+  background: #0f766e;
+}
+
+/* 4. Botanical Daylight Light (Light) */
+html[data-theme="lime"] {
+  color-scheme: light;
+  --studio-bg: #f5f7f2;
+  --studio-surface: #ffffff;
+  --studio-card: #ffffff;
+  --studio-card-elev: #eef2e8;
+  --studio-border: #dce3d5;
+  --studio-border-strong: #b8c4ac;
+  --studio-text: #111827;
+  --studio-muted: #374151;
+  --studio-accent: #65a30d;
+  --studio-accent-hover: #4d7c0f;
+  --studio-blue: #65a30d;
+  --studio-amber: #b45309;
+  --studio-red: #dc2626;
+  --studio-indigo: #4d7c0f;
+}
+
+html[data-theme="lime"] .cso-topbar,
+html[data-theme="lime"] #sidebarConsole.cso-sidebar {
+  background: #ffffff;
+  border-color: #dce3d5;
+}
+
+html[data-theme="lime"] #sidebarConsole .cso-sidebar-search,
+html[data-theme="lime"] #sidebarConsole .cso-sidebar-footer {
+  background: #f5f7f2;
+  border-color: #dce3d5;
+  color: #374151;
+}
+
+html[data-theme="lime"] #accordionNav.cso-nav-tree,
+html[data-theme="lime"] #sidebarConsole .cso-nav-modules {
+  background: #f5f7f2;
+}
+
+html[data-theme="lime"] #sidebarConsole .cso-nav-folder {
+  background: #ffffff;
+  border-color: #dce3d5;
+}
+
+html[data-theme="lime"] #sidebarConsole .cso-nav-folder-btn {
   background: transparent;
-  color: #1e293b;
+  color: #111827;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-folder-btn:hover,
-html[data-theme="light"] .cso-nav-group-hdr:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+html[data-theme="lime"] #sidebarConsole .cso-nav-folder-btn:hover,
+html[data-theme="lime"] #sidebarConsole .cso-nav-mod-btn:hover {
+  background: #eef2e8;
+  color: #111827;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-folder-btn.is-active {
-  background: #ecfdf5;
-  color: #047857;
+html[data-theme="lime"] #sidebarConsole .cso-nav-folder-btn.is-active {
+  background: #111827;
+  color: #bef264;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-count,
-html[data-theme="light"] .cso-nav-badge {
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+html[data-theme="lime"] #sidebarConsole .cso-nav-mod-btn {
+  color: #374151;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-chevron {
-  color: #64748b;
+html[data-theme="lime"] #sidebarConsole .cso-nav-mod-btn.is-active {
+  background: #111827;
+  color: #ffffff;
+  border-left-color: #84cc16;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-chevron.is-open {
-  color: #047857;
+html[data-theme="lime"] #sidebarConsole .cso-nav-count,
+html[data-theme="lime"] #sidebarConsole .cso-nav-mod-tag {
+  background: #eef2e8;
+  color: #374151;
+  border-color: #dce3d5;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn,
-html[data-theme="light"] .cso-nav-item {
-  color: #334155;
+html[data-theme="lime"] #sidebarConsole .cso-nav-mod-tag.is-live,
+html[data-theme="lime"] #sidebarConsole .cso-nav-mod-btn.is-active .cso-nav-mod-tag {
+  background: #bef264;
+  color: #111827;
+  border-color: #84cc16;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn:hover,
-html[data-theme="light"] .cso-nav-item:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+html[data-theme="lime"] .cso-subheader {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom-color: #dce3d5;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn.is-active,
-html[data-theme="light"] .cso-nav-item.active,
-html[data-theme="light"] .cso-nav-item.is-active {
-  background: #ecfdf5;
-  color: #047857;
-  border-left-color: #047857;
+html[data-theme="lime"] .cso-page-title {
+  color: #111827;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-mod-tag {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+html[data-theme="lime"] .cso-breadcrumbs,
+html[data-theme="lime"] .cso-breadcrumb-btn {
+  color: #374151;
 }
 
-html[data-theme="light"] #sidebarConsole .cso-nav-mod-tag.is-live,
-html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn.is-active .cso-nav-mod-tag {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
+html[data-theme="lime"] .cso-breadcrumb-btn:hover {
+  background: #eef2e8;
+  color: #111827;
 }
 
-html[data-theme="light"] .cso-subheader {
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom-color: #cbd5e1;
-}
-
-html[data-theme="light"] .cso-page-title {
-  color: #0f172a;
-}
-
-html[data-theme="light"] .cso-breadcrumbs {
-  color: #475569;
-}
-
-html[data-theme="light"] .cso-breadcrumb-btn {
-  color: #475569;
-}
-
-html[data-theme="light"] .cso-breadcrumb-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-html[data-theme="light"] .cso-breadcrumb-sep,
-html[data-theme="light"] .cso-breadcrumbs > span[aria-hidden="true"] {
-  color: #94a3b8;
-}
-
-html[data-theme="light"] #breadcrumbModule,
-html[data-theme="light"] .cso-text-accent {
-  color: #047857;
+html[data-theme="lime"] #breadcrumbModule,
+html[data-theme="lime"] .cso-text-accent {
+  color: #4d7c0f;
   font-weight: 600;
 }
 
-html[data-theme="light"] .cso-module-pill {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #334155;
+html[data-theme="lime"] .cso-module-pill {
+  background: #eef2e8;
+  border-color: #dce3d5;
+  color: #374151;
 }
 
-html[data-theme="light"] .cso-live-pill,
-html[data-theme="light"] #moduleEndpointPill,
-html[data-theme="light"] .cso-endpoint-pill {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
-  color: #047857;
+html[data-theme="lime"] .cso-live-pill,
+html[data-theme="lime"] #moduleEndpointPill {
+  background: #ecfccb;
+  border-color: #bef264;
+  color: #3f6212;
 }
 
-html[data-theme="light"] .cso-card,
-html[data-theme="light"] .cso-kpi-card,
-html[data-theme="light"] .cso-modal,
-html[data-theme="light"] .cso-create-dropdown,
-html[data-theme="light"] .cso-table-wrap,
-html[data-theme="light"] .cso-bottom-bar {
-  background: #ffffff;
-  border-color: #cbd5e1;
+html[data-theme="lime"] .cso-btn-create,
+html[data-theme="lime"] .cso-btn-primary {
+  background: #65a30d;
+  border-color: #65a30d;
+  color: #ffffff;
+}
+
+html[data-theme="lime"] .cso-btn-create:hover,
+html[data-theme="lime"] .cso-btn-primary:hover {
+  background: #4d7c0f;
+}
+
+/* Shared Light-Mode Surface & Control Contrast (Cobalt & Botanical) */
+html[data-theme="cobalt"] .cso-card,
+html[data-theme="cobalt"] .cso-kpi-card,
+html[data-theme="cobalt"] .cso-modal,
+html[data-theme="cobalt"] .cso-create-dropdown,
+html[data-theme="cobalt"] .cso-table-wrap,
+html[data-theme="cobalt"] .cso-bottom-bar,
+html[data-theme="lime"] .cso-card,
+html[data-theme="lime"] .cso-kpi-card,
+html[data-theme="lime"] .cso-modal,
+html[data-theme="lime"] .cso-create-dropdown,
+html[data-theme="lime"] .cso-table-wrap,
+html[data-theme="lime"] .cso-bottom-bar {
+  background: var(--studio-card);
+  border-color: var(--studio-border);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
-html[data-theme="light"] .cso-pill-btn,
-html[data-theme="light"] .cso-pill-link,
-html[data-theme="light"] .cso-telemetry-pill,
-html[data-theme="light"] .cso-icon-btn,
-html[data-theme="light"] .cso-user-pill {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #0f172a;
+html[data-theme="cobalt"] .cso-pill-btn,
+html[data-theme="cobalt"] .cso-pill-select,
+html[data-theme="cobalt"] .cso-pill-link,
+html[data-theme="cobalt"] .cso-telemetry-pill,
+html[data-theme="cobalt"] .cso-icon-btn,
+html[data-theme="cobalt"] .cso-user-pill,
+html[data-theme="lime"] .cso-pill-btn,
+html[data-theme="lime"] .cso-pill-select,
+html[data-theme="lime"] .cso-pill-link,
+html[data-theme="lime"] .cso-telemetry-pill,
+html[data-theme="lime"] .cso-icon-btn,
+html[data-theme="lime"] .cso-user-pill {
+  background: var(--studio-card-elev);
+  border-color: var(--studio-border);
+  color: var(--studio-text);
 }
 
-html[data-theme="light"] .cso-pill-btn:hover,
-html[data-theme="light"] .cso-pill-link:hover,
-html[data-theme="light"] .cso-icon-btn:hover {
-  background: #e2e8f0;
-  border-color: #0284c7;
+html[data-theme="cobalt"] .cso-input,
+html[data-theme="cobalt"] .cso-select,
+html[data-theme="cobalt"] .cso-textarea,
+html[data-theme="cobalt"] .cso-search-input,
+html[data-theme="lime"] .cso-input,
+html[data-theme="lime"] .cso-select,
+html[data-theme="lime"] .cso-textarea,
+html[data-theme="lime"] .cso-search-input {
+  background: #ffffff;
+  color: var(--studio-text);
+  border-color: var(--studio-border);
 }
 
-html[data-theme="light"] .cso-signout-btn:hover {
+html[data-theme="cobalt"] table th,
+html[data-theme="lime"] table th {
+  background: var(--studio-card-elev);
+  color: var(--studio-muted);
+  border-bottom-color: var(--studio-border);
+}
+
+html[data-theme="cobalt"] table td,
+html[data-theme="lime"] table td {
+  color: var(--studio-text);
+  border-bottom-color: var(--studio-border);
+}
+
+html[data-theme="cobalt"] .cso-modal-backdrop,
+html[data-theme="cobalt"] .cso-drawer-backdrop,
+html[data-theme="lime"] .cso-modal-backdrop,
+html[data-theme="lime"] .cso-drawer-backdrop {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+html[data-theme="cobalt"] .cso-signout-btn:hover,
+html[data-theme="lime"] .cso-signout-btn:hover {
   background: #fef2f2;
   border-color: #dc2626;
   color: #b91c1c;
 }
-
-html[data-theme="light"] .cso-btn-create,
-html[data-theme="light"] .cso-btn-primary {
-  background: #047857;
-  border-color: #047857;
-  color: #ffffff;
-}
-
-html[data-theme="light"] .cso-btn-create:hover,
-html[data-theme="light"] .cso-btn-primary:hover {
-  background: #059669;
-}
-
-html[data-theme="light"] .cso-create-item:hover {
-  background: #f1f5f9;
-}
-
-html[data-theme="light"] .cso-input,
-html[data-theme="light"] .cso-select,
-html[data-theme="light"] .cso-textarea,
-html[data-theme="light"] .cso-search-input {
-  background: #ffffff;
-  color: #0f172a;
-  border-color: #cbd5e1;
-}
-
-html[data-theme="light"] table th {
-  background: #f1f5f9;
-  color: #334155;
-  border-bottom-color: #cbd5e1;
-}
-
-html[data-theme="light"] table td {
-  color: #0f172a;
-  border-bottom-color: #e2e8f0;
-}
-
-html[data-theme="light"] .cso-badge,
-html[data-theme="light"] .cso-pill {
-  background: #f1f5f9;
-  color: #334155;
-  border-color: #cbd5e1;
-}
-
-html[data-theme="light"] .cso-badge-success,
-html[data-theme="light"] .cso-badge-live {
-  background: #ecfdf5;
-  color: #065f46;
-  border-color: #a7f3d0;
-}
-
-html[data-theme="light"] .cso-badge-warn {
-  background: #fffbeb;
-  color: #92400e;
-  border-color: #fde68a;
-}
-
-html[data-theme="light"] .cso-badge-danger {
-  background: #fef2f2;
-  color: #991b1b;
-  border-color: #fecaca;
-}
-
-html[data-theme="light"] .cso-modal-backdrop,
-html[data-theme="light"] .cso-drawer-backdrop {
-  background: rgba(15, 23, 42, 0.45);
-}
-
-
