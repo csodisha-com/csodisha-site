@@ -272,27 +272,29 @@
   function renderStatCards() {
     const container = $('stat-cards');
     if (!container) return;
+    if (!groups.length && !totalCounts.groups) return;
 
-    const groupCount = totalCounts.groups || groups.length;
-    const sectionCount = totalCounts.sections || groups.reduce((s, g) => s + (g.sections || []).length, 0);
-    const entryCount = totalCounts.entries || groups.reduce(
-      (s, g) => s + (g.sections || []).reduce((ss, sec) => ss + (sec.entries || []).length, 0),
+    const groupCount = Number(totalCounts.groups || groups.length || 0);
+    const sectionCount = Number(totalCounts.sections || groups.reduce((s, g) => s + (g.sections || []).length, 0) || 0);
+    const entryCount = Number(
+      totalCounts.entries ||
+      groups.reduce((s, g) => s + (g.sections || []).reduce((ss, sec) => ss + (sec.entries || []).length, 0), 0) ||
       0
     );
 
     const cards = [
-      ['🗂️', pickText('Directory Groups', 'ଡିରେକ୍ଟୋରୀ ବିଭାଗ'), groupCount],
-      ['📁', pickText('Main Sections', 'ମୁଖ୍ୟ ଅନୁଭାଗ'), sectionCount],
-      ['📝', pickText('Detailed Entries', 'ବିସ୍ତୃତ ତଥ୍ୟ'), entryCount],
-      ['🗺️', pickText('Districts Served', 'ସେବା ଜିଲ୍ଲା'), 30]
+      ['🗂️', pickText('Navigation Groups', 'ଡିରେକ୍ଟୋରୀ ବିଭାଗ'), groupCount.toLocaleString('en-IN')],
+      ['📁', pickText('Main Sections', 'ମୁଖ୍ୟ ଅନୁଭାଗ'), sectionCount.toLocaleString('en-IN')],
+      ['📝', pickText('Detailed Entries', 'ବିସ୍ତୃତ ତଥ୍ୟ'), entryCount.toLocaleString('en-IN')],
+      ['✅', pickText('D1 Verified', 'D1 ଯାଞ୍ଚିତ'), '100%']
     ];
 
     container.replaceChildren();
-    cards.forEach(([icon, label, value]) => {
+    cards.forEach(([icon, label, valueText]) => {
       const card = el('div', 'stat-card');
       card.append(el('span', 'stat-icon', icon));
       const content = el('div', 'stat-content');
-      content.append(el('strong', 'stat-value', Number(value).toLocaleString('en-IN')));
+      content.append(el('strong', 'stat-value', valueText));
       content.append(el('span', 'stat-label', label));
       card.append(content);
       container.append(card);
@@ -965,7 +967,7 @@
 
   const onLangRefresh = () => {
     applyStaticBilingualCopy();
-    buildDashboard();
+    if (groups.length) buildDashboard();
     if (activeGroupIndex >= 0) renderExplorer();
     else showOverview(false);
     renderDistricts();

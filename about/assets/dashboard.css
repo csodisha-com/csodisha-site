@@ -3752,3 +3752,108 @@ body.menu-open {
     border-color: #CBD5E1 !important;
   }
 }
+
+/* ==========================================================================
+   Visual Fixes: D1 Directory Grid Containment & Glance Stat Cards
+   ========================================================================== */
+
+.cso-about-page .app-shell,
+.cso-about-page .content-area,
+.cso-about-page .main-content,
+.cso-about-page .about-section-block,
+.cso-about-page .overview,
+.cso-about-page .overview-stats {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.cso-about-page .overview-stats h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cso-text);
+}
+
+#stat-cards,
+.cso-about-page .stat-cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-bottom: 18px !important;
+  box-sizing: border-box !important;
+}
+
+#stat-cards .stat-card {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 66px !important;
+  padding: 12px 14px !important;
+  box-sizing: border-box !important;
+}
+
+#stat-cards .stat-value {
+  color: #0F4C3A !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+:root[data-theme="dark"] #stat-cards .stat-value {
+  color: #86EFAC !important;
+}
+
+#stat-cards .stat-label {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: break-word !important;
+}
+
+#directory-explorer .dashboard-grid,
+#directory-explorer #dashboard-grid,
+#directory-explorer #explorer-items,
+#directory-explorer #search-items {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 0.85rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#directory-explorer .dashboard-card,
+#directory-explorer .explorer-item,
+#directory-explorer .explorer-items > .explorer-item.dashboard-card {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 76px !important;
+  padding: 14px 16px !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  box-sizing: border-box !important;
+}
+
+#directory-explorer .card-content {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+#directory-explorer .card-title,
+#directory-explorer .card-meta {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+}
