@@ -3507,54 +3507,318 @@
 
   function renderAuditTimeline(root, actions) {
     addHeaderPill(actions, '● Live Audit Timeline');
-    var shell = el('div', { class: 'cso-mod-shell' }), host = el('div', {});
-    var items = [], kind = 'All';
-    var q = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Search action or actor…' });
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-grid-4' });
+    var cronBannerHost = el('div', {});
+    var drawerHost = el('div', {});
+    var host = el('div', {});
+    var items = [], kind = 'All', hideNoOpCron = true;
+    var q = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Search action, route, summary, or actor…' });
     var actor = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Filter by actor email…' });
-    renderBanner(shell, 'Live Audit Timeline & Diff Inspector', 'Real entries from /api/admin/audit grouped by date.', [el('button', { type: 'button', class: 'cso-mod-btn', text: 'Reload', onclick: load })]);
-    shell.appendChild(pills(['All', 'Create', 'Update', 'Publish', 'Delete', 'Cron/System'], function (k) { kind = k; draw(); }));
-    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [q, actor]));
-    shell.appendChild(host); root.appendChild(shell);
-    q.addEventListener('input', draw); actor.addEventListener('input', draw);
+
+    function parseMeta(a) {
+      try { return JSON.parse(a.metadata_json || '{}') || {}; } catch (_) { return { raw: a.metadata_json }; }
+    }
+
+    function isNoOpCron(a) {
+      if (a.action !== 'maintenance.run') return false;
+      var m = parseMeta(a);
+      return !m.promoted && !m.expired && !m.cleaned && !m.deleted;
+    }
+
+    function entityInfo(a) {
+      var act = String(a.action || ''), tt = String(a.target_type || '');
+      if (tt === 'site_pages' || /^page\./.test(act)) return { label: 'Page', kind: 'page' };
+      if (/^banner/.test(act) || a.target_id === 'homepage_banner') return { label: 'Banner', kind: 'banner' };
+      if (/^jobs?\./.test(act) || tt === 'job') return { label: 'Job', kind: 'jobs' };
+      if (/^current-affairs\./.test(act) || tt === 'current_affair') return { label: 'Current Affair', kind: 'current-affairs' };
+      if (/^mock/.test(act) || tt === 'mock_test') return { label: 'Mock Test', kind: 'mock-tests' };
+      if (/^media/.test(act) || tt === 'media') return { label: 'Media', kind: 'media' };
+      return { label: 'System', kind: 'system' };
+    }
+
+    function relTime(ts) {
+      if (!ts) return '—';
+      var t = Date.parse(String(ts).replace(' ', 'T') + (String(ts).indexOf('T') === -1 && String(ts).indexOf('Z') === -1 ? 'Z' : ''));
+      if (isNaN(t)) return ts;
+      var mins = Math.max(0, Math.floor((Date.now() - t) / 60000));
+      if (mins < 1) return 'just now';
+      if (mins < 60) return mins + 'm ago';
+      var hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      return Math.floor(hrs / 24) + 'd ago';
+    }
+
+    function humanSummary(a, meta) {
+      var act = String(a.action || '');
+      var tgt = a.target_id ? ' ' + a.target_id : '';
+      if (act === 'maintenance.run') return 'Cron maintenance: ' + (meta.promoted || 0) + ' promoted, ' + (meta.expired || 0) + ' expired, ' + (meta.cleaned || 0) + ' cleaned';
+      if (act === 'page.create' || act === 'page.update') return (act === 'page.create' ? 'Created' : 'Updated') + ' page' + tgt + (meta.status ? ' (' + meta.status + ')' : '');
+      if (act === 'page.restore') return 'Restored page' + tgt + (meta.revision_id ? ' from rev #' + meta.revision_id : '');
+      if (act === 'banner.publish') return 'Published homepage banner: "' + (meta.headline || 'Live') + '"';
+      if (act === 'banner.deactivate') return 'Deactivated homepage banner';
+      if (act === 'seed.odisha') return 'Seeded Odisha starter content pack into D1';
+      if (act === 'user.role_change') return 'Changed role for ' + (meta.email || tgt) + ' (' + (meta.from || '?') + ' → ' + (meta.to || '?') + ')';
+      return act + tgt + (meta.title ? ' — ' + meta.title : '');
+    }
+
     function match(a) {
+      if (hideNoOpCron && isNoOpCron(a)) return false;
       var act = String(a.action || '');
       if (kind === 'Create' && !/create/.test(act)) return false;
       if (kind === 'Update' && !/update|role_change|deactivate|resolved/.test(act)) return false;
       if (kind === 'Publish' && !/publish/.test(act)) return false;
       if (kind === 'Delete' && !/delete/.test(act)) return false;
-      if (kind === 'Cron/System' && !(/maintenance|cron/.test(act) || !a.actor_email)) return false;
+      if (kind === 'Cron/System' && !(/maintenance|cron|seed/.test(act) || !a.actor_email)) return false;
       if (actor.value && !String(a.actor_email || 'system').toLowerCase().includes(actor.value.toLowerCase())) return false;
       var s = q.value.toLowerCase();
-      return !s || act.toLowerCase().includes(s) || String(a.actor_email || '').toLowerCase().includes(s);
+      if (!s) return true;
+      var meta = parseMeta(a);
+      return act.toLowerCase().includes(s) ||
+        String(a.actor_email || '').toLowerCase().includes(s) ||
+        String(a.target_id || '').toLowerCase().includes(s) ||
+        humanSummary(a, meta).toLowerCase().includes(s);
     }
+
     function jump(a) {
       var act = String(a.action || '');
-      var map = [[/^jobs\./, ['folder-05', 'module-05-008']], [/^current-affairs\./, ['folder-04', 'module-04-004']], [/^mock/, ['folder-05', 'module-05-014']], [/^banner/, ['folder-04', 'module-04-005']], [/^resource/, ['folder-05', 'module-05-010']], [/^user/, ['folder-09', 'module-09-001']], [/^incident/, ['folder-16', 'module-16-013']]];
+      var map = [[/^page\./, ['folder-02', 'module-02-001']], [/^jobs?\./, ['folder-05', 'module-05-008']], [/^current-affairs\./, ['folder-04', 'module-04-004']], [/^mock/, ['folder-05', 'module-05-014']], [/^banner/, ['folder-02', 'module-02-004']], [/^resource/, ['folder-05', 'module-05-010']], [/^user/, ['folder-09', 'module-09-001']], [/^incident/, ['folder-16', 'module-16-013']]];
       for (var i = 0; i < map.length; i++) if (map[i][0].test(act)) return map[i][1];
       return null;
     }
-    function draw() {
-      clear(host);
-      var shown = items.filter(match), lastDay = '';
-      host.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' of ' + items.length + ' events' }));
+
+    function exportAudit(fmt) {
+      var shown = items.filter(match);
+      if (fmt === 'json') {
+        downloadFile('cso-audit-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(shown, null, 2));
+        toast('Exported ' + shown.length + ' audit events (JSON)', 'success');
+        return;
+      }
+      var escCsv = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+      var lines = ['id,action,target_type,target_id,actor_email,ip_address,created_at,summary'];
       shown.forEach(function (a) {
-        var day = String(a.created_at || '').slice(0, 10);
-        if (day !== lastDay) { host.appendChild(el('h4', { class: 'cso-audit-day', text: day || 'Unknown date' })); lastDay = day; }
-        var meta = {}; try { meta = JSON.parse(a.metadata_json || '{}'); } catch (_) { meta = { raw: a.metadata_json }; }
-        var det = el('details', { class: 'cso-audit-row' });
-        det.appendChild(el('summary', {}, [badge(a.action, /delete/.test(a.action) ? 'err' : /publish/.test(a.action) ? 'ok' : 'info'), ' ' + (a.actor_email || 'system') + ' · ' + (a.created_at || '')]));
-        var body = el('div', { class: 'cso-mod-card' });
-        body.appendChild(el('p', { class: 'cso-mod-muted', text: 'Target: ' + (a.target_type || '—') + ' / ' + (a.target_id || '—') + ' · IP ' + (a.ip_address || '—') }));
-        body.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(meta, null, 2) }));
-        var j = jump(a);
-        var bar = el('div', { class: 'cso-mod-toolbar' });
-        if (j) bar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Jump to Record', onclick: function () { window.selectModule(j[0], j[1]); } }));
-        if (/^jobs\./.test(a.action)) bar.appendChild(openLink('/jobs-careers/'));
-        if (/^current-affairs\./.test(a.action)) bar.appendChild(openLink('/current-affairs/'));
-        bar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Copy JSON', onclick: function () { navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(a, null, 2)); toast('Copied', 'success'); } }));
-        body.appendChild(bar); det.appendChild(body); host.appendChild(det);
+        lines.push([a.id, a.action, a.target_type, a.target_id, a.actor_email || 'system', a.ip_address || '', a.created_at, humanSummary(a, parseMeta(a))].map(escCsv).join(','));
       });
+      downloadFile('cso-audit-' + new Date().toISOString().slice(0, 10) + '.csv', lines.join('\n'), 'text/csv');
+      toast('Exported ' + shown.length + ' audit events (CSV)', 'success');
     }
+
+    async function openInspector(a) {
+      clear(drawerHost);
+      var meta = parseMeta(a);
+      var ent = entityInfo(a);
+      var j = jump(a);
+      var rawOpen = false;
+      var rawPre = el('pre', { class: 'cso-code-pre cso-hidden', text: JSON.stringify({ event: a, metadata: meta }, null, 2) });
+
+      // Build structured Before / After diff
+      var diffRows = [];
+      if (meta.before && meta.after && typeof meta.before === 'object' && typeof meta.after === 'object') {
+        var keys = Object.keys(Object.assign({}, meta.before, meta.after));
+        keys.forEach(function (k) {
+          var bv = JSON.stringify(meta.before[k] !== undefined ? meta.before[k] : '—');
+          var av = JSON.stringify(meta.after[k] !== undefined ? meta.after[k] : '—');
+          diffRows.push([k, bv, av, bv !== av]);
+        });
+      } else if (meta.from !== undefined || meta.to !== undefined) {
+        diffRows.push(['value', String(meta.from || '—'), String(meta.to || '—'), meta.from !== meta.to]);
+      } else {
+        Object.keys(meta).forEach(function (k) {
+          diffRows.push([k, '—', typeof meta[k] === 'object' ? JSON.stringify(meta[k]) : String(meta[k]), true]);
+        });
+      }
+
+      var diffColBefore = el('div', { class: 'cso-diff-col' }, [el('h4', { text: 'Before / Context' })]);
+      var diffColAfter = el('div', { class: 'cso-diff-col' }, [el('h4', { text: 'After / Recorded Payload' })]);
+      if (!diffRows.length) {
+        diffColBefore.appendChild(el('p', { class: 'cso-mod-muted', text: 'No field-level diff recorded.' }));
+        diffColAfter.appendChild(el('p', { class: 'cso-mod-muted', text: a.action }));
+      } else {
+        diffRows.forEach(function (r) {
+          diffColBefore.appendChild(el('div', { class: 'cso-diff-row' + (r[3] ? ' cso-diff-changed' : ''), text: r[0] + ': ' + r[1] }));
+          diffColAfter.appendChild(el('div', { class: 'cso-diff-row' + (r[3] ? ' cso-diff-changed' : ''), text: r[0] + ': ' + r[2] }));
+        });
+      }
+
+      var previewHost = el('div', { class: 'cso-mod-shell' });
+      if (ent.kind === 'page' || ent.kind === 'banner') {
+        var targetRoute = ent.kind === 'banner' ? '/' : f02NormalizeRoute(a.target_id || '/');
+        previewHost.appendChild(el('div', { class: 'cso-preview-frame-wrap' }, [
+          el('iframe', { src: targetRoute + '?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Live Target Preview' })
+        ]));
+      } else if (ent.kind === 'jobs' || ent.kind === 'current-affairs' || ent.kind === 'mock-tests') {
+        previewHost.appendChild(el('div', { class: 'cso-preview-card-desktop' }, [
+          badge(ent.label, 'info'),
+          el('h4', { text: meta.title || a.target_id || a.action }),
+          el('p', { class: 'cso-mod-muted', text: humanSummary(a, meta) })
+        ]));
+        if (a.target_id) {
+          api('GET', ent.kind + '/' + encodeURIComponent(a.target_id)).then(function (rec) {
+            clear(previewHost);
+            previewHost.appendChild(el('div', { class: 'cso-preview-card-desktop' }, [
+              el('div', { class: 'cso-inline-row' }, [badge(ent.label, 'info'), badge(rec.status || 'draft', rec.status === 'published' ? 'ok' : 'warn')]),
+              el('h4', { text: rec.title || a.target_id }),
+              el('p', { class: 'cso-mod-muted', text: (rec.organisation || rec.category || rec.target_exam || '') + ' · ' + (rec.last_date || rec.event_date || '') }),
+              el('p', { text: rec.summary || 'No summary recorded.' })
+            ]));
+          }).catch(function () {});
+        }
+      } else {
+        previewHost.appendChild(el('p', { class: 'cso-mod-muted', text: humanSummary(a, meta) }));
+      }
+
+      var actionBar = el('div', { class: 'cso-mod-toolbar' });
+      if (j) {
+        actionBar.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-sm',
+          text: 'Edit Target Record',
+          onclick: function () {
+            if (ent.kind === 'page' && a.target_id) f02State.builderRoute = a.target_id;
+            window.selectModule && window.selectModule(j[0], ent.kind === 'page' ? 'module-02-003' : j[1]);
+          }
+        }));
+      }
+      if (ent.kind === 'page' && a.target_id) {
+        actionBar.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+          text: 'Publish / Re-Publish Live',
+          onclick: async function () {
+            try {
+              await api('PUT', 'pages', { route: a.target_id, status: 'published', note: 'Re-published from Audit Inspector' });
+              toast('Re-published live: ' + a.target_id, 'success');
+              load();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        }));
+        actionBar.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-sm',
+          text: 'Restore Latest Snapshot',
+          onclick: async function () {
+            try {
+              var revs = await api('GET', 'pages/revisions?route=' + encodeURIComponent(a.target_id));
+              var latest = (revs.revisions || [])[0];
+              if (!latest) { toast('No revision snapshot found for ' + a.target_id, 'amber'); return; }
+              await api('POST', 'pages/restore', { route: a.target_id, revision_id: latest.id, status: 'published' });
+              toast('Restored snapshot #' + latest.id + ' live!', 'success');
+              load();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        }));
+      } else if ((ent.kind === 'jobs' || ent.kind === 'current-affairs' || ent.kind === 'mock-tests') && a.target_id) {
+        actionBar.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+          text: 'Publish / Re-Publish Live',
+          onclick: async function () {
+            try {
+              await api('POST', ent.kind + '/' + encodeURIComponent(a.target_id) + '/status', { status: 'published' });
+              toast('Published live!', 'success');
+              load();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        }));
+      }
+      actionBar.appendChild(el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-sm',
+        text: 'Raw JSON',
+        onclick: function () { rawOpen = !rawOpen; rawPre.classList.toggle('cso-hidden', !rawOpen); }
+      }));
+
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', { class: 'cso-inline-row' }, [
+            badge(ent.label, 'info'),
+            badge(a.action, /delete/.test(a.action) ? 'err' : /publish|create/.test(a.action) ? 'ok' : 'info'),
+            el('strong', { text: humanSummary(a, meta) })
+          ]),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('p', { class: 'cso-mod-muted', text: 'Actor: ' + (a.actor_email || 'system:cron') + ' · IP: ' + (a.ip_address || '—') + ' · Time: ' + (a.created_at || '—') }),
+        actionBar,
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-shell' }, [
+            el('h4', { text: 'Structured Field Diff' }),
+            el('div', { class: 'cso-diff-grid' }, [diffColBefore, diffColAfter]),
+            rawPre
+          ]),
+          el('div', { class: 'cso-mod-shell' }, [
+            el('h4', { text: 'On-Demand Target Preview' }),
+            previewHost
+          ])
+        ])
+      ]));
+    }
+
+    function draw() {
+      var noOpCount = items.filter(isNoOpCron).length;
+      var cronCount = items.filter(function (a) { return a.action === 'maintenance.run'; }).length;
+      var editorialCount = items.length - cronCount;
+      var publishCount = items.filter(function (a) { return /publish|page\.|banner\./.test(String(a.action || '')); }).length;
+
+      clear(kpiHost);
+      [
+        ['Total Logged Events', items.length],
+        ['Editorial & Admin Actions', editorialCount],
+        ['Live Publishes & Deploys', publishCount],
+        ['Automated Cron Runs', cronCount]
+      ].forEach(function (k) { kpiHost.appendChild(kpiBox(String(k[1]), k[0])); });
+
+      clear(cronBannerHost);
+      var togglePill = el('button', {
+        type: 'button',
+        class: 'cso-pill' + (hideNoOpCron ? ' is-active' : ''),
+        text: (hideNoOpCron ? '✓ ' : '') + 'Hide No-Op Cron Heartbeats (maintenance.run) · ' + noOpCount + ' collapsed',
+        onclick: function () { hideNoOpCron = !hideNoOpCron; draw(); }
+      });
+      var latestCron = items.find(function (a) { return a.action === 'maintenance.run'; });
+      cronBannerHost.appendChild(el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          togglePill,
+          el('span', { class: 'cso-mod-muted', text: latestCron ? ('Latest Cron Heartbeat: ' + relTime(latestCron.created_at) + ' (' + latestCron.created_at + ')') : 'No cron runs logged' })
+        ])
+      ]));
+
+      clear(host);
+      var shown = items.filter(match);
+      host.appendChild(el('p', { class: 'cso-mod-muted', text: 'Showing ' + shown.length + ' of ' + items.length + ' events. Click any row to inspect diff & preview.' }));
+      if (!shown.length) {
+        host.appendChild(el('p', { class: 'cso-mod-muted', text: 'No matching audit events (try toggling off the cron heartbeat filter or clearing search).' }));
+        return;
+      }
+      var rows = shown.map(function (a) {
+        var meta = parseMeta(a);
+        var ent = entityInfo(a);
+        return el('tr', {}, [
+          el('td', {}, [badge(ent.label, 'info'), ' ', badge(a.action, /delete/.test(a.action) ? 'err' : /publish|create/.test(a.action) ? 'ok' : 'info')]),
+          el('td', { text: humanSummary(a, meta) }),
+          el('td', {}, badge(a.actor_email || 'system:cron', a.actor_email ? 'info' : 'warn')),
+          el('td', { text: relTime(a.created_at) + ' (' + (a.created_at || '—') + ')' }),
+          el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Inspect & Preview', onclick: function () { openInspector(a); } }))
+        ]);
+      });
+      host.appendChild(safeTable(['Entity & Action', 'Summary', 'Actor', 'Time', 'Inspect'], rows));
+    }
+
+    renderBanner(shell, 'Live Audit Timeline & Diff Inspector', 'Observable audit stream with no-op cron noise suppression, structured diffs, and live target previews.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: function () { exportAudit('json'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export CSV', onclick: function () { exportAudit('csv'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Reload', onclick: load })
+    ]);
+    shell.appendChild(kpiHost);
+    shell.appendChild(cronBannerHost);
+    shell.appendChild(pills(['All', 'Create', 'Update', 'Publish', 'Delete', 'Cron/System'], function (k) { kind = k; draw(); }));
+    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [q, actor]));
+    shell.appendChild(drawerHost);
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [host]));
+    root.appendChild(shell);
+
+    q.addEventListener('input', draw);
+    actor.addEventListener('input', draw);
+
     async function load() {
       loading(host, 'Loading audit log…');
       try { items = (await api('GET', 'audit?limit=100')).items || []; draw(); } catch (e) { fail(host, e); }
