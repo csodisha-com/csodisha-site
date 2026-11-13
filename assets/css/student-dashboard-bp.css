@@ -88,7 +88,7 @@ body.cso-student-dashboard-page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--cso-border);
 }
 
@@ -144,11 +144,11 @@ body.cso-student-dashboard-page {
 .bp-nav-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 0.45rem 0.75rem;
 }
 
 .bp-nav-section {
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .bp-nav-label {
@@ -157,7 +157,7 @@ body.cso-student-dashboard-page {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--cso-muted);
-  padding: 0 10px 6px;
+  padding: 0 8px 4px;
 }
 
 .bp-nav-list {
@@ -166,14 +166,14 @@ body.cso-student-dashboard-page {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .bp-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 10px;
+  padding: 0.45rem 0.75rem;
   border-radius: 10px;
   text-decoration: none;
   color: var(--cso-muted);
@@ -203,11 +203,11 @@ body.cso-student-dashboard-page {
 }
 
 .bp-sidebar-footer {
-  padding: 12px;
+  padding: 10px 12px;
   border-top: 1px solid var(--cso-border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cso-btn-install-side {
@@ -761,7 +761,70 @@ body.cso-student-dashboard-page {
   background: var(--cso-surface-alt);
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.cso-cd-card-full {
+  grid-column: 1 / -1;
+  padding: 16px;
+}
+
+.cso-cd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cso-cd-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 96px));
+  gap: 8px;
+}
+
+.cso-cd-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+}
+
+.cso-cd-tile strong {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--cso-ink);
+}
+
+.cso-cd-tile span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cso-muted);
+  margin-top: 2px;
+}
+
+.cso-paper-pills {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
+  margin-top: 2px;
+}
+
+.cso-paper-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cso-surface);
+  border: 1px solid var(--cso-border);
+  color: var(--cso-ink);
 }
 
 .cd-normal { border-left: 4px solid var(--cso-emerald); }
@@ -819,6 +882,25 @@ body.cso-student-dashboard-page {
   border-radius: 14px;
   padding: 16px;
   box-shadow: var(--cso-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bp-exam-card-full {
+  grid-column: 1 / -1;
+}
+
+.cso-badge-fallback {
+  background: var(--cso-surface-alt);
+  border: 1px solid var(--cso-border);
+  color: var(--cso-muted);
+}
+
+.cso-shelf-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .bp-exam-card-head {

@@ -178,6 +178,8 @@
     });
 
     const sb = document.getElementById('bp-sidebar');
+    const navScroll = sb?.querySelector('.bp-nav-scroll');
+    if (navScroll) navScroll.scrollTop = 0;
     document.getElementById('bp-sidebar-toggle-btn')?.addEventListener('click', () => sb?.classList.toggle('is-collapsed'));
     document.getElementById('bp-mobile-menu-trigger')?.addEventListener('click', () => sb?.classList.toggle('mobile-open'));
     document.getElementById('bp-topbar-user-btn')?.addEventListener('click', () => switchTab('tab-profile-settings'));
@@ -569,20 +571,42 @@
     renderAchievements(score, doneTopics, state.attempts.length, sprints);
   }
 
+  function buildPaperPills(ex) {
+    const saved = getSavedChecklists()[ex.id] || {};
+    const byPaper = new Map();
+    (ex.syllabus || []).forEach(t => {
+      const paper = t.paper || 'Paper-I';
+      if (!byPaper.has(paper)) byPaper.set(paper, { done: 0, total: 0 });
+      const entry = byPaper.get(paper);
+      entry.total += 1;
+      if (saved[paper] && saved[paper][t.id]) entry.done += 1;
+    });
+    if (!byPaper.size) return null;
+    const wrap = el('div', 'cso-paper-pills');
+    byPaper.forEach((counts, paper) => {
+      wrap.appendChild(el('span', 'cso-paper-pill', `${paper}: ${counts.done}/${counts.total}`));
+    });
+    return wrap;
+  }
+
   function renderTargetExamCards() {
     const grid = document.getElementById('cso-target-exam-cards');
     if (!grid) return;
     clear(grid);
     const active = getActiveExams();
+    const isSingle = active.length === 1;
     active.slice(0, 6).forEach(ex => {
       const st = computeExamStats(ex);
-      const card = el('div', 'bp-exam-card');
+      const card = el('div', isSingle ? 'bp-exam-card bp-exam-card-full' : 'bp-exam-card');
       const head = el('div', 'bp-exam-card-head');
       head.appendChild(el('span', 'cso-pill-badge', ex.short_code));
       head.appendChild(el('span', 'cso-muted-note', st.percent + '%'));
       card.appendChild(head);
       card.appendChild(el('h3', '', ex.exam_label));
       card.appendChild(el('p', 'cso-muted-note', `${st.done}/${st.total} topics · ${ex.next_exam_date || 'Date TBA'}`));
+
+      const pills = buildPaperPills(ex);
+      if (pills) card.appendChild(pills);
 
       const track = el('div', 'bp-progress-track');
       const fill = el('div', 'bp-progress-fill ' + snapPctClass('w-pct-', st.percent));
@@ -735,6 +759,36 @@
   }
 
   /* ---------- Countdowns & Calendar ---------- */
+  function resolveDynamicCountdown(rawDate) {
+    const now = new Date();
+    const compute = window.CSOCountdown && typeof window.CSOCountdown.compute === 'function'
+      ? window.CSOCountdown.compute
+      : null;
+    if (!compute || !rawDate) {
+      return { info: null, displayDate: rawDate || 'TBA', rolledForward: false };
+    }
+    let candidate = String(rawDate).trim();
+    let info = compute(candidate, now);
+    let rolledForward = false;
+    if (info && info.isPast && /^\d{4}-\d{2}-\d{2}$/.test(candidate)) {
+      const parts = candidate.split('-').map(Number);
+      for (let step = 1; step <= 3; step += 1) {
+        const nextDate = `${parts[0] + step}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
+        const nextInfo = compute(nextDate, now);
+        if (nextInfo && !nextInfo.isPast) {
+          candidate = nextDate;
+          info = nextInfo;
+          rolledForward = true;
+          break;
+        }
+      }
+    }
+    if (!info || info.isPast) {
+      return { info: null, displayDate: rawDate, rolledForward: false };
+    }
+    return { info, displayDate: candidate, rolledForward };
+  }
+
   function renderCountdownsAndCalendar() {
     const grid = document.getElementById('cso-countdown-grid');
     const calHost = document.getElementById('candidate-calendar-list');
@@ -745,18 +799,40 @@
       if (!active.length) {
         grid.appendChild(el('p', 'cso-muted-note', 'No scheduled exam dates for current selection.'));
       } else {
+        const isSingle = active.length === 1;
         active.slice(0, 6).forEach(ex => {
-          const info = (window.CSOCountdown && typeof window.CSOCountdown.compute === 'function')
-            ? window.CSOCountdown.compute(ex.next_exam_date)
-            : null;
+          const resolved = resolveDynamicCountdown(ex.next_exam_date);
+          const info = resolved.info;
           const urgClass = info ? ('cd-' + info.urgency) : 'cd-normal';
-          const card = el('div', 'cso-cd-card ' + urgClass);
-          card.appendChild(el('h4', 'cso-cd-title', ex.short_code));
-          const timerTxt = info
-            ? (info.concluded ? 'Concluded' : `${info.days}d ${info.hours}h ${info.minutes}m`)
-            : ex.next_exam_date;
-          card.appendChild(el('div', 'cso-cd-timer', timerTxt));
-          card.appendChild(el('div', 'cso-cd-meta', `${ex.next_exam_date} · ${ex.countdown_status || 'TENTATIVE'}`));
+          const card = el('div', `cso-cd-card ${urgClass}${isSingle ? ' cso-cd-card-full' : ''}`);
+          const head = el('div', 'cso-cd-head');
+          head.appendChild(el('h4', 'cso-cd-title', isSingle ? `${ex.short_code} · ${ex.exam_label}` : ex.short_code));
+          head.appendChild(el('span', 'cso-pill-badge', resolved.rolledForward ? 'NEXT CYCLE (EST.)' : (ex.countdown_status || 'TENTATIVE')));
+          card.appendChild(head);
+
+          if (info) {
+            const tiles = el('div', 'cso-cd-tiles');
+            [
+              [String(info.days), 'DAYS'],
+              [String(info.hours).padStart(2, '0'), 'HRS'],
+              [String(info.minutes).padStart(2, '0'), 'MIN']
+            ].forEach(pair => {
+              const tile = el('div', 'cso-cd-tile');
+              tile.appendChild(el('strong', '', pair[0]));
+              tile.appendChild(el('span', '', pair[1]));
+              tiles.appendChild(tile);
+            });
+            card.appendChild(tiles);
+          } else {
+            card.appendChild(el('div', 'cso-cd-timer', 'Cycle Window Open / Check Official Notification'));
+          }
+
+          if (isSingle) {
+            const pills = buildPaperPills(ex);
+            if (pills) card.appendChild(pills);
+          }
+
+          card.appendChild(el('div', 'cso-cd-meta', `${resolved.displayDate} · ${ex.domain_label || 'Odisha Exam'}`));
           grid.appendChild(card);
         });
       }
@@ -962,28 +1038,43 @@
       }
       return false;
     });
-    const display = matched.length ? matched : state.resources;
+    const isFallback = matched.length === 0;
+    const generalTeaching = isFallback
+      ? state.resources.filter(r => /odisha|teaching|b\.ed|pedagogy|gk|general/i.test(`${r.exam || ''} ${r.title || ''} ${r.kind || ''}`))
+      : [];
+    const display = matched.length ? matched : (generalTeaching.length ? generalTeaching : state.resources);
 
     [overHost, tabHost].forEach((host, idx) => {
       if (!host) return;
       clear(host);
       if (!display.length) {
-        host.appendChild(el('p', 'cso-muted-note', 'No D1 PDFs or PYQs published yet.'));
-        return;
+        host.appendChild(el('p', 'cso-muted-note', 'General Odisha & Teaching study packs are available in the main repository.'));
+      } else {
+        display.slice(0, idx === 0 ? 4 : 12).forEach(r => {
+          const row = el('div', 'cso-list-item');
+          const main = el('div', 'cso-list-item-main');
+          main.appendChild(el('h4', 'cso-list-item-title', r.title));
+          main.appendChild(el('span', 'cso-list-item-sub', `${r.exam || 'Odisha'} · ${(r.kind || 'PYQ').toUpperCase()} ${r.year || ''}`));
+          if (isFallback) {
+            main.appendChild(el('span', 'cso-pill-badge cso-badge-fallback', 'General Odisha Resource'));
+          }
+          const link = el('a', 'cso-btn cso-btn-sm', 'Download ⬇');
+          link.href = r.file_url || '/resources/';
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          row.appendChild(main);
+          row.appendChild(link);
+          host.appendChild(row);
+        });
       }
-      display.slice(0, idx === 0 ? 4 : 12).forEach(r => {
-        const row = el('div', 'cso-list-item');
-        const main = el('div', 'cso-list-item-main');
-        main.appendChild(el('h4', 'cso-list-item-title', r.title));
-        main.appendChild(el('span', 'cso-list-item-sub', `${r.exam || 'Odisha'} · ${(r.kind || 'PYQ').toUpperCase()} ${r.year || ''}`));
-        const link = el('a', 'cso-btn cso-btn-sm', 'Download ⬇');
-        link.href = r.file_url || '/resources/';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        row.appendChild(main);
-        row.appendChild(link);
-        host.appendChild(row);
-      });
+
+      if (isFallback || !display.length) {
+        const footer = el('div', 'cso-shelf-footer');
+        const browseBtn = el('a', 'cso-btn cso-btn-sm', 'Browse All Study Material →');
+        browseBtn.href = '/resources/';
+        footer.appendChild(browseBtn);
+        host.appendChild(footer);
+      }
     });
   }
 
