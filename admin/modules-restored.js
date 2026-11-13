@@ -7841,8 +7841,37 @@
      FOLDER 03: WEBSITE INFORMATION & LEGAL (module-03-001..016)
      ========================================================================= */
   var LEGAL_PAGES = {
-    'module-03-001': { title: 'About Us', path: '/about.html', email: 'editorial@csodisha.com' },
-    'module-03-002': { title: 'Contact Us', path: '/contact.html', email: 'support@csodisha.com' },
+    'module-03-001': {
+      title: 'About Us',
+      seoTitle: 'About Us | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'About Common Sense Odisha (csodisha.com) — independent Odisha government job, OPSC/OSSC/OSSSC exam preparation, and scholarship verification portal based in Basta, Balasore, Odisha.',
+      heroTitle: 'About Common Sense Odisha',
+      heroSubtitle: 'Independent Odisha recruitment, exam preparation, and scholarship intelligence — verified from Basta, Balasore, Odisha, India.',
+      effectiveDate: '2026-11-13',
+      path: '/about.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Our Mission & Editorial Independence', text: 'Common Sense Odisha (csodisha.com) is an independent educational and career-intelligence portal built for aspirants across all 30 districts of Odisha. Every recruitment notice, syllabus, and scheme deadline is cross-checked against official government gazettes and commission portals.' },
+        { type: 'richtext', title: 'Founder & Editorial Base', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, Odisha, India · Contact: editorial@csodisha.com · Official Portal: https://csodisha.com' },
+        { type: 'notice', title: 'Verification & Non-Affiliation Notice', text: 'Common Sense Odisha is not affiliated with any government ministry or recruitment commission. Always confirm final submission dates on the official notification linked in each post.' }
+      ]
+    },
+    'module-03-002': {
+      title: 'Contact Us',
+      seoTitle: 'Contact Us | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Contact Common Sense Odisha (csodisha.com) — reach the Editorial & Verification Desk in Basta, Balasore, Odisha for recruitment updates, corrections, and student queries.',
+      heroTitle: 'Contact Common Sense Odisha',
+      heroSubtitle: 'Reach our Editorial & Verification Desk in Basta, Balasore, Odisha for recruitment tips, factual corrections, scholarship queries, and feedback.',
+      effectiveDate: '2026-11-13',
+      path: '/contact.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Editorial & Verification Desk', text: 'Have a question about an OPSC, OSSC, OSSSC, or teaching recruitment notice, exam syllabus, or scholarship deadline? Write directly to our Editorial Desk at editorial@csodisha.com. Please include the official notification number or advertisement link so our team can verify and respond promptly.' },
+        { type: 'richtext', title: 'Corrections, Takedowns & Technical Support', text: 'If you spot a typographical error, outdated deadline, or broken link on any page, notify us at editorial@csodisha.com with the page URL. Verified corrections are updated within 24 hours. For copyright or DMCA notices, please refer to our Copyright & DMCA policy or email editorial@csodisha.com with supporting documentation.' },
+        { type: 'richtext', title: 'Founder & Editorial Office', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, Odisha, India · Official Portal: https://csodisha.com' },
+        { type: 'notice', title: 'Response Hours & Important Advisory', text: 'Editorial Hours: Monday to Saturday, 10:00 AM – 6:00 PM IST · Advisory: Common Sense Odisha is an independent educational portal and never asks aspirants for money, bank details, or OTPs.' }
+      ]
+    },
     'module-03-003': { title: 'Privacy Policy', path: '/privacy.html', email: 'privacy@csodisha.com' },
     'module-03-004': { title: 'Disclaimer', path: '/disclaimer.html', email: 'legal@csodisha.com' },
     'module-03-005': { title: 'Terms & Conditions', path: '/terms.html', email: 'legal@csodisha.com' },
@@ -7865,20 +7894,23 @@
 
     var shell = el('div', { class: 'cso-mod-shell' });
     var routeInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.path });
-    var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.title });
+    var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.seoTitle || cfg.title });
     var metaInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'SEO Meta Description (up to 160 chars)…' });
-    var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.title });
-    var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', value: 'Official policy & transparency information for Common Sense Odisha.' });
-    var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: new Date().toISOString().slice(0, 10) });
+    if (cfg.metaDescription) metaInp.value = cfg.metaDescription;
+    var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.heroTitle || cfg.title });
+    var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.heroSubtitle || 'Official policy & transparency information for Common Sense Odisha.' });
+    var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: cfg.effectiveDate || new Date().toISOString().slice(0, 10) });
     var statusSel = el('select', { class: 'cso-mod-select' }, [
       el('option', { value: 'published', text: 'published' }),
       el('option', { value: 'draft', text: 'draft' })
     ]);
 
-    var sections = [
-      { type: 'notice', title: 'Effective Date & Contact', text: 'Effective: ' + new Date().toISOString().slice(0, 10) + ' · Contact: ' + cfg.email },
-      { type: 'richtext', title: 'Policy Overview', text: 'Common Sense Odisha (csodisha.com) maintains transparent editorial, accessibility, and DPDP-aligned standards.' }
-    ];
+    var sections = Array.isArray(cfg.sections) && cfg.sections.length
+      ? cfg.sections.map(function (s) { return { type: s.type, title: s.title, text: s.text }; })
+      : [
+          { type: 'notice', title: 'Effective Date & Contact', text: 'Effective: ' + new Date().toISOString().slice(0, 10) + ' · Contact: ' + cfg.email },
+          { type: 'richtext', title: 'Policy Overview', text: 'Common Sense Odisha (csodisha.com) maintains transparent editorial, accessibility, and DPDP-aligned standards.' }
+        ];
     var sectionsHost = el('div', { class: 'cso-mod-shell' });
     var revHost = el('div', {});
     var liveLink = el('a', { href: cfg.path, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn', text: 'Open Live ↗' });
