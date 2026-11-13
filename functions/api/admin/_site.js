@@ -55,6 +55,33 @@ export async function handleBanner(request, env, actor) {
   return json(await readBanner(env));
 }
 
+export const REGISTRY_KEY = 'module_registry_config';
+export async function handleSettings(request, env, actor, id) {
+  const key = !id || id === 'module-registry' ? REGISTRY_KEY : null;
+  if (!key) throw new HttpError(404, 'NOT_FOUND', 'Unknown settings key');
+  if (request.method === 'GET') {
+    const row = await env.DB.prepare('SELECT value_json, updated_at FROM site_settings WHERE key = ?').bind(key).first();
+    if (!row) return json({ key, modules: {}, draft: {}, updatedAt: null });
+    try {
+      const parsed = JSON.parse(row.value_json);
+      return json({ key, modules: parsed.modules || {}, draft: parsed.draft || {}, updatedAt: row.updated_at });
+    } catch {
+      return json({ key, modules: {}, draft: {}, updatedAt: row.updated_at });
+    }
+  }
+  if (request.method !== 'PUT') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  const body = await readJson(request, 200000);
+  const modules = body && typeof body.modules === 'object' && !Array.isArray(body.modules) ? body.modules : {};
+  const draft = body && typeof body.draft === 'object' && !Array.isArray(body.draft) ? body.draft : {};
+  const value = { modules, draft };
+  await env.DB.prepare(
+    `INSERT INTO site_settings (key, value_json, updated_by, updated_at) VALUES (?, ?, ?, datetime('now'))
+     ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_by = excluded.updated_by, updated_at = excluded.updated_at`
+  ).bind(key, JSON.stringify(value), actor.userId).run();
+  await audit(env, request, actor, body.publish ? 'settings.publish' : 'settings.draft', 'site_settings', key, { count: Object.keys(modules).length });
+  return json({ key, modules, draft, updatedAt: new Date().toISOString() });
+}
+
 /* ---------- resources (syllabus / pyq) ---------- */
 async function normalizeResource(env, body, existing) {
   const errors = {};

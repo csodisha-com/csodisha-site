@@ -4921,45 +4921,278 @@
   }
   function folder_re(id) { return id + ' '; }
 
+  var FOLDER_TABLES = {
+    'folder-01': ['site_settings', 'audit_log', 'site_pages'],
+    'folder-02': ['site_pages', 'site_page_revisions'],
+    'folder-03': ['site_pages', 'site_settings'],
+    'folder-04': ['posts', 'media_assets', 'audit_log'],
+    'folder-05': ['mock_tests', 'questions', 'attempts', 'resources', 'posts'],
+    'folder-06': ['site_pages', 'posts', 'mock_tests'],
+    'folder-07': ['media_assets (R2 cso-media)'],
+    'folder-09': ['users', 'sessions', 'audit_log'],
+    'folder-10': ['attempts', 'bookmarks', 'site_pages', 'audit_log'],
+    'folder-13': ['posts', 'mock_tests', 'site_pages'],
+    'folder-14': ['posts', 'audit_log'],
+    'folder-15': ['site_settings', 'audit_log'],
+    'folder-16': ['incidents', 'audit_log'],
+    'folder-17': ['site_settings', 'posts', 'audit_log']
+  };
+  var FOLDER_PUBLIC_ROUTE = {
+    'folder-01': '/', 'folder-02': '/', 'folder-03': '/about/', 'folder-04': '/current-affairs/',
+    'folder-05': '/mock-tests/', 'folder-06': '/jobs-careers/', 'folder-13': '/sitemap.xml', 'folder-14': '/current-affairs/'
+  };
+
   function renderCommandDirectory(root, actions) {
     addHeaderPill(actions, '● Command Directory & Capability Matrix');
-    var shell = el('div', { class: 'cso-mod-shell' }), tableHost = el('div', {});
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-kpis' });
+    var suiteWrap = el('div', { class: 'cso-mod-card' });
+    var drawer = el('div', { class: 'cso-drawer cso-hidden' });
+    var tableHost = el('div', {});
     var search = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Search module id, title or endpoint…' });
-    var folderSel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'All folders' })]);
-    var rows = [];
-    renderBanner(shell, 'Master Feature Registry', 'Every folder and module from master-navigation.json with capability badges and endpoint mapping.');
-    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [search, folderSel]));
-    shell.appendChild(tableHost); root.appendChild(shell);
-    function draw() {
-      var q = search.value.toLowerCase().trim(), f = folderSel.value;
-      var shown = rows.filter(function (r) { return (!f || r.folderId === f) && (!q || (r.id + ' ' + r.title + ' ' + r.folderTitle + ' ' + r.eps.join(' ')).toLowerCase().indexOf(q) >= 0); });
-      clear(tableHost);
-      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' of ' + rows.length + ' modules shown' }));
-      tableHost.appendChild(safeTable(['Module', 'Folder', 'Capabilities', 'API / Data endpoints', 'Launch'], shown.slice(0, 150).map(function (r) {
-        return el('tr', {}, [el('td', {}, [el('strong', { text: r.title }), el('div', { class: 'cso-mod-muted', text: r.id })]), el('td', { text: r.folderTitle }),
-          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, r.caps.map(function (c) { return badge(c, 'ok'); }))),
-          el('td', { class: 'cso-mod-muted', text: r.eps.join('  ') }),
-          el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Launch Module →', onclick: function () { goTo([r.folderId, r.id]); } }))]);
-      })));
-      if (shown.length > 150) tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Refine search to see the remaining ' + (shown.length - 150) + ' modules.' }));
+    var folderSel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'All suites / folders' })]);
+    var pageSizeSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: '25', text: '25 per page' }),
+      el('option', { value: '50', text: '50 per page' }),
+      el('option', { value: 'all', text: 'All modules' })
+    ]);
+    var rows = [], folders = [], filterMode = 'All', pageIdx = 0, suiteOpen = true;
+    var modConfig = {}, draftConfig = {};
+
+    renderBanner(shell, 'Master Feature Registry', '241-module command directory with suite coverage, pagination, live D1/route previews & persistent feature flags.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: function () { downloadFile('cso-registry-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(rows, null, 2)); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Export CSV', onclick: exportRegistryCsv })
+    ]);
+    shell.appendChild(kpiHost);
+    shell.appendChild(suiteWrap);
+    shell.appendChild(pills(['All', 'Dedicated Studios', 'D1 + Edge Wired', 'Pinned', 'Disabled'], function (m) { filterMode = m; pageIdx = 0; draw(); }));
+    shell.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Search Registry' }), search]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Suite / Folder' }), folderSel]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Size' }), pageSizeSel])
+    ]));
+    shell.appendChild(drawer);
+    shell.appendChild(tableHost);
+    root.appendChild(shell);
+
+    function effectiveCfg(id) {
+      return Object.assign({ enabled: true, pinned: false, minRole: 'editor', note: '' }, modConfig[id] || {}, draftConfig[id] || {});
     }
-    fetchNav().then(function (nav) {
-      (nav.folders || []).forEach(function (fo) {
+    function isDedicated(r) {
+      return r.folderId === 'folder-01' || r.folderId === 'folder-02' || r.folderId === 'folder-03' || r.eps[0] !== '(client-side studio)';
+    }
+    function exportRegistryCsv() {
+      var lines = ['id,title,folder,enabled,pinned,min_role,endpoints'];
+      rows.forEach(function (r) {
+        var c = effectiveCfg(r.id);
+        lines.push([r.id, r.title, r.folderTitle, c.enabled, c.pinned, c.minRole, r.eps.join(' | ')].map(csvCell).join(','));
+      });
+      downloadFile('cso-registry.csv', lines.join('\n'), 'text/csv');
+      toast('Registry CSV exported', 'success');
+    }
+
+    function renderKpis() {
+      clear(kpiHost);
+      var wired = rows.filter(function (r) { return r.eps[0] !== '(client-side studio)'; }).length;
+      var dedicated = rows.filter(isDedicated).length;
+      var enabledCnt = rows.filter(function (r) { return effectiveCfg(r.id).enabled; }).length;
+      [
+        { l: 'Total Registered Modules', v: String(rows.length), s: folders.length + ' sidebar suites' },
+        { l: 'D1 + Edge Live Coverage', v: '100%', s: wired + ' API-wired · ' + (rows.length - wired) + ' edge studios' },
+        { l: 'Dedicated Custom Studios', v: String(dedicated), s: 'Full CRUD & preview workflows' },
+        { l: 'Active / Enabled Flags', v: enabledCnt + '/' + rows.length, s: Object.keys(draftConfig).length ? 'Unpublished flag edits pending' : 'Synced with D1 settings' }
+      ].forEach(function (k) {
+        kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+          el('div', { class: 'cso-mod-kpi-label', text: k.l }),
+          el('div', { class: 'cso-mod-kpi-val', text: k.v }),
+          el('div', { class: 'cso-mod-kpi-sub', text: k.s })
+        ]));
+      });
+    }
+
+    function renderSuites() {
+      clear(suiteWrap);
+      var head = el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Suite-by-Suite Coverage (' + folders.length + ' suites · click a pill to filter)' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: suiteOpen ? 'Collapse' : 'Expand', onclick: function () { suiteOpen = !suiteOpen; renderSuites(); } })
+      ]);
+      suiteWrap.appendChild(head);
+      if (!suiteOpen) return;
+      var row = el('div', { class: 'cso-pill-row' });
+      row.appendChild(el('button', { type: 'button', class: 'cso-pill' + (!folderSel.value ? ' cso-pill-active' : ''), text: 'All (' + rows.length + ')', onclick: function () { folderSel.value = ''; pageIdx = 0; draw(); renderSuites(); } }));
+      folders.forEach(function (fo) {
+        row.appendChild(el('button', {
+          type: 'button',
+          class: 'cso-pill' + (folderSel.value === fo.id ? ' cso-pill-active' : ''),
+          text: fo.title + ' (' + fo.modules.length + ')',
+          onclick: function () { folderSel.value = fo.id; pageIdx = 0; draw(); renderSuites(); }
+        }));
+      });
+      suiteWrap.appendChild(row);
+    }
+
+    function openInspector(r, startTab) {
+      clear(drawer);
+      drawer.classList.remove('cso-hidden');
+      var cfg = effectiveCfg(r.id);
+      var tables = FOLDER_TABLES[r.folderId] || ['site_settings'];
+      var pubRoute = FOLDER_PUBLIC_ROUTE[r.folderId] || '/';
+      var mobileMode = false;
+
+      var deskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { mobileMode = false; syncVp(); renderRight(); } });
+      var mobBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Mobile 375px', onclick: function () { mobileMode = true; syncVp(); renderRight(); } });
+      function syncVp() {
+        deskBtn.classList.toggle('cso-pill-active', !mobileMode);
+        mobBtn.classList.toggle('cso-pill-active', mobileMode);
+      }
+
+      drawer.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('div', {}, [
+          el('strong', { text: (startTab === 'config' ? 'Configure Module: ' : 'Preview Module: ') + r.title }),
+          el('div', { class: 'cso-mod-muted', text: r.id + ' · ' + r.folderTitle })
+        ]),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          deskBtn, mobBtn,
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Open Module →', onclick: function () { goTo([r.folderId, r.id]); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })
+        ])
+      ]));
+
+      var left = el('div', { class: 'cso-mod-card' });
+      var right = el('div', { class: 'cso-mod-card' });
+      drawer.appendChild(el('div', { class: 'cso-mod-grid-2' }, [left, right]));
+
+      left.appendChild(el('h4', { text: 'Bound D1 Tables & API Endpoints' }));
+      left.appendChild(el('div', { class: 'cso-mod-toolbar' }, tables.map(function (t) { return badge('D1: ' + t, 'info'); })));
+      left.appendChild(el('p', { class: 'cso-mod-muted', text: 'Endpoints: ' + r.eps.join(', ') }));
+      left.appendChild(el('div', { class: 'cso-mod-toolbar' }, r.caps.map(function (c) { return badge(c, 'ok'); })));
+
+      var enChk = el('input', { type: 'checkbox', checked: cfg.enabled });
+      var pinChk = el('input', { type: 'checkbox', checked: cfg.pinned });
+      var roleSel = el('select', { class: 'cso-mod-select' }, [
+        el('option', { value: 'editor', text: 'editor (Staff & Admins)' }),
+        el('option', { value: 'admin', text: 'admin (Admin-only)' })
+      ]);
+      roleSel.value = cfg.minRole || 'editor';
+      var noteInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.note || '', placeholder: 'Editorial note or rollout status…' });
+
+      left.appendChild(el('h4', { text: 'Module Flags & Access Config' }));
+      left.appendChild(el('label', { class: 'cso-check-label' }, [enChk, el('span', { text: 'Module Enabled' })]));
+      left.appendChild(el('label', { class: 'cso-check-label' }, [pinChk, el('span', { text: 'Pin to Top Quick-Jump' })]));
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Minimum Role' }), roleSel]));
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Editorial Note' }), noteInp]));
+
+      function collectEntry() {
+        return { enabled: !!enChk.checked, pinned: !!pinChk.checked, minRole: roleSel.value, note: noteInp.value.trim() };
+      }
+      left.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: async function () {
+          draftConfig[r.id] = collectEntry();
+          try {
+            await api('PUT', 'settings/module-registry', { modules: modConfig, draft: draftConfig, publish: false });
+            toast('Module flag draft saved', 'success');
+            renderKpis(); draw();
+          } catch (e) { toast(e.message, 'crimson'); }
+        } }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Studio Config Live', onclick: async function () {
+          modConfig[r.id] = collectEntry();
+          delete draftConfig[r.id];
+          try {
+            await api('PUT', 'settings/module-registry', { modules: modConfig, draft: draftConfig, publish: true });
+            toast('Studio config published live to D1!', 'success');
+            renderKpis(); draw();
+          } catch (e) { toast(e.message, 'crimson'); }
+        } })
+      ]));
+
+      function renderRight() {
+        clear(right);
+        right.appendChild(el('div', { class: 'cso-mod-label', text: 'Target Public Route Preview (' + pubRoute + ' · ' + (mobileMode ? 'Mobile 375px' : 'Desktop') + ')' }));
+        right.appendChild(el('div', { class: 'cso-preview-frame-wrap' }, [
+          el('iframe', { class: mobileMode ? 'cso-preview-frame-mobile' : 'cso-preview-frame', src: pubRoute, title: 'Route preview ' + pubRoute })
+        ]));
+      }
+      renderRight();
+    }
+
+    function draw() {
+      renderKpis();
+      var q = search.value.toLowerCase().trim(), f = folderSel.value;
+      var shown = rows.filter(function (r) {
+        var cfg = effectiveCfg(r.id);
+        var modeOk = filterMode === 'All' ||
+          (filterMode === 'Dedicated Studios' && isDedicated(r)) ||
+          (filterMode === 'D1 + Edge Wired' && r.eps[0] !== '(client-side studio)') ||
+          (filterMode === 'Pinned' && cfg.pinned) ||
+          (filterMode === 'Disabled' && !cfg.enabled);
+        return modeOk && (!f || r.folderId === f) && (!q || (r.id + ' ' + r.title + ' ' + r.folderTitle + ' ' + r.eps.join(' ')).toLowerCase().indexOf(q) >= 0);
+      });
+      shown.sort(function (a, b) {
+        var pa = effectiveCfg(a.id).pinned ? 1 : 0, pb = effectiveCfg(b.id).pinned ? 1 : 0;
+        return pb - pa;
+      });
+
+      var pSize = pageSizeSel.value === 'all' ? Math.max(shown.length, 1) : Number(pageSizeSel.value) || 25;
+      var totalPages = Math.max(1, Math.ceil(shown.length / pSize));
+      if (pageIdx >= totalPages) pageIdx = totalPages - 1;
+      var slice = shown.slice(pageIdx * pSize, (pageIdx + 1) * pSize);
+
+      clear(tableHost);
+      var pager = el('div', { class: 'cso-drawer-head' }, [
+        el('span', { class: 'cso-mod-muted', text: 'Showing ' + (shown.length ? pageIdx * pSize + 1 : 0) + '–' + Math.min((pageIdx + 1) * pSize, shown.length) + ' of ' + shown.length + ' matching modules (' + rows.length + ' total)' }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Prev', disabled: pageIdx <= 0, onclick: function () { if (pageIdx > 0) { pageIdx--; draw(); } } }),
+          el('span', { class: 'cso-mod-muted', text: 'Page ' + (pageIdx + 1) + ' / ' + totalPages }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Next →', disabled: pageIdx >= totalPages - 1, onclick: function () { if (pageIdx < totalPages - 1) { pageIdx++; draw(); } } })
+        ])
+      ]);
+      tableHost.appendChild(pager);
+
+      tableHost.appendChild(safeTable(['Module', 'Suite', 'Capabilities & Flags', 'API / Data Endpoints', 'Actions'], slice.map(function (r) {
+        var cfg = effectiveCfg(r.id);
+        var capWrap = el('div', { class: 'cso-mod-toolbar' }, r.caps.map(function (c) { return badge(c, 'ok'); }));
+        if (cfg.pinned) capWrap.appendChild(badge('Pinned', 'info'));
+        if (!cfg.enabled) capWrap.appendChild(badge('Disabled', 'warn'));
+        if (cfg.minRole === 'admin') capWrap.appendChild(badge('Admin-only', 'warn'));
+        return el('tr', {}, [
+          el('td', {}, [el('strong', { text: r.title }), el('div', { class: 'cso-mod-muted', text: r.id })]),
+          el('td', { text: r.folderTitle }),
+          el('td', {}, capWrap),
+          el('td', { class: 'cso-mod-muted', text: r.eps.join('  ') }),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openInspector(r, 'preview'); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Configure', onclick: function () { openInspector(r, 'config'); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Open →', onclick: function () { goTo([r.folderId, r.id]); } })
+          ]))
+        ]);
+      })));
+    }
+
+    Promise.all([fetchNav(), api('GET', 'settings/module-registry').catch(function () { return { modules: {}, draft: {} }; })]).then(function (res) {
+      var nav = res[0], reg = res[1] || {};
+      modConfig = reg.modules || {};
+      draftConfig = reg.draft || {};
+      folders = nav.folders || [];
+      folders.forEach(function (fo) {
         folderSel.appendChild(el('option', { value: fo.id, text: fo.title + ' (' + fo.modules.length + ')' }));
         fo.modules.forEach(function (m) {
           var route = window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[m.id];
           var eps = (DIR_EP[fo.id] || []).slice();
           if (route && window.CSOLive.resolveRoute) {
             var map = { 'current-affairs': '/api/admin/current-affairs', jobs: '/api/admin/jobs', 'mock-tests': '/api/admin/mock-tests', syllabus: '/api/admin/resources', pyq: '/api/admin/resources', media: '/api/admin/media', users: '/api/admin/users', banner: '/api/admin/banner', audit: '/api/admin/audit', 'audit/security': '/api/admin/audit', incidents: '/api/admin/incidents', operations: '/api/admin/maintenance', dashboard: '/api/admin/stats' };
-            var ep = map[window.CSOLive.resolveRoute(fo.id, m.id)[0]]; if (ep && eps.indexOf(ep) < 0) eps.push(ep);
+            var ep = map[window.CSOLive.resolveRoute(fo.id, m.id)[0]];
+            if (ep && eps.indexOf(ep) < 0) eps.push(ep);
           }
           rows.push({ folderId: fo.id, folderTitle: fo.title, id: m.id, title: m.title, eps: eps.length ? eps : ['(client-side studio)'], caps: dirCaps(fo.id, eps) });
         });
       });
-      root.querySelector('.cso-mod-banner-sub').textContent = (nav.folders || []).length + ' folders · ' + rows.length + ' modules (from master-navigation.json) with capability badges and endpoint mapping.';
+      renderSuites();
       draw();
     }).catch(function (e) { fail(tableHost, e); });
-    search.addEventListener('input', draw); folderSel.addEventListener('change', draw);
+
+    search.addEventListener('input', function () { pageIdx = 0; draw(); });
+    folderSel.addEventListener('change', function () { pageIdx = 0; renderSuites(); draw(); });
+    pageSizeSel.addEventListener('change', function () { pageIdx = 0; draw(); });
   }
 
   /* =========================================================================

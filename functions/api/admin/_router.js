@@ -6,7 +6,7 @@ import { parsePaging, likeEscape } from '../../_lib/validate.js';
 import { handlePosts, POST_TYPES } from './_posts.js';
 import { handleMockTests, handleQuestion } from './_mock.js';
 import { handleUpload } from './_media.js';
-import { handleBanner, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
+import { handleBanner, handleSettings, handleResources, handleMediaList, handleIncidents, extraStats } from './_site.js';
 import { handlePages } from './pages.js';
 import { handleSeedOdisha } from './seed-odisha.js';
 import { runLifecycleMaintenance, readLastCronRun } from './_cron.js';
@@ -76,6 +76,8 @@ export async function handleAdminApi(request, env) {
       case 'banner':
         if (!id) return await handleBanner(request, env, actor);
         break;
+      case 'settings':
+        return await handleSettings(request, env, actor, id);
       case 'resources':
         if (!sub) return await handleResources(request, env, actor, id);
         break;
