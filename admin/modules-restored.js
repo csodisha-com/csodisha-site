@@ -8025,7 +8025,23 @@
         { type: 'notice', title: 'Effective Date & Billing Support Contact', text: 'Effective Date: 2026-11-13 · Billing & Support Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-012': { title: 'Digital Delivery Policy', path: '/delivery.html', email: 'support@csodisha.com' },
+    'module-03-012': {
+      title: 'Shipping & Digital Delivery Policy',
+      seoTitle: 'Shipping & Digital Delivery Policy | Common Sense Odisha',
+      metaDescription: 'Shipping & Digital Delivery Policy of Common Sense Odisha (csodisha.com) — 100% digital educational access, instant CBT mock tests, and PDF delivery terms.',
+      heroTitle: 'Shipping & Digital Delivery Policy',
+      heroSubtitle: 'How study guides, exam syllabi, CBT practice suites, and downloadable educational resources are delivered digitally across Odisha.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/delivery.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: '100% Digital Platform (No Physical Shipping)', text: 'Common Sense Odisha (https://csodisha.com) operates exclusively as an online educational, recruitment-information, and Computer-Based Test (CBT) practice platform. We do not ship physical books, printed study kits, or postal parcels. Accordingly, no physical shipping charges or courier transit delays apply to any resource accessed on our portal.' },
+        { type: 'richtext', title: 'Instant Online & Digital Resource Fulfillment', text: 'All public recruitment summaries, exam syllabi, scholarship guides, current affairs digests, and CBT mock practice sessions are delivered instantaneously via your web browser and Cloudflare\'s global edge network. Where downloadable PDF notes or structured study packs are provided, digital access is enabled immediately upon clicking the download link or completing enrollment.' },
+        { type: 'richtext', title: 'Access Troubleshooting & Delivery Support', text: 'In rare cases where a slow mobile network or browser cache interrupts a digital PDF download or account resource activation, refreshing the page or signing back into your registered account restores immediate access. If an issue persists, contact editorial@csodisha.com with your registered email address and page URL for prompt assistance within 24 hours.' },
+        { type: 'notice', title: 'Effective Date & Delivery Support Contact', text: 'Effective Date: 2026-11-13 · Digital Support Desk: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-013': { title: 'Community Guidelines', path: '/community-guidelines.html', email: 'community@csodisha.com' },
     'module-03-014': { title: 'Frequently Asked Questions', path: '/faq.html', email: 'support@csodisha.com' },
     'module-03-015': { title: 'Custom Information Pages', path: '/about.html', email: 'editorial@csodisha.com' },
