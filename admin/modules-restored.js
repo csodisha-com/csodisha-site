@@ -4155,87 +4155,413 @@
 
   function renderApprovalQueue(root, actions) {
     addHeaderPill(actions, '● Editorial Review & Approval');
-    var shell = el('div', { class: 'cso-mod-shell' }), tableHost = el('div', {}), drawer = el('div', { class: 'cso-mod-card cso-hidden' });
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-kpis' });
+    var filterHost = el('div', { class: 'cso-mod-shell' });
+    var drawer = el('div', { class: 'cso-drawer cso-hidden' });
+    var tableHost = el('div', {});
     var all = [], typeF = 'All', statF = 'All', selected = {};
-    renderBanner(shell, 'Pending Approvals — Editorial Review Queue', 'All draft and scheduled jobs, current affairs and mock tests from D1.', [
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Bulk Approve Selected', onclick: bulkApprove }),
+    var NAMES = { jobs: 'Jobs', 'current-affairs': 'Current Affairs', 'mock-tests': 'Mock Tests', resources: 'Resources', pages: 'Pages' };
+
+    renderBanner(shell, 'Pending Approvals — Editorial Review Queue', 'Unified pre-publish review queue across Jobs, Current Affairs, Mock Tests, Resources & Website Pages.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Bulk Approve & Publish', onclick: bulkApprove }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Archive', onclick: bulkArchive }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })
     ]);
-    shell.appendChild(pills(['All', 'Jobs', 'Current Affairs', 'Mock Tests'], function (t) { typeF = t; draw(); }));
-    shell.appendChild(pills(['All', 'draft', 'scheduled'], function (s) { statF = s; draw(); }));
-    shell.appendChild(tableHost); shell.appendChild(drawer); root.appendChild(shell);
+    shell.appendChild(kpiHost);
+    filterHost.appendChild(pills(['All', 'Jobs', 'Current Affairs', 'Mock Tests', 'Resources', 'Pages'], function (t) { typeF = t; draw(); }));
+    filterHost.appendChild(pills(['All', 'draft', 'scheduled'], function (s) { statF = s; draw(); }));
+    shell.appendChild(filterHost);
+    shell.appendChild(drawer);
+    shell.appendChild(tableHost);
+    root.appendChild(shell);
+
+    function itemId(q) { return q.kind === 'pages' ? q.it.route : q.it.id; }
+    function itemKey(q) { return q.kind + ':' + itemId(q); }
+    function itemDate(q) {
+      if (q.kind === 'pages') return q.it.publish_at || q.it.updated_at || '—';
+      if (q.kind === 'jobs') return q.it.published_at || q.it.last_date || q.it.updated_at || '—';
+      return q.it.published_at || q.it.updated_at || '—';
+    }
+
+    function evaluateReadiness(q) {
+      var it = q.it, issues = [];
+      var title = (it.title || it.hero_title || '').trim();
+      if (!title || title.length < 4) issues.push('Short/Missing Title');
+      if (q.kind === 'jobs') {
+        if (!((it.summary || it.body_md || '').trim())) issues.push('Missing Summary');
+        if (!((it.organisation || '').trim())) issues.push('Missing Org');
+        if (it.last_date && Date.parse(it.last_date) < Date.now() - 86400000) issues.push('Past Last Date');
+      } else if (q.kind === 'current-affairs') {
+        if (!((it.summary || it.body_md || '').trim())) issues.push('Missing Summary');
+      } else if (q.kind === 'mock-tests') {
+        if (Number(it.question_count || 0) === 0) issues.push('0 Questions');
+      } else if (q.kind === 'resources') {
+        if (!((it.media_key || '').trim())) issues.push('Missing Media');
+        if (!((it.description || '').trim())) issues.push('Missing Summary');
+      } else if (q.kind === 'pages') {
+        if (!((it.meta_description || it.hero_subtitle || '').trim())) issues.push('Missing Summary');
+      }
+      if (it.status === 'scheduled') {
+        var pub = q.kind === 'pages' ? it.publish_at : it.published_at;
+        if (!pub || isNaN(Date.parse(pub))) issues.push('Invalid Schedule');
+      }
+      return { ok: issues.length === 0, issues: issues };
+    }
+
+    function renderKpis() {
+      clear(kpiHost);
+      var drafts = all.filter(function (q) { return q.it.status === 'draft'; }).length;
+      var sched = all.filter(function (q) { return q.it.status === 'scheduled'; }).length;
+      var ready = all.filter(function (q) { return evaluateReadiness(q).ok; }).length;
+      [
+        { l: 'Awaiting Review', v: String(all.length), s: 'Unified D1 & Pages queue' },
+        { l: 'Unpublished Drafts', v: String(drafts), s: 'Requires editorial review' },
+        { l: 'Scheduled Releases', v: String(sched), s: 'Queued for auto-publish' },
+        { l: 'Passes Readiness Checks', v: String(ready) + '/' + String(all.length), s: 'Zero validation blockers' }
+      ].forEach(function (k) {
+        kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+          el('div', { class: 'cso-mod-kpi-label', text: k.l }),
+          el('div', { class: 'cso-mod-kpi-val', text: k.v }),
+          el('div', { class: 'cso-mod-kpi-sub', text: k.s })
+        ]));
+      });
+    }
+
+    async function publishItem(q) {
+      if (q.kind === 'pages') {
+        await api('PUT', 'pages', Object.assign({}, q.it, { route: q.it.route, status: 'published', publish_at: null, note: 'Approved from Pending Approvals' }));
+      } else if (q.kind === 'resources') {
+        var fullRes = await api('GET', 'resources/' + encodeURIComponent(q.it.id));
+        await api('PUT', 'resources/' + encodeURIComponent(q.it.id), {
+          kind: fullRes.kind, title: fullRes.title, exam: fullRes.exam || '',
+          year: fullRes.year || null, description: fullRes.description || '',
+          media_key: fullRes.media_key, status: 'published'
+        });
+      } else {
+        await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'published' });
+      }
+    }
+
+    async function trashItem(q) {
+      if (q.kind === 'pages') {
+        await api('PUT', 'pages', Object.assign({}, q.it, { route: q.it.route, status: 'trash', publish_at: null, note: 'Rejected from Pending Approvals' }));
+      } else {
+        await api('DELETE', q.kind + '/' + encodeURIComponent(q.it.id));
+      }
+    }
+
+    async function archiveItem(q) {
+      if (q.kind === 'pages') {
+        await api('PUT', 'pages', Object.assign({}, q.it, { route: q.it.route, status: 'archived', publish_at: null, note: 'Bulk archived from Pending Approvals' }));
+      } else {
+        await api('DELETE', q.kind + '/' + encodeURIComponent(q.it.id));
+      }
+    }
 
     async function bulkApprove() {
-      var ids = Object.keys(selected);
-      if (!ids.length) { toast('Select at least one record', 'amber'); return; }
+      var keys = Object.keys(selected);
+      if (!keys.length) { toast('Select at least one record', 'amber'); return; }
       var ok = 0, bad = [];
-      for (var i = 0; i < ids.length; i++) {
-        var q = selected[ids[i]];
-        try { await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'published' }); ok++; } catch (e) { bad.push(q.it.title + ': ' + e.message); }
+      for (var i = 0; i < keys.length; i++) {
+        var q = selected[keys[i]];
+        try { await publishItem(q); ok++; } catch (e) { bad.push((q.it.title || q.it.route) + ': ' + e.message); }
       }
       toast(ok + ' published' + (bad.length ? ', ' + bad.length + ' failed — ' + bad[0] : ''), bad.length ? 'amber' : 'success');
-      selected = {}; load();
+      selected = {}; drawer.classList.add('cso-hidden'); load();
     }
-    async function publishNow(q) { try { await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'published' }); toast('Published', 'success'); drawer.classList.add('cso-hidden'); load(); } catch (e) { toast(e.message, 'crimson'); } }
-    function scheduleBox(q, bar) {
-      var inp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
-      bar.appendChild(inp);
-      bar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Schedule', onclick: async function () {
-        if (!inp.value) { toast('Pick a future date/time', 'amber'); return; }
-        try { await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'scheduled', published_at: new Date(inp.value).toISOString() }); toast('Scheduled', 'success'); drawer.classList.add('cso-hidden'); load(); } catch (e) { toast(e.message, 'crimson'); }
-      } }));
+
+    async function bulkArchive() {
+      var keys = Object.keys(selected);
+      if (!keys.length) { toast('Select at least one record', 'amber'); return; }
+      var ok = 0, bad = [];
+      for (var i = 0; i < keys.length; i++) {
+        var q = selected[keys[i]];
+        try { await archiveItem(q); ok++; } catch (e) { bad.push((q.it.title || q.it.route) + ': ' + e.message); }
+      }
+      toast(ok + ' archived/trashed' + (bad.length ? ', ' + bad.length + ' failed — ' + bad[0] : ''), bad.length ? 'amber' : 'success');
+      selected = {}; drawer.classList.add('cso-hidden'); load();
     }
+
+    async function publishNow(q) {
+      try {
+        await publishItem(q);
+        toast('Published live!', 'success');
+        drawer.classList.add('cso-hidden');
+        load();
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+
+    async function rejectNow(q) {
+      try {
+        await trashItem(q);
+        toast('Moved to trash', 'amber');
+        drawer.classList.add('cso-hidden');
+        load();
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+
     async function openDrawer(q) {
-      clear(drawer); drawer.classList.remove('cso-hidden');
-      drawer.appendChild(el('h3', { text: 'Candidate Preview — ' + q.it.title }));
-      var left = el('div', { class: 'cso-mod-card' }), right = el('div', { class: 'cso-live-preview-box' });
-      drawer.appendChild(el('div', { class: 'cso-mod-grid-2' }, [left, right]));
+      clear(drawer);
+      drawer.classList.remove('cso-hidden');
+      var mobileMode = false;
+      var full = q.it;
+      var qs = [];
+      var prHtml = '';
+
       try {
         if (q.kind === 'mock-tests') {
-          var qs = (await api('GET', 'mock-tests/' + encodeURIComponent(q.it.id) + '/questions')).items || [];
-          left.appendChild(el('p', { class: 'cso-mod-muted', text: q.it.target_exam + ' · ' + q.it.duration_minutes + ' min · ' + qs.length + ' questions' }));
-          right.appendChild(el('h4', { text: q.it.title }));
-          if (!qs.length) right.appendChild(el('p', { class: 'cso-mod-badge cso-mod-badge-err', text: 'No questions — cannot be published' }));
-          qs.forEach(function (x, i) {
-            left.appendChild(el('p', { class: 'cso-mod-muted', text: 'Q' + (i + 1) + ' correct: ' + x.correct_option + (x.explanation ? ' — ' + x.explanation : '') }));
-            right.appendChild(el('p', {}, [el('strong', { text: (i + 1) + '. ' + x.question_en })]));
-            ['a', 'b', 'c', 'd'].forEach(function (o) { right.appendChild(el('div', { class: 'cso-mod-muted', text: o.toUpperCase() + ') ' + x['option_' + o] })); });
+          var qRes = await api('GET', 'mock-tests/' + encodeURIComponent(q.it.id) + '/questions');
+          qs = qRes.items || [];
+        } else if (q.kind !== 'pages') {
+          full = await api('GET', q.kind + '/' + encodeURIComponent(q.it.id));
+          if (full.body_md) {
+            var pr = await api('POST', 'preview', { markdown: full.body_md });
+            prHtml = pr.html || '';
+          }
+        }
+      } catch (e) {
+        toast('Could not load full details: ' + e.message, 'amber');
+      }
+
+      var headRight = el('div', { class: 'cso-mod-toolbar' });
+      var deskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { mobileMode = false; syncViewportBtns(); renderPreview(); } });
+      var mobBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Mobile 375px', onclick: function () { mobileMode = true; syncViewportBtns(); renderPreview(); } });
+      function syncViewportBtns() {
+        deskBtn.classList.toggle('cso-pill-active', !mobileMode);
+        mobBtn.classList.toggle('cso-pill-active', mobileMode);
+      }
+      headRight.appendChild(deskBtn);
+      headRight.appendChild(mobBtn);
+      headRight.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } }));
+
+      drawer.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('div', {}, [
+          el('strong', { text: 'Pre-Publish Review & Editor — ' + (full.title || full.route) }),
+          el('div', { class: 'cso-mod-muted', text: NAMES[q.kind] + ' · Status: ' + full.status })
+        ]),
+        headRight
+      ]));
+
+      var left = el('div', { class: 'cso-mod-card' });
+      var right = el('div', { class: 'cso-mod-card' });
+      drawer.appendChild(el('div', { class: 'cso-mod-grid-2' }, [left, right]));
+
+      var checkWrap = el('div', { class: 'cso-mod-toolbar' });
+      var rd = evaluateReadiness({ kind: q.kind, it: full });
+      if (rd.ok) {
+        checkWrap.appendChild(badge('Readiness: All Checks Passed ✓', 'ok'));
+      } else {
+        rd.issues.forEach(function (iss) { checkWrap.appendChild(badge('⚠ ' + iss, 'warn')); });
+      }
+      left.appendChild(checkWrap);
+
+      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: full.title || full.hero_title || '' });
+      var summaryVal = q.kind === 'pages' ? (full.meta_description || full.hero_subtitle || '') :
+                       q.kind === 'resources' ? (full.description || '') :
+                       q.kind === 'mock-tests' ? (full.title_or || '') : (full.summary || '');
+      var summaryInp = el('textarea', { class: 'cso-mod-textarea', rows: '3', text: summaryVal });
+      var orgVal = q.kind === 'jobs' ? (full.organisation || full.category || '') :
+                   q.kind === 'mock-tests' ? (full.target_exam || '') :
+                   q.kind === 'resources' ? (full.exam || full.kind || '') : (full.category || '');
+      var orgInp = el('input', { type: 'text', class: 'cso-mod-input', value: orgVal });
+      var dateVal = q.kind === 'jobs' ? (full.last_date || '').slice(0, 10) :
+                    q.kind === 'pages' ? (full.publish_at || '').slice(0, 16) :
+                    (full.published_at || '').slice(0, 16);
+      var dateInp = el('input', { type: q.kind === 'jobs' ? 'date' : 'datetime-local', class: 'cso-mod-input', value: dateVal });
+      var noteInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Optional editorial reviewer note…' });
+
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title' }), titleInp]));
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: q.kind === 'mock-tests' ? 'Odia Title / Subtitle' : 'Summary / Description' }), summaryInp]));
+      left.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: q.kind === 'mock-tests' ? 'Target Exam' : 'Organization / Category' }), orgInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: q.kind === 'jobs' ? 'Last Date' : 'Publish / Schedule Date' }), dateInp])
+      ]));
+      left.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Reviewer Note' }), noteInp]));
+
+      async function saveEdits(targetStatus, schedIso) {
+        var st = targetStatus || full.status || 'draft';
+        if (q.kind === 'pages') {
+          var payload = Object.assign({}, full, {
+            route: full.route,
+            title: titleInp.value.trim() || full.title,
+            meta_description: summaryInp.value.trim(),
+            category: orgInp.value.trim() || full.category,
+            status: st,
+            publish_at: st === 'scheduled' ? (schedIso || full.publish_at) : null,
+            note: noteInp.value.trim() || 'Edited in Pending Approvals'
+          });
+          await api('PUT', 'pages', payload);
+        } else if (q.kind === 'resources') {
+          await api('PUT', 'resources/' + encodeURIComponent(full.id), {
+            kind: full.kind,
+            title: titleInp.value.trim() || full.title,
+            exam: orgInp.value.trim(),
+            year: full.year || null,
+            description: summaryInp.value.trim(),
+            media_key: full.media_key,
+            status: st === 'scheduled' ? 'published' : st
+          });
+        } else if (q.kind === 'mock-tests') {
+          await api('PUT', 'mock-tests/' + encodeURIComponent(full.id), {
+            slug: full.slug,
+            title: titleInp.value.trim() || full.title,
+            title_or: summaryInp.value.trim(),
+            target_exam: orgInp.value.trim() || full.target_exam,
+            duration_minutes: full.duration_minutes,
+            total_marks: full.total_marks,
+            negative_marking: full.negative_marking,
+            status: st,
+            published_at: st === 'scheduled' ? (schedIso || full.published_at) : full.published_at
           });
         } else {
-          var full = await api('GET', q.kind + '/' + encodeURIComponent(q.it.id));
-          left.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(full, null, 2) }));
-          var pr = await api('POST', 'preview', { markdown: full.body_md || '' });
-          right.appendChild(el('h4', { text: full.title }));
-          var body = el('div', {}); right.appendChild(body); renderSanitizedHtml(body, pr.html || '');
+          var postPayload = Object.assign({}, full, {
+            title: titleInp.value.trim() || full.title,
+            summary: summaryInp.value.trim(),
+            status: st
+          });
+          if (q.kind === 'jobs') {
+            postPayload.organisation = orgInp.value.trim();
+            if (dateInp.value) postPayload.last_date = dateInp.value;
+          } else {
+            postPayload.category = orgInp.value.trim() || full.category;
+          }
+          if (st === 'scheduled' && schedIso) postPayload.published_at = schedIso;
+          await api('PUT', q.kind + '/' + encodeURIComponent(full.id), postPayload);
         }
-      } catch (e) { right.appendChild(el('p', { class: 'cso-mod-badge cso-mod-badge-err', text: e.message })); }
-      var bar = el('div', { class: 'cso-mod-toolbar' }, [
-        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Approve & Publish Now', onclick: function () { publishNow(q); } }),
-        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Edit in Studio', onclick: function () { goTo(MOD_FOLDER[q.kind]); } }),
-        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })
+      }
+
+      var actionBar = el('div', { class: 'cso-mod-toolbar' }, [
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Edits (Keep Unpublished)', onclick: async function () {
+          try { await saveEdits(full.status === 'scheduled' ? 'scheduled' : 'draft', full.published_at || full.publish_at); toast('Draft saved (still unpublished)', 'success'); load(); } catch (e) { toast(e.message, 'crimson'); }
+        } }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Approve & Publish Live', onclick: async function () {
+          try { await saveEdits('published', null); toast('Saved & published live!', 'success'); drawer.classList.add('cso-hidden'); load(); } catch (e) { toast(e.message, 'crimson'); }
+        } }),
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Reject / Trash', onclick: function () { rejectNow(q); } })
       ]);
-      scheduleBox(q, bar); drawer.appendChild(bar);
+      if (q.kind !== 'resources') {
+        var schedInp = el('input', { type: 'datetime-local', class: 'cso-mod-input', value: (dateInp.value && dateInp.value.length > 10) ? dateInp.value : '' });
+        actionBar.appendChild(schedInp);
+        actionBar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Reschedule', onclick: async function () {
+          if (!schedInp.value) { toast('Pick a future date/time', 'amber'); return; }
+          try { await saveEdits('scheduled', new Date(schedInp.value).toISOString()); toast('Rescheduled', 'success'); drawer.classList.add('cso-hidden'); load(); } catch (e) { toast(e.message, 'crimson'); }
+        } }));
+      }
+      left.appendChild(actionBar);
+
+      function renderPreview() {
+        clear(right);
+        var frameCard = el('div', { class: mobileMode ? 'cso-preview-card-mobile' : 'cso-preview-card-desktop' });
+        var curTitle = titleInp.value.trim() || '(Untitled)';
+        var curSummary = summaryInp.value.trim() || 'No summary provided yet.';
+        var curOrg = orgInp.value.trim() || NAMES[q.kind];
+        var curDate = dateInp.value || 'TBD';
+
+        frameCard.appendChild(el('div', { class: 'cso-preview-kicker', text: NAMES[q.kind].toUpperCase() + ' · ' + curOrg + ' · PREVIEW (UNPUBLISHED)' }));
+        frameCard.appendChild(el('h4', { text: curTitle }));
+        frameCard.appendChild(el('div', { class: 'cso-preview-dates', text: (q.kind === 'jobs' ? 'Last Date: ' : 'Target Date: ') + curDate }));
+        frameCard.appendChild(el('p', { class: 'cso-preview-body', text: curSummary }));
+
+        if (q.kind === 'pages' && full.route) {
+          var wrap = el('div', { class: 'cso-preview-frame-wrap' });
+          wrap.appendChild(el('iframe', {
+            class: mobileMode ? 'cso-preview-frame-mobile' : 'cso-preview-frame',
+            src: full.route,
+            title: 'Live Page Preview ' + full.route
+          }));
+          frameCard.appendChild(wrap);
+        } else if (q.kind === 'mock-tests') {
+          frameCard.appendChild(el('p', { class: 'cso-mod-muted', text: (full.duration_minutes || 0) + ' min · ' + (full.total_marks || 0) + ' marks · ' + qs.length + ' questions' }));
+          if (!qs.length) frameCard.appendChild(badge('0 Questions — add questions before publishing', 'err'));
+          qs.slice(0, 5).forEach(function (x, i) {
+            frameCard.appendChild(el('p', {}, [el('strong', { text: (i + 1) + '. ' + x.question_en })]));
+          });
+        } else if (prHtml) {
+          var bodyBox = el('div', { class: 'cso-preview-body' });
+          renderSanitizedHtml(bodyBox, prHtml);
+          frameCard.appendChild(bodyBox);
+        }
+        right.appendChild(frameCard);
+      }
+
+      [titleInp, summaryInp, orgInp, dateInp].forEach(function (inp) {
+        inp.addEventListener('input', renderPreview);
+      });
+      renderPreview();
     }
+
     function draw() {
-      var names = { jobs: 'Jobs', 'current-affairs': 'Current Affairs', 'mock-tests': 'Mock Tests' };
-      var shown = all.filter(function (q) { return (typeF === 'All' || names[q.kind] === typeF) && (statF === 'All' || q.it.status === statF); });
+      renderKpis();
+      var shown = all.filter(function (q) { return (typeF === 'All' || NAMES[q.kind] === typeF) && (statF === 'All' || q.it.status === statF); });
+      clear(tableHost);
+
+      if (!shown.length) {
+        var emptyCard = el('div', { class: 'cso-mod-card' }, [
+          el('h4', { text: all.length ? 'No matching items in this filter' : 'Editorial Queue Clear — Zero Pending Drafts' }),
+          el('p', { class: 'cso-mod-muted', text: all.length ? 'Adjust the type or status filter pills above to inspect queued items.' : 'All Jobs, Current Affairs, Mock Tests, Resources, and Website Pages are published or clear. Create a new draft below to review and preview before publishing.' })
+        ]);
+        var quickRow = el('div', { class: 'cso-mod-toolbar' });
+        if (all.length) {
+          quickRow.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Reset Filters', onclick: function () { typeF = 'All'; statF = 'All'; draw(); } }));
+        }
+        quickRow.appendChild(el('button', { type: 'button', class: 'cso-mod-btn', text: '+ Create Job Draft', onclick: function () { goTo(['folder-05', 'module-05-008']); } }));
+        quickRow.appendChild(el('button', { type: 'button', class: 'cso-mod-btn', text: '+ Create Current Affair Draft', onclick: function () { goTo(['folder-04', 'module-04-004']); } }));
+        quickRow.appendChild(el('button', { type: 'button', class: 'cso-mod-btn', text: '+ Create Mock Test Draft', onclick: function () { goTo(['folder-05', 'module-05-014']); } }));
+        quickRow.appendChild(el('button', { type: 'button', class: 'cso-mod-btn', text: '+ Create Page Draft', onclick: function () { goTo(['folder-02', 'module-02-002']); } }));
+        emptyCard.appendChild(quickRow);
+        tableHost.appendChild(emptyCard);
+        return;
+      }
+
       var rows = shown.map(function (q) {
+        var key = itemKey(q);
+        var rd = evaluateReadiness(q);
+        var rdCell = el('td', {});
+        if (rd.ok) {
+          rdCell.appendChild(badge('Ready ✓', 'ok'));
+        } else {
+          rd.issues.slice(0, 2).forEach(function (iss) { rdCell.appendChild(badge(iss, 'warn')); });
+          if (rd.issues.length > 2) rdCell.appendChild(badge('+' + (rd.issues.length - 2), 'info'));
+        }
+        var actCell = el('td', {}, [
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Preview & Review', onclick: function () { openDrawer(q); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Approve & Publish Live', onclick: function () { publishNow(q); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Reschedule', onclick: function () { openDrawer(q); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Reject / Trash', onclick: function () { rejectNow(q); } })
+          ])
+        ]);
         return el('tr', {}, [
-          el('td', {}, el('input', { type: 'checkbox', checked: selected[q.it.id] ? true : false, onchange: function (e) { if (e.target.checked) selected[q.it.id] = q; else delete selected[q.it.id]; } })),
-          el('td', {}, badge(names[q.kind], 'info')), el('td', { text: q.it.title }),
+          el('td', {}, el('input', { type: 'checkbox', checked: selected[key] ? true : false, onchange: function (e) { if (e.target.checked) selected[key] = q; else delete selected[key]; } })),
+          el('td', {}, badge(NAMES[q.kind], 'info')),
+          el('td', { text: q.it.title || q.it.route }),
           el('td', {}, badge(q.it.status, q.it.status === 'scheduled' ? 'warn' : 'info')),
-          el('td', { text: q.it.published_at || q.it.updated_at || '—' }),
-          el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview & Review', onclick: function () { openDrawer(q); } }))
+          rdCell,
+          el('td', { text: String(itemDate(q)).slice(0, 16) }),
+          actCell
         ]);
       });
-      clear(tableHost); tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' records awaiting review' })); tableHost.appendChild(safeTable(['Select', 'Type', 'Title', 'Status', 'Date', 'Review'], rows));
+      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' records awaiting review' }));
+      tableHost.appendChild(safeTable(['Select', 'Type', 'Title', 'Status', 'Readiness', 'Date', 'Actions'], rows));
     }
+
     async function load() {
-      loading(tableHost, 'Loading review queue…');
+      loading(tableHost, 'Loading unified review queue…');
       try {
-        var r = await Promise.all([api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100')]);
+        var r = await Promise.all([
+          api('GET', 'jobs?limit=100'),
+          api('GET', 'current-affairs?limit=100'),
+          api('GET', 'mock-tests?limit=100'),
+          api('GET', 'resources'),
+          api('GET', 'pages')
+        ]);
         all = [];
-        [['jobs', r[0]], ['current-affairs', r[1]], ['mock-tests', r[2]]].forEach(function (p) { (p[1].items || []).forEach(function (it) { if (it.status === 'draft' || it.status === 'scheduled') all.push({ kind: p[0], it: it }); }); });
+        [['jobs', r[0]], ['current-affairs', r[1]], ['mock-tests', r[2]], ['resources', r[3]], ['pages', r[4]]].forEach(function (p) {
+          (p[1].items || []).forEach(function (it) {
+            if (it.status === 'draft' || it.status === 'scheduled') all.push({ kind: p[0], it: it });
+          });
+        });
         draw();
       } catch (e) { fail(tableHost, e); }
     }
