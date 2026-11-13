@@ -3203,27 +3203,749 @@
   function renderHomepageBuilder(root, actions) {
     addHeaderPill(actions, '● Live Homepage Studio');
     var shell = el('div', { class: 'cso-mod-shell' });
+    var DRAFT_KEY = 'cso_homepage_draft';
+    var ODISHA_DISTRICTS = [
+      'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh', 'Cuttack', 'Deogarh',
+      'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur', 'Jajpur', 'Jharsuguda', 'Kalahandi',
+      'Kandhamal', 'Kendrapara', 'Kendujhar', 'Khordha', 'Koraput', 'Malkangiri', 'Mayurbhanj',
+      'Nabarangpur', 'Nayagarh', 'Nuapada', 'Puri', 'Rayagada', 'Sambalpur', 'Subarnapur', 'Sundargarh'
+    ];
 
+    var currentTargetRoute = '/';
+    var pagesMap = {};
+    var verifiedLinks = [
+      { url: '/jobs-careers/', label: 'Portal: Jobs & Careers' },
+      { url: '/current-affairs/', label: 'Portal: Current Affairs' },
+      { url: '/mock-tests/', label: 'Portal: Mock Tests' },
+      { url: '/resources/', label: 'Portal: Resources' },
+      { url: '/syllabus/', label: 'Portal: Syllabus' },
+      { url: '/student-dashboard/', label: 'Portal: Student Dashboard' }
+    ];
+    var r2Assets = [];
+    var previewMode = 'unpublished'; // 'unpublished' | 'live'
+    var previewTab = 'visual'; // 'visual' | 'serp' | 'jsonld'
+    var viewport = 'desktop'; // 'desktop' | 'tablet' | 'mobile'
+    var draftTimer = null;
+    var dragSecIdx = null;
+    var activeVaultEmbedUrl = null;
+
+    var kpiHost = el('div', { class: 'cso-kpi-grid-4' });
+    var recoveryHost = el('div', {});
+    var validationHost = el('div', {});
+    var linkHealthHost = el('div', {});
+    var revisionHost = el('div', {});
+    var fullscreenHost = el('div', {});
+    var previewHost = el('div', {});
+    var sectionsHost = el('div', { class: 'cso-mod-shell' });
+    var tickerHost = el('div', { class: 'cso-mod-shell' });
+    var r2PickHost = el('div', { class: 'cso-mod-card cso-hidden' });
+    var bannerCardRef = null;
+    var heroCardRef = null;
+    var sectionCards = [];
+
+    // 1. Live Broadcast Banner Controls
     var activeChk = el('input', { type: 'checkbox' });
     var sevSel = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) { return el('option', { value: s, text: s.toUpperCase() }); }));
     var bHeadInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Urgent announcement headline (max 160 chars)' });
+    var bOdiaInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'ଓଡ଼ିଆ ବ୍ରେକିଂ ଶୀର୍ଷକ (Optional Odia banner headline)' });
     var bCtxInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Supporting context (max 300 chars)' });
     var bCtaInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Button label (max 40 chars)' });
     var bUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/' });
+    var bStartInp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
+    var bExpInp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
+    var tickerItems = [
+      { badge: 'NEW', text: 'OSSC CGL 2026 Online Application Window Open', url: '/jobs-careers/', urgent: true },
+      { badge: 'CBT', text: 'Free Odisha GK & Current Affairs Bilingual Mock Series Live', url: '/mock-tests/', urgent: false }
+    ];
 
-    var seoTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage SEO Title' });
-    var seoDescInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Homepage Meta Description' });
+    // 2. Homepage Hero & SEO Controls
+    var seoTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage SEO Title (50–60 chars optimal)' });
+    var seoDescInp = el('textarea', { class: 'cso-mod-textarea', rows: '2', placeholder: 'Homepage Meta Description (120–160 chars optimal)' });
+    var heroBadgeInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Top Hero Badge (e.g. ODISHA #1 EXAM PORTAL)' });
     var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage Hero Headline' });
     var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Homepage Hero Subtitle' });
+    var heroOdiaSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'ଓଡ଼ିଆ ଉପଶୀର୍ଷକ (Bilingual Odia Hero Subtitle)' });
     var ctaLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Primary CTA Label' });
     var ctaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/' });
+    var secCtaLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Secondary CTA Label (e.g. Start Free Mock)' });
+    var secCtaUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/mock-tests/' });
+    var ogImgInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/api/media/<key>.jpg or https://…' });
+    var ogAltInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Hero / OG Image Alt Text (required when image set)' });
+    var chipsInp = el('input', { type: 'text', class: 'cso-mod-input', value: 'OPSC OAS, OSSC CGL, OSSSC RI/ARI, OTET / OSSTET, Subhadra Yojana' });
+    var qualPills = ['10th', '12th / +2', 'Graduate', 'B.Ed / Teacher', 'PG / NET'];
+    var activeQuals = { '10th': true, '12th / +2': true, 'Graduate': true, 'B.Ed / Teacher': true, 'PG / NET': true };
+    var trustCounters = [
+      { value: '30 Districts', label: 'Odisha Coverage' },
+      { value: '150+ CBT', label: 'Free Mock Tests' },
+      { value: 'Daily Verified', label: 'Govt Job Alerts' },
+      { value: 'Odia + English', label: 'Bilingual Support' }
+    ];
 
-    var frame = el('iframe', { src: '/?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Live Homepage Preview' });
-    function refreshFrame() { frame.src = '/?preview=1&t=' + Date.now(); }
+    function defaultHomeSections() {
+      return [
+        {
+          id: 'board', type: 'home_board', title: "What's New Today (Jobs · Admit Cards · Results)", enabled: true, auto_sync_jobs: true,
+          latest_jobs: [{ title: 'OPSC OAS Prelims 2026 Notification', odia_tag: 'ଓଡ଼ିଆ', url: '/jobs-careers/', deadline: '' }],
+          admit_cards: [{ title: 'OSSC CGL Admit Card Download', odia_tag: 'Admit', url: '/jobs-careers/', deadline: '' }],
+          results: [{ title: 'OSSSC RI/ARI Cutoff & Merit List', odia_tag: 'Result', url: '/jobs-careers/', deadline: '' }]
+        },
+        {
+          id: 'hubs', type: 'home_hubs', title: 'Odisha Exam & Commission Hubs', enabled: true,
+          items: [
+            { title: 'OPSC', badge: 'OAS / OCS', url: '/jobs-careers/?q=OPSC', summary: 'Civil Services & Gazetted posts' },
+            { title: 'OSSC', badge: 'CGL / Combined', url: '/jobs-careers/?q=OSSC', summary: 'State Staff Selection' },
+            { title: 'OSSSC', badge: 'RI / ARI / Amin', url: '/jobs-careers/?q=OSSSC', summary: 'Sub-ordinate Recruitment' },
+            { title: 'Teacher Eligibility', badge: 'OTET / OSSTET / B.Ed', url: '/mock-tests/', summary: 'Teaching & B.Ed Entrance' },
+            { title: 'Odisha Police', badge: 'SI / Constable', url: '/jobs-careers/?q=Police', summary: 'Uniformed Services' },
+            { title: 'Railways / SSC', badge: 'Central', url: '/jobs-careers/?q=SSC', summary: 'RRB & SSC Regional' }
+          ]
+        },
+        {
+          id: 'cbt', type: 'home_cbt', title: 'Interactive Free CBT Mock Test Arena', enabled: true, auto_sync_tests: true,
+          items: [
+            { title: 'OSSC CGL Full-Length Mock #1', duration: '90 min', questions: '150', bilingual: true, url: '/mock-tests/' },
+            { title: 'Odisha GK & Current Affairs', duration: '30 min', questions: '50', bilingual: true, url: '/mock-tests/' }
+          ]
+        },
+        {
+          id: 'districts', type: 'home_districts', title: 'Odisha 30-District Quick-Selector', enabled: true,
+          districts: ODISHA_DISTRICTS.slice()
+        },
+        {
+          id: 'schemes', type: 'home_schemes', title: 'Flagship Government Schemes Hub', enabled: true,
+          items: [
+            { title: 'Subhadra Yojana Odisha', badge: 'Women Welfare', url: '/resources/', summary: 'Eligibility, e-KYC & Status' },
+            { title: 'State Scholarship Portal', badge: 'Students', url: 'https://scholarship.odisha.gov.in', summary: 'Pre & Post Matric Schemes' }
+          ]
+        },
+        {
+          id: 'calendar', type: 'home_calendar', title: 'Upcoming Exam Calendar & Key Deadlines', enabled: true,
+          rows: [
+            { label: 'OPSC OAS Prelims 2026', value: 'Expected Q2 2026' },
+            { label: 'OSSC CGL Application Window', value: 'Active — Verify Official Portal' }
+          ]
+        },
+        {
+          id: 'vault', type: 'home_vault', title: 'Syllabus PDF, PYQ & Drive Document Vault', enabled: true,
+          items: [
+            { title: 'OPSC OAS Complete Syllabus PDF', source_label: 'Official Portal', url: '/syllabus/' }
+          ]
+        },
+        {
+          id: 'faq', type: 'home_faq', title: 'Homepage FAQs', enabled: true,
+          rows: [
+            { question: 'Are all CS Odisha CBT mock tests free?', answer: 'Yes, 100% free with bilingual English & Odia support and instant rank leaderboards.' }
+          ]
+        },
+        {
+          id: 'pwa', type: 'home_pwa', title: 'Install CS Odisha Offline App (PWA)', enabled: true,
+          text: 'Save deadlines, track preparation checklists, and practice offline on Android & desktop.', label: 'Open Student Dashboard', url: '/student-dashboard/'
+        }
+      ];
+    }
+
+    var sections = defaultHomeSections();
+
+    function makeRoutePicker(onPick) {
+      var sel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'Pick verified route…' })].concat(
+        verifiedLinks.map(function (v) { return el('option', { value: v.url, text: v.label }); })
+      ));
+      sel.addEventListener('change', function () { if (sel.value) { onPick(sel.value); sel.value = ''; } });
+      return sel;
+    }
+
+    function detectPreviewUrl(u) {
+      var m = String(u || '').match(/drive\.google\.com\/file\/d\/([^\/?#]+)/i) || String(u || '').match(/[?&]id=([^&]+)/i);
+      if (m && m[1]) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+      return u;
+    }
+
+    function buildHomepageJsonLd() {
+      var list = [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Common Sense Odisha',
+          url: 'https://csodisha.com/',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://csodisha.com/jobs-careers/?q={search_term_string}',
+            'query-input': 'required name=search_term_string'
+          }
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Common Sense Odisha',
+          url: 'https://csodisha.com/',
+          logo: 'https://csodisha.com/assets/favicon.svg'
+        }
+      ];
+      var faqSec = sections.find(function (s) { return s.type === 'home_faq' && s.enabled !== false; });
+      if (faqSec && Array.isArray(faqSec.rows) && faqSec.rows.length) {
+        list.push({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqSec.rows.filter(function (r) { return r.question && r.answer; }).map(function (r) {
+            return { '@type': 'Question', name: r.question, acceptedAnswer: { '@type': 'Answer', text: r.answer } };
+          })
+        });
+      }
+      return list;
+    }
+
+    function collectHomepageBlocks() {
+      var out = [
+        {
+          type: 'page_meta',
+          is_homepage: true,
+          odia_subtitle: heroOdiaSubInp.value.trim(),
+          hero_badge: heroBadgeInp.value.trim(),
+          secondary_cta_label: secCtaLblInp.value.trim(),
+          secondary_cta_url: secCtaUrlInp.value.trim(),
+          trending_chips: chipsInp.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+          qualification_pills: qualPills.filter(function (q) { return !!activeQuals[q]; }),
+          trust_counters: trustCounters,
+          banner_odia: bOdiaInp.value.trim(),
+          banner_starts_at: bStartInp.value || null,
+          banner_expires_at: bExpInp.value || null,
+          og_alt: ogAltInp.value.trim()
+        }
+      ];
+      if (ogImgInp.value.trim()) out.push({ type: 'og_meta', og_image: ogImgInp.value.trim() });
+      if (tickerItems.length) out.push({ type: 'home_ticker', title: 'Breaking Updates', items: tickerItems });
+      sections.forEach(function (s) {
+        var copy = JSON.parse(JSON.stringify(s));
+        copy.hidden = s.enabled === false;
+        out.push(copy);
+      });
+      return out;
+    }
+
+    function renderKpis() {
+      clear(kpiHost);
+      var activeSecCount = sections.filter(function (s) { return s.enabled !== false; }).length;
+      var pinnedCount = tickerItems.length;
+      sections.forEach(function (s) {
+        if (s.type === 'home_board') pinnedCount += (s.latest_jobs || []).length + (s.admit_cards || []).length + (s.results || []).length;
+        else if (Array.isArray(s.items)) pinnedCount += s.items.length;
+        else if (Array.isArray(s.rows)) pinnedCount += s.rows.length;
+      });
+      var tl = seoTitleInp.value.trim().length;
+      var dl = seoDescInp.value.trim().length;
+      var seoOk = (tl >= 30 && tl <= 65 && dl >= 80 && dl <= 165) ? 'Optimal ✓' : 'Needs Tuning';
+      [
+        { l: 'Active Sections', v: activeSecCount + ' / ' + sections.length, s: 'Reorderable portal modules' },
+        { l: 'Pinned Notices & Links', v: String(pinnedCount), s: 'Ticker + Boards + Vault' },
+        { l: 'SEO & JSON-LD Score', v: seoOk, s: 'Title ' + tl + 'c · Meta ' + dl + 'c' },
+        { l: 'Broadcast Banner', v: activeChk.checked ? 'LIVE (' + sevSel.value.toUpperCase() + ')' : 'OFFLINE', s: bHeadInp.value.trim().slice(0, 32) || 'No headline set' }
+      ].forEach(function (k) {
+        kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+          el('div', { class: 'cso-mod-kpi-label', text: k.l }),
+          el('div', { class: 'cso-mod-kpi-val', text: k.v }),
+          el('div', { class: 'cso-mod-kpi-sub', text: k.s })
+        ]));
+      });
+    }
+
+    var publishBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Homepage Live', onclick: function () { saveHomepage('published', '/'); } });
+
+    function runValidation() {
+      clear(validationHost);
+      var errs = [], warns = [];
+      var t = seoTitleInp.value.trim();
+      var d = seoDescInp.value.trim();
+      if (!t) errs.push({ msg: 'SEO Title is required', el: seoTitleInp });
+      else if (t.length > 65) warns.push({ msg: 'SEO Title (' + t.length + 'c) exceeds 65 chars', el: seoTitleInp });
+      if (d.length < 70 || d.length > 165) warns.push({ msg: 'Meta Description (' + d.length + 'c) should be 70–165 chars', el: seoDescInp });
+      if (ogImgInp.value.trim() && !ogAltInp.value.trim()) errs.push({ msg: 'Missing alt text for Hero / OG Image', el: ogAltInp });
+      if (activeChk.checked && !bHeadInp.value.trim()) errs.push({ msg: 'Active Broadcast Banner requires a Headline', el: bHeadInp });
+      if (bExpInp.value && Date.parse(bExpInp.value) < Date.now()) warns.push({ msg: 'Broadcast Banner expiry date is in the past', el: bExpInp });
+      [bUrlInp, ctaUrlInp, secCtaUrlInp].forEach(function (inp) {
+        var u = inp.value.trim();
+        if (u && u.indexOf('http://') === 0) warns.push({ msg: 'Non-HTTPS URL: ' + u, el: inp });
+        if (u && u.indexOf('/') !== 0 && !/^https?:\/\//i.test(u)) errs.push({ msg: 'Malformed URL: ' + u, el: inp });
+      });
+
+      publishBtn.disabled = errs.length > 0;
+      publishBtn.title = errs.length > 0 ? ('Resolve ' + errs.length + ' blocking error(s) before publishing live') : '';
+
+      var verifyBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Verify All Links (200 OK)', onclick: verifyAllLinks });
+      if (!errs.length && !warns.length) {
+        validationHost.appendChild(el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [badge('Pre-Publish Gate: All Checks Passed ✓', 'ok'), verifyBtn]),
+          linkHealthHost
+        ]));
+        return;
+      }
+      var list = el('div', { class: 'cso-mod-toolbar' });
+      errs.forEach(function (er) {
+        list.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '⛔ ' + er.msg, onclick: function () { if (er.el && er.el.focus) er.el.focus(); if (er.el && er.el.scrollIntoView) er.el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }));
+      });
+      warns.forEach(function (w) {
+        list.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '⚠ ' + w.msg, onclick: function () { if (w.el && w.el.focus) w.el.focus(); if (w.el && w.el.scrollIntoView) w.el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }));
+      });
+      validationHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Pre-Publish Error Detector (' + errs.length + ' blocking, ' + warns.length + ' warnings)' }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            verifyBtn,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: '1-Click Auto-Fix Safe Issues', onclick: function () {
+              seoTitleInp.value = seoTitleInp.value.trim();
+              seoDescInp.value = seoDescInp.value.trim();
+              if (ogImgInp.value.trim() && !ogAltInp.value.trim()) ogAltInp.value = heroTitleInp.value.trim() || 'Common Sense Odisha Portal';
+              [bUrlInp, ctaUrlInp, secCtaUrlInp].forEach(function (inp) {
+                if (inp.value.trim().indexOf('http://') === 0) inp.value = inp.value.trim().replace(/^http:\/\//i, 'https://');
+              });
+              updateAll();
+              toast('Applied safe auto-fixes', 'success');
+            } })
+          ])
+        ]),
+        list,
+        linkHealthHost
+      ]));
+    }
+
+    async function verifyAllLinks() {
+      var urls = [];
+      [bUrlInp.value, ctaUrlInp.value, secCtaUrlInp.value, ogImgInp.value].forEach(function (u) { if (u && u.trim()) urls.push(u.trim()); });
+      tickerItems.forEach(function (t) { if (t.url) urls.push(t.url); });
+      sections.forEach(function (s) {
+        if (s.url) urls.push(s.url);
+        ['latest_jobs', 'admit_cards', 'results', 'items'].forEach(function (k) {
+          if (Array.isArray(s[k])) s[k].forEach(function (it) { if (it && it.url) urls.push(it.url); });
+        });
+      });
+      urls = urls.filter(function (u, i, a) { return u && a.indexOf(u) === i; });
+      if (!urls.length) return;
+      clear(linkHealthHost);
+      linkHealthHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Pinging ' + urls.length + ' homepage link(s)…' }));
+      try {
+        var r = await api('POST', 'utils/check-links', { urls: urls });
+        clear(linkHealthHost);
+        var row = el('div', { class: 'cso-mod-toolbar' });
+        (r.results || []).forEach(function (x) {
+          var tone = x.ok ? 'ok' : (x.note && x.note.indexOf('Private') !== -1 ? 'warn' : 'danger');
+          row.appendChild(badge(x.note + ' · ' + x.url.slice(0, 38), tone));
+        });
+        linkHealthHost.appendChild(row);
+      } catch (e) { clear(linkHealthHost); toast(e.message, 'crimson'); }
+    }
+
+    function buildHomepagePreviewHtml() {
+      var escH = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      };
+      var safeU = function (u) {
+        var s = String(u || '').trim();
+        return (s.indexOf('/') === 0 && s.indexOf('//') !== 0) || /^https?:\/\//i.test(s) ? s : '#';
+      };
+      var bannerHtml = activeChk.checked ? '<div class="cso-sitewide" data-home-target="banner"><strong>[' + escH(sevSel.value.toUpperCase()) + '] ' + escH(bHeadInp.value) + '</strong> ' + escH(bOdiaInp.value) + ' <a href="' + escH(safeU(bUrlInp.value)) + '">' + escH(bCtaInp.value || 'Details') + '</a></div>' : '';
+      var tickerHtml = tickerItems.length ? '<div class="card" data-home-target="banner"><strong>Breaking:</strong> ' + tickerItems.map(function (t) { return (t.urgent ? '[URGENT] ' : '') + escH(t.text); }).join(' · ') + '</div>' : '';
+      var heroHtml = '<header class="hero" data-home-target="hero">' +
+        (heroBadgeInp.value.trim() ? '<p class="kicker">' + escH(heroBadgeInp.value) + '</p>' : '') +
+        (ogImgInp.value.trim() ? '<img src="' + escH(safeU(ogImgInp.value)) + '" alt="' + escH(ogAltInp.value || heroTitleInp.value) + '">' : '') +
+        '<h1>' + escH(heroTitleInp.value.trim() || seoTitleInp.value.trim() || 'Common Sense Odisha') + '</h1>' +
+        '<p>' + escH(heroSubInp.value.trim() || 'Odisha Govt Jobs, Syllabus, Current Affairs & Free CBT Mock Tests') + '</p>' +
+        (heroOdiaSubInp.value.trim() ? '<p class="odia-sub">' + escH(heroOdiaSubInp.value) + '</p>' : '') +
+        '<p>' + (ctaLblInp.value.trim() ? '<a class="btn primary" href="' + escH(safeU(ctaUrlInp.value)) + '">' + escH(ctaLblInp.value) + '</a> ' : '') +
+        (secCtaLblInp.value.trim() ? '<a class="btn" href="' + escH(safeU(secCtaUrlInp.value)) + '">' + escH(secCtaLblInp.value) + '</a>' : '') + '</p>' +
+        '<p>' + trustCounters.map(function (c) { return '<span><strong>' + escH(c.value) + '</strong> ' + escH(c.label) + '</span>'; }).join(' · ') + '</p>' +
+        '</header>';
+      var secsHtml = sections.map(function (s, idx) {
+        if (s.enabled === false) return '';
+        var inner = '<h2>' + escH(s.title) + '</h2>';
+        if (s.type === 'home_board') {
+          inner += '<div class="grid">' +
+            [['Latest Jobs', s.latest_jobs], ['Admit Cards', s.admit_cards], ['Results', s.results]].map(function (col) {
+              return '<div><h3>' + col[0] + '</h3><ul>' + (col[1] || []).map(function (r) { return '<li>' + escH(r.title) + (r.odia_tag ? ' (' + escH(r.odia_tag) + ')' : '') + '</li>'; }).join('') + '</ul></div>';
+            }).join('') + '</div>';
+        } else if (s.type === 'home_calendar') {
+          inner += '<table><tbody>' + (s.rows || []).map(function (r) { return '<tr><th>' + escH(r.label) + '</th><td>' + escH(r.value) + '</td></tr>'; }).join('') + '</tbody></table>';
+        } else if (s.type === 'home_faq') {
+          inner += (s.rows || []).map(function (r) { return '<details open><summary>' + escH(r.question) + '</summary><p>' + escH(r.answer) + '</p></details>'; }).join('');
+        } else if (s.type === 'home_districts') {
+          inner += '<p>' + (s.districts || []).slice(0, 12).map(escH).join(', ') + '…</p>';
+        } else if (Array.isArray(s.items)) {
+          inner += '<ul>' + s.items.map(function (it) { return '<li><strong>' + escH(it.title) + '</strong>' + (it.summary ? ' — ' + escH(it.summary) : '') + '</li>'; }).join('') + '</ul>';
+        } else if (s.text) {
+          inner += '<p>' + escH(s.text) + '</p>';
+        }
+        return '<section class="card" data-home-target="sec-' + idx + '">' + inner + '</section>';
+      }).join('');
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + escH(seoTitleInp.value || 'Common Sense Odisha') + '</title>' +
+        '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
+        '</head><body>' + bannerHtml + '<main class="container">' + tickerHtml + heroHtml + secsHtml + '</main></body></html>';
+    }
+
+    function jumpToHomeTarget(target) {
+      clear(fullscreenHost);
+      var node = null;
+      if (target === 'banner') node = bannerCardRef;
+      else if (target === 'hero') node = heroCardRef;
+      else if (target && target.indexOf('sec-') === 0) node = sectionCards[Number(target.slice(4))];
+      if (node && node.scrollIntoView) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (node && node.classList) {
+        node.classList.add('cso-focus-pulse');
+        setTimeout(function () { node.classList.remove('cso-focus-pulse'); }, 1800);
+      }
+      toast('Focused: ' + target, 'info');
+    }
+
+    function wireHomeIframeClick(iframeEl) {
+      iframeEl.addEventListener('load', function () {
+        try {
+          var doc = iframeEl.contentDocument;
+          if (!doc) return;
+          doc.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            var hit = ev.target && ev.target.closest ? ev.target.closest('[data-home-target]') : null;
+            if (hit) jumpToHomeTarget(hit.getAttribute('data-home-target'));
+          });
+        } catch (_) {}
+      });
+    }
+
+    function openFullScreenPreview() {
+      clear(fullscreenHost);
+      var fsMode = viewport;
+      var fsFrame = el('iframe', {
+        class: 'cso-fullscreen-frame' + (fsMode === 'tablet' ? ' is-tablet' : fsMode === 'mobile' ? ' is-mobile' : ''),
+        sandbox: 'allow-same-origin',
+        title: 'Homepage Full-Screen Real View'
+      });
+      if (previewMode === 'live') fsFrame.src = '/?preview=1&t=' + Date.now();
+      else {
+        fsFrame.srcdoc = buildHomepagePreviewHtml();
+        wireHomeIframeClick(fsFrame);
+      }
+      var bD = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'desktop' ? ' cso-pill-active' : ''), text: 'Desktop 100%', onclick: function () { setFs('desktop'); } });
+      var bT = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'tablet' ? ' cso-pill-active' : ''), text: 'Tablet 768px', onclick: function () { setFs('tablet'); } });
+      var bM = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'mobile' ? ' cso-pill-active' : ''), text: 'Mobile 375px', onclick: function () { setFs('mobile'); } });
+      function setFs(m) {
+        fsMode = m;
+        bD.classList.toggle('cso-pill-active', m === 'desktop');
+        bT.classList.toggle('cso-pill-active', m === 'tablet');
+        bM.classList.toggle('cso-pill-active', m === 'mobile');
+        fsFrame.className = 'cso-fullscreen-frame' + (m === 'tablet' ? ' is-tablet' : m === 'mobile' ? ' is-mobile' : '');
+      }
+      function closeFs() { document.removeEventListener('keydown', onEsc); clear(fullscreenHost); }
+      function onEsc(e) { if (e.key === 'Escape') closeFs(); }
+      document.addEventListener('keydown', onEsc);
+      fullscreenHost.appendChild(el('div', { class: 'cso-fullscreen-overlay' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Back to Editor', onclick: closeFs }),
+            el('strong', { text: 'Homepage Full-Screen Real View (Click any section to focus)' })
+          ]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            bD, bT, bM,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Save Draft', onclick: function () { closeFs(); saveHomepage('draft', currentTargetRoute); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Publish Homepage Live', onclick: function () { closeFs(); saveHomepage('published', '/'); } })
+          ])
+        ]),
+        el('div', { class: 'cso-fullscreen-stage' }, [fsFrame])
+      ]));
+    }
+
+    function updatePreviewPane() {
+      clear(previewHost);
+      var t = seoTitleInp.value.trim() || 'Common Sense Odisha — Odisha Govt Jobs & CBT Mock Tests';
+      var d = seoDescInp.value.trim() || 'Verified OPSC, OSSC, OSSSC job alerts, Odia & English CBT mock tests, syllabus PDFs & 30-district updates.';
+      if (previewTab === 'serp') {
+        previewHost.appendChild(el('div', { class: 'cso-serp-card' }, [
+          el('div', { class: 'cso-serp-url', text: 'https://csodisha.com/' }),
+          el('div', { class: 'cso-serp-title', text: t }),
+          el('p', { class: 'cso-serp-desc', text: d })
+        ]));
+        previewHost.appendChild(el('div', { class: 'cso-og-card' }, [
+          el('div', { class: 'cso-preview-kicker', text: 'OPENGRAPH CARD PREVIEW' }),
+          ogImgInp.value.trim() ? el('img', { src: ogImgInp.value.trim(), alt: ogAltInp.value.trim() || t, class: 'cso-asset-preview-img' }) : null,
+          el('strong', { text: t }),
+          el('p', { class: 'cso-mod-muted', text: d })
+        ]));
+      } else if (previewTab === 'jsonld') {
+        previewHost.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(buildHomepageJsonLd(), null, 2) }));
+      } else {
+        var cls = viewport === 'mobile' ? 'cso-preview-frame-mobile' : (viewport === 'tablet' ? 'cso-builder-iframe' : 'cso-builder-iframe');
+        var fr = el('iframe', {
+          class: cls,
+          sandbox: previewMode === 'live' ? undefined : 'allow-same-origin',
+          title: 'Homepage Real-CSS Preview'
+        });
+        if (previewMode === 'live') fr.src = '/?preview=1&t=' + Date.now();
+        else {
+          fr.srcdoc = buildHomepagePreviewHtml();
+          wireHomeIframeClick(fr);
+        }
+        previewHost.appendChild(el('div', { class: 'cso-preview-frame-wrap' }, [fr]));
+        previewHost.appendChild(el('p', { class: 'cso-mod-muted', text: previewMode === 'live' ? 'Showing live deployed /?preview=1' : 'Click any section in the Real-CSS preview to jump directly to its editor card.' }));
+      }
+    }
+
+    function scheduleDraftSave() {
+      if (draftTimer) clearTimeout(draftTimer);
+      draftTimer = setTimeout(function () {
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            route: currentTargetRoute,
+            banner: { active: activeChk.checked, severity: sevSel.value, headline: bHeadInp.value, odia: bOdiaInp.value, context: bCtxInp.value, ctaText: bCtaInp.value, ctaUrl: bUrlInp.value, startsAt: bStartInp.value, expiresAt: bExpInp.value },
+            ticker: tickerItems,
+            seoTitle: seoTitleInp.value, seoDesc: seoDescInp.value, heroBadge: heroBadgeInp.value,
+            heroTitle: heroTitleInp.value, heroSub: heroSubInp.value, heroOdiaSub: heroOdiaSubInp.value,
+            ctaLbl: ctaLblInp.value, ctaUrl: ctaUrlInp.value, secCtaLbl: secCtaLblInp.value, secCtaUrl: secCtaUrlInp.value,
+            ogImg: ogImgInp.value, ogAlt: ogAltInp.value, chips: chipsInp.value, activeQuals: activeQuals, trustCounters: trustCounters,
+            sections: sections, savedAt: new Date().toISOString()
+          }));
+        } catch (_) {}
+      }, 600);
+    }
+
+    function updateAll() {
+      renderKpis();
+      runValidation();
+      updatePreviewPane();
+      scheduleDraftSave();
+    }
+
+    function renderTickerEditor() {
+      clear(tickerHost);
+      tickerItems.forEach(function (it, idx) {
+        var bInp = el('input', { type: 'text', class: 'cso-mod-input', value: it.badge || '', placeholder: 'Badge (NEW)' });
+        var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: it.text || '', placeholder: 'Breaking headline' });
+        var uInp = el('input', { type: 'text', class: 'cso-mod-input', value: it.url || '', placeholder: '/jobs-careers/' });
+        var urgChk = el('input', { type: 'checkbox', checked: !!it.urgent });
+        bInp.addEventListener('input', function () { it.badge = bInp.value; updateAll(); });
+        tInp.addEventListener('input', function () { it.text = tInp.value; updateAll(); });
+        uInp.addEventListener('input', function () { it.url = uInp.value; updateAll(); });
+        urgChk.addEventListener('change', function () { it.urgent = !!urgChk.checked; updateAll(); });
+        tickerHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+          el('div', { class: 'cso-mod-grid-3' }, [bInp, tInp, uInp]),
+          el('div', { class: 'cso-drawer-head' }, [
+            el('label', { class: 'cso-check-label' }, [urgChk, el('span', { text: 'URGENT / NEW' })]),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { tickerItems.splice(idx, 1); renderTickerEditor(); updateAll(); } })
+          ])
+        ]));
+      });
+    }
+
+    function renderSectionsComposer() {
+      clear(sectionsHost);
+      sectionCards = [];
+      sections.forEach(function (sec, idx) {
+        var visChk = el('input', { type: 'checkbox', checked: sec.enabled !== false });
+        visChk.addEventListener('change', function () { sec.enabled = !!visChk.checked; updateAll(); });
+        var sTitle = el('input', { type: 'text', class: 'cso-mod-input', value: sec.title || '' });
+        sTitle.addEventListener('input', function () { sec.title = sTitle.value; updateAll(); });
+
+        var bodyNode = el('div', { class: 'cso-mod-shell' });
+        if (sec.type === 'home_board') {
+          var syncJobsChk = el('input', { type: 'checkbox', checked: sec.auto_sync_jobs !== false });
+          syncJobsChk.addEventListener('change', function () { sec.auto_sync_jobs = !!syncJobsChk.checked; updateAll(); });
+          bodyNode.appendChild(el('label', { class: 'cso-check-label' }, [syncJobsChk, el('span', { text: 'Auto-Sync Latest from /api/admin/jobs' })]));
+          [['latest_jobs', 'Latest Jobs'], ['admit_cards', 'Admit Cards'], ['results', 'Results & Cutoffs']].forEach(function (pair) {
+            var key = pair[0], lbl = pair[1];
+            if (!Array.isArray(sec[key])) sec[key] = [];
+            var colBox = el('div', { class: 'cso-mod-shell' });
+            sec[key].forEach(function (row, ri) {
+              var rt = el('input', { type: 'text', class: 'cso-mod-input', value: row.title || '', placeholder: lbl + ' Title' });
+              var ro = el('input', { type: 'text', class: 'cso-mod-input', value: row.odia_tag || '', placeholder: 'Odia Tag' });
+              var ru = el('input', { type: 'text', class: 'cso-mod-input', value: row.url || '', placeholder: 'URL / PDF / Drive' });
+              var rd = el('input', { type: 'date', class: 'cso-mod-input', value: row.deadline || '' });
+              rt.addEventListener('input', function () { row.title = rt.value; updateAll(); });
+              ro.addEventListener('input', function () { row.odia_tag = ro.value; updateAll(); });
+              ru.addEventListener('input', function () { row.url = ru.value; updateAll(); });
+              rd.addEventListener('input', function () { row.deadline = rd.value; updateAll(); });
+              var daysLeft = row.deadline ? Math.ceil((Date.parse(row.deadline) - Date.now()) / 86400000) : null;
+              colBox.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+                rt, ro,
+                el('div', { class: 'cso-mod-toolbar' }, [
+                  ru, rd,
+                  (daysLeft !== null && !isNaN(daysLeft) && daysLeft >= 0) ? badge('Closing in ' + daysLeft + 'd', daysLeft <= 7 ? 'danger' : 'warn') : null,
+                  el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { sec[key].splice(ri, 1); renderSectionsComposer(); updateAll(); } })
+                ])
+              ]));
+            });
+            bodyNode.appendChild(el('div', { class: 'cso-builder-block' }, [
+              el('div', { class: 'cso-drawer-head' }, [
+                el('strong', { text: lbl + ' (' + sec[key].length + ')' }),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Pin ' + lbl, onclick: function () { sec[key].push({ title: '', odia_tag: '', url: '/jobs-careers/', deadline: '' }); renderSectionsComposer(); updateAll(); } })
+              ]),
+              colBox
+            ]));
+          });
+        } else if (sec.type === 'home_hubs' || sec.type === 'home_schemes') {
+          if (!Array.isArray(sec.items)) sec.items = [];
+          sec.items.forEach(function (it, ii) {
+            var itT = el('input', { type: 'text', class: 'cso-mod-input', value: it.title || '', placeholder: 'Hub / Scheme Title' });
+            var itB = el('input', { type: 'text', class: 'cso-mod-input', value: it.badge || '', placeholder: 'Badge' });
+            var itU = el('input', { type: 'text', class: 'cso-mod-input', value: it.url || '', placeholder: '/route/' });
+            var itS = el('input', { type: 'text', class: 'cso-mod-input', value: it.summary || '', placeholder: 'Summary' });
+            itT.addEventListener('input', function () { it.title = itT.value; updateAll(); });
+            itB.addEventListener('input', function () { it.badge = itB.value; updateAll(); });
+            itU.addEventListener('input', function () { it.url = itU.value; updateAll(); });
+            itS.addEventListener('input', function () { it.summary = itS.value; updateAll(); });
+            bodyNode.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+              itT, itB,
+              el('div', { class: 'cso-mod-toolbar' }, [itU, itS, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { sec.items.splice(ii, 1); renderSectionsComposer(); updateAll(); } })])
+            ]));
+          });
+          bodyNode.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Card', onclick: function () { sec.items.push({ title: '', badge: '', url: '/jobs-careers/', summary: '' }); renderSectionsComposer(); updateAll(); } }));
+        } else if (sec.type === 'home_cbt') {
+          var syncCbt = el('input', { type: 'checkbox', checked: sec.auto_sync_tests !== false });
+          syncCbt.addEventListener('change', function () { sec.auto_sync_tests = !!syncCbt.checked; updateAll(); });
+          bodyNode.appendChild(el('label', { class: 'cso-check-label' }, [syncCbt, el('span', { text: 'Auto-Sync from /api/admin/mock-tests' })]));
+          (sec.items || []).forEach(function (it, ii) {
+            var ct = el('input', { type: 'text', class: 'cso-mod-input', value: it.title || '', placeholder: 'Mock Test Title' });
+            var cq = el('input', { type: 'text', class: 'cso-mod-input', value: it.questions || '', placeholder: 'Questions (100)' });
+            var cd = el('input', { type: 'text', class: 'cso-mod-input', value: it.duration || '', placeholder: 'Duration (90 min)' });
+            ct.addEventListener('input', function () { it.title = ct.value; updateAll(); });
+            cq.addEventListener('input', function () { it.questions = cq.value; updateAll(); });
+            cd.addEventListener('input', function () { it.duration = cd.value; updateAll(); });
+            bodyNode.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+              ct, cq,
+              el('div', { class: 'cso-mod-toolbar' }, [cd, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { sec.items.splice(ii, 1); renderSectionsComposer(); updateAll(); } })])
+            ]));
+          });
+          bodyNode.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Pin Mock Test', onclick: function () { sec.items.push({ title: '', questions: '100', duration: '90 min', bilingual: true, url: '/mock-tests/' }); renderSectionsComposer(); updateAll(); } }));
+        } else if (sec.type === 'home_calendar') {
+          var calPaste = el('textarea', { class: 'cso-mod-textarea', rows: '2', placeholder: 'Bulk paste "Exam: Date" lines and click Auto-Split…' });
+          bodyNode.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+            calPaste,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Auto-Split Lines', onclick: function () {
+              calPaste.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (ln) {
+                var pts = ln.split(/[:|\t–—]+/);
+                sec.rows.push(pts.length >= 2 ? { label: pts[0].trim(), value: pts.slice(1).join(':').trim() } : { label: ln, value: 'TBD' });
+              });
+              calPaste.value = '';
+              renderSectionsComposer(); updateAll();
+            } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Row', onclick: function () { sec.rows.push({ label: '', value: '' }); renderSectionsComposer(); updateAll(); } })
+          ]));
+          (sec.rows || []).forEach(function (rw, ri) {
+            var rl = el('input', { type: 'text', class: 'cso-mod-input', value: rw.label || '' });
+            var rv = el('input', { type: 'text', class: 'cso-mod-input', value: rw.value || '' });
+            rl.addEventListener('input', function () { rw.label = rl.value; updateAll(); });
+            rv.addEventListener('input', function () { rw.value = rv.value; updateAll(); });
+            bodyNode.appendChild(el('div', { class: 'cso-mod-grid-3' }, [rl, rv, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { sec.rows.splice(ri, 1); renderSectionsComposer(); updateAll(); } })]));
+          });
+        } else if (sec.type === 'home_vault') {
+          (sec.items || []).forEach(function (it, ii) {
+            var vt = el('input', { type: 'text', class: 'cso-mod-input', value: it.title || '', placeholder: 'Document Title' });
+            var vs = el('input', { type: 'text', class: 'cso-mod-input', value: it.source_label || '', placeholder: 'R2 PDF / Drive / Official' });
+            var vu = el('input', { type: 'text', class: 'cso-mod-input', value: it.url || '', placeholder: 'https://… or /api/media/…' });
+            vt.addEventListener('input', function () { it.title = vt.value; updateAll(); });
+            vs.addEventListener('input', function () { it.source_label = vs.value; updateAll(); });
+            vu.addEventListener('input', function () { it.url = vu.value; updateAll(); });
+            bodyNode.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+              vt, vs,
+              el('div', { class: 'cso-mod-toolbar' }, [
+                vu,
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { activeVaultEmbedUrl = activeVaultEmbedUrl === it.url ? null : it.url; renderSectionsComposer(); } }),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { sec.items.splice(ii, 1); renderSectionsComposer(); updateAll(); } })
+              ])
+            ]));
+            if (activeVaultEmbedUrl && activeVaultEmbedUrl === it.url) {
+              bodyNode.appendChild(el('iframe', { src: detectPreviewUrl(it.url), class: 'cso-asset-preview-pdf', title: it.title }));
+            }
+          });
+          bodyNode.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Document / Drive Link', onclick: function () { sec.items.push({ title: '', source_label: 'Official PDF', url: '/syllabus/' }); renderSectionsComposer(); updateAll(); } }));
+        } else if (sec.type === 'home_faq') {
+          (sec.rows || []).forEach(function (rw, ri) {
+            var fq = el('input', { type: 'text', class: 'cso-mod-input', value: rw.question || '', placeholder: 'Question' });
+            var fa = el('input', { type: 'text', class: 'cso-mod-input', value: rw.answer || '', placeholder: 'Answer' });
+            fq.addEventListener('input', function () { rw.question = fq.value; updateAll(); });
+            fa.addEventListener('input', function () { rw.answer = fa.value; updateAll(); });
+            bodyNode.appendChild(el('div', { class: 'cso-mod-grid-3' }, [fq, fa, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { sec.rows.splice(ri, 1); renderSectionsComposer(); updateAll(); } })]));
+          });
+          bodyNode.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add FAQ', onclick: function () { sec.rows.push({ question: '', answer: '' }); renderSectionsComposer(); updateAll(); } }));
+        } else if (sec.type === 'home_districts') {
+          bodyNode.appendChild(el('p', { class: 'cso-mod-muted', text: (sec.districts || []).length + ' Odisha districts active (' + (sec.districts || []).slice(0, 6).join(', ') + '…)' }));
+        } else if (sec.type === 'home_pwa') {
+          var pt = el('input', { type: 'text', class: 'cso-mod-input', value: sec.text || '' });
+          var pl = el('input', { type: 'text', class: 'cso-mod-input', value: sec.label || '' });
+          pt.addEventListener('input', function () { sec.text = pt.value; updateAll(); });
+          pl.addEventListener('input', function () { sec.label = pl.value; updateAll(); });
+          bodyNode.appendChild(el('div', { class: 'cso-mod-grid-2' }, [pt, pl]));
+        }
+
+        var sCard = el('details', { class: 'cso-builder-block', draggable: 'true', open: idx < 2 }, [
+          el('summary', { class: 'cso-builder-block-head' }, [
+            el('div', { class: 'cso-inline-row' }, [
+              el('span', { class: 'cso-drag-handle', text: '⋮⋮' }),
+              badge((idx + 1) + '. ' + sec.type.replace('home_', '').toUpperCase(), sec.enabled !== false ? 'ok' : 'muted'),
+              el('strong', { text: sec.title })
+            ]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              el('label', { class: 'cso-check-label' }, [visChk, el('span', { text: 'Show' })]),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↑', disabled: idx === 0, onclick: function (e) { e.preventDefault(); var t = sections[idx - 1]; sections[idx - 1] = sec; sections[idx] = t; renderSectionsComposer(); updateAll(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↓', disabled: idx === sections.length - 1, onclick: function (e) { e.preventDefault(); var t = sections[idx + 1]; sections[idx + 1] = sec; sections[idx] = t; renderSectionsComposer(); updateAll(); } })
+            ])
+          ]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Title' }), sTitle]),
+          bodyNode
+        ]);
+        sCard.addEventListener('dragstart', function () { dragSecIdx = idx; sCard.classList.add('is-dragging'); });
+        sCard.addEventListener('dragend', function () { dragSecIdx = null; sCard.classList.remove('is-dragging'); });
+        sCard.addEventListener('dragover', function (e) { e.preventDefault(); });
+        sCard.addEventListener('drop', function (e) {
+          e.preventDefault();
+          if (dragSecIdx === null || dragSecIdx === idx) return;
+          var mv = sections.splice(dragSecIdx, 1)[0];
+          sections.splice(idx, 0, mv);
+          dragSecIdx = null;
+          renderSectionsComposer();
+          updateAll();
+        });
+        sectionCards[idx] = sCard;
+        sectionsHost.appendChild(sCard);
+      });
+    }
+
+    function hydrateFromPage(home) {
+      if (!home) return;
+      seoTitleInp.value = home.title || '';
+      seoDescInp.value = home.meta_description || '';
+      heroTitleInp.value = home.hero_title || '';
+      heroSubInp.value = home.hero_subtitle || '';
+      ctaLblInp.value = home.cta_label || '';
+      ctaUrlInp.value = home.cta_url || '';
+      var parsed = f02ParseBlocks(home.blocks_json);
+      var pm = parsed.find(function (b) { return b && b.type === 'page_meta'; }) || {};
+      var ogm = parsed.find(function (b) { return b && b.type === 'og_meta'; }) || {};
+      var tk = parsed.find(function (b) { return b && b.type === 'home_ticker'; });
+      if (pm.odia_subtitle !== undefined) heroOdiaSubInp.value = pm.odia_subtitle || '';
+      if (pm.hero_badge !== undefined) heroBadgeInp.value = pm.hero_badge || '';
+      if (pm.secondary_cta_label !== undefined) secCtaLblInp.value = pm.secondary_cta_label || '';
+      if (pm.secondary_cta_url !== undefined) secCtaUrlInp.value = pm.secondary_cta_url || '';
+      if (Array.isArray(pm.trending_chips)) chipsInp.value = pm.trending_chips.join(', ');
+      if (Array.isArray(pm.trust_counters) && pm.trust_counters.length) trustCounters = pm.trust_counters;
+      if (pm.banner_odia !== undefined) bOdiaInp.value = pm.banner_odia || '';
+      if (pm.banner_starts_at) bStartInp.value = pm.banner_starts_at;
+      if (pm.banner_expires_at) bExpInp.value = pm.banner_expires_at;
+      if (pm.og_alt) ogAltInp.value = pm.og_alt;
+      if (ogm.og_image) ogImgInp.value = ogm.og_image;
+      if (tk && Array.isArray(tk.items)) tickerItems = tk.items;
+      var homeSecs = parsed.filter(function (b) { return b && b.type && b.type.indexOf('home_') === 0 && b.type !== 'home_ticker'; });
+      if (homeSecs.length) sections = homeSecs.map(function (s) { s.enabled = !s.hidden; return s; });
+      renderTickerEditor();
+      renderSectionsComposer();
+      updateAll();
+    }
 
     async function loadHomepage() {
       try {
-        var [b, pRes] = await Promise.all([api('GET', 'banner'), api('GET', 'pages')]);
+        var [b, pRes, jRes, mRes, medRes] = await Promise.all([
+          api('GET', 'banner'),
+          api('GET', 'pages'),
+          api('GET', 'jobs?limit=25').catch(function () { return { items: [] }; }),
+          api('GET', 'mock-tests?limit=25').catch(function () { return { items: [] }; }),
+          api('GET', 'media').catch(function () { return { items: [] }; })
+        ]);
         activeChk.checked = !!b.active;
         sevSel.value = b.severity || 'info';
         bHeadInp.value = b.headline || '';
@@ -3231,30 +3953,41 @@
         bCtaInp.value = b.ctaText || '';
         bUrlInp.value = b.ctaUrl || '';
 
-        var home = (pRes.pages || []).find(function (x) { return x.route === '/'; }) || {};
-        seoTitleInp.value = home.title || '';
-        seoDescInp.value = home.meta_description || '';
-        heroTitleInp.value = home.hero_title || '';
-        heroSubInp.value = home.hero_subtitle || '';
-        ctaLblInp.value = home.cta_label || '';
-        ctaUrlInp.value = home.cta_url || '';
-      } catch (e) {
-        toast(e.message, 'crimson');
-      }
+        clear(variantSel);
+        variantSel.appendChild(el('option', { value: '/', text: 'Current Live Homepage (/)' }));
+        (pRes.pages || []).forEach(function (p) {
+          pagesMap[p.route] = p;
+          verifiedLinks.push({ url: p.route, label: 'Page: ' + p.route });
+          if (p.route.indexOf('/home-') === 0) {
+            variantSel.appendChild(el('option', { value: p.route, text: 'Variant: ' + (p.title || p.route) + ' (' + p.status + ')' }));
+          }
+        });
+        variantSel.appendChild(el('option', { value: '__NEW_VARIANT__', text: '+ Create / Clone Homepage Variant' }));
+
+        (jRes.items || []).forEach(function (j) { verifiedLinks.push({ url: '/jobs-careers/?job=' + encodeURIComponent(j.slug || j.id), label: 'Job: ' + j.title }); });
+        (mRes.items || []).forEach(function (t) { verifiedLinks.push({ url: '/mock-tests/?test=' + encodeURIComponent(t.slug || t.id), label: 'Mock: ' + t.title }); });
+        r2Assets = medRes.items || [];
+
+        if (pagesMap['/']) hydrateFromPage(pagesMap['/']);
+        else updateAll();
+      } catch (e) { toast(e.message, 'crimson'); }
     }
 
-    async function publishHomepage() {
+    async function saveHomepage(status, targetRoute) {
+      var r = targetRoute || currentTargetRoute || '/';
       try {
-        await api('PUT', 'banner', {
-          active: activeChk.checked,
-          severity: sevSel.value,
-          headline: bHeadInp.value.trim(),
-          context: bCtxInp.value.trim(),
-          ctaText: bCtaInp.value.trim(),
-          ctaUrl: bUrlInp.value.trim()
-        });
+        if (r === '/') {
+          await api('PUT', 'banner', {
+            active: activeChk.checked,
+            severity: sevSel.value,
+            headline: bHeadInp.value.trim(),
+            context: bCtxInp.value.trim(),
+            ctaText: bCtaInp.value.trim(),
+            ctaUrl: bUrlInp.value.trim()
+          });
+        }
         await api('PUT', 'pages', {
-          route: '/',
+          route: r,
           title: seoTitleInp.value.trim() || 'Common Sense Odisha',
           meta_description: seoDescInp.value.trim(),
           category: 'Core Portal',
@@ -3262,59 +3995,367 @@
           hero_subtitle: heroSubInp.value.trim(),
           cta_label: ctaLblInp.value.trim(),
           cta_url: ctaUrlInp.value.trim(),
-          status: 'published',
-          note: 'Homepage Builder live publish'
+          blocks_json: JSON.stringify(collectHomepageBlocks()),
+          status: status,
+          note: 'Homepage Command Studio (' + r + ')'
         });
-        toast('Homepage & Live Banner published!', 'success');
-        refreshFrame();
-      } catch (e) {
-        toast(e.message, 'crimson');
-      }
+        try { localStorage.removeItem(DRAFT_KEY); clear(recoveryHost); } catch (_) {}
+        toast((status === 'published' ? 'Published ' : 'Saved draft ') + r, 'success');
+        updatePreviewPane();
+      } catch (e) { toast(e.message, 'crimson'); }
     }
 
-    renderBanner(shell, 'Homepage Builder', 'Real-time editor for / (Live Broadcast Banner + Homepage Hero & SEO) with live iframe preview.', [
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Homepage Live', onclick: publishHomepage }),
-      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh Preview', onclick: refreshFrame }),
+    async function openHomeRevisions() {
+      clear(revisionHost);
+      try {
+        var d = await api('GET', 'pages/revisions?route=' + encodeURIComponent(currentTargetRoute));
+        var revs = d.revisions || [];
+        var box = el('div', { class: 'cso-drawer' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('strong', { text: 'Homepage Revision History (' + revs.length + ') — ' + currentTargetRoute }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(revisionHost); } })
+          ])
+        ]);
+        revs.forEach(function (rv) {
+          var snap = {};
+          try { snap = JSON.parse(rv.snapshot_json || '{}'); } catch (_) {}
+          box.appendChild(el('div', { class: 'cso-diff-row' }, [
+            el('div', { class: 'cso-drawer-head' }, [
+              el('span', { text: (rv.created_at || '') + ' · ' + (snap.title || rv.route) + ' (' + (rv.note || 'update') + ')' }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Restore', onclick: async function () {
+                await api('POST', 'pages/restore', { route: currentTargetRoute, revision_id: rv.id, status: 'draft' });
+                clear(revisionHost);
+                loadHomepage();
+                toast('Restored revision #' + rv.id, 'success');
+              } })
+            ])
+          ]));
+        });
+        revisionHost.appendChild(box);
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+
+    // Variant & Portal Mode Presets
+    var variantSel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '/', text: 'Current Live Homepage (/)' })]);
+    variantSel.addEventListener('change', function () {
+      if (variantSel.value === '__NEW_VARIANT__') {
+        var slug = '/home-variant-' + Math.random().toString(36).slice(2, 6) + '/';
+        currentTargetRoute = slug;
+        toast('Editing new draft variant: ' + slug, 'info');
+        return;
+      }
+      currentTargetRoute = variantSel.value;
+      if (pagesMap[currentTargetRoute]) hydrateFromPage(pagesMap[currentTargetRoute]);
+    });
+
+    var presetSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: '', text: 'Portal Mode Presets…' }),
+      el('option', { value: 'balanced', text: 'Standard Balanced Portal' }),
+      el('option', { value: 'admit', text: 'Exam / Admit Card High-Alert' }),
+      el('option', { value: 'results', text: 'Results & Cutoff Showcase' }),
+      el('option', { value: 'cbt', text: 'CBT Mock Test & Syllabus Intensive' })
+    ]);
+    presetSel.addEventListener('change', function () {
+      var v = presetSel.value;
+      if (!v) return;
+      if (v === 'admit') { activeChk.checked = true; sevSel.value = 'urgent'; heroBadgeInp.value = 'ADMIT CARDS & EXAM ALERTS LIVE'; }
+      else if (v === 'results') { activeChk.checked = true; sevSel.value = 'notice'; heroBadgeInp.value = 'RESULTS & MERIT LISTS UPDATED'; }
+      else if (v === 'cbt') { heroBadgeInp.value = 'FREE BILINGUAL CBT MOCK SERIES'; ctaLblInp.value = 'Launch Mock Tests'; ctaUrlInp.value = '/mock-tests/'; }
+      else { heroBadgeInp.value = 'ODISHA #1 EXAM & JOB PORTAL'; }
+      presetSel.value = '';
+      updateAll();
+      toast('Applied portal preset', 'info');
+    });
+
+    var importJsonInp = el('input', { type: 'file', class: 'cso-sr-file', accept: '.json,application/json' });
+    importJsonInp.addEventListener('change', function () {
+      var f = importJsonInp.files[0];
+      if (!f) return;
+      var rdr = new FileReader();
+      rdr.onload = function () {
+        try {
+          var d = JSON.parse(String(rdr.result || '{}'));
+          if (Array.isArray(d.sections)) sections = d.sections;
+          if (Array.isArray(d.ticker)) tickerItems = d.ticker;
+          renderTickerEditor();
+          renderSectionsComposer();
+          updateAll();
+          toast('Imported homepage JSON', 'success');
+        } catch (err) { toast('Invalid JSON: ' + err.message, 'crimson'); }
+      };
+      rdr.readAsText(f);
+      importJsonInp.value = '';
+    });
+
+    renderBanner(shell, 'Homepage Command Studio', 'Manage Live (/), saved homepage variants, hybrid D1 auto-sync boards, Odia hero & real-CSS preview.', [
+      variantSel,
+      presetSel,
+      publishBtn,
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { saveHomepage('draft', currentTargetRoute); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Promote Variant to /', onclick: function () { currentTargetRoute = '/'; saveHomepage('published', '/'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Revision History', onclick: openHomeRevisions }),
+      el('label', { class: 'cso-mod-btn' }, [el('span', { text: 'Import JSON' }), importJsonInp]),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: function () { downloadFile('homepage-config.json', JSON.stringify({ ticker: tickerItems, sections: sections }, null, 2)); } }),
       el('a', { href: '/', target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn', text: 'Open Live / ↗' })
     ]);
 
-    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
-      el('div', { class: 'cso-mod-shell' }, [
-        el('div', { class: 'cso-mod-card' }, [
-          el('h3', { text: '1. Live Broadcast Banner (/api/admin/banner)' }),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [activeChk, el('span', { text: 'Banner Active on Live Website' })])]),
-          el('div', { class: 'cso-mod-grid-2' }, [
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), sevSel]),
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), bHeadInp])
-          ]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Context' }), bCtxInp]),
-          el('div', { class: 'cso-mod-grid-2' }, [
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Button' }), bCtaInp]),
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), bUrlInp])
-          ])
-        ]),
-        el('div', { class: 'cso-mod-card' }, [
-          el('h3', { text: '2. Homepage Hero & SEO (site_pages /)' }),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), seoTitleInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), seoDescInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
-          el('div', { class: 'cso-mod-grid-2' }, [
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero CTA Label' }), ctaLblInp]),
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero CTA URL' }), ctaUrlInp])
-          ])
-        ])
-      ]),
-      el('div', { class: 'cso-mod-card' }, [
-        el('div', { class: 'cso-drawer-head' }, [
-          el('h3', { text: 'Live Homepage Preview (https://csodisha.com/)' }),
-          badge('Live', 'ok')
-        ]),
-        el('div', { class: 'cso-preview-frame-wrap' }, [frame])
+    shell.appendChild(recoveryHost);
+    shell.appendChild(kpiHost);
+    shell.appendChild(validationHost);
+    shell.appendChild(revisionHost);
+
+    // 10-Second Instant Homepage Quick-Drop Bar
+    var qdTitle = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Title (e.g. OPSC OAS Admit Card Out)' });
+    var qdOdia = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Odia Tag (ଓଡ଼ିଆ)' });
+    var qdUrl = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'URL / R2 / Google Drive' });
+    var qdTarget = el('select', { class: 'cso-mod-select' }, [
+      'Broadcast Banner', 'Breaking Ticker', 'Latest Jobs', 'Admit Cards', 'Results & Cutoffs', 'Syllabus Vault'
+    ].map(function (t) { return el('option', { value: t, text: t }); }));
+    shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-drawer-head' }, [el('strong', { text: '⚡ 10-Second Instant Homepage Quick-Drop' }), makeRoutePicker(function (u) { qdUrl.value = u; })]),
+      el('div', { class: 'cso-mod-grid-3' }, [qdTitle, qdOdia, qdUrl]),
+      el('div', { class: 'cso-mod-toolbar' }, [
+        qdTarget,
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Insert & Preview', onclick: function () {
+          var t = qdTitle.value.trim();
+          var u = qdUrl.value.trim() || '/jobs-careers/';
+          if (!t) { toast('Enter a title for Quick-Drop', 'amber'); return; }
+          var tg = qdTarget.value;
+          if (tg === 'Broadcast Banner') { activeChk.checked = true; bHeadInp.value = t; bOdiaInp.value = qdOdia.value.trim(); bUrlInp.value = u; }
+          else if (tg === 'Breaking Ticker') { tickerItems.unshift({ badge: 'NEW', text: t, url: u, urgent: true }); renderTickerEditor(); }
+          else if (tg === 'Syllabus Vault') {
+            var vSec = sections.find(function (s) { return s.type === 'home_vault'; });
+            if (vSec) vSec.items.unshift({ title: t, source_label: qdOdia.value.trim() || 'PDF', url: u });
+            renderSectionsComposer();
+          } else {
+            var bSec = sections.find(function (s) { return s.type === 'home_board'; });
+            var map = { 'Latest Jobs': 'latest_jobs', 'Admit Cards': 'admit_cards', 'Results & Cutoffs': 'results' };
+            if (bSec && map[tg]) bSec[map[tg]].unshift({ title: t, odia_tag: qdOdia.value.trim(), url: u, deadline: '' });
+            renderSectionsComposer();
+          }
+          qdTitle.value = ''; qdOdia.value = ''; qdUrl.value = '';
+          updateAll();
+          toast('Inserted into ' + tg, 'success');
+        } })
       ])
     ]));
 
+    // AI Homepage Co-Pilot
+    var aiPromptInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Paste notice or topic to generate Hero copy, Odia summary & FAQs…' });
+    shell.appendChild(el('details', { class: 'cso-mod-card' }, [
+      el('summary', { class: 'cso-drawer-head' }, [el('strong', { text: '✨ AI Homepage Co-Pilot (Workers AI)' }), badge('Optional', 'info')]),
+      el('div', { class: 'cso-mod-toolbar' }, [
+        aiPromptInp,
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Generate Hero & Odia Copy', onclick: async function () {
+          var topic = aiPromptInp.value.trim() || heroTitleInp.value.trim() || 'Common Sense Odisha Exam Portal';
+          try {
+            var res = await api('POST', 'ai/generate-page', { mode: 'create', topic: topic, language: 'Bilingual English + Odia' });
+            if (res.hero_title) heroTitleInp.value = res.hero_title;
+            if (res.hero_subtitle) heroSubInp.value = res.hero_subtitle;
+            if (res.odia_subtitle) heroOdiaSubInp.value = res.odia_subtitle;
+            updateAll();
+            toast('AI Homepage copy applied', 'success');
+          } catch (e) { toast(e.message, 'crimson'); }
+        } })
+      ])
+    ]));
+
+    // R2 Upload + Picker for Hero/OG
+    var r2Up = el('input', { type: 'file', class: 'cso-sr-file', accept: '.png,.jpg,.jpeg,.webp,.svg' });
+    r2Up.addEventListener('change', async function () {
+      var f = r2Up.files[0];
+      if (!f) return;
+      var fd = new FormData();
+      fd.append('file', f);
+      try {
+        var d = await api('POST', 'media/upload', fd, true);
+        ogImgInp.value = d.url || ('/api/media/' + (d.key || d.object_key));
+        if (!ogAltInp.value.trim()) ogAltInp.value = f.name.replace(/\.[a-z0-9]+$/i, '');
+        updateAll();
+        toast('Uploaded Hero/OG image to R2', 'success');
+      } catch (e) { toast(e.message, 'crimson'); }
+      r2Up.value = '';
+    });
+
+    function toggleR2Picker() {
+      r2PickHost.classList.toggle('cso-hidden');
+      if (r2PickHost.classList.contains('cso-hidden')) return;
+      clear(r2PickHost);
+      r2PickHost.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Pick Image from R2 Library' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { r2PickHost.classList.add('cso-hidden'); } })
+      ]));
+      r2Assets.filter(function (m) { return m.kind === 'image'; }).slice(0, 12).forEach(function (m) {
+        var u = m.url || ('/api/media/' + m.object_key);
+        r2PickHost.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: m.original_name || m.object_key, onclick: function () {
+          ogImgInp.value = u;
+          if (!ogAltInp.value.trim()) ogAltInp.value = m.original_name || 'Portal Banner';
+          r2PickHost.classList.add('cso-hidden');
+          updateAll();
+        } }));
+      });
+    }
+
+    var qualRow = el('div', { class: 'cso-pill-row' }, qualPills.map(function (q) {
+      var btn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: q, onclick: function () {
+        activeQuals[q] = !activeQuals[q];
+        btn.classList.toggle('cso-pill-active', !!activeQuals[q]);
+        updateAll();
+      } });
+      return btn;
+    }));
+
+    var trustHost = el('div', { class: 'cso-mod-grid-2' });
+    trustCounters.forEach(function (tc) {
+      var vI = el('input', { type: 'text', class: 'cso-mod-input', value: tc.value });
+      var lI = el('input', { type: 'text', class: 'cso-mod-input', value: tc.label });
+      vI.addEventListener('input', function () { tc.value = vI.value; updateAll(); });
+      lI.addEventListener('input', function () { tc.label = lI.value; updateAll(); });
+      trustHost.appendChild(el('div', { class: 'cso-builder-block' }, [vI, lI]));
+    });
+
+    bannerCardRef = el('div', { class: 'cso-mod-card' }, [
+      el('h3', { text: '1. Live Broadcast Banner & Breaking Marquee (/api/admin/banner)' }),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [activeChk, el('span', { text: 'Banner Active on Live Website' })])]),
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), sevSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), bHeadInp])
+      ]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Odia Banner Headline (ଓଡ଼ିଆ)' }), bOdiaInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Context' }), bCtxInp]),
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Button' }), bCtaInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), bUrlInp, makeRoutePicker(function (u) { bUrlInp.value = u; updateAll(); })])
+      ]),
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Starts At (optional)' }), bStartInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Expires At (optional)' }), bExpInp])
+      ]),
+      el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Breaking News Marquee Ticker' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Ticker Item', onclick: function () { tickerItems.push({ badge: 'NEW', text: '', url: '/jobs-careers/', urgent: false }); renderTickerEditor(); updateAll(); } })
+      ]),
+      tickerHost
+    ]);
+
+    heroCardRef = el('div', { class: 'cso-mod-card' }, [
+      el('h3', { text: '2. Homepage Hero, Bilingual Copy, R2 Media & SEO (site_pages /)' }),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), seoTitleInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), seoDescInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Top Hero Announcement Badge' }), heroBadgeInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subtitle' }), heroSubInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Odia Hero Subtitle (ଓଡ଼ିଆ)' }), heroOdiaSubInp]),
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary CTA Label' }), ctaLblInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary CTA URL' }), ctaUrlInp])
+      ]),
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Secondary CTA Label' }), secCtaLblInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Secondary CTA URL' }), secCtaUrlInp])
+      ]),
+      el('div', { class: 'cso-mod-field' }, [
+        el('label', { class: 'cso-mod-label', text: 'Hero Cover / OpenGraph Image (og:image)' }),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          ogImgInp,
+          el('label', { class: 'cso-file-drop' }, [el('span', { text: '⬆ Upload to R2' }), r2Up]),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick from R2 Library', onclick: toggleR2Picker })
+        ]),
+        r2PickHost
+      ]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Image Alt Text' }), ogAltInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Trending Search Quick-Chips (comma-separated)' }), chipsInp]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Candidate Qualification Quick-Filter Pills' }), qualRow]),
+      el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: '4 Impact / Trust Counters' }), trustHost])
+    ]);
+
+    var mUnpubBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Unpublished Real-CSS', onclick: function () { previewMode = 'unpublished'; syncPrevBtns(); updatePreviewPane(); } });
+    var mLiveBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Live /?preview=1', onclick: function () { previewMode = 'live'; syncPrevBtns(); updatePreviewPane(); } });
+    var tVisBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Live Visual Preview', onclick: function () { previewTab = 'visual'; syncPrevBtns(); updatePreviewPane(); } });
+    var tSerpBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Google SERP & OG', onclick: function () { previewTab = 'serp'; syncPrevBtns(); updatePreviewPane(); } });
+    var tJsonBtn = el('button', { type: 'button', class: 'cso-pill', text: 'JSON-LD Schema', onclick: function () { previewTab = 'jsonld'; syncPrevBtns(); updatePreviewPane(); } });
+    var vDeskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { viewport = 'desktop'; syncPrevBtns(); updatePreviewPane(); } });
+    var vTabBtn = el('button', { type: 'button', class: 'cso-pill', text: '768px', onclick: function () { viewport = 'tablet'; syncPrevBtns(); updatePreviewPane(); } });
+    var vMobBtn = el('button', { type: 'button', class: 'cso-pill', text: '375px', onclick: function () { viewport = 'mobile'; syncPrevBtns(); updatePreviewPane(); } });
+    function syncPrevBtns() {
+      mUnpubBtn.classList.toggle('cso-pill-active', previewMode === 'unpublished');
+      mLiveBtn.classList.toggle('cso-pill-active', previewMode === 'live');
+      tVisBtn.classList.toggle('cso-pill-active', previewTab === 'visual');
+      tSerpBtn.classList.toggle('cso-pill-active', previewTab === 'serp');
+      tJsonBtn.classList.toggle('cso-pill-active', previewTab === 'jsonld');
+      vDeskBtn.classList.toggle('cso-pill-active', viewport === 'desktop');
+      vTabBtn.classList.toggle('cso-pill-active', viewport === 'tablet');
+      vMobBtn.classList.toggle('cso-pill-active', viewport === 'mobile');
+    }
+
+    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+      el('div', { class: 'cso-mod-shell' }, [
+        bannerCardRef,
+        heroCardRef,
+        el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: '3. Modular Homepage Sections Composer (Drag or ↑/↓)' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Reset Default Sections', onclick: function () { sections = defaultHomeSections(); renderSectionsComposer(); updateAll(); } })
+          ]),
+          sectionsHost
+        ])
+      ]),
+      el('div', { class: 'cso-mod-card cso-sticky-preview' }, [
+        el('div', { class: 'cso-preview-header-stack' }, [
+          el('h3', { text: 'Homepage Real-CSS Preview Studio' }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            mUnpubBtn, mLiveBtn, vDeskBtn, vTabBtn, vMobBtn,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Full-Screen Real View', onclick: openFullScreenPreview })
+          ])
+        ]),
+        el('div', { class: 'cso-pill-row' }, [tVisBtn, tSerpBtn, tJsonBtn]),
+        previewHost
+      ])
+    ]));
+
+    [activeChk, sevSel, bHeadInp, bOdiaInp, bCtxInp, bCtaInp, bUrlInp, bStartInp, bExpInp,
+      seoTitleInp, seoDescInp, heroBadgeInp, heroTitleInp, heroSubInp, heroOdiaSubInp,
+      ctaLblInp, ctaUrlInp, secCtaLblInp, secCtaUrlInp, ogImgInp, ogAltInp, chipsInp
+    ].forEach(function (inp) {
+      inp.addEventListener('input', updateAll);
+      inp.addEventListener('change', updateAll);
+    });
+
     root.appendChild(shell);
+    root.appendChild(fullscreenHost);
+
+    try {
+      var sr = localStorage.getItem(DRAFT_KEY);
+      if (sr) {
+        var sv = JSON.parse(sr);
+        if (sv && (sv.seoTitle || sv.heroTitle)) {
+          recoveryHost.appendChild(el('div', { class: 'cso-drawer' }, [
+            el('div', { class: 'cso-drawer-head' }, [
+              el('strong', { text: 'Unsaved Homepage Draft Found (' + (sv.savedAt || '').slice(0, 16) + ')' }),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Restore Draft', onclick: function () {
+                  if (sv.seoTitle) seoTitleInp.value = sv.seoTitle;
+                  if (sv.seoDesc) seoDescInp.value = sv.seoDesc;
+                  if (sv.heroTitle) heroTitleInp.value = sv.heroTitle;
+                  if (sv.heroSub) heroSubInp.value = sv.heroSub;
+                  if (sv.heroOdiaSub) heroOdiaSubInp.value = sv.heroOdiaSub;
+                  if (Array.isArray(sv.ticker)) tickerItems = sv.ticker;
+                  if (Array.isArray(sv.sections)) sections = sv.sections;
+                  clear(recoveryHost);
+                  renderTickerEditor();
+                  renderSectionsComposer();
+                  updateAll();
+                } }),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Discard', onclick: function () { localStorage.removeItem(DRAFT_KEY); clear(recoveryHost); } })
+              ])
+            ])
+          ]));
+        }
+      }
+    } catch (_) {}
+
+    renderTickerEditor();
+    renderSectionsComposer();
     loadHomepage();
   }
 

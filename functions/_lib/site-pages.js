@@ -74,7 +74,28 @@ export function buildJsonLd(row, blocks) {
     ]
   };
   const out = [crumbs];
-  const faqs = list.filter(b => b && !b.hidden && b.type === 'faq');
+  const meta = extractPageMeta(list);
+  if (route === '/' || route === '/index.html' || meta.is_homepage) {
+    out.push({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Common Sense Odisha',
+      url: 'https://csodisha.com/',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://csodisha.com/jobs-careers/?q={search_term_string}',
+        'query-input': 'required name=search_term_string'
+      }
+    });
+    out.push({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Common Sense Odisha',
+      url: 'https://csodisha.com/',
+      logo: 'https://csodisha.com/assets/favicon.svg'
+    });
+  }
+  const faqs = list.filter(b => b && !b.hidden && (b.type === 'faq' || b.type === 'home_faq'));
   if (faqs.length) {
     const mainEntity = [];
     faqs.forEach(f => {
@@ -155,6 +176,54 @@ export function renderBlocks(blocks) {
     if (t === 'notice') return wrap(`<aside class="cso-live-notice" role="note"><strong>${esc(b.title || b.heading)}</strong><p>${esc(b.text || b.body)}</p></aside>`);
     if (t === 'richtext' || t === 'rich_text') return wrap(`${(b.title || b.heading) ? `<h2>${esc(b.title || b.heading)}</h2>` : ''}${String(b.text || b.body || '').split(/\n{2,}/).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('')}`);
     if (t === 'quote') return wrap(`<blockquote>${text}</blockquote>`);
+    if (t === 'home_ticker') {
+      const tItems = Array.isArray(b.items) ? b.items : [];
+      if (!tItems.length) return '';
+      return wrap(`<section class="cso-live-ticker" aria-label="Breaking Updates"><strong>${esc(b.title || 'Breaking Updates')}</strong><ul>${tItems.map(it => `<li>${it.urgent ? '<span class="cso-live-badge">URGENT</span> ' : (it.badge ? `<span class="cso-live-badge">${esc(it.badge)}</span> ` : '')}<a href="${esc(safeUrl(it.url || '/jobs-careers/'))}">${esc(it.text || '')}</a></li>`).join('')}</ul></section>`);
+    }
+    if (t === 'home_board') {
+      const cols = [['Latest Jobs', b.latest_jobs], ['Admit Cards', b.admit_cards], ['Results & Cutoffs', b.results]];
+      const colHtml = cols.map(([lbl, arr]) => {
+        const rows = Array.isArray(arr) ? arr : [];
+        const lis = rows.map(r => {
+          let dlBadge = '';
+          if (r.deadline) {
+            const days = Math.ceil((Date.parse(r.deadline) - Date.now()) / 86400000);
+            if (!Number.isNaN(days) && days >= 0) dlBadge = ` <span class="cso-live-badge">Closing in ${days}d</span>`;
+          }
+          return `<li><a href="${esc(safeUrl(r.url || '/jobs-careers/'))}">${esc(r.title || '')}</a>${r.odia_tag ? ` <span class="cso-live-odia">(${esc(r.odia_tag)})</span>` : ''}${dlBadge}</li>`;
+        }).join('');
+        return `<div class="cso-live-board-col"><h3>${esc(lbl)}</h3><ul>${lis || '<li>Updated via live D1 feed</li>'}</ul></div>`;
+      }).join('');
+      return wrap(`<section class="cso-live-board"><h2>${esc(b.title || "What's New Today")}</h2><div class="cso-live-grid">${colHtml}</div></section>`);
+    }
+    if (t === 'home_hubs' || t === 'home_schemes') {
+      const hItems = Array.isArray(b.items) ? b.items : [];
+      return wrap(`<section><h2>${esc(b.title || 'Portals')}</h2><ul class="cso-live-grid">${hItems.map(c => `<li><a href="${esc(safeUrl(c.url || '/'))}"><strong>${esc(c.title || '')}</strong>${c.badge ? ` <span class="cso-live-badge">${esc(c.badge)}</span>` : ''}${c.summary ? `<p>${esc(c.summary)}</p>` : ''}</a></li>`).join('')}</ul></section>`);
+    }
+    if (t === 'home_cbt') {
+      const cItems = Array.isArray(b.items) ? b.items : [];
+      return wrap(`<section class="cso-live-cbt"><h2>${esc(b.title || 'Free CBT Mock Test Arena')}</h2><ul class="cso-live-grid">${cItems.map(c => `<li><a href="${esc(safeUrl(c.url || '/mock-tests/'))}"><strong>${esc(c.title || '')}</strong>${c.bilingual ? ' <span class="cso-live-badge">Odia + Eng</span>' : ''}<p>${esc((c.questions || '100') + ' Qs · ' + (c.duration || '90 min'))}</p></a></li>`).join('')}</ul></section>`);
+    }
+    if (t === 'home_districts') {
+      const dList = Array.isArray(b.districts) ? b.districts : [];
+      return wrap(`<section><h2>${esc(b.title || 'Odisha 30-District Jobs')}</h2><p class="cso-live-districts">${dList.map(d => `<a class="cso-live-badge" href="/jobs-careers/?district=${encodeURIComponent(d)}">${esc(d)}</a>`).join(' ')}</p></section>`);
+    }
+    if (t === 'home_calendar') {
+      const rows = Array.isArray(b.rows) ? b.rows : [];
+      return wrap(`<section class="cso-live-notice"><h2>${esc(b.title || 'Upcoming Exam Calendar')}</h2><table><tbody>${rows.map(r => `<tr><th>${esc(r.label || '')}</th><td>${esc(r.value || '')}</td></tr>`).join('')}</tbody></table></section>`);
+    }
+    if (t === 'home_vault') {
+      const vItems = Array.isArray(b.items) ? b.items : [];
+      return wrap(`<section><h2>${esc(b.title || 'Syllabus & Document Vault')}</h2>${vItems.map(a => `<div class="cso-live-attachment"><span class="cso-live-badge">${esc(a.source_label || 'PDF')}</span> <strong>${esc(a.title || '')}</strong> <a class="btn btn-primary" href="${esc(safeUrl(a.url || '#'))}" target="_blank" rel="noopener noreferrer">Open / Download</a></div>`).join('')}</section>`);
+    }
+    if (t === 'home_faq') {
+      const rows = Array.isArray(b.rows) ? b.rows : [];
+      return wrap(`<section><h2>${esc(b.title || 'Frequently Asked Questions')}</h2>${rows.map(r => `<details><summary>${esc(r.question || '')}</summary><p>${esc(r.answer || '')}</p></details>`).join('')}</section>`);
+    }
+    if (t === 'home_pwa') {
+      return wrap(`<aside class="cso-live-notice"><h2>${esc(b.title || 'Install CS Odisha App')}</h2><p>${esc(b.text || '')}</p>${b.label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url || '/student-dashboard/'))}">${esc(b.label)}</a></p>` : ''}</aside>`);
+    }
     return text ? wrap(`<p>${text}</p>`) : '';
   }).join('\n');
 }
