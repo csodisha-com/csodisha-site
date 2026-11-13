@@ -18,6 +18,7 @@ import { handleAdminApi } from './functions/api/admin/_router.js';
 import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
 import { handleSitemapXml, handleRssFeed, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
+import { getPublishedPage, renderDynamicPage, applyPageOverrides, publishDueScheduledPages } from './functions/_lib/site-pages.js';
 import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
@@ -347,7 +348,22 @@ export default {
 
     // Fall back to static asset binding
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
-      const res = await env.ASSETS.fetch(request);
+      let res = await env.ASSETS.fetch(request);
+      const isPageReq = (request.method === 'GET' || request.method === 'HEAD') && !pathname.startsWith('/api/') && !pathname.startsWith('/assets/') && (pathname.endsWith('/') || pathname.endsWith('.html') || !/\.[a-z0-9]+$/i.test(pathname));
+      if (isPageReq) {
+        const live = await getPublishedPage(env, pathname);
+        if (live) {
+          const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'";
+          if (res.status === 404) {
+            return new Response(request.method === 'HEAD' ? null : renderDynamicPage(live), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' } });
+          }
+          if (res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html')) {
+            res = applyPageOverrides(res, live);
+            res = new Response(res.body, { status: 200, headers: new Headers(res.headers) });
+            res.headers.set('Cache-Control', 'no-cache');
+          }
+        }
+      }
       if (/^\/(jobs-careers|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
@@ -373,7 +389,7 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    const task = runLifecycleMaintenance(env, { actorId: 'system:cron' });
+    const task = (async () => { await publishDueScheduledPages(env); return runLifecycleMaintenance(env, { actorId: 'system:cron' }); })();
     if (ctx && typeof ctx.waitUntil === 'function') {
       ctx.waitUntil(task);
     }
