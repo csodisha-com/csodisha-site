@@ -7974,7 +7974,23 @@
         { type: 'notice', title: 'Effective Date & Editorial Desk Contact', text: 'Effective Date: 2026-11-13 · Editor-in-Chief: Ramesh Biswal · Editorial Desk: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-009': { title: 'Corrections Policy', path: '/corrections.html', email: 'editorial@csodisha.com' },
+    'module-03-009': {
+      title: 'Corrections Policy',
+      seoTitle: 'Corrections Policy | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Corrections Policy of Common Sense Odisha (csodisha.com) — how we verify, update, and timestamp factual errata, exam date changes, and official corrigenda.',
+      heroTitle: 'Corrections Policy',
+      heroSubtitle: 'Our commitment to prompt factual corrections, transparent update timestamps, and immediate reflection of official government corrigenda.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/corrections.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Commitment to Accuracy & Official Corrigenda', text: 'Recruitment commissions (such as OPSC, OSSC, and OSSSC) and scholarship authorities frequently issue official corrigenda, extended application deadlines, or revised answer keys. Common Sense Odisha (https://csodisha.com) actively monitors official portals to update affected articles promptly and prevent aspirants from relying on outdated dates or eligibility criteria.' },
+        { type: 'richtext', title: 'How Factual Errors Are Corrected & Timestamped', text: 'When a factual discrepancy, typographical error, or official schedule revision is identified, our editorial desk verifies the change against the primary notification, updates the live page immediately, and refreshes the page\'s Last Updated timestamp alongside a revision log entry. Minor spelling or formatting adjustments that do not alter meaning are corrected silently, whereas substantive changes to dates, fees, vacancies, or answer keys are clearly noted on the page.' },
+        { type: 'richtext', title: 'How Readers Can Report an Error', text: 'Readers and aspirants who spot an outdated deadline, broken official PDF link, or factual inaccuracy are encouraged to write to editorial@csodisha.com with the article URL and a link or reference to the official notice. All verified correction requests are reviewed and resolved within 24 hours.' },
+        { type: 'notice', title: 'Effective Date & Corrections Desk', text: 'Effective Date: 2026-11-13 · Corrections & Errata Desk: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-010': { title: 'Accessibility Statement', path: '/accessibility.html', email: 'accessibility@csodisha.com' },
     'module-03-011': { title: 'Refund & Cancellation Policy', path: '/refund.html', email: 'billing@csodisha.com' },
     'module-03-012': { title: 'Digital Delivery Policy', path: '/delivery.html', email: 'support@csodisha.com' },
