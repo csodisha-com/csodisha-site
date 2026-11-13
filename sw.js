@@ -10,7 +10,7 @@
  *    messaging the dashboard clients (with a SW-side fallback drain)
  */
 
-const CACHE_NAME = 'cso-candidate-cache-v11';
+const CACHE_NAME = 'cso-candidate-cache-v12';
 const EXPECTED_CACHES = [CACHE_NAME];
 
 const PRECACHE_URLS = [
@@ -67,6 +67,12 @@ self.addEventListener('install', (event) => {
       });
     }).then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {

@@ -157,7 +157,7 @@
   function switchTab(tabId) {
     if (!tabId || !document.getElementById(tabId)) return;
     document.querySelectorAll('.bp-tab-view').forEach(v => v.classList.toggle('active', v.id === tabId));
-    document.querySelectorAll('.bp-nav-item[data-tab]').forEach(a => a.classList.toggle('active', a.dataset.tab === tabId));
+    document.querySelectorAll('.bp-nav-item[data-tab], .bp-bottom-nav-btn[data-tab]').forEach(a => a.classList.toggle('active', a.dataset.tab === tabId));
     const meta = TAB_META[tabId];
     if (meta) {
       const t = document.getElementById('bp-topbar-title');
@@ -184,6 +184,63 @@
     document.getElementById('bp-mobile-menu-trigger')?.addEventListener('click', () => sb?.classList.toggle('mobile-open'));
     document.getElementById('bp-topbar-user-btn')?.addEventListener('click', () => switchTab('tab-profile-settings'));
     document.getElementById('bp-sidebar-user-btn')?.addEventListener('click', () => switchTab('tab-profile-settings'));
+
+    const hashTab = String(window.location.hash || '').replace(/^#/, '');
+    if (hashTab && document.getElementById(hashTab)) {
+      switchTab(hashTab);
+    }
+    initPwaLiveStatus();
+  }
+
+  async function refreshOfflineSyncPill() {
+    const pill = document.getElementById('cso-sync-pill');
+    if (!pill) return;
+    let queuedCount = 0;
+    try {
+      if (window.CSOIdb && typeof window.CSOIdb.getSyncQueue === 'function') {
+        const q = await window.CSOIdb.getSyncQueue();
+        queuedCount = Array.isArray(q) ? q.length : 0;
+      }
+    } catch (_) {}
+
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    pill.hidden = false;
+    pill.classList.remove('is-offline', 'is-pending', 'is-synced');
+    if (offline || queuedCount > 0) {
+      pill.classList.add(offline ? 'is-offline' : 'is-pending');
+      pill.textContent = queuedCount > 0 ? `Offline Mode — ${queuedCount} Queued` : 'Offline Mode — Queued';
+    } else {
+      pill.classList.add('is-synced');
+      pill.textContent = 'Synced';
+    }
+  }
+
+  function showSwUpdateToast(registration) {
+    const host = document.getElementById('cso-toast-container');
+    if (!host || document.getElementById('cso-sw-update-btn')) return;
+    const btn = el('button', 'cso-sw-update-toast', 'App updated — Reload');
+    btn.type = 'button';
+    btn.id = 'cso-sw-update-btn';
+    btn.addEventListener('click', () => {
+      if (registration && registration.waiting) {
+        try {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        } catch (_) {}
+      }
+      window.location.reload();
+    });
+    host.appendChild(btn);
+  }
+
+  function initPwaLiveStatus() {
+    refreshOfflineSyncPill();
+    window.addEventListener('online', refreshOfflineSyncPill);
+    window.addEventListener('offline', refreshOfflineSyncPill);
+    window.addEventListener('cso:saved-offline', refreshOfflineSyncPill);
+    window.addEventListener('cso:sync-complete', refreshOfflineSyncPill);
+    window.addEventListener('cso:sw-update-available', (e) => {
+      showSwUpdateToast(e && e.detail ? e.detail.registration : null);
+    });
   }
 
   /* ---------- Auth & Governance Rendering ---------- */

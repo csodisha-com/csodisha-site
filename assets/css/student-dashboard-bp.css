@@ -56,6 +56,8 @@ body.cso-student-dashboard-page {
 .bp-app-layout {
   display: flex;
   min-height: 100vh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .bp-sidebar {
@@ -1605,5 +1607,105 @@ html[data-cso-student-theme="obsidian-mint"] .cso-pwa-btn-install {
   }
   .bp-content {
     padding: 14px;
+  }
+}
+
+/* PWA Installed Badge, Guide Modal, SW Update Toast & Mobile Bottom Tab Bar */
+.cso-pwa-install-trigger.is-installed {
+  opacity: 0.78;
+  cursor: default;
+  border-color: var(--cso-emerald);
+  color: var(--cso-emerald);
+}
+
+.cso-pwa-guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.cso-pwa-guide-step {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cso-border);
+  background: var(--cso-surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cso-pwa-guide-step strong {
+  font-size: 13px;
+  color: var(--cso-ink);
+}
+
+.cso-pwa-guide-step span {
+  font-size: 12px;
+  color: var(--cso-muted);
+}
+
+.cso-sw-update-toast {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--cso-primary);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--cso-shadow);
+}
+
+.bp-mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bp-mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 65;
+    background: var(--cso-surface);
+    border-top: 1px solid var(--cso-border);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+  }
+
+  .bp-bottom-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none;
+    background: transparent;
+    color: var(--cso-muted);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 2px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .bp-bottom-nav-btn.active {
+    color: var(--cso-primary);
+    background: var(--cso-primary-soft);
+  }
+
+  .bp-content {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .cso-toast-container {
+    bottom: calc(76px + env(safe-area-inset-bottom));
   }
 }

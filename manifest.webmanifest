@@ -7,7 +7,7 @@
   "display": "standalone",
   "background_color": "#0a0f1d",
   "theme_color": "#0d9488",
-  "orientation": "portrait",
+  "orientation": "any",
   "icons": [
     {
       "src": "/assets/favicon.svg",
@@ -16,5 +16,25 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "government", "news", "productivity"]
+  "categories": ["education", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Candidate Overview",
+      "short_name": "Overview",
+      "url": "/student-dashboard/#tab-overview",
+      "icons": [{ "src": "/assets/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Daily GK Drill",
+      "short_name": "Daily Drill",
+      "url": "/student-dashboard/#tool-daily-drill",
+      "icons": [{ "src": "/assets/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Exam Calendar",
+      "short_name": "Calendar",
+      "url": "/student-dashboard/#tool-calendar",
+      "icons": [{ "src": "/assets/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    }
+  ]
 }

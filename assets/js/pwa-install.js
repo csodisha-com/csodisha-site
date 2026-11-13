@@ -5,16 +5,43 @@
 (function () {
   'use strict';
 
-  // 1. Service Worker Registration
+  // 1. Service Worker Registration & Update Detection
+  let hadController = !!('serviceWorker' in navigator && navigator.serviceWorker.controller);
+
+  function notifySwUpdate(registration) {
+    if (typeof CustomEvent === 'function') {
+      window.dispatchEvent(new CustomEvent('cso:sw-update-available', { detail: { registration } }));
+    }
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((reg) => {
           console.log('[CSO PWA] Service Worker registered with scope:', reg.scope);
+          if (reg.waiting && hadController) {
+            notifySwUpdate(reg);
+          }
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                notifySwUpdate(reg);
+              }
+            });
+          });
         })
         .catch((err) => {
           console.warn('[CSO PWA] Service Worker registration failed:', err);
         });
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController) {
+        notifySwUpdate(null);
+      }
+      hadController = true;
     });
   }
 
@@ -105,46 +132,122 @@
     showInstallBanner();
   });
 
+  function isStandaloneMode() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markInstallTriggersInstalled() {
+    document.querySelectorAll('.cso-pwa-install-trigger, #btn-pwa-install-action, #bp-sidebar-install-btn, #topbar-pwa-install-btn, #bp-topbar-install-btn').forEach(node => {
+      node.hidden = false;
+      node.setAttribute('aria-disabled', 'true');
+      node.disabled = true;
+      node.classList.add('is-installed');
+      node.title = 'CS Odisha Hub is installed';
+      const textSpan = node.querySelector('.bp-nav-text, .cso-btn-label');
+      const iconSpan = node.firstElementChild;
+      if (iconSpan && iconSpan !== textSpan) iconSpan.textContent = '✓';
+      if (textSpan) {
+        textSpan.textContent = 'Installed';
+      } else {
+        node.textContent = '✓ Installed';
+      }
+    });
+  }
+
+  function openInstallGuideModal() {
+    const existing = document.getElementById('cso-pwa-guide-modal');
+    if (existing) {
+      existing.hidden = false;
+      return;
+    }
+    const overlay = el('div', 'bp-modal-overlay cso-pwa-guide-overlay');
+    overlay.id = 'cso-pwa-guide-modal';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Install CS Odisha App');
+
+    const box = el('div', 'bp-modal-box cso-pwa-guide-box');
+    const head = el('div', 'bp-modal-head');
+    head.appendChild(el('h2', '', 'Install CS Odisha App'));
+    const closeBtn = el('button', 'cso-btn', '✕');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close Install Guide');
+    closeBtn.addEventListener('click', () => { overlay.hidden = true; });
+    head.appendChild(closeBtn);
+    box.appendChild(head);
+
+    box.appendChild(el('p', 'cso-muted-note', 'Install the Candidate Hub on your home screen for full-screen offline access, exam countdowns, and synced syllabi.'));
+
+    const list = el('div', 'cso-pwa-guide-steps');
+    [
+      ['Safari (iPhone / iPad)', 'Tap the Share button (⎋) at the bottom, then choose "Add to Home Screen".'],
+      ['Chrome / Edge (Android & Desktop)', 'Open the browser menu (⋮) and tap "Install App" or "Add to Home screen".'],
+      ['Firefox (Android)', 'Tap the menu (⋮) and select "Install" to pin CS Odisha Hub.']
+    ].forEach(pair => {
+      const item = el('div', 'cso-pwa-guide-step');
+      item.appendChild(el('strong', '', pair[0]));
+      item.appendChild(el('span', '', pair[1]));
+      list.appendChild(item);
+    });
+    box.appendChild(list);
+
+    const foot = el('div', 'cso-goal-modal-foot');
+    const okBtn = el('button', 'cso-btn cso-btn-primary', 'Got it');
+    okBtn.type = 'button';
+    okBtn.addEventListener('click', () => { overlay.hidden = true; });
+    foot.appendChild(okBtn);
+    box.appendChild(foot);
+
+    overlay.appendChild(box);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.hidden = true;
+    });
+    document.body.appendChild(overlay);
+  }
+
   window.addEventListener('appinstalled', () => {
     console.log('[CSO PWA] App was successfully installed');
     const banner = document.getElementById('cso-pwa-install-banner');
     if (banner) banner.remove();
     deferredPrompt = null;
-    hideAllInstallTriggers();
+    markInstallTriggersInstalled();
   });
-
-  function hideAllInstallTriggers() {
-    document.querySelectorAll('.cso-pwa-install-trigger').forEach(node => {
-      node.hidden = true;
-    });
-  }
 
   // Public API for on-demand install prompt triggers
   window.CSOPwa = {
     triggerInstall: async function () {
+      if (isStandaloneMode()) return 'installed';
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`[CSO PWA] User response to manual install prompt: ${outcome}`);
         if (outcome === 'accepted') {
           deferredPrompt = null;
-          hideAllInstallTriggers();
+          markInstallTriggersInstalled();
         }
         return outcome;
-      } else {
-        alert('To install Common Sense Odisha Hub:\n\n• On Chrome/Android: Tap menu (⋮) and choose "Install App" or "Add to Home screen".\n• On Safari/iOS: Tap Share (⎋) and select "Add to Home Screen".\n• On Desktop Chrome/Edge: Click the install icon in the URL bar.');
-        return 'unsupported';
       }
+      openInstallGuideModal();
+      return 'guide';
     },
     isInstallable: function () {
       return !!deferredPrompt;
-    }
+    },
+    isStandalone: isStandaloneMode
   };
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.cso-pwa-install-trigger, #btn-pwa-install-action, #bp-sidebar-install-btn, #topbar-pwa-install-btn').forEach(btn => {
+    if (isStandaloneMode()) {
+      markInstallTriggersInstalled();
+    }
+    document.querySelectorAll('.cso-pwa-install-trigger, #btn-pwa-install-action, #bp-sidebar-install-btn, #topbar-pwa-install-btn, #bp-topbar-install-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        if (isStandaloneMode() || btn.getAttribute('aria-disabled') === 'true') return;
         window.CSOPwa.triggerInstall();
       });
     });
