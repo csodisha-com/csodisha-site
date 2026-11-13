@@ -8,13 +8,54 @@ const ROUTE_RE = /^\/[a-z0-9\-_/.]*$/i;
 const cut = (v, n) => v == null ? null : String(v).trim().slice(0, n);
 const jsonStr = v => v == null ? null : (typeof v === 'string' ? v : JSON.stringify(v));
 
-async function listPages(env) {
+let schemaReady = false;
+async function ensureSitePagesSchema(db) {
+  if (schemaReady || !db) return;
+  await db.batch([
+    db.prepare(`CREATE TABLE IF NOT EXISTS site_pages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      route TEXT NOT NULL UNIQUE,
+      title TEXT, meta_description TEXT, category TEXT,
+      hero_title TEXT, hero_subtitle TEXT, cta_label TEXT, cta_url TEXT,
+      blocks_json TEXT, reusable_sections_json TEXT,
+      status TEXT NOT NULL DEFAULT 'published',
+      publish_at TEXT, created_by TEXT, updated_by TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_site_pages_status ON site_pages(status, publish_at)'),
+    db.prepare(`CREATE TABLE IF NOT EXISTS site_page_revisions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      route TEXT NOT NULL, snapshot_json TEXT NOT NULL, editor_email TEXT, note TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_site_page_rev_route ON site_page_revisions(route, id DESC)')
+  ]);
+  schemaReady = true;
+}
+
+async function getManifestPages(request, env) {
+  if (manifest && Array.isArray(manifest.pages)) return manifest.pages;
+  try {
+    if (env && env.ASSETS && request) {
+      const r = await env.ASSETS.fetch(new URL('/admin/site-manifest.json', request.url));
+      if (r.ok) {
+        const d = await r.json();
+        if (Array.isArray(d.pages)) return d.pages;
+      }
+    }
+  } catch {}
+  return [];
+}
+
+async function listPages(request, env) {
+  const manifestPages = await getManifestPages(request, env);
   const { results: rows } = await env.DB.prepare('SELECT * FROM site_pages').all();
   const { results: revs } = await env.DB.prepare('SELECT route, COUNT(*) AS n FROM site_page_revisions GROUP BY route').all();
   const rc = Object.fromEntries((revs || []).map(r => [r.route, r.n]));
   const live = new Map((rows || []).map(r => [r.route, r]));
   const out = [];
-  for (const p of manifest.pages || []) {
+  for (const p of manifestPages) {
     const o = live.get(p.route); live.delete(p.route);
     out.push({ route: p.route, file: p.file, source: o ? 'override' : 'static',
       title: o?.title || p.title, meta_description: o?.meta_description ?? p.description, category: o?.category || p.category,
@@ -23,6 +64,7 @@ async function listPages(env) {
       status: o?.status || 'published', publish_at: o?.publish_at || null, updated_at: o?.updated_at || p.lastModified,
       updated_by: o?.updated_by || null, revisions: rc[p.route] || 0 });
   }
+  live.delete('/__sitewide');
   for (const o of live.values()) out.push({ ...o, source: 'dynamic', revisions: rc[o.route] || 0 });
   return out;
 }
@@ -41,7 +83,8 @@ async function savePage(request, env, actor, body, isCreate) {
   }
   if (Object.keys(errors).length) throw validationError(errors);
   const prev = await env.DB.prepare('SELECT * FROM site_pages WHERE route = ?').bind(route).first();
-  const m = (manifest.pages || []).find(p => p.route === route);
+  const manifestPages = await getManifestPages(request, env);
+  const m = manifestPages.find(p => p.route === route);
   const pick = (k, n, fallback = null) => body[k] !== undefined ? cut(body[k], n) : (prev ? prev[k] : fallback);
   const rec = {
     title: pick('title', 200, m?.title), meta_description: pick('meta_description', 400, m?.description), category: pick('category', 80, m?.category),
@@ -85,19 +128,26 @@ async function restorePage(request, env, actor, body) {
 }
 
 export async function handlePages(request, env, actor, id) {
-  const m = request.method;
-  if (id === 'restore') {
-    if (m !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
-    return restorePage(request, env, actor, await readJson(request, 2_000_000));
+  try {
+    await ensureSitePagesSchema(env.DB);
+    const m = request.method;
+    if (id === 'restore') {
+      if (m !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+      return restorePage(request, env, actor, await readJson(request, 2_000_000));
+    }
+    if (id === 'revisions' && m === 'GET') {
+      const route = normalizeRoute(new URL(request.url).searchParams.get('route'));
+      const { results } = await env.DB.prepare('SELECT id, route, snapshot_json, editor_email, note, created_at FROM site_page_revisions WHERE route = ? ORDER BY id DESC LIMIT 25').bind(route).all();
+      return json({ revisions: results || [] });
+    }
+    if (m === 'GET' && id === 'sitewide') { const r = await env.DB.prepare("SELECT reusable_sections_json FROM site_pages WHERE route = '/__sitewide'").first(); return json({ sections: JSON.parse(r?.reusable_sections_json || '[]') }); }
+    if (m === 'GET') { const pages = await listPages(request, env); return json({ total: pages.length, pages }); }
+    if (m === 'POST' || m === 'PUT') return savePage(request, env, actor, await readJson(request, 2_000_000), m === 'POST');
+    throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
+    return json({ error: err?.message || 'Internal server error' }, 500);
   }
-  if (id === 'revisions' && m === 'GET') {
-    const route = normalizeRoute(new URL(request.url).searchParams.get('route'));
-    const { results } = await env.DB.prepare('SELECT id, route, editor_email, note, created_at FROM site_page_revisions WHERE route = ? ORDER BY id DESC LIMIT 50').bind(route).all();
-    return json({ revisions: results || [] });
-  }
-  if (m === 'GET') { const pages = await listPages(env); return json({ total: pages.length, pages }); }
-  if (m === 'POST' || m === 'PUT') return savePage(request, env, actor, await readJson(request, 2_000_000), m === 'POST');
-  throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
 }
 
 export async function onRequest({ request, env }) {
