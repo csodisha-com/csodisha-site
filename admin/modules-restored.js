@@ -8059,7 +8059,25 @@
         { type: 'notice', title: 'Effective Date & Moderation Desk Contact', text: 'Effective Date: 2026-11-13 · Moderation & Safety Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-014': { title: 'Frequently Asked Questions', path: '/faq.html', email: 'support@csodisha.com' },
+    'module-03-014': {
+      title: 'Frequently Asked Questions',
+      seoTitle: 'Frequently Asked Questions (FAQs) | Common Sense Odisha',
+      metaDescription: 'Answers to common questions about Common Sense Odisha (csodisha.com) — OPSC, OSSC, OSSSC job alerts, exam syllabi, free CBT mock tests, and scholarships.',
+      heroTitle: 'Frequently Asked Questions (FAQs)',
+      heroSubtitle: 'Quick, verified answers for Odisha students and job aspirants on recruitment alerts, exam syllabi, free CBT practice tests, and scholarships.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/faqs.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'faq', category: 'General', question: 'Is Common Sense Odisha an official government website?', answer: 'No. Common Sense Odisha (csodisha.com) is an independent educational and civic information portal. Every recruitment summary, syllabus guide, and scholarship update links directly to the official government portal (such as OPSC, OSSC, OSSSC, or State Scholarship Portal) so aspirants can verify primary notifications before applying.' },
+        { type: 'faq', category: 'Exams', question: 'Which Odisha recruitment exams are covered on csodisha.com?', answer: 'We cover major Odisha state and central recruitment notifications including OPSC (OAS, OES, Assistant Professor), OSSC (CGL, CHSL, Junior Engineer), OSSSC (RI, ARI, Amin, Forest Guard, ICDS Supervisor), Odisha Police, and teaching eligibility/recruitment exams (OTET, OSSTET, CTET, LTR, PGT).' },
+        { type: 'faq', category: 'CBT Prep', question: 'Are the CBT mock practice tests completely free?', answer: 'Yes. All Computer-Based Test (CBT) practice sets, topic quizzes, and instant score breakdowns on Common Sense Odisha are 100% free to access without hidden subscription charges or payment requests.' },
+        { type: 'faq', category: 'Scholarships', question: 'How do I apply for Odisha State Scholarships listed on this portal?', answer: 'We publish step-by-step eligibility checklists, required document lists, and deadline alerts for Odisha State Scholarship Portal schemes (Post-Matric, e-Medhabruti, Nirman Shramik, and central NSP schemes). Applications must always be submitted directly on scholarship.odisha.gov.in or scholarships.gov.in.' },
+        { type: 'faq', category: 'Account', question: 'Why should I create a free student account?', answer: 'Signing in with a free student account lets you bookmark recruitment alerts, track completed CBT mock tests, and sync saved study resources across devices securely.' },
+        { type: 'faq', category: 'Corrections', question: 'How can I report a broken official link or outdated exam date?', answer: 'Email editorial@csodisha.com with the article URL and reference to the official corrigendum or notice. Verified corrections are updated within 24 hours.' }
+      ]
+    },
     'module-03-015': { title: 'Custom Information Pages', path: '/about.html', email: 'editorial@csodisha.com' },
     'module-03-016': { title: 'Legal Page Revision History', path: '/privacy.html', email: 'legal@csodisha.com' }
   };
@@ -8082,8 +8100,18 @@
     ]);
     statusSel.value = cfg.status === 'draft' ? 'draft' : 'published';
 
+    var isFaq = moduleId === 'module-03-014';
     var sections = Array.isArray(cfg.sections) && cfg.sections.length
-      ? cfg.sections.map(function (s) { return { type: s.type, title: s.title, text: s.text }; })
+      ? cfg.sections.map(function (s) {
+          return {
+            type: s.type,
+            category: s.category || '',
+            question: s.question || '',
+            answer: s.answer || '',
+            title: s.title || s.question || '',
+            text: s.text || s.answer || ''
+          };
+        })
       : [
           { type: 'notice', title: 'Effective Date & Contact', text: 'Effective: ' + new Date().toISOString().slice(0, 10) + ' · Contact: ' + cfg.email },
           { type: 'richtext', title: 'Policy Overview', text: 'Common Sense Odisha (csodisha.com) maintains transparent editorial, accessibility, and DPDP-aligned standards.' }
@@ -8117,11 +8145,30 @@
     function renderSections() {
       clear(sectionsHost);
       sections.forEach(function (sec, idx) {
-        var sTitle = el('input', { type: 'text', class: 'cso-mod-input', value: sec.title || '', placeholder: 'Section Heading' });
-        var sText = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Section content…' });
-        sText.value = sec.text || '';
-        sTitle.addEventListener('input', function () { sec.title = sTitle.value; });
-        sText.addEventListener('input', function () { sec.text = sText.value; });
+        var isFaqItem = isFaq || sec.type === 'faq';
+        var sTitle = el('input', { type: 'text', class: 'cso-mod-input', value: (isFaqItem ? (sec.question || sec.title) : sec.title) || '', placeholder: isFaqItem ? 'FAQ Question' : 'Section Heading' });
+        var sText = el('textarea', { class: 'cso-mod-textarea', placeholder: isFaqItem ? 'FAQ Answer…' : 'Section content…' });
+        sText.value = (isFaqItem ? (sec.answer || sec.text) : sec.text) || '';
+        sTitle.addEventListener('input', function () {
+          sec.title = sTitle.value;
+          if (isFaqItem) sec.question = sTitle.value;
+        });
+        sText.addEventListener('input', function () {
+          sec.text = sText.value;
+          if (isFaqItem) sec.answer = sText.value;
+        });
+        var headBadges = [badge((idx + 1) + '. ' + sec.type, 'info')];
+        var catField = null;
+        if (isFaqItem) {
+          var catBadge = badge(sec.category || 'General', 'success');
+          headBadges.push(catBadge);
+          var sCat = el('input', { type: 'text', class: 'cso-mod-input', value: sec.category || 'General', placeholder: 'Category (e.g., Exams, CBT Prep, Scholarships)' });
+          sCat.addEventListener('input', function () {
+            sec.category = sCat.value;
+            catBadge.textContent = sCat.value || 'General';
+          });
+          catField = el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), sCat]);
+        }
         var upBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', title: 'Move Up', text: '↑', onclick: function () {
           if (idx <= 0) return;
           var tmp = sections[idx - 1]; sections[idx - 1] = sections[idx]; sections[idx] = tmp;
@@ -8134,18 +8181,20 @@
           renderSections();
         } });
         if (idx === sections.length - 1) downBtn.disabled = true;
-        sectionsHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+        var fields = [
           el('div', { class: 'cso-builder-block-head' }, [
-            badge((idx + 1) + '. ' + sec.type, 'info'),
+            el('div', { class: 'cso-mod-toolbar' }, headBadges),
             el('div', { class: 'cso-mod-toolbar' }, [
               upBtn,
               downBtn,
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', title: 'Remove Section', text: '✕', onclick: function () { sections.splice(idx, 1); renderSections(); } })
             ])
-          ]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Title' }), sTitle]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Content' }), sText])
-        ]));
+          ])
+        ];
+        if (catField) fields.push(catField);
+        fields.push(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: isFaqItem ? 'Question' : 'Section Title' }), sTitle]));
+        fields.push(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: isFaqItem ? 'Answer' : 'Section Content' }), sText]));
+        sectionsHost.appendChild(el('div', { class: 'cso-builder-block' }, fields));
       });
     }
 
@@ -8252,8 +8301,9 @@
         ]),
         el('div', { class: 'cso-mod-card' }, [
           el('div', { class: 'cso-drawer-head' }, [
-            el('h3', { text: 'Structured Policy / Info Sections' }),
+            el('h3', { text: isFaq ? 'Structured FAQ Items' : 'Structured Policy / Info Sections' }),
             el('div', { class: 'cso-mod-toolbar' }, [
+              isFaq ? el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ FAQ Item', onclick: function () { sections.push({ type: 'faq', category: 'General', question: '', answer: '', title: '', text: '' }); renderSections(); } }) : null,
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { sections.push({ type: 'notice', title: 'Notice', text: '' }); renderSections(); } }),
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Rich Text', onclick: function () { sections.push({ type: 'richtext', title: 'Section', text: '' }); renderSections(); } })
             ])
