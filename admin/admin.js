@@ -21,6 +21,7 @@
     searchCountBadge: document.getElementById('searchCountBadge'),
     workspaceRoot: document.getElementById('workspaceRoot'),
     breadcrumbFolder: document.getElementById('breadcrumbFolder'),
+    breadcrumbHomeBtn: document.getElementById('breadcrumbHomeBtn'),
     breadcrumbModule: document.getElementById('breadcrumbModule'),
     activeModuleHeading: document.getElementById('activeModuleHeading'),
     activeModuleTitleText: document.getElementById('activeModuleTitleText'),
@@ -29,6 +30,7 @@
     sessionTimer: document.getElementById('sessionTimer'),
     btnToggleSidebar: document.getElementById('btnToggleSidebar'),
     sidebarToggleBtn: document.getElementById('sidebarToggleBtn'),
+    brandHomeBtn: document.getElementById('brandHomeBtn'),
     shell: document.querySelector('.cso-shell'),
     sidebarConsole: document.getElementById('sidebarConsole'),
     mobileDrawerBackdrop: document.getElementById('mobileDrawerBackdrop'),
@@ -217,13 +219,24 @@
   }
 
   function resolveModuleTarget(targetId) {
+    var normalizedId = targetId === 'module-00-001' ? 'module-01-001' : targetId;
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return null;
     for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
       var f = masterNavigationSchema.folders[i];
-      var m = (f.modules || []).find(function (x) { return x.id === targetId; });
+      var m = (f.modules || []).find(function (x) { return x.id === normalizedId; });
       if (m) return { folderId: f.id, moduleId: m.id };
     }
     return null;
+  }
+
+  function goDashboardHome() {
+    var target = resolveModuleTarget('module-01-001') || { folderId: 'folder-01', moduleId: 'module-01-001' };
+    selectModule(target.folderId, target.moduleId);
+    if (dom.workspaceRoot && dom.workspaceRoot.scrollIntoView) {
+      dom.workspaceRoot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   function selectModule(folderId, moduleId) {
@@ -330,8 +343,39 @@
         e.preventDefault();
         var nextCollapsed = !(dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed'));
         setSidebarCollapsed(nextCollapsed);
+      } else if (e.altKey && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        goDashboardHome();
       }
     });
+
+    if (dom.brandHomeBtn) {
+      dom.brandHomeBtn.addEventListener('click', goDashboardHome);
+      dom.brandHomeBtn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goDashboardHome();
+        }
+      });
+    }
+
+    if (dom.breadcrumbHomeBtn) {
+      dom.breadcrumbHomeBtn.addEventListener('click', goDashboardHome);
+    }
+
+    if (dom.breadcrumbFolder) {
+      dom.breadcrumbFolder.addEventListener('click', function () {
+        if (!CSOState.activeFolderId) return;
+        if (dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed')) setSidebarCollapsed(false);
+        CSOState.expandedFolders.add(CSOState.activeFolderId);
+        persistOpenGroups();
+        renderNavigationTree();
+        var activeFolderEl = dom.accordionNav && dom.accordionNav.querySelector('.cso-nav-folder.is-current');
+        if (activeFolderEl && activeFolderEl.scrollIntoView) {
+          activeFolderEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
 
     if (dom.sidebarToggleBtn) {
       dom.sidebarToggleBtn.addEventListener('click', function () {

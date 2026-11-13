@@ -18,7 +18,7 @@
         <svg class="cso-svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
 
-      <div class="cso-brand">
+      <div id="brandHomeBtn" class="cso-brand" role="button" tabindex="0" aria-label="Return to Dashboard Overview" title="Admin Dashboard Home — Overview (Alt+H)">
         <div class="cso-brand-mark" aria-hidden="true">CSO</div>
         <div class="cso-brand-text">
           <div class="cso-brand-title-row">
@@ -39,6 +39,7 @@
         <span class="cso-live-dot" aria-hidden="true"></span>
         <span>D1 &amp; R2 Live</span>
       </div>
+      <a href="/" target="_blank" rel="noopener noreferrer" class="cso-pill-link" title="Open Public Website in New Tab">Live Site ↗</a>
       <div class="cso-telemetry-pill cso-tabular">
         <span>Session:</span>
         <strong id="sessionTimer">00:00:00</strong>
@@ -119,9 +120,9 @@
       <div class="cso-subheader">
         <div class="cso-subheader-title">
           <nav class="cso-breadcrumbs" aria-label="Breadcrumbs">
-            <span class="cso-text-muted">Studio</span>
+            <button id="breadcrumbHomeBtn" type="button" class="cso-breadcrumb-btn">Studio</button>
             <span aria-hidden="true">/</span>
-            <span id="breadcrumbFolder">Dashboard &amp; Command Centre</span>
+            <button id="breadcrumbFolder" type="button" class="cso-breadcrumb-btn">Dashboard &amp; Command Centre</button>
             <span aria-hidden="true">/</span>
             <span id="breadcrumbModule" class="cso-text-accent">Overview</span>
           </nav>
