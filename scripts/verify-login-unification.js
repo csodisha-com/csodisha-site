@@ -125,7 +125,8 @@ async function main() {
       'failed logins clear stale tokens before showing the error');
 
     const dashHtml = read('student-dashboard/index.html');
-    assert(dashHtml.includes("'/login.html?redirect='") || dashHtml.includes('/login.html?redirect='),
+    const guardJs = read('assets/js/student-auth-guard.js');
+    assert(dashHtml.includes('/assets/js/student-auth-guard.js') && (guardJs.includes("'/login.html?redirect='") || guardJs.includes('/login.html?redirect=')),
       'dashboard gate redirects unauthenticated visits to the dark login with ?redirect=');
   }
 

@@ -1,1951 +1,1407 @@
 /**
- * Common Sense Odisha (CSO) — Student Dashboard Portal Logic (Independent Candidate Workspace Edition)
- * Features:
- * - Dynamic Candidate Topbar Profile with real registered name from cso_candidate_session_v1
- * - Direct [🚪 Logout] Action with session clearing, toast notification & clean redirect
- * - Self-contained In-Dashboard SPA Tools:
- *     - Multi-Stage Syllabus Checklists (cso_candidate_checklist_v1)
- *     - Private Library & Bookmarks (cso_candidate_bookmarks_v1)
- *     - Revision Scratchpad & Daily Notes (cso_candidate_notes_v1)
- *     - Mock Test Score Logger (cso_candidate_mock_scores_v1)
- *     - Exam Calendar & Countdown Timeline
- *     - Candidate KYC & Document Locker Checklist (cso_candidate_locker_v1)
- * - Isolated from public website: No routing back to general public tables or external prompts
+ * Common Sense Odisha — Candidate Hub (Split-Focus Bento & 4-Tier Personalization)
+ * Strict CSP-compliant: ZERO .innerHTML, ZERO .style.*, ZERO inline handlers.
  */
-(function(window) {
+(function () {
   'use strict';
 
   const SESSION_KEY = 'cso_candidate_session_v1';
+  const PROFILE_KEY = 'cso_candidate_profile';
+  const THEME_KEY = 'cso_student_theme';
   const CHECKLIST_KEY = 'cso_candidate_checklist_v1';
-  const VAULT_KEY = 'cso_registered_accounts_v1';
+  const PREFS_KEY = 'cso_candidate_prefs_v1';
+  const MISTAKES_KEY = 'cso_candidate_mistakes_v1';
+  const LOCKER_KEY = 'cso_candidate_locker_v1';
   const NOTES_KEY = 'cso_candidate_notes_v1';
   const SCORES_KEY = 'cso_candidate_mock_scores_v1';
-  const LOCKER_KEY = 'cso_candidate_locker_v1';
-  const BOOKMARKS_KEY = 'cso_candidate_bookmarks_v1';
-  const AUTH_TOKEN_KEY = 'cso_auth_token';
-
-  // All local candidate state keys cleared on secure sign-out.
-  const CLEARED_KEYS = [
-    SESSION_KEY, CHECKLIST_KEY, VAULT_KEY, NOTES_KEY, SCORES_KEY,
-    LOCKER_KEY, BOOKMARKS_KEY, AUTH_TOKEN_KEY
-  ];
-
-  // Default state-exam trackers for the countdown grid (Official vs Tentative).
-  const DEFAULT_TRACKERS = [
-    {
-      id: 'opsc-ocs-2026',
-      exam: 'OPSC Odisha Civil Services (OCS)',
-      badgeType: 'official',
-      target: '2026-11-29',
-      url: '/jobs-careers/'
-    },
-    {
-      id: 'ossc-cgl-2026',
-      exam: 'OSSC Combined Graduate Level (CGL)',
-      badgeType: 'official',
-      target: '2026-12-14',
-      url: '/jobs-careers/'
-    },
-    {
-      id: 'osssc-jc-peo-2027',
-      exam: 'OSSSC Junior Clerk / Panchayat Executive Officers',
-      badgeType: 'tentative',
-      target: '2027-01-18',
-      url: '/jobs-careers/'
-    }
-  ];
 
   const ODISHA_DISTRICTS = [
-    "Angul", "Balangir", "Balasore (Baleswar)", "Bargarh", "Bhadrak", "Boudh",
-    "Cuttack", "Deogarh", "Dhenkanal", "Gajapati", "Ganjam", "Jagatsinghpur",
-    "Jajpur", "Jharsuguda", "Kalahandi", "Kandhamal", "Kendrapara", "Kendujhar",
-    "Khordha (Bhubaneswar)", "Koraput", "Malkangiri", "Mayurbhanj", "Nabarangpur",
-    "Nayagarh", "Nuapada", "Puri", "Rayagada", "Sambalpur", "Subarnapur", "Sundargarh"
+    'Angul', 'Balangir', 'Balasore (Baleswar)', 'Bargarh', 'Bhadrak', 'Boudh',
+    'Cuttack', 'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur',
+    'Jajpur', 'Jharsuguda', 'Kalahandi', 'Kandhamal', 'Kendrapara', 'Kendujhar (Keonjhar)',
+    'Khordha (Bhubaneswar)', 'Koraput', 'Malkangiri', 'Mayurbhanj', 'Nabarangpur',
+    'Nayagarh', 'Nuapada', 'Puri', 'Rayagada', 'Sambalpur', 'Subarnapur (Sonepur)', 'Sundargarh'
   ];
 
-  // Comprehensive Exam Syllabi & Stage Milestones
-  const SYLLABUS_CHECKLISTS = {
-    opsc: {
-      name: "OPSC Odisha Civil Services (OCS / OAS / OFS)",
-      short: "OPSC OCS",
-      cardClass: "card-cobalt",
-      badge: "OPSC • Class I & II",
-      accentColor: "#38bdf8",
-      stages: [
-        {
-          id: "opsc-prelims",
-          title: "Stage I: Preliminary Examination (Objective)",
-          topics: [
-            { id: "opsc-p-gs1-hist", label: "History of India & Indian National Movement (Odisha Emphasis)", time: "45 min", badge: "Prelims GS-1" },
-            { id: "opsc-p-gs1-geo", label: "Indian & Odisha Physical, Social, Economic Geography", time: "30 min", badge: "Geography" },
-            { id: "opsc-p-gs1-pol", label: "Indian Polity & Governance, Odisha Panchayati Raj, Public Policy", time: "40 min", badge: "Polity" },
-            { id: "opsc-p-gs1-eco", label: "Economic & Social Development, Sustainable Development Goals", time: "35 min", badge: "Economy" },
-            { id: "opsc-p-gs1-env", label: "General Issues on Ecology, Biodiversity, Odisha Wildlife Sanctuaries", time: "25 min", badge: "Ecology" },
-            { id: "opsc-p-gs1-sci", label: "General Science & Emerging Science & Tech Innovations", time: "30 min", badge: "Science" },
-            { id: "opsc-p-gs2-csat", label: "Paper-II (CSAT): Comprehension, Interpersonal Skills & Communication", time: "50 min", badge: "CSAT" },
-            { id: "opsc-p-gs2-quant", label: "Paper-II (CSAT): Logical Reasoning, Basic Numeracy (Class X standard)", time: "60 min", badge: "CSAT" }
-          ]
-        },
-        {
-          id: "opsc-mains",
-          title: "Stage II: Main Written Examination (Descriptive)",
-          topics: [
-            { id: "opsc-m-odia", label: "Paper I: Odia Language Qualifying (Essay, Translation, Grammar)", time: "60 min", badge: "Mains" },
-            { id: "opsc-m-eng", label: "Paper II: English Qualifying (Precis, Comprehension, Usage)", time: "60 min", badge: "Mains" },
-            { id: "opsc-m-essay", label: "Paper III: English Essay Writing (Socio-Economic & Philosophical)", time: "90 min", badge: "Essay" },
-            { id: "opsc-m-gs1", label: "Paper IV: General Studies I (Indian Heritage, Culture & Odisha Heritage)", time: "60 min", badge: "GS-1" },
-            { id: "opsc-m-gs2", label: "Paper V: General Studies II (Governance, Constitution, Polity & IR)", time: "60 min", badge: "GS-2" },
-            { id: "opsc-m-gs3", label: "Paper VI: General Studies III (Technology, Economic Development, Disaster)", time: "60 min", badge: "GS-3" },
-            { id: "opsc-m-gs4", label: "Paper VII: General Studies IV (Ethics, Integrity & Case Studies)", time: "60 min", badge: "GS-4" },
-            { id: "opsc-m-opt1", label: "Paper VIII & IX: Optional Subject Paper I & II Revision", time: "120 min", badge: "Optional" }
-          ]
-        },
-        {
-          id: "opsc-viva",
-          title: "Stage III: Personality Test & Interview",
-          topics: [
-            { id: "opsc-v-daf", label: "Detailed Application Form (DAF) Background & Hobby Revision", time: "45 min", badge: "Interview" },
-            { id: "opsc-v-dist", label: "Home District Socio-Economic Profile & Local Issues Preparation", time: "45 min", badge: "Interview" },
-            { id: "opsc-v-mock", label: "2+ Board Mock Interviews & Confidence Building Drills", time: "60 min", badge: "Interview" }
-          ]
-        }
-      ]
+  const LOCKER_ITEMS = [
+    { id: 'aadhaar', label: 'Aadhaar Card (e-KYC & NPCI Seeded)' },
+    { id: 'resident', label: 'Odisha Resident / Domicile Certificate' },
+    { id: 'caste', label: 'Caste / SEBC / EWS Certificate (Valid)' },
+    { id: 'income', label: 'Income Certificate (Scholarship / Fee Waiver)' },
+    { id: 'degree', label: '10th, +2, Graduation Marksheets & Provisional' },
+    { id: 'photo_sig', label: 'Passport Photo & Scanned Signature (20-50 KB)' }
+  ];
+
+  const GK_DRILL_BANK = [
+    { q: 'Which river is known as the "Sorrow of Odisha"?', opts: ['Mahanadi', 'Brahmani', 'Baitarani', 'Rushikulya'], ans: 0, exp: 'Mahanadi has historically caused severe deltaic floods in coastal Odisha.' },
+    { q: 'Under NEP 2020, what is the new curricular structure replacing 10+2?', opts: ['5+3+3+4', '4+4+4+2', '6+3+3', '5+4+3'], ans: 0, exp: 'NEP 2020 introduces the 5+3+3+4 Foundational, Preparatory, Middle, and Secondary stages.' },
+    { q: 'Where is the headquarters of Odisha Staff Selection Commission (OSSC)?', opts: ['Cuttack', 'Bhubaneswar', 'Sambalpur', 'Puri'], ans: 1, exp: 'OSSC is headquartered at Barrack No. 1, Unit V, Bhubaneswar.' },
+    { q: 'Who founded the Satyabadi Bana Vidyalaya in Puri district?', opts: ['Madhusudan Das', 'Gopabandhu Das', 'Fakir Mohan Senapati', 'Krushna Chandra Gajapati'], ans: 1, exp: 'Utkalmani Pandit Gopabandhu Das established Satyabadi Bana Vidyalaya in 1909.' },
+    { q: 'Which Article of the Indian Constitution guarantees Right to Education (6–14 years)?', opts: ['Article 19', 'Article 21A', 'Article 32', 'Article 45'], ans: 1, exp: 'The 86th Constitutional Amendment inserted Article 21A making elementary education a fundamental right.' }
+  ];
+
+  const state = {
+    user: null,
+    controls: {
+      account_status: 'active',
+      permissions: { canTakeCbt: true, canEditProfile: true, canSyncCloud: true, canBookmark: true, canExportData: true },
+      assigned_exams: [],
+      lock_exam_preferences: false,
+      admin_notice_text: null,
+      admin_notice_level: 'info'
     },
-    ossc: {
-      name: "OSSC Combined Graduate Level (CGL) & CHSL",
-      short: "OSSC CGL",
-      cardClass: "card-coral",
-      badge: "OSSC • Group-B / C",
-      accentColor: "#fdba74",
-      stages: [
-        {
-          id: "ossc-stage1",
-          title: "Stage I: Preliminary Examination (CBRE / OMR)",
-          topics: [
-            { id: "ossc-p-arith", label: "Arithmetic & Advanced Mathematics (10th/12th Standard Speed Drills)", time: "45 min", badge: "Maths" },
-            { id: "ossc-p-di", label: "Data Interpretation (Charts, Graphs, Tables & Data Sufficiency)", time: "30 min", badge: "DI" },
-            { id: "ossc-p-reason", label: "Logical Reasoning, Analytical Ability & Mental Agility", time: "40 min", badge: "Reasoning" },
-            { id: "ossc-p-current", label: "Current Events of National & International Importance", time: "25 min", badge: "Current Affairs" },
-            { id: "ossc-p-comp", label: "Computer & Internet Awareness (MS Office, OS, Networking)", time: "30 min", badge: "Computer" }
-          ]
-        },
-        {
-          id: "ossc-stage2",
-          title: "Stage II: Main Written Examination",
-          topics: [
-            { id: "ossc-m-odia", label: "Odia Language Competency (Grammar, Vocabulary & Comprehension)", time: "45 min", badge: "Language" },
-            { id: "ossc-m-eng", label: "English Language Competency (Sentence Correction, Idioms, Vocab)", time: "45 min", badge: "Language" },
-            { id: "ossc-m-gs", label: "General Studies (Odisha History, Geography, Environment & Polity)", time: "60 min", badge: "GS" }
-          ]
-        },
-        {
-          id: "ossc-skill",
-          title: "Stage III: Computer Skill Test & Certificate Verification",
-          topics: [
-            { id: "ossc-s-word", label: "MS Word Document Formatting & Tabular Structure Drills", time: "30 min", badge: "Practical" },
-            { id: "ossc-s-excel", label: "MS Excel Formulas, Functions, Pivot Tables & Data Sorting", time: "30 min", badge: "Practical" },
-            { id: "ossc-s-ppt", label: "MS PowerPoint Slide Preparation with Formatting Requirements", time: "30 min", badge: "Practical" }
-          ]
-        }
-      ]
+    preferences: {
+      domain: 'teaching-education',
+      track: 'bed-entrances',
+      primaryExam: 'odisha-bed',
+      selectedExams: ['odisha-bed'],
+      selectedStreams: {}
     },
-    teaching: {
-      name: "Odisha B.Ed Entrance & Teacher Eligibility (OTET / OSSTET)",
-      short: "Odisha B.Ed",
-      cardClass: "card-charcoal",
-      badge: "SAMS • Education",
-      accentColor: "#94a3b8",
-      stages: [
-        {
-          id: "bed-paper1",
-          title: "Paper I: General Section (Compulsory for All Streams)",
-          topics: [
-            { id: "bed-p1-eng", label: "General English Comprehension, Vocabulary & Sentence Structure", time: "35 min", badge: "English" },
-            { id: "bed-p1-odia", label: "Odia Grammar, Dhwani, Barna, Sabdaprakarana & Bakyabibhaga", time: "35 min", badge: "Odia" },
-            { id: "bed-p1-gk", label: "General Awareness, NEP 2020 & Odisha Education Policy Initiatives", time: "30 min", badge: "GK & NEP" },
-            { id: "bed-p1-reason", label: "Reasoning Ability & Analytical Judgment", time: "30 min", badge: "Reasoning" },
-            { id: "bed-p1-aptitude", label: "Teaching Aptitude, Classroom Management & Child Psychology", time: "45 min", badge: "Pedagogy" }
-          ]
-        },
-        {
-          id: "bed-paper2-arts",
-          title: "Paper II (Arts Stream): Subject Specialization",
-          topics: [
-            { id: "bed-p2-hist", label: "History & Political Science (Indian Freedom Movement, Constitution)", time: "40 min", badge: "Arts" },
-            { id: "bed-p2-geo", label: "Geography & Economics (Physical Geography, Natural Resources)", time: "40 min", badge: "Arts" },
-            { id: "bed-p2-eng-odia", label: "English & Odia Language Literature Concepts", time: "40 min", badge: "Arts" }
-          ]
-        },
-        {
-          id: "bed-paper2-sci",
-          title: "Paper II (Science Stream): Subject Specialization",
-          topics: [
-            { id: "bed-p2-phy-chem", label: "Physical Science (Atomic Structure, Chemical Reactions, Motion)", time: "45 min", badge: "Science" },
-            { id: "bed-p2-bio", label: "Biological Science (Cell Biology, Plant/Animal Nutrition, Genetics)", time: "45 min", badge: "Science" },
-            { id: "bed-p2-math", label: "Mathematics (Number System, Algebra, Geometry & Trigonometry)", time: "45 min", badge: "Science" }
-          ]
-        }
-      ]
-    },
-    police: {
-      name: "Odisha Police Recruitment (Sub-Inspector & Constable)",
-      short: "Police SI",
-      cardClass: "card-charcoal",
-      badge: "Police Recruitment",
-      accentColor: "#a3e635",
-      stages: [
-        {
-          id: "police-cbre",
-          title: "Written Examination (Computer Based Recruitment)",
-          topics: [
-            { id: "pol-p1-odia", label: "Paper I: Odia Language Comprehension & Descriptive Translation", time: "40 min", badge: "Paper-1" },
-            { id: "pol-p1-eng", label: "Paper I: English Language Composition, Precis & Correct Usage", time: "40 min", badge: "Paper-1" },
-            { id: "pol-p2-gs", label: "Paper II: General Studies, Current Affairs & National Security", time: "50 min", badge: "Paper-2" },
-            { id: "pol-p2-quant", label: "Paper II: Quantitative Aptitude & Mental Ability", time: "45 min", badge: "Paper-2" },
-            { id: "pol-p2-computer", label: "Paper II: Basic Computer Fundamentals & Cyber Awareness", time: "30 min", badge: "Paper-2" }
-          ]
-        },
-        {
-          id: "police-pmt-pet",
-          title: "Physical Measurement & Physical Efficiency Test (PET/PMT)",
-          topics: [
-            { id: "pol-pet-run", label: "1.6 KM Running Practice (Target Time: < 6.5 Minutes)", time: "30 min", badge: "Fitness" },
-            { id: "pol-pet-jump", label: "Broad Jump (Long Jump Qualification Target: 3.66 Meters)", time: "20 min", badge: "Fitness" },
-            { id: "pol-pmt-measure", label: "Height & Chest Standard Verification Check", time: "15 min", badge: "Standards" }
-          ]
-        }
-      ]
-    }
+    taxonomy: [],
+    attempts: [],
+    schemes: [],
+    resources: [],
+    allFeedMode: false,
+    activeChecklistExam: null,
+    modalDraft: { domain: null, track: null, primaryExam: null, selectedExams: [], selectedStreams: {} }
   };
 
-  function getSession() {
-    try {
-      const raw = localStorage.getItem(SESSION_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch(e) {}
-    return null;
+  /* ---------- Safe DOM Helpers ---------- */
+  function clear(node) {
+    while (node && node.firstChild) node.removeChild(node.firstChild);
+    return node;
   }
 
-  function getSavedChecklists() {
-    try {
-      const raw = localStorage.getItem(CHECKLIST_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch(e) {}
-    return {};
+  function el(tag, className, text) {
+    const n = document.createElement(tag);
+    if (className) n.className = className;
+    if (text !== undefined && text !== null) n.textContent = String(text);
+    return n;
   }
 
-  let checklistSyncTimeout = null;
-  function saveChecklists(obj) {
+  function readJsonStorage(key, fallback) {
     try {
-      localStorage.setItem(CHECKLIST_KEY, JSON.stringify(obj));
-
-      // Immediate UI broadcast
-      window.dispatchEvent(new CustomEvent('cso:checklists-updated', { detail: obj }));
-
-      // Debounced background sync to Cloudflare D1
-      if (typeof navigator !== 'undefined' && navigator.onLine) {
-        clearTimeout(checklistSyncTimeout);
-        checklistSyncTimeout = setTimeout(async () => {
-          try {
-            const rawSession = localStorage.getItem(SESSION_KEY);
-            if (!rawSession) return;
-
-            await fetch('/api/candidate/checklist', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ checklists: obj })
-            });
-          } catch (err) {
-            console.warn('Checklists cloud sync notice:', err.message);
-          }
-        }, 1200);
-      }
-    } catch(e) {}
-  }
-
-  // Cloud reconciliation for syllabus checklists
-  async function reconcileChecklistsFromCloud() {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
-    try {
-      const rawSession = localStorage.getItem(SESSION_KEY);
-      if (!rawSession) return;
-
-      const res = await fetch('/api/candidate/checklist');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data && data.success && data.checklists && typeof data.checklists === 'object') {
-        const local = getSavedChecklists();
-        let changed = false;
-
-        for (const [examKey, topics] of Object.entries(data.checklists)) {
-          if (!local[examKey]) local[examKey] = {};
-          for (const [stageOrTopic, val] of Object.entries(topics)) {
-            if (val !== null && typeof val === 'object') {
-              // Staged entry: { stageId: { topicId: bool } }
-              if (!local[examKey][stageOrTopic] || typeof local[examKey][stageOrTopic] !== 'object') {
-                local[examKey][stageOrTopic] = {};
-              }
-              for (const [topicId, isCompleted] of Object.entries(val)) {
-                if (local[examKey][stageOrTopic][topicId] === undefined) {
-                  local[examKey][stageOrTopic][topicId] = isCompleted;
-                  changed = true;
-                }
-              }
-            } else if (local[examKey][stageOrTopic] === undefined) {
-              // Legacy flat entry: { topicId: bool }
-              local[examKey][stageOrTopic] = val;
-              changed = true;
-            }
-          }
-        }
-
-        if (changed) {
-          localStorage.setItem(CHECKLIST_KEY, JSON.stringify(local));
-          renderChecklistTracker();
-          updateExamCards();
-        }
-      }
-    } catch (err) {
-      console.warn('Checklists cloud reconcile notice:', err.message);
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
     }
   }
 
-  function getMockScores() {
+  function writeJsonStorage(key, val) {
     try {
-      const raw = localStorage.getItem(SCORES_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch(e) {}
-    return [
-      { id: "mock-1", date: "2026-11-04", exam: "OPSC OCS Prelims", paper: "General Studies Paper I", score: 142, max: 200, accuracy: "71%" },
-      { id: "mock-2", date: "2026-11-07", exam: "OSSC CGL CBRE", paper: "Arithmetic & Reasoning Speed Test", score: 118, max: 150, accuracy: "78.6%" },
-      { id: "mock-3", date: "2026-11-09", exam: "Odisha B.Ed Entrance", paper: "Teaching Aptitude & General English", score: 68, max: 80, accuracy: "85%" }
-    ];
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch {}
   }
 
-  function saveMockScores(list) {
-    try {
-      localStorage.setItem(SCORES_KEY, JSON.stringify(list));
-    } catch(e) {}
+  function showToast(msg, isError) {
+    const host = document.getElementById('cso-toast-container');
+    if (!host) return;
+    const t = el('div', isError ? 'cso-toast is-error' : 'cso-toast', msg);
+    host.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
   }
 
-  // Toast Notification
-  function showToast(message, type = 'success') {
-    let container = document.getElementById('cso-toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'cso-toast-container';
-      container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:999999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
-      document.body.appendChild(container);
-    }
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-      padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;color:#ffffff;
-      background:${type === 'success' ? '#0d9488' : '#ef4444'};
-      box-shadow:0 8px 24px rgba(0,0,0,0.4);display:flex;align-items:center;gap:8px;
-      pointer-events:auto;transition:opacity 0.3s, transform 0.3s;opacity:0;transform:translateY(10px);
-    `;
-    toast.innerHTML = `<span>${type === 'success' ? '✓' : '⚠'}</span><span>${message}</span>`;
-    container.appendChild(toast);
-    requestAnimationFrame(() => {
-      toast.style.opacity = '1';
-      toast.style.transform = 'translateY(0)';
-    });
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(10px)';
-      setTimeout(() => toast.remove(), 300);
-    }, 3200);
+  function snapPctClass(prefix, pct) {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct / 10) * 10));
+    return prefix + clamped;
   }
 
-  // Topbar and Sidebar User Info & Logout
-  function renderUserProfile(session) {
-    const candidateName = (session?.fullName || session?.name || 'RAMESH BISWAL').toUpperCase();
-    const candidateDistrict = session?.district || 'Balasore (Baleswar)';
-    const initial = candidateName.charAt(0);
-
-    // Topbar Profile Pill
-    const topAvatar = document.getElementById('bp-top-avatar');
-    const topName = document.getElementById('bp-top-name');
-    const topDistrict = document.getElementById('bp-top-district');
-    if (topAvatar) topAvatar.textContent = initial;
-    if (topName) topName.textContent = candidateName;
-    if (topDistrict) topDistrict.textContent = candidateDistrict;
-
-    // Sidebar Footer Profile Badge
-    const sideAvatar = document.getElementById('bp-side-avatar');
-    const sideName = document.getElementById('bp-side-name');
-    const sideDistrict = document.getElementById('bp-side-district');
-    if (sideAvatar) sideAvatar.textContent = initial;
-    if (sideName) sideName.textContent = candidateName;
-    if (sideDistrict) sideDistrict.textContent = candidateDistrict;
-
-    // Profile & Settings Tab
-    const tabSettingsName = document.getElementById('tab-settings-name');
-    const tabSettingsDistrict = document.getElementById('tab-settings-district');
-    if (tabSettingsName) tabSettingsName.textContent = candidateName;
-    if (tabSettingsDistrict) tabSettingsDistrict.textContent = candidateDistrict;
+  function snapRingClass(pct) {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct / 5) * 5));
+    return 'cso-ring-' + clamped;
   }
 
-  // Handle Logout (topbar action → secure server session teardown)
-  function handleCandidateLogout() {
-    performSecureSignOut();
+  function initials(name) {
+    const parts = String(name || 'OA').trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return (parts[0].slice(0, 2) || 'OA').toUpperCase();
   }
 
-  // Calculate Progress Stats for an Exam
-  function getExamProgress(examKey) {
-    const syllabus = SYLLABUS_CHECKLISTS[examKey];
-    if (!syllabus) return { total: 0, completed: 0, percent: 0 };
-
-    const saved = getSavedChecklists();
-    const examSaved = saved[examKey] || {};
-
-    let total = 0;
-    let completed = 0;
-
-    syllabus.stages.forEach(stage => {
-      const stageSaved = examSaved[stage.id] || {};
-      stage.topics.forEach(t => {
-        total++;
-        if (stageSaved[t.id]) completed++;
-      });
-    });
-
-    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-    return { total, completed, percent };
+  /* ---------- Theme Switcher ---------- */
+  function applyTheme(theme) {
+    const valid = (theme === 'obsidian-mint' || theme === 'alabaster-cobalt') ? theme : 'alabaster-cobalt';
+    document.documentElement.dataset.csoStudentTheme = valid;
+    try { localStorage.setItem(THEME_KEY, valid); } catch {}
+    const lbl = document.getElementById('cso-theme-label');
+    if (lbl) lbl.textContent = valid === 'obsidian-mint' ? 'Night' : 'Day';
   }
 
-  // Update Exam Cards on Dashboard
-  function updateExamCards() {
-    // 1. OPSC OCS
-    const opscStats = getExamProgress('opsc');
-    const opscPctLabel = document.getElementById('card-opsc-pct-label');
-    const opscCountLabel = document.getElementById('card-opsc-count-label');
-    const opscBar = document.getElementById('card-opsc-bar');
-    if (opscPctLabel) opscPctLabel.textContent = `${opscStats.percent}% Completed`;
-    if (opscCountLabel) opscCountLabel.textContent = `${opscStats.completed}/${opscStats.total} Topics`;
-    if (opscBar) opscBar.style.width = `${opscStats.percent}%`;
-
-    // 2. OSSC CGL
-    const osscStats = getExamProgress('ossc');
-    const osscPctLabel = document.getElementById('card-ossc-pct-label');
-    const osscCountLabel = document.getElementById('card-ossc-count-label');
-    const osscBar = document.getElementById('card-ossc-bar');
-    if (osscPctLabel) osscPctLabel.textContent = `${osscStats.percent}% Completed`;
-    if (osscCountLabel) osscCountLabel.textContent = `${osscStats.completed}/${osscStats.total} Topics`;
-    if (osscBar) osscBar.style.width = `${osscStats.percent}%`;
-
-    // 3. Teaching / Police
-    const teachStats = getExamProgress('teaching');
-    const teachPctLabel = document.getElementById('card-teach-pct-label');
-    const teachCountLabel = document.getElementById('card-teach-count-label');
-    const teachBar = document.getElementById('card-teach-bar');
-    if (teachPctLabel) teachPctLabel.textContent = `${teachStats.percent}% Completed`;
-    if (teachCountLabel) teachCountLabel.textContent = `${teachStats.completed}/${teachStats.total} Topics`;
-    if (teachBar) teachBar.style.width = `${teachStats.percent}%`;
-  }
-
-  // Render Upcoming Lessons & Targets
-  function renderUpcomingLessons() {
-    const listEl = document.getElementById('bp-upcoming-lessons-list');
-    if (!listEl) return;
-
-    const saved = getSavedChecklists();
-
-    const targetItems = [
-      { exam: "opsc", stageId: "opsc-prelims", topicId: "opsc-p-gs1-hist", title: "History of India & National Movement (Odisha Special)", stream: "OPSC OCS", time: "45 min" },
-      { exam: "opsc", stageId: "opsc-prelims", topicId: "opsc-p-gs1-geo", title: "Odisha Physical & Economic Geography Compendium", stream: "OPSC OCS", time: "30 min" },
-      { exam: "ossc", stageId: "ossc-stage1", topicId: "ossc-p-arith", title: "Arithmetic & Data Interpretation Speed Drills (Class X)", stream: "OSSC CGL", time: "45 min" },
-      { exam: "teaching", stageId: "bed-paper1", topicId: "bed-p1-aptitude", title: "Teaching Aptitude, Classroom Management & Child Psychology", stream: "Odisha B.Ed", time: "40 min" },
-      { exam: "ossc", stageId: "ossc-stage1", topicId: "ossc-p-comp", title: "Computer & Internet Awareness (MS Office & Cybersecurity)", stream: "OSSC CGL", time: "30 min" },
-      { exam: "opsc", stageId: "opsc-prelims", topicId: "opsc-p-gs2-csat", title: "Paper-II (CSAT): Comprehension & Reasoning Tests", stream: "OPSC OCS", time: "50 min" }
-    ];
-
-    listEl.innerHTML = targetItems.map(item => {
-      const isDone = !!(saved[item.exam] && saved[item.exam][item.stageId] && saved[item.exam][item.stageId][item.topicId]);
-      return `
-        <div class="bp-lesson-item ${isDone ? 'completed' : ''}" data-exam="${item.exam}" data-stage="${item.stageId}" data-topic="${item.topicId}">
-          <div class="bp-lesson-left">
-            <input type="checkbox" class="bp-lesson-cb" ${isDone ? 'checked' : ''} aria-label="Mark completed" />
-            <div>
-              <h4 class="bp-lesson-title">${item.title}</h4>
-              <div class="bp-lesson-meta">
-                <span class="bp-badge-stream">${item.stream}</span>
-                <span>• Scheduled Target</span>
-              </div>
-            </div>
-          </div>
-          <div class="bp-lesson-right">
-            <span class="bp-lesson-time">⏱️ ${item.time}</span>
-            <button type="button" class="bp-lesson-play-btn" title="Open syllabus details">▶</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // Attach Checkbox Handlers
-    listEl.querySelectorAll('.bp-lesson-cb').forEach(cb => {
-      cb.addEventListener('change', (e) => {
-        const itemEl = e.target.closest('.bp-lesson-item');
-        if (!itemEl) return;
-        const exam = itemEl.dataset.exam;
-        const stage = itemEl.dataset.stage;
-        const topic = itemEl.dataset.topic;
-        const isChecked = e.target.checked;
-
-        const allChecklists = getSavedChecklists();
-        if (!allChecklists[exam]) allChecklists[exam] = {};
-        if (!allChecklists[exam][stage]) allChecklists[exam][stage] = {};
-        allChecklists[exam][stage][topic] = isChecked;
-        saveChecklists(allChecklists);
-
-        if (isChecked) {
-          itemEl.classList.add('completed');
-          showToast('Lesson milestone marked as completed!');
-        } else {
-          itemEl.classList.remove('completed');
-        }
-
-        updateExamCards();
-        renderChecklistTracker();
-        syncChecklistChange(exam, stage, topic, isChecked);
-      });
-    });
-
-    listEl.querySelectorAll('.bp-lesson-play-btn').forEach(btn => {
+  function initThemeSwitcher() {
+    applyTheme(document.documentElement.dataset.csoStudentTheme || 'alabaster-cobalt');
+    const btn = document.getElementById('cso-theme-toggle');
+    if (btn) {
       btn.addEventListener('click', () => {
-        switchTab('tab-my-learning');
-      });
-    });
-  }
-
-  // Multi-Stage Syllabus Checklist (for Tab My Learning)
-  let activeChecklistExam = 'opsc';
-
-  function renderChecklistTracker() {
-    const trackerEl = document.getElementById('candidate-tracker-list');
-    const badgeEl = document.getElementById('tracker-completion-badge');
-    if (!trackerEl) return;
-
-    const savedState = getSavedChecklists();
-    const currentSyllabus = SYLLABUS_CHECKLISTS[activeChecklistExam] || SYLLABUS_CHECKLISTS.opsc;
-    const examSaved = savedState[activeChecklistExam] || {};
-
-    let totalTopics = 0;
-    let completedTopics = 0;
-
-    currentSyllabus.stages.forEach(stage => {
-      const stageSaved = examSaved[stage.id] || {};
-      stage.topics.forEach(t => {
-        totalTopics++;
-        if (stageSaved[t.id]) completedTopics++;
-      });
-    });
-
-    const percent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
-    if (badgeEl) {
-      badgeEl.textContent = `${percent}% Completed (${completedTopics}/${totalTopics})`;
-    }
-
-    const examKeys = Object.keys(SYLLABUS_CHECKLISTS);
-    const tabsHtml = `
-      <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);">
-        ${examKeys.map(key => {
-          const syl = SYLLABUS_CHECKLISTS[key];
-          const isActive = key === activeChecklistExam;
-          return `
-            <button type="button" class="bp-chip ${isActive ? 'active' : ''}" data-checklist-exam="${key}">
-              ${syl.short || key.toUpperCase()}
-            </button>
-          `;
-        }).join('')}
-      </div>
-    `;
-
-    const stagesHtml = currentSyllabus.stages.map((stage, idx) => {
-      const stageSaved = examSaved[stage.id] || {};
-      const stageDoneCount = stage.topics.filter(t => stageSaved[t.id]).length;
-
-      const topicsHtml = stage.topics.map(t => {
-        const isDone = !!stageSaved[t.id];
-        return `
-          <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;background:${isDone ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.02)'};border:1px solid ${isDone ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'};cursor:pointer;margin-bottom:6px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <input type="checkbox" class="cb-stage-topic" data-exam="${activeChecklistExam}" data-stage="${stage.id}" data-topic="${t.id}" ${isDone ? 'checked' : ''} style="accent-color:#0d9488;width:17px;height:17px;" />
-              <span style="font-size:13px;color:${isDone ? '#94a3b8' : '#f8fafc'};text-decoration:${isDone ? 'line-through' : 'none'};">${t.label}</span>
-            </div>
-            <span style="font-size:11px;color:#64748b;font-family:monospace;">${t.time || '30m'}</span>
-          </label>
-        `;
-      }).join('');
-
-      return `
-        <details ${idx === 0 ? 'open' : ''} style="margin-bottom:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;">
-          <summary style="padding:12px 16px;background:rgba(255,255,255,0.04);cursor:pointer;font-size:13px;font-weight:700;color:#f8fafc;display:flex;align-items:center;justify-content:space-between;">
-            <span>${stage.title}</span>
-            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#1e293b;color:#2dd4bf;font-family:monospace;">${stageDoneCount}/${stage.topics.length}</span>
-          </summary>
-          <div style="padding:12px;">
-            ${topicsHtml}
-          </div>
-        </details>
-      `;
-    }).join('');
-
-    trackerEl.innerHTML = tabsHtml + stagesHtml;
-
-    // Attach Tab Handlers
-    trackerEl.querySelectorAll('button[data-checklist-exam]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeChecklistExam = btn.dataset.checklistExam;
-        renderChecklistTracker();
-      });
-    });
-
-    // Attach Topic Checkboxes
-    trackerEl.querySelectorAll('.cb-stage-topic').forEach(cb => {
-      cb.addEventListener('change', (e) => {
-        const exam = e.target.dataset.exam;
-        const stage = e.target.dataset.stage;
-        const topic = e.target.dataset.topic;
-        const isChecked = e.target.checked;
-
-        const allChecklists = getSavedChecklists();
-        if (!allChecklists[exam]) allChecklists[exam] = {};
-        if (!allChecklists[exam][stage]) allChecklists[exam][stage] = {};
-        allChecklists[exam][stage][topic] = isChecked;
-        saveChecklists(allChecklists);
-
-        updateExamCards();
-        renderUpcomingLessons();
-        renderChecklistTracker();
-        syncChecklistChange(exam, stage, topic, isChecked);
-      });
-    });
-  }
-
-  // Active Exam Milestones & Countdown Timers
-  function renderMilestones() {
-    const listEl = document.getElementById('candidate-milestones-list');
-    if (!listEl) return;
-
-    let eventsConfig = null;
-    if (window.CSOSuperStore && typeof window.CSOSuperStore.getEventsScheduleConfig === 'function') {
-      eventsConfig = window.CSOSuperStore.getEventsScheduleConfig();
-    }
-
-    let allEvents = [];
-    if (eventsConfig && eventsConfig.categories) {
-      eventsConfig.categories.forEach(cat => {
-        if (cat.nodes) {
-          cat.nodes.forEach(n => {
-            allEvents.push({ ...n, catTitle: cat.title });
-            if (n.children) {
-              n.children.forEach(ch => allEvents.push({ ...ch, catTitle: cat.title }));
-            }
-          });
-        }
+        const cur = document.documentElement.dataset.csoStudentTheme;
+        applyTheme(cur === 'obsidian-mint' ? 'alabaster-cobalt' : 'obsidian-mint');
       });
     }
-
-    if (allEvents.length === 0) {
-      allEvents = [
-        { id: "EV-01", title: "OPSC Odisha Civil Services (OCS) Prelims 2026", titleOdia: "ଓପିଏସସି ସିଭିଲ ସର୍ଭିସେସ ପ୍ରିଲିମ୍ସ", eventStartDate: "2026-11-29", eventType: "Exam", venueDistrict: "All 30 Districts" },
-        { id: "EV-02", title: "OSSC Combined Graduate Level (CGL) Mains 2026", titleOdia: "ଓଏସଏସସି ସିଜିଏଲ ମୁଖ୍ୟ ପରୀକ୍ଷା", eventStartDate: "2026-12-14", eventType: "Exam", venueDistrict: "Bhubaneswar / Cuttack" },
-        { id: "EV-03", title: "OSSSC RI & ARI Practical Skill Test Schedule", titleOdia: "ଆରଆଇ ଏବଂ ଏଆରଆଇ କମ୍ପ୍ୟୁଟର ପରୀକ୍ଷା", eventStartDate: "2026-12-22", eventType: "Skill Test", venueDistrict: "District HQs" },
-        { id: "EV-04", title: "Odisha B.Ed Entrance Application Form Closing", titleOdia: "ବି.ଏଡ୍ ପ୍ରବେଶିକା ଆବେଦନ ଶେଷ ତାରିଖ", eventStartDate: "2026-12-05", eventType: "Deadline", venueDistrict: "Online State Portal" }
-      ];
-    }
-
-    const now = new Date();
-    listEl.innerHTML = allEvents.map(ev => {
-      let daysLeft = 'Upcoming';
-      let dateStr = ev.eventStartDate || '';
-      if (dateStr) {
-        const evDate = new Date(dateStr);
-        const diffMs = evDate - now;
-        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-        if (diffDays > 0) daysLeft = `${diffDays} days left`;
-        else if (diffDays === 0) daysLeft = 'Today!';
-        else daysLeft = 'Concluded';
-      }
-
-      return `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-          <div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-              <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(13,148,136,0.15);color:#2dd4bf;font-weight:700;">${ev.eventType || 'Event'}</span>
-              <span style="font-size:10px;color:#94a3b8;font-family:monospace;">${ev.eventStartDate || 'TBA'}</span>
-            </div>
-            <h4 style="font-size:13px;font-weight:700;color:#f8fafc;margin:0;">${ev.title}</h4>
-            <span style="font-size:11px;color:#64748b;">📍 ${ev.venueDistrict || 'Odisha'}</span>
-          </div>
-          <span style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:#1e293b;color:#38bdf8;font-family:monospace;">
-            ${daysLeft}
-          </span>
-        </div>
-      `;
-    }).join('');
   }
 
-  // Bookmarked Jobs Shelf (Candidate Isolated)
-  function renderJobsShelf() {
-    const listEl = document.getElementById('candidate-jobs-shelf');
-    const tabListEl = document.getElementById('bookmarks-tab-jobs-shelf');
-    if (!listEl) return;
+  /* ---------- Tab & Sidebar Navigation ---------- */
+  const TAB_META = {
+    'tab-overview': ['Candidate Overview', 'Personalized exam readiness, live deadlines & synced workspace'],
+    'tab-my-learning': ['My Learning & Syllabi', 'Auto-provisioned exam checklists synced with D1'],
+    'tab-bookmarks': ['Private Library & Pins', 'Exam-matched PYQs, saved alerts, and mock tests'],
+    'tab-achievements': ['Readiness & Streaks', 'Live preparation milestones computed from D1 activity'],
+    'tab-profile-settings': ['Profile & Account Settings', 'Manage personal identity, 4-tier goals, and backups'],
+    'tool-calendar': ['Target Exam Calendar', 'Countdown schedule filtered to your active goals'],
+    'tool-locker': ['Document Locker', 'Odisha recruitment & scholarship KYC readiness'],
+    'tool-notes': ['Revision Scratchpad', 'Auto-saved study notes and quick recall facts'],
+    'tool-analytics': ['CBT Analytics & Mistake Log', 'Live D1 test history, trend chart & spaced-repetition log'],
+    'tool-study-timer': ['Focus Timer', 'Pomodoro study sprints for sustained concentration'],
+    'tool-exam-calculator': ['Cutoff & Negative Marks', 'Instant net score calculator across exam schemes'],
+    'tool-daily-drill': ['Daily GK Drill', 'Rapid recall practice for Odisha GK & Pedagogy']
+  };
 
-    let bookmarkedJobs = [];
-    if (window.CSOBookmarks && typeof window.CSOBookmarks.getBookmarksByType === 'function') {
-      bookmarkedJobs = window.CSOBookmarks.getBookmarksByType('jobs');
-    }
-
-    if (bookmarkedJobs.length === 0) {
-      const emptyHtml = `
-        <div style="padding:16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.12);text-align:center;">
-          <p style="font-size:12px;color:#94a3b8;margin:0 0 4px;">You haven't bookmarked any opportunities yet.</p>
-          <p style="font-size:11px;color:#64748b;margin:0;">Star any post or recruitment alert across your modules to pin it to your quick shelf.</p>
-        </div>
-      `;
-      listEl.innerHTML = emptyHtml;
-      if (tabListEl) tabListEl.innerHTML = emptyHtml;
-      return;
-    }
-
-    const html = bookmarkedJobs.map(job => `
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-        <div style="min-width:0;">
-          <h4 style="font-size:12px;font-weight:700;color:#f8fafc;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${job.title}</h4>
-          <span style="font-size:10px;color:#2dd4bf;">${job.badge || 'Jobs'}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button type="button" class="btn-remove-bm" data-type="jobs" data-id="${job.id}" style="background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 8px;color:#f87171;font-size:11px;cursor:pointer;">Remove ✕</button>
-        </div>
-      </div>
-    `).join('');
-
-    listEl.innerHTML = html;
-    if (tabListEl) tabListEl.innerHTML = html;
-
-    document.querySelectorAll('.btn-remove-bm').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (window.CSOBookmarks) {
-          window.CSOBookmarks.removeBookmark(btn.dataset.type, btn.dataset.id);
-          renderJobsShelf();
-          showToast('Bookmark removed from your shelf.');
-        }
-      });
-    });
-  }
-
-  // Saved PYQ Shelf
-  function renderStudyShelf() {
-    const shelfEl = document.getElementById('candidate-pyq-shelf');
-    if (!shelfEl) return;
-
-    let bookmarkedStudy = [];
-    if (window.CSOBookmarks && typeof window.CSOBookmarks.getBookmarksByType === 'function') {
-      bookmarkedStudy = window.CSOBookmarks.getBookmarksByType('study');
-    }
-
-    const defaultItems = [
-      { id: "def-pyq-1", title: "OPSC OCS General Studies Paper I — 5 Year PYQ Compilation", size: "3.4 MB", ext: "PDF", link: "https://assets.csodisha.org/pdf/pyq/2025/opsc-ocs-prelims-gs1-solved.pdf", badge: "Official Mirror" },
-      { id: "def-pyq-2", title: "OSSC CGL Arithmetic & Reasoning Topic-Wise Question Bank", size: "2.1 MB", ext: "PDF", link: "https://assets.csodisha.org/pdf/pyq/2025/ossc-cgl-maths-bank.pdf", badge: "Cloudflare R2" }
-    ];
-
-    const items = bookmarkedStudy.length > 0 ? bookmarkedStudy : defaultItems;
-
-    shelfEl.innerHTML = items.map(item => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-        <div>
-          <h4 style="font-size:12px;font-weight:600;color:#f8fafc;margin:0 0 2px;">${item.title}</h4>
-          <span style="font-size:10px;color:#94a3b8;">${item.size || 'PDF'} • <span style="color:#2dd4bf;">${item.badge || 'Study Library'}</span></span>
-        </div>
-        <a href="${item.link || item.url || '#'}" target="_blank" rel="noopener noreferrer" style="padding:4px 10px;border-radius:6px;background:#1e293b;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;font-size:11px;text-decoration:none;">Download ⬇</a>
-      </div>
-    `).join('');
-  }
-
-  // Personalized Schemes Shelf
-  function renderSchemes(session) {
-    const listEl = document.getElementById('candidate-schemes-list');
-    if (!listEl) return;
-
-    const district = session?.district || 'Balasore (Baleswar)';
-    const schemes = [
-      { title: "Subhadra Yojana — Financial Aid", amount: "₹10,000 / Yr", target: "Women (21-60)", status: "Active DBT" },
-      { title: "e-Medhabruti Higher Education Scholarship", amount: "Up to ₹10,000", target: "Undergraduate & Post-Graduate", status: "Open for Domicile" },
-      { title: "KALIA Scholarship for Professional Education", amount: "Full Fee Waiver", target: "Farmers' Children (MBBS/Tech)", status: `Verified for ${district}` }
-    ];
-
-    listEl.innerHTML = schemes.map(sc => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);">
-        <div>
-          <h4 style="font-size:12px;font-weight:700;color:#f8fafc;margin:0 0 2px;">${sc.title}</h4>
-          <span style="font-size:10px;color:#94a3b8;"><strong style="color:#34d399;">${sc.amount}</strong> • ${sc.target}</span>
-        </div>
-        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(13,148,136,0.15);color:#2dd4bf;font-weight:700;">${sc.status}</span>
-      </div>
-    `).join('');
-  }
-
-  // In-Dashboard Scratchpad & Daily Notes
-  function initScratchpad() {
-    const textarea = document.getElementById('bp-candidate-scratchpad');
-    const indicator = document.getElementById('scratchpad-save-indicator');
-    if (!textarea) return;
-
-    try {
-      const savedNote = localStorage.getItem(NOTES_KEY);
-      if (savedNote) textarea.value = savedNote;
-    } catch(e) {}
-
-    let timeout = null;
-    textarea.addEventListener('input', () => {
-      if (indicator) indicator.textContent = 'Saving...';
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        try {
-          localStorage.setItem(NOTES_KEY, textarea.value);
-          if (indicator) indicator.textContent = 'Auto-saved to device';
-          if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
-            window.CSOSync.pushLocalStateToCloud();
-          }
-        } catch(e) {}
-      }, 500);
-    });
-  }
-
-  // In-Dashboard Mock Test Score Logger
-  function renderMockScores() {
-    const tbody = document.getElementById('bp-mock-scores-body');
-    if (!tbody) return;
-
-    const scores = getMockScores();
-    if (scores.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:16px;">No mock tests logged yet. Click "+ Log New Mock" to track your first test score.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = scores.map(item => `
-      <tr>
-        <td style="font-family:monospace;color:#94a3b8;">${item.date}</td>
-        <td><strong style="color:#f8fafc;">${item.exam}</strong><br><span style="color:#64748b;font-size:11px;">${item.paper}</span></td>
-        <td style="color:#2dd4bf;font-weight:700;">${item.score}</td>
-        <td style="color:#94a3b8;">${item.max}</td>
-        <td><span style="padding:2px 8px;border-radius:4px;background:rgba(16,185,129,0.15);color:#34d399;font-weight:700;">${item.accuracy}</span></td>
-        <td><button type="button" class="btn-del-score" data-id="${item.id}" style="background:transparent;border:none;color:#f87171;cursor:pointer;font-size:12px;">✕</button></td>
-      </tr>
-    `).join('');
-
-    tbody.querySelectorAll('.btn-del-score').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const filtered = getMockScores().filter(x => x.id !== id);
-        saveMockScores(filtered);
-        renderMockScores();
-        showToast('Mock test record deleted.');
-      });
-    });
-  }
-
-  function initMockScoreLogger() {
-    renderMockScores();
-
-    const addBtn = document.getElementById('bp-add-mock-score-btn');
-    addBtn?.addEventListener('click', () => {
-      const exam = prompt("Enter Examination Name (e.g. OPSC OCS Prelims, OSSC CGL):", "OPSC OCS Prelims");
-      if (!exam) return;
-      const paper = prompt("Enter Paper Name (e.g. GS Paper I, CSAT):", "General Studies Mock Test");
-      if (!paper) return;
-      const scoreStr = prompt("Marks Scored:", "135");
-      const maxStr = prompt("Total Marks:", "200");
-      const score = parseFloat(scoreStr) || 0;
-      const max = parseFloat(maxStr) || 200;
-      const accuracy = Math.round((score / max) * 100) + "%";
-
-      const list = getMockScores();
-      list.unshift({
-        id: "mock-" + Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        exam,
-        paper,
-        score,
-        max,
-        accuracy
-      });
-      saveMockScores(list);
-      renderMockScores();
-      showToast('Mock test score logged successfully!');
-      if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
-        window.CSOSync.pushLocalStateToCloud();
-      }
-    });
-  }
-
-  // Document Locker Reactive Checkboxes
-  function initDocumentLocker() {
-    let lockerState = {};
-    try {
-      const raw = localStorage.getItem(LOCKER_KEY);
-      if (raw) lockerState = JSON.parse(raw);
-    } catch(e) {}
-
-    const items = document.querySelectorAll('.bp-locker-item');
-    items.forEach((item, idx) => {
-      const cb = item.querySelector('.bp-locker-cb');
-      if (lockerState[idx] !== undefined) {
-        cb.checked = lockerState[idx];
-        item.classList.toggle('verified', cb.checked);
-      }
-      cb?.addEventListener('change', () => {
-        lockerState[idx] = cb.checked;
-        item.classList.toggle('verified', cb.checked);
-        try {
-          localStorage.setItem(LOCKER_KEY, JSON.stringify(lockerState));
-        } catch(e) {}
-        showToast(cb.checked ? 'Document marked as verified.' : 'Document status updated.');
-        if (window.CSOSync && typeof window.CSOSync.pushLocalStateToCloud === 'function') {
-          window.CSOSync.pushLocalStateToCloud();
-        }
-      });
-    });
-  }
-
-  // Tab View Switcher (Self-Contained SPA)
   function switchTab(tabId) {
-    if (!tabId) return;
-
-    // Update active nav items
-    document.querySelectorAll('.bp-nav-item').forEach(el => {
-      if (el.dataset.tab === tabId || el.getAttribute('href') === `#${tabId}`) {
-        el.classList.add('active');
-      } else {
-        el.classList.remove('active');
-      }
-    });
-
-    // Update view titles
-    const titles = {
-      'tab-overview': ['Dashboard Overview', 'Live exam preparation, syllabus milestones & downloads'],
-      'tab-my-learning': ['My Learning & Syllabi', 'Stage-wise topic checklists, milestones, and syllabus coverage'],
-      'tab-bookmarks': ['Private Library & Bookmarks', 'Curated repository of saved PYQs, bookmarked opportunities, and study notes'],
-      'tab-achievements': ['Achievements & Badges', 'Study streaks, syllabus completion ratios & milestone tokens'],
-      'tool-calendar': ['Exam Calendar & Timeline', 'Official countdowns for upcoming OPSC, OSSC, and B.Ed exams'],
-      'tool-locker': ['Document Locker', 'KYC certificates, domicile proofs, and examination marksheets'],
-      'tool-notes': ['Revision Scratchpad & Daily Notes', 'Aspirant notepad for historical milestones and formulas'],
-      'tool-analytics': ['Mock Score Tracker & Diagnostics', 'Test series analytics, accuracy ratios, and mark logger'],
-      'tool-study-timer': ['Study Focus Timer & Pomodoro', 'Targeted 25-minute deep syllabus study intervals'],
-      'tool-exam-calculator': ['Cutoff & Negative Marks Calculator', 'Exam score forecaster, penalty deduction & accuracy calculator'],
-      'tool-daily-drill': ['Daily Odisha GK Rapid Flash Drill', 'High-frequency Odisha history, polity & geography recall practice'],
-      'tab-profile-settings': ['Profile & Account Settings', 'Manage personal preferences, target exams, and export data backup']
-    };
-
-    if (titles[tabId]) {
-      const viewTitle = document.getElementById('bp-view-title');
-      const viewSub = document.getElementById('bp-view-subtitle');
-      if (viewTitle) viewTitle.textContent = titles[tabId][0];
-      if (viewSub) viewSub.textContent = titles[tabId][1];
+    if (!tabId || !document.getElementById(tabId)) return;
+    document.querySelectorAll('.bp-tab-view').forEach(v => v.classList.toggle('active', v.id === tabId));
+    document.querySelectorAll('.bp-nav-item[data-tab]').forEach(a => a.classList.toggle('active', a.dataset.tab === tabId));
+    const meta = TAB_META[tabId];
+    if (meta) {
+      const t = document.getElementById('bp-topbar-title');
+      const s = document.getElementById('bp-topbar-subtitle');
+      if (t) t.textContent = meta[0];
+      if (s) s.textContent = meta[1];
     }
-
-    // Toggle tab views
-    document.querySelectorAll('.bp-tab-view').forEach(view => {
-      if (view.id === tabId) {
-        view.classList.add('active');
-      } else {
-        view.classList.remove('active');
-      }
-    });
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const sb = document.getElementById('bp-sidebar');
+    if (sb) sb.classList.remove('mobile-open');
   }
 
-  // Profile Editor Modal
-  function openProfileEditorModal(currentSession) {
-    let existingModal = document.getElementById('cso-profile-editor-modal');
-    if (existingModal) existingModal.remove();
-
-    const currentName = currentSession?.fullName || currentSession?.name || 'RAMESH BISWAL';
-    const currentMobile = currentSession?.mobile || currentSession?.phone || '9876543210';
-    const currentDistrict = currentSession?.district || 'Balasore (Baleswar)';
-    const selectedExams = Array.isArray(currentSession?.targetExams) ? currentSession.targetExams : ['opsc', 'ossc'];
-
-    const districtOptions = ODISHA_DISTRICTS.map(d => {
-      const isSel = (d.toLowerCase() === currentDistrict.toLowerCase()) || currentDistrict.toLowerCase().includes(d.toLowerCase());
-      return `<option value="${d}" ${isSel ? 'selected' : ''}>${d}</option>`;
-    }).join('');
-
-    const examCheckboxes = [
-      { key: 'opsc', label: 'OPSC (OCS / OAS / OFS)' },
-      { key: 'ossc', label: 'OSSC (CGL / CHSL / CTSRE)' },
-      { key: 'osssc', label: 'OSSSC (RI / ARI / Amin / Forest Guard)' },
-      { key: 'teaching', label: 'Teaching (Odisha B.Ed / OTET / OSSTET)' },
-      { key: 'police', label: 'Odisha Police (SI / Constable)' }
-    ].map(item => {
-      const isChecked = selectedExams.includes(item.key);
-      return `
-        <label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);cursor:pointer;font-size:12px;color:#e2e8f0;">
-          <input type="checkbox" name="edit_target_exams" value="${item.key}" ${isChecked ? 'checked' : ''} style="accent-color:#0d9488;cursor:pointer;" />
-          <span>${item.label}</span>
-        </label>
-      `;
-    }).join('');
-
-    const modal = document.createElement('div');
-    modal.id = 'cso-profile-editor-modal';
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
-
-    modal.innerHTML = `
-      <div style="background:#0f172a;border:1px solid rgba(255,255,255,0.12);border-radius:18px;max-width:500px;width:100%;box-shadow:0 24px 48px rgba(0,0,0,0.7);overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">⚙️</span>
-            <h3 style="margin:0;font-size:16px;font-weight:700;color:#f8fafc;">Aspirant Profile &amp; Preferences</h3>
-          </div>
-          <button type="button" id="btn-close-profile-editor" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
-        </div>
-
-        <form id="cso-profile-editor-form" style="padding:20px;display:flex;flex-direction:column;gap:14px;max-height:80vh;overflow-y:auto;">
-          <div>
-            <label style="display:block;font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:6px;">Full Name *</label>
-            <input type="text" id="edit-candidate-name" value="${currentName}" required style="width:100%;box-sizing:border-box;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f8fafc;font-size:13px;" />
-          </div>
-
-          <div>
-            <label style="display:block;font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:6px;">Mobile Number (10 digits) *</label>
-            <input type="tel" id="edit-candidate-mobile" value="${currentMobile}" maxlength="10" required style="width:100%;box-sizing:border-box;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f8fafc;font-size:13px;" />
-          </div>
-
-          <div>
-            <label style="display:block;font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:6px;">Home District in Odisha *</label>
-            <select id="edit-candidate-district" style="width:100%;box-sizing:border-box;padding:9px 12px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f8fafc;font-size:13px;">
-              ${districtOptions}
-            </select>
-          </div>
-
-          <div>
-            <label style="display:block;font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:8px;">Target Examinations &amp; Streams</label>
-            <div style="flex-direction:column;gap:6px;display:flex;">
-              ${examCheckboxes}
-            </div>
-          </div>
-
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);">
-            <button type="button" id="btn-cancel-profile-editor" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#cbd5e1;border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;">Cancel</button>
-            <button type="submit" style="background:#0d9488;color:#ffffff;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;">Save Changes ✓</button>
-          </div>
-        </form>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    const closeModal = () => modal.remove();
-    document.getElementById('btn-close-profile-editor')?.addEventListener('click', closeModal);
-    document.getElementById('btn-cancel-profile-editor')?.addEventListener('click', closeModal);
-
-    document.getElementById('cso-profile-editor-form')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const newName = document.getElementById('edit-candidate-name').value.trim();
-      const newMobile = document.getElementById('edit-candidate-mobile').value.trim();
-      const newDistrict = document.getElementById('edit-candidate-district').value;
-      const checkedBoxes = Array.from(document.querySelectorAll('input[name="edit_target_exams"]:checked'));
-      const newExams = checkedBoxes.map(cb => cb.value);
-
-      const updatedSession = {
-        ...(currentSession || {}),
-        fullName: newName,
-        name: newName,
-        mobile: newMobile,
-        phone: newMobile,
-        district: newDistrict,
-        targetExams: newExams,
-        updatedAt: new Date().toISOString()
-      };
-
-      try {
-        localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession));
-      } catch(err) {}
-
-      renderUserProfile(updatedSession);
-      renderSchemes(updatedSession);
-      modal.remove();
-      showToast('Aspirant Profile successfully updated!');
-    });
-  }
-
-  // Universal Search Overlay Modal (Ctrl + K)
-  function initUniversalSearch() {
-    const overlay = document.getElementById('bp-search-overlay');
-    const input = document.getElementById('bp-search-modal-input');
-    const results = document.getElementById('bp-search-modal-results');
-    const closeBtn = document.getElementById('bp-search-modal-close');
-    const topbarTrigger = document.getElementById('bp-topbar-search-trigger');
-    const sidebarTrigger = document.getElementById('tool-search-btn');
-
-    const openSearch = () => {
-      if (overlay) {
-        overlay.classList.add('open');
-        overlay.setAttribute('aria-hidden', 'false');
-        setTimeout(() => input?.focus(), 50);
-      }
-    };
-
-    const closeSearch = () => {
-      if (overlay) {
-        overlay.classList.remove('open');
-        overlay.setAttribute('aria-hidden', 'true');
-        if (input) input.value = '';
-      }
-    };
-
-    topbarTrigger?.addEventListener('click', openSearch);
-    sidebarTrigger?.addEventListener('click', (e) => {
-      e.preventDefault();
-      openSearch();
-    });
-    closeBtn?.addEventListener('click', closeSearch);
-
-    overlay?.addEventListener('click', (e) => {
-      if (e.target === overlay) closeSearch();
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        openSearch();
-      }
-      if (e.key === 'Escape' && overlay?.classList.contains('open')) {
-        closeSearch();
-      }
-    });
-
-    input?.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      if (!q) {
-        results.innerHTML = `<div style="padding:16px;text-align:center;color:#64748b;font-size:13px;">Type to search across OPSC, OSSC, B.Ed and Odisha study materials...</div>`;
-        return;
-      }
-
-      const matches = [];
-      Object.keys(SYLLABUS_CHECKLISTS).forEach(examKey => {
-        const syl = SYLLABUS_CHECKLISTS[examKey];
-        syl.stages.forEach(stage => {
-          stage.topics.forEach(t => {
-            if (t.label.toLowerCase().includes(q) || syl.name.toLowerCase().includes(q)) {
-              matches.push({ title: t.label, exam: syl.short, type: "Topic" });
-            }
-          });
-        });
-      });
-
-      if (matches.length === 0) {
-        results.innerHTML = `<div style="padding:16px;text-align:center;color:#94a3b8;font-size:13px;">No direct syllabus matches found for "<strong>${q}</strong>".</div>`;
-        return;
-      }
-
-      results.innerHTML = matches.slice(0, 6).map(m => `
-        <div style="padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background 0.15s;">
-          <div>
-            <h5 style="margin:0 0 2px;font-size:13px;color:#f8fafc;">${m.title}</h5>
-            <span style="font-size:10px;color:#2dd4bf;font-weight:700;">${m.exam} • ${m.type}</span>
-          </div>
-          <span style="font-size:12px;color:#64748b;">Jump →</span>
-        </div>
-      `).join('');
-
-      results.querySelectorAll('div').forEach(item => {
-        item.addEventListener('click', () => {
-          closeSearch();
-          switchTab('tab-my-learning');
-        });
-      });
-    });
-  }
-
-  // Sidebar Collapse / Expand & Mobile Drawer Handlers
-  function initSidebar() {
-    const sidebar = document.getElementById('bp-sidebar');
-    const toggleBtn = document.getElementById('bp-sidebar-toggle');
-    const mobileBtn = document.getElementById('bp-mobile-menu-trigger');
-    const toggleIcon = toggleBtn?.querySelector('.bp-toggle-icon');
-
-    // Desktop Compact / Expanded
-    toggleBtn?.addEventListener('click', () => {
-      sidebar?.classList.toggle('collapsed');
-      const isCollapsed = sidebar?.classList.contains('collapsed');
-      if (toggleIcon) toggleIcon.textContent = isCollapsed ? '▶' : '◀';
-    });
-
-    // Mobile Drawer Toggle
-    mobileBtn?.addEventListener('click', () => {
-      sidebar?.classList.toggle('mobile-open');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768 && sidebar?.classList.contains('mobile-open')) {
-        if (!sidebar.contains(e.target) && e.target !== mobileBtn) {
-          sidebar.classList.remove('mobile-open');
-        }
-      }
-    });
-
-    // Sidebar Navigation Click Routing (Self-Contained SPA)
-    document.querySelectorAll('.bp-nav-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        const href = item.getAttribute('href');
-        if (href && href.startsWith('#')) {
-          e.preventDefault();
-          const tabId = href.substring(1);
-          switchTab(tabId);
-          if (window.innerWidth <= 768) {
-            sidebar?.classList.remove('mobile-open');
-          }
-        }
-      });
-    });
-
-    // Internal tab jump links
-    document.querySelectorAll('.bp-nav-switch').forEach(link => {
+  function initNavigation() {
+    document.querySelectorAll('[data-tab]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        const tab = link.dataset.tab;
-        if (tab) switchTab(tab);
+        switchTab(link.dataset.tab);
       });
     });
 
-    // Hero Card Jump buttons
-    document.querySelectorAll('.bp-btn-jump-checklist').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeChecklistExam = btn.dataset.exam || 'opsc';
+    const sb = document.getElementById('bp-sidebar');
+    document.getElementById('bp-sidebar-toggle-btn')?.addEventListener('click', () => sb?.classList.toggle('is-collapsed'));
+    document.getElementById('bp-mobile-menu-trigger')?.addEventListener('click', () => sb?.classList.toggle('mobile-open'));
+    document.getElementById('bp-topbar-user-btn')?.addEventListener('click', () => switchTab('tab-profile-settings'));
+    document.getElementById('bp-sidebar-user-btn')?.addEventListener('click', () => switchTab('tab-profile-settings'));
+  }
+
+  /* ---------- Auth & Governance Rendering ---------- */
+  function renderProfileAndControls() {
+    const u = state.user || {};
+    const name = u.fullName || u.name || 'Odisha Aspirant';
+    const district = u.district || 'Odisha';
+    const av = initials(name);
+
+    ['bp-side-avatar', 'bp-top-avatar', 'cso-profile-avatar'].forEach(id => {
+      const n = document.getElementById(id);
+      if (n) n.textContent = av;
+    });
+    ['bp-side-name', 'bp-top-name', 'cso-profile-name', 'tab-settings-name'].forEach(id => {
+      const n = document.getElementById(id);
+      if (n) n.textContent = name;
+    });
+    ['bp-side-district', 'bp-top-district', 'cso-profile-id', 'tab-settings-district'].forEach(id => {
+      const n = document.getElementById(id);
+      if (n) n.textContent = district;
+    });
+
+    const skel = document.getElementById('cso-profile-skeleton');
+    const det = document.getElementById('cso-profile-details');
+    if (skel) skel.hidden = true;
+    if (det) det.hidden = false;
+
+    const primaryObj = getExamById(state.preferences.primaryExam);
+    const badge = document.getElementById('cso-profile-stream-badge');
+    if (badge) badge.textContent = primaryObj ? primaryObj.short_code : 'TARGETING GOALS';
+
+    const primText = document.getElementById('tab-settings-primary');
+    if (primText) primText.textContent = primaryObj ? primaryObj.exam_label : 'Not set';
+
+    const stText = document.getElementById('tab-settings-status');
+    if (stText) stText.textContent = (state.controls.account_status || 'active').toUpperCase();
+
+    // Admin Notice Banner
+    const noticeBanner = document.getElementById('cso-admin-notice-banner');
+    const noticeLvl = document.getElementById('cso-admin-notice-level');
+    const noticeTxt = document.getElementById('cso-admin-notice-text');
+    const notifDot = document.getElementById('bp-notif-dot');
+    if (noticeBanner && state.controls.admin_notice_text) {
+      noticeBanner.hidden = false;
+      noticeBanner.classList.remove('is-warning', 'is-urgent');
+      if (state.controls.admin_notice_level === 'warning') noticeBanner.classList.add('is-warning');
+      if (state.controls.admin_notice_level === 'urgent') noticeBanner.classList.add('is-urgent');
+      if (noticeLvl) noticeLvl.textContent = (state.controls.admin_notice_level || 'info').toUpperCase();
+      if (noticeTxt) noticeTxt.textContent = state.controls.admin_notice_text;
+      if (notifDot) notifDot.hidden = false;
+    } else if (noticeBanner) {
+      noticeBanner.hidden = true;
+    }
+
+    // Governance locks & permissions
+    const isRestricted = state.controls.account_status === 'restricted';
+    const perms = state.controls.permissions || {};
+    const editBtn = document.getElementById('btn-open-profile-editor-tab');
+    if (editBtn) editBtn.disabled = isRestricted || perms.canEditProfile === false;
+    const exportBtn = document.getElementById('btn-export-json-backup');
+    if (exportBtn) exportBtn.disabled = perms.canExportData === false;
+
+    const locked = Boolean(state.controls.lock_exam_preferences);
+    const editGoalsBtn = document.getElementById('cso-open-goal-modal-btn');
+    const settingsGoalsBtn = document.getElementById('btn-open-goals-settings');
+    const lockBadge = document.getElementById('cso-goal-locked-badge');
+    if (editGoalsBtn) editGoalsBtn.hidden = locked || isRestricted;
+    if (settingsGoalsBtn) settingsGoalsBtn.disabled = locked || isRestricted;
+    if (lockBadge) lockBadge.hidden = !locked;
+  }
+
+  async function performSignOut() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
+    [SESSION_KEY, PROFILE_KEY, 'cso_auth_token'].forEach(k => {
+      try { localStorage.removeItem(k); } catch {}
+    });
+    if (window.CSOIdb && typeof window.CSOIdb.clearSyncQueue === 'function') {
+      try { await window.CSOIdb.clearSyncQueue(); } catch {}
+    }
+    window.location.replace('/login.html');
+  }
+
+  /* ---------- Taxonomy & Focus Helpers ---------- */
+  function getExamById(id) {
+    return state.taxonomy.find(e => e.id === id) || null;
+  }
+
+  function getActiveExams() {
+    if (state.allFeedMode) return state.taxonomy;
+    const ids = (state.controls.lock_exam_preferences && state.controls.assigned_exams.length)
+      ? state.controls.assigned_exams
+      : (state.preferences.selectedExams || []);
+    const matched = ids.map(getExamById).filter(Boolean);
+    return matched.length ? matched : state.taxonomy.slice(0, 3);
+  }
+
+  function renderFocusBar() {
+    const host = document.getElementById('cso-focus-pills-list');
+    if (!host) return;
+    clear(host);
+
+    const active = getActiveExams();
+    const displayList = state.allFeedMode ? active.slice(0, 4) : active;
+    displayList.forEach(ex => {
+      const isPrimary = ex.id === state.preferences.primaryExam;
+      const stream = state.preferences.selectedStreams && state.preferences.selectedStreams[ex.id];
+      const label = (isPrimary ? '★ ' : '') + ex.short_code + (stream ? (' (' + stream + ')') : '');
+      const pill = el('button', isPrimary ? 'cso-focus-pill is-primary' : 'cso-focus-pill', label);
+      pill.type = 'button';
+      pill.addEventListener('click', () => {
+        state.activeChecklistExam = ex.id;
         switchTab('tab-my-learning');
         renderChecklistTracker();
       });
+      host.appendChild(pill);
     });
 
-    // Profile Modals
-    document.getElementById('bp-topbar-user-pill')?.addEventListener('click', () => {
-      openProfileEditorModal(getSession());
-    });
-    document.getElementById('bp-sidebar-user-pill')?.addEventListener('click', () => {
-      openProfileEditorModal(getSession());
-    });
-    document.getElementById('sidebar-nav-profile')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      openProfileEditorModal(getSession());
-    });
-
-    // Logout Action Button
-    document.getElementById('bp-topbar-logout-btn')?.addEventListener('click', handleCandidateLogout);
-
-    // Exam Filter Chips in Overview
-    document.querySelectorAll('#bp-exam-filter-chips .bp-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('#bp-exam-filter-chips .bp-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        const filter = chip.dataset.filter;
-
-        document.querySelectorAll('#bp-hero-cards-mount .bp-exam-card').forEach(card => {
-          if (filter === 'all' || card.dataset.examCard === filter) {
-            card.style.display = 'flex';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-      });
-    });
-  }
-
-  // Candidate Data Portability Export Handler
-  function initDataPortability() {
-    const exportBtn = document.getElementById('btn-export-candidate-data');
-    exportBtn?.addEventListener('click', () => {
-      const session = getSession() || {};
-      const candidateName = session.fullName || session.name || 'Candidate';
-
-      let bookmarks = [];
-      try {
-        const rawBm = localStorage.getItem('cso_candidate_bookmarks_v1');
-        if (rawBm) bookmarks = JSON.parse(rawBm);
-      } catch(e) {}
-
-      let locker = {};
-      try {
-        const rawLocker = localStorage.getItem(LOCKER_KEY);
-        if (rawLocker) locker = JSON.parse(rawLocker);
-      } catch(e) {}
-
-      const candidateData = {
-        version: '1.0.0',
-        exportedAt: new Date().toISOString(),
-        candidate: session,
-        checklist: getSavedChecklists(),
-        bookmarks: bookmarks,
-        documentLocker: locker,
-        revisionNotes: localStorage.getItem(NOTES_KEY) || '',
-        mockScores: getMockScores()
-      };
-
-      try {
-        const jsonStr = JSON.stringify(candidateData, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-        const cleanName = candidateName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-        const dateStr = new Date().toISOString().slice(0, 10);
-        const filename = `CSO_Study_Data_${cleanName}_${dateStr}.json`;
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        showToast('Study data archive downloaded successfully.');
-      } catch(err) {
-        console.error('Failed to export study data', err);
-        showToast('Failed to export study data archive.', 'error');
-      }
-    });
-
-    document.getElementById('btn-open-profile-editor-tab')?.addEventListener('click', () => {
-      openProfileEditorModal(getSession());
-    });
-  }
-
-  // ==========================================================================
-  // Innovation 1: Candidate Study Focus Timer (Pomodoro Sprint)
-  // ==========================================================================
-  function initStudyFocusTimer() {
-    const display = document.getElementById('timer-display');
-    const toggleBtn = document.getElementById('btn-timer-toggle');
-    const resetBtn = document.getElementById('btn-timer-reset');
-    const modeBtns = document.querySelectorAll('.bp-timer-mode-btn');
-    const sprintCountEl = document.getElementById('timer-sprints-count');
-
-    if (!display || !toggleBtn) return;
-
-    let durationSeconds = 25 * 60;
-    let remainingSeconds = durationSeconds;
-    let timerInterval = null;
-    let isRunning = false;
-    let completedSprints = 0;
-
-    function formatTime(secs) {
-      const m = Math.floor(secs / 60);
-      const s = secs % 60;
-      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    if (state.allFeedMode && active.length > 4) {
+      host.appendChild(el('span', 'cso-muted-note', '+' + (active.length - 4) + ' more'));
     }
 
-    function updateDisplay() {
-      display.textContent = formatTime(remainingSeconds);
+    const toggle = document.getElementById('cso-all-feed-toggle');
+    if (toggle) {
+      toggle.classList.toggle('is-active', state.allFeedMode);
+      toggle.setAttribute('aria-pressed', state.allFeedMode ? 'true' : 'false');
     }
-
-    modeBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (isRunning) {
-          clearInterval(timerInterval);
-          isRunning = false;
-          toggleBtn.textContent = '▶ Start Session';
-          toggleBtn.style.background = '#0d9488';
-        }
-        modeBtns.forEach(b => {
-          b.classList.remove('active');
-          b.style.background = 'rgba(255,255,255,0.06)';
-          b.style.color = '#94a3b8';
-        });
-        btn.classList.add('active');
-        btn.style.background = '#0284c7';
-        btn.style.color = '#ffffff';
-
-        const mins = parseInt(btn.dataset.minutes, 10) || 25;
-        durationSeconds = mins * 60;
-        remainingSeconds = durationSeconds;
-        updateDisplay();
-      });
-    });
-
-    toggleBtn.addEventListener('click', () => {
-      if (!isRunning) {
-        isRunning = true;
-        toggleBtn.textContent = '⏸ Pause';
-        toggleBtn.style.background = '#f59e0b';
-        timerInterval = setInterval(() => {
-          if (remainingSeconds > 0) {
-            remainingSeconds--;
-            updateDisplay();
-          } else {
-            clearInterval(timerInterval);
-            isRunning = false;
-            toggleBtn.textContent = '▶ Start Session';
-            toggleBtn.style.background = '#0d9488';
-            completedSprints++;
-            if (sprintCountEl) sprintCountEl.textContent = completedSprints;
-            showToast('🎉 Focus Sprint completed! Take a 5-minute breather.');
-          }
-        }, 1000);
-      } else {
-        clearInterval(timerInterval);
-        isRunning = false;
-        toggleBtn.textContent = '▶ Resume';
-        toggleBtn.style.background = '#0d9488';
-      }
-    });
-
-    resetBtn?.addEventListener('click', () => {
-      clearInterval(timerInterval);
-      isRunning = false;
-      remainingSeconds = durationSeconds;
-      updateDisplay();
-      toggleBtn.textContent = '▶ Start Session';
-      toggleBtn.style.background = '#0d9488';
-    });
   }
 
-  // ==========================================================================
-  // Innovation 2: Odisha Competitive Exam Cutoff & Marks Calculator
-  // ==========================================================================
-  function initExamCalculator() {
-    const schemeSelect = document.getElementById('calc-exam-scheme');
-    const correctInput = document.getElementById('calc-correct-input');
-    const incorrectInput = document.getElementById('calc-incorrect-input');
-    const totalInput = document.getElementById('calc-total-input');
-    const penaltyInput = document.getElementById('calc-penalty-input');
-    const calcBtn = document.getElementById('btn-run-calc');
-
-    const netScoreEl = document.getElementById('calc-net-score');
-    const grossMarksEl = document.getElementById('calc-gross-marks');
-    const penaltyDeductedEl = document.getElementById('calc-penalty-deducted');
-    const accuracyRateEl = document.getElementById('calc-accuracy-rate');
-    const unattemptedEl = document.getElementById('calc-unattempted');
-
-    if (!calcBtn || !correctInput) return;
-
-    const schemes = {
-      opsc_ocs_p1: { total: 100, markPerQuestion: 2.0, penalty: 0.66 },
-      opsc_ocs_p2: { total: 80, markPerQuestion: 2.5, penalty: 0.83 },
-      ossc_cgl: { total: 150, markPerQuestion: 1.0, penalty: 0.25 },
-      bed_exam: { total: 100, markPerQuestion: 1.0, penalty: 0.25 }
+  /* ---------- 4-Tier Hierarchical Goal Selector Modal ---------- */
+  function openGoalModal() {
+    if (state.controls.lock_exam_preferences) {
+      showToast('Exam preferences are locked by your administrator.', true);
+      return;
+    }
+    const modal = document.getElementById('cso-goal-modal');
+    if (!modal) return;
+    const first = getExamById(state.preferences.primaryExam) || state.taxonomy[0];
+    state.modalDraft = {
+      domain: state.preferences.domain || (first && first.domain_slug) || null,
+      track: state.preferences.track || (first && first.track_slug) || null,
+      primaryExam: state.preferences.primaryExam || (first && first.id) || null,
+      selectedExams: [...(state.preferences.selectedExams || [])],
+      selectedStreams: { ...(state.preferences.selectedStreams || {}) }
     };
-
-    schemeSelect?.addEventListener('change', () => {
-      const key = schemeSelect.value;
-      if (schemes[key]) {
-        totalInput.value = schemes[key].total;
-        penaltyInput.value = schemes[key].penalty;
-        calculateScore();
-      }
-    });
-
-    function calculateScore() {
-      const correct = Math.max(0, parseInt(correctInput.value, 10) || 0);
-      const incorrect = Math.max(0, parseInt(incorrectInput.value, 10) || 0);
-      const total = Math.max(1, parseInt(totalInput.value, 10) || 100);
-      const penalty = parseFloat(penaltyInput.value) || 0;
-
-      const schemeKey = schemeSelect?.value || 'opsc_ocs_p1';
-      const markPerQ = schemes[schemeKey] ? schemes[schemeKey].markPerQuestion : 1.0;
-
-      const attempted = correct + incorrect;
-      const unattempted = Math.max(0, total - attempted);
-      const gross = correct * markPerQ;
-      const penaltyAmt = incorrect * penalty;
-      const net = Math.max(0, gross - penaltyAmt);
-      const accuracy = attempted > 0 ? ((correct / attempted) * 100).toFixed(2) : '0.00';
-
-      if (netScoreEl) netScoreEl.textContent = net.toFixed(2);
-      if (grossMarksEl) grossMarksEl.textContent = gross.toFixed(2);
-      if (penaltyDeductedEl) penaltyDeductedEl.textContent = `-${penaltyAmt.toFixed(2)}`;
-      if (accuracyRateEl) accuracyRateEl.textContent = `${accuracy}%`;
-      if (unattemptedEl) unattemptedEl.textContent = unattempted;
-    }
-
-    calcBtn.addEventListener('click', calculateScore);
-    correctInput.addEventListener('input', calculateScore);
-    incorrectInput.addEventListener('input', calculateScore);
+    const searchInp = document.getElementById('cso-goal-search-input');
+    if (searchInp) searchInp.value = '';
+    modal.hidden = false;
+    renderGoalModalTiers('');
   }
 
-  // ==========================================================================
-  // Innovation 3: Daily Odisha GK Rapid Flash Drill
-  // ==========================================================================
-  function initDailyFlashQuiz() {
-    const questions = [
-      {
-        q: "In which year did the historic Paika Rebellion take place in Odisha under the leadership of Bakshi Jagabandhu?",
-        options: ["1803", "1817", "1857", "1921"],
-        answer: 1,
-        exp: "The Paika Rebellion erupted in Khordha, Odisha in 1817 under the military command of Bakshi Jagabandhu Bidyadhar Mohapatra."
-      },
-      {
-        q: "Which river is famously known as the 'Lifeline of Odisha'?",
-        options: ["Baitarani River", "Subarnarekha River", "Mahanadi River", "Brahmani River"],
-        answer: 2,
-        exp: "The Mahanadi River is the largest river in Odisha and home to the Hirakud Dam, one of the longest earthen dams in the world."
-      },
-      {
-        q: "In which year was the separate Odisha province officially formed under British India?",
-        options: ["1912", "1936", "1947", "1950"],
-        answer: 1,
-        exp: "Odisha became the first Indian state formed on a linguistic basis on 1st April 1936, commemorated annually as Utkala Dibasa."
-      },
-      {
-        q: "Which national park in Odisha is designated as a UNESCO World Heritage site candidate and renowned for salt-water crocodiles and mangroves?",
-        options: ["Similipal National Park", "Bhitarkanika National Park", "Karlapat Wildlife Sanctuary", "Debrigarh Sanctuary"],
-        answer: 1,
-        exp: "Bhitarkanika National Park in Kendrapara district is famous for its rich mangrove ecosystem, giant saltwater crocodiles, and Olive Ridley turtle nesting grounds."
-      },
-      {
-        q: "Who was revered as 'Utkal Mani' (Jewel of Utkal) for his legendary social service and founding the Satyabadi Bana Bidyalaya?",
-        options: ["Madhusudan Das", "Gopabandhu Das", "Fakir Mohan Senapati", "Gourishankar Ray"],
-        answer: 1,
-        exp: "Pandit Gopabandhu Das is lovingly called 'Utkal Mani' for his dedicated relief work during Odisha floods and famine, and for authoring Dharmapada and Bandira Atmakatha."
-      }
-    ];
+  function renderGoalModalTiers(query) {
+    const domHost = document.getElementById('cso-tier1-domains');
+    const trkHost = document.getElementById('cso-tier2-tracks');
+    const exHost = document.getElementById('cso-tier3-exams');
+    const strHost = document.getElementById('cso-tier4-streams');
+    const sumEl = document.getElementById('cso-goal-selection-summary');
+    if (!domHost || !trkHost || !exHost || !strHost) return;
 
-    let currentIndex = 0;
-    let score = 0;
+    const q = String(query || '').trim().toLowerCase();
 
-    const qText = document.getElementById('quiz-question-text');
-    const optContainer = document.getElementById('quiz-options-container');
-    const expBox = document.getElementById('quiz-explanation-box');
-    const nextBtn = document.getElementById('btn-quiz-next');
-    const progLabel = document.getElementById('quiz-progress-label');
-    const scoreBadge = document.getElementById('quiz-score-badge');
+    // Tier 1: Domains
+    const domainsMap = new Map();
+    state.taxonomy.forEach(ex => {
+      if (!domainsMap.has(ex.domain_slug)) domainsMap.set(ex.domain_slug, ex.domain_label);
+    });
+    clear(domHost);
+    domainsMap.forEach((lbl, slug) => {
+      const b = el('button', slug === state.modalDraft.domain ? 'cso-tier-btn active' : 'cso-tier-btn', lbl);
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        state.modalDraft.domain = slug;
+        const firstInDom = state.taxonomy.find(e => e.domain_slug === slug);
+        state.modalDraft.track = firstInDom ? firstInDom.track_slug : null;
+        renderGoalModalTiers(q);
+      });
+      domHost.appendChild(b);
+    });
 
-    if (!qText || !optContainer) return;
+    // Tier 2: Tracks in selected domain
+    const tracksMap = new Map();
+    state.taxonomy.filter(ex => !state.modalDraft.domain || ex.domain_slug === state.modalDraft.domain)
+      .forEach(ex => {
+        if (!tracksMap.has(ex.track_slug)) tracksMap.set(ex.track_slug, ex.track_label);
+      });
+    clear(trkHost);
+    tracksMap.forEach((lbl, slug) => {
+      const b = el('button', slug === state.modalDraft.track ? 'cso-tier-btn active' : 'cso-tier-btn', lbl);
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        state.modalDraft.track = slug;
+        renderGoalModalTiers(q);
+      });
+      trkHost.appendChild(b);
+    });
 
-    function renderQuestion() {
-      if (currentIndex >= questions.length) {
-        // Quiz completed
-        qText.textContent = `🎉 Flash Drill Complete! Final Score: ${score} / ${questions.length}`;
-        optContainer.innerHTML = `
-          <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;">
-            <p style="font-size:14px;color:#2dd4bf;margin:0 0 12px;font-weight:700;">Excellent revision cadence! Consistent daily recall boosts Prelims accuracy.</p>
-            <button type="button" id="btn-restart-quiz" style="background:#0d9488;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;">↺ Retake Drill</button>
-          </div>
-        `;
-        if (expBox) expBox.style.display = 'none';
-        if (nextBtn) nextBtn.style.display = 'none';
-        document.getElementById('btn-restart-quiz')?.addEventListener('click', () => {
-          currentIndex = 0;
-          score = 0;
-          if (scoreBadge) scoreBadge.textContent = 'Score: 0';
-          renderQuestion();
-        });
-        return;
-      }
+    // Tier 3: Exams (search across all if q is non-empty, else filter by domain+track)
+    const examsList = q
+      ? state.taxonomy.filter(ex => (ex.exam_label + ' ' + ex.short_code + ' ' + ex.track_label + ' ' + ex.domain_label).toLowerCase().includes(q))
+      : state.taxonomy.filter(ex => (!state.modalDraft.domain || ex.domain_slug === state.modalDraft.domain) && (!state.modalDraft.track || ex.track_slug === state.modalDraft.track));
 
-      const current = questions[currentIndex];
-      if (progLabel) progLabel.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
-      qText.textContent = current.q;
-      if (expBox) expBox.style.display = 'none';
-      if (nextBtn) nextBtn.style.display = 'none';
-
-      optContainer.innerHTML = '';
-      current.options.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = opt;
-        btn.style.cssText = `
-          width: 100%;
-          text-align: left;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 10px;
-          padding: 12px 16px;
-          color: #f8fafc;
-          font-size: 13px;
-          cursor: pointer;
-          transition: all 0.2s;
-        `;
-
-        btn.addEventListener('click', () => {
-          // Disable all buttons in container
-          optContainer.querySelectorAll('button').forEach(b => b.disabled = true);
-
-          if (idx === current.answer) {
-            btn.style.background = 'rgba(16,185,129,0.2)';
-            btn.style.borderColor = '#10b981';
-            btn.style.color = '#34d399';
-            score++;
-            if (scoreBadge) scoreBadge.textContent = `Score: ${score}`;
+    clear(exHost);
+    if (!examsList.length) {
+      exHost.appendChild(el('p', 'cso-muted-note', 'No exams match this filter.'));
+    } else {
+      examsList.forEach(ex => {
+        const row = el('div', 'cso-exam-pick-row');
+        const lbl = el('label', 'cso-exam-pick-label');
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = state.modalDraft.selectedExams.includes(ex.id);
+        chk.addEventListener('change', () => {
+          if (chk.checked) {
+            if (!state.modalDraft.selectedExams.includes(ex.id)) state.modalDraft.selectedExams.push(ex.id);
+            if (!state.modalDraft.primaryExam) state.modalDraft.primaryExam = ex.id;
           } else {
-            btn.style.background = 'rgba(239,68,68,0.2)';
-            btn.style.borderColor = '#ef4444';
-            btn.style.color = '#f87171';
-
-            // Highlight correct one
-            const correctBtn = optContainer.querySelectorAll('button')[current.answer];
-            if (correctBtn) {
-              correctBtn.style.background = 'rgba(16,185,129,0.2)';
-              correctBtn.style.borderColor = '#10b981';
-              correctBtn.style.color = '#34d399';
+            state.modalDraft.selectedExams = state.modalDraft.selectedExams.filter(id => id !== ex.id);
+            if (state.modalDraft.primaryExam === ex.id) {
+              state.modalDraft.primaryExam = state.modalDraft.selectedExams[0] || null;
             }
           }
+          renderGoalModalTiers(q);
+        });
+        lbl.appendChild(chk);
+        lbl.appendChild(el('span', '', ex.exam_label));
 
-          if (expBox) {
-            expBox.innerHTML = `<strong>Answer Note:</strong> ${current.exp}`;
-            expBox.style.display = 'block';
-          }
-
-          if (nextBtn) nextBtn.style.display = 'inline-block';
+        const star = el('button', state.modalDraft.primaryExam === ex.id ? 'cso-star-btn is-primary' : 'cso-star-btn', state.modalDraft.primaryExam === ex.id ? '★' : '☆');
+        star.type = 'button';
+        star.title = 'Set as Primary Goal';
+        star.addEventListener('click', () => {
+          if (!state.modalDraft.selectedExams.includes(ex.id)) state.modalDraft.selectedExams.push(ex.id);
+          state.modalDraft.primaryExam = ex.id;
+          renderGoalModalTiers(q);
         });
 
-        optContainer.appendChild(btn);
+        row.appendChild(lbl);
+        row.appendChild(star);
+        exHost.appendChild(row);
       });
     }
 
-    nextBtn?.addEventListener('click', () => {
-      currentIndex++;
-      renderQuestion();
-    });
+    // Tier 4: Optional Stream/Paper selectors for selected exams that have streams
+    clear(strHost);
+    const withStreams = state.modalDraft.selectedExams.map(getExamById).filter(ex => ex && Array.isArray(ex.streams) && ex.streams.length > 0);
+    if (!withStreams.length) {
+      strHost.hidden = true;
+    } else {
+      strHost.hidden = false;
+      strHost.appendChild(el('strong', '', 'Tier 4: Optional Stream / Paper Specialization'));
+      withStreams.forEach(ex => {
+        const wrap = el('div', 'cso-field');
+        const lbl = el('label', '', ex.short_code + ' Stream / Paper');
+        const sel = el('select', 'cso-input');
+        ex.streams.forEach(st => {
+          const opt = el('option', '', st);
+          opt.value = st;
+          sel.appendChild(opt);
+        });
+        sel.value = state.modalDraft.selectedStreams[ex.id] || ex.streams[0];
+        state.modalDraft.selectedStreams[ex.id] = sel.value;
+        sel.addEventListener('change', () => {
+          state.modalDraft.selectedStreams[ex.id] = sel.value;
+        });
+        wrap.appendChild(lbl);
+        wrap.appendChild(sel);
+        strHost.appendChild(wrap);
+      });
+    }
 
-    renderQuestion();
+    if (sumEl) sumEl.textContent = state.modalDraft.selectedExams.length + ' exam(s) selected';
   }
 
-  // ==================================================================
-  // Auth Handshake & Candidate Profile Card (fed by /api/auth/me)
-  // ==================================================================
-
-  // Map a candidate's target stream keys onto display labels.
-  function streamBadgeLabel(streams) {
-    const list = Array.isArray(streams) ? streams
-      : (typeof streams === 'string' ? streams.split(',') : []);
-    const key = String(list[0] || '').trim().toLowerCase();
-    const map = {
-      opsc: 'OPSC Civil Services',
-      ossc: 'Combined Graduate Level',
-      osssc: 'OSSSC Recruitment',
-      teaching: 'Teaching (B.Ed / CT)',
-      police: 'Police Recruitment'
+  async function saveGoalModal() {
+    if (!state.modalDraft.selectedExams.length) {
+      showToast('Select at least one target exam.', true);
+      return;
+    }
+    const payload = {
+      domain: state.modalDraft.domain,
+      track: state.modalDraft.track,
+      primaryExam: state.modalDraft.primaryExam || state.modalDraft.selectedExams[0],
+      selectedExams: state.modalDraft.selectedExams,
+      selectedStreams: state.modalDraft.selectedStreams
     };
-    return map[key] || (list[0] ? String(list[0]).toUpperCase() : 'General Aspirant');
-  }
-
-  // Render the profile card from a /api/auth/me user payload (or a local
-  // session fallback while offline).
-  function renderProfileCard(user) {
-    const skeleton = document.getElementById('cso-profile-skeleton');
-    const details = document.getElementById('cso-profile-details');
-    if (!details) return;
-
-    const fullName = user.fullName || user.name || 'Candidate';
-    const candidateId = user.id || user.candidateId || '';
-    const streams = user.targetStreams || user.targetExams || user.streams;
-
-    const nameEl = document.getElementById('cso-profile-name');
-    const idEl = document.getElementById('cso-profile-id');
-    const badgeEl = document.getElementById('cso-profile-stream-badge');
-    const avatarEl = document.getElementById('cso-profile-avatar');
-
-    if (nameEl) nameEl.textContent = fullName;
-    if (idEl) idEl.textContent = candidateId || '—';
-    if (badgeEl) badgeEl.textContent = streamBadgeLabel(streams);
-    if (avatarEl) avatarEl.textContent = (fullName.charAt(0) || '?').toUpperCase();
-
-    if (skeleton) skeleton.style.display = 'none';
-    details.style.display = 'flex';
-  }
-
-  // End the session server-side, clear every local cache and redirect.
-  async function performSecureSignOut() {
-    showToast('Signing out securely…', 'success');
-
+    const btn = document.getElementById('cso-goal-save-btn');
+    if (btn) btn.disabled = true;
     try {
-      await fetch('/api/auth/logout', {
+      const res = await fetch('/api/user/preferences', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+        body: JSON.stringify(payload)
       });
-    } catch (err) {
-      // Offline: local teardown still proceeds.
-      console.warn('Sign-out logout call skipped:', err.message);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save preferences');
+
+      state.preferences = payload;
+      writeJsonStorage(PREFS_KEY, payload);
+      state.activeChecklistExam = payload.primaryExam;
+      document.getElementById('cso-goal-modal').hidden = true;
+      showToast('Workspace personalized for your selected goals!');
+      renderAllPersonalizedViews();
+    } catch (e) {
+      showToast(e.message || 'Could not save goals', true);
+    } finally {
+      if (btn) btn.disabled = false;
     }
-
-    CLEARED_KEYS.forEach(key => {
-      try { localStorage.removeItem(key); } catch (e) {}
-    });
-
-    // Best-effort IndexedDB wipe of the offline mirrors/queue.
-    if (window.CSOIdb) {
-      try {
-        const db = await window.CSOIdb.getDb();
-        if (db && db.close) {
-          db.close();
-          window.CSOIdb.dbPromise = null;
-        }
-        await indexedDB.deleteDatabase('CSO_LOCAL_DB');
-      } catch (err) {
-        console.warn('IDB cleanup skipped:', err.message);
-      }
-    }
-
-    setTimeout(() => {
-      window.location.href = '/login.html';
-    }, 500);
   }
 
-  /**
-   * Dashboard entry handshake:
-   *  1. Resolve the session via /api/auth/me (skeleton shown meanwhile).
-   *  2. Verified → render the profile card; expired/invalid → redirect to
-   *     /login.html?redirect=/student-dashboard/.
-   *  3. Offline → fall back to the cached local session instead of
-   *     bouncing the candidate off the app.
-   */
-  async function initAuthHandshake() {
-    const readLocalSession = () => {
-      try {
-        const raw = localStorage.getItem(SESSION_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch (e) {
-        return null;
+  /* ---------- Syllabus Checklists & Readiness Ring ---------- */
+  function getSavedChecklists() {
+    return readJsonStorage(CHECKLIST_KEY, {});
+  }
+
+  function computeExamStats(exam) {
+    const saved = getSavedChecklists();
+    const examSaved = saved[exam.id] || {};
+    const topics = Array.isArray(exam.syllabus) ? exam.syllabus : [];
+    const total = topics.length;
+    let done = 0;
+    topics.forEach(t => {
+      const paperKey = t.paper || 'core';
+      if ((examSaved[paperKey] && examSaved[paperKey][t.id]) || examSaved[t.id]) done++;
+    });
+    const percent = total ? Math.round((done / total) * 100) : 0;
+    return { done, total, percent };
+  }
+
+  function renderReadinessHero() {
+    const active = getActiveExams();
+    let totalTopics = 0;
+    let doneTopics = 0;
+    active.forEach(ex => {
+      const st = computeExamStats(ex);
+      totalTopics += st.total;
+      doneTopics += st.done;
+    });
+    const syllabusPct = totalTopics ? Math.round((doneTopics / totalTopics) * 100) : 0;
+
+    let cbtPct = 0;
+    if (state.attempts.length) {
+      const recent = state.attempts.slice(0, 5);
+      const sum = recent.reduce((acc, a) => acc + Number(a.accuracy || 0), 0);
+      cbtPct = Math.round(sum / recent.length);
+    }
+
+    const sprints = Number(readJsonStorage('cso_pomodoro_sprints_today', 0)) || 0;
+    const consistencyPct = Math.min(100, (state.attempts.length ? 50 : 20) + sprints * 15 + (doneTopics > 0 ? 30 : 0));
+
+    const score = Math.round((syllabusPct * 0.4) + (cbtPct * 0.4) + (consistencyPct * 0.2));
+
+    const ring = document.getElementById('cso-readiness-ring');
+    if (ring) {
+      for (let i = 0; i <= 100; i += 5) ring.classList.remove('cso-ring-' + i);
+      ring.classList.add(snapRingClass(score));
+    }
+    const pctEl = document.getElementById('cso-readiness-pct');
+    if (pctEl) pctEl.textContent = score + '%';
+    const sylEl = document.getElementById('cso-metric-syllabus');
+    if (sylEl) sylEl.textContent = syllabusPct + '%';
+    const cbtEl = document.getElementById('cso-metric-cbt');
+    if (cbtEl) cbtEl.textContent = cbtPct + '%';
+    const strEl = document.getElementById('cso-metric-streak');
+    if (strEl) strEl.textContent = consistencyPct + '%';
+
+    const prim = getExamById(state.preferences.primaryExam) || active[0];
+    const targetText = document.getElementById('cso-daily-target-text');
+    if (targetText && prim) {
+      const primStats = computeExamStats(prim);
+      const rem = Math.max(0, primStats.total - primStats.done);
+      let daysLeft = 30;
+      if (prim.next_exam_date) {
+        const diff = Math.ceil((Date.parse(prim.next_exam_date) - Date.now()) / 86400000);
+        if (diff > 0) daysLeft = diff;
       }
-    };
+      const perDay = rem > 0 ? Math.max(1, Math.ceil(rem / Math.min(daysLeft, 30))) : 0;
+      targetText.textContent = rem > 0
+        ? `Daily Target: Complete ${perDay} topic(s)/day for ${prim.short_code} (${daysLeft}d left)`
+        : `${prim.short_code} syllabus completed! Focus on CBT revisions.`;
+    }
 
+    const achBadge = document.getElementById('ach-readiness-badge');
+    if (achBadge) achBadge.textContent = `Readiness: ${score}/100`;
+    renderAchievements(score, doneTopics, state.attempts.length, sprints);
+  }
+
+  function renderTargetExamCards() {
+    const grid = document.getElementById('cso-target-exam-cards');
+    if (!grid) return;
+    clear(grid);
+    const active = getActiveExams();
+    active.slice(0, 6).forEach(ex => {
+      const st = computeExamStats(ex);
+      const card = el('div', 'bp-exam-card');
+      const head = el('div', 'bp-exam-card-head');
+      head.appendChild(el('span', 'cso-pill-badge', ex.short_code));
+      head.appendChild(el('span', 'cso-muted-note', st.percent + '%'));
+      card.appendChild(head);
+      card.appendChild(el('h3', '', ex.exam_label));
+      card.appendChild(el('p', 'cso-muted-note', `${st.done}/${st.total} topics · ${ex.next_exam_date || 'Date TBA'}`));
+
+      const track = el('div', 'bp-progress-track');
+      const fill = el('div', 'bp-progress-fill ' + snapPctClass('w-pct-', st.percent));
+      track.appendChild(fill);
+      card.appendChild(track);
+
+      const btn = el('button', 'cso-btn cso-btn-sm', 'Open Checklist →');
+      btn.type = 'button';
+      btn.addEventListener('click', () => {
+        state.activeChecklistExam = ex.id;
+        switchTab('tab-my-learning');
+        renderChecklistTracker();
+      });
+      card.appendChild(btn);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderPriorityTopics() {
+    const host = document.getElementById('overview-priority-topics');
+    if (!host) return;
+    clear(host);
+    const active = getActiveExams();
+    const saved = getSavedChecklists();
+    const pending = [];
+    active.forEach(ex => {
+      const exSaved = saved[ex.id] || {};
+      (ex.syllabus || []).forEach(t => {
+        const paper = t.paper || 'core';
+        const isDone = Boolean(exSaved[paper] && exSaved[paper][t.id]);
+        if (!isDone) pending.push({ exam: ex, topic: t });
+      });
+    });
+
+    if (!pending.length) {
+      host.appendChild(el('p', 'cso-muted-note', 'All topics in your selected exams are checked off!'));
+      return;
+    }
+    pending.slice(0, 4).forEach(item => {
+      const row = el('div', 'cso-list-item');
+      const main = el('div', 'cso-list-item-main');
+      main.appendChild(el('h4', 'cso-list-item-title', item.topic.topic));
+      main.appendChild(el('span', 'cso-list-item-sub', `${item.exam.short_code} · ${item.topic.paper || 'Core'} · Weight ${item.topic.weightage || 20}%`));
+      const go = el('button', 'cso-btn cso-btn-sm', 'Mark Done');
+      go.type = 'button';
+      go.addEventListener('click', () => toggleTopic(item.exam.id, item.topic.paper || 'core', item.topic.id, true));
+      row.appendChild(main);
+      row.appendChild(go);
+      host.appendChild(row);
+    });
+  }
+
+  function toggleTopic(examId, paper, topicId, checked) {
+    const all = getSavedChecklists();
+    if (!all[examId]) all[examId] = {};
+    if (!all[examId][paper]) all[examId][paper] = {};
+    all[examId][paper][topicId] = checked;
+    writeJsonStorage(CHECKLIST_KEY, all);
+
+    if (window.CSOSync && typeof window.CSOSync.toggleChecklistMilestone === 'function') {
+      window.CSOSync.toggleChecklistMilestone({
+        examStream: examId,
+        milestone: `${paper}::${topicId}`,
+        completed: checked,
+        checklists: all
+      });
+    }
+    renderReadinessHero();
+    renderTargetExamCards();
+    renderPriorityTopics();
+    renderChecklistTracker();
+  }
+
+  function renderChecklistTracker() {
+    const host = document.getElementById('candidate-tracker-list');
+    const badge = document.getElementById('tracker-completion-badge');
+    if (!host) return;
+    clear(host);
+
+    const active = getActiveExams();
+    if (!state.activeChecklistExam || !active.some(e => e.id === state.activeChecklistExam)) {
+      state.activeChecklistExam = (active[0] && active[0].id) || null;
+    }
+
+    const chipRow = el('div', 'cso-chip-row');
+    active.forEach(ex => {
+      const b = el('button', ex.id === state.activeChecklistExam ? 'bp-chip active' : 'bp-chip', ex.short_code);
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        state.activeChecklistExam = ex.id;
+        renderChecklistTracker();
+      });
+      chipRow.appendChild(b);
+    });
+    host.appendChild(chipRow);
+
+    const current = getExamById(state.activeChecklistExam) || active[0];
+    if (!current) {
+      host.appendChild(el('p', 'cso-muted-note', 'Select an exam goal to view its syllabus checklist.'));
+      return;
+    }
+
+    const stats = computeExamStats(current);
+    if (badge) badge.textContent = `${stats.percent}% Completed`;
+
+    const saved = getSavedChecklists();
+    const exSaved = saved[current.id] || {};
+
+    // Group by paper
+    const byPaper = new Map();
+    (current.syllabus || []).forEach(t => {
+      const p = t.paper || 'Core';
+      if (!byPaper.has(p)) byPaper.set(p, []);
+      byPaper.get(p).push(t);
+    });
+
+    if (!byPaper.size) {
+      host.appendChild(el('p', 'cso-muted-note', 'No syllabus items provisioned for this exam yet.'));
+      return;
+    }
+
+    let first = true;
+    byPaper.forEach((topics, paper) => {
+      const det = el('details', 'cso-stage-details');
+      if (first) { det.open = true; first = false; }
+      const sum = el('summary', 'cso-stage-summary');
+      sum.appendChild(el('span', '', paper));
+      const doneCnt = topics.filter(t => Boolean(exSaved[paper] && exSaved[paper][t.id])).length;
+      sum.appendChild(el('span', 'cso-pill-badge', `${doneCnt}/${topics.length}`));
+      det.appendChild(sum);
+
+      const body = el('div', 'cso-stage-body');
+      topics.forEach(t => {
+        const isDone = Boolean(exSaved[paper] && exSaved[paper][t.id]);
+        const row = el('label', isDone ? 'cso-topic-row is-done' : 'cso-topic-row');
+        const left = el('div', 'cso-exam-pick-label');
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = isDone;
+        chk.addEventListener('change', () => toggleTopic(current.id, paper, t.id, chk.checked));
+        left.appendChild(chk);
+        left.appendChild(el('span', '', t.topic));
+        row.appendChild(left);
+        row.appendChild(el('span', 'cso-muted-note', (t.weightage || 20) + '%'));
+        body.appendChild(row);
+      });
+      det.appendChild(body);
+      host.appendChild(det);
+    });
+  }
+
+  /* ---------- Countdowns & Calendar ---------- */
+  function renderCountdownsAndCalendar() {
+    const grid = document.getElementById('cso-countdown-grid');
+    const calHost = document.getElementById('candidate-calendar-list');
+    const active = getActiveExams().filter(e => e.next_exam_date);
+
+    if (grid) {
+      clear(grid);
+      if (!active.length) {
+        grid.appendChild(el('p', 'cso-muted-note', 'No scheduled exam dates for current selection.'));
+      } else {
+        active.slice(0, 6).forEach(ex => {
+          const info = (window.CSOCountdown && typeof window.CSOCountdown.compute === 'function')
+            ? window.CSOCountdown.compute(ex.next_exam_date)
+            : null;
+          const urgClass = info ? ('cd-' + info.urgency) : 'cd-normal';
+          const card = el('div', 'cso-cd-card ' + urgClass);
+          card.appendChild(el('h4', 'cso-cd-title', ex.short_code));
+          const timerTxt = info
+            ? (info.concluded ? 'Concluded' : `${info.days}d ${info.hours}h ${info.minutes}m`)
+            : ex.next_exam_date;
+          card.appendChild(el('div', 'cso-cd-timer', timerTxt));
+          card.appendChild(el('div', 'cso-cd-meta', `${ex.next_exam_date} · ${ex.countdown_status || 'TENTATIVE'}`));
+          grid.appendChild(card);
+        });
+      }
+    }
+
+    if (calHost) {
+      clear(calHost);
+      const sorted = [...active].sort((a, b) => String(a.next_exam_date).localeCompare(String(b.next_exam_date)));
+      if (!sorted.length) {
+        calHost.appendChild(el('p', 'cso-muted-note', 'No upcoming exam dates in your active focus.'));
+      } else {
+        sorted.forEach(ex => {
+          const row = el('div', 'cso-list-item');
+          const main = el('div', 'cso-list-item-main');
+          main.appendChild(el('h4', 'cso-list-item-title', ex.exam_label));
+          main.appendChild(el('span', 'cso-list-item-sub', `${ex.domain_label} · ${ex.countdown_status || 'TENTATIVE'}`));
+          row.appendChild(main);
+          row.appendChild(el('span', 'cso-pill-badge', ex.next_exam_date));
+          calHost.appendChild(row);
+        });
+      }
+    }
+  }
+
+  /* ---------- Live D1 CBT Analytics, Mistake Notebook & Manual Scores ---------- */
+  function renderCbtAnalytics() {
+    const sumHost = document.getElementById('cso-cbt-summary-stats');
+    const chartHost = document.getElementById('cso-cbt-trend-chart');
+    const listHost = document.getElementById('cso-cbt-attempts-list');
+    if (!sumHost || !chartHost || !listHost) return;
+
+    clear(sumHost);
+    clear(chartHost);
+    clear(listHost);
+
+    const attempts = state.attempts;
+    const total = attempts.length;
+    const avgAcc = total ? Math.round(attempts.reduce((a, b) => a + Number(b.accuracy || 0), 0) / total) : 0;
+    const bestPct = total ? Math.round(Math.max(...attempts.map(a => a.max_score ? (a.score / a.max_score) * 100 : 0))) : 0;
+
+    [
+      [String(total), 'D1 CBT Attempts'],
+      [avgAcc + '%', 'Avg Accuracy'],
+      [bestPct + '%', 'Best Score']
+    ].forEach(pair => {
+      const box = el('div', 'cso-cbt-kpi');
+      box.appendChild(el('strong', '', pair[0]));
+      box.appendChild(el('span', '', pair[1]));
+      sumHost.appendChild(box);
+    });
+
+    const recent = attempts.slice(0, 8).reverse();
+    if (!recent.length) {
+      chartHost.appendChild(el('p', 'cso-muted-note', 'Complete a CBT mock test to populate your live score trend.'));
+      listHost.appendChild(el('p', 'cso-muted-note', 'No D1 mock test attempts recorded yet.'));
+      return;
+    }
+
+    recent.forEach((a, idx) => {
+      const pct = a.max_score ? Math.round((a.score / a.max_score) * 100) : 0;
+      const col = el('div', 'cso-bar-col');
+      const fill = el('div', 'cso-bar-fill ' + snapPctClass('bar-h-', pct));
+      fill.title = `${a.title}: ${a.score}/${a.max_score} (${pct}%)`;
+      col.appendChild(fill);
+      col.appendChild(el('span', 'cso-bar-lbl', 'T' + (idx + 1)));
+      chartHost.appendChild(col);
+    });
+
+    attempts.slice(0, 10).forEach(a => {
+      const row = el('div', 'cso-list-item');
+      const main = el('div', 'cso-list-item-main');
+      main.appendChild(el('h4', 'cso-list-item-title', a.title || 'Mock Test'));
+      main.appendChild(el('span', 'cso-list-item-sub', `${a.target_exam || 'General'} · Accuracy ${Math.round(a.accuracy || 0)}% · ${String(a.created_at || '').slice(0, 10)}`));
+      row.appendChild(main);
+      row.appendChild(el('span', 'cso-pill-badge', `${a.score}/${a.max_score}`));
+      listHost.appendChild(row);
+    });
+  }
+
+  function initMistakeNotebook() {
+    const form = document.getElementById('cso-mistake-form');
+    const listHost = document.getElementById('cso-mistake-list');
+    function draw() {
+      if (!listHost) return;
+      clear(listHost);
+      const items = readJsonStorage(MISTAKES_KEY, []);
+      if (!items.length) {
+        listHost.appendChild(el('p', 'cso-muted-note', 'Log missed questions or tricky concepts for active recall.'));
+        return;
+      }
+      items.slice(0, 15).forEach((m, idx) => {
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', m.topic));
+        main.appendChild(el('span', 'cso-list-item-sub', m.note));
+        const del = el('button', 'cso-btn cso-btn-sm', 'Mastered ✓');
+        del.type = 'button';
+        del.addEventListener('click', () => {
+          const cur = readJsonStorage(MISTAKES_KEY, []);
+          cur.splice(idx, 1);
+          writeJsonStorage(MISTAKES_KEY, cur);
+          draw();
+        });
+        row.appendChild(main);
+        row.appendChild(del);
+        listHost.appendChild(row);
+      });
+    }
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const topic = document.getElementById('cso-mistake-topic').value.trim();
+        const note = document.getElementById('cso-mistake-note').value.trim();
+        if (!topic || !note) return;
+        const cur = readJsonStorage(MISTAKES_KEY, []);
+        cur.unshift({ topic, note, createdAt: new Date().toISOString() });
+        writeJsonStorage(MISTAKES_KEY, cur.slice(0, 50));
+        form.reset();
+        draw();
+        showToast('Added to Mistake Notebook');
+      });
+    }
+    draw();
+  }
+
+  function initManualScoreLogger() {
+    const form = document.getElementById('form-log-mock-score');
+    const listHost = document.getElementById('candidate-scores-list');
+    function draw() {
+      if (!listHost) return;
+      clear(listHost);
+      const list = readJsonStorage(SCORES_KEY, []);
+      if (!list.length) {
+        listHost.appendChild(el('p', 'cso-muted-note', 'No manual offline scores logged yet.'));
+        return;
+      }
+      list.slice(0, 10).forEach(s => {
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', s.examName));
+        main.appendChild(el('span', 'cso-list-item-sub', `${s.accuracyRate}% accuracy`));
+        row.appendChild(main);
+        row.appendChild(el('span', 'cso-pill-badge', `${s.score}/${s.totalMarks}`));
+        listHost.appendChild(row);
+      });
+    }
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const examName = document.getElementById('score-exam-name').value.trim();
+        const score = Number(document.getElementById('score-obtained').value);
+        const totalMarks = Number(document.getElementById('score-total').value);
+        if (!examName || !totalMarks) return;
+        const accuracyRate = Math.round((score / totalMarks) * 100);
+        const list = readJsonStorage(SCORES_KEY, []);
+        list.unshift({ examName, score, totalMarks, accuracyRate, createdAt: new Date().toISOString() });
+        writeJsonStorage(SCORES_KEY, list.slice(0, 30));
+        form.reset();
+        draw();
+        showToast('Offline score saved!');
+      });
+    }
+    draw();
+  }
+
+  /* ---------- Schemes, Resources/PYQs & Bookmarks ---------- */
+  function renderSchemes() {
+    const host = document.getElementById('candidate-schemes-list');
+    if (!host) return;
+    clear(host);
+    if (!state.schemes.length) {
+      host.appendChild(el('p', 'cso-muted-note', 'No active scholarship programs found.'));
+      return;
+    }
+    state.schemes.forEach(sc => {
+      const row = el('div', 'cso-list-item');
+      const main = el('div', 'cso-list-item-main');
+      main.appendChild(el('h4', 'cso-list-item-title', sc.title));
+      main.appendChild(el('span', 'cso-list-item-sub', `${sc.category} · Deadline: ${sc.deadline || 'Open'}`));
+      const a = el('a', 'cso-btn cso-btn-sm', 'View →');
+      a.href = sc.url || '/schemes-benefits/';
+      row.appendChild(main);
+      row.appendChild(a);
+      host.appendChild(row);
+    });
+  }
+
+  function renderResourcesShelf() {
+    const overHost = document.getElementById('overview-pyq-shelf');
+    const tabHost = document.getElementById('candidate-pyq-shelf');
+    const active = getActiveExams();
+    const tagSet = new Set();
+    active.forEach(ex => {
+      tagSet.add(ex.short_code.toLowerCase());
+      tagSet.add(ex.id.toLowerCase());
+      (ex.parent_tags || []).forEach(t => tagSet.add(String(t).toLowerCase()));
+    });
+
+    const matched = state.resources.filter(r => {
+      const hay = ((r.exam || '') + ' ' + (r.title || '')).toLowerCase();
+      for (const tag of tagSet) {
+        if (tag.length > 2 && hay.includes(tag)) return true;
+      }
+      return false;
+    });
+    const display = matched.length ? matched : state.resources;
+
+    [overHost, tabHost].forEach((host, idx) => {
+      if (!host) return;
+      clear(host);
+      if (!display.length) {
+        host.appendChild(el('p', 'cso-muted-note', 'No D1 PDFs or PYQs published yet.'));
+        return;
+      }
+      display.slice(0, idx === 0 ? 4 : 12).forEach(r => {
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', r.title));
+        main.appendChild(el('span', 'cso-list-item-sub', `${r.exam || 'Odisha'} · ${(r.kind || 'PYQ').toUpperCase()} ${r.year || ''}`));
+        const link = el('a', 'cso-btn cso-btn-sm', 'Download ⬇');
+        link.href = r.file_url || '/resources/';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        row.appendChild(main);
+        row.appendChild(link);
+        host.appendChild(row);
+      });
+    });
+  }
+
+  function renderBookmarksShelves() {
+    const overHost = document.getElementById('candidate-jobs-shelf');
+    const tabHost = document.getElementById('bookmarks-tab-jobs-shelf');
+    const items = (window.CSOBookmarks && typeof window.CSOBookmarks.getAllBookmarks === 'function')
+      ? window.CSOBookmarks.getAllBookmarks()
+      : [];
+
+    [overHost, tabHost].forEach((host, idx) => {
+      if (!host) return;
+      clear(host);
+      if (!items.length) {
+        host.appendChild(el('p', 'cso-muted-note', 'No bookmarks saved yet. Star any job, test, or resource across the site.'));
+        return;
+      }
+      items.slice(0, idx === 0 ? 4 : 25).forEach(bm => {
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', bm.title || 'Saved Item'));
+        main.appendChild(el('span', 'cso-list-item-sub', bm.itemType || bm.type || 'Bookmark'));
+        const a = el('a', 'cso-btn cso-btn-sm', 'Open →');
+        a.href = bm.url || '#';
+        row.appendChild(main);
+        row.appendChild(a);
+        host.appendChild(row);
+      });
+    });
+  }
+
+  function renderAchievements(score, doneTopics, attemptCount, sprints) {
+    const grid = document.getElementById('cso-achievements-grid');
+    if (!grid) return;
+    clear(grid);
+    const cards = [
+      ['🎯', `Readiness ${score}/100`, 'Combined syllabus, CBT accuracy & study cadence'],
+      ['📚', `${doneTopics} Topics Mastered`, 'Auto-synced with your D1 exam checklists'],
+      ['🧪', `${attemptCount} CBT Tests Logged`, 'Live server-graded mock test submissions'],
+      ['⏱️', `${sprints} Focus Sprints Today`, 'Completed Pomodoro study sessions']
+    ];
+    cards.forEach(c => {
+      const box = el('div', 'cso-ach-card');
+      box.appendChild(el('div', '', c[0]));
+      box.appendChild(el('h4', '', c[1]));
+      box.appendChild(el('p', 'cso-muted-note', c[2]));
+      grid.appendChild(box);
+    });
+  }
+
+  /* ---------- Workspace Tools (Locker, Scratchpad, Timer, Calc, Drill, Search, Profile) ---------- */
+  function initWorkspaceTools() {
+    // Document Locker
+    const lockerGrid = document.getElementById('candidate-locker-grid');
+    if (lockerGrid) {
+      const lockerState = readJsonStorage(LOCKER_KEY, {});
+      LOCKER_ITEMS.forEach(item => {
+        const row = el('label', 'cso-topic-row');
+        const left = el('div', 'cso-exam-pick-label');
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = Boolean(lockerState[item.id]);
+        chk.addEventListener('change', () => {
+          lockerState[item.id] = chk.checked;
+          writeJsonStorage(LOCKER_KEY, lockerState);
+        });
+        left.appendChild(chk);
+        left.appendChild(el('span', '', item.label));
+        row.appendChild(left);
+        lockerGrid.appendChild(row);
+      });
+    }
+
+    // Scratchpad
+    const pad = document.getElementById('bp-candidate-scratchpad');
+    const padInd = document.getElementById('scratchpad-save-indicator');
+    if (pad) {
+      pad.value = localStorage.getItem(NOTES_KEY) || '';
+      pad.addEventListener('input', () => {
+        try { localStorage.setItem(NOTES_KEY, pad.value); } catch {}
+        if (padInd) padInd.textContent = 'Saved locally';
+      });
+    }
+
+    // Pomodoro Timer
+    let mins = 25;
+    let secsLeft = 25 * 60;
+    let timerId = null;
+    const disp = document.getElementById('pomodoro-display');
+    const toggleBtn = document.getElementById('pomodoro-toggle-btn');
+    const sprintLbl = document.getElementById('pomodoro-sessions-count');
+    function drawTimer() {
+      if (!disp) return;
+      const m = String(Math.floor(secsLeft / 60)).padStart(2, '0');
+      const s = String(secsLeft % 60).padStart(2, '0');
+      disp.textContent = `${m}:${s}`;
+    }
+    document.querySelectorAll('#tool-study-timer [data-mins]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        clearInterval(timerId); timerId = null;
+        mins = Number(btn.dataset.mins) || 25;
+        secsLeft = mins * 60;
+        document.querySelectorAll('#tool-study-timer [data-mins]').forEach(b => b.classList.toggle('active', b === btn));
+        if (toggleBtn) toggleBtn.textContent = '▶ Start Sprint';
+        drawTimer();
+      });
+    });
+    toggleBtn?.addEventListener('click', () => {
+      if (timerId) {
+        clearInterval(timerId); timerId = null;
+        toggleBtn.textContent = '▶ Resume';
+      } else {
+        toggleBtn.textContent = '⏸ Pause';
+        timerId = setInterval(() => {
+          secsLeft--;
+          if (secsLeft <= 0) {
+            clearInterval(timerId); timerId = null;
+            const cur = (Number(readJsonStorage('cso_pomodoro_sprints_today', 0)) || 0) + 1;
+            writeJsonStorage('cso_pomodoro_sprints_today', cur);
+            if (sprintLbl) sprintLbl.textContent = `Completed study sprints today: ${cur}`;
+            toggleBtn.textContent = '▶ Start Sprint';
+            secsLeft = mins * 60;
+            showToast('Study sprint completed!');
+            renderReadinessHero();
+          }
+          drawTimer();
+        }, 1000);
+      }
+    });
+    document.getElementById('pomodoro-reset-btn')?.addEventListener('click', () => {
+      clearInterval(timerId); timerId = null;
+      secsLeft = mins * 60;
+      if (toggleBtn) toggleBtn.textContent = '▶ Start Sprint';
+      drawTimer();
+    });
+
+    // Cutoff Calculator
+    function updateCalc() {
+      const preset = (document.getElementById('calc-exam-preset')?.value || '1,0.25').split(',').map(Number);
+      const corr = Number(document.getElementById('calc-correct-count')?.value || 0);
+      const wrong = Number(document.getElementById('calc-wrong-count')?.value || 0);
+      const net = (corr * preset[0]) - (wrong * preset[1]);
+      const out = document.getElementById('calc-net-score');
+      if (out) out.textContent = net.toFixed(2);
+    }
+    ['calc-exam-preset', 'calc-correct-count', 'calc-wrong-count'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', updateCalc);
+      document.getElementById(id)?.addEventListener('change', updateCalc);
+    });
+    updateCalc();
+
+    // Daily GK Drill
+    let drillIdx = 0;
+    let drillScore = 0;
+    function renderDrill() {
+      const qEl = document.getElementById('drill-question-text');
+      const optHost = document.getElementById('drill-options-container');
+      const expEl = document.getElementById('drill-explanation-box');
+      const nextBtn = document.getElementById('drill-next-btn');
+      const badge = document.getElementById('drill-score-badge');
+      if (!qEl || !optHost) return;
+      if (badge) badge.textContent = `Score: ${drillScore} / ${GK_DRILL_BANK.length}`;
+      const item = GK_DRILL_BANK[drillIdx];
+      qEl.textContent = `Q${drillIdx + 1}. ${item.q}`;
+      clear(optHost);
+      if (expEl) expEl.hidden = true;
+      if (nextBtn) nextBtn.hidden = true;
+      item.opts.forEach((opt, i) => {
+        const b = el('button', 'cso-drill-opt', opt);
+        b.type = 'button';
+        b.addEventListener('click', () => {
+          optHost.querySelectorAll('button').forEach(btn => { btn.disabled = true; });
+          if (i === item.ans) {
+            b.classList.add('is-correct');
+            drillScore++;
+          } else {
+            b.classList.add('is-wrong');
+            optHost.children[item.ans]?.classList.add('is-correct');
+          }
+          if (badge) badge.textContent = `Score: ${drillScore} / ${GK_DRILL_BANK.length}`;
+          if (expEl) { expEl.textContent = item.exp; expEl.hidden = false; }
+          if (nextBtn) nextBtn.hidden = false;
+        });
+        optHost.appendChild(b);
+      });
+    }
+    document.getElementById('drill-next-btn')?.addEventListener('click', () => {
+      drillIdx = (drillIdx + 1) % GK_DRILL_BANK.length;
+      if (drillIdx === 0) drillScore = 0;
+      renderDrill();
+    });
+    renderDrill();
+
+    // Universal Search (Ctrl+K)
+    const overlay = document.getElementById('bp-search-overlay');
+    const searchInp = document.getElementById('bp-search-modal-input');
+    const searchRes = document.getElementById('bp-search-modal-results');
+    function openSearch() { if (overlay) { overlay.hidden = false; searchInp?.focus(); } }
+    document.getElementById('bp-topbar-search-trigger')?.addEventListener('click', openSearch);
+    document.getElementById('tool-search-btn')?.addEventListener('click', (e) => { e.preventDefault(); openSearch(); });
+    document.getElementById('bp-search-modal-close')?.addEventListener('click', () => { if (overlay) overlay.hidden = true; });
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSearch(); }
+      if (e.key === 'Escape' && overlay && !overlay.hidden) overlay.hidden = true;
+    });
+    searchInp?.addEventListener('input', () => {
+      if (!searchRes) return;
+      clear(searchRes);
+      const q = searchInp.value.trim().toLowerCase();
+      if (!q) {
+        searchRes.appendChild(el('p', 'cso-muted-note', 'Type to search across 44 exams and syllabus topics...'));
+        return;
+      }
+      const hits = state.taxonomy.filter(ex => (ex.exam_label + ' ' + ex.short_code + ' ' + ex.track_label).toLowerCase().includes(q)).slice(0, 8);
+      if (!hits.length) {
+        searchRes.appendChild(el('p', 'cso-muted-note', 'No exams found matching "' + q + '".'));
+        return;
+      }
+      hits.forEach(ex => {
+        const row = el('div', 'cso-list-item');
+        const main = el('div', 'cso-list-item-main');
+        main.appendChild(el('h4', 'cso-list-item-title', ex.exam_label));
+        main.appendChild(el('span', 'cso-list-item-sub', `${ex.domain_label} · ${ex.track_label}`));
+        const btn = el('button', 'cso-btn cso-btn-sm', 'View Syllabus');
+        btn.type = 'button';
+        btn.addEventListener('click', () => {
+          state.activeChecklistExam = ex.id;
+          if (!state.preferences.selectedExams.includes(ex.id) && !state.controls.lock_exam_preferences) {
+            state.allFeedMode = true;
+          }
+          if (overlay) overlay.hidden = true;
+          switchTab('tab-my-learning');
+          renderChecklistTracker();
+        });
+        row.appendChild(main);
+        row.appendChild(btn);
+        searchRes.appendChild(row);
+      });
+    });
+
+    // Profile Editor Modal
+    const distSel = document.getElementById('edit-candidate-district');
+    if (distSel) {
+      ODISHA_DISTRICTS.forEach(d => {
+        const opt = el('option', '', d);
+        opt.value = d;
+        distSel.appendChild(opt);
+      });
+    }
+    const pModal = document.getElementById('cso-profile-modal');
+    document.getElementById('btn-open-profile-editor-tab')?.addEventListener('click', () => {
+      if (!pModal) return;
+      document.getElementById('edit-candidate-name').value = state.user?.fullName || '';
+      document.getElementById('edit-candidate-mobile').value = state.user?.phone || '';
+      if (distSel && state.user?.district) distSel.value = state.user.district;
+      pModal.hidden = false;
+    });
+    document.getElementById('cso-profile-modal-close')?.addEventListener('click', () => { if (pModal) pModal.hidden = true; });
+    document.getElementById('cso-profile-cancel-btn')?.addEventListener('click', () => { if (pModal) pModal.hidden = true; });
+    document.getElementById('cso-profile-editor-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('edit-candidate-name').value.trim();
+      const phone = document.getElementById('edit-candidate-mobile').value.trim();
+      const district = document.getElementById('edit-candidate-district').value;
+      const saveBtn = document.getElementById('cso-profile-save-btn');
+      if (saveBtn) saveBtn.disabled = true;
+      try {
+        const res = await fetch('/api/user/profile', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'X-CSO-CSRF': '1' },
+          body: JSON.stringify({ fullName, phone, district, targetExams: state.preferences.selectedExams })
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || 'Failed to update profile');
+        }
+        state.user = { ...(state.user || {}), fullName, name: fullName, phone, district };
+        writeJsonStorage(SESSION_KEY, { ...(readJsonStorage(SESSION_KEY, {})), ...state.user });
+        renderProfileAndControls();
+        if (pModal) pModal.hidden = true;
+        showToast('Profile saved to D1!');
+      } catch (err) {
+        showToast(err.message || 'Profile update failed', true);
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    });
+
+    // JSON Backup Export
+    document.getElementById('btn-export-json-backup')?.addEventListener('click', () => {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        preferences: state.preferences,
+        checklists: getSavedChecklists(),
+        mistakes: readJsonStorage(MISTAKES_KEY, []),
+        locker: readJsonStorage(LOCKER_KEY, {}),
+        notes: localStorage.getItem(NOTES_KEY) || ''
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cso-workspace-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  function renderAllPersonalizedViews() {
+    renderProfileAndControls();
+    renderFocusBar();
+    renderReadinessHero();
+    renderTargetExamCards();
+    renderPriorityTopics();
+    renderChecklistTracker();
+    renderCountdownsAndCalendar();
+    renderCbtAnalytics();
+    renderSchemes();
+    renderResourcesShelf();
+    renderBookmarksShelves();
+  }
+
+  /* ---------- Bootstrap & Data Hydration ---------- */
+  async function bootstrap() {
+    initThemeSwitcher();
+    initNavigation();
+    initMistakeNotebook();
+    initManualScoreLogger();
+    initWorkspaceTools();
+
+    document.getElementById('cso-profile-signout-btn')?.addEventListener('click', performSignOut);
+    document.getElementById('cso-open-goal-modal-btn')?.addEventListener('click', openGoalModal);
+    document.getElementById('btn-open-goals-settings')?.addEventListener('click', openGoalModal);
+    document.getElementById('cso-goal-modal-close')?.addEventListener('click', () => { document.getElementById('cso-goal-modal').hidden = true; });
+    document.getElementById('cso-goal-cancel-btn')?.addEventListener('click', () => { document.getElementById('cso-goal-modal').hidden = true; });
+    document.getElementById('cso-goal-save-btn')?.addEventListener('click', saveGoalModal);
+    document.getElementById('cso-goal-search-input')?.addEventListener('input', (e) => renderGoalModalTiers(e.target.value));
+    document.getElementById('cso-all-feed-toggle')?.addEventListener('click', () => {
+      state.allFeedMode = !state.allFeedMode;
+      renderAllPersonalizedViews();
+    });
+    document.getElementById('bp-notif-btn')?.addEventListener('click', () => {
+      if (state.controls.admin_notice_text) {
+        showToast(state.controls.admin_notice_text);
+      } else {
+        showToast('All exam deadlines & D1 alerts are up to date.');
+      }
+    });
+
+    window.addEventListener('cso:bookmarks-updated', renderBookmarksShelves);
+
+    // 1. Auth & Controls Handshake
     try {
-      const res = await fetch('/api/auth/me', { credentials: 'include' });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && data.user) {
-          // Refresh the local session snapshot for the offline fallback path.
-          const local = readLocalSession();
-          try {
-            localStorage.setItem(SESSION_KEY, JSON.stringify({
-              ...(local || {}),
-              id: data.user.id,
-              fullName: data.user.name || data.user.fullName,
-              name: data.user.name || data.user.fullName,
-              email: data.user.email,
-              role: data.user.role,
-              targetStreams: (local && local.targetStreams) || [],
-              verifiedAt: new Date().toISOString()
-            }));
-          } catch (e) {}
-          renderProfileCard({ ...data.user, targetStreams: (readLocalSession() || {}).targetStreams });
+      const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+      if (meRes.status === 401 || meRes.status === 403) {
+        const errData = await meRes.json().catch(() => ({}));
+        if (errData.code === 'ACCOUNT_RESTRICTED') {
+          state.controls.account_status = errData.account_status || 'suspended';
+          state.controls.admin_notice_text = errData.error || 'Your account has been restricted by an administrator.';
+          state.controls.admin_notice_level = 'urgent';
+          renderProfileAndControls();
           return;
         }
-      }
-
-      // 401 / invalid → redirect, unless we're offline with a cached session.
-      if (typeof navigator !== 'undefined' && !navigator.onLine && readLocalSession()) {
-        renderProfileCard(readLocalSession());
+        window.location.replace('/login.html?redirect=' + encodeURIComponent(window.location.pathname));
         return;
       }
-      window.location.href = '/login.html?redirect=/student-dashboard/';
-      return;
-    } catch (err) {
-      // Network failure (offline): cached session keeps the dashboard usable.
-      const local = readLocalSession();
-      if (local && local.id) {
-        renderProfileCard(local);
-        return;
+      const meData = await meRes.json();
+      if (meData && meData.user) {
+        state.user = meData.user;
+        if (meData.controls) state.controls = meData.controls;
+        if (meData.preferences && Array.isArray(meData.preferences.selectedExams) && meData.preferences.selectedExams.length) {
+          state.preferences = meData.preferences;
+          writeJsonStorage(PREFS_KEY, meData.preferences);
+        } else {
+          const localPrefs = readJsonStorage(PREFS_KEY, null);
+          if (localPrefs && Array.isArray(localPrefs.selectedExams) && localPrefs.selectedExams.length) {
+            state.preferences = localPrefs;
+          }
+        }
+        writeJsonStorage(SESSION_KEY, { ...meData.user, isAuthenticated: true });
       }
-      window.location.href = '/login.html?redirect=/student-dashboard/';
-      return;
+    } catch {
+      state.user = readJsonStorage(SESSION_KEY, { fullName: 'Odisha Aspirant', district: 'Odisha' });
     }
-  }
 
-  // ==================================================================
-  // Dual-Source Exam Countdown Grid
-  // ==================================================================
-
-  // Collect countdown cards: 3 default trackers + bookmark deadlines that
-  // are still open (deadline_date >= today).
-  function buildCountdownCards() {
-    const todayIso = new Date().toISOString().slice(0, 10);
-
-    const cards = DEFAULT_TRACKERS.map(t => ({
-      kind: 'tracker',
-      id: t.id,
-      exam: t.exam,
-      badge: t.badgeType,
-      target: t.target,
-      url: t.url
-    }));
-
+    // 2. Fetch 4-Tier Exam Taxonomy (with IndexedDB offline fallback)
     try {
-      const raw = localStorage.getItem(BOOKMARKS_KEY);
-      const shelves = raw ? JSON.parse(raw) : null;
-      if (shelves) {
-        ['jobs', 'schemes', 'study'].forEach(shelf => {
-          (Array.isArray(shelves[shelf]) ? shelves[shelf] : []).forEach(item => {
-            const deadline = item.deadline || item.deadlineDate;
-            if (!deadline || String(deadline) < todayIso) return; // past deadlines excluded
-            cards.push({
-              kind: 'bookmark',
-              id: `${shelf}:${item.id}`,
-              shelf,
-              exam: item.title || 'Bookmarked Deadline',
-              badge: 'bookmark',
-              target: String(deadline).slice(0, 10),
-              url: item.url || ''
-            });
-          });
-        });
+      const taxRes = await fetch('/api/content/exam-taxonomy');
+      if (taxRes.ok) {
+        const taxData = await taxRes.json();
+        state.taxonomy = taxData.items || [];
+        if (window.CSOIdb && typeof window.CSOIdb.putTaxonomy === 'function') {
+          window.CSOIdb.putTaxonomy(state.taxonomy).catch(() => {});
+        }
       }
-    } catch (e) {}
+    } catch {
+      if (window.CSOIdb && typeof window.CSOIdb.getTaxonomy === 'function') {
+        state.taxonomy = await window.CSOIdb.getTaxonomy().catch(() => []);
+      }
+    }
 
-    return cards;
+    // 3. Fetch Live D1 CBT Attempts, Schemes, Resources in parallel
+    const [attRes, schRes, resRes] = await Promise.all([
+      fetch('/api/user/attempts', { credentials: 'include' }).then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] })),
+      fetch('/api/content/schemes').then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] })),
+      fetch('/api/content/resources?limit=30').then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] }))
+    ]);
+    state.attempts = attRes.items || [];
+    state.schemes = schRes.items || [];
+    state.resources = resRes.items || [];
+
+    if (window.CSOSync && typeof window.CSOSync.reconcileChecklist === 'function') {
+      window.CSOSync.reconcileChecklist().catch(() => {});
+    }
+
+    renderAllPersonalizedViews();
   }
 
-  function countdownCardHtml(card) {
-    const badgeClass = card.badge === 'official'
-      ? 'cso-badge-official'
-      : (card.badge === 'tentative' ? 'cso-badge-tentative' : 'cso-badge-bookmark');
-    const badgeText = card.badge === 'official'
-      ? 'OFFICIAL'
-      : (card.badge === 'tentative' ? 'TENTATIVE' : 'BOOKMARK');
-
-    const actions = card.kind === 'bookmark'
-      ? `<div style="display:flex;align-items:center;gap:6px;">
-           <button type="button" class="cso-countdown-remove" data-bm-id="${card.id}" title="Remove this bookmark">✕ Remove</button>
-         </div>`
-      : '';
-
-    return `
-      <div class="cso-countdown-card" data-cd-id="${card.id}" data-target="${card.target}">
-        <div class="cso-countdown-card-top">
-          <h3 class="cso-countdown-exam">${card.exam}</h3>
-          <span class="cso-countdown-badge ${badgeClass}">${badgeText}</span>
-        </div>
-        <div class="cso-countdown-timer">
-          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="days">--</span><span class="cso-cd-label">Days</span></div>
-          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="hours">--</span><span class="cso-cd-label">Hrs</span></div>
-          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="minutes">--</span><span class="cso-cd-label">Min</span></div>
-          <div class="cso-cd-unit"><span class="cso-cd-value" data-unit="seconds">--</span><span class="cso-cd-label">Sec</span></div>
-        </div>
-        <div class="cso-countdown-footer">
-          <span class="cso-countdown-date" data-slot="date"></span>
-          <span class="cso-countdown-status" data-slot="status"></span>
-        </div>
-        ${card.kind === 'bookmark' && card.url
-          ? `<a class="cso-countdown-link" href="${card.url}" target="_blank" rel="noopener">View post →</a>`
-          : ''}
-        ${actions}
-      </div>
-    `;
-  }
-
-  function tickCountdownGrid(now) {
-    const grid = document.getElementById('cso-countdown-grid');
-    if (!grid || !window.CSOCountdown) return;
-
-    grid.querySelectorAll('.cso-countdown-card[data-target]').forEach(cardEl => {
-      const cd = window.CSOCountdown.computeCountdown(cardEl.dataset.target, now);
-      if (!cd) return;
-
-      // Urgency class transitions live too (crosses the 30/7-day borders).
-      cardEl.classList.remove('cd-normal', 'cd-warning', 'cd-critical', 'cd-concluded');
-      cardEl.classList.add(cd.urgencyClass);
-
-      const statusEl = cardEl.querySelector('[data-slot="status"]');
-      if (statusEl) statusEl.textContent = cd.label;
-
-      const valueEls = {
-        days: cardEl.querySelector('[data-unit="days"]'),
-        hours: cardEl.querySelector('[data-unit="hours"]'),
-        minutes: cardEl.querySelector('[data-unit="minutes"]'),
-        seconds: cardEl.querySelector('[data-unit="seconds"]')
-      };
-      if (valueEls.days) valueEls.days.textContent = cd.days;
-      if (valueEls.hours) valueEls.hours.textContent = String(cd.hours).padStart(2, '0');
-      if (valueEls.minutes) valueEls.minutes.textContent = String(cd.minutes).padStart(2, '0');
-      if (valueEls.seconds) valueEls.seconds.textContent = String(cd.seconds).padStart(2, '0');
-    });
-  }
-
-  function renderCountdownGrid() {
-    const grid = document.getElementById('cso-countdown-grid');
-    if (!grid || !window.CSOCountdown) return;
-
-    const now = new Date();
-    const cards = window.CSOCountdown.sortCountdowns(buildCountdownCards(), now);
-    grid.innerHTML = cards.length > 0
-      ? cards.map(countdownCardHtml).join('')
-      : '<p style="font-size:12px;color:#64748b;">No active deadlines tracked.</p>';
-
-    grid.querySelectorAll('[data-slot="date"]').forEach(el => {
-      const cardEl = el.closest('.cso-countdown-card');
-      if (cardEl) el.textContent = window.CSOCountdown.formatTargetDate(cardEl.dataset.target);
-    });
-
-    tickCountdownGrid(now);
-
-    // Bookmark quick-remove → optimistic offline-first sync engine.
-    grid.querySelectorAll('.cso-countdown-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const prefixedId = btn.dataset.bmId || '';
-        const sep = prefixedId.indexOf(':');
-        const shelf = sep > -1 ? prefixedId.slice(0, sep) : 'jobs';
-        const itemId = sep > -1 ? prefixedId.slice(sep + 1) : prefixedId;
-
-        if (window.CSOBookmarks) {
-          window.CSOBookmarks.removeBookmark(shelf, itemId);
-        }
-        if (window.CSOSync && typeof window.CSOSync.saveBookmarkAction === 'function') {
-          window.CSOSync.saveBookmarkAction('remove', { postId: prefixedId });
-        }
-        renderCountdownGrid();
-        showToast('Bookmark removed — deadline tracker cleared.');
-      });
-    });
-  }
-
-  function initCountdownGrid() {
-    renderCountdownGrid();
-    // 1s live tick; full re-render only when the card set can have changed
-    // (bookmark events), value updates every tick.
-    setInterval(() => tickCountdownGrid(new Date()), 1000);
-  }
-
-  // Optimistic checklist toggle: mirrors to IndexedDB + dispatches/queues.
-  function syncChecklistChange(exam, stage, topic, isChecked) {
-    if (!window.CSOSync || typeof window.CSOSync.recordChecklistChange !== 'function') return;
-    const milestoneKey = stage ? `${stage}::${topic}` : topic;
-    window.CSOSync.recordChecklistChange(exam, milestoneKey, isChecked);
-  }
-
-  // Initialization
-  function init() {
-    const session = getSession();
-    renderUserProfile(session);
-    initAuthHandshake();
-    initSidebar();
-    initUniversalSearch();
-    updateExamCards();
-    renderUpcomingLessons();
-    renderChecklistTracker();
-    renderMilestones();
-    renderJobsShelf();
-    renderStudyShelf();
-    renderSchemes(session);
-    initCountdownGrid();
-    initScratchpad();
-    initMockScoreLogger();
-    initDocumentLocker();
-    initDataPortability();
-    initStudyFocusTimer();
-    initExamCalculator();
-    initDailyFlashQuiz();
-
-    // Listen for bookmark updates
-    window.addEventListener('cso:bookmarks-updated', () => {
-      renderJobsShelf();
-      renderStudyShelf();
-      renderCountdownGrid();
-    });
-
-    // Reconcile checklist from cloud
-    reconcileChecklistsFromCloud();
-
-    // Wire the topbar profile sign-out (secure session teardown).
-    document.getElementById('cso-profile-signout-btn')?.addEventListener('click', performSecureSignOut);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-})(window);
+  document.addEventListener('DOMContentLoaded', bootstrap);
+})();

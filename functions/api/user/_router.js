@@ -145,6 +145,37 @@ export async function handleUserApi(request, env) {
       await rateLimit(env, `user-write:${actor.userId}`, 60, 60);
     }
 
+    // POST /api/user/profile
+    if (resource === 'profile' && !seg1) {
+      if (request.method !== 'POST') {
+        throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+      }
+      await enforceCandidateControls(env, actor.userId, { isWrite: true, permission: 'canEditProfile' });
+      const body = await readJson(request, 20000);
+      const full_name = cleanStr(body.fullName || body.full_name || body.name, 120, { required: true });
+      const phone = cleanStr(body.phone || body.mobile, 20) || '';
+      const district = cleanStr(body.district, 80, { required: true });
+      if (!full_name || !district) {
+        throw validationError({ full_name: !full_name ? 'Name is required' : undefined, district: !district ? 'District is required' : undefined });
+      }
+      const streams = Array.isArray(body.targetExams || body.targetStreams)
+        ? (body.targetExams || body.targetStreams).map(s => cleanStr(s, 80)).filter(Boolean).slice(0, 20)
+        : null;
+
+      if (streams) {
+        await env.DB.prepare(
+          'UPDATE candidates SET full_name = ?, phone = ?, district = ?, target_streams = ? WHERE id = ? OR email = ?'
+        ).bind(full_name, phone, district, JSON.stringify(streams), actor.userId, actor.email).run();
+      } else {
+        await env.DB.prepare(
+          'UPDATE candidates SET full_name = ?, phone = ?, district = ? WHERE id = ? OR email = ?'
+        ).bind(full_name, phone, district, actor.userId, actor.email).run();
+      }
+
+      await logCandidateAudit(env, actor.userId, 'profile.update', actor.email, { full_name, district });
+      return json({ ok: true, profile: { fullName: full_name, phone, district, targetStreams: streams } });
+    }
+
     // GET / POST /api/user/preferences
     if (resource === 'preferences' && !seg1) {
       if (request.method === 'GET') {

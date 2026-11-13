@@ -362,6 +362,25 @@ export async function handleContent(request, env) {
       ).bind(...binds).all();
       return json({ items: results.map(formatTaxonomyRow), total: results.length }, 200, { 'Cache-Control': CACHE });
     }
+    if (resource === 'schemes') {
+      const { results } = await env.DB.prepare(
+        `SELECT id, exam_label, short_code, track_label, streams_json, next_exam_date, countdown_status, parent_tags
+         FROM exam_taxonomy WHERE domain_slug = 'scholarships-welfare' AND is_active = 1
+         ORDER BY sort_order ASC`
+      ).all();
+      const items = results.map(r => ({
+        id: r.id,
+        title: r.exam_label,
+        short_code: r.short_code,
+        category: r.track_label,
+        streams: JSON.parse(r.streams_json || '[]'),
+        deadline: r.next_exam_date || null,
+        status: r.countdown_status || 'TENTATIVE',
+        tags: JSON.parse(r.parent_tags || '[]'),
+        url: '/schemes-benefits/'
+      }));
+      return json({ items, total: items.length }, 200, { 'Cache-Control': CACHE });
+    }
     if (resource === 'resources') {
       const { page, limit, offset } = parsePaging(url);
       const where = ["deleted_at IS NULL AND status = 'published'"]; const binds = [];

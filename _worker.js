@@ -386,7 +386,7 @@ export default {
           }
         }
       }
-      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|current-affairs|mock-tests|resources)(\/|$)/.test(pathname)) {
+      if (pathname === '/' || pathname === '/index.html' || /^\/(jobs-careers|current-affairs|mock-tests|resources|student-dashboard)(\/|$)/.test(pathname)) {
         const headers = new Headers(res.headers);
         headers.set(
           'Content-Security-Policy',

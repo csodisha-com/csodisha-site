@@ -21,11 +21,12 @@
   'use strict';
 
   const DB_NAME = 'CSO_LOCAL_DB';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
 
   const STORE_BOOKMARKS = 'bookmarks';
   const STORE_CHECKLIST = 'checklist';
   const STORE_SYNC_QUEUE = 'sync_queue';
+  const STORE_META = 'meta';
 
   function openDb(indexedDbImpl) {
     const impl = indexedDbImpl || (typeof indexedDB !== 'undefined' ? indexedDB : null);
@@ -50,6 +51,9 @@
             autoIncrement: true
           });
           queue.createIndex('by_timestamp', 'timestamp');
+        }
+        if (!db.objectStoreNames.contains(STORE_META)) {
+          db.createObjectStore(STORE_META, { keyPath: 'key' });
         }
       };
       request.onsuccess = () => resolve(request.result);
@@ -177,12 +181,25 @@
     return clearStore(STORE_SYNC_QUEUE);
   }
 
+  function putTaxonomy(items) {
+    return putRecord(STORE_META, {
+      key: 'exam_taxonomy_v1',
+      items: Array.isArray(items) ? items : [],
+      cachedAt: new Date().toISOString()
+    });
+  }
+
+  function getTaxonomy() {
+    return getRecord(STORE_META, 'exam_taxonomy_v1').then(rec => (rec && Array.isArray(rec.items)) ? rec.items : []);
+  }
+
   return {
     DB_NAME,
     DB_VERSION,
     STORE_BOOKMARKS,
     STORE_CHECKLIST,
     STORE_SYNC_QUEUE,
+    STORE_META,
     openDb,
     getDb,
     putRecord,
@@ -200,6 +217,8 @@
     getSyncQueue,
     deleteSyncAction,
     bumpRetryCount,
-    clearSyncQueue
+    clearSyncQueue,
+    putTaxonomy,
+    getTaxonomy
   };
 });

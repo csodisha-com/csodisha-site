@@ -37,6 +37,7 @@ const PRECACHE_URLS = [
   '/assets/js/cso-countdown.js',
   '/assets/js/cso-idb.js',
   '/assets/js/candidate-sync.js',
+  '/assets/js/student-auth-guard.js',
   '/assets/js/student-dashboard.js',
   '/assets/js/pwa-install.js'
 ];
