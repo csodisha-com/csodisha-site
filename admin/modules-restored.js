@@ -2141,85 +2141,178 @@
   };
 
   function renderLegalStudio(moduleId, root, actions) {
-    if (moduleId === 'module-03-016') {
-      addHeaderPill(actions, '● Legal Audit Trail');
-      mountCms(root, 'audit', [['audit', 'All Events'], ['pages/legal', 'Info & Legal']]);
-      return true;
-    }
     var cfg = LEGAL_PAGES[moduleId] || { title: 'Legal Document', path: '/privacy.html', email: 'legal@csodisha.com' };
-    addHeaderPill(actions, '● Legal & Info Studio');
-
-    var state = {
-      title: cfg.title,
-      publicPath: cfg.path,
-      effectiveDate: '2026-01-01',
-      contactEmail: cfg.email,
-      markdown: '## ' + cfg.title + '\n\nCommon Sense Odisha (csodisha.com) maintains transparent editorial and DPDP-aligned standards.\n\n### Key Commitments\n- Verified official notifications only\n- Zero unauthorized tracking cookies\n- Direct contact: ' + cfg.email
-    };
+    addHeaderPill(actions, '● Live Legal & Info Publisher');
 
     var shell = el('div', { class: 'cso-mod-shell' });
-    var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: state.title });
-    var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: state.effectiveDate });
-    var emailInp = el('input', { type: 'email', class: 'cso-mod-input', value: state.contactEmail });
-    var mdInp = el('textarea', { class: 'cso-mod-textarea cso-mod-textarea-tall' });
-    mdInp.value = state.markdown;
-    var jsonArea = el('textarea', { class: 'cso-mod-textarea cso-hidden' });
-    var previewBox = el('div', { class: 'cso-live-preview-box' });
+    var routeInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.path });
+    var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.title });
+    var metaInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'SEO Meta Description (up to 160 chars)…' });
+    var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.title });
+    var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', value: 'Official policy & transparency information for Common Sense Odisha.' });
+    var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: new Date().toISOString().slice(0, 10) });
+    var statusSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: 'published', text: 'published' }),
+      el('option', { value: 'draft', text: 'draft' })
+    ]);
 
-    function syncFromInputs() {
-      state.title = titleInp.value;
-      state.effectiveDate = dateInp.value;
-      state.contactEmail = emailInp.value;
-      state.markdown = mdInp.value;
-      jsonArea.value = JSON.stringify(state, null, 2);
+    var sections = [
+      { type: 'notice', title: 'Effective Date & Contact', text: 'Effective: ' + new Date().toISOString().slice(0, 10) + ' · Contact: ' + cfg.email },
+      { type: 'richtext', title: 'Policy Overview', text: 'Common Sense Odisha (csodisha.com) maintains transparent editorial, accessibility, and DPDP-aligned standards.' }
+    ];
+    var sectionsHost = el('div', { class: 'cso-mod-shell' });
+    var revHost = el('div', {});
+    var liveLink = el('a', { href: cfg.path, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn', text: 'Open Live ↗' });
+    var frame = el('iframe', { src: cfg.path + '?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Live Legal Preview' });
+
+    function refreshFrame() {
+      var r = f02NormalizeRoute(routeInp.value || cfg.path);
+      liveLink.setAttribute('href', r);
+      frame.src = r + '?preview=1&t=' + Date.now();
     }
 
-    async function updatePreview() {
-      syncFromInputs();
+    function renderSections() {
+      clear(sectionsHost);
+      sections.forEach(function (sec, idx) {
+        var sTitle = el('input', { type: 'text', class: 'cso-mod-input', value: sec.title || '', placeholder: 'Section Heading' });
+        var sText = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Section content…' });
+        sText.value = sec.text || '';
+        sTitle.addEventListener('input', function () { sec.title = sTitle.value; });
+        sText.addEventListener('input', function () { sec.text = sText.value; });
+        sectionsHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+          el('div', { class: 'cso-builder-block-head' }, [
+            badge((idx + 1) + '. ' + sec.type, 'info'),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '✕', onclick: function () { sections.splice(idx, 1); renderSections(); } })
+          ]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Title' }), sTitle]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Section Content' }), sText])
+        ]));
+      });
+    }
+
+    async function loadLive() {
+      var targetRoute = f02NormalizeRoute(routeInp.value || cfg.path);
       try {
-        var r = await api('POST', 'preview', { markdown: state.markdown });
-        renderSanitizedHtml(previewBox, r.html || '');
-      } catch (_) {
-        previewBox.textContent = state.markdown;
+        var [pRes, revRes] = await Promise.all([
+          api('GET', 'pages'),
+          api('GET', 'pages/revisions?route=' + encodeURIComponent(targetRoute)).catch(function () { return { revisions: [] }; })
+        ]);
+        var match = (pRes.pages || []).find(function (p) { return p.route === targetRoute || p.route === cfg.path; });
+        if (match) {
+          titleInp.value = match.title || cfg.title;
+          metaInp.value = match.meta_description || '';
+          heroTitleInp.value = match.hero_title || match.title || cfg.title;
+          heroSubInp.value = match.hero_subtitle || '';
+          statusSel.value = match.status === 'draft' ? 'draft' : 'published';
+          var parsed = f02ParseBlocks(match.blocks_json);
+          if (parsed.length) sections = parsed;
+        }
+        renderSections();
+        clear(revHost);
+        var revs = revRes.revisions || [];
+        if (revs.length) {
+          revHost.appendChild(safeTable(['Rev', 'Editor', 'Note', 'Time', 'Restore'], revs.slice(0, 6).map(function (rv) {
+            return el('tr', {}, [
+              el('td', { text: '#' + rv.id }),
+              el('td', { text: rv.editor_email || '—' }),
+              el('td', { text: rv.note || 'update' }),
+              el('td', { text: rv.created_at || '—' }),
+              el('td', {}, el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+                text: 'Restore Live',
+                onclick: async function () {
+                  try {
+                    await api('POST', 'pages/restore', { route: targetRoute, revision_id: rv.id, status: 'published' });
+                    toast('Restored revision #' + rv.id + ' live!', 'success');
+                    await loadLive();
+                    refreshFrame();
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              }))
+            ]);
+          })));
+        } else {
+          revHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No D1 revisions saved yet for ' + targetRoute + '.' }));
+        }
+      } catch (e) {
+        toast(e.message, 'crimson');
       }
     }
 
-    renderBanner(shell, cfg.title + ' Studio', 'Author, preview, and export structured configuration for ' + cfg.path + '.', [
-      el('a', { href: cfg.path, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn', text: 'Preview Live Page ↗' }),
-      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Raw JSON', onclick: function () { syncFromInputs(); jsonArea.classList.toggle('cso-hidden'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export Config', onclick: function () { syncFromInputs(); downloadFile(moduleId + '-config.json', JSON.stringify(state, null, 2)); } }),
-      el('button', {
-        type: 'button',
-        class: 'cso-mod-btn',
-        text: 'Import Config',
-        onclick: function () {
-          pickJsonFile(function (d) {
-            if (d.title) titleInp.value = d.title;
-            if (d.effectiveDate) dateInp.value = d.effectiveDate;
-            if (d.contactEmail) emailInp.value = d.contactEmail;
-            if (d.markdown) mdInp.value = d.markdown;
-            updatePreview();
-          });
-        }
-      }),
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Render Preview', onclick: updatePreview })
+    async function publishLegal(targetStatus) {
+      var targetRoute = f02NormalizeRoute(routeInp.value || cfg.path);
+      if (sections[0] && sections[0].type === 'notice' && dateInp.value) {
+        sections[0].title = 'Effective Date: ' + dateInp.value;
+      }
+      try {
+        await api('PUT', 'pages', {
+          route: targetRoute,
+          title: titleInp.value.trim() || cfg.title,
+          meta_description: metaInp.value.trim(),
+          category: 'Information & Legal',
+          hero_title: heroTitleInp.value.trim(),
+          hero_subtitle: heroSubInp.value.trim(),
+          blocks_json: JSON.stringify(sections),
+          status: targetStatus,
+          note: 'Legal & Info Studio (' + moduleId + ')'
+        });
+        statusSel.value = targetStatus;
+        toast((targetStatus === 'published' ? 'Published live: ' : 'Saved draft: ') + targetRoute, 'success');
+        refreshFrame();
+        loadLive();
+      } catch (e) {
+        toast(e.message, 'crimson');
+      }
+    }
+
+    renderBanner(shell, cfg.title + ' — Live D1 & Edge Studio', 'Edit SEO, Hero, Effective Date, and structured sections for ' + cfg.path + ' and publish live via HTMLRewriter.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live to Website', onclick: function () { publishLegal('published'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { publishLegal('draft'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh Preview', onclick: refreshFrame }),
+      liveLink
     ]);
 
     shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
-      el('div', { class: 'cso-mod-card' }, [
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Document Title' }), titleInp]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Effective Date' }), dateInp]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Contact Email' }), emailInp]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Markdown Content' }), mdInp]),
-        jsonArea
+      el('div', { class: 'cso-mod-shell' }, [
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: 'SEO, Hero & Effective Date' }),
+          el('div', { class: 'cso-mod-grid-2' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route' }), routeInp]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Status' }), statusSel])
+          ]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), titleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), metaInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Headline' }), heroTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Subheadline' }), heroSubInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Last-Updated Effective Date' }), dateInp])
+        ]),
+        el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: 'Structured Policy / Info Sections' }),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Notice', onclick: function () { sections.push({ type: 'notice', title: 'Notice', text: '' }); renderSections(); } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Rich Text', onclick: function () { sections.push({ type: 'richtext', title: 'Section', text: '' }); renderSections(); } })
+            ])
+          ]),
+          sectionsHost
+        ])
       ]),
-      el('div', { class: 'cso-mod-card' }, [
-        el('h3', { text: 'Live Sanitized Document Preview' }),
-        previewBox
+      el('div', { class: 'cso-mod-shell' }, [
+        el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [el('h3', { text: 'Live Public Route Preview' }), badge('iframe', 'info')]),
+          el('div', { class: 'cso-preview-frame-wrap' }, [frame])
+        ]),
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: 'Revision History & One-Click Restore' }),
+          revHost
+        ])
       ])
     ]));
+
     root.appendChild(shell);
-    updatePreview();
+    renderSections();
+    loadLive();
     return true;
   }
 
@@ -2869,11 +2962,41 @@
   function renderEdgeStudio(root, actions) {
     addHeaderPill(actions, '● Edge & Endpoint Telemetry');
     var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-grid-4' });
     var chartHost = el('div', { class: 'cso-mod-card' }), tableHost = el('div', {}), drawer = el('div', { class: 'cso-mod-card cso-hidden' });
     var results = [], filter = 'All';
+    var customInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/about.html or /my-route/' });
+
+    async function probeOne(p) {
+      var t0 = performance.now(), out = { path: p, status: 0, ms: 0, headers: {} };
+      try {
+        var res = await fetch(p, { credentials: 'same-origin', cache: 'no-store' });
+        await res.clone().arrayBuffer();
+        out.status = res.status; out.ms = Math.round(performance.now() - t0);
+        res.headers.forEach(function (v, k) { out.headers[k] = v; });
+      } catch (e) { out.ms = Math.round(performance.now() - t0); out.headers = { error: e.message }; }
+      return out;
+    }
+
     renderBanner(shell, 'Edge & Endpoint Telemetry Studio', 'Real fetch() probes: latency, status, Cache-Control, CSP and Content-Type.', [
+      customInp,
+      el('button', {
+        type: 'button',
+        class: 'cso-mod-btn',
+        text: 'Probe Custom Route',
+        onclick: async function () {
+          var p = customInp.value.trim();
+          if (!p) return;
+          if (!p.startsWith('/')) p = '/' + p;
+          var r = await probeOne(p);
+          results = [r].concat(results.filter(function (x) { return x.path !== p; }));
+          draw();
+          inspect(r);
+        }
+      }),
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Re-Probe All Endpoints', onclick: probeAll })
     ]);
+    shell.appendChild(kpiHost);
     shell.appendChild(pills(['All', 'Healthy 200', 'Slow >400ms', 'Errors'], function (f) { filter = f; draw(); }));
     shell.appendChild(chartHost); shell.appendChild(tableHost); shell.appendChild(drawer);
     root.appendChild(shell);
@@ -2892,7 +3015,28 @@
       drawer.appendChild(el('div', { class: 'cso-mod-toolbar' }, [openLink(r.path, 'Open in tab ↗'), el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })]));
       drawer.appendChild(el('iframe', { src: r.path, class: 'cso-inspector-frame', title: 'Preview ' + r.path, sandbox: 'allow-same-origin' }));
     }
+    function renderKpis() {
+      clear(kpiHost);
+      if (!results.length) return;
+      var totalMs = results.reduce(function (a, r) { return a + r.ms; }, 0);
+      var avgMs = Math.round(totalMs / results.length);
+      var upCount = results.filter(function (r) { return r.status >= 200 && r.status < 400; }).length;
+      var htmlRoutes = results.filter(function (r) { return (r.headers['content-type'] || '').toLowerCase().indexOf('text/html') !== -1; });
+      var htmlCspOk = htmlRoutes.filter(function (r) { return !!r.headers['content-security-policy']; }).length;
+      var cspPct = htmlRoutes.length ? Math.round((htmlCspOk / htmlRoutes.length) * 100) + '%' : '100%';
+      var sorted = results.slice().sort(function (a, b) { return a.ms - b.ms; });
+      var fastSlow = sorted.length ? (sorted[0].ms + 'ms / ' + sorted[sorted.length - 1].ms + 'ms') : '—';
+      [
+        ['Avg Edge Latency', avgMs + ' ms'],
+        ['Endpoint Uptime', upCount + ' / ' + results.length],
+        ['HTML CSP Coverage', cspPct + ' (' + htmlCspOk + '/' + htmlRoutes.length + ')'],
+        ['Fastest / Slowest', fastSlow]
+      ].forEach(function (k) {
+        kpiHost.appendChild(kpiBox(k[1], k[0]));
+      });
+    }
     function draw() {
+      renderKpis();
       var shown = results.filter(pass);
       clear(chartHost);
       chartHost.appendChild(el('h3', { text: 'Response Time (ms)' }));
@@ -2906,8 +3050,12 @@
       });
       chartHost.appendChild(g);
       var rows = shown.map(function (r) {
+        var isHtml = (r.headers['content-type'] || '').toLowerCase().indexOf('text/html') !== -1;
+        var cspCell = isHtml
+          ? badge(r.headers['content-security-policy'] ? 'CSP ✓' : 'no CSP', r.headers['content-security-policy'] ? 'ok' : 'warn')
+          : badge('Asset / API', 'info');
         return el('tr', {}, [el('td', { text: r.path }), el('td', {}, badge(String(r.status || 'ERR'), r.status === 200 ? 'ok' : 'err')), el('td', { text: r.ms + ' ms' }),
-          el('td', { text: r.headers['cache-control'] || '—' }), el('td', {}, badge(r.headers['content-security-policy'] ? 'CSP ✓' : 'no CSP', r.headers['content-security-policy'] ? 'ok' : 'warn')),
+          el('td', { text: r.headers['cache-control'] || '—' }), el('td', {}, cspCell),
           el('td', { text: r.headers['content-type'] || '—' }),
           el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Inspect', onclick: function () { inspect(r); } }))]);
       });
@@ -2915,16 +3063,7 @@
     }
     async function probeAll() {
       loading(tableHost, 'Probing…');
-      results = await Promise.all(PROBES.map(async function (p) {
-        var t0 = performance.now(), out = { path: p, status: 0, ms: 0, headers: {} };
-        try {
-          var res = await fetch(p, { credentials: 'same-origin', cache: 'no-store' });
-          await res.clone().arrayBuffer();
-          out.status = res.status; out.ms = Math.round(performance.now() - t0);
-          res.headers.forEach(function (v, k) { out.headers[k] = v; });
-        } catch (e) { out.ms = Math.round(performance.now() - t0); out.headers = { error: e.message }; }
-        return out;
-      }));
+      results = await Promise.all(PROBES.map(probeOne));
       draw();
     }
     probeAll();

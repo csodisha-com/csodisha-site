@@ -1,6 +1,7 @@
 // Server-side gate for /admin/* static pages. Session role (from D1 users.role) is the
 // only source of truth — nothing in browser storage is consulted.
 import { getActor } from './rbac.js';
+import siteManifest from '../../admin/site-manifest.json';
 
 // One strict policy for the whole /admin/ area (Master Command Suite included): no inline
 // scripts/styles, no CDNs. The suite's legacy inline handlers/styles are translated by
@@ -52,6 +53,13 @@ export async function handleAdminPage(request, env) {
     }
     const allowed = ADMIN_ONLY_PREFIXES.some(p => path.startsWith(p)) ? ['admin'] : ['editor', 'admin'];
     if (!allowed.includes(actor.role)) return plain(403, 'Forbidden: your account does not have access to this area.', csp);
+  }
+  if (path === '/admin/site-manifest.json') {
+    return secured(
+      new Response(JSON.stringify(siteManifest), { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8' } }),
+      csp,
+      { 'Cache-Control': 'private, max-age=300' }
+    );
   }
   const res = await env.ASSETS.fetch(request);
   // Large static assets (the suite is ~12 MB of JS): allow conditional revalidation, never shared caching.
