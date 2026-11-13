@@ -7905,7 +7905,24 @@
         { type: 'notice', title: 'Effective Date & Corrections Contact', text: 'Effective Date: 2026-11-13 · Report any discrepancy to editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-005': { title: 'Terms & Conditions', path: '/terms.html', email: 'legal@csodisha.com' },
+    'module-03-005': {
+      title: 'Terms & Conditions',
+      seoTitle: 'Terms & Conditions | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Read the Terms & Conditions governing the use of Common Sense Odisha (csodisha.com) — Odisha recruitment alerts, exam syllabi, scholarships, and CBT prep.',
+      heroTitle: 'Terms & Conditions',
+      heroSubtitle: 'Rules, acceptable use standards, intellectual property terms, and governing jurisdiction for accessing Common Sense Odisha (csodisha.com).',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/terms.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Acceptance of Terms & Educational Scope', text: 'By accessing or using Common Sense Odisha (https://csodisha.com), you agree to comply with and be bound by these Terms & Conditions. All recruitment summaries, exam syllabi, scholarship guides, current affairs digests, and CBT mock tests provided on this platform are intended strictly for personal, non-commercial educational and informational use by students and job aspirants.' },
+        { type: 'richtext', title: 'User Accounts & Acceptable Conduct', text: 'When creating a student account or participating in CBT practice tests, you agree to provide accurate registration information and maintain the confidentiality of your login credentials. You must not scrape, mirror, automate bulk requests against, attempt unauthorized access to administrative endpoints, or disrupt the Cloudflare edge infrastructure serving this portal.' },
+        { type: 'richtext', title: 'Intellectual Property & Official Notification Links', text: 'Original study notes, syllabus compilations, CBT practice question sets, UI layouts, and editorial articles on Common Sense Odisha are protected under the Copyright Act, 1957 (India). Official government recruitment PDFs, logos, and gazette notifications remain the property of their respective government departments and recruitment commissions (such as OPSC, OSSC, and OSSSC) and are linked solely for reference.' },
+        { type: 'richtext', title: 'Limitation of Liability & Governing Law', text: 'Common Sense Odisha provides content on an \'as-is\' basis without warranties of any kind. Users must verify final eligibility, fee deadlines, and exam instructions on official government portals before applying. These Terms & Conditions are governed by the laws of India, with exclusive jurisdiction vested in the competent courts of Balasore, Odisha.' },
+        { type: 'notice', title: 'Effective Date & Legal Contact', text: 'Effective Date: 2026-11-13 · Legal & Editorial Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-006': { title: 'Cookie Policy', path: '/cookies.html', email: 'privacy@csodisha.com' },
     'module-03-007': { title: 'Copyright & DMCA', path: '/copyright.html', email: 'dmca@csodisha.com' },
     'module-03-008': { title: 'Editorial Policy', path: '/editorial-policy.html', email: 'editorial@csodisha.com' },
@@ -7930,11 +7947,12 @@
     if (cfg.metaDescription) metaInp.value = cfg.metaDescription;
     var heroTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.heroTitle || cfg.title });
     var heroSubInp = el('input', { type: 'text', class: 'cso-mod-input', value: cfg.heroSubtitle || 'Official policy & transparency information for Common Sense Odisha.' });
-    var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: cfg.effectiveDate || new Date().toISOString().slice(0, 10) });
+    var dateInp = el('input', { type: 'date', class: 'cso-mod-input', value: cfg.effectiveDate || '2026-11-13' });
     var statusSel = el('select', { class: 'cso-mod-select' }, [
       el('option', { value: 'published', text: 'published' }),
       el('option', { value: 'draft', text: 'draft' })
     ]);
+    statusSel.value = cfg.status === 'draft' ? 'draft' : 'published';
 
     var sections = Array.isArray(cfg.sections) && cfg.sections.length
       ? cfg.sections.map(function (s) { return { type: s.type, title: s.title, text: s.text }; })
