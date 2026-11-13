@@ -7991,7 +7991,23 @@
         { type: 'notice', title: 'Effective Date & Corrections Desk', text: 'Effective Date: 2026-11-13 · Corrections & Errata Desk: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-010': { title: 'Accessibility Statement', path: '/accessibility.html', email: 'accessibility@csodisha.com' },
+    'module-03-010': {
+      title: 'Accessibility Statement',
+      seoTitle: 'Accessibility Statement | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Accessibility Statement of Common Sense Odisha (csodisha.com) — our WCAG 2.1 Level AA commitment, keyboard navigation, screen-reader support, and feedback.',
+      heroTitle: 'Accessibility Statement',
+      heroSubtitle: 'Ensuring equitable, barrier-free digital access to Odisha recruitment alerts, exam syllabi, scholarships, and CBT practice tools for every learner.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/accessibility.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Commitment to Digital Accessibility (WCAG 2.1 Level AA)', text: 'Common Sense Odisha (https://csodisha.com) is committed to ensuring digital accessibility for students, job aspirants, and citizens of all abilities across Odisha. We actively design and maintain our web pages, syllabus guides, and CBT mock practice interfaces in alignment with the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA and Indian digital accessibility best practices.' },
+        { type: 'richtext', title: 'Built-In Accessibility Features', text: 'Our platform incorporates semantic HTML5 landmarks, full keyboard-only navigation with visible focus rings, descriptive alt text and ARIA labels for interactive controls, high-contrast readable typography, and mobile-first responsive layouts engineered to load reliably even on low-bandwidth rural mobile connections.' },
+        { type: 'richtext', title: 'Known Limitations & Third-Party Official PDFs', text: 'While all pages authored directly on csodisha.com follow accessible markup standards, certain external recruitment notifications, scanned gazettes, and official PDFs hosted on third-party government portals (such as OPSC, OSSC, or OSSSC) may not be fully screen-reader optimized. Whenever possible, we summarize key dates, eligibility rules, and vacancy tables in accessible HTML text alongside the official PDF link.' },
+        { type: 'notice', title: 'Effective Date & Accessibility Feedback Desk', text: 'Effective Date: 2026-11-13 · Report an Accessibility Barrier: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-011': { title: 'Refund & Cancellation Policy', path: '/refund.html', email: 'billing@csodisha.com' },
     'module-03-012': { title: 'Digital Delivery Policy', path: '/delivery.html', email: 'support@csodisha.com' },
     'module-03-013': { title: 'Community Guidelines', path: '/community-guidelines.html', email: 'community@csodisha.com' },
