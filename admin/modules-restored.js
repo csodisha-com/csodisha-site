@@ -471,91 +471,201 @@
       id: 'ossc-recruitment',
       name: 'OSSC / OSSSC Recruitment Notification',
       category: 'Core Portal',
-      meta_description: 'Official Odisha recruitment notification, vacancy breakdown, eligibility, important dates, and direct apply link.',
-      hero_title: 'OSSC / OSSSC Recruitment 2026 — Official Notification',
-      hero_subtitle: 'Verified vacancy details, age limit, educational qualification, and online application schedule.',
+      version: 'v1.0',
+      schema_type: 'JobPosting',
+      meta_description: '{{EXAM_NAME}} {{YEAR}} official recruitment notification by {{DEPARTMENT}}, vacancy breakdown, eligibility, last date {{LAST_DATE}}, and direct apply link.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Official Recruitment Notification',
+      hero_subtitle: '{{DEPARTMENT}} ନିଯୁକ୍ତି ବିଜ୍ଞପ୍ତି {{YEAR}} — Verified vacancy details, age limit, and apply schedule (Last Date: {{LAST_DATE}}).',
       cta_label: 'Apply Online Now',
       cta_url: '/jobs-careers/',
+      secondary_cta_label: 'Download Official PDF',
+      secondary_cta_url: '/resources/',
+      attachments: [{ label: '{{EXAM_NAME}} Official Notification PDF', url: '/resources/', kind: 'Official PDF' }],
       blocks: [
-        { type: 'hero', title: 'Odisha Recruitment Notification 2026', text: 'Complete official notification summary and key dates for Odisha aspirants.', label: 'View Official PDF', url: '/jobs-careers/' },
-        { type: 'notice', title: 'Important Dates & Fee', text: 'Check application start date, last date, and examination fee structure before applying.' },
+        { type: 'hero', title: '{{EXAM_NAME}} Recruitment {{YEAR}}', text: 'Complete official notification summary from {{DEPARTMENT}} (Apply before {{LAST_DATE}}).', label: 'View Official PDF', url: '/jobs-careers/' },
+        { type: 'notice', title: 'Important Dates & Fee', text: 'Last date to apply: {{LAST_DATE}}. Check age limit, reservation, and fee structure before submitting.' },
         { type: 'ticker', title: 'Latest Odisha Govt Job Alerts' },
-        { type: 'faq', title: 'Recruitment FAQs', items: ['Who can apply?|Candidates meeting age and educational criteria as per official notification.', 'How to download admit card?|Log in to the commission portal using your registration number.'] }
+        { type: 'faq', title: 'Recruitment FAQs', items: ['Who can apply for {{EXAM_NAME}}?|Candidates meeting age and educational criteria as per {{DEPARTMENT}} notification.', 'What is the last date?|Online applications close on {{LAST_DATE}}.'] }
       ]
     },
     {
       id: 'opsc-oas-hub',
       name: 'OPSC OAS Exam & Syllabus Hub',
       category: 'Core Portal',
-      meta_description: 'OPSC OAS Prelims & Mains syllabus, exam pattern, previous year question papers, and preparation strategy.',
-      hero_title: 'OPSC Odisha Civil Services (OAS) Hub',
-      hero_subtitle: 'Complete Prelims, Mains & Interview syllabus, PYQ archives, and free mock tests.',
+      version: 'v1.0',
+      schema_type: 'Course',
+      meta_description: '{{EXAM_NAME}} {{YEAR}} Prelims & Mains syllabus, exam pattern, previous year question papers, and preparation strategy.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Exam & Syllabus Hub',
+      hero_subtitle: 'ଓଡ଼ିଶା ସିଭିଲ ସର୍ଭିସେସ୍ ପରୀକ୍ଷା ସୂଚୀ ଓ ପାଠ୍ୟକ୍ରମ — Complete Prelims, Mains & Interview syllabus, PYQs, and free mock tests.',
       cta_label: 'Start OAS Mock Test',
       cta_url: '/mock-tests/',
+      secondary_cta_label: 'Download Syllabus PDF',
+      secondary_cta_url: '/syllabus/',
+      attachments: [{ label: '{{EXAM_NAME}} Prelims & Mains Syllabus PDF', url: '/syllabus/', kind: 'Official PDF' }],
       blocks: [
-        { type: 'hero', title: 'OPSC OAS 2026 Preparation Hub', text: 'Structured syllabus, Odisha GK notes, and bilingual test series.', label: 'Explore Syllabus', url: '/syllabus/' },
-        { type: 'examgrid', title: 'OAS Quick Links', items: ['Prelims Syllabus|/syllabus/', 'Previous Year Papers|/pyq/', 'Daily Current Affairs|/current-affairs/', 'Free Mock Tests|/mock-tests/'] },
-        { type: 'cbt', title: 'Practice OPSC Prelims CBT', text: 'Attempt timed GS Paper I & CSAT mock tests with instant scorecard.', label: 'Launch CBT', url: '/mock-tests/' }
+        { type: 'hero', title: '{{EXAM_NAME}} {{YEAR}} Preparation Hub', text: 'Structured syllabus from {{DEPARTMENT}}, Odisha GK notes, and bilingual test series.', label: 'Explore Syllabus', url: '/syllabus/' },
+        { type: 'examgrid', title: 'Exam Quick Links', items: ['Prelims Syllabus|/syllabus/', 'Previous Year Papers|/pyq/', 'Daily Current Affairs|/current-affairs/', 'Free Mock Tests|/mock-tests/'] },
+        { type: 'cbt', title: 'Practice Prelims CBT', text: 'Attempt timed GS Paper I & CSAT mock tests with instant scorecard.', label: 'Launch CBT', url: '/mock-tests/' }
       ]
     },
     {
       id: 'cbt-mock-portal',
       name: 'Free CBT Mock Test Portal',
       category: 'Candidate Workspace',
-      meta_description: 'Free bilingual Odia & English CBT mock tests for OSSC CGL, OSSSC RI/ARI, OPSC OAS, and Odisha Police.',
-      hero_title: 'Free Odisha CBT Mock Test Series',
-      hero_subtitle: 'Real exam interface with timer, negative marking, and detailed solutions.',
+      version: 'v1.0',
+      schema_type: 'Quiz',
+      meta_description: 'Free bilingual Odia & English CBT mock tests for {{EXAM_NAME}} {{YEAR}}, OSSC CGL, OSSSC RI/ARI, and Odisha Police.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Free Odisha CBT Mock Test Series',
+      hero_subtitle: 'ଓଡ଼ିଆ ଏବଂ ଇଂରାଜୀରେ ମାଗଣା CBT ମକ୍ ଟେଷ୍ଟ — Real exam interface with timer, negative marking, and detailed solutions.',
       cta_label: 'Attempt Free Test',
       cta_url: '/mock-tests/',
+      secondary_cta_label: 'View Leaderboard',
+      secondary_cta_url: '/student-dashboard/',
+      attachments: [{ label: 'CBT Exam Pattern & Marking Guide', url: '/mock-tests/', kind: 'Guide' }],
       blocks: [
-        { type: 'cbt', title: 'Full-Length Odisha Exam CBT', text: 'Practice OSSC CGL, RI/ARI, Amin, and Constable papers in real-time mode.', label: 'Start Test Now', url: '/mock-tests/' },
+        { type: 'cbt', title: 'Full-Length {{EXAM_NAME}} CBT', text: 'Practice {{EXAM_NAME}} {{YEAR}} papers in real-time bilingual mode.', label: 'Start Test Now', url: '/mock-tests/' },
         { type: 'examgrid', title: 'Available Test Series', items: ['OSSC CGLRE Prelims|/mock-tests/', 'OSSSC Combined Exam|/mock-tests/', 'Odisha Police SI|/mock-tests/', 'OTET & OSSTET|/mock-tests/'] },
-        { type: 'richtext', text: 'All mock tests are updated regularly as per the latest OSSC, OSSSC, and OPSC exam patterns.' }
+        { type: 'richtext', text: 'All mock tests are updated regularly as per the latest {{DEPARTMENT}} exam pattern.' }
       ]
     },
     {
       id: 'odisha-scheme-guide',
       name: 'Odisha Govt Scheme & Scholarship Guide',
       category: 'Core Portal',
-      meta_description: 'Eligibility, required documents, benefits, and step-by-step online application guide for Odisha government schemes.',
-      hero_title: 'Odisha Government Scheme & Scholarship Guide',
-      hero_subtitle: 'Verified eligibility rules, document checklist, and official portal links.',
+      version: 'v1.0',
+      schema_type: 'GovernmentService',
+      meta_description: '{{EXAM_NAME}} {{YEAR}} eligibility, required documents, benefits, and step-by-step online application guide via {{DEPARTMENT}}.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Odisha Scheme & Scholarship Guide',
+      hero_subtitle: 'ଓଡ଼ିଶା ସରକାରୀ ଯୋଜନା ଓ ବୃତ୍ତି ସହାୟତା — Verified eligibility rules, document checklist, and official portal links (Last Date: {{LAST_DATE}}).',
       cta_label: 'Check Eligibility',
       cta_url: '/schemes/',
+      secondary_cta_label: 'Apply on Official Portal',
+      secondary_cta_url: 'https://odisha.gov.in',
+      attachments: [{ label: 'Required Documents Checklist PDF', url: '/resources/', kind: 'Official PDF' }],
       blocks: [
-        { type: 'hero', title: 'Odisha Welfare & Scholarship Guide', text: 'Step-by-step application instructions and beneficiary status check.', label: 'Open Schemes Portal', url: '/schemes/' },
+        { type: 'hero', title: '{{EXAM_NAME}} Welfare & Scholarship Guide', text: 'Step-by-step application instructions by {{DEPARTMENT}} (Deadline: {{LAST_DATE}}).', label: 'Open Schemes Portal', url: '/schemes/' },
         { type: 'notice', title: 'Required Documents', text: 'Keep Aadhaar card, residence certificate, income certificate, and bank passbook ready.' },
-        { type: 'faq', title: 'Scheme FAQs', items: ['Where to apply?|Apply only through the official Odisha state portal.', 'Is there any application fee?|No, government welfare and scholarship applications are free.'] }
+        { type: 'faq', title: 'Scheme FAQs', items: ['Where to apply?|Apply only through the official {{DEPARTMENT}} Odisha state portal.', 'Is there any application fee?|No, government welfare and scholarship applications are free.'] }
       ]
     },
     {
       id: 'admit-card-tracker',
       name: 'Admit Card & Result Tracker',
       category: 'Core Portal',
-      meta_description: 'Direct official links to download Odisha exam admit cards, hall tickets, answer keys, and merit lists.',
-      hero_title: 'Odisha Exam Admit Card & Result Tracker',
-      hero_subtitle: 'Fast, verified links to commission hall tickets and final selection lists.',
+      version: 'v1.0',
+      schema_type: 'WebPage',
+      meta_description: 'Direct official links to download {{EXAM_NAME}} {{YEAR}} admit cards, hall tickets, answer keys, and merit lists.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Admit Card & Result Tracker',
+      hero_subtitle: 'ଆଡମିଟ୍ କାର୍ଡ ଏବଂ ପରୀକ୍ଷା ଫଳାଫଳ — Fast, verified links to {{DEPARTMENT}} hall tickets and final selection lists.',
       cta_label: 'Check Live Results',
       cta_url: '/jobs-careers/',
+      secondary_cta_label: 'Open Student Dashboard',
+      secondary_cta_url: '/student-dashboard/',
+      attachments: [{ label: 'Exam Day Instructions & Hall Ticket Guide', url: '/resources/', kind: 'Official PDF' }],
       blocks: [
         { type: 'ticker', title: 'Live Admit Card & Result Updates' },
         { type: 'examgrid', title: 'Official Commission Portals', items: ['OSSC Portal|/jobs-careers/', 'OSSSC Portal|/jobs-careers/', 'OPSC Portal|/jobs-careers/', 'Student Dashboard|/student-dashboard/'] },
-        { type: 'notice', title: 'Candidate Advisory', text: 'Always verify your roll number and exam centre on the official PDF before exam day.' }
+        { type: 'notice', title: 'Candidate Advisory', text: 'Verify your roll number and exam centre on the official {{DEPARTMENT}} PDF before {{LAST_DATE}}.' }
       ]
     },
     {
       id: 'official-notice-faq',
       name: 'Official Notice & FAQ Page',
       category: 'Information & Legal',
-      meta_description: 'Official portal notice, candidate guidelines, and frequently asked questions for Common Sense Odisha.',
-      hero_title: 'Official Notice & Candidate Guidelines',
-      hero_subtitle: 'Clear answers on portal access, mock tests, and official verification.',
+      version: 'v1.0',
+      schema_type: 'FAQPage',
+      meta_description: 'Official portal notice, candidate guidelines, and frequently asked questions for {{EXAM_NAME}} {{YEAR}}.',
+      hero_title: '{{EXAM_NAME}} — Official Notice & Candidate Guidelines',
+      hero_subtitle: 'ସରକାରୀ ବିଜ୍ଞପ୍ତି ଏବଂ ସାଧାରଣ ପ୍ରଶ୍ନୋତ୍ତର — Clear answers on portal access, mock tests, and official verification.',
       cta_label: 'Contact Support',
       cta_url: '/contact.html',
+      secondary_cta_label: 'Read Disclaimer',
+      secondary_cta_url: '/disclaimer.html',
+      attachments: [],
       blocks: [
-        { type: 'notice', title: 'Portal Verification Notice', text: 'Common Sense Odisha provides verified educational guides and official commission links.' },
+        { type: 'notice', title: 'Portal Verification Notice', text: 'Common Sense Odisha provides verified educational guides and official {{DEPARTMENT}} links.' },
         { type: 'richtext', text: 'Use this page template for statutory notices, exam advisories, or candidate helpdesks.' },
         { type: 'faq', title: 'Frequently Asked Questions', items: ['How do I report an error?|Reach out via the Contact Us page with the page URL.', 'Are study resources free?|Yes, core syllabus, PYQs, and job alerts are free for Odisha aspirants.'] }
+      ]
+    },
+    {
+      id: 'district-recruitment-hub',
+      name: 'District Recruitment Drive Hub',
+      category: 'Core Portal',
+      version: 'v1.0',
+      schema_type: 'JobPosting',
+      meta_description: '{{EXAM_NAME}} {{YEAR}} Odisha 30-district collectorate, block-level, and contractual recruitment updates by {{DEPARTMENT}}.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — District Recruitment Drive Hub',
+      hero_subtitle: 'ଓଡ଼ିଶାର ୩୦ଟି ଜିଲ୍ଲା ନିଯୁକ୍ତି ସୂଚନା — District-wise vacancy table, walk-in interview dates & application form PDF.',
+      cta_label: 'View District Vacancies',
+      cta_url: '/jobs-careers/',
+      secondary_cta_label: 'Download Application Form',
+      secondary_cta_url: '/resources/',
+      attachments: [{ label: 'District Collectorate Notification PDF', url: '/resources/', kind: 'Official PDF' }],
+      blocks: [
+        { type: 'hero', title: '{{EXAM_NAME}} District Drive {{YEAR}}', text: 'Verified district-level vacancies under {{DEPARTMENT}}. Last date: {{LAST_DATE}}.', label: 'Explore District List', url: '/jobs-careers/' },
+        { type: 'notice', title: 'Walk-In & Offline Submission Rules', text: 'Check district NIC portal and registered post deadlines ({{LAST_DATE}}) carefully.' },
+        { type: 'faq', title: 'District Recruitment FAQs', items: ['Can other district candidates apply?|Check domicile rules in the official {{DEPARTMENT}} PDF.', 'Where to submit forms?|Submit at the designated district office before {{LAST_DATE}}.'] }
+      ]
+    },
+    {
+      id: 'answer-key-cutoff',
+      name: 'Answer Key & Cutoff Analysis Page',
+      category: 'Candidate Workspace',
+      version: 'v1.0',
+      schema_type: 'Article',
+      meta_description: '{{EXAM_NAME}} {{YEAR}} official provisional answer key PDF, objection window ({{LAST_DATE}}), and category-wise expected cutoff marks.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Answer Key & Cutoff Analysis',
+      hero_subtitle: 'ଉତ୍ତର ସୂଚୀ ଏବଂ କଟଅଫ୍ ବିଶ୍ଳେଷଣ — Set A/B/C/D answer key PDFs, objection link, and UR/SEBC/SC/ST cutoff trends.',
+      cta_label: 'Download Answer Key PDF',
+      cta_url: '/resources/',
+      secondary_cta_label: 'Practice Next Stage CBT',
+      secondary_cta_url: '/mock-tests/',
+      attachments: [{ label: '{{EXAM_NAME}} Official Answer Key Set A-D PDF', url: '/resources/', kind: 'Official PDF' }],
+      blocks: [
+        { type: 'hero', title: '{{EXAM_NAME}} Answer Key & Cutoff {{YEAR}}', text: 'Published by {{DEPARTMENT}}. Raise objections before {{LAST_DATE}}.', label: 'Check Answer Key', url: '/resources/' },
+        { type: 'notice', title: 'Objection Window Deadline', text: 'Candidates must submit valid documentary proof on the {{DEPARTMENT}} portal on or before {{LAST_DATE}}.' },
+        { type: 'cbt', title: 'Prepare for Mains / Skill Test', text: 'Attempt our free CBT mock tests aligned with the latest cutoff trends.', label: 'Start CBT Practice', url: '/mock-tests/' }
+      ]
+    },
+    {
+      id: 'teacher-eligibility-guide',
+      name: 'B.Ed / OTET / OSSTET Teacher Eligibility Guide',
+      category: 'Core Portal',
+      version: 'v1.0',
+      schema_type: 'Course',
+      meta_description: '{{EXAM_NAME}} {{YEAR}} Odisha teacher eligibility syllabus, Paper I & II pattern, qualifying marks, and free pedagogy mock tests.',
+      hero_title: '{{EXAM_NAME}} {{YEAR}} — Odisha Teacher Eligibility Guide',
+      hero_subtitle: 'ଓଡ଼ିଶା ଶିକ୍ଷକ ଯୋଗ୍ୟତା ପରୀକ୍ଷା (OTET / OSSTET / B.Ed) — Paper I & II syllabus, Odia pedagogy notes, and practice tests.',
+      cta_label: 'Attempt Teacher CBT',
+      cta_url: '/mock-tests/',
+      secondary_cta_label: 'Download Pedagogy Syllabus',
+      secondary_cta_url: '/syllabus/',
+      attachments: [{ label: '{{EXAM_NAME}} Paper I & II Syllabus PDF', url: '/syllabus/', kind: 'Official PDF' }],
+      blocks: [
+        { type: 'hero', title: '{{EXAM_NAME}} {{YEAR}} Complete Guide', text: 'Conducted by {{DEPARTMENT}}. Application deadline: {{LAST_DATE}}.', label: 'Download Syllabus', url: '/syllabus/' },
+        { type: 'examgrid', title: 'Teacher Exam Modules', items: ['Child Development & Pedagogy|/mock-tests/', 'Odia & English Language|/mock-tests/', 'Previous Year OTET/OSSTET|/pyq/', 'Official BSE Notice|/jobs-careers/'] },
+        { type: 'faq', title: 'Teacher Eligibility FAQs', items: ['What is the qualifying mark?|General 60% (90/150) and reserved categories 50% (75/150) as per norms.', 'Is there negative marking?|Check the latest {{YEAR}} {{DEPARTMENT}} information brochure.'] }
+      ]
+    },
+    {
+      id: 'pyq-download-vault',
+      name: 'Previous Year Question Paper (PYQ) Download Vault',
+      category: 'Candidate Workspace',
+      version: 'v1.0',
+      schema_type: 'CollectionPage',
+      meta_description: 'Download {{EXAM_NAME}} previous year question papers (PYQ) with official answer keys and free online CBT practice sets.',
+      hero_title: '{{EXAM_NAME}} — Previous Year Question Paper (PYQ) Vault',
+      hero_subtitle: 'ପୂର୍ବ ବର୍ଷର ପ୍ରଶ୍ନପତ୍ର ସଂଗ୍ରହ — Year-wise {{EXAM_NAME}} question PDFs with solved explanations.',
+      cta_label: 'Browse All PYQ PDFs',
+      cta_url: '/pyq/',
+      secondary_cta_label: 'Solve PYQs in CBT Mode',
+      secondary_cta_url: '/mock-tests/',
+      attachments: [{ label: '{{EXAM_NAME}} 5-Year Solved PYQ Pack PDF', url: '/pyq/', kind: 'PYQ Archive' }],
+      blocks: [
+        { type: 'hero', title: '{{EXAM_NAME}} PYQ Archive', text: 'Verified {{DEPARTMENT}} question papers curated for Odisha aspirants.', label: 'Open PYQ Vault', url: '/pyq/' },
+        { type: 'examgrid', title: 'Year-Wise Question Sets', items: ['2025 Solved Paper|/pyq/', '2024 Solved Paper|/pyq/', '2023 Solved Paper|/pyq/', 'Interactive PYQ CBT|/mock-tests/'] },
+        { type: 'richtext', text: 'Solving at least 5 years of {{EXAM_NAME}} PYQs helps identify high-weightage Odisha GK and reasoning topics.' }
       ]
     }
   ];
@@ -5137,41 +5247,721 @@
   }
 
   /* -------------------------------------------------------------------------
-     02-006: Page Templates (6 Odisha Blueprints -> Create Page / Builder)
+     02-006: Page Templates (D1 Blueprint, Token-AutoFill, Sync & Real-CSS Studio)
      ------------------------------------------------------------------------- */
+  function f02SyncPinnedCreateMenu(pinnedIds, allTemplates) {
+    var dd = document.getElementById('createNewDropdown');
+    if (!dd) return;
+    dd.querySelectorAll('.cso-pinned-tpl-item, .cso-create-divider').forEach(function (n) { n.remove(); });
+    var ids = Array.isArray(pinnedIds) ? pinnedIds : [];
+    var list = Array.isArray(allTemplates) ? allTemplates : F02_TEMPLATES;
+    var pinned = list.filter(function (t) { return ids.indexOf(t.id) !== -1; });
+    if (!pinned.length) return;
+    dd.appendChild(el('div', { class: 'cso-create-divider', text: '★ Pinned Blueprints' }));
+    pinned.forEach(function (tpl) {
+      var btn = el('button', {
+        type: 'button',
+        class: 'cso-create-item cso-pinned-tpl-item',
+        role: 'menuitem',
+        onclick: function () {
+          dd.hidden = true;
+          var trigger = document.getElementById('btnCreateNewMenu');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          f02State.createTemplate = tpl;
+          window.selectModule && window.selectModule('folder-02', 'module-02-002');
+        }
+      }, [
+        el('strong', { text: '★ ' + tpl.name }),
+        el('span', { text: (tpl.category || 'Blueprint') + ' · ' + ((tpl.blocks && tpl.blocks.length) || 0) + ' blocks' })
+      ]);
+      dd.appendChild(btn);
+    });
+  }
+
+  (function initPinnedCreateMenuFromStorage() {
+    try {
+      var raw = localStorage.getItem('cso_pinned_page_templates');
+      var ids = raw ? JSON.parse(raw) : [];
+      var customRaw = localStorage.getItem('cso_custom_page_templates');
+      var custom = customRaw ? JSON.parse(customRaw) : [];
+      if (Array.isArray(ids) && ids.length) {
+        f02SyncPinnedCreateMenu(ids, F02_TEMPLATES.concat(Array.isArray(custom) ? custom : []));
+      }
+    } catch (_e) { /* ignore storage errors */ }
+  })();
+
   function renderPageTemplatesGallery(root, actions) {
-    addHeaderPill(actions, '● 6 Odisha Blueprints');
+    addHeaderPill(actions, '● Blueprints Studio');
     var shell = el('div', { class: 'cso-mod-shell' });
-    renderBanner(shell, 'Page Templates Gallery', '6 Odisha exam & portal starter blueprints ready to instantiate into Create Page or Visual Builder.', [
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Open Visual Page Builder', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-003'); } })
-    ]);
-    var grid = el('div', { class: 'cso-mod-grid-2' });
-    F02_TEMPLATES.forEach(function (tpl) {
-      grid.appendChild(el('div', { class: 'cso-mod-card' }, [
+    var kpiHost = el('div', {});
+    var toolbarHost = el('div', {});
+    var drawerHost = el('div', {});
+    var gridHost = el('div', {});
+    var fullscreenHost = el('div', {});
+
+    var customTemplates = [];
+    var pinnedIds = [];
+    var usageMap = {};
+    var existingPages = [];
+    var searchText = '';
+    var activeFilter = 'all';
+
+    function getAllTemplates() {
+      return F02_TEMPLATES.map(function (t) {
+        return Object.assign({}, t, { isCustom: false });
+      }).concat(customTemplates.map(function (t) {
+        return Object.assign({}, t, { isCustom: true });
+      }));
+    }
+
+    function applyTokens(str, tokens) {
+      if (!str) return '';
+      var out = String(str);
+      Object.keys(tokens || {}).forEach(function (k) {
+        var val = tokens[k] || ('{{' + k + '}}');
+        out = out.split('{{' + k + '}}').join(val);
+      });
+      return out;
+    }
+
+    function materializeTemplate(tpl, tokens) {
+      var blocks = (tpl.blocks || []).map(function (b) {
+        var nb = Object.assign({}, b);
+        if (nb.title) nb.title = applyTokens(nb.title, tokens);
+        if (nb.text) nb.text = applyTokens(nb.text, tokens);
+        if (nb.label) nb.label = applyTokens(nb.label, tokens);
+        if (Array.isArray(nb.items)) {
+          nb.items = nb.items.map(function (it) { return applyTokens(it, tokens); });
+        }
+        return nb;
+      });
+      var atts = (tpl.attachments || []).map(function (a) {
+        return Object.assign({}, a, { label: applyTokens(a.label, tokens) });
+      });
+      return Object.assign({}, tpl, {
+        template_id: tpl.id,
+        meta_description: applyTokens(tpl.meta_description, tokens),
+        hero_title: applyTokens(tpl.hero_title, tokens),
+        hero_subtitle: applyTokens(tpl.hero_subtitle, tokens),
+        cta_label: applyTokens(tpl.cta_label, tokens),
+        secondary_cta_label: applyTokens(tpl.secondary_cta_label, tokens),
+        blocks: blocks,
+        attachments: atts
+      });
+    }
+
+    function bumpVersion(ver) {
+      var m = String(ver || 'v1.0').match(/^v?(\d+)\.(\d+)$/);
+      if (!m) return 'v1.1';
+      return 'v' + m[1] + '.' + (parseInt(m[2], 10) + 1);
+    }
+
+    async function saveD1Setting(key, val) {
+      await api('POST', 'settings', { key: key, value: JSON.stringify(val) });
+    }
+
+    async function recordUsage(tplId) {
+      usageMap[tplId] = (usageMap[tplId] || 0) + 1;
+      try {
+        localStorage.setItem('cso_page_template_usage', JSON.stringify(usageMap));
+        await saveD1Setting('page_template_usage', usageMap);
+      } catch (_e) { /* non-blocking */ }
+    }
+
+    async function togglePin(tplId) {
+      var idx = pinnedIds.indexOf(tplId);
+      if (idx === -1) pinnedIds.push(tplId);
+      else pinnedIds.splice(idx, 1);
+      try {
+        localStorage.setItem('cso_pinned_page_templates', JSON.stringify(pinnedIds));
+        f02SyncPinnedCreateMenu(pinnedIds, getAllTemplates());
+        await saveD1Setting('pinned_page_templates', pinnedIds);
+        toast(idx === -1 ? 'Pinned blueprint to top & + Create New menu' : 'Unpinned blueprint', 'success');
+      } catch (e) { toast(e.message, 'crimson'); }
+      renderAll();
+    }
+
+    function escapeHtmlAttr(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function buildBlueprintPreviewHtml(tpl) {
+      var m = materializeTemplate(tpl, {
+        EXAM_NAME: 'OSSC CGLRE',
+        YEAR: '2026',
+        DEPARTMENT: 'Odisha Staff Selection Commission',
+        LAST_DATE: '30 Nov 2026'
+      });
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + escapeHtmlAttr(m.hero_title || m.name) + '</title>' +
+        '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
+        '</head><body><header class="site-header"><div class="container header-inner"><a class="brand" href="/">Common Sense Odisha</a></div></header>' +
+        '<main class="container section"><section class="hero-card">' +
+        '<span class="badge">' + escapeHtmlAttr(m.category || 'Blueprint') + ' · ' + escapeHtmlAttr(m.schema_type || 'WebPage') + '</span>' +
+        '<h1>' + escapeHtmlAttr(m.hero_title || m.name) + '</h1>' +
+        (m.hero_subtitle ? '<p class="lead">' + escapeHtmlAttr(m.hero_subtitle) + '</p>' : '') +
+        '<p>' + escapeHtmlAttr(m.meta_description || '') + '</p><div class="hero-actions">' +
+        (m.cta_label ? '<a class="btn btn-primary" href="' + escapeHtmlAttr(m.cta_url || '#') + '">' + escapeHtmlAttr(m.cta_label) + '</a> ' : '') +
+        (m.secondary_cta_label ? '<a class="btn btn-secondary" href="' + escapeHtmlAttr(m.secondary_cta_url || '#') + '">' + escapeHtmlAttr(m.secondary_cta_label) + '</a>' : '') +
+        '</div></section>';
+      (m.blocks || []).forEach(function (b) {
+        html += '<section class="card"><span class="badge">' + escapeHtmlAttr((b.type || 'block').toUpperCase()) + '</span>';
+        if (b.title) html += '<h2>' + escapeHtmlAttr(b.title) + '</h2>';
+        if (b.text) html += '<p>' + escapeHtmlAttr(b.text) + '</p>';
+        if (Array.isArray(b.items) && b.items.length) {
+          html += '<ul>';
+          b.items.forEach(function (it) { html += '<li>' + escapeHtmlAttr(String(it).split('|')[0]) + '</li>'; });
+          html += '</ul>';
+        }
+        html += '</section>';
+      });
+      html += '</main></body></html>';
+      return html;
+    }
+
+    function openFullscreenPreview(tpl) {
+      clear(fullscreenHost);
+      var fsMode = 'desktop';
+      var fsFrame = el('iframe', {
+        class: 'cso-fullscreen-frame',
+        sandbox: 'allow-same-origin',
+        title: 'Blueprint Real-CSS Preview'
+      });
+      fsFrame.srcdoc = buildBlueprintPreviewHtml(tpl);
+      var bD = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop 100%', onclick: function () { setFs('desktop'); } });
+      var bT = el('button', { type: 'button', class: 'cso-pill', text: 'Tablet 768px', onclick: function () { setFs('tablet'); } });
+      var bM = el('button', { type: 'button', class: 'cso-pill', text: 'Mobile 375px', onclick: function () { setFs('mobile'); } });
+      function setFs(m) {
+        fsMode = m;
+        bD.classList.toggle('cso-pill-active', m === 'desktop');
+        bT.classList.toggle('cso-pill-active', m === 'tablet');
+        bM.classList.toggle('cso-pill-active', m === 'mobile');
+        fsFrame.className = 'cso-fullscreen-frame' + (m === 'tablet' ? ' is-tablet' : m === 'mobile' ? ' is-mobile' : '');
+      }
+      function closeFs() { document.removeEventListener('keydown', onEsc); clear(fullscreenHost); }
+      function onEsc(e) { if (e.key === 'Escape') closeFs(); }
+      document.addEventListener('keydown', onEsc);
+      fullscreenHost.appendChild(el('div', { class: 'cso-fullscreen-overlay' }, [
         el('div', { class: 'cso-drawer-head' }, [
-          el('h3', { text: tpl.name }),
-          badge(tpl.category, 'info')
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Back to Templates', onclick: closeFs }),
+            el('strong', { text: 'Real-CSS Blueprint Preview — ' + tpl.name })
+          ]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            bD, bT, bM,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Launch This Blueprint →', onclick: function () { closeFs(); openLaunchConfigurator(tpl, 'create'); } })
+          ])
         ]),
-        el('p', { class: 'cso-mod-muted', text: tpl.meta_description }),
-        el('p', { class: 'cso-mod-muted', text: 'Includes ' + tpl.blocks.length + ' blocks: ' + tpl.blocks.map(function (b) { return b.type; }).join(', ') }),
+        el('div', { class: 'cso-fullscreen-stage' }, [fsFrame])
+      ]));
+    }
+
+    function openLaunchConfigurator(tpl, mode) {
+      clear(drawerHost);
+      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: tpl.name + ' 2026' });
+      var slugInp = el('input', { type: 'text', class: 'cso-mod-input', value: '/' + tpl.id.replace(/[^a-z0-9\-]/g, '-') + '-2026/' });
+      var tokExam = el('input', { type: 'text', class: 'cso-mod-input', value: 'OSSC CGLRE' });
+      var tokYear = el('input', { type: 'text', class: 'cso-mod-input', value: '2026' });
+      var tokDept = el('input', { type: 'text', class: 'cso-mod-input', value: 'Odisha Staff Selection Commission' });
+      var tokDate = el('input', { type: 'text', class: 'cso-mod-input', value: '30 Nov 2026' });
+      var slugStatusHost = el('div', { class: 'cso-mod-toolbar' });
+
+      function checkSlugCollision() {
+        clear(slugStatusHost);
+        var norm = f02NormalizeRoute(slugInp.value);
+        var match = existingPages.find(function (p) { return p.route === norm; });
+        if (!match) {
+          slugStatusHost.appendChild(badge('✅ Route Available: ' + norm, 'ok'));
+        } else {
+          slugStatusHost.appendChild(badge('⚠️ Route Exists: ' + norm, 'warn'));
+          slugStatusHost.appendChild(el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-sm',
+            text: 'Open Existing',
+            onclick: function () { f02State.editRoute = norm; f02State.editPage = match; window.selectModule && window.selectModule('folder-02', 'module-02-002'); }
+          }));
+          slugStatusHost.appendChild(el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-sm',
+            text: 'Auto-Suffix -2',
+            onclick: function () { slugInp.value = norm.replace(/\/$/, '') + '-2/'; checkSlugCollision(); }
+          }));
+        }
+      }
+      slugInp.addEventListener('input', checkSlugCollision);
+      checkSlugCollision();
+
+      function buildMaterialized() {
+        var tokens = {
+          EXAM_NAME: tokExam.value.trim() || 'Odisha Exam',
+          YEAR: tokYear.value.trim() || '2026',
+          DEPARTMENT: tokDept.value.trim() || 'Govt of Odisha',
+          LAST_DATE: tokDate.value.trim() || '30 Nov 2026'
+        };
+        var mat = materializeTemplate(tpl, tokens);
+        mat.route = f02NormalizeRoute(slugInp.value);
+        mat.title = titleInp.value.trim() || mat.hero_title;
+        return mat;
+      }
+
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Smart Token Auto-Fill & Launch Configurator — ' + tpl.name }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title' }), titleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Target URL Slug' }), slugInp, slugStatusHost])
+        ]),
+        el('div', { class: 'cso-mod-grid-4' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: '{{EXAM_NAME}}' }), tokExam]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: '{{YEAR}}' }), tokYear]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: '{{DEPARTMENT}}' }), tokDept]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: '{{LAST_DATE}}' }), tokDate])
+        ]),
         el('div', { class: 'cso-mod-toolbar' }, [
           el('button', {
             type: 'button',
-            class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
-            text: 'Use in Create Page',
-            onclick: function () { f02State.createTemplate = tpl; window.selectModule && window.selectModule('folder-02', 'module-02-002'); }
+            class: 'cso-mod-btn cso-mod-btn-primary',
+            text: mode === 'builder' ? 'Hydrate & Open Visual Builder' : 'Hydrate & Open Create Page',
+            onclick: async function () {
+              var mat = buildMaterialized();
+              await recordUsage(tpl.id);
+              if (mode === 'builder') {
+                f02State.builderTemplate = mat;
+                f02State.builderRoute = mat.route;
+                window.selectModule && window.selectModule('folder-02', 'module-02-003');
+              } else {
+                f02State.createTemplate = mat;
+                window.selectModule && window.selectModule('folder-02', 'module-02-002');
+              }
+            }
           }),
           el('button', {
             type: 'button',
-            class: 'cso-mod-btn cso-mod-btn-sm',
-            text: 'Open in Visual Builder',
-            onclick: function () { f02State.builderTemplate = tpl; window.selectModule && window.selectModule('folder-02', 'module-02-003'); }
+            class: 'cso-mod-btn',
+            text: 'Quick Create Draft in D1',
+            onclick: async function () {
+              try {
+                var mat = buildMaterialized();
+                await api('POST', 'pages', {
+                  route: mat.route,
+                  title: mat.title,
+                  meta_description: mat.meta_description,
+                  category: mat.category || 'Core Portal',
+                  hero_title: mat.hero_title,
+                  hero_subtitle: mat.hero_subtitle,
+                  cta_label: mat.cta_label,
+                  cta_url: mat.cta_url,
+                  secondary_cta_label: mat.secondary_cta_label || '',
+                  secondary_cta_url: mat.secondary_cta_url || '',
+                  template_id: tpl.id,
+                  blocks_json: JSON.stringify(mat.blocks || []),
+                  status: 'draft',
+                  note: 'Quick draft from template ' + tpl.id
+                });
+                await recordUsage(tpl.id);
+                toast('Created draft in D1: ' + mat.route, 'success');
+                clear(drawerHost);
+                await loadAll();
+              } catch (e) { toast(e.message, 'crimson'); }
+            }
           })
         ])
       ]));
+    }
+
+    function openCustomTemplateEditor(existingTpl) {
+      clear(drawerHost);
+      var isEdit = !!(existingTpl && existingTpl.isCustom);
+      var nameInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. OSSC Skill Test Guide', value: existingTpl ? existingTpl.name : '' });
+      var catSel = el('select', { class: 'cso-mod-select' }, ['Core Portal', 'Candidate Workspace', 'Information & Legal'].map(function (c) {
+        return el('option', { value: c, text: c, selected: existingTpl && existingTpl.category === c });
+      }));
+      var descInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Supports {{EXAM_NAME}}, {{YEAR}}, {{DEPARTMENT}}, {{LAST_DATE}}', value: existingTpl ? existingTpl.meta_description : '' });
+      var hTitleInp = el('input', { type: 'text', class: 'cso-mod-input', value: existingTpl ? (existingTpl.hero_title || '') : '{{EXAM_NAME}} {{YEAR}} Guide' });
+      var hSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Odia bilingual subtitle (ଓଡ଼ିଆ)', value: existingTpl ? (existingTpl.hero_subtitle || '') : '' });
+      var ctaLbl = el('input', { type: 'text', class: 'cso-mod-input', value: existingTpl ? (existingTpl.cta_label || 'Apply Online') : 'Apply Online' });
+      var ctaUrl = el('input', { type: 'text', class: 'cso-mod-input', value: existingTpl ? (existingTpl.cta_url || '/jobs-careers/') : '/jobs-careers/' });
+      var blocksArea = el('textarea', { class: 'cso-mod-textarea', rows: 6, value: JSON.stringify(existingTpl && existingTpl.blocks ? existingTpl.blocks : [{ type: 'hero', title: '{{EXAM_NAME}} {{YEAR}}', text: 'Verified guide by {{DEPARTMENT}}.' }, { type: 'notice', title: 'Deadline', text: 'Last Date: {{LAST_DATE}}' }], null, 2) });
+
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: isEdit ? 'Edit Custom D1 Template (' + existingTpl.version + ')' : '+ New Custom D1 Template' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Template Name' }), nameInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description (Tokens Supported)' }), descInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Title' }), hTitleInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Bilingual Odia Subtitle (ଓଡ଼ିଆ)' }), hSubInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary CTA Label & URL' }), el('div', { class: 'cso-mod-grid-2' }, [ctaLbl, ctaUrl])])
+        ]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Blocks JSON Array' }), blocksArea]),
+        el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-primary',
+          text: isEdit ? 'Save New Version to D1' : 'Save Custom Template to D1',
+          onclick: async function () {
+            try {
+              var parsedBlocks = JSON.parse(blocksArea.value || '[]');
+              var tplObj = {
+                id: isEdit ? existingTpl.id : 'custom-' + Date.now(),
+                name: nameInp.value.trim() || 'Custom Odisha Blueprint',
+                category: catSel.value,
+                version: isEdit ? bumpVersion(existingTpl.version) : 'v1.0',
+                updated_at: new Date().toISOString(),
+                schema_type: (existingTpl && existingTpl.schema_type) || 'WebPage',
+                meta_description: descInp.value.trim(),
+                hero_title: hTitleInp.value.trim(),
+                hero_subtitle: hSubInp.value.trim(),
+                cta_label: ctaLbl.value.trim(),
+                cta_url: ctaUrl.value.trim(),
+                blocks: Array.isArray(parsedBlocks) ? parsedBlocks : []
+              };
+              if (isEdit) {
+                customTemplates = customTemplates.map(function (c) { return c.id === existingTpl.id ? tplObj : c; });
+              } else {
+                customTemplates.push(tplObj);
+              }
+              localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+              await saveD1Setting('custom_page_templates', customTemplates);
+              f02SyncPinnedCreateMenu(pinnedIds, getAllTemplates());
+              toast('Saved custom template ' + tplObj.name + ' (' + tplObj.version + ') to D1', 'success');
+              clear(drawerHost);
+              renderAll();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        })
+      ]));
+    }
+
+    function openSaveFromLivePageDrawer() {
+      clear(drawerHost);
+      var sel = el('select', { class: 'cso-mod-select' }, existingPages.map(function (p) {
+        return el('option', { value: p.route, text: (p.title || p.route) + ' (' + p.route + ')' });
+      }));
+      var nameInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Reusable Template Name' });
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Save Live Page as Reusable D1 Template' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Select Live Page' }), sel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'New Template Name' }), nameInp])
+        ]),
+        el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-primary',
+          text: 'Snapshot into Custom D1 Templates',
+          onclick: async function () {
+            var pg = existingPages.find(function (p) { return p.route === sel.value; });
+            if (!pg) return;
+            var tplObj = {
+              id: 'snap-' + Date.now(),
+              name: nameInp.value.trim() || ((pg.title || pg.route) + ' Blueprint'),
+              category: pg.category || 'Core Portal',
+              version: 'v1.0',
+              updated_at: new Date().toISOString(),
+              schema_type: 'WebPage',
+              meta_description: pg.meta_description || '',
+              hero_title: pg.hero_title || pg.title || '',
+              hero_subtitle: pg.hero_subtitle || '',
+              cta_label: pg.cta_label || 'Explore Now',
+              cta_url: pg.cta_url || '/jobs-careers/',
+              secondary_cta_label: pg.secondary_cta_label || '',
+              secondary_cta_url: pg.secondary_cta_url || '',
+              blocks: f02ParseBlocks(pg.blocks_json)
+            };
+            customTemplates.push(tplObj);
+            try {
+              localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+              await saveD1Setting('custom_page_templates', customTemplates);
+              toast('Saved live page as D1 template: ' + tplObj.name, 'success');
+              clear(drawerHost);
+              renderAll();
+            } catch (e) { toast(e.message, 'crimson'); }
+          }
+        })
+      ]));
+    }
+
+    function openAiArchitectDrawer() {
+      clear(drawerHost);
+      var promptInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. Odisha Forest Guard Physical Test & Merit List Blueprint' });
+      var genBtn = el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-primary',
+        text: '✨ Generate & Save D1 Blueprint',
+        onclick: async function () {
+          if (!promptInp.value.trim()) return;
+          genBtn.disabled = true;
+          try {
+            var res = await api('POST', 'ai/generate-page', {
+              mode: 'blueprint',
+              topic: promptInp.value.trim(),
+              language: 'Bilingual English + Odia'
+            });
+            var gen = res.page || res;
+            var tplObj = {
+              id: 'ai-' + Date.now(),
+              name: gen.title || promptInp.value.trim(),
+              category: 'Core Portal',
+              version: 'v1.0',
+              updated_at: new Date().toISOString(),
+              schema_type: 'WebPage',
+              meta_description: gen.meta_description || ('Complete guide for ' + promptInp.value.trim()),
+              hero_title: gen.hero_title || gen.title || promptInp.value.trim(),
+              hero_subtitle: gen.hero_subtitle || 'ଓଡ଼ିଆ ଏବଂ ଇଂରାଜୀରେ ସମ୍ପୂର୍ଣ୍ଣ ସୂଚନା',
+              cta_label: gen.cta_label || 'Apply / Explore Now',
+              cta_url: gen.cta_url || '/jobs-careers/',
+              blocks: Array.isArray(gen.blocks) && gen.blocks.length ? gen.blocks : [
+                { type: 'hero', title: '{{EXAM_NAME}} {{YEAR}}', text: 'Generated blueprint for ' + promptInp.value.trim() },
+                { type: 'notice', title: 'Key Dates', text: 'Deadline: {{LAST_DATE}}' },
+                { type: 'faq', title: 'FAQs', items: ['Who can apply?|Check official {{DEPARTMENT}} notification.'] }
+              ]
+            };
+            customTemplates.push(tplObj);
+            localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+            await saveD1Setting('custom_page_templates', customTemplates);
+            toast('AI Blueprint saved to D1: ' + tplObj.name, 'success');
+            clear(drawerHost);
+            renderAll();
+          } catch (e) { toast(e.message, 'crimson'); }
+          finally { genBtn.disabled = false; }
+        }
+      });
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'AI Blueprint Architect (Workers AI → Custom D1 Template)' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Describe the Odisha Blueprint to Generate' }), promptInp]),
+        genBtn
+      ]));
+    }
+
+    async function syncLinkedPages(tpl) {
+      var linked = existingPages.filter(function (p) { return p.template_id === tpl.id; });
+      if (!linked.length) { toast('No D1 pages linked to template "' + tpl.id + '" yet.', 'info'); return; }
+      if (!window.confirm('Sync updated structural blocks from "' + tpl.name + '" to ' + linked.length + ' linked page(s)?')) return;
+      var updated = 0;
+      for (var i = 0; i < linked.length; i++) {
+        try {
+          await api('PUT', 'pages', {
+            route: linked[i].route,
+            blocks_json: JSON.stringify(tpl.blocks || []),
+            note: 'Synced structural blocks from template ' + tpl.id
+          });
+          updated++;
+        } catch (_e) { /* continue */ }
+      }
+      toast('Synced blocks to ' + updated + '/' + linked.length + ' linked page(s)', 'success');
+    }
+
+    function exportJsonPack() {
+      var data = JSON.stringify({ exported_at: new Date().toISOString(), custom_templates: customTemplates }, null, 2);
+      var blob = new Blob([data], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'cso-custom-page-templates.json';
+      a.click();
+    }
+
+    function renderAll() {
+      clear(kpiHost);
+      clear(toolbarHost);
+      clear(gridHost);
+
+      var all = getAllTemplates();
+      var mostUsed = all[0];
+      var maxUse = -1;
+      all.forEach(function (t) {
+        var u = usageMap[t.id] || 0;
+        if (u > maxUse) { maxUse = u; mostUsed = t; }
+      });
+
+      kpiHost.appendChild(el('div', { class: 'cso-kpi-grid-4' }, [
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Total Blueprints' }), el('strong', { text: String(all.length) })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Custom D1 Templates' }), el('strong', { text: String(customTemplates.length) })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Most Used Blueprint' }), el('strong', { text: mostUsed ? mostUsed.name : '—' })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Bilingual & Schema Ready' }), el('strong', { text: '100%' })])
+      ]));
+
+      var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Search blueprints, Odia tags, schema, or blocks...', value: searchText });
+      searchInp.addEventListener('input', function () { searchText = searchInp.value.trim(); renderGridOnly(); });
+
+      var cats = [
+        ['all', 'All Blueprints'],
+        ['Core Portal', 'Core Portal'],
+        ['Candidate Workspace', 'Candidate Workspace'],
+        ['Information & Legal', 'Information & Legal'],
+        ['custom', 'My Custom Templates'],
+        ['pinned', '★ Pinned']
+      ];
+      var pills = cats.map(function (c) {
+        return el('button', {
+          type: 'button',
+          class: 'cso-pill' + (activeFilter === c[0] ? ' cso-pill-active' : ''),
+          text: c[1],
+          onclick: function () { activeFilter = c[0]; renderAll(); }
+        });
+      });
+      toolbarHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, [searchInp, el('div', { class: 'cso-pill-row' }, pills)]));
+      renderGridOnly();
+    }
+
+    function renderGridOnly() {
+      clear(gridHost);
+      var all = getAllTemplates().sort(function (a, b) {
+        var pa = pinnedIds.indexOf(a.id) !== -1 ? 1 : 0;
+        var pb = pinnedIds.indexOf(b.id) !== -1 ? 1 : 0;
+        return pb - pa;
+      });
+      var filtered = all.filter(function (t) {
+        if (activeFilter === 'custom' && !t.isCustom) return false;
+        if (activeFilter === 'pinned' && pinnedIds.indexOf(t.id) === -1) return false;
+        if (activeFilter !== 'all' && activeFilter !== 'custom' && activeFilter !== 'pinned' && t.category !== activeFilter) return false;
+        if (searchText) {
+          var q = searchText.toLowerCase();
+          var hay = (t.name + ' ' + t.meta_description + ' ' + (t.hero_subtitle || '') + ' ' + (t.schema_type || '')).toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+
+      var grid = el('div', { class: 'cso-mod-grid-2' });
+      filtered.forEach(function (tpl) {
+        var isPinned = pinnedIds.indexOf(tpl.id) !== -1;
+        var uses = usageMap[tpl.id] || 0;
+        var flow = el('div', { class: 'cso-block-flow' }, (tpl.blocks || []).map(function (b, idx) {
+          var cls = 'cso-block-chip' + (b.type === 'notice' ? ' is-notice' : b.type === 'cbt' ? ' is-cbt' : b.type === 'faq' ? ' is-faq' : b.type === 'ticker' ? ' is-ticker' : '');
+          return el('div', { class: cls }, [
+            el('span', { text: (idx + 1) + '. ' + (b.type || 'block').toUpperCase() }),
+            el('small', { text: b.title || (b.text ? String(b.text).slice(0, 36) : 'Section') })
+          ]);
+        }));
+
+        var cardBtns = [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Use in Create Page', onclick: function () { openLaunchConfigurator(tpl, 'create'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open in Visual Builder', onclick: function () { openLaunchConfigurator(tpl, 'builder'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openFullscreenPreview(tpl); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Sync Linked Pages', onclick: function () { syncLinkedPages(tpl); } })
+        ];
+        if (tpl.isCustom) {
+          cardBtns.push(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit', onclick: function () { openCustomTemplateEditor(tpl); } }));
+          cardBtns.push(el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-sm',
+            text: 'Duplicate',
+            onclick: async function () {
+              var copy = Object.assign({}, tpl, { id: 'copy-' + Date.now(), name: tpl.name + ' (Copy)', version: 'v1.0', updated_at: new Date().toISOString() });
+              customTemplates.push(copy);
+              localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+              await saveD1Setting('custom_page_templates', customTemplates);
+              renderAll();
+            }
+          }));
+          cardBtns.push(el('button', {
+            type: 'button',
+            class: 'cso-mod-btn cso-mod-btn-sm',
+            text: 'Delete',
+            onclick: async function () {
+              customTemplates = customTemplates.filter(function (c) { return c.id !== tpl.id; });
+              localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+              await saveD1Setting('custom_page_templates', customTemplates);
+              renderAll();
+            }
+          }));
+        }
+
+        grid.appendChild(el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('div', {}, [
+              el('h3', { text: tpl.name }),
+              el('div', { class: 'cso-pill-row' }, [
+                badge(tpl.category, 'info'),
+                badge(tpl.schema_type || 'WebPage', 'ok'),
+                badge((tpl.version || 'v1.0') + ' · ' + uses + ' uses', 'info'),
+                tpl.isCustom ? badge('Custom D1', 'warn') : ''
+              ])
+            ]),
+            el('button', {
+              type: 'button',
+              class: 'cso-pin-btn' + (isPinned ? ' is-pinned' : ''),
+              text: isPinned ? '★ Pinned' : '☆ Pin to Top',
+              onclick: function () { togglePin(tpl.id); }
+            })
+          ]),
+          el('p', { class: 'cso-mod-muted', text: tpl.meta_description }),
+          flow,
+          el('div', { class: 'cso-mod-toolbar' }, cardBtns)
+        ]));
+      });
+      gridHost.appendChild(grid);
+    }
+
+    var importFileInp = el('input', { type: 'file', class: 'cso-sr-file', accept: 'application/json,.json' });
+    importFileInp.addEventListener('change', function () {
+      var f = importFileInp.files && importFileInp.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = async function () {
+        try {
+          var parsed = JSON.parse(String(reader.result || '{}'));
+          var list = Array.isArray(parsed) ? parsed : (parsed.custom_templates || []);
+          list.forEach(function (item) {
+            customTemplates.push(Object.assign({}, item, { id: item.id || ('imp-' + Date.now()), isCustom: true }));
+          });
+          localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+          await saveD1Setting('custom_page_templates', customTemplates);
+          toast('Imported ' + list.length + ' template(s) into D1', 'success');
+          renderAll();
+        } catch (e) { toast('Invalid JSON: ' + e.message, 'crimson'); }
+      };
+      reader.readAsText(f);
     });
-    shell.appendChild(grid);
+
+    async function loadAll() {
+      try {
+        var res = await api('GET', 'settings');
+        var map = (res && res.settings) || {};
+        if (map.custom_page_templates) {
+          try { customTemplates = JSON.parse(map.custom_page_templates) || []; } catch (_e) { customTemplates = []; }
+        }
+        if (map.pinned_page_templates) {
+          try { pinnedIds = JSON.parse(map.pinned_page_templates) || []; } catch (_e) { pinnedIds = []; }
+        }
+        if (map.page_template_usage) {
+          try { usageMap = JSON.parse(map.page_template_usage) || {}; } catch (_e) { usageMap = {}; }
+        }
+        localStorage.setItem('cso_pinned_page_templates', JSON.stringify(pinnedIds));
+        localStorage.setItem('cso_custom_page_templates', JSON.stringify(customTemplates));
+        f02SyncPinnedCreateMenu(pinnedIds, getAllTemplates());
+      } catch (_s) { /* fallback to storage */ }
+      try {
+        var pg = await api('GET', 'pages');
+        existingPages = (pg && pg.pages) || [];
+      } catch (_p) { existingPages = []; }
+      renderAll();
+    }
+
+    renderBanner(shell, 'Page Templates & Blueprints Studio', '10 Odisha starter blueprints + D1 custom templates with smart token auto-fill, slug collision checks, linked-page sync & real-CSS previews.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ New Custom Template', onclick: function () { openCustomTemplateEditor(null); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Live Page as Template', onclick: openSaveFromLivePageDrawer }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: '✨ AI Generate Blueprint', onclick: openAiArchitectDrawer }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: exportJsonPack }),
+      el('label', { class: 'cso-mod-btn' }, ['Import JSON', importFileInp])
+    ]);
+    shell.appendChild(kpiHost);
+    shell.appendChild(toolbarHost);
+    shell.appendChild(drawerHost);
+    shell.appendChild(gridHost);
+    shell.appendChild(fullscreenHost);
     root.appendChild(shell);
+    loadAll();
   }
 
   /* -------------------------------------------------------------------------

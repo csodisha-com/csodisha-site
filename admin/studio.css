@@ -1835,4 +1835,13 @@ input[type="checkbox"] {
 .cso-builder-block.is-dragging { opacity: 0.4; }
 .cso-drag-handle { cursor: grab; user-select: none; color: var(--studio-muted); font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--studio-bg); }
 .cso-palette-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.cso-block-flow { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 12px; padding: 8px 10px; background: var(--studio-bg); border: 1px solid var(--studio-border); border-radius: 8px; }
+.cso-block-chip { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; border-left: 3px solid var(--studio-blue); background: rgba(56, 189, 248, 0.1); color: var(--studio-text); }
+.cso-block-chip.is-notice { border-left-color: var(--studio-amber); background: rgba(245, 158, 11, 0.12); }
+.cso-block-chip.is-cbt { border-left-color: #10b981; background: rgba(16, 185, 129, 0.12); }
+.cso-block-chip.is-faq { border-left-color: #a78bfa; background: rgba(167, 139, 250, 0.12); }
+.cso-block-chip.is-ticker { border-left-color: #f43f5e; background: rgba(244, 63, 94, 0.12); }
+.cso-pin-btn { border: 1px solid var(--studio-border); background: var(--studio-bg); color: var(--studio-muted); padding: 3px 8px; border-radius: 999px; font-size: 11.5px; cursor: pointer; }
+.cso-pin-btn.is-pinned { border-color: var(--studio-amber); background: rgba(245, 158, 11, 0.16); color: var(--studio-amber); font-weight: 700; }
+.cso-create-divider { border-top: 1px solid var(--studio-border); margin: 6px 0; padding: 4px 10px 2px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--studio-amber); }
 
