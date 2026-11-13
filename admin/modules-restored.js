@@ -7844,35 +7844,51 @@
     'module-03-001': {
       title: 'About Us',
       seoTitle: 'About Us | Common Sense Odisha (csodisha.com)',
-      metaDescription: 'About Common Sense Odisha (csodisha.com) — independent Odisha government job, OPSC/OSSC/OSSSC exam preparation, and scholarship verification portal based in Basta, Balasore, Odisha.',
+      metaDescription: 'About Common Sense Odisha (csodisha.com) — independent Odisha government job, OPSC/OSSC/OSSSC exam preparation, and scholarship verification portal based in Basta, Balasore, 756029.',
       heroTitle: 'About Common Sense Odisha',
-      heroSubtitle: 'Independent Odisha recruitment, exam preparation, and scholarship intelligence — verified from Basta, Balasore, Odisha, India.',
+      heroSubtitle: 'Independent Odisha recruitment, exam preparation, and scholarship intelligence — verified from Basta, Balasore, 756029.',
       effectiveDate: '2026-11-13',
       path: '/about.html',
       email: 'editorial@csodisha.com',
       sections: [
         { type: 'richtext', title: 'Our Mission & Editorial Independence', text: 'Common Sense Odisha (csodisha.com) is an independent educational and career-intelligence portal built for aspirants across all 30 districts of Odisha. Every recruitment notice, syllabus, and scheme deadline is cross-checked against official government gazettes and commission portals.' },
-        { type: 'richtext', title: 'Founder & Editorial Base', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, Odisha, India · Contact: editorial@csodisha.com · Official Portal: https://csodisha.com' },
+        { type: 'richtext', title: 'Founder & Editorial Base', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, 756029 · Contact: editorial@csodisha.com · Official Portal: https://csodisha.com' },
         { type: 'notice', title: 'Verification & Non-Affiliation Notice', text: 'Common Sense Odisha is not affiliated with any government ministry or recruitment commission. Always confirm final submission dates on the official notification linked in each post.' }
       ]
     },
     'module-03-002': {
       title: 'Contact Us',
       seoTitle: 'Contact Us | Common Sense Odisha (csodisha.com)',
-      metaDescription: 'Contact Common Sense Odisha (csodisha.com) — reach the Editorial & Verification Desk in Basta, Balasore, Odisha for recruitment updates, corrections, and student queries.',
+      metaDescription: 'Contact Common Sense Odisha (csodisha.com) — reach the Editorial & Verification Desk in Basta, Balasore, 756029 for recruitment updates, corrections, and student queries.',
       heroTitle: 'Contact Common Sense Odisha',
-      heroSubtitle: 'Reach our Editorial & Verification Desk in Basta, Balasore, Odisha for recruitment tips, factual corrections, scholarship queries, and feedback.',
+      heroSubtitle: 'Reach our Editorial & Verification Desk in Basta, Balasore, 756029 for recruitment tips, factual corrections, scholarship queries, and feedback.',
       effectiveDate: '2026-11-13',
       path: '/contact.html',
       email: 'editorial@csodisha.com',
       sections: [
         { type: 'richtext', title: 'Editorial & Verification Desk', text: 'Have a question about an OPSC, OSSC, OSSSC, or teaching recruitment notice, exam syllabus, or scholarship deadline? Write directly to our Editorial Desk at editorial@csodisha.com. Please include the official notification number or advertisement link so our team can verify and respond promptly.' },
         { type: 'richtext', title: 'Corrections, Takedowns & Technical Support', text: 'If you spot a typographical error, outdated deadline, or broken link on any page, notify us at editorial@csodisha.com with the page URL. Verified corrections are updated within 24 hours. For copyright or DMCA notices, please refer to our Copyright & DMCA policy or email editorial@csodisha.com with supporting documentation.' },
-        { type: 'richtext', title: 'Founder & Editorial Office', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, Odisha, India · Official Portal: https://csodisha.com' },
+        { type: 'richtext', title: 'Founder & Editorial Office', text: 'Founder & Editor-in-Chief: Ramesh Biswal · Editorial Base: Basta, Balasore, 756029 · Official Portal: https://csodisha.com' },
         { type: 'notice', title: 'Response Hours & Important Advisory', text: 'Editorial Hours: Monday to Saturday, 10:00 AM – 6:00 PM IST · Advisory: Common Sense Odisha is an independent educational portal and never asks aspirants for money, bank details, or OTPs.' }
       ]
     },
-    'module-03-003': { title: 'Privacy Policy', path: '/privacy.html', email: 'privacy@csodisha.com' },
+    'module-03-003': {
+      title: 'Privacy Policy',
+      seoTitle: 'Privacy Policy | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Read the Privacy Policy of Common Sense Odisha (csodisha.com) — compliant with India\'s Digital Personal Data Protection Act, 2023 (DPDP Act) and IT Rules.',
+      heroTitle: 'Privacy Policy',
+      heroSubtitle: 'How Common Sense Odisha collects, safeguards, and processes user information in compliance with India\'s Digital Personal Data Protection Act, 2023 (DPDP Act).',
+      effectiveDate: '2026-11-13',
+      path: '/privacy.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Information We Collect & Purpose of Processing', text: 'Common Sense Odisha (csodisha.com) respects your privacy and collects only minimal information necessary to operate our educational portal: (a) Account & Learning Data (name, email address, saved bookmarks, and CBT mock test practice scores when you voluntarily register); (b) Technical & Security Logs (anonymized IP telemetry, browser user-agent, and Cloudflare edge security headers used strictly to prevent abuse and unauthorized access); and (c) Voluntary Correspondence sent to our editorial desk.' },
+        { type: 'richtext', title: 'How We Use Data & Zero-Sale Guarantee', text: 'We use collected data solely to deliver personalized study bookmarks, track CBT practice progress, maintain platform security, and respond to user inquiries. We never sell, rent, or trade your personal data to third-party data brokers or marketing networks.' },
+        { type: 'richtext', title: 'Your Rights Under India\'s DPDP Act, 2023', text: 'Under the Digital Personal Data Protection Act, 2023 (India), you have the right to access a summary of your personal data, request correction of inaccurate details, withdraw consent or request erasure of your account and CBT records, and raise a grievance by writing to editorial@csodisha.com.' },
+        { type: 'richtext', title: 'External Official Links & Edge Infrastructure', text: 'Our portal links directly to official government recruitment websites (OPSC, OSSC, OSSSC, and State Scholarship portals) and runs on Cloudflare edge infrastructure. External websites are governed by their own privacy policies.' },
+        { type: 'notice', title: 'Data Grievance Contact & Effective Date', text: 'Effective Date: 2026-11-13 · Grievance & Privacy Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-004': { title: 'Disclaimer', path: '/disclaimer.html', email: 'legal@csodisha.com' },
     'module-03-005': { title: 'Terms & Conditions', path: '/terms.html', email: 'legal@csodisha.com' },
     'module-03-006': { title: 'Cookie Policy', path: '/cookies.html', email: 'privacy@csodisha.com' },
