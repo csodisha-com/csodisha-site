@@ -1004,7 +1004,7 @@
     };
 
     var shell = el('div', { class: 'cso-mod-shell' });
-    var kpiHost = el('div', { class: 'cso-mod-kpis' });
+    var kpiHost = el('div', { class: 'cso-kpi-grid-4' });
     var resultBanner = el('div', {});
     var existingRoutes = {};
     var previewTab = 'page';
@@ -1065,6 +1065,7 @@
       el('span', { text: 'Auto-create 301 redirect from old slug' })
     ]);
     var publishBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live Now', onclick: function () { submitPage('published'); } });
+    var bottomPublishBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live Now', onclick: function () { submitPage('published'); } });
 
     function utf8Bytes(s) {
       try { return new TextEncoder().encode(String(s || '')).length; } catch (_) { return String(s || '').length; }
@@ -1529,6 +1530,10 @@
       }
 
       publishBtn.disabled = errs.length > 0;
+      bottomPublishBtn.disabled = errs.length > 0;
+      var blockTip = errs.length > 0 ? ('Resolve ' + errs.length + ' blocking error(s) in Pre-Publish Error Detector before publishing live') : '';
+      publishBtn.title = blockTip;
+      bottomPublishBtn.title = blockTip;
       clear(validationHost);
       var verifyBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Verify All Links (200 OK)', onclick: verifyAllLinks });
       if (!errs.length && !warns.length) {
@@ -1854,6 +1859,7 @@
       starterBlocks = parsed.filter(function (b) { return b && b.type !== 'page_meta' && b.type !== 'og_meta' && b.type !== 'attachment' && b.type !== 'image'; });
       if (!starterBlocks.length) starterBlocks = [{ type: 'richtext', title: 'Overview', text: '' }];
       publishBtn.textContent = 'Update Live';
+      bottomPublishBtn.textContent = 'Update Live';
       clear(revisionHost);
       renderLifecycleBar();
       renderAttachments();
@@ -1868,6 +1874,7 @@
       editingStatus = 'published';
       editingRevisionsCount = 0;
       publishBtn.textContent = 'Publish Live Now';
+      bottomPublishBtn.textContent = 'Publish Live Now';
       clear(lifecycleHost);
       clear(revisionHost);
       attachments = [];
@@ -1950,6 +1957,7 @@
             editingRoute = null;
             editingStatus = 'draft';
             publishBtn.textContent = 'Publish Live Now';
+      bottomPublishBtn.textContent = 'Publish Live Now';
             titleInp.value = (titleInp.value.trim() || 'Page') + ' (Copy)';
             slugInp.value = f02NormalizeRoute((slugInp.value || '/page/').replace(/\/$/, '') + '-copy/');
             slugInp.dataset.touched = '1';
@@ -1979,11 +1987,10 @@
     });
 
     renderBanner(shell, 'Create & Edit Website Pages', 'Create new routes or edit existing portals on csodisha.com with 301 redirects, AI polish, revision rollback & click-to-focus real-CSS preview.', [
-      editPageSel,
       el('button', { type: 'button', class: 'cso-mod-btn', text: '+ New Page', onclick: resetToCreateMode }),
-      publishBtn,
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { submitPage('draft'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Schedule', onclick: function () { submitPage('scheduled'); } })
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Schedule', onclick: function () { submitPage('scheduled'); } }),
+      publishBtn
     ]);
 
     shell.appendChild(recoveryHost);
@@ -2110,14 +2117,17 @@
     });
 
     shell.appendChild(el('div', { class: 'cso-mod-card' }, [
+      el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Edit Existing Page' }), editPageSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Clone From Existing Page' }), cloneSel])
+      ]),
       el('div', { class: 'cso-drawer-head' }, [
-        el('strong', { text: 'Quick-Start Blueprints & Clone' }),
-        el('div', { class: 'cso-mod-toolbar' }, [
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Blank Page', onclick: function () { applyBlueprint('blank'); } }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Odisha Exam Guide (OPSC/OSSC)', onclick: function () { applyBlueprint('exam'); } }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Scheme & Benefit Portal', onclick: function () { applyBlueprint('scheme'); } }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Institutional / Policy Page', onclick: function () { applyBlueprint('policy'); } }),
-          cloneSel
+        el('strong', { text: 'Quick-Start Blueprints' }),
+        el('div', { class: 'cso-pill-row' }, [
+          el('button', { type: 'button', class: 'cso-pill', text: 'Blank Page', onclick: function () { applyBlueprint('blank'); } }),
+          el('button', { type: 'button', class: 'cso-pill', text: 'Odisha Exam Guide (OPSC/OSSC)', onclick: function () { applyBlueprint('exam'); } }),
+          el('button', { type: 'button', class: 'cso-pill', text: 'Scheme & Benefit Portal', onclick: function () { applyBlueprint('scheme'); } }),
+          el('button', { type: 'button', class: 'cso-pill', text: 'Institutional / Policy Page', onclick: function () { applyBlueprint('policy'); } })
         ])
       ])
     ]));
@@ -2180,8 +2190,8 @@
           el('label', { class: 'cso-check-label' }, [noindexChk, el('span', { text: 'Noindex / Unlisted' })])
         ])
       ]),
-      el('div', { class: 'cso-mod-card' }, [
-        el('div', { class: 'cso-drawer-head' }, [
+      el('div', { class: 'cso-mod-card cso-sticky-preview' }, [
+        el('div', { class: 'cso-preview-header-stack' }, [
           el('h3', { text: 'Real Pre-Publish Preview Studio' }),
           el('div', { class: 'cso-mod-toolbar' }, [
             vpDeskBtn,
@@ -2194,7 +2204,7 @@
       ])
     ]));
 
-    var r2UploadInp = el('input', { type: 'file', class: 'cso-mod-input', accept: '.pdf,.png,.jpg,.jpeg,.webp,.svg,.doc,.docx,.xls,.xlsx,.csv,.zip' });
+    var r2UploadInp = el('input', { type: 'file', class: 'cso-sr-file', accept: '.pdf,.png,.jpg,.jpeg,.webp,.svg,.doc,.docx,.xls,.xlsx,.csv,.zip' });
     r2UploadInp.addEventListener('change', async function () {
       var f = r2UploadInp.files[0];
       if (!f) return;
@@ -2235,35 +2245,41 @@
     shell.appendChild(el('div', { class: 'cso-mod-card' }, [
       el('div', { class: 'cso-drawer-head' }, [
         el('h3', { text: 'Media, Files & External Links (R2 + Official + Google Drive)' }),
-        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick from R2 Library', onclick: function () { toggleR2Browser(); } })
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('label', { class: 'cso-file-drop' }, [el('span', { text: '⬆ Upload File to R2 (PDF, JPG, PNG, WebP)' }), r2UploadInp]),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick from R2 Library', onclick: function () { toggleR2Browser(); } })
+        ])
       ]),
       el('div', { class: 'cso-mod-grid-2' }, [
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Upload File to R2 (PDF, JPG, PNG, WebP)' }), r2UploadInp]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link Type' }), extTypeSel])
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link Type' }), extTypeSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link Title' }), extTitleInp])
       ]),
       el('div', { class: 'cso-mod-grid-3' }, [
-        extTitleInp,
-        el('div', { class: 'cso-mod-shell' }, [extUrlInp, extLinkPicker]),
-        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Attach External / Drive Link', onclick: function () {
-          var u = extUrlInp.value.trim();
-          var t = extTitleInp.value.trim();
-          if (!u || (!/^https?:\/\//i.test(u) && u.indexOf('/') !== 0)) { toast('Enter a valid http(s) or site-relative URL', 'amber'); return; }
-          var meta = detectLinkMeta(u, extTypeSel.value);
-          var role = extTypeSel.value === 'Apply Online CTA' ? 'Apply Online CTA' :
-                     meta.source_kind === 'gdrive' ? 'Google Drive Document' :
-                     meta.source_kind === 'gov' ? 'Official Portal Link' :
-                     meta.is_pdf ? 'Downloadable PDF/File' : 'Official Portal Link';
-          addAttachment({
-            id: 'att-' + Date.now(),
-            title: t || meta.source_label + ' Link',
-            alt: meta.is_image ? (t || meta.source_label) : '',
-            url: u, preview_url: meta.preview_url,
-            role: role, source_kind: meta.source_kind, source_label: meta.source_label,
-            domain: meta.domain, is_image: meta.is_image, is_pdf: meta.is_pdf, new_tab: true
-          });
-          extTitleInp.value = ''; extUrlInp.value = ''; extLinkPicker.value = '';
-          toast('Attached ' + meta.source_label + ' link', 'success');
-        } })
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'External / Google Drive / Site URL' }), extUrlInp]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Or Pick Verified Internal Route' }), extLinkPicker]),
+        el('div', { class: 'cso-mod-field' }, [
+          el('label', { class: 'cso-mod-label', text: 'Attach' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Attach Link', onclick: function () {
+            var u = extUrlInp.value.trim();
+            var t = extTitleInp.value.trim();
+            if (!u || (!/^https?:\/\//i.test(u) && u.indexOf('/') !== 0)) { toast('Enter a valid http(s) or site-relative URL', 'amber'); return; }
+            var meta = detectLinkMeta(u, extTypeSel.value);
+            var role = extTypeSel.value === 'Apply Online CTA' ? 'Apply Online CTA' :
+                       meta.source_kind === 'gdrive' ? 'Google Drive Document' :
+                       meta.source_kind === 'gov' ? 'Official Portal Link' :
+                       meta.is_pdf ? 'Downloadable PDF/File' : 'Official Portal Link';
+            addAttachment({
+              id: 'att-' + Date.now(),
+              title: t || meta.source_label + ' Link',
+              alt: meta.is_image ? (t || meta.source_label) : '',
+              url: u, preview_url: meta.preview_url,
+              role: role, source_kind: meta.source_kind, source_label: meta.source_label,
+              domain: meta.domain, is_image: meta.is_image, is_pdf: meta.is_pdf, new_tab: true
+            });
+            extTitleInp.value = ''; extUrlInp.value = ''; extLinkPicker.value = '';
+            toast('Attached ' + meta.source_label + ' link', 'success');
+          } })
+        ])
       ]),
       r2LibraryHost,
       attachPreviewHost,
@@ -2283,6 +2299,15 @@
         ])
       ]),
       blocksHost
+    ]));
+
+    shell.appendChild(el('div', { class: 'cso-bottom-bar' }, [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: '← Back to Top', onclick: function () { shell.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }),
+      el('div', { class: 'cso-mod-toolbar' }, [
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Full-Screen Real View', onclick: openFullScreenPreview }),
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { submitPage('draft'); } }),
+        bottomPublishBtn
+      ])
     ]));
 
     root.appendChild(shell);
@@ -5520,7 +5545,7 @@
   function renderApprovalQueue(root, actions) {
     addHeaderPill(actions, '● Editorial Review & Approval');
     var shell = el('div', { class: 'cso-mod-shell' });
-    var kpiHost = el('div', { class: 'cso-mod-kpis' });
+    var kpiHost = el('div', { class: 'cso-kpi-grid-4' });
     var filterHost = el('div', { class: 'cso-mod-shell' });
     var drawer = el('div', { class: 'cso-drawer cso-hidden' });
     var tableHost = el('div', {});
@@ -6309,7 +6334,7 @@
   function renderCommandDirectory(root, actions) {
     addHeaderPill(actions, '● Command Directory & Capability Matrix');
     var shell = el('div', { class: 'cso-mod-shell' });
-    var kpiHost = el('div', { class: 'cso-mod-kpis' });
+    var kpiHost = el('div', { class: 'cso-kpi-grid-4' });
     var suiteWrap = el('div', { class: 'cso-mod-card' });
     var drawer = el('div', { class: 'cso-drawer cso-hidden' });
     var tableHost = el('div', {});
