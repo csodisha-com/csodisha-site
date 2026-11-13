@@ -3848,67 +3848,225 @@
 
   function renderAlertCenter(root, actions) {
     addHeaderPill(actions, '● Live Alert & Broadcast Center');
-    var shell = el('div', { class: 'cso-mod-shell' }), host = el('div', { class: 'cso-mod-shell' });
-    var sev = 'All', alerts = [], acked = {};
+    var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', { class: 'cso-mod-grid-4' });
+    var previewDrawer = el('div', {});
+    var host = el('div', { class: 'cso-mod-shell' });
+    var sev = 'All', alerts = [], acked = {}, currentBanner = {};
     try { acked = JSON.parse(localStorage.getItem('cso_ack_alerts') || '{}'); } catch (_) { acked = {}; }
-    renderBanner(shell, 'Administrative Notifications', 'Actionable alerts computed live from D1, health probes and the sitewide broadcast banner (/api/admin/banner).', [el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })]);
+    renderBanner(shell, 'Administrative Notifications', 'Actionable alerts computed live from D1, health probes, and the sitewide broadcast banner (/api/admin/banner).', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })
+    ]);
+    shell.appendChild(kpiHost);
     shell.appendChild(pills(['All', 'Critical', 'Warning', 'Info'], function (s) { sev = s; draw(); }));
-    shell.appendChild(host); root.appendChild(shell);
+    shell.appendChild(previewDrawer);
+    shell.appendChild(host);
+    root.appendChild(shell);
     var alertHost = el('div', {}), composerHost = el('div', {});
     host.appendChild(alertHost); host.appendChild(composerHost);
 
+    function btn(text, fn, primary) {
+      return el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm' + (primary ? ' cso-mod-btn-primary' : ''), text: text, onclick: fn });
+    }
+
+    function openTargetPreview(a) {
+      clear(previewDrawer);
+      var bodyNode;
+      if (a.previewRoute) {
+        bodyNode = el('div', { class: 'cso-preview-frame-wrap' }, [
+          el('iframe', { src: a.previewRoute + '?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Alert Target Preview' })
+        ]);
+      } else {
+        bodyNode = el('div', { class: 'cso-preview-card-desktop' }, [
+          el('div', { class: 'cso-inline-row' }, [badge(a.sev, a.sev === 'Critical' ? 'err' : a.sev === 'Warning' ? 'warn' : 'info'), badge(a.kindLabel || 'Alert', 'info')]),
+          el('h4', { text: a.title || a.msg }),
+          el('p', { class: 'cso-mod-muted', text: a.detail || a.msg })
+        ]);
+      }
+      previewDrawer.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Target Preview — ' + (a.title || a.msg) }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(previewDrawer); } })
+        ]),
+        bodyNode
+      ]));
+    }
+
+    function renderKpis() {
+      clear(kpiHost);
+      var critCount = alerts.filter(function (a) { return a.sev === 'Critical' || /closing/i.test(a.msg); }).length;
+      var ackCount = alerts.filter(function (a) { return !!acked[a.id]; }).length;
+      var bStatus = currentBanner.active ? 'LIVE' : 'OFFLINE';
+      var bTime = currentBanner.updatedAt ? ('Updated ' + currentBanner.updatedAt) : 'Not published yet';
+      [
+        ['Active Alerts', String(alerts.length), 'Across D1 & Edge'],
+        ['Critical / Expiring <72h', String(critCount), 'Needs immediate action'],
+        ['Acknowledged Alerts', String(ackCount), 'Tracked in session'],
+        ['Sitewide Broadcast', bStatus, bTime]
+      ].forEach(function (k) {
+        kpiHost.appendChild(el('div', { class: 'cso-mod-kpi' }, [
+          el('div', { class: 'cso-mod-kpi-val', text: k[1] }),
+          el('div', { class: 'cso-mod-kpi-lbl', text: k[0] }),
+          el('div', { class: 'cso-mod-muted', text: k[2] })
+        ]));
+      });
+    }
+
     function draw() {
+      renderKpis();
       clear(alertHost);
       var shown = alerts.filter(function (a) { return sev === 'All' || a.sev.toLowerCase() === sev.toLowerCase(); });
+      if (!shown.length) {
+        alertHost.appendChild(el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: 'All Clear — Zero Unresolved Alerts' }),
+            badge('Healthy', 'ok')
+          ]),
+          el('p', { class: 'cso-mod-muted', text: 'No active critical warnings, expiring jobs, or edge health failures match this filter.' }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            btn('Open Live Site Status', function () { window.selectModule && window.selectModule('folder-01', 'module-01-002'); }, true),
+            btn('Open Quick Actions', function () { window.selectModule && window.selectModule('folder-01', 'module-01-003'); }, false)
+          ])
+        ]));
+        return;
+      }
       var rows = shown.map(function (a) {
         var done = !!acked[a.id];
+        var rowBtns = [btn('Preview Target', function () { openTargetPreview(a); }, false)].concat(a.actions || []);
         return el('tr', {}, [
           el('td', {}, badge(a.sev, a.sev === 'Critical' ? 'err' : a.sev === 'Warning' ? 'warn' : 'info')),
           el('td', { text: a.msg }),
-          el('td', {}, el('label', {}, [el('input', { type: 'checkbox', checked: done ? true : false, onchange: function (e) { if (e.target.checked) acked[a.id] = 1; else delete acked[a.id]; try { localStorage.setItem('cso_ack_alerts', JSON.stringify(acked)); } catch (_) {} } }), ' Ack'])),
-          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, a.actions))
+          el('td', {}, el('label', { class: 'cso-check-label' }, [
+            el('input', {
+              type: 'checkbox',
+              checked: done ? true : false,
+              onchange: function (e) {
+                if (e.target.checked) acked[a.id] = 1; else delete acked[a.id];
+                try { localStorage.setItem('cso_ack_alerts', JSON.stringify(acked)); } catch (_) {}
+                renderKpis();
+              }
+            }),
+            el('span', { text: done ? 'Acked' : 'Ack' })
+          ])),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, rowBtns))
         ]);
       });
-      alertHost.appendChild(el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Actionable Alerts (' + shown.length + ')' }), safeTable(['Severity', 'Alert', 'Acknowledge', 'Resolve / Edit'], rows)]));
+      alertHost.appendChild(el('div', { class: 'cso-mod-card' }, [
+        el('h3', { text: 'Actionable Alerts (' + shown.length + ')' }),
+        safeTable(['Severity', 'Alert', 'Acknowledge', 'Preview & Resolve'], rows)
+      ]));
     }
-
-    function btn(text, fn, primary) { return el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm' + (primary ? ' cso-mod-btn-primary' : ''), text: text, onclick: fn }); }
 
     function composer(b) {
       clear(composerHost);
-      var head = el('input', { type: 'text', class: 'cso-mod-input', value: b.headline || '', maxlength: '160' });
-      var ctx = el('textarea', { class: 'cso-mod-textarea', maxlength: '300' }); ctx.value = b.context || '';
-      var cta = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaText || '', maxlength: '40' });
-      var url = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaUrl || '' });
+      var head = el('input', { type: 'text', class: 'cso-mod-input', value: b.headline || '', maxlength: '160', placeholder: 'e.g. OPSC OCS 2026 Admit Card Released' });
+      var ctx = el('textarea', { class: 'cso-mod-textarea', maxlength: '300', placeholder: 'Supporting context for aspirants…' }); ctx.value = b.context || '';
+      var cta = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaText || '', maxlength: '40', placeholder: 'Open Portal' });
+      var url = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaUrl || '', placeholder: '/jobs-careers/' });
       var sevSel = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) { return el('option', { value: s, text: s }); }));
       sevSel.value = b.severity || 'info';
       var act = el('input', { type: 'checkbox' }); act.checked = !!b.active;
+
+      var mode = 'strip'; // 'strip' | 'iframe'
+      var mobile = false;
       var prev = el('div', { class: 'cso-banner-preview' });
+      var frameWrap = el('div', { class: 'cso-preview-frame-wrap cso-hidden' });
+      var frame = el('iframe', { src: '/?preview=1&t=' + Date.now(), class: 'cso-preview-frame', title: 'Live Homepage Preview' });
+      frameWrap.appendChild(frame);
+
+      var modeStripBtn = el('button', { type: 'button', class: 'cso-pill is-active', text: 'Banner Strip Preview', onclick: function () { mode = 'strip'; syncMode(); } });
+      var modeIframeBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Live Homepage (/) + Overlay', onclick: function () { mode = 'iframe'; syncMode(); } });
+      var vpBtn = el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-sm',
+        text: 'Mobile 375px',
+        onclick: function () {
+          mobile = !mobile;
+          frame.className = mobile ? 'cso-preview-frame-mobile' : 'cso-preview-frame';
+          vpBtn.textContent = mobile ? 'Desktop 100%' : 'Mobile 375px';
+        }
+      });
+
+      function syncMode() {
+        modeStripBtn.className = 'cso-pill' + (mode === 'strip' ? ' is-active' : '');
+        modeIframeBtn.className = 'cso-pill' + (mode === 'iframe' ? ' is-active' : '');
+        frameWrap.classList.toggle('cso-hidden', mode !== 'iframe');
+      }
+
       function paint() {
         clear(prev);
         prev.className = 'cso-banner-preview cso-banner-' + sevSel.value + (act.checked ? '' : ' is-off');
         prev.appendChild(el('strong', { text: head.value || '(headline)' }));
         prev.appendChild(el('span', { text: ' ' + ctx.value }));
         if (cta.value) prev.appendChild(el('span', { class: 'cso-mod-badge cso-mod-badge-info', text: cta.value + ' → ' + (url.value || '/') }));
-        if (!act.checked) prev.appendChild(el('em', { class: 'cso-mod-muted', text: ' (inactive — not visible to candidates)' }));
+        if (!act.checked) prev.appendChild(el('em', { class: 'cso-mod-muted', text: ' (unpublished preview)' }));
       }
+
       [head, ctx, cta, url].forEach(function (i) { i.addEventListener('input', paint); });
-      sevSel.addEventListener('change', paint); act.addEventListener('change', paint);
-      var save = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Save & Publish Banner', onclick: async function () {
-        try { await api('PUT', 'banner', { active: act.checked, severity: sevSel.value, headline: head.value, context: ctx.value, ctaText: cta.value, ctaUrl: url.value }); toast('Banner saved', 'success'); load(); }
-        catch (e) { toast(e.message, 'crimson'); }
-      } });
+      sevSel.addEventListener('change', paint);
+      act.addEventListener('change', paint);
+
+      var PRESETS = [
+        ['OPSC Exam Alert', { headline: 'OPSC OCS 2026 Prelims Schedule Released', context: 'Download official timetable and exam centre instructions.', severity: 'notice', ctaText: 'View Schedule', ctaUrl: '/jobs-careers/' }],
+        ['OSSC Last Date Warning', { headline: 'OSSC CGLRE 2026 — Final 48 Hours to Apply', context: 'Complete online registration before portal closes.', severity: 'urgent', ctaText: 'Apply Now', ctaUrl: '/jobs-careers/' }],
+        ['Live CBT Mock Test Launch', { headline: 'Free Odisha GK & GS CBT Mock Test Now Live', context: 'Attempt timed bilingual practice test with instant rank.', severity: 'info', ctaText: 'Start CBT', ctaUrl: '/mock-tests/' }],
+        ['Clear Form', { headline: '', context: '', severity: 'info', ctaText: '', ctaUrl: '' }]
+      ];
+      var presetBar = el('div', { class: 'cso-pill-row' }, PRESETS.map(function (pr) {
+        return el('button', {
+          type: 'button',
+          class: 'cso-pill',
+          text: pr[0],
+          onclick: function () {
+            head.value = pr[1].headline;
+            ctx.value = pr[1].context;
+            sevSel.value = pr[1].severity;
+            cta.value = pr[1].ctaText;
+            url.value = pr[1].ctaUrl;
+            paint();
+          }
+        });
+      }));
+
+      async function saveBanner(activeFlag) {
+        try {
+          await api('PUT', 'banner', { active: activeFlag, severity: sevSel.value, headline: head.value.trim(), context: ctx.value.trim(), ctaText: cta.value.trim(), ctaUrl: url.value.trim() });
+          toast(activeFlag ? 'Homepage Banner published live!' : 'Banner saved offline (unpublished)', 'success');
+          load();
+        } catch (e) { toast(e.message, 'crimson'); }
+      }
+
       composerHost.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
-        el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Broadcast Banner Composer' }),
+        el('div', { class: 'cso-mod-card' }, [
+          el('h3', { text: 'Broadcast Banner Composer' }),
+          presetBar,
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), head]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Context' }), ctx]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), sevSel]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Button text' }), cta]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Button link' }), url]),
-          el('label', {}, [act, ' Active on homepage']), save]),
-        el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Real-Time Candidate Preview' }), prev, el('p', { class: 'cso-mod-muted', text: 'Last updated: ' + (b.updatedAt || 'never') })])
+          el('div', { class: 'cso-mod-grid-3' }, [
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), sevSel]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Button text' }), cta]),
+            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Button link' }), url])
+          ]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [act, el('span', { text: 'Active on homepage' })])]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft (Unpublished)', onclick: function () { saveBanner(false); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Save & Publish Live', onclick: function () { saveBanner(true); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger', text: 'Take Banner Offline', onclick: function () { saveBanner(false); } })
+          ])
+        ]),
+        el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('h3', { text: 'Real-Time Candidate Preview' }),
+            vpBtn
+          ]),
+          el('div', { class: 'cso-pill-row' }, [modeStripBtn, modeIframeBtn]),
+          prev,
+          frameWrap,
+          el('p', { class: 'cso-mod-muted', text: 'Last updated: ' + (b.updatedAt || 'never') })
+        ])
       ]));
       paint();
+      syncMode();
     }
 
     async function load() {
@@ -3916,25 +4074,80 @@
       try {
         var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100'), api('GET', 'banner')]);
         var stats = r[0], jobs = r[1].items || [], cas = r[2].items || [], tests = r[3].items || [], now = Date.now();
+        currentBanner = r[4] || {};
         alerts = [];
         jobs.forEach(function (j) {
           if (j.status !== 'published' || !j.last_date) return;
           var left = Date.parse(j.last_date + 'T23:59:59+05:30') - now;
-          if (left > 0 && left < 72 * 3600000) alerts.push({ id: 'exp-' + j.id, sev: left < 24 * 3600000 ? 'Critical' : 'Warning', msg: 'Job closing ' + j.last_date + ': ' + j.title,
-            actions: [btn('Extend +7d', async function () { try { var f = await api('GET', 'jobs/' + encodeURIComponent(j.id)); f.last_date = new Date(Date.parse(f.last_date) + 7 * 86400000).toISOString().slice(0, 10); await api('PUT', 'jobs/' + encodeURIComponent(j.id), f); toast('Extended', 'success'); load(); } catch (e) { toast(e.message, 'crimson'); } }, true), btn('Edit', function () { goTo(MOD_FOLDER.jobs); })] });
+          if (left > 0 && left < 72 * 3600000) alerts.push({
+            id: 'exp-' + j.id, sev: left < 24 * 3600000 ? 'Critical' : 'Warning',
+            kindLabel: 'Expiring Job', title: j.title, detail: (j.organisation || 'Odisha') + ' · Closes ' + j.last_date,
+            msg: 'Job closing ' + j.last_date + ': ' + j.title,
+            actions: [btn('Extend +7d', async function () { try { var f = await api('GET', 'jobs/' + encodeURIComponent(j.id)); f.last_date = new Date(Date.parse(f.last_date) + 7 * 86400000).toISOString().slice(0, 10); await api('PUT', 'jobs/' + encodeURIComponent(j.id), f); toast('Extended', 'success'); load(); } catch (e) { toast(e.message, 'crimson'); } }, true), btn('Edit', function () { goTo(MOD_FOLDER.jobs); })]
+          });
         });
-        jobs.concat(cas).forEach(function (x) { if (x.status === 'draft') { var k = x.type === 'job' ? 'jobs' : 'current-affairs'; alerts.push({ id: 'draft-' + x.id, sev: 'Info', msg: 'Draft awaiting review (' + (k === 'jobs' ? 'Job' : 'Current Affairs') + '): ' + x.title, actions: [btn('Review', function () { window.selectModule('folder-01', 'module-01-006'); }, true), btn('Edit', function () { goTo(MOD_FOLDER[k]); })] }); } });
-        tests.forEach(function (t) { if (!t.question_count) alerts.push({ id: 'noq-' + t.id, sev: t.status === 'published' ? 'Critical' : 'Warning', msg: 'Mock test has 0 questions (' + t.status + '): ' + t.title, actions: [btn('Add Questions', function () { goTo(MOD_FOLDER['mock-tests']); }, true)] }); });
-        if (stats.open_incidents) alerts.push({ id: 'incidents', sev: 'Critical', msg: stats.open_incidents + ' open incident(s) unresolved', actions: [btn('Open Incidents', function () { window.selectModule('folder-16', 'module-16-013'); }, true)] });
+        jobs.concat(cas).forEach(function (x) {
+          if (x.status === 'draft') {
+            var k = x.type === 'job' ? 'jobs' : 'current-affairs';
+            alerts.push({
+              id: 'draft-' + x.id, sev: 'Info', kindLabel: 'Unpublished Draft', title: x.title, detail: x.summary || 'Pending editorial approval.',
+              msg: 'Draft awaiting review (' + (k === 'jobs' ? 'Job' : 'Current Affairs') + '): ' + x.title,
+              actions: [btn('Review', function () { window.selectModule('folder-01', 'module-01-006'); }, true), btn('Edit', function () { goTo(MOD_FOLDER[k]); })]
+            });
+          } else if (x.status === 'scheduled' && x.published_at && Date.parse(x.published_at) - now < 24 * 3600000) {
+            alerts.push({
+              id: 'sched-' + x.id, sev: 'Info', kindLabel: 'Scheduled <24h', title: x.title, detail: 'Scheduled for ' + x.published_at,
+              msg: 'Scheduled item due within 24h: ' + x.title,
+              actions: [btn('Open Schedule', function () { window.selectModule('folder-02', 'module-02-010'); }, true)]
+            });
+          }
+        });
+        tests.forEach(function (t) {
+          if (!t.question_count) alerts.push({
+            id: 'noq-' + t.id, sev: t.status === 'published' ? 'Critical' : 'Warning',
+            kindLabel: 'Mock Test', title: t.title, detail: '0 questions attached (' + t.status + ')',
+            msg: 'Mock test has 0 questions (' + t.status + '): ' + t.title,
+            actions: [btn('Add Questions', function () { goTo(MOD_FOLDER['mock-tests']); }, true)]
+          });
+        });
+        if (stats.open_incidents) alerts.push({
+          id: 'incidents', sev: 'Critical', kindLabel: 'Incident', title: 'Open Incidents', detail: stats.open_incidents + ' unresolved incident(s).',
+          msg: stats.open_incidents + ' open incident(s) unresolved',
+          actions: [btn('Open Incidents', function () { window.selectModule('folder-16', 'module-16-013'); }, true)]
+        });
+        if (!currentBanner.active) {
+          alerts.push({
+            id: 'banner-offline', sev: 'Info', kindLabel: 'Broadcast Banner', title: 'Homepage Broadcast Banner Offline',
+            previewRoute: '/', msg: 'Homepage broadcast banner is currently OFFLINE.',
+            actions: [btn('Compose Below', function () { composerHost.scrollIntoView(); }, true)]
+          });
+        } else {
+          alerts.push({
+            id: 'banner-live', sev: 'Info', kindLabel: 'Broadcast Banner', title: currentBanner.headline,
+            previewRoute: '/', msg: 'Homepage broadcast is LIVE: ' + currentBanner.headline,
+            actions: [btn('Edit Below', function () { composerHost.scrollIntoView(); }, false)]
+          });
+        }
         var cron = stats.last_cron_run, ran = cron && (cron.ran_at || cron.at);
-        if (!ran) alerts.push({ id: 'cron', sev: 'Warning', msg: 'No cron run recorded yet', actions: [btn('Maintenance', function () { window.selectModule('folder-01', 'module-01-003'); }, true)] });
-        else if (Date.now() - Date.parse(String(ran).replace(' ', 'T') + (/Z|\+/.test(String(ran)) ? '' : 'Z')) > 3600000) alerts.push({ id: 'cron-stale', sev: 'Warning', msg: 'Last cron run is over 1 hour old (' + ran + ')', actions: [btn('Maintenance', function () { window.selectModule('folder-01', 'module-01-003'); }, true)] });
-        var health = await Promise.all(['/api/health', '/sitemap.xml', '/feed.xml'].map(async function (p) { try { var x = await fetch(p, { cache: 'no-store' }); return [p, x.ok]; } catch (_) { return [p, false]; } }));
-        health.forEach(function (h) { if (!h[1]) alerts.push({ id: 'health-' + h[0], sev: 'Critical', msg: 'Health check failed: ' + h[0], actions: [btn('Open Site Status', function () { window.selectModule('folder-01', 'module-01-002'); }, true)] }); });
-        if (r[4].active) alerts.push({ id: 'banner-live', sev: 'Info', msg: 'Homepage broadcast is LIVE: ' + r[4].headline, actions: [btn('Edit below', function () { composerHost.scrollIntoView(); })] });
+        if (!ran) alerts.push({ id: 'cron', sev: 'Warning', kindLabel: 'Cron', msg: 'No cron run recorded yet', actions: [btn('Maintenance', function () { window.selectModule('folder-01', 'module-01-003'); }, true)] });
+        else if (Date.now() - Date.parse(String(ran).replace(' ', 'T') + (/Z|\+/.test(String(ran)) ? '' : 'Z')) > 3600000) alerts.push({ id: 'cron-stale', sev: 'Warning', kindLabel: 'Cron', msg: 'Last cron run is over 1 hour old (' + ran + ')', actions: [btn('Maintenance', function () { window.selectModule('folder-01', 'module-01-003'); }, true)] });
+        var health = await Promise.all(['/', '/api/health', '/sitemap.xml', '/feed.xml'].map(async function (p) {
+          try {
+            var x = await fetch(p, { cache: 'no-store' });
+            var cspMissing = p === '/' && !x.headers.get('content-security-policy');
+            return [p, x.ok && !cspMissing, cspMissing ? 'Missing CSP header' : ('HTTP ' + x.status)];
+          } catch (_) { return [p, false, 'Fetch error']; }
+        }));
+        health.forEach(function (h) {
+          if (!h[1]) alerts.push({
+            id: 'health-' + h[0], sev: 'Critical', kindLabel: 'Edge / CSP', previewRoute: h[0],
+            msg: 'Edge/CSP check failed on ' + h[0] + ' (' + h[2] + ')',
+            actions: [btn('Open Site Status', function () { window.selectModule('folder-01', 'module-01-002'); }, true)]
+          });
+        });
         var order = { Critical: 0, Warning: 1, Info: 2 };
         alerts.sort(function (a, b) { return order[a.sev] - order[b.sev]; });
-        draw(); composer(r[4]);
+        draw(); composer(currentBanner);
       } catch (e) { fail(alertHost, e); }
     }
     load();
