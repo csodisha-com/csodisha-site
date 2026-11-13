@@ -233,6 +233,43 @@ export function renderSections(sections) {
   ).join('\n');
 }
 
+export function getExpiredRedirect(row) {
+  if (!row) return null;
+  const meta = extractPageMeta(row.blocks_json);
+  if (!meta.expires_at) return null;
+  const expTs = Date.parse(meta.expires_at);
+  if (Number.isNaN(expTs) || expTs >= Date.now()) return null;
+  if (meta.expired_action === 'redirect' && meta.expired_redirect && meta.expired_redirect.startsWith('/')) {
+    return meta.expired_redirect;
+  }
+  return null;
+}
+
+export function renderLandingExtras(row) {
+  const meta = extractPageMeta(row && row.blocks_json);
+  let out = '';
+  if (meta.expires_at) {
+    const expTs = Date.parse(meta.expires_at);
+    if (!Number.isNaN(expTs) && expTs < Date.now()) {
+      out += `<aside class="cso-live-notice" role="status"><strong>Applications / Campaign Closed</strong><p>This campaign closed on ${esc(meta.expires_at)}. Visit <a href="/jobs-careers/">Jobs &amp; Careers</a> for active notifications.</p></aside>`;
+    }
+  }
+  if (meta.secondary_cta_label && meta.secondary_cta_url) {
+    out += `<p><a class="btn" href="${esc(safeUrl(meta.secondary_cta_url))}">${esc(meta.secondary_cta_label)}</a></p>`;
+  }
+  if (meta.alert_optin && meta.alert_optin.enabled) {
+    const ao = meta.alert_optin;
+    out += `<section class="cso-alert-optin cso-live-notice"><h2>${esc(ao.heading || 'Get Instant Odisha Exam &amp; Scheme Alerts')}</h2>` +
+      (ao.channel_url ? `<p><a class="btn btn-primary" href="${esc(safeUrl(ao.channel_url))}" target="_blank" rel="noopener noreferrer">Join Official Alert Channel ↗</a></p>` : '') +
+      `<form method="post" action="/api/contact"><input type="email" name="email" required placeholder="Enter email for instant alerts"> <button type="submit" class="btn">Subscribe</button></form></section>`;
+  }
+  if (meta.sticky_mobile_cta && meta.sticky_mobile_cta.enabled && meta.sticky_mobile_cta.label) {
+    const st = meta.sticky_mobile_cta;
+    out += `<div class="cso-mobile-sticky-cta"><a class="btn btn-primary" href="${esc(safeUrl(st.url || row.cta_url || '/jobs-careers/'))}">${esc(st.label)}</a>${st.odia_sublabel ? ` <span>${esc(st.odia_sublabel)}</span>` : ''}</div>`;
+  }
+  return out;
+}
+
 export function renderDynamicPage(row, sitewide) {
   const ogImg = extractOgImage(row.blocks_json);
   const meta = extractPageMeta(row.blocks_json);
@@ -240,15 +277,18 @@ export function renderDynamicPage(row, sitewide) {
   const robotsMeta = meta.noindex ? '<meta name="robots" content="noindex,nofollow">' : '';
   const jsonLd = buildJsonLd(row, row.blocks_json);
   const odiaSub = meta.odia_subtitle ? `<p class="cso-live-odia">${esc(meta.odia_subtitle)}</p>` : '';
+  const focused = !!meta.focused_landing_mode;
+  const navHtml = focused ? '' : `<nav aria-label="Primary"><a href="/jobs-careers/">Jobs</a> <a href="/current-affairs/">Current Affairs</a> <a href="/mock-tests/">Mock Tests</a> <a href="/study-library/">Study Library</a></nav>`;
+  const footerHtml = focused ? '' : `<footer><div class="w"><p>&copy; Common Sense Odisha · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/contact.html">Contact</a></p></div></footer>`;
   const hero = row.hero_title ? `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.hero_title)}</h1>${row.hero_subtitle ? `<p>${esc(row.hero_subtitle)}</p>` : ''}${odiaSub}${row.cta_label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(row.cta_url))}">${esc(row.cta_label)}</a></p>` : ''}</div></section>` : `<section class="hero cso-live-hero"><div class="w"><h1>${esc(row.title)}</h1>${odiaSub}</div></section>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(row.title)}</title><meta name="description" content="${esc(row.meta_description)}">${robotsMeta}${ogMeta}${jsonLd}
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/design-tokens.css"><link rel="stylesheet" href="/assets/css/ui-kit.css"><link rel="stylesheet" href="/assets/css/public-content.css"><link rel="stylesheet" href="/styles.css"></head>
-<body><header class="top site-header__top" role="banner"><div class="w"><a href="/" class="brand">Common Sense Odisha</a>
-<nav aria-label="Primary"><a href="/jobs-careers/">Jobs</a> <a href="/current-affairs/">Current Affairs</a> <a href="/mock-tests/">Mock Tests</a> <a href="/study-library/">Study Library</a></nav></div></header>
-<main id="main">${hero}<div class="w cso-live-body">${renderBlocks(row.blocks_json)}${renderSections(row.reusable_sections_json)}</div></main>
-<footer><div class="w"><p>&copy; Common Sense Odisha · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/contact.html">Contact</a></p></div></footer>${sitewide ? sitewideHtml(sitewide) : ''}</body></html>`;
+<body${focused ? ' class="cso-focused-landing"' : ''}><header class="top site-header__top" role="banner"><div class="w"><a href="/" class="brand">Common Sense Odisha</a>
+${navHtml}</div></header>
+<main id="main">${hero}<div class="w cso-live-body">${renderBlocks(row.blocks_json)}${renderSections(row.reusable_sections_json)}${renderLandingExtras(row)}</div></main>
+${footerHtml}${sitewide ? sitewideHtml(sitewide) : ''}</body></html>`;
 }
 
 export function applyPageOverrides(res, row, sitewide) {
@@ -266,7 +306,7 @@ export function applyPageOverrides(res, row, sitewide) {
   if (headExtra) rw.on('head', { element(e) { e.append(headExtra, { html: true }); } });
   if (row.hero_title) rw.on('h1', (() => { let done = false; return { element(e) { if (done) return; done = true; e.setInnerContent(row.hero_title); e.removeAttribute('aria-label'); } }; })());
   if (row.hero_subtitle) rw.on('.hero p, #cso-hero p', (() => { let done = false; return { element(e) { if (done) return; done = true; e.setInnerContent(row.hero_subtitle); } }; })());
-  const extra = renderBlocks(row.blocks_json) + renderSections(row.reusable_sections_json);
+  const extra = renderBlocks(row.blocks_json) + renderSections(row.reusable_sections_json) + renderLandingExtras(row);
   if (row && extra.trim()) rw.on('main', { element(e) { e.append(`<div class="w cso-live-body">${extra}</div>`, { html: true }); } });
   return rw.transform(res);
 }

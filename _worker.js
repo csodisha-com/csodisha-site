@@ -18,7 +18,7 @@ import { handleAdminApi } from './functions/api/admin/_router.js';
 import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
 import { handleSitemapXml, handleRssFeed, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
-import { getPublishedPage, getPageRedirect, renderDynamicPage, applyPageOverrides, publishDueScheduledPages, getSitewide } from './functions/_lib/site-pages.js';
+import { getPublishedPage, getPageRedirect, getExpiredRedirect, renderDynamicPage, applyPageOverrides, publishDueScheduledPages, getSitewide } from './functions/_lib/site-pages.js';
 import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
@@ -365,6 +365,10 @@ export default {
           return Response.redirect(new URL(redirectTarget, url.origin).toString(), 301);
         }
         const live = await getPublishedPage(env, pathname);
+        const expTarget = getExpiredRedirect(live);
+        if (expTarget && expTarget !== pathname) {
+          return Response.redirect(new URL(expTarget, url.origin).toString(), 301);
+        }
         const sitewide = await getSitewide(env);
         if (live || (sitewide && res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html'))) {
           const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'";

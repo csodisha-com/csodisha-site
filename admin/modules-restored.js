@@ -4365,18 +4365,175 @@
   function renderLandingPagesStudio(root, actions) {
     addHeaderPill(actions, '● Landing Pages');
     var shell = el('div', { class: 'cso-mod-shell' });
+    var kpiHost = el('div', {});
+    var toolbarHost = el('div', {});
+    var blueprintHost = el('div', {});
     var drawerHost = el('div', {});
     var tableHost = el('div', {});
+    var fullscreenHost = el('div', {});
+
+    var allLanding = [];
+    var allRoutesList = [];
+    var analyticsMap = {};
+    var searchText = '';
+    var activeFilter = 'all';
+
+    function decodeEntities(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+    }
+
+    function hasBadSlug(route) {
+      if (!route || route === '/') return false;
+      return /\s/.test(route) || !/^\/[a-z0-9\-\/]*\/?$/.test(route);
+    }
+
+    function suggestCleanSlug(route) {
+      if (!route || route === '/') return '/';
+      var s = String(route).trim().toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-\/]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/\/+/g, '/');
+      if (s.charAt(0) !== '/') s = '/' + s;
+      if (s.length > 1 && s.charAt(s.length - 1) !== '/') s += '/';
+      return s;
+    }
+
+    function escapeHtmlAttr(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function buildLandingPreviewHtml(cfg) {
+      var title = escapeHtmlAttr(cfg.title || 'Landing Page Preview');
+      var desc = escapeHtmlAttr(cfg.meta_description || '');
+      var heroTitle = escapeHtmlAttr(cfg.hero_title || cfg.title || 'Odisha Portal Campaign');
+      var heroSub = escapeHtmlAttr(cfg.hero_subtitle || '');
+      var ctaLbl = escapeHtmlAttr(cfg.cta_label || '');
+      var ctaUrl = escapeHtmlAttr(cfg.cta_url || '#');
+      var secLbl = escapeHtmlAttr(cfg.secondary_cta_label || '');
+      var secUrl = escapeHtmlAttr(cfg.secondary_cta_url || '#');
+      var ogImg = escapeHtmlAttr(cfg.og_image || '');
+      var isExpired = cfg.expires_at && !isNaN(Date.parse(cfg.expires_at)) && Date.parse(cfg.expires_at) < Date.now();
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + title + '</title>' +
+        '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
+        '</head><body>';
+      if (!cfg.focused_landing_mode) {
+        html += '<header class="site-header"><div class="container header-inner"><a class="brand" href="/">Common Sense Odisha</a></div></header>';
+      }
+      html += '<main class="container section">';
+      if (isExpired) {
+        html += '<div class="notice-banner" role="status"><strong>Campaign / Applications Closed</strong> — Deadline passed (' + escapeHtmlAttr(cfg.expires_at) + ').</div>';
+      }
+      html += '<section class="hero-card">';
+      if (ogImg) html += '<p><img src="' + ogImg + '" alt="' + heroTitle + '" class="cso-preview-og-img"></p>';
+      html += '<span class="badge">' + escapeHtmlAttr(cfg.category || 'Campaign') + '</span>';
+      html += '<h1>' + heroTitle + '</h1>';
+      if (heroSub) html += '<p class="lead">' + heroSub + '</p>';
+      if (desc) html += '<p>' + desc + '</p>';
+      html += '<div class="hero-actions">';
+      if (ctaLbl) html += '<a class="btn btn-primary" href="' + ctaUrl + '">' + ctaLbl + '</a> ';
+      if (secLbl) html += '<a class="btn btn-secondary" href="' + secUrl + '">' + secLbl + '</a>';
+      html += '</div></section>';
+
+      if (cfg.resources && cfg.resources.length) {
+        html += '<section class="card"><h2>Official Resources &amp; Downloads</h2><ul>';
+        cfg.resources.forEach(function (r) {
+          html += '<li><a href="' + escapeHtmlAttr(r.url) + '">' + escapeHtmlAttr(r.label || r.url) + '</a> <small>(' + escapeHtmlAttr(r.kind || 'Link') + ')</small></li>';
+        });
+        html += '</ul></section>';
+      }
+
+      if (cfg.alert_optin && cfg.alert_optin.enabled) {
+        html += '<section class="card"><h3>' + escapeHtmlAttr(cfg.alert_optin.heading || 'Get Instant Exam &amp; Scheme Alerts') + '</h3>' +
+          '<a class="btn btn-primary" href="' + escapeHtmlAttr(cfg.alert_optin.channel_url || 'https://t.me/csodisha') + '">Join Official Alert Channel</a></section>';
+      }
+
+      html += '</main>';
+      if (cfg.sticky_mobile_cta && cfg.sticky_mobile_cta.enabled && cfg.sticky_mobile_cta.label) {
+        html += '<div class="sticky-mobile-cta"><div class="container"><strong>' + escapeHtmlAttr(cfg.sticky_mobile_cta.label) + '</strong>' +
+          (cfg.sticky_mobile_cta.odia_sub ? ' <span>' + escapeHtmlAttr(cfg.sticky_mobile_cta.odia_sub) + '</span>' : '') +
+          ' <a class="btn btn-primary" href="' + escapeHtmlAttr(cfg.sticky_mobile_cta.url || ctaUrl) + '">Open</a></div></div>';
+      }
+      html += '</body></html>';
+      return html;
+    }
+
+    function openFullscreenPreview(cfg, initialViewport) {
+      clear(fullscreenHost);
+      var fsMode = initialViewport || 'desktop';
+      var fsFrame = el('iframe', {
+        class: 'cso-fullscreen-frame' + (fsMode === 'tablet' ? ' is-tablet' : fsMode === 'mobile' ? ' is-mobile' : ''),
+        sandbox: 'allow-same-origin',
+        title: 'Landing Page Full-Screen Real View'
+      });
+      fsFrame.srcdoc = buildLandingPreviewHtml(cfg);
+      var bD = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'desktop' ? ' cso-pill-active' : ''), text: 'Desktop 100%', onclick: function () { setFs('desktop'); } });
+      var bT = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'tablet' ? ' cso-pill-active' : ''), text: 'Tablet 768px', onclick: function () { setFs('tablet'); } });
+      var bM = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'mobile' ? ' cso-pill-active' : ''), text: 'Mobile 375px', onclick: function () { setFs('mobile'); } });
+      function setFs(m) {
+        fsMode = m;
+        bD.classList.toggle('cso-pill-active', m === 'desktop');
+        bT.classList.toggle('cso-pill-active', m === 'tablet');
+        bM.classList.toggle('cso-pill-active', m === 'mobile');
+        fsFrame.className = 'cso-fullscreen-frame' + (m === 'tablet' ? ' is-tablet' : m === 'mobile' ? ' is-mobile' : '');
+      }
+      function closeFs() { document.removeEventListener('keydown', onEsc); clear(fullscreenHost); }
+      function onEsc(e) { if (e.key === 'Escape') closeFs(); }
+      document.addEventListener('keydown', onEsc);
+      fullscreenHost.appendChild(el('div', { class: 'cso-fullscreen-overlay' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Back to Studio', onclick: closeFs }),
+            el('strong', { text: 'Real-CSS Live Preview — ' + (cfg.route || '/') })
+          ]),
+          el('div', { class: 'cso-mod-toolbar' }, [bD, bT, bM])
+        ]),
+        el('div', { class: 'cso-fullscreen-stage' }, [fsFrame])
+      ]));
+    }
+
+    function openR2Picker(onPick) {
+      var pickHost = el('div', { class: 'cso-drawer' });
+      pickHost.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Pick from R2 Media Library' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { pickHost.remove(); } })
+      ]));
+      var listBox = el('div', { class: 'cso-mod-muted', text: 'Loading R2 assets...' });
+      pickHost.appendChild(listBox);
+      drawerHost.appendChild(pickHost);
+      api('GET', 'media').then(function (d) {
+        clear(listBox);
+        var items = d.media || d.files || d.objects || [];
+        if (!items.length) { listBox.textContent = 'No R2 media files found.'; return; }
+        var grid = el('div', { class: 'cso-mod-grid-3' });
+        items.slice(0, 24).forEach(function (it) {
+          var url = it.url || it.public_url || ('/media/' + (it.key || it.name || ''));
+          var name = it.name || it.key || url;
+          grid.appendChild(el('div', { class: 'cso-mod-card' }, [
+            el('div', { class: 'cso-mod-label', text: name }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Use Asset', onclick: function () { onPick(url, name); pickHost.remove(); } })
+          ]));
+        });
+        listBox.appendChild(grid);
+      }).catch(function (e) { listBox.textContent = e.message; });
+    }
 
     function openCloneDrawer(p) {
       clear(drawerHost);
-      var base = p.route === '/' ? '/campaign-home/' : p.route.replace(/\/$/, '') + '-copy/';
+      var base = p.route === '/' ? '/campaign-home/' : suggestCleanSlug(p.route).replace(/\/$/, '') + '-variant-b/';
       var slugInp = el('input', { type: 'text', class: 'cso-mod-input', value: base });
-      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: (p.title || 'Landing Page') + ' (Copy)' });
+      var titleInp = el('input', { type: 'text', class: 'cso-mod-input', value: decodeEntities(p.title || 'Landing Page') + ' (Variant B)' });
       var cloneBtn = el('button', {
         type: 'button',
         class: 'cso-mod-btn cso-mod-btn-primary',
-        text: 'Clone & Publish Live',
+        text: 'Clone & Publish A/B Variant Live',
         onclick: async function () {
           cloneBtn.disabled = true;
           try {
@@ -4384,17 +4541,20 @@
             await api('POST', 'pages', {
               route: newRoute,
               title: titleInp.value.trim(),
-              meta_description: p.meta_description || '',
+              meta_description: decodeEntities(p.meta_description || ''),
               category: p.category || 'Core Portal',
-              hero_title: p.hero_title || titleInp.value.trim(),
-              hero_subtitle: p.hero_subtitle || '',
-              cta_label: p.cta_label || 'Explore Now',
+              hero_title: decodeEntities(p.hero_title || titleInp.value.trim()),
+              hero_subtitle: decodeEntities(p.hero_subtitle || ''),
+              cta_label: decodeEntities(p.cta_label || 'Explore Now'),
               cta_url: p.cta_url || '/jobs-careers/',
+              secondary_cta_label: p.secondary_cta_label || '',
+              secondary_cta_url: p.secondary_cta_url || '',
+              og_image: p.og_image || '',
               blocks_json: p.blocks_json || '[]',
               status: 'published',
-              note: 'Cloned from ' + p.route
+              note: 'A/B Variant cloned from ' + p.route
             });
-            toast('Cloned & published live: ' + newRoute, 'success');
+            toast('Cloned & published A/B variant: ' + newRoute, 'success');
             clear(drawerHost);
             await loadLanding();
           } catch (e) { toast(e.message, 'crimson'); }
@@ -4403,12 +4563,12 @@
       });
       drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
         el('div', { class: 'cso-drawer-head' }, [
-          el('strong', { text: 'Clone as New Live Landing Page — ' + p.route }),
+          el('strong', { text: 'Clone A/B Variant — ' + p.route }),
           el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
         ]),
         el('div', { class: 'cso-mod-grid-2' }, [
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'New Live Route' }), slugInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'New Page Title' }), titleInp])
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'New Live Variant Route' }), slugInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Variant Page Title' }), titleInp])
         ]),
         cloneBtn
       ]));
@@ -4416,34 +4576,528 @@
 
     function openInlineEdit(p) {
       clear(drawerHost);
-      var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.title || '' });
-      var dInp = el('input', { type: 'text', class: 'cso-mod-input', value: p.meta_description || '' });
-      var cLbl = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_label || '' });
+      var cleanTitle = decodeEntities(p.title || '');
+      var cleanDesc = decodeEntities(p.meta_description || '');
+      var cleanHeroSub = decodeEntities(p.hero_subtitle || '');
+      var cleanCtaLbl = decodeEntities(p.cta_label || '');
+      var resources = Array.isArray(p.resources) ? p.resources.slice() : [];
+      var stickyCfg = (p.sticky_mobile_cta && typeof p.sticky_mobile_cta === 'object') ? p.sticky_mobile_cta : { enabled: false, label: '', url: '', odia_sub: '' };
+      var alertCfg = (p.alert_optin && typeof p.alert_optin === 'object') ? p.alert_optin : { enabled: false, heading: 'Get Instant Exam & Scheme Alerts', channel_url: 'https://t.me/csodisha' };
+
+      var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: cleanTitle });
+      var dInp = el('input', { type: 'text', class: 'cso-mod-input', value: cleanDesc });
+      var hSubInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Odia / Bilingual Hero Subtitle (ଓଡ଼ିଆ)', value: cleanHeroSub });
+      var cLbl = el('input', { type: 'text', class: 'cso-mod-input', value: cleanCtaLbl });
       var cUrl = el('input', { type: 'text', class: 'cso-mod-input', value: p.cta_url || '' });
+      var secLbl = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. Download Notification PDF', value: decodeEntities(p.secondary_cta_label || '') });
+      var secUrl = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/media/... or https://...', value: p.secondary_cta_url || '' });
+
+      var routePicker = el('select', { class: 'cso-mod-select' }, [
+        el('option', { value: '', text: '— Pick Verified Internal Route for Primary CTA —' })
+      ].concat(allRoutesList.map(function (rt) { return el('option', { value: rt, text: rt }); })));
+      routePicker.addEventListener('change', function () {
+        if (routePicker.value) { cUrl.value = routePicker.value; updateLivePreview(); }
+      });
+
+      var focusedChk = el('input', { type: 'checkbox' });
+      focusedChk.checked = !!p.focused_landing_mode;
+
+      var stickyChk = el('input', { type: 'checkbox' });
+      stickyChk.checked = !!stickyCfg.enabled;
+      var stickyLbl = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Sticky CTA Label (e.g. Apply Online Now)', value: stickyCfg.label || '' });
+      var stickyUrl = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Target Route / PDF / Drive URL', value: stickyCfg.url || '' });
+      var stickyOdia = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Odia Sub-label (e.g. ଆବେଦନ କରନ୍ତୁ)', value: stickyCfg.odia_sub || '' });
+
+      var alertChk = el('input', { type: 'checkbox' });
+      alertChk.checked = !!alertCfg.enabled;
+      var alertHeading = el('input', { type: 'text', class: 'cso-mod-input', value: alertCfg.heading || 'Get Instant Exam & Scheme Alerts' });
+      var alertUrl = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Telegram / WhatsApp Channel URL', value: alertCfg.channel_url || 'https://t.me/csodisha' });
+
+      var expAtInp = el('input', { type: 'date', class: 'cso-mod-input', value: p.expires_at ? String(p.expires_at).slice(0, 10) : '' });
+      var expActionSel = el('select', { class: 'cso-mod-select' }, [
+        el('option', { value: 'notice', text: 'Show "Applications / Campaign Closed" Notice' }),
+        el('option', { value: 'redirect', text: 'Auto-301 Redirect to Evergreen Hub' })
+      ]);
+      expActionSel.value = p.expired_action === 'redirect' ? 'redirect' : 'notice';
+      var expRedirInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/jobs-careers/', value: p.expired_redirect || '/jobs-careers/' });
+
+      var ogInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: '/media/og-campaign.png', value: p.og_image || '' });
+      var ogPreviewImg = el('img', { class: 'cso-asset-preview-img', alt: 'OG Social Card Preview', src: p.og_image || '/assets/og-default.png' });
+
+      var utmSrc = el('input', { type: 'text', class: 'cso-mod-input', value: p.utm_source || 'telegram' });
+      var utmMed = el('input', { type: 'text', class: 'cso-mod-input', value: p.utm_medium || 'social' });
+      var utmCamp = el('input', { type: 'text', class: 'cso-mod-input', value: p.utm_campaign || suggestCleanSlug(p.route).replace(/\//g, '') || 'odisha-campaign' });
+      var utmOut = el('input', { type: 'text', class: 'cso-mod-input', readOnly: true });
+
+      function refreshUtm() {
+        var base = 'https://csodisha.com' + (p.route || '/');
+        var q = 'utm_source=' + encodeURIComponent(utmSrc.value.trim() || 'direct') +
+          '&utm_medium=' + encodeURIComponent(utmMed.value.trim() || 'web') +
+          '&utm_campaign=' + encodeURIComponent(utmCamp.value.trim() || 'campaign');
+        utmOut.value = base + '?' + q;
+      }
+      refreshUtm();
+      [utmSrc, utmMed, utmCamp].forEach(function (inp) { inp.addEventListener('input', refreshUtm); });
+
+      var resListHost = el('div', {});
+      var resVerifyHost = el('div', { class: 'cso-mod-muted' });
+      function renderResList() {
+        clear(resListHost);
+        if (!resources.length) {
+          resListHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No PDFs, R2 files, or external links attached yet.' }));
+          return;
+        }
+        resources.forEach(function (r, idx) {
+          resListHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+            badge(r.kind || 'Link', 'info'),
+            el('strong', { text: r.label || r.url }),
+            el('code', { text: r.url }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Remove', onclick: function () { resources.splice(idx, 1); renderResList(); updateLivePreview(); } })
+          ]));
+        });
+      }
+      renderResList();
+
+      var resFileInput = el('input', { type: 'file', class: 'cso-sr-file', accept: '.pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.zip' });
+      resFileInput.addEventListener('change', async function () {
+        var f = resFileInput.files && resFileInput.files[0];
+        if (!f) return;
+        try {
+          var fd = new FormData();
+          fd.append('file', f);
+          var up = await api('POST', 'media/upload', fd, true);
+          var url = up.url || up.public_url || ('/media/' + (up.key || f.name));
+          resources.push({ label: f.name, url: url, kind: 'R2 PDF/File' });
+          renderResList();
+          updateLivePreview();
+          toast('Uploaded to R2: ' + f.name, 'success');
+        } catch (e) { toast(e.message, 'crimson'); }
+      });
+
+      var ogFileInput = el('input', { type: 'file', class: 'cso-sr-file', accept: 'image/png,image/jpeg,image/webp' });
+      ogFileInput.addEventListener('change', async function () {
+        var f = ogFileInput.files && ogFileInput.files[0];
+        if (!f) return;
+        try {
+          var fd = new FormData();
+          fd.append('file', f);
+          var up = await api('POST', 'media/upload', fd, true);
+          var url = up.url || up.public_url || ('/media/' + (up.key || f.name));
+          ogInp.value = url;
+          ogPreviewImg.src = url;
+          updateLivePreview();
+          toast('Uploaded OG image to R2', 'success');
+        } catch (e) { toast(e.message, 'crimson'); }
+      });
+
+      var extLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Resource Label (e.g. Official OPSC PDF)' });
+      var extUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'https://drive.google.com/... or https://opsc.gov.in/...' });
+      var extKindSel = el('select', { class: 'cso-mod-select' }, [
+        el('option', { value: 'Google Drive', text: 'Google Drive Link' }),
+        el('option', { value: '.gov.in Official', text: '.gov.in Official Link' }),
+        el('option', { value: 'External Resource', text: 'External Resource' })
+      ]);
+
+      var previewViewport = 'desktop';
+      var previewFrame = el('iframe', { class: 'cso-builder-iframe', sandbox: 'allow-same-origin', title: 'Landing Live Preview' });
+      function getCfg() {
+        return {
+          route: p.route,
+          category: p.category || 'Campaign',
+          title: tInp.value.trim(),
+          meta_description: dInp.value.trim(),
+          hero_title: tInp.value.trim(),
+          hero_subtitle: hSubInp.value.trim(),
+          cta_label: cLbl.value.trim(),
+          cta_url: cUrl.value.trim(),
+          secondary_cta_label: secLbl.value.trim(),
+          secondary_cta_url: secUrl.value.trim(),
+          focused_landing_mode: focusedChk.checked,
+          sticky_mobile_cta: { enabled: stickyChk.checked, label: stickyLbl.value.trim(), url: stickyUrl.value.trim(), odia_sub: stickyOdia.value.trim() },
+          alert_optin: { enabled: alertChk.checked, heading: alertHeading.value.trim(), channel_url: alertUrl.value.trim() },
+          expires_at: expAtInp.value.trim(),
+          expired_action: expActionSel.value,
+          expired_redirect: expRedirInp.value.trim(),
+          og_image: ogInp.value.trim(),
+          resources: resources
+        };
+      }
+      function updateLivePreview() {
+        previewFrame.srcdoc = buildLandingPreviewHtml(getCfg());
+        if (ogInp.value.trim()) ogPreviewImg.src = ogInp.value.trim();
+      }
+      [tInp, dInp, hSubInp, cLbl, cUrl, secLbl, secUrl, stickyLbl, stickyUrl, stickyOdia, alertHeading, alertUrl, expAtInp, expRedirInp, ogInp].forEach(function (inp) {
+        inp.addEventListener('input', updateLivePreview);
+      });
+      [focusedChk, stickyChk, alertChk, expActionSel].forEach(function (inp) {
+        inp.addEventListener('change', updateLivePreview);
+      });
+      updateLivePreview();
+
+      var aiBtn = el('button', {
+        type: 'button',
+        class: 'cso-mod-btn cso-mod-btn-sm',
+        text: '✨ AI Optimize Copy & CTAs',
+        onclick: async function () {
+          aiBtn.disabled = true;
+          try {
+            var res = await api('POST', 'ai/generate-page', {
+              mode: 'optimize',
+              route: p.route,
+              topic: tInp.value.trim() || p.route,
+              language: 'Bilingual English + Odia'
+            });
+            var gen = res.page || res;
+            if (gen.title) tInp.value = decodeEntities(gen.title);
+            if (gen.meta_description) dInp.value = decodeEntities(gen.meta_description);
+            if (gen.hero_subtitle) hSubInp.value = decodeEntities(gen.hero_subtitle);
+            if (gen.cta_label) cLbl.value = decodeEntities(gen.cta_label);
+            if (gen.cta_url) cUrl.value = gen.cta_url;
+            updateLivePreview();
+            toast('AI generated conversion copy & Odia subtitle', 'success');
+          } catch (e) { toast(e.message, 'crimson'); }
+          finally { aiBtn.disabled = false; }
+        }
+      });
+
+      var vpD = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { setVp('desktop'); } });
+      var vpT = el('button', { type: 'button', class: 'cso-pill', text: '768px', onclick: function () { setVp('tablet'); } });
+      var vpM = el('button', { type: 'button', class: 'cso-pill', text: '375px', onclick: function () { setVp('mobile'); } });
+      function setVp(v) {
+        previewViewport = v;
+        vpD.classList.toggle('cso-pill-active', v === 'desktop');
+        vpT.classList.toggle('cso-pill-active', v === 'tablet');
+        vpM.classList.toggle('cso-pill-active', v === 'mobile');
+        previewFrame.className = 'cso-builder-iframe' + (v === 'mobile' ? ' cso-preview-frame-mobile' : '');
+      }
+
       drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
         el('div', { class: 'cso-drawer-head' }, [
-          el('strong', { text: 'Edit Landing Page SEO & CTA — ' + p.route }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+          el('strong', { text: 'Landing Conversion & Campaign Drawer — ' + p.route }),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            aiBtn,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Full-Screen Real View', onclick: function () { openFullscreenPreview(getCfg(), previewViewport); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+          ])
         ]),
         el('div', { class: 'cso-mod-grid-2' }, [
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title' }), tInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), dInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), cLbl]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), cUrl])
-        ]),
-        el('button', {
+          el('div', {}, [
+            el('div', { class: 'cso-mod-grid-2' }, [
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'SEO Title' }), tInp]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description (~150 chars)' }), dInp]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Bilingual Odia Hero Subtitle (ଓଡ଼ିଆ)' }), hSubInp]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Verified Internal Route Picker' }), routePicker]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary CTA Label' }), cLbl]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary CTA URL' }), cUrl]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Secondary CTA Label' }), secLbl]),
+              el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Secondary CTA URL' }), secUrl])
+            ]),
+            el('label', { class: 'cso-mod-toolbar' }, [focusedChk, el('span', { text: 'Focused Landing Mode (hide global nav chrome)' })]),
+            el('div', { class: 'cso-mod-card' }, [
+              el('strong', { text: 'Floating Mobile Sticky CTA Bar' }),
+              el('label', { class: 'cso-mod-toolbar' }, [stickyChk, el('span', { text: 'Enable Sticky Mobile CTA on 375px+' })]),
+              el('div', { class: 'cso-mod-grid-3' }, [stickyLbl, stickyUrl, stickyOdia])
+            ]),
+            el('div', { class: 'cso-mod-card' }, [
+              el('strong', { text: 'Quick Resource & PDF Attachment Strip' }),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                el('label', { class: 'cso-mod-btn cso-mod-btn-sm' }, ['Upload PDF to R2', resFileInput]),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick from R2 Library', onclick: function () { openR2Picker(function (u, n) { resources.push({ label: n, url: u, kind: 'R2 Library' }); renderResList(); updateLivePreview(); }); } }),
+                el('button', {
+                  type: 'button',
+                  class: 'cso-mod-btn cso-mod-btn-sm',
+                  text: 'Verify All Links (200 OK)',
+                  onclick: async function () {
+                    var urls = [cUrl.value.trim(), secUrl.value.trim(), stickyUrl.value.trim(), alertUrl.value.trim()]
+                      .concat(resources.map(function (r) { return r.url; }))
+                      .filter(Boolean);
+                    if (!urls.length) { toast('No URLs to verify', 'warn'); return; }
+                    try {
+                      var r = await api('POST', 'utils/check-links', { urls: urls });
+                      var results = r.results || [];
+                      var okCnt = results.filter(function (x) { return x.ok || (x.status >= 200 && x.status < 400); }).length;
+                      resVerifyHost.textContent = 'Link check: ' + okCnt + '/' + results.length + ' returned 200 OK';
+                    } catch (e) { resVerifyHost.textContent = 'Check failed: ' + e.message; }
+                  }
+                })
+              ]),
+              el('div', { class: 'cso-mod-grid-3' }, [
+                extKindSel,
+                extLblInp,
+                el('div', { class: 'cso-mod-toolbar' }, [
+                  extUrlInp,
+                  el('button', {
+                    type: 'button',
+                    class: 'cso-mod-btn cso-mod-btn-sm',
+                    text: '+ Add Link',
+                    onclick: function () {
+                      if (!extUrlInp.value.trim()) return;
+                      resources.push({ label: extLblInp.value.trim() || extUrlInp.value.trim(), url: extUrlInp.value.trim(), kind: extKindSel.value });
+                      extLblInp.value = '';
+                      extUrlInp.value = '';
+                      renderResList();
+                      updateLivePreview();
+                    }
+                  })
+                ])
+              ]),
+              resListHost,
+              resVerifyHost
+            ]),
+            el('div', { class: 'cso-mod-card' }, [
+              el('strong', { text: 'Candidate Exam / Scheme Alert Opt-In & Auto-Expiry' }),
+              el('label', { class: 'cso-mod-toolbar' }, [alertChk, el('span', { text: 'Enable Alert Opt-In Strip' })]),
+              el('div', { class: 'cso-mod-grid-2' }, [alertHeading, alertUrl]),
+              el('div', { class: 'cso-mod-grid-3' }, [
+                el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Deadline / Expiry Date' }), expAtInp]),
+                el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Post-Deadline Action' }), expActionSel]),
+                el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Evergreen Redirect Target' }), expRedirInp])
+              ])
+            ]),
+            el('div', { class: 'cso-mod-card' }, [
+              el('strong', { text: 'Shareable UTM Campaign Link Builder & OpenGraph Card' }),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                el('button', { type: 'button', class: 'cso-pill', text: 'Telegram', onclick: function () { utmSrc.value = 'telegram'; utmMed.value = 'channel'; refreshUtm(); } }),
+                el('button', { type: 'button', class: 'cso-pill', text: 'WhatsApp', onclick: function () { utmSrc.value = 'whatsapp'; utmMed.value = 'broadcast'; refreshUtm(); } }),
+                el('button', { type: 'button', class: 'cso-pill', text: 'YouTube', onclick: function () { utmSrc.value = 'youtube'; utmMed.value = 'video'; refreshUtm(); } }),
+                el('button', { type: 'button', class: 'cso-pill', text: 'Google Discover', onclick: function () { utmSrc.value = 'google_discover'; utmMed.value = 'feed'; refreshUtm(); } })
+              ]),
+              el('div', { class: 'cso-mod-grid-3' }, [utmSrc, utmMed, utmCamp]),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                utmOut,
+                el('button', {
+                  type: 'button',
+                  class: 'cso-mod-btn cso-mod-btn-sm',
+                  text: 'Copy UTM Link',
+                  onclick: function () {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(utmOut.value);
+                      toast('Copied UTM campaign URL', 'success');
+                    }
+                  }
+                })
+              ]),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                ogInp,
+                el('label', { class: 'cso-mod-btn cso-mod-btn-sm' }, ['Upload OG Image to R2', ogFileInput]),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick OG from R2', onclick: function () { openR2Picker(function (u) { ogInp.value = u; ogPreviewImg.src = u; updateLivePreview(); }); } })
+              ]),
+              el('div', { class: 'cso-og-card' }, [ogPreviewImg, el('strong', { text: cleanTitle || p.route }), el('p', { class: 'cso-mod-muted', text: cleanDesc })])
+            ]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              el('button', {
+                type: 'button',
+                class: 'cso-mod-btn cso-mod-btn-primary',
+                text: 'Save Campaign Live',
+                onclick: async function () {
+                  try {
+                    var cfg = getCfg();
+                    await api('PUT', 'pages', {
+                      route: p.route,
+                      title: cfg.title,
+                      meta_description: cfg.meta_description,
+                      hero_subtitle: cfg.hero_subtitle,
+                      cta_label: cfg.cta_label,
+                      cta_url: cfg.cta_url,
+                      secondary_cta_label: cfg.secondary_cta_label,
+                      secondary_cta_url: cfg.secondary_cta_url,
+                      focused_landing_mode: cfg.focused_landing_mode,
+                      sticky_mobile_cta: cfg.sticky_mobile_cta,
+                      alert_optin: cfg.alert_optin,
+                      expires_at: cfg.expires_at,
+                      expired_action: cfg.expired_action,
+                      expired_redirect: cfg.expired_redirect,
+                      og_image: cfg.og_image,
+                      utm_source: utmSrc.value.trim(),
+                      utm_medium: utmMed.value.trim(),
+                      utm_campaign: utmCamp.value.trim(),
+                      resources: resources,
+                      status: 'published',
+                      note: 'Landing campaign studio update'
+                    });
+                    toast('Saved landing campaign live: ' + p.route, 'success');
+                    clear(drawerHost);
+                    await loadLanding();
+                  } catch (e) { toast(e.message, 'crimson'); }
+                }
+              })
+            ])
+          ]),
+          el('div', {}, [
+            el('div', { class: 'cso-drawer-head' }, [
+              el('strong', { text: 'Real-CSS Live Preview' }),
+              el('div', { class: 'cso-pill-row' }, [vpD, vpT, vpM])
+            ]),
+            el('div', { class: 'cso-preview-frame-wrap' }, [previewFrame])
+          ])
+        ])
+      ]));
+    }
+
+    async function fixSlug(p) {
+      var target = suggestCleanSlug(p.route);
+      try {
+        await api('PUT', 'pages', {
+          old_route: p.route,
+          route: target,
+          create_redirect: true,
+          title: decodeEntities(p.title || target),
+          meta_description: decodeEntities(p.meta_description || ''),
+          status: p.status || 'published',
+          note: 'Auto-repaired slug & 301 redirect from ' + p.route
+        });
+        toast('Fixed slug ' + p.route + ' → ' + target + ' (301 redirect active)', 'success');
+        await loadLanding();
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+
+    async function bulkFixMissing() {
+      var targets = allLanding.filter(function (p) {
+        var desc = decodeEntities(p.meta_description || '');
+        return !p.cta_label || !p.cta_url || desc.length < 40;
+      });
+      if (!targets.length) { toast('All landing routes already have CTAs & healthy SEO', 'info'); return; }
+      var fixed = 0;
+      for (var i = 0; i < targets.length; i++) {
+        var p = targets[i];
+        var title = decodeEntities(p.title || p.route);
+        var ctaLbl = p.cta_label || (/exam|opsc|ossc|osssc/i.test(title + p.route) ? 'Start Free Mock Test' : /scheme|yojana|welfare/i.test(title + p.route) ? 'Check Eligibility & Apply' : 'Explore Odisha Portal');
+        var ctaUrl = p.cta_url || (/exam|opsc|ossc|osssc/i.test(title + p.route) ? '/mock-tests/' : '/jobs-careers/');
+        var desc = decodeEntities(p.meta_description || '');
+        if (desc.length < 40) {
+          desc = (title + ' — Verified Odisha portal guide with official notifications, eligibility details, syllabus PDFs & free CBT practice on Common Sense Odisha.').slice(0, 155);
+        }
+        try {
+          await api('PUT', 'pages', {
+            route: p.route,
+            title: title,
+            meta_description: desc,
+            cta_label: ctaLbl,
+            cta_url: ctaUrl,
+            status: p.status || 'published',
+            note: 'Bulk CTA & SEO auto-fix'
+          });
+          fixed++;
+        } catch (_e) { /* continue */ }
+      }
+      toast('Bulk fixed ' + fixed + ' landing routes', 'success');
+      await loadLanding();
+    }
+
+    function renderKpisAndTable() {
+      clear(kpiHost);
+      clear(tableHost);
+
+      var total = allLanding.length;
+      var ctaReady = allLanding.filter(function (p) { return !!(p.cta_label && p.cta_url); }).length;
+      var seoHealthy = allLanding.filter(function (p) { return decodeEntities(p.title || '').length > 0 && decodeEntities(p.meta_description || '').length >= 40; }).length;
+      var slugAlerts = allLanding.filter(function (p) { return hasBadSlug(p.route); }).length;
+
+      kpiHost.appendChild(el('div', { class: 'cso-kpi-grid-4' }, [
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Total Landing Routes' }), el('strong', { text: String(total) })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'CTA-Ready Routes' }), el('strong', { text: ctaReady + ' / ' + total })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'SEO Healthy Routes' }), el('strong', { text: seoHealthy + ' / ' + total })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Slug & Link Alerts' }), el('strong', { text: String(slugAlerts) })])
+      ]));
+
+      var filtered = allLanding.filter(function (p) {
+        var title = decodeEntities(p.title || '');
+        var desc = decodeEntities(p.meta_description || '');
+        var seoOk = title.length > 0 && desc.length >= 40;
+        var ctaOk = !!(p.cta_label && p.cta_url);
+        var badSlug = hasBadSlug(p.route);
+        if (activeFilter === 'missing-cta' && ctaOk) return false;
+        if (activeFilter === 'needs-seo' && seoOk) return false;
+        if (activeFilter === 'slug-alerts' && !badSlug) return false;
+        if (activeFilter === 'active-campaigns' && !(p.sticky_mobile_cta && p.sticky_mobile_cta.enabled) && !p.expires_at && !p.utm_campaign) return false;
+        if (searchText) {
+          var q = searchText.toLowerCase();
+          if ((title + ' ' + p.route + ' ' + (p.category || '')).toLowerCase().indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+
+      var rows = filtered.map(function (p) {
+        var cleanTitle = decodeEntities(p.title || p.route);
+        var cleanDesc = decodeEntities(p.meta_description || '');
+        var seoOk = cleanTitle.length > 0 && cleanDesc.length >= 40;
+        var ctaOk = !!(p.cta_label && p.cta_url);
+        var badSlug = hasBadSlug(p.route);
+        var views = analyticsMap[p.route];
+        var rowActions = [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit SEO/CTA', onclick: function () { openInlineEdit(p); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openFullscreenPreview(p, 'desktop'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Clone Live', onclick: function () { openCloneDrawer(p); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit in Full Studio', onclick: function () { f02State.editRoute = p.route; f02State.editPage = p; window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
+          el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open ↗' })
+        ];
+        if (badSlug) {
+          rowActions.unshift(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Fix Slug (301)', onclick: function () { fixSlug(p); } }));
+        }
+        return el('tr', {}, [
+          el('td', {}, [
+            el('strong', { text: cleanTitle }),
+            el('div', {}, [el('code', { text: p.route }), ' ', badSlug ? badge('Invalid Slug', 'warn') : '', views != null ? ' ' : '', views != null ? badge(String(views) + ' views', 'info') : ''])
+          ]),
+          el('td', {}, [badge(seoOk ? 'SEO OK' : 'Check Meta', seoOk ? 'ok' : 'warn'), ' ', badge(ctaOk ? 'CTA Ready' : 'No CTA', ctaOk ? 'ok' : 'info')]),
+          el('td', {}, f02StatusBadge(p.status)),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, rowActions))
+        ]);
+      });
+      tableHost.appendChild(safeTable(['Landing Route', 'SEO & CTA Audit', 'Status', 'Actions'], rows));
+    }
+
+    function renderToolbar() {
+      clear(toolbarHost);
+      var searchInp = el('input', { type: 'search', class: 'cso-mod-input', placeholder: 'Search landing route, title, or category...', value: searchText });
+      searchInp.addEventListener('input', function () { searchText = searchInp.value.trim(); renderKpisAndTable(); });
+      var filterDefs = [
+        ['all', 'All Routes'],
+        ['missing-cta', 'Missing CTA'],
+        ['needs-seo', 'Needs SEO Fix'],
+        ['slug-alerts', 'Slug Alerts'],
+        ['active-campaigns', 'Active Campaigns']
+      ];
+      var pills = filterDefs.map(function (fd) {
+        return el('button', {
           type: 'button',
-          class: 'cso-mod-btn cso-mod-btn-primary',
-          text: 'Save Live',
-          onclick: async function () {
-            try {
-              await api('PUT', 'pages', { route: p.route, title: tInp.value.trim(), meta_description: dInp.value.trim(), cta_label: cLbl.value.trim(), cta_url: cUrl.value.trim(), status: 'published', note: 'Landing page inline edit' });
-              toast('Updated landing page: ' + p.route, 'success');
-              clear(drawerHost);
-              await loadLanding();
-            } catch (e) { toast(e.message, 'crimson'); }
-          }
-        })
+          class: 'cso-pill' + (activeFilter === fd[0] ? ' cso-pill-active' : ''),
+          text: fd[1],
+          onclick: function () { activeFilter = fd[0]; renderToolbar(); renderKpisAndTable(); }
+        });
+      });
+      toolbarHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, [searchInp, el('div', { class: 'cso-pill-row' }, pills)]));
+    }
+
+    function toggleBlueprints() {
+      if (blueprintHost.childNodes.length) { clear(blueprintHost); return; }
+      var blueprints = [
+        { name: 'Exam Notification & Admit Card Hub', category: 'Exam Guide', cta_label: 'Download Admit Card & Syllabus', cta_url: '/mock-tests/' },
+        { name: 'Free CBT Mock Test Campaign', category: 'Exam Guide', cta_label: 'Start Free CBT Test Now', cta_url: '/mock-tests/' },
+        { name: 'Govt Scheme Eligibility & Apply Page', category: 'Core Portal', cta_label: 'Check Eligibility & Apply Online', cta_url: '/jobs-careers/' },
+        { name: 'District Recruitment Drive Hub', category: 'Recruitment', cta_label: 'View District Vacancies', cta_url: '/jobs-careers/' }
+      ];
+      blueprintHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'High-Converting Campaign Blueprints' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(blueprintHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-4' }, blueprints.map(function (bp) {
+          return el('div', { class: 'cso-mod-card' }, [
+            el('strong', { text: bp.name }),
+            el('p', { class: 'cso-mod-muted', text: bp.category + ' · ' + bp.cta_label }),
+            el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+              text: 'Launch Blueprint →',
+              onclick: function () {
+                f02State.createTemplate = bp;
+                window.selectModule && window.selectModule('folder-02', 'module-02-002');
+              }
+            })
+          ]);
+        }))
       ]));
     }
 
@@ -4451,36 +5105,33 @@
       clear(tableHost);
       try {
         var d = await api('GET', 'pages');
-        var list = (d.pages || []).filter(function (p) {
+        var pages = d.pages || [];
+        allRoutesList = pages.map(function (x) { return x.route; }).filter(Boolean);
+        allLanding = pages.filter(function (p) {
           return p.category === 'Core Portal' || p.category === 'Exam Guide' || p.category === 'Recruitment' || p.source === 'dynamic';
         });
-        var rows = list.map(function (p) {
-          var seoOk = (p.title || '').length > 0 && (p.meta_description || '').length >= 40;
-          var ctaOk = !!(p.cta_label && p.cta_url);
-          return el('tr', {}, [
-            el('td', {}, [el('strong', { text: p.title || p.route }), el('div', {}, el('code', { text: p.route }))]),
-            el('td', {}, [badge(seoOk ? 'SEO OK' : 'Check Meta', seoOk ? 'ok' : 'warn'), ' ', badge(ctaOk ? 'CTA Ready' : 'No CTA', ctaOk ? 'ok' : 'info')]),
-            el('td', {}, f02StatusBadge(p.status)),
-            el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
-              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit SEO/CTA', onclick: function () { openInlineEdit(p); } }),
-              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Clone Live', onclick: function () { openCloneDrawer(p); } }),
-              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
-              el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open ↗' })
-            ]))
-          ]);
-        });
-        tableHost.appendChild(safeTable(['Landing Route', 'SEO & CTA Audit', 'Status', 'Actions'], rows));
+        try {
+          var st = await api('GET', 'analytics');
+          if (st && st.routes && typeof st.routes === 'object') analyticsMap = st.routes;
+        } catch (_a) { /* optional analytics */ }
+        renderToolbar();
+        renderKpisAndTable();
       } catch (e) {
         tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: e.message }));
       }
     }
 
-    renderBanner(shell, 'Landing Pages Studio', 'Audit portal & campaign landing routes, edit SEO/CTAs inline, or clone as new live pages.', [
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ New Landing Page', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
+    renderBanner(shell, 'Landing Pages Studio', 'Audit portal & campaign landing routes, repair slugs, optimize CTAs & mobile sticky bars, or clone live variants.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ New Landing Page', onclick: toggleBlueprints }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Fix CTAs & SEO', onclick: bulkFixMissing }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: loadLanding })
     ]);
+    shell.appendChild(kpiHost);
+    shell.appendChild(blueprintHost);
+    shell.appendChild(toolbarHost);
     shell.appendChild(drawerHost);
     shell.appendChild(tableHost);
+    shell.appendChild(fullscreenHost);
     root.appendChild(shell);
     loadLanding();
   }
