@@ -87,6 +87,9 @@ export async function handleAdminApi(request, env) {
       case 'ai':
         if (id === 'generate-page') return await handleAiGeneratePage(request, env, actor);
         break;
+      case 'utils':
+        if (id === 'check-links' && method === 'POST') return await handleCheckLinks(request, env);
+        break;
       case 'incidents':
         return await handleIncidents(request, env, actor, id, sub);
       case 'media':
@@ -186,4 +189,60 @@ async function handleUsers(request, env, actor, id, sub) {
     return json({ id, role: body.role });
   }
   throw new HttpError(404, 'NOT_FOUND', 'Unknown admin route');
+}
+
+async function handleCheckLinks(request, env) {
+  const body = await readJson(request, 20000);
+  const rawUrls = Array.isArray(body.urls) ? body.urls : [];
+  const urls = [...new Set(rawUrls.map(u => String(u || '').trim()).filter(Boolean))].slice(0, 30);
+  const isPrivateHost = host => /^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.0\.0\.0|\[::1\])/i.test(host);
+
+  const results = await Promise.all(urls.map(async u => {
+    if (u.startsWith('/') && !u.startsWith('//')) {
+      try {
+        if (u.startsWith('/api/media/') && env.MEDIA) {
+          const key = decodeURIComponent(u.slice('/api/media/'.length).split('?')[0]);
+          const head = await env.MEDIA.head(key);
+          return { url: u, ok: !!head, status: head ? 200 : 404, note: head ? '200 OK (R2)' : '404 Not Found' };
+        }
+        if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+          const ar = await env.ASSETS.fetch(new URL(u, request.url));
+          if (ar.ok) return { url: u, ok: true, status: ar.status, note: '200 OK' };
+        }
+        if (env.DB) {
+          const path = u.split('?')[0];
+          const row = await env.DB.prepare("SELECT status FROM site_pages WHERE route IN (?, ?, ?) LIMIT 1").bind(path, path.endsWith('/') ? path.slice(0, -1) : path + '/', path).first();
+          if (row) return { url: u, ok: true, status: 200, note: '200 OK (' + row.status + ')' };
+        }
+        return { url: u, ok: false, status: 404, note: '404 Not Found' };
+      } catch {
+        return { url: u, ok: false, status: 0, note: 'Check Error' };
+      }
+    }
+    if (!/^https?:\/\//i.test(u)) return { url: u, ok: false, status: 0, note: 'Invalid Scheme' };
+    let parsed;
+    try { parsed = new URL(u); } catch { return { url: u, ok: false, status: 0, note: 'Invalid URL' }; }
+    if (isPrivateHost(parsed.hostname)) return { url: u, ok: false, status: 0, note: 'Blocked Host' };
+
+    const isDrive = /(^|\.)(drive|docs)\.google\.com$/i.test(parsed.hostname);
+    const pingUrl = async m => fetch(u, {
+      method: m,
+      redirect: 'follow',
+      headers: m === 'GET' ? { 'User-Agent': 'CSOdisha-LinkChecker/1.0', Range: 'bytes=0-0' } : { 'User-Agent': 'CSOdisha-LinkChecker/1.0' },
+      signal: AbortSignal.timeout(5000)
+    });
+    try {
+      let res = await pingUrl('HEAD');
+      if (res.status === 405 || res.status === 403 || res.status === 501) res = await pingUrl('GET');
+      if (isDrive && (res.status === 401 || res.status === 403 || /accounts\.google\.com/i.test(res.url || ''))) {
+        return { url: u, ok: false, status: res.status, note: 'Private / Auth Required' };
+      }
+      if (res.ok) return { url: u, ok: true, status: res.status, note: '200 OK' };
+      if (res.status === 401 || res.status === 403) return { url: u, ok: false, status: res.status, note: 'Private / Auth Required' };
+      return { url: u, ok: false, status: res.status, note: res.status + ' Error' };
+    } catch {
+      return { url: u, ok: false, status: 0, note: '404 / Timeout' };
+    }
+  }));
+  return json({ results });
 }

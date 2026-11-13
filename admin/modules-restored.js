@@ -867,8 +867,8 @@
           el('td', {}, badge(ready ? 'SEO Ready ✓' : 'Needs Meta', ready ? 'ok' : 'warn')),
           el('td', { text: (p.meta_description || '').slice(0, 64) + ((p.meta_description || '').length > 64 ? '…' : '') || '—' }),
           el('td', {}, el('div', { class: 'cso-mod-toolbar' }, [
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Edit', onclick: function () { openPageStudioDrawer(p); } }),
-            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview', onclick: function () { openPageStudioDrawer(p); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Edit in Full Studio', onclick: function () { f02State.editRoute = p.route; f02State.editPage = p; window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Quick Edit', onclick: function () { openPageStudioDrawer(p); } }),
             el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Builder', onclick: function () { f02State.builderRoute = p.route; window.selectModule && window.selectModule('folder-02', 'module-02-003'); } }),
             el('a', { href: p.route, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' }),
             (p.status !== 'trash' && p.status !== 'archived') ? el('button', {
@@ -934,7 +934,7 @@
     pageSizeSel.addEventListener('change', function () { state.pageSize = pageSizeSel.value; state.page = 0; drawTable(); });
 
     renderBanner(shell, 'All Website Pages', 'Live merged inventory of all static portals + D1 live overrides + custom pages with bulk controls & split-pane previews.', [
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Create New Page', onclick: function () { window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: '+ Create New Page', onclick: function () { f02State.editRoute = null; f02State.editPage = null; window.selectModule && window.selectModule('folder-02', 'module-02-002'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Publish Live', onclick: function () { bulkSetStatus('published'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Bulk Set Draft', onclick: function () { bulkSetStatus('draft'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: exportPagesJson }),
@@ -1047,7 +1047,23 @@
     var draftTimer = null;
     var DRAFT_KEY = 'cso_new_page_draft';
     var recoveryHost = el('div', {});
+    var lifecycleHost = el('div', {});
+    var revisionHost = el('div', {});
     var validationHost = el('div', {});
+    var linkHealthHost = el('div', {});
+    var fullscreenHost = el('div', {});
+    var editMode = false;
+    var editingRoute = null;
+    var editingStatus = 'published';
+    var editingRevisionsCount = 0;
+    var lastLinkResults = [];
+    var blockCards = [];
+    var attCards = [];
+    var redirectChk = el('input', { type: 'checkbox', checked: true });
+    var redirectWrap = el('label', { class: 'cso-check-label cso-hidden' }, [
+      redirectChk,
+      el('span', { text: 'Auto-create 301 redirect from old slug' })
+    ]);
     var publishBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish Live Now', onclick: function () { submitPage('published'); } });
 
     function utf8Bytes(s) {
@@ -1123,6 +1139,7 @@
 
     function renderAttachments() {
       clear(attachListHost);
+      attCards = [];
       if (!attachments.length) {
         attachListHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'No R2 files, photos, or official/Google Drive links attached yet.' }));
         return;
@@ -1144,7 +1161,7 @@
         var altInp = att.is_image ? el('input', { type: 'text', class: 'cso-mod-input', value: att.alt || '', placeholder: 'Image alt text (required for SEO/accessibility)' }) : null;
         if (altInp) altInp.addEventListener('input', function () { att.alt = altInp.value; updateAll(); });
 
-        attachListHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+        var aCard = el('div', { class: 'cso-builder-block' }, [
           el('div', { class: 'cso-builder-block-head' }, [
             el('div', { class: 'cso-inline-row' }, [
               badge(att.source_label || 'Link', att.source_kind === 'gov' || att.source_kind === 'r2' ? 'ok' : 'info'),
@@ -1163,7 +1180,9 @@
             el('label', { class: 'cso-check-label' }, [ntChk, el('span', { text: 'Open in New Tab' })])
           ]),
           altInp ? el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Image Alt Text' }), altInp]) : null
-        ]));
+        ]);
+        attCards[idx] = aCard;
+        attachListHost.appendChild(aCard);
       });
     }
 
@@ -1294,100 +1313,182 @@
       return list;
     }
 
+    function buildRealPreviewHtml() {
+      var escHtml = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      };
+      var safeU = function (u) {
+        var s = String(u || '').trim();
+        return (s.indexOf('/') === 0 && s.indexOf('//') !== 0) || /^https?:\/\//i.test(s) ? s : '#';
+      };
+      var t = titleInp.value.trim() || 'Page Title — Common Sense Odisha';
+      var hTitle = heroTitleInp.value.trim() || t;
+      var hSub = heroSubInp.value.trim() || 'Verified guidance and resources for Odisha aspirants.';
+      var oSub = odiaSubInp.value.trim();
+      var cLbl = ctaLblInp.value.trim();
+      var cUrl = safeU(ctaUrlInp.value.trim() || '/jobs-careers/');
+      var heroImgAtt = attachments.find(function (a) { return a.is_image && a.role === 'Hero Cover Image'; });
+
+      var blocksHtml = starterBlocks.map(function (b, idx) {
+        var heading = escHtml(b.question || b.title || b.heading || 'Section');
+        var bodyTxt = escHtml(b.answer || b.text || b.body || '');
+        var inner = '<h2>' + heading + '</h2>';
+        if (b.type === 'key_dates' && Array.isArray(b.rows) && b.rows.length) {
+          inner += '<table><thead><tr><th>Event / Milestone</th><th>Date / Status</th></tr></thead><tbody>' +
+            b.rows.map(function (rw) { return '<tr><td>' + escHtml(rw.label || '') + '</td><td>' + escHtml(rw.value || '') + '</td></tr>'; }).join('') +
+            '</tbody></table>';
+        } else if (bodyTxt) {
+          inner += '<p>' + bodyTxt + '</p>';
+        }
+        if (b.url) inner += '<p><a href="' + escHtml(safeU(b.url)) + '">' + escHtml(b.url) + '</a></p>';
+        return '<section class="card" data-editor-target="block-' + idx + '">' + inner + '</section>';
+      }).join('');
+
+      var attHtml = attachments.length ? '<section class="card"><h2>Official Files &amp; Resources</h2>' + attachments.map(function (a, idx) {
+        var media = a.is_image ? '<img src="' + escHtml(safeU(a.url)) + '" alt="' + escHtml(a.alt || a.title) + '">' : '';
+        return '<div class="cso-att-preview" data-editor-target="attachment-' + idx + '">' + media +
+          '<p><strong>' + escHtml(a.title) + '</strong> (' + escHtml(a.source_label || a.role || 'Link') + ')</p>' +
+          '<a href="' + escHtml(safeU(a.url)) + '">' + escHtml(a.url) + '</a></div>';
+      }).join('') + '</section>' : '';
+
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + escHtml(t) + '</title>' +
+        '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
+        '</head><body><main class="container">' +
+        '<header class="hero" data-editor-target="hero">' +
+        '<p class="kicker">' + escHtml(catSel.value) + ' · ' + escHtml(layoutSel.value) + '</p>' +
+        (heroImgAtt ? '<img src="' + escHtml(safeU(heroImgAtt.url)) + '" alt="' + escHtml(heroImgAtt.alt || heroImgAtt.title) + '">' : '') +
+        '<h1>' + escHtml(hTitle) + '</h1><p>' + escHtml(hSub) + '</p>' +
+        (oSub ? '<p class="odia-sub">' + escHtml(oSub) + '</p>' : '') +
+        (cLbl ? '<p><a class="btn primary" href="' + escHtml(cUrl) + '">' + escHtml(cLbl) + '</a></p>' : '') +
+        '</header>' + blocksHtml + attHtml + '</main></body></html>';
+    }
+
+    function jumpToEditorTarget(target) {
+      if (!target) return;
+      clear(fullscreenHost);
+      var node = null;
+      var focusEl = null;
+      if (target === 'hero') {
+        node = heroTitleInp;
+        focusEl = heroTitleInp;
+      } else if (target.indexOf('block-') === 0) {
+        var bIdx = Number(target.slice(6));
+        node = blockCards[bIdx] || blocksHost;
+        focusEl = node ? node.querySelector('input, textarea, select') : null;
+      } else if (target.indexOf('attachment-') === 0) {
+        var aIdx = Number(target.slice(11));
+        node = attCards[aIdx] || attachListHost;
+        focusEl = node ? node.querySelector('input, select') : null;
+      }
+      if (node && node.scrollIntoView) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (node && node.classList) {
+        node.classList.add('cso-focus-pulse');
+        setTimeout(function () { node.classList.remove('cso-focus-pulse'); }, 1800);
+      }
+      if (focusEl && focusEl.focus) focusEl.focus();
+      toast('Focused editor section: ' + target, 'info');
+    }
+
+    function wirePreviewClickToFocus(iframeEl) {
+      iframeEl.addEventListener('load', function () {
+        try {
+          var doc = iframeEl.contentDocument;
+          if (!doc) return;
+          doc.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            var hit = ev.target && ev.target.closest ? ev.target.closest('[data-editor-target]') : null;
+            if (hit) jumpToEditorTarget(hit.getAttribute('data-editor-target'));
+          });
+        } catch (_) {}
+      });
+    }
+
+    function openFullScreenPreview() {
+      clear(fullscreenHost);
+      var fsMode = mobileMode ? 'mobile' : 'desktop';
+      var fsFrame = el('iframe', {
+        class: 'cso-fullscreen-frame' + (fsMode === 'mobile' ? ' is-mobile' : ''),
+        sandbox: 'allow-same-origin',
+        title: 'Full-Screen Real Page Preview'
+      });
+      fsFrame.srcdoc = buildRealPreviewHtml();
+      wirePreviewClickToFocus(fsFrame);
+
+      var btnDesk = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'desktop' ? ' cso-pill-active' : ''), text: 'Desktop 100%', onclick: function () { setFs('desktop'); } });
+      var btnTab = el('button', { type: 'button', class: 'cso-pill', text: 'Tablet 768px', onclick: function () { setFs('tablet'); } });
+      var btnMob = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'mobile' ? ' cso-pill-active' : ''), text: 'Mobile 375px', onclick: function () { setFs('mobile'); } });
+      function setFs(m) {
+        fsMode = m;
+        btnDesk.classList.toggle('cso-pill-active', m === 'desktop');
+        btnTab.classList.toggle('cso-pill-active', m === 'tablet');
+        btnMob.classList.toggle('cso-pill-active', m === 'mobile');
+        fsFrame.className = 'cso-fullscreen-frame' + (m === 'tablet' ? ' is-tablet' : m === 'mobile' ? ' is-mobile' : '');
+      }
+      function closeFs() {
+        document.removeEventListener('keydown', onEsc);
+        clear(fullscreenHost);
+      }
+      function onEsc(e) { if (e.key === 'Escape') closeFs(); }
+      document.addEventListener('keydown', onEsc);
+
+      fullscreenHost.appendChild(el('div', { class: 'cso-fullscreen-overlay' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Back to Editor', onclick: closeFs }),
+            el('strong', { text: 'Full-Screen Real View (Click any section to jump to editor)' })
+          ]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            btnDesk, btnTab, btnMob,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Save Draft', onclick: function () { closeFs(); submitPage('draft'); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: editMode ? 'Update Live' : 'Publish Live', onclick: function () { closeFs(); submitPage('published'); } })
+          ])
+        ]),
+        el('div', { class: 'cso-fullscreen-stage' }, [fsFrame])
+      ]));
+    }
+
     function updatePreviewPane() {
       clear(previewHost);
       var t = titleInp.value.trim() || 'Page Title — Common Sense Odisha';
       var d = metaDescInp.value.trim() || 'Meta description preview will appear here as you type…';
       var r = f02NormalizeRoute(slugInp.value || '/new-page/');
-      var hTitle = heroTitleInp.value.trim() || t;
-      var hSub = heroSubInp.value.trim() || 'Supporting summary for Odisha aspirants.';
-      var oSub = odiaSubInp.value.trim();
-      var cLbl = ctaLblInp.value.trim();
       var heroImgAtt = attachments.find(function (a) { return a.is_image && a.role === 'Hero Cover Image'; });
       var ogAtt = attachments.find(function (a) { return a.is_image && a.role === 'OpenGraph Social Image'; });
       var ogUrl = ogImgInp.value.trim() || (ogAtt ? ogAtt.url : (heroImgAtt ? heroImgAtt.url : ''));
 
-      var card = el('div', { class: mobileMode ? 'cso-preview-card-mobile' : 'cso-preview-card-desktop' });
       if (previewTab === 'serp') {
-        card.appendChild(el('div', { class: 'cso-serp-card' }, [
-          el('div', { class: 'cso-serp-url', text: 'https://csodisha.com' + r }),
-          el('div', { class: 'cso-serp-title', text: t }),
-          el('p', { class: 'cso-serp-desc', text: d })
+        previewHost.appendChild(el('div', { class: mobileMode ? 'cso-preview-card-mobile' : 'cso-preview-card-desktop' }, [
+          el('div', { class: 'cso-serp-card' }, [
+            el('div', { class: 'cso-serp-url', text: 'https://csodisha.com' + r }),
+            el('div', { class: 'cso-serp-title', text: t }),
+            el('p', { class: 'cso-serp-desc', text: d })
+          ])
         ]));
       } else if (previewTab === 'og') {
-        var ogCard = el('div', { class: 'cso-og-card' }, [
-          el('div', { class: 'cso-preview-kicker', text: 'CSODISHA.COM · ' + catSel.value.toUpperCase() }),
-          ogUrl ? el('img', { src: ogUrl, alt: t, class: 'cso-asset-preview-img' }) : null,
-          el('strong', { text: t }),
-          el('p', { class: 'cso-mod-muted', text: d })
-        ]);
-        card.appendChild(ogCard);
+        previewHost.appendChild(el('div', { class: mobileMode ? 'cso-preview-card-mobile' : 'cso-preview-card-desktop' }, [
+          el('div', { class: 'cso-og-card' }, [
+            el('div', { class: 'cso-preview-kicker', text: 'CSODISHA.COM · ' + catSel.value.toUpperCase() }),
+            ogUrl ? el('img', { src: ogUrl, alt: t, class: 'cso-asset-preview-img' }) : null,
+            el('strong', { text: t }),
+            el('p', { class: 'cso-mod-muted', text: d })
+          ])
+        ]));
       } else if (previewTab === 'jsonld') {
-        card.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(buildPreviewJsonLd(r, t), null, 2) }));
+        previewHost.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(buildPreviewJsonLd(r, t), null, 2) }));
       } else {
-        card.appendChild(el('div', { class: 'cso-drawer-head' }, [
-          el('strong', { text: 'Common Sense Odisha' }),
-          el('div', { class: 'cso-mod-muted', text: layoutSel.value + ' · Jobs · Current Affairs · Mock Tests' })
-        ]));
-        card.appendChild(el('div', { class: 'cso-og-card' }, [
-          el('div', { class: 'cso-preview-kicker', text: catSel.value.toUpperCase() + ' · PREVIEW (UNPUBLISHED)' }),
-          heroImgAtt ? el('img', { src: heroImgAtt.url, alt: heroImgAtt.alt || heroImgAtt.title, class: 'cso-asset-preview-img' }) : null,
-          el('h3', { text: hTitle }),
-          el('p', { class: 'cso-preview-body', text: hSub }),
-          oSub ? el('p', { class: 'cso-mod-muted', text: oSub }) : null,
-          cLbl ? el('span', { class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: cLbl }) : null
-        ]));
-        starterBlocks.forEach(function (b, idx) {
-          var blk = el('div', { class: 'cso-builder-block' }, [
-            el('div', { class: 'cso-builder-block-head' }, [badge((idx + 1) + '. ' + b.type, 'info')]),
-            el('strong', { text: b.question || b.title || b.heading || '(Untitled Block)' }),
-            el('p', { class: 'cso-mod-muted', text: b.answer || b.text || b.body || '' }),
-            (b.url && b.type === 'image') ? el('img', { src: b.url, alt: b.alt || b.title || '', class: 'cso-asset-preview-img' }) : null
-          ]);
-          if (b.type === 'key_dates' && Array.isArray(b.rows) && b.rows.length) {
-            blk.appendChild(safeTable(['Event / Milestone', 'Date / Status'], b.rows.map(function (rw) {
-              return el('tr', {}, [el('td', { text: rw.label || '' }), el('td', { text: rw.value || '' })]);
-            })));
-          }
-          card.appendChild(blk);
+        var miniFrame = el('iframe', {
+          class: mobileMode ? 'cso-preview-frame-mobile' : 'cso-preview-frame',
+          sandbox: 'allow-same-origin',
+          title: 'Real-CSS Live Page Mini-Preview'
         });
-        attachments.forEach(function (att) {
-          if (att.role === 'Hero Cover Image' || att.role === 'OpenGraph Social Image') return;
-          if (att.role === 'Inline Photo' && att.is_image) {
-            card.appendChild(el('div', { class: 'cso-builder-block' }, [
-              el('strong', { text: att.title }),
-              el('img', { src: att.url, alt: att.alt || att.title, class: 'cso-asset-preview-img' })
-            ]));
-            return;
-          }
-          var embedOpen = activeEmbedId === att.id;
-          var attCard = el('div', { class: 'cso-builder-block' }, [
-            el('div', { class: 'cso-builder-block-head' }, [
-              el('div', { class: 'cso-inline-row' }, [
-                badge(att.source_label || att.role, att.source_kind === 'gov' || att.source_kind === 'r2' ? 'ok' : 'info'),
-                el('strong', { text: att.title }),
-                el('span', { class: 'cso-mod-muted', text: att.domain || '' })
-              ]),
-              el('div', { class: 'cso-mod-toolbar' }, [
-                (att.is_pdf || att.source_kind === 'gdrive' || att.is_image) ? el('button', {
-                  type: 'button',
-                  class: 'cso-mod-btn cso-mod-btn-sm',
-                  text: embedOpen ? 'Hide Embed' : 'Preview File / Drive Embed',
-                  onclick: function () { activeEmbedId = embedOpen ? null : att.id; updatePreviewPane(); }
-                }) : null,
-                el('span', { class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: att.role === 'Apply Online CTA' ? 'Apply Online ↗' : 'Open ↗' })
-              ])
-            ])
-          ]);
-          if (embedOpen) {
-            attCard.appendChild(att.is_image
-              ? el('img', { src: att.url, alt: att.alt || att.title, class: 'cso-asset-preview-img' })
-              : el('iframe', { src: att.preview_url || att.url, class: 'cso-asset-preview-pdf', title: att.title }));
-          }
-          card.appendChild(attCard);
-        });
+        miniFrame.srcdoc = buildRealPreviewHtml();
+        wirePreviewClickToFocus(miniFrame);
+        previewHost.appendChild(el('div', { class: 'cso-preview-frame-wrap' }, [miniFrame]));
+        previewHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Tip: Click any heading, table, or attachment inside the preview to jump directly to its editor field.' }));
       }
-      previewHost.appendChild(card);
     }
 
     function runValidation() {
@@ -1398,7 +1499,7 @@
       var r = f02NormalizeRoute(rawSlug || '/new-page/');
       if (!t || t.length < 6) errs.push({ msg: 'Page Title is missing or too short (min 6 chars)', el: titleInp });
       if (!rawSlug || rawSlug === '/' || !/^\/[a-z0-9\-\/]+$/i.test(rawSlug)) errs.push({ msg: 'Slug must be a valid /kebab-case/ route', el: slugInp });
-      if (existingRoutes[r]) errs.push({ msg: 'Route ' + r + ' already exists in /api/admin/pages', el: slugInp });
+      if (existingRoutes[r] && (!editMode || r !== editingRoute)) errs.push({ msg: 'Route ' + r + ' already exists in /api/admin/pages', el: slugInp });
       if (d.length < 120 || d.length > 160) warns.push({ msg: 'Meta Description (' + d.length + ' chars) should be 120–160 chars', el: metaDescInp });
       if (utf8Bytes(d) > 160) warns.push({ msg: 'Meta Description exceeds 160 UTF-8 bytes (' + utf8Bytes(d) + 'B) — Odia text may truncate', el: metaDescInp });
       var ctaU = ctaUrlInp.value.trim();
@@ -1429,8 +1530,15 @@
 
       publishBtn.disabled = errs.length > 0;
       clear(validationHost);
+      var verifyBtn = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Verify All Links (200 OK)', onclick: verifyAllLinks });
       if (!errs.length && !warns.length) {
-        validationHost.appendChild(el('div', { class: 'cso-mod-card' }, [badge('Pre-Publish Gate: All Checks Passed ✓', 'ok')]));
+        validationHost.appendChild(el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            badge('Pre-Publish Gate: All Checks Passed ✓', 'ok'),
+            verifyBtn
+          ]),
+          linkHealthHost
+        ]));
         return;
       }
       var list = el('div', { class: 'cso-mod-toolbar' });
@@ -1443,10 +1551,40 @@
       validationHost.appendChild(el('div', { class: 'cso-drawer' }, [
         el('div', { class: 'cso-drawer-head' }, [
           el('strong', { text: 'Pre-Publish Error Detector (' + errs.length + ' blocking, ' + warns.length + ' warnings)' }),
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: '1-Click Auto-Fix Safe Issues', onclick: autoFixSafe })
+          el('div', { class: 'cso-mod-toolbar' }, [
+            verifyBtn,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: '1-Click Auto-Fix Safe Issues', onclick: autoFixSafe })
+          ])
         ]),
-        list
+        list,
+        linkHealthHost
       ]));
+    }
+
+    async function verifyAllLinks() {
+      var urls = [];
+      if (ctaUrlInp.value.trim()) urls.push(ctaUrlInp.value.trim());
+      if (ogImgInp.value.trim()) urls.push(ogImgInp.value.trim());
+      attachments.forEach(function (a) { if (a.url) urls.push(a.url); });
+      starterBlocks.forEach(function (b) { if (b.url) urls.push(b.url); });
+      urls = urls.filter(function (u, i, arr) { return u && arr.indexOf(u) === i; });
+      if (!urls.length) { toast('No links or attachments to verify', 'info'); return; }
+      clear(linkHealthHost);
+      linkHealthHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Pinging ' + urls.length + ' link(s)…' }));
+      try {
+        var res = await api('POST', 'utils/check-links', { urls: urls });
+        lastLinkResults = res.results || [];
+        clear(linkHealthHost);
+        var row = el('div', { class: 'cso-mod-toolbar' });
+        lastLinkResults.forEach(function (r) {
+          var tone = r.ok ? 'ok' : (r.note && r.note.indexOf('Private') !== -1 ? 'warn' : 'danger');
+          row.appendChild(badge(r.note + ' · ' + r.url.slice(0, 42), tone));
+        });
+        linkHealthHost.appendChild(row);
+      } catch (e) {
+        clear(linkHealthHost);
+        linkHealthHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Link check failed: ' + e.message }));
+      }
     }
 
     function autoFixSafe() {
@@ -1496,12 +1634,15 @@
       descCount.textContent = d.length + ' / 160 chars (' + utf8Bytes(d) + ' UTF-8 bytes)';
       descCount.className = 'cso-char-count' + (d.length > 160 ? ' is-over' : '');
       clear(slugStatusEl);
-      if (existingRoutes[r]) {
+      if (editMode && r === editingRoute) {
+        slugStatusEl.appendChild(badge('Editing Existing Route (' + editingStatus + ')', 'info'));
+      } else if (existingRoutes[r]) {
         slugStatusEl.appendChild(badge('Already Exists (will update)', 'warn'));
       } else {
         slugStatusEl.appendChild(badge('Slug Available ✓', 'ok'));
       }
       slugStatusEl.appendChild(el('code', { text: r }));
+      redirectWrap.classList.toggle('cso-hidden', !(editMode && editingRoute && r !== editingRoute));
       renderReadinessKpis();
       runValidation();
       updatePreviewPane();
@@ -1510,6 +1651,7 @@
 
     function renderInitialBlocks() {
       clear(blocksHost);
+      blockCards = [];
       starterBlocks.forEach(function (b, idx) {
         var bTitle = el('input', { type: 'text', class: 'cso-mod-input', value: b.title || b.heading || '', placeholder: b.type === 'faq' ? 'FAQ Question' : 'Block Title' });
         var bText = el('input', { type: 'text', class: 'cso-mod-input', value: b.text || b.body || '', placeholder: b.type === 'faq' ? 'FAQ Answer' : 'Block Text' });
@@ -1550,7 +1692,7 @@
           ]);
         }
 
-        blocksHost.appendChild(el('div', { class: 'cso-builder-block' }, [
+        var bCard = el('div', { class: 'cso-builder-block' }, [
           el('div', { class: 'cso-builder-block-head' }, [
             badge((idx + 1) + '. ' + b.type, 'info'),
             el('div', { class: 'cso-mod-toolbar' }, [
@@ -1562,7 +1704,9 @@
           ]),
           el('div', { class: 'cso-mod-grid-2' }, [bTitle, bText]),
           extraNode
-        ]));
+        ]);
+        blockCards[idx] = bCard;
+        blocksHost.appendChild(bCard);
       });
     }
 
@@ -1621,6 +1765,8 @@
       });
       var payload = {
         route: route,
+        old_route: (editMode && editingRoute && editingRoute !== route) ? editingRoute : undefined,
+        create_redirect: (editMode && editingRoute && editingRoute !== route) ? !!redirectChk.checked : undefined,
         title: titleInp.value.trim(),
         meta_description: metaDescInp.value.trim(),
         category: catSel.value,
@@ -1631,14 +1777,19 @@
         blocks_json: JSON.stringify(finalBlocks),
         status: status,
         publish_at: status === 'scheduled' ? new Date(schedInp.value).toISOString() : null,
-        note: 'Created via Create New Page Wizard'
+        note: editMode ? 'Updated via Full Page Studio' : 'Created via Create New Page Wizard'
       };
       try {
-        var res = await api('POST', 'pages', payload);
+        var res = await api(editMode ? 'PUT' : 'POST', 'pages', payload);
         try { localStorage.removeItem(DRAFT_KEY); clear(recoveryHost); } catch (_) {}
         existingRoutes[res.route] = 1;
+        editMode = true;
+        editingRoute = res.route;
+        editingStatus = status;
+        editingRevisionsCount = (editingRevisionsCount || 0) + 1;
+        renderLifecycleBar();
         updateAll();
-        toast('Page ' + status + ': ' + res.route, 'success');
+        toast((res.redirect_from ? '301 redirect created (' + res.redirect_from + ' → ' + res.route + ') · ' : '') + 'Page ' + status + ': ' + res.route, 'success');
         clear(resultBanner);
         resultBanner.appendChild(el('div', { class: 'cso-drawer' }, [
           el('div', { class: 'cso-inline-row' }, [
@@ -1654,13 +1805,190 @@
       }
     }
 
-    renderBanner(shell, 'Create New Page', 'Publish real public routes on csodisha.com/<slug>/ with AI drafting, pre-publish error gate & live previews.', [
+    function loadPageIntoEditor(p) {
+      if (!p) return;
+      editMode = true;
+      editingRoute = f02NormalizeRoute(p.route);
+      editingStatus = p.status || 'published';
+      editingRevisionsCount = p.revisions || 0;
+      titleInp.value = p.title || '';
+      slugInp.value = editingRoute;
+      slugInp.dataset.touched = '1';
+      catSel.value = p.category || 'Core Portal';
+      metaDescInp.value = p.meta_description || '';
+      heroTitleInp.value = p.hero_title || p.title || '';
+      heroTitleInp.dataset.touched = '1';
+      heroSubInp.value = p.hero_subtitle || '';
+      ctaLblInp.value = p.cta_label || '';
+      ctaUrlInp.value = p.cta_url || '';
+      schedInp.value = p.publish_at ? String(p.publish_at).slice(0, 16) : '';
+      var parsed = [];
+      try { parsed = JSON.parse(p.blocks_json || '[]'); } catch (_) {}
+      if (!Array.isArray(parsed)) parsed = [];
+      var pm = parsed.find(function (b) { return b && b.type === 'page_meta'; }) || {};
+      var ogm = parsed.find(function (b) { return b && b.type === 'og_meta'; }) || {};
+      odiaSubInp.value = pm.odia_subtitle || '';
+      layoutSel.value = pm.layout_variant || 'Standard Portal';
+      navChk.checked = !!pm.show_in_nav;
+      featChk.checked = !!pm.feature_home;
+      noindexChk.checked = !!pm.noindex;
+      expiresInp.value = pm.expires_at || '';
+      ogImgInp.value = ogm.og_image || '';
+      attachments = parsed.filter(function (b) { return b && (b.type === 'attachment' || b.type === 'image'); }).map(function (b, idx) {
+        var meta = detectLinkMeta(b.url || '', b.role || '');
+        return {
+          id: 'att-' + idx + '-' + Date.now(),
+          title: b.title || meta.source_label || 'Attachment',
+          alt: b.alt || '',
+          url: b.url || '',
+          preview_url: b.preview_url || meta.preview_url || b.url || '',
+          role: b.role || (b.type === 'image' ? 'Hero Cover Image' : 'Official Portal Link'),
+          source_kind: b.source_kind || meta.source_kind,
+          source_label: b.source_label || meta.source_label,
+          domain: b.domain || meta.domain,
+          is_image: b.type === 'image' || !!b.is_image || meta.is_image,
+          is_pdf: !!b.is_pdf || meta.is_pdf,
+          new_tab: b.new_tab !== false
+        };
+      });
+      starterBlocks = parsed.filter(function (b) { return b && b.type !== 'page_meta' && b.type !== 'og_meta' && b.type !== 'attachment' && b.type !== 'image'; });
+      if (!starterBlocks.length) starterBlocks = [{ type: 'richtext', title: 'Overview', text: '' }];
+      publishBtn.textContent = 'Update Live';
+      clear(revisionHost);
+      renderLifecycleBar();
+      renderAttachments();
+      renderInitialBlocks();
+      updateAll();
+      toast('Loaded page into Edit Mode: ' + editingRoute, 'info');
+    }
+
+    function resetToCreateMode() {
+      editMode = false;
+      editingRoute = null;
+      editingStatus = 'published';
+      editingRevisionsCount = 0;
+      publishBtn.textContent = 'Publish Live Now';
+      clear(lifecycleHost);
+      clear(revisionHost);
+      attachments = [];
+      applyBlueprint('blank');
+      renderAttachments();
+    }
+
+    async function openRevisionsDrawer() {
+      if (!editingRoute) return;
+      clear(revisionHost);
+      revisionHost.appendChild(el('div', { class: 'cso-drawer' }, [el('p', { class: 'cso-mod-muted', text: 'Loading revision history for ' + editingRoute + '…' })]));
+      try {
+        var d = await api('GET', 'pages/revisions?route=' + encodeURIComponent(editingRoute));
+        var revs = d.revisions || [];
+        clear(revisionHost);
+        var box = el('div', { class: 'cso-drawer' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('strong', { text: 'Revision History (' + revs.length + ' snapshots) — ' + editingRoute }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(revisionHost); } })
+          ])
+        ]);
+        if (!revs.length) {
+          box.appendChild(el('p', { class: 'cso-mod-muted', text: 'No saved revisions yet. Updating this page will record a snapshot.' }));
+        } else {
+          revs.forEach(function (rv) {
+            var snap = {};
+            try { snap = JSON.parse(rv.snapshot_json || '{}'); } catch (_) {}
+            var blkCount = 0;
+            try { var arr = JSON.parse(snap.blocks_json || '[]'); blkCount = Array.isArray(arr) ? arr.length : 0; } catch (_) {}
+            box.appendChild(el('div', { class: 'cso-diff-row' }, [
+              el('div', { class: 'cso-drawer-head' }, [
+                el('div', {}, [
+                  el('strong', { text: (snap.title || rv.route) + ' ' }),
+                  badge(snap.status || 'draft', snap.status === 'published' ? 'ok' : 'warn'),
+                  el('div', { class: 'cso-mod-muted', text: (rv.created_at || '') + ' · ' + (rv.editor_email || 'staff') + ' · ' + (rv.note || 'update') + ' · ' + blkCount + ' blocks' })
+                ]),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Restore Previous Version', onclick: async function () {
+                  try {
+                    await api('POST', 'pages/restore', { route: editingRoute, revision_id: rv.id, status: 'draft' });
+                    var listRes = await api('GET', 'pages');
+                    var fresh = (listRes.pages || []).find(function (x) { return x.route === editingRoute; });
+                    if (fresh) loadPageIntoEditor(fresh);
+                    toast('Restored revision #' + rv.id + ' as draft', 'success');
+                  } catch (e) { toast(e.message, 'crimson'); }
+                } })
+              ])
+            ]));
+          });
+        }
+        revisionHost.appendChild(box);
+      } catch (e) {
+        clear(revisionHost);
+        toast(e.message, 'crimson');
+      }
+    }
+
+    function renderLifecycleBar() {
+      clear(lifecycleHost);
+      if (!editMode || !editingRoute) return;
+      lifecycleHost.appendChild(el('div', { class: 'cso-lifecycle-bar' }, [
+        el('div', { class: 'cso-inline-row' }, [
+          badge('EDIT MODE', 'info'),
+          badge(editingStatus, editingStatus === 'published' ? 'ok' : (editingStatus === 'scheduled' ? 'warn' : 'muted')),
+          el('code', { text: editingRoute }),
+          el('span', { class: 'cso-mod-muted', text: editingRevisionsCount + ' rev(s)' })
+        ]),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Update Live', onclick: function () { submitPage('published'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Revert to Draft (Unpublish)', onclick: function () { submitPage('draft'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Schedule Update', onclick: function () { submitPage('scheduled'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Extend Expiry (+30 Days)', onclick: function () {
+            var base = expiresInp.value ? new Date(expiresInp.value) : new Date();
+            base.setDate(base.getDate() + 30);
+            expiresInp.value = base.toISOString().slice(0, 10);
+            updateAll();
+            submitPage(editingStatus || 'published');
+          } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Duplicate as New Page', onclick: function () {
+            editMode = false;
+            editingRoute = null;
+            editingStatus = 'draft';
+            publishBtn.textContent = 'Publish Live Now';
+            titleInp.value = (titleInp.value.trim() || 'Page') + ' (Copy)';
+            slugInp.value = f02NormalizeRoute((slugInp.value || '/page/').replace(/\/$/, '') + '-copy/');
+            slugInp.dataset.touched = '1';
+            clear(lifecycleHost);
+            clear(revisionHost);
+            updateAll();
+            toast('Duplicated into Create Mode — edit slug & publish when ready', 'info');
+          } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Revision History', onclick: openRevisionsDrawer }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Archive / Delete', onclick: async function () {
+            if (!window.confirm('Archive / move "' + editingRoute + '" to trash?')) return;
+            try {
+              await api('PUT', 'pages', { route: editingRoute, status: 'trash', note: 'Archived from Full Studio' });
+              toast('Archived: ' + editingRoute, 'success');
+              resetToCreateMode();
+            } catch (e) { toast(e.message, 'crimson'); }
+          } })
+        ])
+      ]));
+    }
+
+    var editPageSel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'Edit Existing Page…' })]);
+    editPageSel.addEventListener('change', function () {
+      if (!editPageSel.value) return;
+      var found = allPagesList.find(function (p) { return p.route === editPageSel.value; });
+      if (found) loadPageIntoEditor(found);
+    });
+
+    renderBanner(shell, 'Create & Edit Website Pages', 'Create new routes or edit existing portals on csodisha.com with 301 redirects, AI polish, revision rollback & click-to-focus real-CSS preview.', [
+      editPageSel,
+      el('button', { type: 'button', class: 'cso-mod-btn', text: '+ New Page', onclick: resetToCreateMode }),
       publishBtn,
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Save Draft', onclick: function () { submitPage('draft'); } }),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Schedule', onclick: function () { submitPage('scheduled'); } })
     ]);
 
     shell.appendChild(recoveryHost);
+    shell.appendChild(lifecycleHost);
+    shell.appendChild(revisionHost);
 
     // 1. Collapsible AI Page & Article Assistant
     var aiTopicInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'e.g. OPSC OAS 2026 Prelims Notification, Eligibility & Syllabus' });
@@ -1682,32 +2010,54 @@
       });
     }
 
-    async function runAiDraft(blocksOnly) {
-      var topic = aiTopicInp.value.trim() || titleInp.value.trim();
-      if (!topic || topic.length < 3) { toast('Enter a topic for the AI Assistant', 'amber'); aiTopicInp.focus(); return; }
-      toast('Generating draft via Workers AI…', 'info');
+    async function runAiDraft(blocksOnly, mode) {
+      var aiMode = mode || 'create';
+      var topic = aiTopicInp.value.trim() || titleInp.value.trim() || heroTitleInp.value.trim();
+      if (!topic || topic.length < 3) { toast('Enter a topic or page title for the AI Assistant', 'amber'); aiTopicInp.focus(); return; }
+      toast('Running AI (' + aiMode + ') via Workers AI…', 'info');
       try {
-        var res = await api('POST', 'ai/generate-page', {
+        var payload = {
+          mode: aiMode,
           topic: topic,
           sourceNotes: aiNotesInp.value.trim(),
           category: catSel.value,
           contentStyle: aiStyleSel.value,
-          language: aiLangSel.value
-        });
-        aiProviderBadge.textContent = 'Generated via ' + (res.provider || 'workers-ai');
-        if (!blocksOnly) {
-          titleInp.value = res.title || titleInp.value;
-          slugInp.value = res.slug || slugInp.value;
-          delete slugInp.dataset.touched;
-          metaDescInp.value = res.meta_description || '';
-          heroTitleInp.value = res.hero_title || res.title || '';
-          heroSubInp.value = res.hero_subtitle || '';
-          odiaSubInp.value = res.odia_subtitle || '';
+          language: aiMode === 'translate_odia' ? 'Bilingual English + Odia' : aiLangSel.value
+        };
+        if (aiMode !== 'create') {
+          payload.existing = {
+            title: titleInp.value.trim(),
+            route: f02NormalizeRoute(slugInp.value || '/'),
+            meta_description: metaDescInp.value.trim(),
+            hero_title: heroTitleInp.value.trim(),
+            hero_subtitle: heroSubInp.value.trim(),
+            odia_subtitle: odiaSubInp.value.trim(),
+            category: catSel.value,
+            blocks: starterBlocks
+          };
         }
-        starterBlocks = mapAiBlocks(res.blocks);
+        var res = await api('POST', 'ai/generate-page', payload);
+        aiProviderBadge.textContent = 'AI (' + aiMode + ') via ' + (res.provider || 'workers-ai');
+        if (aiMode === 'translate_odia') {
+          if (res.odia_subtitle) odiaSubInp.value = res.odia_subtitle;
+          if (Array.isArray(res.blocks) && res.blocks.length) starterBlocks = mapAiBlocks(res.blocks);
+        } else {
+          if (!blocksOnly) {
+            titleInp.value = res.title || titleInp.value;
+            if (aiMode === 'create') {
+              slugInp.value = res.slug || slugInp.value;
+              delete slugInp.dataset.touched;
+            }
+            metaDescInp.value = res.meta_description || metaDescInp.value;
+            heroTitleInp.value = res.hero_title || res.title || heroTitleInp.value;
+            heroSubInp.value = res.hero_subtitle || heroSubInp.value;
+            if (res.odia_subtitle) odiaSubInp.value = res.odia_subtitle;
+          }
+          starterBlocks = mapAiBlocks(res.blocks);
+        }
         renderInitialBlocks();
         updateAll();
-        toast('AI draft loaded into editor (unpublished)', 'success');
+        toast('AI ' + aiMode + ' applied to editor (unpublished)', 'success');
       } catch (e) { toast(e.message, 'crimson'); }
     }
 
@@ -1724,8 +2074,10 @@
         ]),
         el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Paste Official Notice / Raw Notes (optional)' }), aiNotesInp]),
         el('div', { class: 'cso-mod-toolbar' }, [
-          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Generate Draft Into Editor', onclick: function () { runAiDraft(false); } }),
-          el('button', { type: 'button', class: 'cso-mod-btn', text: 'Regenerate Blocks Only', onclick: function () { runAiDraft(true); } })
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Generate Draft Into Editor', onclick: function () { runAiDraft(false, 'create'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn', text: 'Regenerate Blocks Only', onclick: function () { runAiDraft(true, 'create'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn', text: 'AI Polish & Expand Content', onclick: function () { runAiDraft(false, 'polish'); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn', text: 'AI Add Odia (ଓଡ଼ିଆ) Summary', onclick: function () { runAiDraft(false, 'translate_odia'); } })
         ])
       ])
     ]));
@@ -1798,7 +2150,7 @@
       el('div', { class: 'cso-mod-card' }, [
         el('h3', { text: 'Route, SEO & Hero Settings' }),
         el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title (50–60 chars optimal)' }), titleInp, titleCount]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route / Slug' }), slugInp, slugStatusEl]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Public Route / Slug' }), slugInp, slugStatusEl, redirectWrap]),
         el('div', { class: 'cso-mod-grid-2' }, [
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category' }), catSel]),
           el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Layout Variant' }), layoutSel])
@@ -1831,7 +2183,11 @@
       el('div', { class: 'cso-mod-card' }, [
         el('div', { class: 'cso-drawer-head' }, [
           el('h3', { text: 'Real Pre-Publish Preview Studio' }),
-          el('div', { class: 'cso-mod-toolbar' }, [vpDeskBtn, vpMobBtn])
+          el('div', { class: 'cso-mod-toolbar' }, [
+            vpDeskBtn,
+            vpMobBtn,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Full-Screen Real View', onclick: openFullScreenPreview })
+          ])
         ]),
         el('div', { class: 'cso-pill-row' }, [tabPageBtn, tabSerpBtn, tabOgBtn, tabJsonLdBtn]),
         previewHost
@@ -1986,9 +2342,15 @@
       allPagesList = allRes[0].pages || [];
       allPagesList.forEach(function (p) {
         existingRoutes[p.route] = 1;
+        editPageSel.appendChild(el('option', { value: p.route, text: p.route + ' — ' + (p.title || '').slice(0, 36) }));
         cloneSel.appendChild(el('option', { value: p.route, text: p.route + ' — ' + (p.title || '').slice(0, 36) }));
         verifiedRoutes.push({ url: p.route, label: 'Page: ' + p.route });
       });
+      if (f02State.editRoute && !editMode) {
+        var targetPage = allPagesList.find(function (p) { return p.route === f02State.editRoute; });
+        f02State.editRoute = null;
+        if (targetPage) loadPageIntoEditor(targetPage);
+      }
       (allRes[1].items || []).forEach(function (t) {
         verifiedRoutes.push({ url: '/mock-tests/?test=' + encodeURIComponent(t.slug || t.id), label: 'Mock Test: ' + t.title });
       });

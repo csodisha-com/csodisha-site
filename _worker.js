@@ -18,7 +18,7 @@ import { handleAdminApi } from './functions/api/admin/_router.js';
 import { runLifecycleMaintenance } from './functions/api/admin/_cron.js';
 import { handleContent } from './functions/api/content/_public.js';
 import { handleSitemapXml, handleRssFeed, resolveDeepLinkMeta, rewriteHtmlWithMeta } from './functions/api/content/_seo.js';
-import { getPublishedPage, renderDynamicPage, applyPageOverrides, publishDueScheduledPages, getSitewide } from './functions/_lib/site-pages.js';
+import { getPublishedPage, getPageRedirect, renderDynamicPage, applyPageOverrides, publishDueScheduledPages, getSitewide } from './functions/_lib/site-pages.js';
 import { handleUserApi } from './functions/api/user/_router.js';
 import { handleMedia } from './functions/api/media/_serve.js';
 import { handleAdminPage } from './functions/_lib/admin-pages.js';
@@ -360,6 +360,10 @@ export default {
       let res = await env.ASSETS.fetch(request);
       const isPageReq = (request.method === 'GET' || request.method === 'HEAD') && !pathname.startsWith('/api/') && !pathname.startsWith('/assets/') && (pathname.endsWith('/') || pathname.endsWith('.html') || !/\.[a-z0-9]+$/i.test(pathname));
       if (isPageReq) {
+        const redirectTarget = await getPageRedirect(env, pathname);
+        if (redirectTarget && redirectTarget.startsWith('/') && redirectTarget !== pathname) {
+          return Response.redirect(new URL(redirectTarget, url.origin).toString(), 301);
+        }
         const live = await getPublishedPage(env, pathname);
         const sitewide = await getSitewide(env);
         if (live || (sitewide && res.status === 200 && (res.headers.get('Content-Type') || '').includes('text/html'))) {

@@ -70,25 +70,71 @@ function extractJson(text) {
 
 export async function handleAiGeneratePage(request, env, actor) {
   if (request.method !== 'POST') throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
-  const body = await readJson(request, 50000);
-  const topic = cleanStr(body.topic, 300);
+  const body = await readJson(request, 80000);
+  const mode = ['polish', 'translate_odia'].includes(body.mode) ? body.mode : 'create';
+  const existing = body.existing && typeof body.existing === 'object' ? body.existing : null;
+  const topic = cleanStr(body.topic || (existing && (existing.title || existing.hero_title)), 300);
   if (!topic || topic.length < 3) throw validationError({ topic: 'Enter a topic or exam name (min 3 chars)' });
   const sourceNotes = cleanStr(body.sourceNotes || '', 4000);
-  const category = cleanStr(body.category || 'Exam Guide', 60);
+  const category = cleanStr(body.category || (existing && existing.category) || 'Exam Guide', 60);
   const contentStyle = cleanStr(body.contentStyle || 'Exam Recruitment Guide', 80);
-  const language = cleanStr(body.language || 'English', 60);
+  const language = cleanStr(body.language || (mode === 'translate_odia' ? 'Bilingual English + Odia' : 'English'), 60);
 
-  const fallback = deterministicDraft(topic, sourceNotes, category, contentStyle, language);
-  const prompt = [
-    'You are an editorial assistant for Common Sense Odisha (csodisha.com), an Odisha government jobs and exam portal.',
-    `Topic: ${topic}`,
-    `Category: ${category}`,
-    `Content Style: ${contentStyle}`,
-    `Language: ${language}`,
-    sourceNotes ? `Source Notes:\n${sourceNotes}` : '',
-    'Return ONLY valid JSON matching this exact schema:',
-    '{"title":"50-60 char SEO title","slug":"/kebab-case/","meta_description":"145-160 char meta description","hero_title":"Hero H1","hero_subtitle":"Hero subtitle","odia_subtitle":"Optional Odia subtitle if Odia or Bilingual","blocks":[{"type":"richtext|notice|key_dates|faq","heading":"Heading","body":"Body text","rows":[{"label":"Label","value":"Value"}],"question":"FAQ Q","answer":"FAQ A"}]}'
-  ].filter(Boolean).join('\n\n');
+  let fallback;
+  if (mode !== 'create' && existing) {
+    const baseTitle = cleanStr(existing.title || topic, 70);
+    const odiaSummary = cleanStr(existing.odia_subtitle, 220) || (baseTitle.replace(/\s*\|\s*CS Odisha.*$/i, '') + ' — ଓଡ଼ିଶା ପରୀକ୍ଷାର୍ଥୀଙ୍କ ପାଇଁ ସବିଶେଷ ବିବରଣୀ ଓ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ସୂଚନା');
+    const existingBlocks = Array.isArray(existing.blocks) ? existing.blocks : [];
+    const enhancedBlocks = mode === 'translate_odia'
+      ? (existingBlocks.some(b => b && b.heading && b.heading.includes('ଓଡ଼ିଆ'))
+          ? existingBlocks
+          : [{ type: 'notice', heading: 'ଓଡ଼ିଆ ସାରାଂଶ (Odia Summary)', body: odiaSummary + '। ସମସ୍ତ ଅଫିସିଆଲ୍ ଲିଙ୍କ୍ ଏବଂ ତାରିଖ ନିମ୍ନରେ ଦିଆଯାଇଛି।' }, ...existingBlocks])
+      : existingBlocks.map(b => {
+          if (!b || b.type === 'key_dates' || b.type === 'attachment' || b.type === 'official_links') return b;
+          const bodyTxt = String(b.body || '').trim();
+          return {
+            ...b,
+            body: bodyTxt ? (bodyTxt + (bodyTxt.endsWith('.') ? '' : '.') + ' Verified for Odisha aspirants on CS Odisha.') : 'Updated guidance and verification checklist for Odisha candidates.'
+          };
+        });
+    fallback = {
+      title: baseTitle,
+      slug: existing.route || existing.slug || slugify(topic),
+      meta_description: cleanStr(existing.meta_description, 165) || ('Complete ' + baseTitle + ' guide on CS Odisha with key dates, official links & preparation tips.').slice(0, 158),
+      hero_title: cleanStr(existing.hero_title || baseTitle, 120),
+      hero_subtitle: cleanStr(existing.hero_subtitle, 220) || ('Verified ' + category + ' guide for Odisha aspirants.'),
+      odia_subtitle: mode === 'translate_odia' ? odiaSummary : cleanStr(existing.odia_subtitle, 220),
+      blocks: enhancedBlocks.length ? enhancedBlocks : deterministicDraft(topic, sourceNotes, category, contentStyle, language).blocks
+    };
+  } else {
+    fallback = deterministicDraft(topic, sourceNotes, category, contentStyle, language);
+  }
+
+  const prompt = mode === 'polish' && existing
+    ? [
+        'You are a senior editor for Common Sense Odisha (csodisha.com).',
+        'Polish and expand the existing page content for clarity, completeness, and SEO without inventing fake dates or altering any official URLs or key_dates rows.',
+        `Existing Page JSON:\n${JSON.stringify({ title: existing.title, meta_description: existing.meta_description, hero_title: existing.hero_title, hero_subtitle: existing.hero_subtitle, odia_subtitle: existing.odia_subtitle, blocks: (existing.blocks || []).filter(b => b && b.type !== 'key_dates' && b.type !== 'attachment') }).slice(0, 3500)}`,
+        sourceNotes ? `Additional Notes:\n${sourceNotes}` : '',
+        'Return ONLY valid JSON with keys: title, meta_description, hero_title, hero_subtitle, odia_subtitle, blocks.'
+      ].filter(Boolean).join('\n\n')
+    : mode === 'translate_odia' && existing
+      ? [
+          'You are a bilingual English + Odia (ଓଡ଼ିଆ) editor for Common Sense Odisha (csodisha.com).',
+          'Generate an accurate, natural Odia (ଓଡ଼ିଆ) subtitle (odia_subtitle, max 180 chars) and one concise Odia summary notice block for this page. Preserve all existing English blocks.',
+          `Title: ${existing.title || topic}\nSubtitle: ${existing.hero_subtitle || ''}\nMeta: ${existing.meta_description || ''}`,
+          'Return ONLY valid JSON: {"odia_subtitle":"...","odia_notice_heading":"ଓଡ଼ିଆ ସାରାଂଶ (Odia Summary)","odia_notice_body":"..."}'
+        ].join('\n\n')
+      : [
+          'You are an editorial assistant for Common Sense Odisha (csodisha.com), an Odisha government jobs and exam portal.',
+          `Topic: ${topic}`,
+          `Category: ${category}`,
+          `Content Style: ${contentStyle}`,
+          `Language: ${language}`,
+          sourceNotes ? `Source Notes:\n${sourceNotes}` : '',
+          'Return ONLY valid JSON matching this exact schema:',
+          '{"title":"50-60 char SEO title","slug":"/kebab-case/","meta_description":"145-160 char meta description","hero_title":"Hero H1","hero_subtitle":"Hero subtitle","odia_subtitle":"Optional Odia subtitle if Odia or Bilingual","blocks":[{"type":"richtext|notice|key_dates|faq","heading":"Heading","body":"Body text","rows":[{"label":"Label","value":"Value"}],"question":"FAQ Q","answer":"FAQ A"}]}'
+        ].filter(Boolean).join('\n\n');
 
   let parsed = null;
   let provider = 'structured-fallback';
@@ -123,8 +169,32 @@ export async function handleAiGeneratePage(request, env, actor) {
     } catch (_) {}
   }
 
-  const result = normalizeAiPayload(parsed, fallback);
+  let result;
+  if (mode === 'translate_odia' && existing) {
+    const odiaSub = cleanStr(parsed && parsed.odia_subtitle, 220) || fallback.odia_subtitle;
+    const noticeHeading = cleanStr(parsed && parsed.odia_notice_heading, 120) || 'ଓଡ଼ିଆ ସାରାଂଶ (Odia Summary)';
+    const noticeBody = cleanStr(parsed && parsed.odia_notice_body, 800) || (odiaSub + '। ସମସ୍ତ ଅଫିସିଆଲ୍ ଲିଙ୍କ୍ ଏବଂ ତାରିଖ ନିମ୍ନରେ ଦିଆଯାଇଛି।');
+    const existingBlocks = Array.isArray(existing.blocks) ? existing.blocks : [];
+    const filtered = existingBlocks.filter(b => !(b && b.heading && b.heading.includes('ଓଡ଼ିଆ ସାରାଂଶ')));
+    result = {
+      ...fallback,
+      odia_subtitle: odiaSub,
+      blocks: [{ type: 'notice', heading: noticeHeading, body: noticeBody }, ...filtered]
+    };
+  } else if (mode === 'polish' && existing) {
+    const norm = normalizeAiPayload(parsed, fallback);
+    const preservedDates = (Array.isArray(existing.blocks) ? existing.blocks : []).filter(b => b && (b.type === 'key_dates' || b.type === 'official_links'));
+    const aiNonDates = norm.blocks.filter(b => b && b.type !== 'key_dates' && b.type !== 'official_links');
+    result = {
+      ...norm,
+      slug: fallback.slug,
+      blocks: [...aiNonDates, ...preservedDates]
+    };
+  } else {
+    result = normalizeAiPayload(parsed, fallback);
+  }
   result.provider = provider;
-  await audit(env, request, actor, 'ai.generate_page', 'site_pages', result.slug, { topic, language, provider });
+  result.mode = mode;
+  await audit(env, request, actor, 'ai.generate_page', 'site_pages', result.slug, { topic, mode, language, provider });
   return json(result);
 }

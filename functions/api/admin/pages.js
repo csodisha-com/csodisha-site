@@ -29,7 +29,13 @@ async function ensureSitePagesSchema(db) {
       route TEXT NOT NULL, snapshot_json TEXT NOT NULL, editor_email TEXT, note TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`),
-    db.prepare('CREATE INDEX IF NOT EXISTS idx_site_page_rev_route ON site_page_revisions(route, id DESC)')
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_site_page_rev_route ON site_page_revisions(route, id DESC)'),
+    db.prepare(`CREATE TABLE IF NOT EXISTS site_redirects (
+      old_route TEXT PRIMARY KEY,
+      new_route TEXT NOT NULL,
+      created_by TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`)
   ]);
   schemaReady = true;
 }
@@ -82,6 +88,19 @@ async function savePage(request, env, actor, body, isCreate) {
     if (body[k] != null) { try { if (!Array.isArray(JSON.parse(jsonStr(body[k])))) throw 0; } catch { errors[k] = 'Must be a JSON array'; } }
   }
   if (Object.keys(errors).length) throw validationError(errors);
+  const oldRoute = body.old_route ? normalizeRoute(body.old_route) : null;
+  if (oldRoute && oldRoute !== route && ROUTE_RE.test(oldRoute)) {
+    const oldRow = await env.DB.prepare('SELECT * FROM site_pages WHERE route = ?').bind(oldRoute).first();
+    const targetExists = await env.DB.prepare('SELECT 1 FROM site_pages WHERE route = ?').bind(route).first();
+    if (oldRow && !targetExists) {
+      await env.DB.prepare('UPDATE site_pages SET route = ? WHERE route = ?').bind(route, oldRoute).run();
+    }
+    if (body.create_redirect !== false) {
+      await env.DB.prepare('INSERT OR REPLACE INTO site_redirects (old_route, new_route, created_by) VALUES (?,?,?)')
+        .bind(oldRoute, route, actor.email || actor.userId || null).run();
+      await audit(env, request, actor, 'page.redirect', 'site_redirects', oldRoute, { to: route });
+    }
+  }
   const prev = await env.DB.prepare('SELECT * FROM site_pages WHERE route = ?').bind(route).first();
   const manifestPages = await getManifestPages(request, env);
   const m = manifestPages.find(p => p.route === route);
@@ -101,10 +120,12 @@ async function savePage(request, env, actor, body, isCreate) {
       reusable_sections_json=excluded.reusable_sections_json, status=excluded.status, publish_at=excluded.publish_at, updated_by=excluded.updated_by, updated_at=datetime('now')`)
       .bind(route, rec.title, rec.meta_description, rec.category, rec.hero_title, rec.hero_subtitle, rec.cta_label, rec.cta_url, rec.blocks_json, rec.reusable_sections_json, rec.status, rec.publish_at, actor.userId, actor.userId),
     env.DB.prepare('INSERT INTO site_page_revisions (route, snapshot_json, editor_email, note) VALUES (?,?,?,?)')
-      .bind(route, JSON.stringify({ route, ...rec }), actor.email || null, cut(body.note, 200) || (prev ? 'update' : 'create'))
+      .bind(route, JSON.stringify({ route, ...rec }), actor.email || null, cut(body.note, 200) || (prev ? 'update' : 'create')),
+    env.DB.prepare('DELETE FROM site_page_revisions WHERE route = ? AND id NOT IN (SELECT id FROM site_page_revisions WHERE route = ? ORDER BY id DESC LIMIT 10)')
+      .bind(route, route)
   ]);
   await audit(env, request, actor, prev ? 'page.update' : 'page.create', 'site_pages', route, { status });
-  return json({ ok: true, route, ...rec }, prev ? 200 : 201);
+  return json({ ok: true, route, redirect_from: (oldRoute && oldRoute !== route && body.create_redirect !== false) ? oldRoute : null, ...rec }, prev ? 200 : 201);
 }
 
 async function restorePage(request, env, actor, body) {

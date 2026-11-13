@@ -26,6 +26,16 @@ export function sitewideHtml(row) {
   const list = parse(row && row.reusable_sections_json).filter(s => s && s.enabled !== false);
   return list.map(s => `<section class="cso-sitewide cso-sitewide-${esc(s.id)}"><div class="w">${s.title ? `<strong>${esc(s.title)}</strong> ` : ''}${esc(s.text)}${s.label ? ` <a href="${esc(safeUrl(s.url))}">${esc(s.label)}</a>` : ''}</div></section>`).join('');
 }
+export async function getPageRedirect(env, pathname) {
+  if (!env || !env.DB) return null;
+  try {
+    const c = routeCandidates(pathname);
+    const row = await env.DB.prepare(
+      `SELECT new_route FROM site_redirects WHERE old_route IN (${c.map(() => '?').join(',')}) LIMIT 1`
+    ).bind(...c).first();
+    return row && row.new_route ? row.new_route : null;
+  } catch { return null; }
+}
 export async function getPublishedPage(env, pathname) {
   if (!env || !env.DB || normalizeRoute(pathname) === SITEWIDE_ROUTE) return null;
   try {
