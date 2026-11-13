@@ -1754,3 +1754,11 @@ input[type="checkbox"] {
 .cso-audit-row { background: var(--studio-surface); border: 1px solid var(--studio-border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; }
 .cso-audit-row summary { cursor: pointer; font-size: 12.5px; }
 .cso-audit-row .cso-mod-card { margin-top: 8px; }
+
+/* Command Centre 5-8 */
+.cso-bar-info { fill: var(--studio-blue); }
+.cso-banner-preview { padding: 12px 14px; border-radius: 8px; border: 1px solid var(--studio-border-strong); font-size: 13.5px; }
+.cso-banner-info { background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.5); }
+.cso-banner-notice { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.5); }
+.cso-banner-urgent { background: rgba(239, 68, 68, 0.16); border-color: rgba(239, 68, 68, 0.55); }
+.cso-banner-preview.is-off { opacity: 0.55; }

@@ -579,7 +579,7 @@
 
     fetchManifest().then(function (m) {
       (m.pages || m.routes || []).forEach(function (p) {
-        var val = p.path || p.url || p.file || p.title;
+        var val = p.route || p.path || p.url || p.file || p.title;
         pageSelect.appendChild(el('option', { value: val, text: (p.title || val) + ' (' + val + ')' }));
       });
     }).catch(function () {});
@@ -659,7 +659,7 @@
       fetchManifest().then(function (m) {
         var pages = m.pages || m.routes || [];
         var rows = pages.map(function (p) {
-          var path = typeof p === 'string' ? p : (p.path || p.url || '/');
+          var path = typeof p === 'string' ? p : (p.route || p.path || p.url || '/');
           var title = typeof p === 'string' ? p : (p.title || path);
           return el('tr', {}, [
             el('td', { text: title }),
@@ -972,7 +972,7 @@
     fetchManifest().then(function (m) {
       var pages = m.pages || m.routes || [];
       nodes = pages.map(function (p, i) {
-        var path = typeof p === 'string' ? p : (p.path || p.url || '/');
+        var path = typeof p === 'string' ? p : (p.route || p.path || p.url || '/');
         var lbl = typeof p === 'string' ? p : (p.title || path);
         return { title: lbl, path: path, depth: path.split('/').filter(Boolean).length > 1 ? 1 : 0, order: i };
       });
@@ -1510,6 +1510,340 @@
   }
 
   /* =========================================================================
+     COMMAND CENTRE 5-8: Alerts, Approval Queue, Analytics Studio, Command Directory
+     ========================================================================= */
+  function barChart(rows, label) {
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([1]));
+    var g = svg('svg', { viewBox: '0 0 600 ' + (rows.length * 22 + 6), class: 'cso-bar-svg', role: 'img', 'aria-label': label });
+    rows.forEach(function (r, i) {
+      var w = Math.max(2, (r.value / max) * 320);
+      var t1 = svg('text', { x: 0, y: i * 22 + 15, class: 'cso-bar-lbl' }); t1.textContent = String(r.label).slice(0, 30);
+      var t2 = svg('text', { x: 206 + w, y: i * 22 + 15, class: 'cso-bar-lbl' }); t2.textContent = r.text || String(r.value);
+      g.appendChild(t1);
+      g.appendChild(svg('rect', { x: 200, y: i * 22 + 4, width: w.toFixed(1), height: 14, rx: 3, class: r.cls || 'cso-bar-ok' }));
+      g.appendChild(t2);
+    });
+    return rows.length ? g : el('p', { class: 'cso-mod-muted', text: 'No live data to chart yet.' });
+  }
+  function csvCell(v) { return '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"'; }
+  var MOD_FOLDER = { jobs: ['folder-05', 'module-05-008'], 'current-affairs': ['folder-04', 'module-04-004'], 'mock-tests': ['folder-05', 'module-05-014'] };
+  function goTo(pair) { if (pair && window.selectModule) window.selectModule(pair[0], pair[1]); }
+
+  function renderAlertCenter(root, actions) {
+    addHeaderPill(actions, '● Live Alert & Broadcast Center');
+    var shell = el('div', { class: 'cso-mod-shell' }), host = el('div', { class: 'cso-mod-shell' });
+    var sev = 'All', alerts = [], acked = {};
+    try { acked = JSON.parse(localStorage.getItem('cso_ack_alerts') || '{}'); } catch (_) { acked = {}; }
+    renderBanner(shell, 'Administrative Notifications', 'Actionable alerts computed live from D1, health probes and the sitewide broadcast banner (/api/admin/banner).', [el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })]);
+    shell.appendChild(pills(['All', 'Critical', 'Warning', 'Info'], function (s) { sev = s; draw(); }));
+    shell.appendChild(host); root.appendChild(shell);
+    var alertHost = el('div', {}), composerHost = el('div', {});
+    host.appendChild(alertHost); host.appendChild(composerHost);
+
+    function draw() {
+      clear(alertHost);
+      var shown = alerts.filter(function (a) { return sev === 'All' || a.sev.toLowerCase() === sev.toLowerCase(); });
+      var rows = shown.map(function (a) {
+        var done = !!acked[a.id];
+        return el('tr', {}, [
+          el('td', {}, badge(a.sev, a.sev === 'Critical' ? 'err' : a.sev === 'Warning' ? 'warn' : 'info')),
+          el('td', { text: a.msg }),
+          el('td', {}, el('label', {}, [el('input', { type: 'checkbox', checked: done ? true : false, onchange: function (e) { if (e.target.checked) acked[a.id] = 1; else delete acked[a.id]; try { localStorage.setItem('cso_ack_alerts', JSON.stringify(acked)); } catch (_) {} } }), ' Ack'])),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, a.actions))
+        ]);
+      });
+      alertHost.appendChild(el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Actionable Alerts (' + shown.length + ')' }), safeTable(['Severity', 'Alert', 'Acknowledge', 'Resolve / Edit'], rows)]));
+    }
+
+    function btn(text, fn, primary) { return el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm' + (primary ? ' cso-mod-btn-primary' : ''), text: text, onclick: fn }); }
+
+    function composer(b) {
+      clear(composerHost);
+      var head = el('input', { type: 'text', class: 'cso-mod-input', value: b.headline || '', maxlength: '160' });
+      var ctx = el('textarea', { class: 'cso-mod-textarea', maxlength: '300' }); ctx.value = b.context || '';
+      var cta = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaText || '', maxlength: '40' });
+      var url = el('input', { type: 'text', class: 'cso-mod-input', value: b.ctaUrl || '' });
+      var sevSel = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) { return el('option', { value: s, text: s }); }));
+      sevSel.value = b.severity || 'info';
+      var act = el('input', { type: 'checkbox' }); act.checked = !!b.active;
+      var prev = el('div', { class: 'cso-banner-preview' });
+      function paint() {
+        clear(prev);
+        prev.className = 'cso-banner-preview cso-banner-' + sevSel.value + (act.checked ? '' : ' is-off');
+        prev.appendChild(el('strong', { text: head.value || '(headline)' }));
+        prev.appendChild(el('span', { text: ' ' + ctx.value }));
+        if (cta.value) prev.appendChild(el('span', { class: 'cso-mod-badge cso-mod-badge-info', text: cta.value + ' → ' + (url.value || '/') }));
+        if (!act.checked) prev.appendChild(el('em', { class: 'cso-mod-muted', text: ' (inactive — not visible to candidates)' }));
+      }
+      [head, ctx, cta, url].forEach(function (i) { i.addEventListener('input', paint); });
+      sevSel.addEventListener('change', paint); act.addEventListener('change', paint);
+      var save = el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Save & Publish Banner', onclick: async function () {
+        try { await api('PUT', 'banner', { active: act.checked, severity: sevSel.value, headline: head.value, context: ctx.value, ctaText: cta.value, ctaUrl: url.value }); toast('Banner saved', 'success'); load(); }
+        catch (e) { toast(e.message, 'crimson'); }
+      } });
+      composerHost.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Broadcast Banner Composer' }),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), head]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Context' }), ctx]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), sevSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Button text' }), cta]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Button link' }), url]),
+          el('label', {}, [act, ' Active on homepage']), save]),
+        el('div', { class: 'cso-mod-card' }, [el('h3', { text: 'Real-Time Candidate Preview' }), prev, el('p', { class: 'cso-mod-muted', text: 'Last updated: ' + (b.updatedAt || 'never') })])
+      ]));
+      paint();
+    }
+
+    async function load() {
+      loading(alertHost, 'Aggregating alerts…');
+      try {
+        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100'), api('GET', 'banner')]);
+        var stats = r[0], jobs = r[1].items || [], cas = r[2].items || [], tests = r[3].items || [], now = Date.now();
+        alerts = [];
+        jobs.forEach(function (j) {
+          if (j.status !== 'published' || !j.last_date) return;
+          var left = Date.parse(j.last_date + 'T23:59:59+05:30') - now;
+          if (left > 0 && left < 72 * 3600000) alerts.push({ id: 'exp-' + j.id, sev: left < 24 * 3600000 ? 'Critical' : 'Warning', msg: 'Job closing ' + j.last_date + ': ' + j.title,
+            actions: [btn('Extend +7d', async function () { try { var f = await api('GET', 'jobs/' + encodeURIComponent(j.id)); f.last_date = new Date(Date.parse(f.last_date) + 7 * 86400000).toISOString().slice(0, 10); await api('PUT', 'jobs/' + encodeURIComponent(j.id), f); toast('Extended', 'success'); load(); } catch (e) { toast(e.message, 'crimson'); } }, true), btn('Edit', function () { goTo(MOD_FOLDER.jobs); })] });
+        });
+        jobs.concat(cas).forEach(function (x) { if (x.status === 'draft') { var k = x.type === 'job' ? 'jobs' : 'current-affairs'; alerts.push({ id: 'draft-' + x.id, sev: 'Info', msg: 'Draft awaiting review (' + (k === 'jobs' ? 'Job' : 'Current Affairs') + '): ' + x.title, actions: [btn('Review', function () { window.selectModule('folder-01', 'module-01-006'); }, true), btn('Edit', function () { goTo(MOD_FOLDER[k]); })] }); } });
+        tests.forEach(function (t) { if (!t.question_count) alerts.push({ id: 'noq-' + t.id, sev: t.status === 'published' ? 'Critical' : 'Warning', msg: 'Mock test has 0 questions (' + t.status + '): ' + t.title, actions: [btn('Add Questions', function () { goTo(MOD_FOLDER['mock-tests']); }, true)] }); });
+        if (stats.open_incidents) alerts.push({ id: 'incidents', sev: 'Critical', msg: stats.open_incidents + ' open incident(s) unresolved', actions: [btn('Open Incidents', function () { window.selectModule('folder-16', 'module-16-013'); }, true)] });
+        var cron = stats.last_cron_run, ran = cron && (cron.ran_at || cron.at);
+        if (!ran) alerts.push({ id: 'cron', sev: 'Warning', msg: 'No cron run recorded yet', actions: [btn('Maintenance', function () { window.selectModule('folder-01', 'module-01-003'); }, true)] });
+        else if (Date.now() - Date.parse(String(ran).replace(' ', 'T') + (/Z|\+/.test(String(ran)) ? '' : 'Z')) > 3600000) alerts.push({ id: 'cron-stale', sev: 'Warning', msg: 'Last cron run is over 1 hour old (' + ran + ')', actions: [btn('Maintenance', function () { window.selectModule('folder-01', 'module-01-003'); }, true)] });
+        var health = await Promise.all(['/api/health', '/sitemap.xml', '/feed.xml'].map(async function (p) { try { var x = await fetch(p, { cache: 'no-store' }); return [p, x.ok]; } catch (_) { return [p, false]; } }));
+        health.forEach(function (h) { if (!h[1]) alerts.push({ id: 'health-' + h[0], sev: 'Critical', msg: 'Health check failed: ' + h[0], actions: [btn('Open Site Status', function () { window.selectModule('folder-01', 'module-01-002'); }, true)] }); });
+        if (r[4].active) alerts.push({ id: 'banner-live', sev: 'Info', msg: 'Homepage broadcast is LIVE: ' + r[4].headline, actions: [btn('Edit below', function () { composerHost.scrollIntoView(); })] });
+        var order = { Critical: 0, Warning: 1, Info: 2 };
+        alerts.sort(function (a, b) { return order[a.sev] - order[b.sev]; });
+        draw(); composer(r[4]);
+      } catch (e) { fail(alertHost, e); }
+    }
+    load();
+  }
+
+  function renderApprovalQueue(root, actions) {
+    addHeaderPill(actions, '● Editorial Review & Approval');
+    var shell = el('div', { class: 'cso-mod-shell' }), tableHost = el('div', {}), drawer = el('div', { class: 'cso-mod-card cso-hidden' });
+    var all = [], typeF = 'All', statF = 'All', selected = {};
+    renderBanner(shell, 'Pending Approvals — Editorial Review Queue', 'All draft and scheduled jobs, current affairs and mock tests from D1.', [
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Bulk Approve Selected', onclick: bulkApprove }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Refresh', onclick: load })
+    ]);
+    shell.appendChild(pills(['All', 'Jobs', 'Current Affairs', 'Mock Tests'], function (t) { typeF = t; draw(); }));
+    shell.appendChild(pills(['All', 'draft', 'scheduled'], function (s) { statF = s; draw(); }));
+    shell.appendChild(tableHost); shell.appendChild(drawer); root.appendChild(shell);
+
+    async function bulkApprove() {
+      var ids = Object.keys(selected);
+      if (!ids.length) { toast('Select at least one record', 'amber'); return; }
+      var ok = 0, bad = [];
+      for (var i = 0; i < ids.length; i++) {
+        var q = selected[ids[i]];
+        try { await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'published' }); ok++; } catch (e) { bad.push(q.it.title + ': ' + e.message); }
+      }
+      toast(ok + ' published' + (bad.length ? ', ' + bad.length + ' failed — ' + bad[0] : ''), bad.length ? 'amber' : 'success');
+      selected = {}; load();
+    }
+    async function publishNow(q) { try { await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'published' }); toast('Published', 'success'); drawer.classList.add('cso-hidden'); load(); } catch (e) { toast(e.message, 'crimson'); } }
+    function scheduleBox(q, bar) {
+      var inp = el('input', { type: 'datetime-local', class: 'cso-mod-input' });
+      bar.appendChild(inp);
+      bar.appendChild(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Schedule', onclick: async function () {
+        if (!inp.value) { toast('Pick a future date/time', 'amber'); return; }
+        try { await api('POST', q.kind + '/' + encodeURIComponent(q.it.id) + '/status', { status: 'scheduled', published_at: new Date(inp.value).toISOString() }); toast('Scheduled', 'success'); drawer.classList.add('cso-hidden'); load(); } catch (e) { toast(e.message, 'crimson'); }
+      } }));
+    }
+    async function openDrawer(q) {
+      clear(drawer); drawer.classList.remove('cso-hidden');
+      drawer.appendChild(el('h3', { text: 'Candidate Preview — ' + q.it.title }));
+      var left = el('div', { class: 'cso-mod-card' }), right = el('div', { class: 'cso-live-preview-box' });
+      drawer.appendChild(el('div', { class: 'cso-mod-grid-2' }, [left, right]));
+      try {
+        if (q.kind === 'mock-tests') {
+          var qs = (await api('GET', 'mock-tests/' + encodeURIComponent(q.it.id) + '/questions')).items || [];
+          left.appendChild(el('p', { class: 'cso-mod-muted', text: q.it.target_exam + ' · ' + q.it.duration_minutes + ' min · ' + qs.length + ' questions' }));
+          right.appendChild(el('h4', { text: q.it.title }));
+          if (!qs.length) right.appendChild(el('p', { class: 'cso-mod-badge cso-mod-badge-err', text: 'No questions — cannot be published' }));
+          qs.forEach(function (x, i) {
+            left.appendChild(el('p', { class: 'cso-mod-muted', text: 'Q' + (i + 1) + ' correct: ' + x.correct_option + (x.explanation ? ' — ' + x.explanation : '') }));
+            right.appendChild(el('p', {}, [el('strong', { text: (i + 1) + '. ' + x.question_en })]));
+            ['a', 'b', 'c', 'd'].forEach(function (o) { right.appendChild(el('div', { class: 'cso-mod-muted', text: o.toUpperCase() + ') ' + x['option_' + o] })); });
+          });
+        } else {
+          var full = await api('GET', q.kind + '/' + encodeURIComponent(q.it.id));
+          left.appendChild(el('pre', { class: 'cso-code-pre', text: JSON.stringify(full, null, 2) }));
+          var pr = await api('POST', 'preview', { markdown: full.body_md || '' });
+          right.appendChild(el('h4', { text: full.title }));
+          var body = el('div', {}); right.appendChild(body); renderSanitizedHtml(body, pr.html || '');
+        }
+      } catch (e) { right.appendChild(el('p', { class: 'cso-mod-badge cso-mod-badge-err', text: e.message })); }
+      var bar = el('div', { class: 'cso-mod-toolbar' }, [
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Approve & Publish Now', onclick: function () { publishNow(q); } }),
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Edit in Studio', onclick: function () { goTo(MOD_FOLDER[q.kind]); } }),
+        el('button', { type: 'button', class: 'cso-mod-btn', text: 'Close', onclick: function () { drawer.classList.add('cso-hidden'); } })
+      ]);
+      scheduleBox(q, bar); drawer.appendChild(bar);
+    }
+    function draw() {
+      var names = { jobs: 'Jobs', 'current-affairs': 'Current Affairs', 'mock-tests': 'Mock Tests' };
+      var shown = all.filter(function (q) { return (typeF === 'All' || names[q.kind] === typeF) && (statF === 'All' || q.it.status === statF); });
+      var rows = shown.map(function (q) {
+        return el('tr', {}, [
+          el('td', {}, el('input', { type: 'checkbox', checked: selected[q.it.id] ? true : false, onchange: function (e) { if (e.target.checked) selected[q.it.id] = q; else delete selected[q.it.id]; } })),
+          el('td', {}, badge(names[q.kind], 'info')), el('td', { text: q.it.title }),
+          el('td', {}, badge(q.it.status, q.it.status === 'scheduled' ? 'warn' : 'info')),
+          el('td', { text: q.it.published_at || q.it.updated_at || '—' }),
+          el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Preview & Review', onclick: function () { openDrawer(q); } }))
+        ]);
+      });
+      clear(tableHost); tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' records awaiting review' })); tableHost.appendChild(safeTable(['Select', 'Type', 'Title', 'Status', 'Date', 'Review'], rows));
+    }
+    async function load() {
+      loading(tableHost, 'Loading review queue…');
+      try {
+        var r = await Promise.all([api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100')]);
+        all = [];
+        [['jobs', r[0]], ['current-affairs', r[1]], ['mock-tests', r[2]]].forEach(function (p) { (p[1].items || []).forEach(function (it) { if (it.status === 'draft' || it.status === 'scheduled') all.push({ kind: p[0], it: it }); }); });
+        draw();
+      } catch (e) { fail(tableHost, e); }
+    }
+    load();
+  }
+
+  function renderAnalyticsStudio(root, actions) {
+    addHeaderPill(actions, '● D1 Content, CBT & SEO Analytics');
+    var shell = el('div', { class: 'cso-mod-shell' }), host = el('div', { class: 'cso-mod-shell' });
+    var data = null, catSel = el('select', { class: 'cso-mod-select' }), statSel = el('select', { class: 'cso-mod-select' });
+    ['All statuses', 'published', 'draft', 'scheduled', 'expired', 'archived'].forEach(function (s) { statSel.appendChild(el('option', { value: s, text: s })); });
+    renderBanner(shell, 'Website Analytics Studio', 'Live D1 pipeline, coverage, CBT performance and manifest SEO readiness.', [
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: function () { if (data) downloadFile('cso-analytics-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(report(), null, 2)); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Export CSV', onclick: exportCsv })
+    ]);
+    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Category / Exam' }), catSel]), el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Status' }), statSel])]));
+    shell.appendChild(host); root.appendChild(shell);
+    catSel.addEventListener('change', draw); statSel.addEventListener('change', draw);
+
+    function items() {
+      var out = [];
+      data.jobs.forEach(function (x) { out.push({ t: 'Job', cat: x.category || 'Uncategorized', status: x.status }); });
+      data.cas.forEach(function (x) { out.push({ t: 'Current Affairs', cat: x.category || 'Uncategorized', status: x.status }); });
+      data.tests.forEach(function (x) { out.push({ t: 'Mock Test', cat: x.target_exam || 'Uncategorized', status: x.status }); });
+      return out;
+    }
+    function filtered() { return items().filter(function (i) { return (catSel.value === 'All categories' || i.cat === catSel.value) && (statSel.value === 'All statuses' || i.status === statSel.value); }); }
+    function seoRows() {
+      return data.pages.map(function (p) {
+        var tl = (p.title || '').length, dl = (p.description || '').length, issues = [];
+        if (tl < 20 || tl > 70) issues.push('title ' + tl + ' chars');
+        if (dl < 70 || dl > 170) issues.push('description ' + dl + ' chars');
+        return { route: p.route, category: p.category, issues: issues };
+      });
+    }
+    function cbtRows() {
+      return data.board.map(function (b) { var it = b.items; var acc = it.length ? it.reduce(function (s, x) { return s + (Number(x.accuracy) || 0); }, 0) / it.length : 0; return { title: b.test.title, participants: it.length, avgAcc: Math.round(acc * 10) / 10, top: it[0] ? it[0].score + '/' + (it[0].maxScore || it[0].max_score) : '—' }; }).filter(function (r) { return r.participants; }).sort(function (a, b) { return b.avgAcc - a.avgAcc; });
+    }
+    function report() { return { generated_at: new Date().toISOString(), stats: data.stats, pipeline: tally(function (i) { return i.status; }), coverage: tally(function (i) { return i.cat; }), cbt: cbtRows(), seo: seoRows() }; }
+    function tally(keyFn) { var c = {}; filtered().forEach(function (i) { var k = keyFn(i); c[k] = (c[k] || 0) + 1; }); return c; }
+    function exportCsv() {
+      if (!data) return;
+      var rep = report(), lines = ['section,label,value'];
+      Object.keys(rep.pipeline).forEach(function (k) { lines.push(['pipeline', k, rep.pipeline[k]].map(csvCell).join(',')); });
+      Object.keys(rep.coverage).forEach(function (k) { lines.push(['coverage', k, rep.coverage[k]].map(csvCell).join(',')); });
+      rep.cbt.forEach(function (r) { lines.push(['cbt', r.title, r.avgAcc + '% avg accuracy / ' + r.participants + ' participants'].map(csvCell).join(',')); });
+      rep.seo.forEach(function (r) { lines.push(['seo', r.route, r.issues.length ? r.issues.join('; ') : 'ready'].map(csvCell).join(',')); });
+      downloadFile('cso-analytics.csv', lines.join('\n'), 'text/csv'); toast('CSV exported', 'success');
+    }
+    function chartCard(title, node) { return el('div', { class: 'cso-mod-card' }, [el('h3', { text: title }), node]); }
+    function draw() {
+      clear(host);
+      var s = data.stats;
+      host.appendChild(el('div', { class: 'cso-mod-grid-4' }, [kpiBox(String(s.attempts_total || 0), 'CBT Attempts'), kpiBox(String(s.bookmarks_total || 0), 'Bookmarks'), kpiBox(String(s.accounts ? s.accounts.total : 0), 'Registered Users'), kpiBox(String(s.audit_24h || 0), 'Audit events 24h')]));
+      var pipe = tally(function (i) { return i.status; });
+      host.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+        chartCard('Content Status Pipeline', barChart(Object.keys(pipe).map(function (k) { return { label: k, value: pipe[k], cls: k === 'published' ? 'cso-bar-ok' : k === 'draft' ? 'cso-bar-warn' : 'cso-bar-info' }; }), 'Content status pipeline')),
+        chartCard('Exam Category Coverage', barChart((function () { var c = tally(function (i) { return i.cat; }); return Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }).slice(0, 12).map(function (k) { return { label: k, value: c[k] }; }); })(), 'Exam category coverage'))
+      ]));
+      var cbt = cbtRows(), seo = seoRows();
+      var ready = seo.filter(function (r) { return !r.issues.length; }).length;
+      host.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+        chartCard('CBT Attempts & Average Accuracy (top-10 best attempts per test)', barChart(cbt.slice(0, 10).map(function (r) { return { label: r.title, value: r.avgAcc, text: r.avgAcc + '% · ' + r.participants + ' users', cls: 'cso-bar-info' }; }), 'CBT breakdown')),
+        chartCard('Site Page SEO Readiness (' + seo.length + ' manifest pages)', barChart([{ label: 'Ready', value: ready, cls: 'cso-bar-ok' }, { label: 'Needs title/description fix', value: seo.length - ready, cls: 'cso-bar-warn' }], 'SEO readiness'))
+      ]));
+      host.appendChild(chartCard('Top-Performing Mock Tests Leaderboard', safeTable(['Rank', 'Mock Test', 'Participants', 'Avg accuracy', 'Top score'], cbt.map(function (r, i) { return el('tr', {}, [el('td', { text: String(i + 1) }), el('td', { text: r.title }), el('td', { text: String(r.participants) }), el('td', { text: r.avgAcc + '%' }), el('td', { text: r.top })]); }))));
+      host.appendChild(chartCard('SEO Issues', safeTable(['Route', 'Category', 'Issues'], seo.filter(function (r) { return r.issues.length; }).slice(0, 25).map(function (r) { return el('tr', {}, [el('td', { text: r.route }), el('td', { text: r.category || '—' }), el('td', {}, badge(r.issues.join(', '), 'warn'))]); }))));
+    }
+    (async function () {
+      loading(host, 'Loading analytics…');
+      try {
+        var r = await Promise.all([api('GET', 'stats'), api('GET', 'jobs?limit=100'), api('GET', 'current-affairs?limit=100'), api('GET', 'mock-tests?limit=100'), fetchManifest()]);
+        var tests = r[3].items || [];
+        var pub = tests.filter(function (t) { return t.status === 'published'; }).slice(0, 20);
+        var board = await Promise.all(pub.map(async function (t) { try { var lb = await (await fetch('/api/content/mock-tests/' + encodeURIComponent(t.slug || t.id) + '/leaderboard', { credentials: 'same-origin' })).json(); return { test: t, items: lb.items || [] }; } catch (_) { return { test: t, items: [] }; } }));
+        data = { stats: r[0], jobs: r[1].items || [], cas: r[2].items || [], tests: tests, pages: r[4].pages || [], board: board };
+        var cats = {}; items().forEach(function (i) { cats[i.cat] = 1; });
+        catSel.appendChild(el('option', { value: 'All categories', text: 'All categories' }));
+        Object.keys(cats).sort().forEach(function (c) { catSel.appendChild(el('option', { value: c, text: c })); });
+        draw();
+      } catch (e) { fail(host, e); }
+    })();
+  }
+
+  var DIR_EP = { 'folder-01': ['/api/admin/stats', '/api/admin/audit', '/api/admin/banner', '/api/admin/maintenance'], 'folder-02': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-03': ['/api/admin/preview', '/admin/site-manifest.json'], 'folder-04': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-05': ['/api/admin/mock-tests', '/api/admin/resources', '/api/admin/jobs'], 'folder-06': ['/admin/site-manifest.json'], 'folder-07': ['/api/admin/media', '/api/admin/media/upload'], 'folder-09': ['/api/admin/users'], 'folder-10': ['/api/admin/stats', '/api/admin/audit'], 'folder-13': ['/sitemap.xml', '/feed.xml', '/robots.txt'], 'folder-14': ['/api/admin/current-affairs', '/api/admin/jobs'], 'folder-15': ['/api/health', '/sitemap.xml'], 'folder-16': ['/api/admin/audit', '/api/admin/incidents'], 'folder-17': ['/api/admin/maintenance', '/api/admin/stats'], 'folder-19': ['/admin/data/master-navigation.json'] };
+  function dirCaps(folderId, eps) {
+    var caps = [];
+    if (eps.some(function (e) { return e.indexOf('/api/admin/') === 0; })) caps.push('Live D1');
+    if (eps.some(function (e) { return /media|resources/.test(e); })) caps.push('R2 Storage');
+    if (/folder-0[2-3]|folder-04/.test(folder_re(folderId)) || eps.indexOf('/api/admin/preview') >= 0) caps.push('Preview Studio');
+    if (/folder-10|folder-01|folder-13/.test(folder_re(folderId))) caps.push('SVG Analytics');
+    if (eps.some(function (e) { return /manifest|sitemap|feed|robots|navigation/.test(e); })) caps.push('Manifest');
+    return caps;
+  }
+  function folder_re(id) { return id + ' '; }
+
+  function renderCommandDirectory(root, actions) {
+    addHeaderPill(actions, '● Command Directory & Capability Matrix');
+    var shell = el('div', { class: 'cso-mod-shell' }), tableHost = el('div', {});
+    var search = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Search module id, title or endpoint…' });
+    var folderSel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'All folders' })]);
+    var rows = [];
+    renderBanner(shell, 'Master Feature Registry', 'Every folder and module from master-navigation.json with capability badges and endpoint mapping.');
+    shell.appendChild(el('div', { class: 'cso-mod-grid-2' }, [search, folderSel]));
+    shell.appendChild(tableHost); root.appendChild(shell);
+    function draw() {
+      var q = search.value.toLowerCase().trim(), f = folderSel.value;
+      var shown = rows.filter(function (r) { return (!f || r.folderId === f) && (!q || (r.id + ' ' + r.title + ' ' + r.folderTitle + ' ' + r.eps.join(' ')).toLowerCase().indexOf(q) >= 0); });
+      clear(tableHost);
+      tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: shown.length + ' of ' + rows.length + ' modules shown' }));
+      tableHost.appendChild(safeTable(['Module', 'Folder', 'Capabilities', 'API / Data endpoints', 'Launch'], shown.slice(0, 150).map(function (r) {
+        return el('tr', {}, [el('td', {}, [el('strong', { text: r.title }), el('div', { class: 'cso-mod-muted', text: r.id })]), el('td', { text: r.folderTitle }),
+          el('td', {}, el('div', { class: 'cso-mod-toolbar' }, r.caps.map(function (c) { return badge(c, 'ok'); }))),
+          el('td', { class: 'cso-mod-muted', text: r.eps.join('  ') }),
+          el('td', {}, el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Launch Module →', onclick: function () { goTo([r.folderId, r.id]); } }))]);
+      })));
+      if (shown.length > 150) tableHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Refine search to see the remaining ' + (shown.length - 150) + ' modules.' }));
+    }
+    fetchNav().then(function (nav) {
+      (nav.folders || []).forEach(function (fo) {
+        folderSel.appendChild(el('option', { value: fo.id, text: fo.title + ' (' + fo.modules.length + ')' }));
+        fo.modules.forEach(function (m) {
+          var route = window.CSOLive && window.CSOLive.routes && window.CSOLive.routes[m.id];
+          var eps = (DIR_EP[fo.id] || []).slice();
+          if (route && window.CSOLive.resolveRoute) {
+            var map = { 'current-affairs': '/api/admin/current-affairs', jobs: '/api/admin/jobs', 'mock-tests': '/api/admin/mock-tests', syllabus: '/api/admin/resources', pyq: '/api/admin/resources', media: '/api/admin/media', users: '/api/admin/users', banner: '/api/admin/banner', audit: '/api/admin/audit', 'audit/security': '/api/admin/audit', incidents: '/api/admin/incidents', operations: '/api/admin/maintenance', dashboard: '/api/admin/stats' };
+            var ep = map[window.CSOLive.resolveRoute(fo.id, m.id)[0]]; if (ep && eps.indexOf(ep) < 0) eps.push(ep);
+          }
+          rows.push({ folderId: fo.id, folderTitle: fo.title, id: m.id, title: m.title, eps: eps.length ? eps : ['(client-side studio)'], caps: dirCaps(fo.id, eps) });
+        });
+      });
+      root.querySelector('.cso-mod-banner-sub').textContent = (nav.folders || []).length + ' folders · ' + rows.length + ' modules (from master-navigation.json) with capability badges and endpoint mapping.';
+      draw();
+    }).catch(function (e) { fail(tableHost, e); });
+    search.addEventListener('input', draw); folderSel.addEventListener('change', draw);
+  }
+
+  /* =========================================================================
      MAIN DISPATCHER
      ========================================================================= */
   function render(folderId, moduleId, root, actions) {
@@ -1518,9 +1852,10 @@
     if (moduleId === 'module-01-002') { renderEdgeStudio(root, actions); return true; }
     if (moduleId === 'module-01-003') { renderLaunchpad(root, actions); return true; }
     if (moduleId === 'module-01-004') { renderAuditTimeline(root, actions); return true; }
-    if (moduleId === 'module-01-006') { renderPendingApprovals(root, actions); return true; }
-    if (moduleId === 'module-01-007') { renderWebsiteAnalytics(root, actions); return true; }
-    if (moduleId === 'module-01-008') { renderMasterRegistry(root, actions); return true; }
+    if (moduleId === 'module-01-005') { renderAlertCenter(root, actions); return true; }
+    if (moduleId === 'module-01-006') { renderApprovalQueue(root, actions); return true; }
+    if (moduleId === 'module-01-007') { renderAnalyticsStudio(root, actions); return true; }
+    if (moduleId === 'module-01-008') { renderCommandDirectory(root, actions); return true; }
 
     // Folder 02: Website Pages & Builder
     if (folderId === 'folder-02' || moduleId.startsWith('module-02-')) {
