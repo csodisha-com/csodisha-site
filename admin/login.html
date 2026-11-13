@@ -9,9 +9,12 @@
 </head>
 <body class="login-body">
   <main class="login-card" aria-labelledby="t">
-    <a href="/" class="cso-login-logo-link" aria-label="Return to Common Sense Odisha Home" title="Return to Common Sense Odisha Home">
-      <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="44">
-    </a>
+    <div class="cso-login-head">
+      <a href="/" class="cso-login-logo-link" aria-label="Return to Common Sense Odisha Home" title="Return to Common Sense Odisha Home">
+        <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="44">
+      </a>
+      <button type="button" id="themeToggleBtn" class="cso-login-theme-btn" aria-pressed="false" aria-label="Switch to Light Theme" title="Switch Light / Dark Theme (Alt+T)">☀ Light</button>
+    </div>
     <h1 id="t">Staff sign-in</h1>
     <p class="muted">Editors and administrators only. Use your CS Odisha account.</p>
     <div id="msg" class="alert" role="alert" hidden></div>

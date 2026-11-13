@@ -42,6 +42,7 @@
     btnModalClose: document.getElementById('btnModalClose'),
     btnCreateNewMenu: document.getElementById('btnCreateNewMenu'),
     createNewDropdown: document.getElementById('createNewDropdown'),
+    themeToggleBtn: document.getElementById('themeToggleBtn'),
     adminUserEmail: document.getElementById('adminUserEmail'),
     adminUserRole: document.getElementById('adminUserRole'),
     adminUserInitials: document.getElementById('adminUserInitials')
@@ -312,6 +313,32 @@
     if (dom.btnCreateNewMenu) dom.btnCreateNewMenu.setAttribute('aria-expanded', 'false');
   }
 
+  function readStoredTheme() {
+    try {
+      return localStorage.getItem('cso_studio_theme') === 'light' ? 'light' : 'dark';
+    } catch (_e) {
+      return 'dark';
+    }
+  }
+
+  function applyTheme(theme) {
+    var safe = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = safe;
+    if (dom.themeToggleBtn) {
+      var isLight = safe === 'light';
+      dom.themeToggleBtn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+      dom.themeToggleBtn.setAttribute('aria-label', isLight ? 'Switch to Dark Theme' : 'Switch to Light Theme');
+      dom.themeToggleBtn.textContent = isLight ? '🌙 Dark' : '☀ Light';
+    }
+    return safe;
+  }
+
+  function toggleTheme() {
+    var next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    try { localStorage.setItem('cso_studio_theme', next); } catch (_e) {}
+  }
+
   function wireTopbarEvents() {
     if (dom.btnCreateNewMenu && dom.createNewDropdown) {
       dom.btnCreateNewMenu.addEventListener('click', function (e) {
@@ -346,8 +373,17 @@
       } else if (e.altKey && (e.key === 'h' || e.key === 'H')) {
         e.preventDefault();
         goDashboardHome();
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T')) {
+        var tag = e.target && e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+        e.preventDefault();
+        toggleTheme();
       }
     });
+
+    if (dom.themeToggleBtn) {
+      dom.themeToggleBtn.addEventListener('click', toggleTheme);
+    }
 
     if (dom.brandHomeBtn) {
       dom.brandHomeBtn.addEventListener('click', goDashboardHome);
@@ -423,6 +459,7 @@
 
   window.addEventListener('DOMContentLoaded', async function () {
     initSessionTimer();
+    applyTheme(readStoredTheme());
     wireTopbarEvents();
     try {
       if (localStorage.getItem('cso_sidebar_collapsed') === '1') setSidebarCollapsed(true);

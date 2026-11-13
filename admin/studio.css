@@ -2,6 +2,7 @@
    Strict CSP: external stylesheet only, zero inline styles. Responsive 360px - 1440px. */
 
 :root {
+  color-scheme: dark;
   --studio-bg: #081220;
   --studio-surface: #0f172a;
   --studio-card: #131f36;
@@ -124,6 +125,28 @@
 }
 
 .cso-pill-link:hover {
+  border-color: var(--studio-blue);
+  background: rgba(56, 189, 248, 0.14);
+}
+
+.cso-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-card);
+  color: var(--studio-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cso-pill-btn:hover {
   border-color: var(--studio-blue);
   background: rgba(56, 189, 248, 0.14);
 }
@@ -1918,4 +1941,143 @@ input[type="checkbox"] {
 .cso-pin-btn { border: 1px solid var(--studio-border); background: var(--studio-bg); color: var(--studio-muted); padding: 3px 8px; border-radius: 999px; font-size: 11.5px; cursor: pointer; }
 .cso-pin-btn.is-pinned { border-color: var(--studio-amber); background: rgba(245, 158, 11, 0.16); color: var(--studio-amber); font-weight: 700; }
 .cso-create-divider { border-top: 1px solid var(--studio-border); margin: 6px 0; padding: 4px 10px 2px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--studio-amber); }
+
+/* ---------- WCAG AA+ Daylight Theme (html[data-theme="light"]) ---------- */
+html[data-theme="light"] {
+  color-scheme: light;
+  --studio-bg: #f8fafc;
+  --studio-surface: #ffffff;
+  --studio-card: #ffffff;
+  --studio-card-elev: #f1f5f9;
+  --studio-border: #cbd5e1;
+  --studio-border-strong: #94a3b8;
+  --studio-text: #0f172a;
+  --studio-muted: #334155;
+  --studio-accent: #047857;
+  --studio-accent-hover: #059669;
+  --studio-blue: #0284c7;
+  --studio-amber: #b45309;
+  --studio-red: #dc2626;
+  --studio-indigo: #4f46e5;
+}
+
+html[data-theme="light"] .cso-topbar,
+html[data-theme="light"] .cso-sidebar {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] .cso-card,
+html[data-theme="light"] .cso-kpi-card,
+html[data-theme="light"] .cso-modal,
+html[data-theme="light"] .cso-create-dropdown,
+html[data-theme="light"] .cso-table-wrap,
+html[data-theme="light"] .cso-bottom-bar {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+html[data-theme="light"] .cso-pill-btn,
+html[data-theme="light"] .cso-pill-link,
+html[data-theme="light"] .cso-telemetry-pill,
+html[data-theme="light"] .cso-icon-btn,
+html[data-theme="light"] .cso-user-pill {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+html[data-theme="light"] .cso-pill-btn:hover,
+html[data-theme="light"] .cso-pill-link:hover,
+html[data-theme="light"] .cso-icon-btn:hover {
+  background: #e2e8f0;
+  border-color: #0284c7;
+}
+
+html[data-theme="light"] .cso-signout-btn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+  color: #b91c1c;
+}
+
+html[data-theme="light"] .cso-btn-create,
+html[data-theme="light"] .cso-btn-primary {
+  background: #047857;
+  border-color: #047857;
+  color: #ffffff;
+}
+
+html[data-theme="light"] .cso-btn-create:hover,
+html[data-theme="light"] .cso-btn-primary:hover {
+  background: #059669;
+}
+
+html[data-theme="light"] .cso-nav-folder:hover,
+html[data-theme="light"] .cso-nav-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+html[data-theme="light"] .cso-nav-item.is-active {
+  background: rgba(4, 120, 87, 0.12);
+  color: #065f46;
+  border-color: rgba(4, 120, 87, 0.35);
+}
+
+html[data-theme="light"] .cso-create-item:hover {
+  background: #f1f5f9;
+}
+
+html[data-theme="light"] .cso-input,
+html[data-theme="light"] .cso-select,
+html[data-theme="light"] .cso-textarea,
+html[data-theme="light"] .cso-search-input {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] table th {
+  background: #f1f5f9;
+  color: #334155;
+  border-bottom-color: #cbd5e1;
+}
+
+html[data-theme="light"] table td {
+  color: #0f172a;
+  border-bottom-color: #e2e8f0;
+}
+
+html[data-theme="light"] .cso-badge,
+html[data-theme="light"] .cso-pill {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] .cso-badge-success,
+html[data-theme="light"] .cso-badge-live {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+html[data-theme="light"] .cso-badge-warn {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+html[data-theme="light"] .cso-badge-danger {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+html[data-theme="light"] .cso-modal-backdrop,
+html[data-theme="light"] .cso-drawer-backdrop {
+  background: rgba(15, 23, 42, 0.45);
+}
+
 
