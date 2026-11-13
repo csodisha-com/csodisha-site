@@ -315,6 +315,14 @@
   position: relative;
 }
 
+.cso-shell.cso-sidebar-collapsed .cso-sidebar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  #sidebarToggleBtn { display: none; }
+}
+
 .cso-sidebar {
   width: 288px;
   flex-shrink: 0;

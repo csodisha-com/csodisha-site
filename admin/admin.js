@@ -28,6 +28,8 @@
     moduleHeaderActions: document.getElementById('moduleHeaderActions'),
     sessionTimer: document.getElementById('sessionTimer'),
     btnToggleSidebar: document.getElementById('btnToggleSidebar'),
+    sidebarToggleBtn: document.getElementById('sidebarToggleBtn'),
+    shell: document.querySelector('.cso-shell'),
     sidebarConsole: document.getElementById('sidebarConsole'),
     mobileDrawerBackdrop: document.getElementById('mobileDrawerBackdrop'),
     toastContainer: document.getElementById('toastContainer'),
@@ -168,6 +170,7 @@
       folderBtn.addEventListener('click', function () {
         if (CSOState.expandedFolders.has(folder.id)) CSOState.expandedFolders.delete(folder.id);
         else CSOState.expandedFolders.add(folder.id);
+        persistOpenGroups();
         renderNavigationTree();
       });
 
@@ -202,11 +205,37 @@
     dom.accordionNav.scrollTop = prevNavScroll;
   }
 
+  function persistOpenGroups() {
+    try { localStorage.setItem('cso_open_sidebar_groups', JSON.stringify(Array.from(CSOState.expandedFolders))); } catch (_e) {}
+  }
+
+  function setSidebarCollapsed(collapsed) {
+    if (dom.shell) dom.shell.classList.toggle('cso-sidebar-collapsed', !!collapsed);
+    document.body.classList.toggle('cso-sidebar-collapsed', !!collapsed);
+    if (dom.sidebarToggleBtn) dom.sidebarToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    try { localStorage.setItem('cso_sidebar_collapsed', collapsed ? '1' : '0'); } catch (_e) {}
+  }
+
+  function resolveModuleTarget(targetId) {
+    if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return null;
+    for (var i = 0; i < masterNavigationSchema.folders.length; i++) {
+      var f = masterNavigationSchema.folders[i];
+      var m = (f.modules || []).find(function (x) { return x.id === targetId; });
+      if (m) return { folderId: f.id, moduleId: m.id };
+    }
+    return null;
+  }
+
   function selectModule(folderId, moduleId) {
     if (!masterNavigationSchema || !Array.isArray(masterNavigationSchema.folders)) return;
     CSOState.activeFolderId = folderId;
     CSOState.activeModuleId = moduleId;
     CSOState.expandedFolders.add(folderId);
+    persistOpenGroups();
+    try { localStorage.setItem('cso_active_module_id', moduleId); } catch (_e) {}
+    if (window.location.hash !== '#' + moduleId && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#' + moduleId);
+    }
 
     var folder = masterNavigationSchema.folders.find(function (f) { return f.id === folderId; });
     var mod = folder && folder.modules ? folder.modules.find(function (m) { return m.id === moduleId; }) : null;
@@ -297,8 +326,30 @@
         closeCreateDropdown();
         closeModal();
         closeMobileDrawer();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
+        e.preventDefault();
+        var nextCollapsed = !(dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed'));
+        setSidebarCollapsed(nextCollapsed);
       }
     });
+
+    if (dom.sidebarToggleBtn) {
+      dom.sidebarToggleBtn.addEventListener('click', function () {
+        var nextCollapsed = !(dom.shell && dom.shell.classList.contains('cso-sidebar-collapsed'));
+        setSidebarCollapsed(nextCollapsed);
+      });
+    }
+
+    function syncFromHash() {
+      var hashId = (window.location.hash || '').replace(/^#/, '');
+      if (!hashId) return;
+      var resolved = resolveModuleTarget(hashId);
+      if (resolved && resolved.moduleId !== CSOState.activeModuleId) {
+        selectModule(resolved.folderId, resolved.moduleId);
+      }
+    }
+    window.addEventListener('hashchange', syncFromHash);
+    window.addEventListener('popstate', syncFromHash);
 
     if (dom.moduleSearchInput) {
       dom.moduleSearchInput.addEventListener('input', function (e) {
@@ -329,8 +380,17 @@
   window.addEventListener('DOMContentLoaded', async function () {
     initSessionTimer();
     wireTopbarEvents();
+    try {
+      if (localStorage.getItem('cso_sidebar_collapsed') === '1') setSidebarCollapsed(true);
+      var savedGroups = JSON.parse(localStorage.getItem('cso_open_sidebar_groups') || '[]');
+      if (Array.isArray(savedGroups)) savedGroups.forEach(function (g) { CSOState.expandedFolders.add(g); });
+    } catch (_e) {}
     await Promise.all([loadMasterNavigation(), hydrateSessionIdentity()]);
+    var hashId = (window.location.hash || '').replace(/^#/, '');
+    var storedId = '';
+    try { storedId = localStorage.getItem('cso_active_module_id') || ''; } catch (_e) {}
+    var target = resolveModuleTarget(hashId) || resolveModuleTarget(storedId) || resolveModuleTarget('module-00-001') || { folderId: 'folder-01', moduleId: 'module-01-001' };
     renderNavigationTree();
-    selectModule('folder-01', 'module-01-001');
+    selectModule(target.folderId, target.moduleId);
   });
 })(window, document);
