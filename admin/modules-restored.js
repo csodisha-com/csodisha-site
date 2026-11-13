@@ -7940,7 +7940,23 @@
         { type: 'notice', title: 'Effective Date & Privacy Inquiries', text: 'Effective Date: 2026-11-13 · Privacy & Cookie Inquiries: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-007': { title: 'Copyright & DMCA', path: '/copyright.html', email: 'dmca@csodisha.com' },
+    'module-03-007': {
+      title: 'Copyright & DMCA',
+      seoTitle: 'Copyright & DMCA | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Copyright & DMCA Policy of Common Sense Odisha (csodisha.com) — intellectual property ownership, official government PDF attribution, and takedown notices.',
+      heroTitle: 'Copyright & DMCA Policy',
+      heroSubtitle: 'Intellectual property rights, fair educational attribution of public government notices, and copyright takedown procedures for Common Sense Odisha.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/copyright.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Ownership of Original Educational Content', text: 'All original study guides, syllabus breakdowns, CBT mock practice question sets, editorial summaries, custom graphics, and web application code published on Common Sense Odisha (https://csodisha.com) are protected under the Copyright Act, 1957 (India) and international copyright treaties. Unauthorized bulk reproduction, commercial scraping, or redistribution without prior written permission is prohibited.' },
+        { type: 'richtext', title: 'Official Government Notifications & Public Domain Records', text: 'Official recruitment advertisements, exam calendars, gazette notifications, and scholarship circulars referenced on this portal belong to their respective government departments and recruitment commissions (such as OPSC, OSSC, OSSSC, and the Government of Odisha). We link directly to original official sources and summarize public-interest details strictly for educational guidance.' },
+        { type: 'richtext', title: 'Submitting a Copyright or DMCA Takedown Notice', text: 'If you believe any content hosted on Common Sense Odisha infringes upon your copyrighted work, please send a written takedown notice to editorial@csodisha.com containing: (a) identification of the copyrighted work claimed to have been infringed; (b) the exact URL(s) on csodisha.com where the material appears; (c) your full name, organization (if applicable), and contact details; and (d) a good-faith statement that the disputed use is not authorized by the copyright owner or the law. Verified notices are reviewed and acted upon within 48 hours.' },
+        { type: 'notice', title: 'Effective Date & Designated IP Contact', text: 'Effective Date: 2026-11-13 · Designated Copyright & DMCA Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-008': { title: 'Editorial Policy', path: '/editorial-policy.html', email: 'editorial@csodisha.com' },
     'module-03-009': { title: 'Corrections Policy', path: '/corrections.html', email: 'editorial@csodisha.com' },
     'module-03-010': { title: 'Accessibility Statement', path: '/accessibility.html', email: 'accessibility@csodisha.com' },
