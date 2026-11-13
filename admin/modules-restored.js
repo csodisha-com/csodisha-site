@@ -7957,7 +7957,23 @@
         { type: 'notice', title: 'Effective Date & Designated IP Contact', text: 'Effective Date: 2026-11-13 · Designated Copyright & DMCA Contact: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
       ]
     },
-    'module-03-008': { title: 'Editorial Policy', path: '/editorial-policy.html', email: 'editorial@csodisha.com' },
+    'module-03-008': {
+      title: 'Editorial Policy',
+      seoTitle: 'Editorial Policy | Common Sense Odisha (csodisha.com)',
+      metaDescription: 'Editorial Policy of Common Sense Odisha (csodisha.com) — our fact-checking standards, primary source verification, and pedagogical review process in Odisha.',
+      heroTitle: 'Editorial Policy',
+      heroSubtitle: 'How Common Sense Odisha verifies government recruitment notices, designs exam syllabi and CBT practice sets, and upholds editorial independence.',
+      effectiveDate: '2026-11-13',
+      status: 'published',
+      path: '/editorial-policy.html',
+      email: 'editorial@csodisha.com',
+      sections: [
+        { type: 'richtext', title: 'Primary-Source Fact-Checking & Verification', text: 'Every recruitment notification, exam calendar, answer key, and scholarship update published on Common Sense Odisha (https://csodisha.com) is verified directly against primary official sources—including OPSC, OSSC, OSSSC, Odisha Police, State Scholarship Portal, and official Government of Odisha gazettes—prior to publication. Unverified rumors or unconfirmed social media forwards are never published as news.' },
+        { type: 'richtext', title: 'Pedagogical Standards & CBT Quality Review', text: 'Study guides, syllabus breakdowns, and CBT mock practice questions are structured for clarity, syllabus alignment, and conceptual accuracy. Content design and editorial oversight are led by Editor-in-Chief Ramesh Biswal (Post Graduation in English from Ravenshaw University, B.Ed. from UGCTE, Baripada, and UGC NET qualified in English and Education), ensuring educational materials reflect sound pedagogical principles and clear, accessible language.' },
+        { type: 'richtext', title: 'Editorial Independence & Separation of Content', text: 'Common Sense Odisha operates with full editorial independence. Recruitment summaries, syllabus guides, and scholarship explainers are selected strictly on student and public utility—never influenced by external third-party sponsors. Every article includes direct reference links to the original official notification so aspirants can cross-check details independently.' },
+        { type: 'notice', title: 'Effective Date & Editorial Desk Contact', text: 'Effective Date: 2026-11-13 · Editor-in-Chief: Ramesh Biswal · Editorial Desk: editorial@csodisha.com · Address: Basta, Balasore, 756029' }
+      ]
+    },
     'module-03-009': { title: 'Corrections Policy', path: '/corrections.html', email: 'editorial@csodisha.com' },
     'module-03-010': { title: 'Accessibility Statement', path: '/accessibility.html', email: 'accessibility@csodisha.com' },
     'module-03-011': { title: 'Refund & Cancellation Policy', path: '/refund.html', email: 'billing@csodisha.com' },
