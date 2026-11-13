@@ -1962,76 +1962,101 @@ html[data-theme="light"] {
 }
 
 html[data-theme="light"] .cso-topbar,
-html[data-theme="light"] .cso-sidebar {
+html[data-theme="light"] #sidebarConsole.cso-sidebar {
   background: #ffffff;
   border-color: #cbd5e1;
 }
 
-html[data-theme="light"] .cso-sidebar-search,
-html[data-theme="light"] .cso-sidebar-footer {
+html[data-theme="light"] #sidebarConsole .cso-sidebar-search,
+html[data-theme="light"] #sidebarConsole .cso-sidebar-footer {
   background: #f8fafc;
   border-color: #cbd5e1;
   color: #334155;
 }
 
-html[data-theme="light"] .cso-search-badge {
+html[data-theme="light"] #accordionNav.cso-nav-tree {
+  background: #f8fafc;
+}
+
+html[data-theme="light"] #sidebarConsole .cso-nav-folder {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] #sidebarConsole .cso-nav-folder.is-current {
+  background: #ffffff;
+  border-color: #6ee7b7;
+}
+
+html[data-theme="light"] #sidebarConsole .cso-nav-modules {
+  background: #f8fafc;
+  border-top-color: #e2e8f0;
+}
+
+html[data-theme="light"] #sidebarConsole .cso-search-badge {
   background: #e2e8f0;
   color: #0f172a;
 }
 
-html[data-theme="light"] .cso-nav-folder-btn,
+html[data-theme="light"] #sidebarConsole .cso-nav-folder-btn,
 html[data-theme="light"] .cso-nav-group-hdr {
+  background: transparent;
   color: #1e293b;
 }
 
-html[data-theme="light"] .cso-nav-folder-btn:hover,
+html[data-theme="light"] #sidebarConsole .cso-nav-folder-btn:hover,
 html[data-theme="light"] .cso-nav-group-hdr:hover {
   background: #f1f5f9;
   color: #0f172a;
 }
 
-html[data-theme="light"] .cso-nav-folder.is-current,
-html[data-theme="light"] .cso-nav-folder-btn.is-active {
+html[data-theme="light"] #sidebarConsole .cso-nav-folder-btn.is-active {
   background: #ecfdf5;
   color: #047857;
-  border-color: #6ee7b7;
 }
 
-html[data-theme="light"] .cso-nav-count,
+html[data-theme="light"] #sidebarConsole .cso-nav-count,
 html[data-theme="light"] .cso-nav-badge {
   background: #f1f5f9;
   color: #334155;
   border: 1px solid #cbd5e1;
 }
 
-html[data-theme="light"] .cso-nav-mod-btn,
+html[data-theme="light"] #sidebarConsole .cso-nav-chevron {
+  color: #64748b;
+}
+
+html[data-theme="light"] #sidebarConsole .cso-nav-chevron.is-open {
+  color: #047857;
+}
+
+html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn,
 html[data-theme="light"] .cso-nav-item {
   color: #334155;
 }
 
-html[data-theme="light"] .cso-nav-mod-btn:hover,
+html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn:hover,
 html[data-theme="light"] .cso-nav-item:hover {
   background: #f1f5f9;
   color: #0f172a;
 }
 
-html[data-theme="light"] .cso-nav-mod-btn.is-active,
+html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn.is-active,
 html[data-theme="light"] .cso-nav-item.active,
 html[data-theme="light"] .cso-nav-item.is-active {
   background: #ecfdf5;
   color: #047857;
   border-left-color: #047857;
-  border-color: #6ee7b7;
 }
 
-html[data-theme="light"] .cso-nav-mod-tag {
+html[data-theme="light"] #sidebarConsole .cso-nav-mod-tag {
   background: #f1f5f9;
   color: #475569;
   border: 1px solid #cbd5e1;
 }
 
-html[data-theme="light"] .cso-nav-mod-tag.is-live,
-html[data-theme="light"] .cso-nav-mod-btn.is-active .cso-nav-mod-tag {
+html[data-theme="light"] #sidebarConsole .cso-nav-mod-tag.is-live,
+html[data-theme="light"] #sidebarConsole .cso-nav-mod-btn.is-active .cso-nav-mod-tag {
   background: #ecfdf5;
   color: #047857;
   border-color: #a7f3d0;
