@@ -5970,70 +5970,543 @@
   function renderReusableSectionsStudio(root, actions) {
     addHeaderPill(actions, '● Sitewide Sections');
     var shell = el('div', { class: 'cso-mod-shell' });
-    var grid = el('div', { class: 'cso-mod-grid-2' });
+    var kpiHost = el('div', {});
+    var drawerHost = el('div', {});
+    var splitHost = el('div', { class: 'cso-mod-grid-2' });
+    var leftCol = el('div', {});
+    var rightCol = el('div', { class: 'cso-sticky-preview' });
+    var fullscreenHost = el('div', {});
 
     var DEFAULT_SECTIONS = [
-      { id: 'candidate-cta', name: 'Candidate Portal CTA Strip', enabled: true, title: 'Candidate Workspace', text: 'Track exam deadlines, saved posts, and CBT scores in one dashboard.', label: 'Open Dashboard', url: '/student-dashboard/' },
-      { id: 'community-callout', name: 'Telegram/WhatsApp Community Callout', enabled: true, title: 'Odisha Aspirant Community', text: 'Join daily current affairs & instant job alert channels.', label: 'Join Community', url: '/community/' },
-      { id: 'footer-notice', name: 'Footer Statutory Notice', enabled: true, title: 'Disclaimer', text: 'Common Sense Odisha is an independent educational portal. Verify official dates on commission websites.', label: 'Read Disclaimer', url: '/disclaimer.html' }
+      { id: 'candidate-cta', name: 'Candidate Portal CTA Strip', enabled: true, style: 'emerald', visibility: 'all', exclude_routes: '/privacy-policy.html,/disclaimer.html,/terms.html', title: 'Candidate Workspace', odia_title: 'ପ୍ରାର୍ଥୀ ଡ୍ୟାସବୋର୍ଡ', text: 'Track exam deadlines, saved posts, and CBT scores in one dashboard.', odia_text: 'ପରୀକ୍ଷା ତାରିଖ ଏବଂ CBT ସ୍କୋର ଗୋଟିଏ ସ୍ଥାନରେ ଦେଖନ୍ତୁ।', label: 'Open Dashboard', url: '/student-dashboard/', secondary_label: 'Practice Free CBT', secondary_url: '/mock-tests/' },
+      { id: 'community-callout', name: 'Telegram/WhatsApp Community Callout', enabled: true, style: 'amber', visibility: 'all', exclude_routes: '/privacy-policy.html,/disclaimer.html,/terms.html', title: 'Odisha Aspirant Community', odia_title: 'ଓଡ଼ିଶା ପରୀକ୍ଷାର୍ଥୀ ସମୁଦାୟ', text: 'Join daily current affairs & instant job alert channels.', odia_text: 'ଦୈନିକ କରେଣ୍ଟ ଆଫେୟାର୍ସ ଏବଂ ନିଯୁକ୍ତି ସୂଚନା ପାଇଁ ଯୋଗ ଦିଅନ୍ତୁ।', label: 'Join Community', url: '/community/', secondary_label: 'Telegram Alerts', secondary_url: 'https://t.me/csodisha' },
+      { id: 'footer-notice', name: 'Footer Statutory Notice', enabled: true, style: 'slate', visibility: 'all', exclude_routes: '', title: 'Disclaimer', odia_title: 'ସରକାରୀ ସୂଚନା', text: 'Common Sense Odisha is an independent educational portal. Verify official dates on commission websites.', odia_text: 'ସମସ୍ତ ତଥ୍ୟ ଅଫିସିଆଲ୍ ୱେବସାଇଟ୍ ସହିତ ଯାଞ୍ଚ କରନ୍ତୁ।', label: 'Read Disclaimer', url: '/disclaimer.html', secondary_label: 'Contact Support', secondary_url: '/contact.html' }
+    ];
+
+    var PRESETS = [
+      { id: 'cbt-promo', name: 'Free CBT Mock Test Promo Bar', enabled: true, style: 'emerald', visibility: 'jobs-exams', exclude_routes: '', title: 'Free Bilingual CBT Mock Tests', odia_title: 'ମାଗଣା CBT ମକ୍ ଟେଷ୍ଟ', text: 'Practice OSSC CGL, OSSSC RI/ARI & OPSC OAS papers with live ranking.', odia_text: 'ଓଡ଼ିଆ ଏବଂ ଇଂରାଜୀରେ ମାଗଣା ମକ୍ ଟେଷ୍ଟ ଦିଅନ୍ତୁ।', label: 'Start CBT Now', url: '/mock-tests/', secondary_label: 'View Syllabus', secondary_url: '/syllabus/' },
+      { id: 'exam-helpline', name: 'OTET / OSSTET Exam Helpline Box', enabled: true, style: 'gold', visibility: 'all', exclude_routes: '/privacy-policy.html', title: 'Odisha Exam Helpline & Verification', odia_title: 'ପରୀକ୍ଷା ସହାୟତା କେନ୍ଦ୍ର', text: 'Need help finding official PDFs or admit card links? Check our verified directory.', odia_text: 'ଆଡମିଟ୍ କାର୍ଡ ଏବଂ ଅଫିସିଆଲ୍ PDF ପାଇଁ ସହାୟତା ପାଆନ୍ତୁ।', label: 'Open Resources', url: '/resources/', secondary_label: 'Contact Helpdesk', secondary_url: '/contact.html' },
+      { id: 'gov-seal', name: 'Official .gov.in Verification Seal', enabled: true, style: 'slate', visibility: 'all', exclude_routes: '', title: 'Verified Official Sources', odia_title: 'ଯାଞ୍ଚିତ ସରକାରୀ ଉତ୍ସ', text: 'All notifications are cross-checked against opsc.gov.in, ossc.gov.in & osssc.gov.in.', odia_text: 'ସମସ୍ତ ବିଜ୍ଞପ୍ତି ଅଫିସିଆଲ୍ ପୋର୍ଟାଲରୁ ଯାଞ୍ଚିତ।', label: 'Official Jobs Hub', url: '/jobs-careers/', secondary_label: '', secondary_url: '' }
     ];
 
     var sections = [];
-    var bannerState = { active: false, severity: 'info', headline: '', context: '', ctaText: '', ctaUrl: '' };
+    var bannerState = { active: false, severity: 'info', headline: '', odia_headline: '', context: '', ctaText: '', ctaUrl: '', starts_at: '', expires_at: '' };
+    var verifiedRoutes = ['/jobs-careers/', '/current-affairs/', '/mock-tests/', '/resources/', '/syllabus/', '/pyq/', '/student-dashboard/', '/community/', '/schemes/', '/contact.html', '/disclaimer.html'];
+    var linkHealthText = 'Not Checked';
+    var lastPublishedAt = '—';
+    var previewViewport = 'desktop';
+    var previewRoute = '/jobs-careers/';
+    var dragIndex = -1;
+
+    function escapeHtmlAttr(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function matchesPreviewRoute(s, rt) {
+      var r = rt || '/';
+      var excl = String(s.exclude_routes || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      if (excl.some(function (p) { return r === p || (p.slice(-1) === '*' && r.indexOf(p.slice(0, -1)) === 0); })) return false;
+      var vis = s.visibility || 'all';
+      if (vis === 'jobs-exams') return r.indexOf('/jobs-careers') === 0 || r.indexOf('/study') === 0 || r.indexOf('/mock-tests') === 0 || r.indexOf('/syllabus') === 0;
+      if (vis === 'home-landing') return r === '/' || r.indexOf('/campaign') === 0 || r.indexOf('/landing') === 0;
+      if (vis === 'custom') {
+        var incl = String(s.include_routes || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        if (!incl.length) return true;
+        return incl.some(function (p) { return r === p || (p.slice(-1) === '*' && r.indexOf(p.slice(0, -1)) === 0); });
+      }
+      return true;
+    }
+
+    function buildSitewidePreviewHtml() {
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>Sitewide Preview — ' + escapeHtmlAttr(previewRoute) + '</title>' +
+        '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
+        '</head><body><header class="site-header"><div class="container header-inner"><a class="brand" href="/">Common Sense Odisha</a></div></header>';
+      if (bannerState.active && bannerState.headline) {
+        html += '<div class="notice-banner"><strong>[' + escapeHtmlAttr((bannerState.severity || 'info').toUpperCase()) + ']</strong> ' +
+          escapeHtmlAttr(bannerState.headline) +
+          (bannerState.odia_headline ? ' · ' + escapeHtmlAttr(bannerState.odia_headline) : '') +
+          (bannerState.ctaUrl ? ' <a href="' + escapeHtmlAttr(bannerState.ctaUrl) + '">' + escapeHtmlAttr(bannerState.ctaText || 'View') + '</a>' : '') +
+          '</div>';
+      }
+      html += '<main class="container section"><section class="hero-card"><span class="badge">Sample Route: ' + escapeHtmlAttr(previewRoute) + '</span>' +
+        '<h1>Sample Public Page Content</h1><p>Inspect how active sitewide strips inject and stack below the main content on ' + escapeHtmlAttr(previewRoute) + '.</p></section>';
+      sections.filter(function (s) { return s.enabled !== false && matchesPreviewRoute(s, previewRoute); }).forEach(function (s) {
+        html += '<section class="card cso-sitewide-style-' + escapeHtmlAttr(s.style || 'emerald') + '">' +
+          '<span class="badge">' + escapeHtmlAttr(s.style || 'emerald') + ' · ' + escapeHtmlAttr(s.visibility || 'all') + '</span>' +
+          '<h2>' + escapeHtmlAttr(s.title || s.name || s.id) + '</h2>' +
+          (s.odia_title ? '<p><strong>' + escapeHtmlAttr(s.odia_title) + '</strong></p>' : '') +
+          '<p>' + escapeHtmlAttr(s.text || '') + '</p>' +
+          (s.odia_text ? '<p>' + escapeHtmlAttr(s.odia_text) + '</p>' : '') +
+          '<div class="hero-actions">' +
+          (s.label ? '<a class="btn btn-primary" href="' + escapeHtmlAttr(s.url || '#') + '">' + escapeHtmlAttr(s.label) + '</a> ' : '') +
+          (s.secondary_label ? '<a class="btn btn-secondary" href="' + escapeHtmlAttr(s.secondary_url || '#') + '">' + escapeHtmlAttr(s.secondary_label) + '</a> ' : '') +
+          (s.attachment_url ? '<a class="btn" href="' + escapeHtmlAttr(s.attachment_url) + '">' + escapeHtmlAttr(s.attachment_label || 'Official PDF') + '</a>' : '') +
+          '</div></section>';
+      });
+      html += '</main></body></html>';
+      return html;
+    }
+
+    var previewFrame = el('iframe', { class: 'cso-builder-iframe', sandbox: 'allow-same-origin', title: 'Sitewide Real-CSS Preview' });
+    function updatePreview() {
+      previewFrame.srcdoc = buildSitewidePreviewHtml();
+      renderKpis();
+    }
+
+    function openFullscreenPreview() {
+      clear(fullscreenHost);
+      var fsMode = previewViewport;
+      var fsFrame = el('iframe', {
+        class: 'cso-fullscreen-frame' + (fsMode === 'tablet' ? ' is-tablet' : fsMode === 'mobile' ? ' is-mobile' : ''),
+        sandbox: 'allow-same-origin',
+        title: 'Sitewide Full-Screen Real View'
+      });
+      fsFrame.srcdoc = buildSitewidePreviewHtml();
+      var bD = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'desktop' ? ' cso-pill-active' : ''), text: 'Desktop 100%', onclick: function () { setFs('desktop'); } });
+      var bT = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'tablet' ? ' cso-pill-active' : ''), text: 'Tablet 768px', onclick: function () { setFs('tablet'); } });
+      var bM = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'mobile' ? ' cso-pill-active' : ''), text: 'Mobile 375px', onclick: function () { setFs('mobile'); } });
+      function setFs(m) {
+        fsMode = m;
+        bD.classList.toggle('cso-pill-active', m === 'desktop');
+        bT.classList.toggle('cso-pill-active', m === 'tablet');
+        bM.classList.toggle('cso-pill-active', m === 'mobile');
+        fsFrame.className = 'cso-fullscreen-frame' + (m === 'tablet' ? ' is-tablet' : m === 'mobile' ? ' is-mobile' : '');
+      }
+      function closeFs() { document.removeEventListener('keydown', onEsc); clear(fullscreenHost); }
+      function onEsc(e) { if (e.key === 'Escape') closeFs(); }
+      document.addEventListener('keydown', onEsc);
+      fullscreenHost.appendChild(el('div', { class: 'cso-fullscreen-overlay' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Back to Studio', onclick: closeFs }),
+            el('strong', { text: 'Sitewide Strips Full-Screen Real View (' + previewRoute + ')' })
+          ]),
+          el('div', { class: 'cso-mod-toolbar' }, [bD, bT, bM])
+        ]),
+        el('div', { class: 'cso-fullscreen-stage' }, [fsFrame])
+      ]));
+    }
+
+    function renderKpis() {
+      clear(kpiHost);
+      var activeCnt = sections.filter(function (s) { return s.enabled !== false; }).length;
+      var hasCustomRules = sections.some(function (s) { return (s.visibility && s.visibility !== 'all') || (s.exclude_routes && s.exclude_routes.trim()); });
+      kpiHost.appendChild(el('div', { class: 'cso-kpi-grid-4' }, [
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Active Sitewide Strips' }), el('strong', { text: activeCnt + ' / ' + sections.length })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Target Scope' }), el('strong', { text: hasCustomRules ? 'Custom Targeting Rules' : 'All Public Pages' })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Link Health (200 OK)' }), el('strong', { text: linkHealthText })]),
+        el('div', { class: 'cso-mod-card' }, [el('div', { class: 'cso-mod-label', text: 'Last Published' }), el('strong', { text: lastPublishedAt })])
+      ]));
+    }
+
+    function makeRoutePicker(onSelect) {
+      var sel = el('select', { class: 'cso-mod-select' }, [
+        el('option', { value: '', text: '— Verified Route Picker —' })
+      ].concat(verifiedRoutes.map(function (r) { return el('option', { value: r, text: r }); })));
+      sel.addEventListener('change', function () {
+        if (sel.value) { onSelect(sel.value); sel.value = ''; }
+      });
+      return sel;
+    }
+
+    function openR2Picker(onPick) {
+      var box = el('div', { class: 'cso-drawer' });
+      box.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: 'Pick Attachment from R2 Library' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { box.remove(); } })
+      ]));
+      var listHost = el('div', { class: 'cso-mod-muted', text: 'Loading R2 files...' });
+      box.appendChild(listHost);
+      drawerHost.appendChild(box);
+      api('GET', 'media').then(function (d) {
+        clear(listHost);
+        var items = d.media || d.files || d.objects || [];
+        if (!items.length) { listHost.textContent = 'No R2 assets found.'; return; }
+        var g = el('div', { class: 'cso-mod-grid-3' });
+        items.slice(0, 18).forEach(function (it) {
+          var u = it.url || it.public_url || ('/media/' + (it.key || it.name || ''));
+          var n = it.name || it.key || u;
+          g.appendChild(el('div', { class: 'cso-mod-card' }, [
+            el('div', { class: 'cso-mod-label', text: n }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Attach', onclick: function () { onPick(u, n); box.remove(); } })
+          ]));
+        });
+        listHost.appendChild(g);
+      }).catch(function (e) { listHost.textContent = e.message; });
+    }
 
     function renderCards() {
-      clear(grid);
+      clear(leftCol);
 
       // Card 1: Broadcast Banner (/api/admin/banner)
       var bChk = el('input', { type: 'checkbox' }); bChk.checked = !!bannerState.active;
       var bSev = el('select', { class: 'cso-mod-select' }, ['info', 'notice', 'urgent'].map(function (s) { return el('option', { value: s, text: s, selected: bannerState.severity === s }); }));
       var bHead = el('input', { type: 'text', class: 'cso-mod-input', value: bannerState.headline || '' });
+      var bOdia = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Odia Banner Headline (ଓଡ଼ିଆ)', value: bannerState.odia_headline || '' });
+      var bCtx = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Context (e.g. OPSC OAS 2026)', value: bannerState.context || '' });
+      var bCtaTxt = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'CTA Label (e.g. Apply Now)', value: bannerState.ctaText || '' });
       var bUrl = el('input', { type: 'text', class: 'cso-mod-input', value: bannerState.ctaUrl || '' });
-      grid.appendChild(el('div', { class: 'cso-mod-card' }, [
+      var bStart = el('input', { type: 'date', class: 'cso-mod-input', value: bannerState.starts_at ? String(bannerState.starts_at).slice(0, 10) : '' });
+      var bEnd = el('input', { type: 'date', class: 'cso-mod-input', value: bannerState.expires_at ? String(bannerState.expires_at).slice(0, 10) : '' });
+      var bRoutePick = makeRoutePicker(function (v) { bUrl.value = v; bannerState.ctaUrl = v; updatePreview(); });
+
+      [bHead, bOdia, bCtx, bCtaTxt, bUrl, bStart, bEnd].forEach(function (inp) {
+        inp.addEventListener('input', function () {
+          bannerState.headline = bHead.value;
+          bannerState.odia_headline = bOdia.value;
+          bannerState.context = bCtx.value;
+          bannerState.ctaText = bCtaTxt.value;
+          bannerState.ctaUrl = bUrl.value;
+          bannerState.starts_at = bStart.value;
+          bannerState.expires_at = bEnd.value;
+          updatePreview();
+        });
+      });
+      bChk.addEventListener('change', function () { bannerState.active = bChk.checked; updatePreview(); });
+      bSev.addEventListener('change', function () { bannerState.severity = bSev.value; updatePreview(); });
+
+      leftCol.appendChild(el('div', { class: 'cso-mod-card' }, [
         el('div', { class: 'cso-drawer-head' }, [el('h3', { text: 'Broadcast Banner' }), badge('/api/admin/banner', 'info')]),
         el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [bChk, el('span', { text: 'Active across homepage & portals' })])]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), bSev]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline' }), bHead]),
-        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), bUrl]),
+        el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Severity' }), bSev]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Context' }), bCtx]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Headline (English)' }), bHead]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Odia Headline (ଓଡ଼ିଆ)' }), bOdia]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), bCtaTxt]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL + Route Picker' }), bUrl, bRoutePick]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Starts At' }), bStart]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Expires At' }), bEnd])
+        ]),
         el('button', {
           type: 'button',
           class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
           text: 'Save Broadcast Banner',
           onclick: async function () {
             try {
-              await api('PUT', 'banner', { active: bChk.checked, severity: bSev.value, headline: bHead.value.trim(), context: bannerState.context || '', ctaText: bannerState.ctaText || 'View', ctaUrl: bUrl.value.trim() });
+              await api('PUT', 'banner', {
+                active: bChk.checked,
+                severity: bSev.value,
+                headline: bHead.value.trim(),
+                odia_headline: bOdia.value.trim(),
+                context: bCtx.value.trim(),
+                ctaText: bCtaTxt.value.trim() || 'View',
+                ctaUrl: bUrl.value.trim(),
+                starts_at: bStart.value.trim(),
+                expires_at: bEnd.value.trim()
+              });
               toast('Broadcast Banner saved live!', 'success');
             } catch (e) { toast(e.message, 'crimson'); }
           }
         })
       ]));
 
-      // Cards 2-4: /__sitewide sections
-      sections.forEach(function (sec) {
+      // /__sitewide sections
+      sections.forEach(function (sec, idx) {
+        var card = el('div', { class: 'cso-mod-card', draggable: true });
+        card.addEventListener('dragstart', function () { dragIndex = idx; card.classList.add('is-dragging'); });
+        card.addEventListener('dragend', function () { card.classList.remove('is-dragging'); });
+        card.addEventListener('dragover', function (e) { e.preventDefault(); });
+        card.addEventListener('drop', function (e) {
+          e.preventDefault();
+          if (dragIndex < 0 || dragIndex === idx) return;
+          var moved = sections.splice(dragIndex, 1)[0];
+          sections.splice(idx, 0, moved);
+          dragIndex = -1;
+          renderCards();
+          updatePreview();
+        });
+
         var chk = el('input', { type: 'checkbox' }); chk.checked = sec.enabled !== false;
+        var styleSel = el('select', { class: 'cso-mod-select' }, [
+          ['emerald', 'Emerald Brand'],
+          ['amber', 'Amber Alert'],
+          ['slate', 'Slate Neutral'],
+          ['gold', 'Official Gold']
+        ].map(function (st) { return el('option', { value: st[0], text: st[1], selected: (sec.style || 'emerald') === st[0] }); }));
+
+        var visSel = el('select', { class: 'cso-mod-select' }, [
+          ['all', 'All Public Pages'],
+          ['jobs-exams', 'Jobs & Exam Hubs Only (/jobs-careers/*, /study/*)'],
+          ['home-landing', 'Homepage & Landing Hubs Only'],
+          ['custom', 'Custom Include / Exclude Route Rules']
+        ].map(function (v) { return el('option', { value: v[0], text: v[1], selected: (sec.visibility || 'all') === v[0] }); }));
+
+        var inclInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Include routes (comma-separated, e.g. /jobs-careers/*)', value: sec.include_routes || '' });
+        var exclInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Exclude routes (e.g. /privacy-policy.html,/disclaimer.html)', value: sec.exclude_routes || '' });
         var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: sec.title || '' });
-        var txtInp = el('textarea', { class: 'cso-mod-textarea' }); txtInp.value = sec.text || '';
+        var oTInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Odia Title (ଓଡ଼ିଆ)', value: sec.odia_title || '' });
+        var txtInp = el('textarea', { class: 'cso-mod-textarea', value: sec.text || '' });
+        var oTxtInp = el('textarea', { class: 'cso-mod-textarea', placeholder: 'Odia Copy (ଓଡ଼ିଆ)', value: sec.odia_text || '' });
         var lblInp = el('input', { type: 'text', class: 'cso-mod-input', value: sec.label || '' });
         var urlInp = el('input', { type: 'text', class: 'cso-mod-input', value: sec.url || '' });
+        var secLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Secondary Button Label', value: sec.secondary_label || '' });
+        var secUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Secondary Button URL', value: sec.secondary_url || '' });
+        var attLblInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'Attachment Label (e.g. Official PDF)', value: sec.attachment_label || '' });
+        var attUrlInp = el('input', { type: 'text', class: 'cso-mod-input', placeholder: 'R2 PDF / Google Drive URL', value: sec.attachment_url || '' });
 
-        chk.addEventListener('change', function () { sec.enabled = chk.checked; });
-        tInp.addEventListener('input', function () { sec.title = tInp.value; });
-        txtInp.addEventListener('input', function () { sec.text = txtInp.value; });
-        lblInp.addEventListener('input', function () { sec.label = lblInp.value; });
-        urlInp.addEventListener('input', function () { sec.url = urlInp.value; });
+        var priPick = makeRoutePicker(function (v) { urlInp.value = v; sec.url = v; updatePreview(); });
+        var secPick = makeRoutePicker(function (v) { secUrlInp.value = v; sec.secondary_url = v; updatePreview(); });
 
-        grid.appendChild(el('div', { class: 'cso-mod-card' }, [
-          el('div', { class: 'cso-drawer-head' }, [el('h3', { text: sec.name || sec.id }), badge(sec.id, 'ok')]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-check-label' }, [chk, el('span', { text: 'Inject on public pages' })])]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title' }), tInp]),
-          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Body Copy' }), txtInp]),
-          el('div', { class: 'cso-mod-grid-2' }, [
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link Label' }), lblInp]),
-            el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Link URL' }), urlInp])
+        chk.addEventListener('change', function () { sec.enabled = chk.checked; updatePreview(); });
+        styleSel.addEventListener('change', function () { sec.style = styleSel.value; updatePreview(); });
+        visSel.addEventListener('change', function () { sec.visibility = visSel.value; updatePreview(); });
+        inclInp.addEventListener('input', function () { sec.include_routes = inclInp.value; updatePreview(); });
+        exclInp.addEventListener('input', function () { sec.exclude_routes = exclInp.value; updatePreview(); });
+        tInp.addEventListener('input', function () { sec.title = tInp.value; updatePreview(); });
+        oTInp.addEventListener('input', function () { sec.odia_title = oTInp.value; updatePreview(); });
+        txtInp.addEventListener('input', function () { sec.text = txtInp.value; updatePreview(); });
+        oTxtInp.addEventListener('input', function () { sec.odia_text = oTxtInp.value; updatePreview(); });
+        lblInp.addEventListener('input', function () { sec.label = lblInp.value; updatePreview(); });
+        urlInp.addEventListener('input', function () { sec.url = urlInp.value; updatePreview(); });
+        secLblInp.addEventListener('input', function () { sec.secondary_label = secLblInp.value; updatePreview(); });
+        secUrlInp.addEventListener('input', function () { sec.secondary_url = secUrlInp.value; updatePreview(); });
+        attLblInp.addEventListener('input', function () { sec.attachment_label = attLblInp.value; updatePreview(); });
+        attUrlInp.addEventListener('input', function () { sec.attachment_url = attUrlInp.value; updatePreview(); });
+
+        var r2UploadInp = el('input', { type: 'file', class: 'cso-sr-file', accept: '.pdf,.png,.jpg,.jpeg,.webp,.docx' });
+        r2UploadInp.addEventListener('change', async function () {
+          var f = r2UploadInp.files && r2UploadInp.files[0];
+          if (!f) return;
+          try {
+            var fd = new FormData();
+            fd.append('file', f);
+            var up = await api('POST', 'media/upload', fd, true);
+            var u = up.url || up.public_url || ('/media/' + (up.key || f.name));
+            attLblInp.value = f.name;
+            attUrlInp.value = u;
+            sec.attachment_label = f.name;
+            sec.attachment_url = u;
+            updatePreview();
+            toast('Uploaded R2 attachment: ' + f.name, 'success');
+          } catch (e) { toast(e.message, 'crimson'); }
+        });
+
+        var aiPolishBtn = el('button', {
+          type: 'button',
+          class: 'cso-mod-btn cso-mod-btn-sm',
+          text: '✨ AI Polish English + Odia',
+          onclick: async function () {
+            aiPolishBtn.disabled = true;
+            try {
+              var res = await api('POST', 'ai/generate-page', {
+                mode: 'polish_section',
+                topic: (tInp.value || sec.name || sec.id) + ': ' + (txtInp.value || ''),
+                language: 'Bilingual English + Odia'
+              });
+              var gen = res.page || res;
+              if (gen.hero_title || gen.title) { tInp.value = gen.hero_title || gen.title; sec.title = tInp.value; }
+              if (gen.meta_description) { txtInp.value = gen.meta_description; sec.text = txtInp.value; }
+              if (gen.hero_subtitle) { oTxtInp.value = gen.hero_subtitle; sec.odia_text = oTxtInp.value; }
+              updatePreview();
+              toast('AI polished English + Odia copy', 'success');
+            } catch (e) { toast(e.message, 'crimson'); }
+            finally { aiPolishBtn.disabled = false; }
+          }
+        });
+
+        var headerTools = [
+          el('span', { class: 'cso-drag-handle', text: '⋮⋮' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↑', disabled: idx === 0, onclick: function () { var t = sections[idx - 1]; sections[idx - 1] = sections[idx]; sections[idx] = t; renderCards(); updatePreview(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↓', disabled: idx === sections.length - 1, onclick: function () { var t = sections[idx + 1]; sections[idx + 1] = sections[idx]; sections[idx] = t; renderCards(); updatePreview(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Duplicate', onclick: function () { var cp = Object.assign({}, sec, { id: sec.id + '-copy-' + Date.now(), name: (sec.name || sec.id) + ' (Copy)', custom: true }); sections.splice(idx + 1, 0, cp); renderCards(); updatePreview(); } })
+        ];
+        if (sec.custom) {
+          headerTools.push(el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Delete', onclick: function () { sections.splice(idx, 1); renderCards(); updatePreview(); } }));
+        }
+
+        card.appendChild(el('div', { class: 'cso-drawer-head' }, [
+          el('div', {}, [el('h3', { text: sec.name || sec.id }), badge(sec.id, 'ok')]),
+          el('div', { class: 'cso-mod-toolbar' }, headerTools)
+        ]));
+        card.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+          el('label', { class: 'cso-check-label' }, [chk, el('span', { text: 'Enabled' })]),
+          aiPolishBtn
+        ]));
+        card.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Visual Accent Style' }), styleSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Where This Strip Appears' }), visSel]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Include Routes (for Custom)' }), inclInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Exclude Routes' }), exclInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title (English)' }), tInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Odia Title (ଓଡ଼ିଆ)' }), oTInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Body Copy (English)' }), txtInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Odia Copy (ଓଡ଼ିଆ)' }), oTxtInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary Link Label' }), lblInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary Link URL' }), urlInp, priPick]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Secondary Action Label' }), secLblInp]),
+          el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Secondary Action URL' }), secUrlInp, secPick])
+        ]));
+        card.appendChild(el('div', { class: 'cso-mod-card' }, [
+          el('div', { class: 'cso-mod-label', text: 'Optional R2 PDF / Google Drive Attachment' }),
+          el('div', { class: 'cso-mod-grid-2' }, [attLblInp, attUrlInp]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('label', { class: 'cso-mod-btn cso-mod-btn-sm' }, ['Upload PDF to R2', r2UploadInp]),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Pick from R2 Library', onclick: function () { openR2Picker(function (u, n) { attLblInp.value = n; attUrlInp.value = u; sec.attachment_label = n; sec.attachment_url = u; updatePreview(); }); } })
           ])
         ]));
+        leftCol.appendChild(card);
       });
     }
+
+    function renderPreviewPane() {
+      clear(rightCol);
+      var routeSel = el('select', { class: 'cso-mod-select' }, verifiedRoutes.map(function (r) {
+        return el('option', { value: r, text: 'Preview Route: ' + r, selected: previewRoute === r });
+      }));
+      routeSel.addEventListener('change', function () { previewRoute = routeSel.value; updatePreview(); });
+
+      var vpD = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { setVp('desktop'); } });
+      var vpT = el('button', { type: 'button', class: 'cso-pill', text: '768px', onclick: function () { setVp('tablet'); } });
+      var vpM = el('button', { type: 'button', class: 'cso-pill', text: '375px', onclick: function () { setVp('mobile'); } });
+      function setVp(v) {
+        previewViewport = v;
+        vpD.classList.toggle('cso-pill-active', v === 'desktop');
+        vpT.classList.toggle('cso-pill-active', v === 'tablet');
+        vpM.classList.toggle('cso-pill-active', v === 'mobile');
+        previewFrame.className = 'cso-builder-iframe' + (v === 'mobile' ? ' cso-preview-frame-mobile' : '');
+      }
+
+      rightCol.appendChild(el('div', { class: 'cso-mod-card' }, [
+        el('div', { class: 'cso-preview-header-stack' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('strong', { text: 'Real-CSS Sitewide Preview' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Full-Screen Real View', onclick: openFullscreenPreview })
+          ]),
+          routeSel,
+          el('div', { class: 'cso-pill-row' }, [vpD, vpT, vpM])
+        ]),
+        el('div', { class: 'cso-preview-frame-wrap' }, [previewFrame])
+      ]));
+    }
+
+    async function verifyAllLinks() {
+      var urls = [bannerState.ctaUrl].concat(sections.reduce(function (acc, s) {
+        return acc.concat([s.url, s.secondary_url, s.attachment_url]);
+      }, [])).filter(Boolean);
+      if (!urls.length) { toast('No URLs to verify', 'info'); return; }
+      try {
+        var r = await api('POST', 'utils/check-links', { urls: urls });
+        var results = r.results || [];
+        var okCnt = results.filter(function (x) { return x.ok || (x.status >= 200 && x.status < 400); }).length;
+        linkHealthText = okCnt + '/' + results.length + ' (200 OK)';
+        renderKpis();
+        toast('Link check: ' + linkHealthText, okCnt === results.length ? 'success' : 'warn');
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+
+    async function openRollbackDrawer() {
+      clear(drawerHost);
+      var box = el('div', { class: 'cso-drawer' });
+      box.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        el('strong', { text: '10-Snapshot Rollback — /__sitewide' }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+      ]));
+      var listHost = el('div', { class: 'cso-mod-muted', text: 'Loading snapshots...' });
+      box.appendChild(listHost);
+      drawerHost.appendChild(box);
+      try {
+        var res = await api('GET', 'pages/revisions?route=' + encodeURIComponent('/__sitewide'));
+        clear(listHost);
+        var revs = (res && res.revisions) || [];
+        if (!revs.length) { listHost.textContent = 'No snapshots recorded yet.'; return; }
+        revs.slice(0, 10).forEach(function (rv) {
+          listHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+            badge('#' + rv.id, 'info'),
+            el('span', { text: (rv.created_at || '') + ' · ' + (rv.note || 'Snapshot') }),
+            el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary',
+              text: 'Restore',
+              onclick: async function () {
+                try {
+                  await api('POST', 'pages/restore', { route: '/__sitewide', revision_id: rv.id });
+                  toast('Restored snapshot #' + rv.id, 'success');
+                  clear(drawerHost);
+                  await loadSitewide();
+                } catch (e) { toast(e.message, 'crimson'); }
+              }
+            })
+          ]));
+        });
+      } catch (e) { listHost.textContent = e.message; }
+    }
+
+    function openPresetsDrawer() {
+      clear(drawerHost);
+      drawerHost.appendChild(el('div', { class: 'cso-drawer' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('strong', { text: 'Load Odisha Portal Presets' }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(drawerHost); } })
+        ]),
+        el('div', { class: 'cso-mod-grid-3' }, PRESETS.map(function (pr) {
+          return el('div', { class: 'cso-mod-card' }, [
+            el('strong', { text: pr.name }),
+            el('p', { class: 'cso-mod-muted', text: pr.text }),
+            el('button', {
+              type: 'button',
+              class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm',
+              text: '+ Add Preset Strip',
+              onclick: function () {
+                sections.push(Object.assign({}, pr, { id: pr.id + '-' + Date.now(), custom: true }));
+                clear(drawerHost);
+                renderCards();
+                updatePreview();
+              }
+            })
+          ]);
+        }))
+      ]));
+    }
+
+    function addCustomStrip() {
+      sections.push({
+        id: 'custom-strip-' + Date.now(),
+        name: 'Custom Sitewide Strip',
+        custom: true,
+        enabled: true,
+        style: 'emerald',
+        visibility: 'all',
+        exclude_routes: '/privacy-policy.html,/disclaimer.html',
+        title: 'New Odisha Portal Strip',
+        odia_title: 'ନୂତନ ସୂଚନା',
+        text: 'Add verified announcement or promotional copy here.',
+        odia_text: '',
+        label: 'Explore Now',
+        url: '/jobs-careers/',
+        secondary_label: '',
+        secondary_url: ''
+      });
+      renderCards();
+      updatePreview();
+    }
+
+    function exportJson() {
+      var data = JSON.stringify({ exported_at: new Date().toISOString(), banner: bannerState, sections: sections }, null, 2);
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      a.download = 'cso-sitewide-sections.json';
+      a.click();
+    }
+
+    var importInp = el('input', { type: 'file', class: 'cso-sr-file', accept: 'application/json,.json' });
+    importInp.addEventListener('change', function () {
+      var f = importInp.files && importInp.files[0];
+      if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        try {
+          var parsed = JSON.parse(String(rd.result || '{}'));
+          if (Array.isArray(parsed.sections)) sections = parsed.sections;
+          if (parsed.banner) bannerState = Object.assign({}, bannerState, parsed.banner);
+          renderCards();
+          updatePreview();
+          toast('Imported sitewide configuration JSON', 'success');
+        } catch (e) { toast('Invalid JSON: ' + e.message, 'crimson'); }
+      };
+      rd.readAsText(f);
+    });
 
     async function saveSitewide() {
       try {
@@ -6044,6 +6517,8 @@
           reusable_sections_json: JSON.stringify(sections),
           note: 'Updated reusable sitewide sections'
         });
+        lastPublishedAt = new Date().toLocaleTimeString();
+        renderKpis();
         toast('Sitewide sections published live!', 'success');
       } catch (e) {
         toast(e.message, 'crimson');
@@ -6053,25 +6528,55 @@
     async function loadSitewide() {
       try {
         var [sw, b] = await Promise.all([api('GET', 'pages/sitewide'), api('GET', 'banner')]);
-        bannerState = b || bannerState;
+        bannerState = Object.assign({}, bannerState, b || {});
         var saved = Array.isArray(sw.sections) && sw.sections.length ? sw.sections : [];
-        sections = DEFAULT_SECTIONS.map(function (def) {
+        var merged = DEFAULT_SECTIONS.map(function (def) {
           var match = saved.find(function (x) { return x.id === def.id; });
           return match ? Object.assign({}, def, match) : Object.assign({}, def);
         });
-        renderCards();
+        saved.forEach(function (x) {
+          if (!merged.some(function (m) { return m.id === x.id; })) merged.push(Object.assign({ custom: true }, x));
+        });
+        sections = merged;
+        if (sw && sw.updated_at) lastPublishedAt = String(sw.updated_at).slice(0, 16).replace('T', ' ');
       } catch (e) {
         sections = DEFAULT_SECTIONS.map(function (d) { return Object.assign({}, d); });
-        renderCards();
         toast(e.message, 'crimson');
       }
+      try {
+        var [pgs, mts, jbs] = await Promise.all([
+          api('GET', 'pages').catch(function () { return {}; }),
+          api('GET', 'mock-tests').catch(function () { return {}; }),
+          api('GET', 'jobs').catch(function () { return {}; })
+        ]);
+        var set = {};
+        verifiedRoutes.forEach(function (r) { set[r] = true; });
+        ((pgs && pgs.pages) || []).forEach(function (p) { if (p.route && p.route !== '/__sitewide') set[p.route] = true; });
+        ((mts && mts.tests) || []).forEach(function (m) { if (m.slug) set['/mock-tests/?test=' + m.slug] = true; });
+        ((jbs && jbs.jobs) || []).forEach(function (j) { if (j.slug) set['/jobs-careers/?job=' + j.slug] = true; });
+        verifiedRoutes = Object.keys(set);
+      } catch (_r) { /* keep defaults */ }
+      renderCards();
+      renderPreviewPane();
+      updatePreview();
     }
 
-    renderBanner(shell, 'Reusable Sections', 'Edit shared sitewide strips injected across public pages via /__sitewide & /api/admin/banner.', [
+    renderBanner(shell, 'Reusable Sections & Sitewide Strips Studio', 'Manage sitewide strips, page-targeting rules, bilingual Odia copy, R2 attachments, snapshots & real-CSS previews.', [
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary', text: 'Publish All Sitewide Sections Live', onclick: saveSitewide }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: '+ Add Custom Sitewide Strip', onclick: addCustomStrip }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Load Odisha Portal Presets', onclick: openPresetsDrawer }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Verify All Links (200 OK)', onclick: verifyAllLinks }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: '10-Snapshot Rollback', onclick: openRollbackDrawer }),
+      el('button', { type: 'button', class: 'cso-mod-btn', text: 'Export JSON', onclick: exportJson }),
+      el('label', { class: 'cso-mod-btn' }, ['Import JSON', importInp]),
       el('button', { type: 'button', class: 'cso-mod-btn', text: 'Reload', onclick: loadSitewide })
     ]);
-    shell.appendChild(grid);
+    shell.appendChild(kpiHost);
+    shell.appendChild(drawerHost);
+    splitHost.appendChild(leftCol);
+    splitHost.appendChild(rightCol);
+    shell.appendChild(splitHost);
+    shell.appendChild(fullscreenHost);
     root.appendChild(shell);
     loadSitewide();
   }

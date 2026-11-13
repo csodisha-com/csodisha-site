@@ -22,9 +22,31 @@ export async function getSitewide(env) {
   if (!env || !env.DB) return null;
   try { return await env.DB.prepare("SELECT reusable_sections_json FROM site_pages WHERE route = ? AND status = 'published'").bind(SITEWIDE_ROUTE).first(); } catch { return null; }
 }
-export function sitewideHtml(row) {
-  const list = parse(row && row.reusable_sections_json).filter(s => s && s.enabled !== false);
-  return list.map(s => `<section class="cso-sitewide cso-sitewide-${esc(s.id)}"><div class="w">${s.title ? `<strong>${esc(s.title)}</strong> ` : ''}${esc(s.text)}${s.label ? ` <a href="${esc(safeUrl(s.url))}">${esc(s.label)}</a>` : ''}</div></section>`).join('');
+function matchesSitewideRoute(s, currentRoute) {
+  const r = normalizeRoute(currentRoute || '/');
+  const excl = String(s.exclude_routes || '').split(',').map(x => x.trim()).filter(Boolean);
+  if (excl.some(p => r === p || (p.endsWith('*') && r.startsWith(p.slice(0, -1))))) return false;
+  const vis = s.visibility || 'all';
+  if (vis === 'jobs-exams') return r.startsWith('/jobs-careers') || r.startsWith('/study') || r.startsWith('/mock-tests') || r.startsWith('/syllabus');
+  if (vis === 'home-landing') return r === '/' || r.startsWith('/campaign') || r.startsWith('/landing');
+  if (vis === 'custom') {
+    const incl = String(s.include_routes || '').split(',').map(x => x.trim()).filter(Boolean);
+    if (!incl.length) return true;
+    return incl.some(p => r === p || (p.endsWith('*') && r.startsWith(p.slice(0, -1))));
+  }
+  return true;
+}
+
+export function sitewideHtml(row, currentRoute) {
+  const list = parse(row && row.reusable_sections_json).filter(s => s && s.enabled !== false && matchesSitewideRoute(s, currentRoute));
+  return list.map(s => {
+    const styleCls = `cso-sitewide-style-${esc(s.style || 'emerald')}`;
+    const odia = (s.odia_title || s.odia_text) ? `<div class="cso-sitewide-odia">${s.odia_title ? `<strong>${esc(s.odia_title)}</strong> ` : ''}${esc(s.odia_text || '')}</div>` : '';
+    const pri = s.label ? ` <a class="btn btn-primary" href="${esc(safeUrl(s.url))}">${esc(s.label)}</a>` : '';
+    const sec = s.secondary_label ? ` <a class="btn btn-secondary" href="${esc(safeUrl(s.secondary_url))}">${esc(s.secondary_label)}</a>` : '';
+    const att = s.attachment_url ? ` <a class="cso-sitewide-att" href="${esc(safeUrl(s.attachment_url))}">${esc(s.attachment_label || 'Official PDF')}</a>` : '';
+    return `<section class="cso-sitewide cso-sitewide-${esc(s.id)} ${styleCls}"><div class="w">${s.title ? `<strong>${esc(s.title)}</strong> ` : ''}${esc(s.text)}${odia}<span class="cso-sitewide-actions">${pri}${sec}${att}</span></div></section>`;
+  }).join('');
 }
 export async function getPageRedirect(env, pathname) {
   if (!env || !env.DB) return null;
@@ -288,13 +310,13 @@ export function renderDynamicPage(row, sitewide) {
 <body${focused ? ' class="cso-focused-landing"' : ''}><header class="top site-header__top" role="banner"><div class="w"><a href="/" class="brand">Common Sense Odisha</a>
 ${navHtml}</div></header>
 <main id="main">${hero}<div class="w cso-live-body">${renderBlocks(row.blocks_json)}${renderSections(row.reusable_sections_json)}${renderLandingExtras(row)}</div></main>
-${footerHtml}${sitewide ? sitewideHtml(sitewide) : ''}</body></html>`;
+${footerHtml}${sitewide ? sitewideHtml(sitewide, row.route) : ''}</body></html>`;
 }
 
 export function applyPageOverrides(res, row, sitewide) {
   const rw = new HTMLRewriter();
   row = row || {};
-  const sw = sitewide ? sitewideHtml(sitewide) : '';
+  const sw = sitewide ? sitewideHtml(sitewide, row.route) : '';
   if (sw) rw.on('body', { element(e) { e.append(sw, { html: true }); } });
   if (row.title) rw.on('title', { element(e) { e.setInnerContent(row.title); } });
   if (row.meta_description) rw.on('meta[name="description"]', { element(e) { e.setAttribute('content', row.meta_description); } });
