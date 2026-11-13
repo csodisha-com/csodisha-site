@@ -9,7 +9,9 @@
 </head>
 <body class="login-body">
   <main class="login-card" aria-labelledby="t">
-    <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="44">
+    <a href="/" class="cso-login-logo-link" aria-label="Return to Common Sense Odisha Home" title="Return to Common Sense Odisha Home">
+      <img src="/assets/images/cso-logo.svg" alt="Common Sense Odisha" width="130" height="44">
+    </a>
     <h1 id="t">Staff sign-in</h1>
     <p class="muted">Editors and administrators only. Use your CS Odisha account.</p>
     <div id="msg" class="alert" role="alert" hidden></div>
@@ -17,9 +19,20 @@
       <label for="email">Email</label>
       <input id="email" name="email" type="email" autocomplete="username" required>
       <label for="pw">Password</label>
-      <input id="pw" name="password" type="password" autocomplete="current-password" required>
+      <div class="cso-pw-wrap">
+        <input id="pw" name="password" type="password" autocomplete="current-password" required>
+        <button id="togglePw" type="button" class="cso-pw-toggle" aria-label="Show password">Show</button>
+      </div>
+      <p id="capsHint" class="cso-caps-hint" hidden>Caps Lock is on</p>
+      <label class="cso-remember-row">
+        <input id="rememberMe" name="remember_me" type="checkbox">
+        <span>Keep me signed in on this device</span>
+      </label>
       <button class="btn primary block" id="go" type="submit">Sign in</button>
     </form>
+    <div class="cso-login-footer">
+      <a href="/" class="cso-login-home-link" title="Return to Common Sense Odisha Public Portal">← Back to Common Sense Odisha Home</a>
+    </div>
   </main>
   <script src="/admin/cms/login.js"></script>
 </body>
