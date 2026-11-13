@@ -55,7 +55,7 @@
     banner.setAttribute('aria-label', 'Install CSO App');
 
     const left = el('div', 'cso-pwa-banner-left');
-    const logo = el('img', 'cso-pwa-banner-logo');
+    const logo = el('img', 'cso-pwa-banner-icon');
     logo.src = '/assets/favicon.svg';
     logo.alt = 'CSO Logo';
 
@@ -68,7 +68,7 @@
     left.appendChild(copy);
 
     const actions = el('div', 'cso-pwa-banner-actions');
-    const dismissBtn = el('button', 'cso-pwa-btn-dismiss', 'Later');
+    const dismissBtn = el('button', 'cso-pwa-btn-later', 'Later');
     dismissBtn.type = 'button';
     dismissBtn.id = 'cso-pwa-btn-dismiss';
 
