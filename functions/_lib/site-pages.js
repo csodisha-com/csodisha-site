@@ -74,12 +74,21 @@ export function buildJsonLd(row, blocks) {
     ]
   };
   const out = [crumbs];
-  const faqs = list.filter(b => b && b.type === 'faq');
+  const faqs = list.filter(b => b && !b.hidden && b.type === 'faq');
   if (faqs.length) {
     const mainEntity = [];
     faqs.forEach(f => {
-      if (f.question && f.answer) {
+      if (Array.isArray(f.rows) && f.rows.length) {
+        f.rows.forEach(r => {
+          if (r && r.question && r.answer) mainEntity.push({ '@type': 'Question', name: r.question, acceptedAnswer: { '@type': 'Answer', text: r.answer } });
+        });
+      } else if (f.question && f.answer) {
         mainEntity.push({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } });
+      } else if (Array.isArray(f.items) && f.items.length) {
+        f.items.forEach(i => {
+          const [q, a] = String(i).split('|');
+          if ((q || '').trim() && (a || '').trim()) mainEntity.push({ '@type': 'Question', name: q.trim(), acceptedAnswer: { '@type': 'Answer', text: a.trim() } });
+        });
       } else if (f.title && f.text) {
         mainEntity.push({ '@type': 'Question', name: f.title, acceptedAnswer: { '@type': 'Answer', text: f.text } });
       }
@@ -91,38 +100,62 @@ export function buildJsonLd(row, blocks) {
 
 export function renderBlocks(blocks) {
   return parse(typeof blocks === 'string' ? blocks : JSON.stringify(blocks || [])).map(b => {
-    const t = b && b.type;
+    if (!b || b.hidden) return '';
+    const t = b.type;
     if (t === 'og_meta' || t === 'page_meta') return '';
+    const surf = ['elevated', 'accent'].includes(b.surface) ? b.surface : 'default';
+    const sp = ['compact', 'spacious'].includes(b.spacing) ? b.spacing : 'normal';
+    const wrap = inner => `<div class="cso-blk cso-blk-surface-${surf} cso-blk-space-${sp}">${inner}</div>`;
     const text = esc(b.text || b.body || b.title || b.heading || '');
-    if (t === 'heading') return `<h2>${text}</h2>`;
-    if (t === 'list') return `<ul>${(Array.isArray(b.items) ? b.items : String(b.text || '').split('\n')).filter(Boolean).map(i => `<li>${esc(i)}</li>`).join('')}</ul>`;
-    if (t === 'image') return b.url ? `<figure class="cso-live-figure"><img src="${esc(safeUrl(b.url))}" alt="${esc(b.alt || b.title || '')}" loading="lazy">${b.title ? `<figcaption>${esc(b.title)}</figcaption>` : ''}</figure>` : '';
+    if (t === 'heading') return wrap(`<h2>${text}</h2>`);
+    if (t === 'list') return wrap(`<ul>${(Array.isArray(b.items) ? b.items : String(b.text || '').split('\n')).filter(Boolean).map(i => `<li>${esc(i)}</li>`).join('')}</ul>`);
+    if (t === 'image') return b.url ? wrap(`<figure class="cso-live-figure"><img src="${esc(safeUrl(b.url))}" alt="${esc(b.alt || b.title || '')}" loading="lazy">${b.title ? `<figcaption>${esc(b.title)}</figcaption>` : ''}</figure>`) : '';
     if (t === 'attachment') {
       const u = safeUrl(b.url);
       const nt = b.new_tab !== false ? ' target="_blank" rel="noopener noreferrer"' : '';
       const badge = esc(b.role || b.source_label || 'Document');
-      return `<div class="cso-live-attachment"><span class="cso-live-badge">${badge}</span> <strong>${esc(b.title || 'Resource')}</strong>${b.domain ? ` <span class="cso-live-domain">(${esc(b.domain)})</span>` : ''} <a class="btn btn-primary" href="${esc(u)}"${nt}>Open / Download</a></div>`;
+      return wrap(`<div class="cso-live-attachment"><span class="cso-live-badge">${badge}</span> <strong>${esc(b.title || 'Resource')}</strong>${b.domain ? ` <span class="cso-live-domain">(${esc(b.domain)})</span>` : ''} <a class="btn btn-primary" href="${esc(u)}"${nt}>Open / Download</a></div>`);
     }
-    if (t === 'official_links') return `<aside class="cso-live-notice"><strong>${esc(b.title || b.heading || 'Official Links')}</strong><p>${esc(b.text || b.body || '')}</p>${b.url ? `<p><a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>` : ''}</aside>`;
+    if (t === 'attachments') {
+      const list = Array.isArray(b.items) ? b.items : (Array.isArray(b.rows) ? b.rows : []);
+      const lis = list.map(a => `<div class="cso-live-attachment"><span class="cso-live-badge">${esc(a.source_label || a.role || 'Link')}</span> <strong>${esc(a.title || a.label || 'Resource')}</strong> <a class="btn btn-primary" href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer">Open / Download</a></div>`).join('');
+      return wrap(`<section class="cso-live-attachments">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${lis}</section>`);
+    }
+    if (t === 'official_links') return wrap(`<aside class="cso-live-notice"><strong>${esc(b.title || b.heading || 'Official Links')}</strong><p>${esc(b.text || b.body || '')}</p>${b.url ? `<p><a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>` : ''}</aside>`);
     if (t === 'key_dates') {
       const rows = Array.isArray(b.rows) ? b.rows : [];
       const tbl = rows.length ? `<table><tbody>${rows.map(r => `<tr><th>${esc(r.label)}</th><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table>` : `<p>${esc(b.text || b.body || '')}</p>`;
-      return `<section class="cso-live-notice"><h2>${esc(b.title || b.heading || 'Key Dates')}</h2>${tbl}</section>`;
+      return wrap(`<section class="cso-live-notice"><h2>${esc(b.title || b.heading || 'Key Dates')}</h2>${tbl}</section>`);
     }
-    if (t === 'cta') return `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label || b.text || 'Learn more')}</a></p>`;
+    if (t === 'cta') return wrap(`<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label || b.text || 'Learn more')}</a></p>`);
     const items = Array.isArray(b.items) ? b.items : String(b.items || '').split('\n').filter(Boolean);
-    if (t === 'hero') return `<section class="cso-live-hero-block"><h2>${esc(b.title || b.heading)}</h2>${(b.text || b.body) ? `<p>${esc(b.text || b.body)}</p>` : ''}${b.label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label)}</a></p>` : ''}</section>`;
-    if (t === 'ticker') return `<section class="cso-live-ticker"><h2>${esc(b.title || 'Latest Jobs')}</h2><p><a href="/jobs-careers/">View all live job notifications</a></p></section>`;
-    if (t === 'examgrid') return `<section><h2>${esc(b.title)}</h2><ul class="cso-live-grid">${items.map(i => { const [l, u] = String(i).split('|'); return `<li><a href="${esc(safeUrl((u || '').trim()))}">${esc((l || '').trim())}</a></li>`; }).join('')}</ul></section>`;
-    if (t === 'cbt') return `<section class="cso-live-cbt"><h2>${esc(b.title)}</h2><p>${esc(b.text)}</p><p><a class="btn btn-primary" href="${esc(safeUrl(b.url || '/mock-tests/'))}">${esc(b.label || 'Start mock test')}</a></p></section>`;
-    if (t === 'faq') {
-      if (b.question && b.answer) return `<section><details open><summary>${esc(b.question)}</summary><p>${esc(b.answer)}</p></details></section>`;
-      return `<section><h2>${esc(b.title || b.heading || 'FAQ')}</h2>${items.length ? items.map(i => { const [q, a] = String(i).split('|'); return `<details><summary>${esc((q || '').trim())}</summary><p>${esc((a || '').trim())}</p></details>`; }).join('') : `<p>${esc(b.text || b.body || '')}</p>`}</section>`;
+    if (t === 'hero') return wrap(`<section class="cso-live-hero-block">${b.image_url ? `<img src="${esc(safeUrl(b.image_url))}" alt="${esc(b.title || '')}" loading="lazy">` : ''}<h2>${esc(b.title || b.heading)}</h2>${b.odia_subtitle ? `<p class="cso-live-odia">${esc(b.odia_subtitle)}</p>` : ''}${(b.text || b.body) ? `<p>${esc(b.text || b.body)}</p>` : ''}${b.label ? `<p><a class="btn btn-primary" href="${esc(safeUrl(b.url))}">${esc(b.label)}</a></p>` : ''}</section>`);
+    if (t === 'ticker') return wrap(`<section class="cso-live-ticker"><h2>${esc(b.title || 'Latest Jobs')}</h2><p><a href="/jobs-careers/">View all live job notifications</a></p></section>`);
+    if (t === 'examgrid' || t === 'exam_grid') {
+      const cards = Array.isArray(b.cards) && b.cards.length ? b.cards : null;
+      const body = cards
+        ? `<ul class="cso-live-grid">${cards.map(c => `<li><a href="${esc(safeUrl(c.url || '/'))}"><strong>${esc(c.title || '')}</strong>${c.badge ? ` <span class="cso-live-badge">${esc(c.badge)}</span>` : ''}${c.summary ? `<p>${esc(c.summary)}</p>` : ''}</a></li>`).join('')}</ul>`
+        : `<ul class="cso-live-grid">${items.map(i => { const [l, u] = String(i).split('|'); return `<li><a href="${esc(safeUrl((u || '').trim()))}">${esc((l || '').trim())}</a></li>`; }).join('')}</ul>`;
+      return wrap(`<section><h2>${esc(b.title || 'Exam Portals')}</h2>${body}</section>`);
     }
-    if (t === 'notice') return `<aside class="cso-live-notice" role="note"><strong>${esc(b.title || b.heading)}</strong><p>${esc(b.text || b.body)}</p></aside>`;
-    if (t === 'richtext') return `${(b.title || b.heading) ? `<h2>${esc(b.title || b.heading)}</h2>` : ''}${String(b.text || b.body || '').split(/\n{2,}/).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('')}`;
-    if (t === 'quote') return `<blockquote>${text}</blockquote>`;
-    return text ? `<p>${text}</p>` : '';
+    if (t === 'cbt') {
+      const cards = Array.isArray(b.cards) && b.cards.length ? b.cards : null;
+      const body = cards
+        ? `<ul class="cso-live-grid">${cards.map(c => `<li><a href="${esc(safeUrl(c.url || '/mock-tests/'))}"><strong>${esc(c.title || '')}</strong>${c.badge ? ` <span class="cso-live-badge">${esc(c.badge)}</span>` : ''}${c.summary ? `<p>${esc(c.summary)}</p>` : ''}</a></li>`).join('')}</ul>`
+        : `<p>${esc(b.text || '')}</p><p><a class="btn btn-primary" href="${esc(safeUrl(b.url || '/mock-tests/'))}">${esc(b.label || 'Start mock test')}</a></p>`;
+      return wrap(`<section class="cso-live-cbt"><h2>${esc(b.title || 'CBT Mock Tests')}</h2>${body}</section>`);
+    }
+    if (t === 'faq') {
+      if (Array.isArray(b.rows) && b.rows.length) {
+        return wrap(`<section><h2>${esc(b.title || b.heading || 'FAQ')}</h2>${b.rows.map(r => `<details><summary>${esc(r.question || '')}</summary><p>${esc(r.answer || '')}</p></details>`).join('')}</section>`);
+      }
+      if (b.question && b.answer) return wrap(`<section><details open><summary>${esc(b.question)}</summary><p>${esc(b.answer)}</p></details></section>`);
+      return wrap(`<section><h2>${esc(b.title || b.heading || 'FAQ')}</h2>${items.length ? items.map(i => { const [q, a] = String(i).split('|'); return `<details><summary>${esc((q || '').trim())}</summary><p>${esc((a || '').trim())}</p></details>`; }).join('') : `<p>${esc(b.text || b.body || '')}</p>`}</section>`);
+    }
+    if (t === 'notice') return wrap(`<aside class="cso-live-notice" role="note"><strong>${esc(b.title || b.heading)}</strong><p>${esc(b.text || b.body)}</p></aside>`);
+    if (t === 'richtext' || t === 'rich_text') return wrap(`${(b.title || b.heading) ? `<h2>${esc(b.title || b.heading)}</h2>` : ''}${String(b.text || b.body || '').split(/\n{2,}/).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('')}`);
+    if (t === 'quote') return wrap(`<blockquote>${text}</blockquote>`);
+    return text ? wrap(`<p>${text}</p>`) : '';
   }).join('\n');
 }
 export function renderSections(sections) {

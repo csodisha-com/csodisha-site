@@ -2394,9 +2394,10 @@
      02-003: Visual Page Builder (Live /api/admin/pages + 7 Rich Block Types)
      ------------------------------------------------------------------------- */
   function renderVisualPageBuilder(root, actions) {
-    addHeaderPill(actions, '● Live Visual Builder');
+    addHeaderPill(actions, '● Live Visual Studio');
     var shell = el('div', { class: 'cso-mod-shell' });
     var viewport = 'desktop';
+    var canvasMode = 'live';
     var pagesMap = {};
     var currentRoute = f02State.builderRoute || '/custom-portal/';
     f02State.builderRoute = null;
@@ -2414,33 +2415,230 @@
       cta_url: tpl ? tpl.cta_url : ''
     };
     var blocks = tpl ? JSON.parse(JSON.stringify(tpl.blocks || [])) : [
-      { type: 'hero', title: 'Odisha Government Jobs & Exam Portal', text: 'Verified recruitment alerts, syllabus PDFs, and CBT mock tests.', label: 'Explore Jobs', url: '/jobs-careers/' },
+      { type: 'hero', title: 'Odisha Government Jobs & Exam Portal', odia_subtitle: 'ଓଡ଼ିଶା ସରକାରୀ ଚାକିରି ଓ ପରୀକ୍ଷା ପୋର୍ଟାଲ୍', text: 'Verified recruitment alerts, syllabus PDFs, and CBT mock tests.', label: 'Explore Jobs', url: '/jobs-careers/' },
       { type: 'ticker', title: 'Latest Odisha Job Notifications' },
       { type: 'cbt', title: 'Start Free CBT Mock Tests', text: 'Practice bilingual Odia & English papers with instant explanations.', label: 'Launch Tests', url: '/mock-tests/' }
     ];
     if (tpl) currentRoute = '/' + tpl.id + '/';
+
+    var DRAFT_KEY = 'cso_builder_draft';
+    var draftTimer = null;
+    var verifiedLinks = [
+      { url: '/jobs-careers/', label: 'Portal: Jobs & Careers' },
+      { url: '/current-affairs/', label: 'Portal: Current Affairs' },
+      { url: '/mock-tests/', label: 'Portal: Mock Tests' },
+      { url: '/resources/', label: 'Portal: Resources' },
+      { url: '/syllabus/', label: 'Portal: Syllabus' }
+    ];
+    var r2Images = [];
+    var dragFromIdx = null;
 
     var pageSelect = el('select', { class: 'cso-mod-select' }, [el('option', { value: '__CUSTOM__', text: '+ Custom / New Route' })]);
     var routeInput = el('input', { type: 'text', class: 'cso-mod-input', value: currentRoute, placeholder: '/my-route/' });
     var canvasEl = el('div', { class: 'cso-builder-viewport-desktop' });
     var propHost = el('div', { class: 'cso-mod-card' });
     var metaHost = el('div', { class: 'cso-mod-card' });
+    var recoveryHost = el('div', {});
+    var validationHost = el('div', {});
+    var revisionHost = el('div', {});
+    var fullscreenHost = el('div', {});
     var openLiveLink = el('a', { href: currentRoute, target: '_blank', rel: 'noopener noreferrer', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Open Live ↗' });
     var selectedIdx = 0;
 
     var BLOCK_TYPES = [
-      { type: 'hero', label: 'Hero', def: { type: 'hero', title: 'Hero Headline', text: 'Supporting description for aspirants.', label: 'Explore', url: '/jobs-careers/' } },
+      { type: 'hero', label: 'Hero', def: { type: 'hero', title: 'Hero Headline', odia_subtitle: '', text: 'Supporting description for aspirants.', label: 'Explore', url: '/jobs-careers/' } },
       { type: 'ticker', label: 'Live Job Ticker', def: { type: 'ticker', title: 'Latest Odisha Govt Jobs' } },
-      { type: 'examgrid', label: 'Exam Grid', def: { type: 'examgrid', title: 'Exam Portals', items: ['OSSC CGL|/jobs-careers/', 'OPSC OAS|/syllabus/', 'Mock Tests|/mock-tests/'] } },
-      { type: 'cbt', label: 'CBT Card', def: { type: 'cbt', title: 'Practice CBT Mock Test', text: 'Timed bilingual practice paper.', label: 'Start CBT', url: '/mock-tests/' } },
-      { type: 'faq', label: 'FAQ Accordion', def: { type: 'faq', title: 'Frequently Asked Questions', items: ['How to apply?|Visit the official commission link.', 'Is it free?|Yes, 100% free for candidates.'] } },
+      { type: 'examgrid', label: 'Exam Grid', def: { type: 'examgrid', title: 'Exam Portals', cards: [{ title: 'OSSC CGL 2026', badge: 'Live', url: '/jobs-careers/', summary: 'Latest recruitment & syllabus' }, { title: 'OPSC OAS', badge: 'Guide', url: '/syllabus/', summary: 'Prelims & Mains roadmap' }] } },
+      { type: 'cbt', label: 'CBT Card', def: { type: 'cbt', title: 'Practice CBT Mock Test', text: 'Timed bilingual practice paper.', label: 'Start CBT', url: '/mock-tests/', cards: [{ title: 'Odisha GK Mock #1', badge: 'Free', url: '/mock-tests/', summary: '100 Qs · Bilingual' }] } },
+      { type: 'key_dates', label: 'Key Dates Table', def: { type: 'key_dates', title: 'Important Dates', rows: [{ label: 'Notification Release', value: 'Published' }, { label: 'Last Date', value: 'TBD' }] } },
+      { type: 'faq', label: 'FAQ Accordion', def: { type: 'faq', title: 'Frequently Asked Questions', rows: [{ question: 'How to apply?', answer: 'Visit the official commission link.' }, { question: 'Is it free?', answer: 'Yes, 100% free for candidates.' }] } },
+      { type: 'attachments', label: 'Official / Drive Downloads', def: { type: 'attachments', title: 'Official Documents & Drive Links', items: [{ title: 'Official Notification PDF', source_label: 'Official Portal', url: 'https://odisha.gov.in' }] } },
       { type: 'notice', label: 'Notice Callout', def: { type: 'notice', title: 'Official Notice', text: 'Verify dates and roll numbers on the official portal.' } },
-      { type: 'richtext', label: 'Rich Text', def: { type: 'richtext', text: 'Write multi-paragraph guidance here.\n\nSeparate paragraphs with a blank line.' } }
+      { type: 'richtext', label: 'Rich Text', def: { type: 'richtext', title: 'Detailed Overview', text: 'Write multi-paragraph guidance here.\n\nSeparate paragraphs with a blank line.' } }
     ];
+
+    var SECTION_BLUEPRINTS = {
+      exam_hub: [
+        { type: 'hero', title: 'Odisha Competitive Exam Hub 2026', odia_subtitle: 'ଓଡ଼ିଶା ପ୍ରତିଯୋଗିତାମୂଳକ ପରୀକ୍ଷା ହବ୍', text: 'Unified portal for OPSC, OSSC, and OSSSC notifications, syllabus & mock tests.', label: 'Browse Jobs', url: '/jobs-careers/' },
+        { type: 'examgrid', title: 'Major Commissions', cards: [{ title: 'OPSC OAS / OCS', badge: 'Prelims', url: '/jobs-careers/', summary: 'Civil Services updates' }, { title: 'OSSC CGLRE', badge: 'Active', url: '/mock-tests/', summary: 'Graduate level CBT' }] },
+        { type: 'key_dates', title: '2026 Exam Calendar', rows: [{ label: 'OPSC Prelims', value: 'Expected Q2 2026' }, { label: 'OSSC CGL', value: 'Check Official Portal' }] },
+        { type: 'faq', title: 'Candidate FAQs', rows: [{ question: 'Are mock tests bilingual?', answer: 'Yes, both English and Odia are supported.' }] }
+      ],
+      cbt_landing: [
+        { type: 'hero', title: 'Free Odisha CBT Mock Test Series', odia_subtitle: 'ମାଗଣା ଅନଲାଇନ୍ CBT ମକ୍ ଟେଷ୍ଟ', text: 'Real exam interface with negative marking and instant rank leaderboard.', label: 'Launch Mock Tests', url: '/mock-tests/' },
+        { type: 'cbt', title: 'Featured Mock Series', cards: [{ title: 'OSSC CGL Full Mock', badge: '150 Qs', url: '/mock-tests/', summary: 'Math, Reasoning, GK & Computer' }, { title: 'Odisha Current Affairs', badge: 'Weekly', url: '/current-affairs/', summary: 'State & National highlights' }] },
+        { type: 'notice', title: 'Scoring Rules', text: '+1.0 for correct answers, -0.25 negative marking per wrong response.' }
+      ],
+      scheme_portal: [
+        { type: 'hero', title: 'Odisha Govt Welfare & Student Schemes', odia_subtitle: 'ଓଡ଼ିଶା ସରକାରୀ ଯୋଜନା ଓ ବୃତ୍ତି', text: 'Eligibility rules, documents checklist & verified official portal links.', label: 'View Resources', url: '/resources/' },
+        { type: 'key_dates', title: 'Application Windows', rows: [{ label: 'Fresh Registration', value: 'Open' }, { label: 'Renewal Window', value: 'Check Portal' }] },
+        { type: 'attachments', title: 'Official Portals', items: [{ title: 'State Scholarship Portal', source_label: 'Official Portal', url: 'https://scholarship.odisha.gov.in' }] }
+      ],
+      institutional: [
+        { type: 'hero', title: 'Editorial & Verification Standards', text: 'How Common Sense Odisha verifies official Odisha commission notices.', label: 'Contact Us', url: '/contact.html' },
+        { type: 'richtext', title: '3-Step Verification Process', text: 'Every recruitment notice and answer key is verified directly against official .gov.in PDFs.' },
+        { type: 'faq', title: 'Policy Questions', rows: [{ question: 'How to report an error?', answer: 'Use the Contact page with the notice reference number.' }] }
+      ]
+    };
+
+    var vpDeskBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Desktop', onclick: function () { setViewport('desktop'); } });
+    var vpTabBtn = el('button', { type: 'button', class: 'cso-pill', text: '768px', onclick: function () { setViewport('tablet'); } });
+    var vpMobBtn = el('button', { type: 'button', class: 'cso-pill', text: '375px', onclick: function () { setViewport('mobile'); } });
+    var modeLiveBtn = el('button', { type: 'button', class: 'cso-pill cso-pill-active', text: 'Real-CSS Live View', onclick: function () { canvasMode = 'live'; syncModeBtns(); renderCanvas(); } });
+    var modeOutlineBtn = el('button', { type: 'button', class: 'cso-pill', text: 'Block Outline', onclick: function () { canvasMode = 'outline'; syncModeBtns(); renderCanvas(); } });
+
+    function syncModeBtns() {
+      modeLiveBtn.classList.toggle('cso-pill-active', canvasMode === 'live');
+      modeOutlineBtn.classList.toggle('cso-pill-active', canvasMode === 'outline');
+    }
 
     function setViewport(vp) {
       viewport = vp;
       canvasEl.className = 'cso-builder-viewport-' + vp;
+      vpDeskBtn.classList.toggle('cso-pill-active', vp === 'desktop');
+      vpTabBtn.classList.toggle('cso-pill-active', vp === 'tablet');
+      vpMobBtn.classList.toggle('cso-pill-active', vp === 'mobile');
+    }
+
+    function scheduleDraftSave() {
+      if (draftTimer) clearTimeout(draftTimer);
+      draftTimer = setTimeout(function () {
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({ route: currentRoute, pageMeta: pageMeta, blocks: blocks, savedAt: new Date().toISOString() }));
+        } catch (_) {}
+      }, 600);
+    }
+
+    function runBuilderValidation() {
+      clear(validationHost);
+      var errs = [];
+      var r = f02NormalizeRoute(routeInput.value || currentRoute);
+      if (!r || r === '/' || !/^\/[a-z0-9\-\/]+$/i.test(r)) errs.push('Invalid target route');
+      blocks.forEach(function (b, idx) {
+        if (b.hidden) return;
+        var hasTxt = (b.title || b.heading || '').trim() || (b.text || b.body || '').trim() ||
+          (Array.isArray(b.cards) && b.cards.length) || (Array.isArray(b.rows) && b.rows.length) ||
+          (Array.isArray(b.items) && b.items.length);
+        if (!hasTxt) errs.push('Block #' + (idx + 1) + ' (' + b.type + ') is empty');
+        if (b.url && b.url.indexOf('/') !== 0 && !/^https?:\/\//i.test(b.url)) errs.push('Block #' + (idx + 1) + ' has malformed URL');
+      });
+      if (!errs.length) {
+        validationHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, [badge('Builder Gate: Valid ✓ (' + blocks.length + ' blocks)', 'ok')]));
+      } else {
+        validationHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, errs.map(function (m) { return badge('⚠ ' + m, 'warn'); })));
+      }
+    }
+
+    function buildBuilderPreviewHtml() {
+      var escH = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      };
+      var safeU = function (u) {
+        var s = String(u || '').trim();
+        return (s.indexOf('/') === 0 && s.indexOf('//') !== 0) || /^https?:\/\//i.test(s) ? s : '#';
+      };
+      var sections = blocks.map(function (b, idx) {
+        if (!b || b.hidden) return '';
+        var surf = b.surface ? ' cso-blk-surface-' + escH(b.surface) : '';
+        var sp = b.spacing ? ' cso-blk-space-' + escH(b.spacing) : '';
+        var inner = '';
+        if (b.type === 'hero') {
+          inner = (b.image_url ? '<img src="' + escH(safeU(b.image_url)) + '" alt="' + escH(b.title || '') + '">' : '') +
+            '<h1>' + escH(b.title || 'Hero') + '</h1>' +
+            (b.odia_subtitle ? '<p class="odia-sub">' + escH(b.odia_subtitle) + '</p>' : '') +
+            '<p>' + escH(b.text || b.body || '') + '</p>' +
+            (b.label ? '<p><a class="btn primary" href="' + escH(safeU(b.url)) + '">' + escH(b.label) + '</a></p>' : '');
+        } else if (b.type === 'examgrid' || b.type === 'exam_grid' || b.type === 'cbt') {
+          var cards = Array.isArray(b.cards) && b.cards.length ? b.cards : null;
+          inner = '<h2>' + escH(b.title || b.type) + '</h2>' + (b.text ? '<p>' + escH(b.text) + '</p>' : '') +
+            (cards ? '<ul>' + cards.map(function (c) {
+              return '<li><a href="' + escH(safeU(c.url)) + '"><strong>' + escH(c.title) + '</strong>' + (c.badge ? ' [' + escH(c.badge) + ']' : '') + '</a>' + (c.summary ? ' — ' + escH(c.summary) : '') + '</li>';
+            }).join('') + '</ul>' : '');
+        } else if (b.type === 'key_dates') {
+          var rows = Array.isArray(b.rows) ? b.rows : [];
+          inner = '<h2>' + escH(b.title || 'Key Dates') + '</h2><table><tbody>' + rows.map(function (r) {
+            return '<tr><th>' + escH(r.label) + '</th><td>' + escH(r.value) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+        } else if (b.type === 'faq') {
+          var frows = Array.isArray(b.rows) ? b.rows : [];
+          inner = '<h2>' + escH(b.title || 'FAQ') + '</h2>' + frows.map(function (r) {
+            return '<details open><summary>' + escH(r.question) + '</summary><p>' + escH(r.answer) + '</p></details>';
+          }).join('');
+        } else if (b.type === 'attachments') {
+          var aitems = Array.isArray(b.items) ? b.items : [];
+          inner = '<h2>' + escH(b.title || 'Downloads') + '</h2><ul>' + aitems.map(function (a) {
+            return '<li><strong>' + escH(a.title) + '</strong> (' + escH(a.source_label || 'Link') + ') — <a href="' + escH(safeU(a.url)) + '">' + escH(a.url) + '</a></li>';
+          }).join('') + '</ul>';
+        } else {
+          inner = (b.title ? '<h2>' + escH(b.title) + '</h2>' : '') + '<p>' + escH(b.text || b.body || '') + '</p>';
+        }
+        return '<section class="card' + surf + sp + '" data-block-idx="' + idx + '">' + inner + '</section>';
+      }).join('');
+      return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + escH(pageMeta.title || currentRoute) + '</title>' +
+        '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/site.css">' +
+        '</head><body><main class="container">' + sections + '</main></body></html>';
+    }
+
+    function wireBuilderIframeClick(iframeEl) {
+      iframeEl.addEventListener('load', function () {
+        try {
+          var doc = iframeEl.contentDocument;
+          if (!doc) return;
+          doc.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            var hit = ev.target && ev.target.closest ? ev.target.closest('[data-block-idx]') : null;
+            if (hit) {
+              selectedIdx = Number(hit.getAttribute('data-block-idx')) || 0;
+              clear(fullscreenHost);
+              renderInspector();
+              if (canvasMode === 'outline') renderCanvas();
+              toast('Selected block #' + (selectedIdx + 1) + ' in Inspector', 'info');
+            }
+          });
+        } catch (_) {}
+      });
+    }
+
+    function openBuilderFullScreen() {
+      clear(fullscreenHost);
+      var fsMode = viewport;
+      var fsFrame = el('iframe', {
+        class: 'cso-fullscreen-frame' + (fsMode === 'tablet' ? ' is-tablet' : fsMode === 'mobile' ? ' is-mobile' : ''),
+        sandbox: 'allow-same-origin',
+        title: 'Visual Builder Full-Screen Preview'
+      });
+      fsFrame.srcdoc = buildBuilderPreviewHtml();
+      wireBuilderIframeClick(fsFrame);
+      var bD = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'desktop' ? ' cso-pill-active' : ''), text: 'Desktop 100%', onclick: function () { setFs('desktop'); } });
+      var bT = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'tablet' ? ' cso-pill-active' : ''), text: 'Tablet 768px', onclick: function () { setFs('tablet'); } });
+      var bM = el('button', { type: 'button', class: 'cso-pill' + (fsMode === 'mobile' ? ' cso-pill-active' : ''), text: 'Mobile 375px', onclick: function () { setFs('mobile'); } });
+      function setFs(m) {
+        fsMode = m;
+        bD.classList.toggle('cso-pill-active', m === 'desktop');
+        bT.classList.toggle('cso-pill-active', m === 'tablet');
+        bM.classList.toggle('cso-pill-active', m === 'mobile');
+        fsFrame.className = 'cso-fullscreen-frame' + (m === 'tablet' ? ' is-tablet' : m === 'mobile' ? ' is-mobile' : '');
+      }
+      function closeFs() { document.removeEventListener('keydown', onEsc); clear(fullscreenHost); }
+      function onEsc(e) { if (e.key === 'Escape') closeFs(); }
+      document.addEventListener('keydown', onEsc);
+      fullscreenHost.appendChild(el('div', { class: 'cso-fullscreen-overlay' }, [
+        el('div', { class: 'cso-drawer-head' }, [
+          el('div', { class: 'cso-mod-toolbar' }, [
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '← Back to Editor', onclick: closeFs }),
+            el('strong', { text: 'Full-Screen Real View (Click any block to select it in Inspector)' })
+          ]),
+          el('div', { class: 'cso-mod-toolbar' }, [
+            bD, bT, bM,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Save Draft', onclick: function () { closeFs(); saveBuilder('draft'); } }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Publish Live', onclick: function () { closeFs(); saveBuilder('published'); } })
+          ])
+        ]),
+        el('div', { class: 'cso-fullscreen-stage' }, [fsFrame])
+      ]));
     }
 
     function renderMetaCard() {
@@ -2448,15 +2646,55 @@
       metaHost.appendChild(el('h4', { text: 'Page Route & SEO' }));
       var tInp = el('input', { type: 'text', class: 'cso-mod-input', value: pageMeta.title || '' });
       var dInp = el('input', { type: 'text', class: 'cso-mod-input', value: pageMeta.meta_description || '' });
-      tInp.addEventListener('input', function () { pageMeta.title = tInp.value; });
-      dInp.addEventListener('input', function () { pageMeta.meta_description = dInp.value; });
+      tInp.addEventListener('input', function () { pageMeta.title = tInp.value; scheduleDraftSave(); });
+      dInp.addEventListener('input', function () { pageMeta.meta_description = dInp.value; scheduleDraftSave(); });
       routeInput.addEventListener('input', function () {
         currentRoute = f02NormalizeRoute(routeInput.value);
         openLiveLink.setAttribute('href', currentRoute);
+        runBuilderValidation();
+        scheduleDraftSave();
       });
       metaHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Target Route' }), routeInput]));
       metaHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Page Title' }), tInp]));
       metaHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Meta Description' }), dInp]));
+    }
+
+    async function runBlockAi(mode) {
+      var b = blocks[selectedIdx];
+      if (!b) return;
+      toast('Running AI (' + mode + ') on block…', 'info');
+      try {
+        var res = await api('POST', 'ai/generate-page', {
+          mode: mode,
+          topic: b.title || pageMeta.title || currentRoute,
+          existing: {
+            title: b.title || pageMeta.title,
+            route: currentRoute,
+            hero_title: b.title || pageMeta.title,
+            hero_subtitle: b.text || '',
+            odia_subtitle: b.odia_subtitle || '',
+            blocks: [b]
+          }
+        });
+        if (mode === 'translate_odia') {
+          if (res.odia_subtitle) b.odia_subtitle = res.odia_subtitle;
+          if (!b.odia_subtitle && res.blocks && res.blocks[0]) b.text = res.blocks[0].body || b.text;
+        } else if (res.blocks && res.blocks[0]) {
+          b.title = res.blocks[0].heading || b.title;
+          b.text = res.blocks[0].body || b.text;
+        }
+        renderInspector();
+        renderCanvas();
+        toast('AI block update applied', 'success');
+      } catch (e) { toast(e.message, 'crimson'); }
+    }
+
+    function makeVerifiedSelect(onPick) {
+      var sel = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'Pick verified route…' })].concat(
+        verifiedLinks.map(function (v) { return el('option', { value: v.url, text: v.label }); })
+      ));
+      sel.addEventListener('change', function () { if (sel.value) { onPick(sel.value); sel.value = ''; } });
+      return sel;
     }
 
     function renderInspector() {
@@ -2467,62 +2705,244 @@
         propHost.appendChild(el('p', { class: 'cso-mod-muted', text: 'Select or add a block.' }));
         return;
       }
-      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [badge('Type: ' + b.type, 'info')]));
-      if (b.type !== 'richtext') {
-        var hInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.title || b.heading || '' });
-        hInp.addEventListener('input', function () { b.title = hInp.value; renderCanvas(); });
-        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title / Heading' }), hInp]));
+
+      propHost.appendChild(el('div', { class: 'cso-drawer-head' }, [
+        badge('#' + (selectedIdx + 1) + ' · ' + b.type, 'info'),
+        el('div', { class: 'cso-mod-toolbar' }, [
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: b.hidden ? 'Show Block' : 'Hide Block', onclick: function () { b.hidden = !b.hidden; renderInspector(); renderCanvas(); } }),
+          el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Duplicate', onclick: function () { blocks.splice(selectedIdx + 1, 0, JSON.parse(JSON.stringify(b))); selectedIdx++; renderInspector(); renderCanvas(); } })
+        ])
+      ]));
+
+      // Visual Styling Controls
+      var surfSel = el('select', { class: 'cso-mod-select' }, [
+        ['default', 'Default'], ['elevated', 'Elevated Card'], ['accent', 'Accent Highlight']
+      ].map(function (o) { return el('option', { value: o[0], text: o[1], selected: (b.surface || 'default') === o[0] }); }));
+      var spaceSel = el('select', { class: 'cso-mod-select' }, [
+        ['compact', 'Compact'], ['normal', 'Normal'], ['spacious', 'Spacious']
+      ].map(function (o) { return el('option', { value: o[0], text: o[1], selected: (b.spacing || 'normal') === o[0] }); }));
+      surfSel.addEventListener('change', function () { b.surface = surfSel.value; renderCanvas(); });
+      spaceSel.addEventListener('change', function () { b.spacing = spaceSel.value; renderCanvas(); });
+      propHost.appendChild(el('div', { class: 'cso-mod-grid-2' }, [
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Surface Style' }), surfSel]),
+        el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Spacing' }), spaceSel])
+      ]));
+
+      var hInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.title || b.heading || '' });
+      hInp.addEventListener('input', function () { b.title = hInp.value; renderCanvas(); });
+      propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Title / Heading' }), hInp]));
+
+      if (b.type === 'hero') {
+        var oInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.odia_subtitle || '', placeholder: 'ଓଡ଼ିଆ ଉପଶୀର୍ଷକ (Optional Odia subtitle)' });
+        oInp.addEventListener('input', function () { b.odia_subtitle = oInp.value; renderCanvas(); });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Odia Subtitle (ଓଡ଼ିଆ)' }), oInp]));
+
+        var imgInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.image_url || '', placeholder: '/api/media/<key>.jpg' });
+        imgInp.addEventListener('input', function () { b.image_url = imgInp.value; renderCanvas(); });
+        var imgPick = el('select', { class: 'cso-mod-select' }, [el('option', { value: '', text: 'Pick R2 image…' })].concat(
+          r2Images.map(function (m) { return el('option', { value: m.url, text: m.name }); })
+        ));
+        imgPick.addEventListener('change', function () { if (imgPick.value) { b.image_url = imgPick.value; imgInp.value = imgPick.value; renderCanvas(); } });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Hero Cover Image (R2)' }), imgInp, imgPick]));
       }
+
       if (b.type === 'hero' || b.type === 'cbt' || b.type === 'notice' || b.type === 'richtext') {
         var bodyInp = el('textarea', { class: 'cso-mod-textarea' });
         bodyInp.value = b.text || b.body || '';
         bodyInp.addEventListener('input', function () { b.text = bodyInp.value; renderCanvas(); });
         propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Body Text' }), bodyInp]));
       }
+
       if (b.type === 'hero' || b.type === 'cbt') {
         var lblInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.label || b.ctaText || '' });
         var urlInp = el('input', { type: 'text', class: 'cso-mod-input', value: b.url || b.ctaUrl || '' });
         lblInp.addEventListener('input', function () { b.label = lblInp.value; renderCanvas(); });
         urlInp.addEventListener('input', function () { b.url = urlInp.value; renderCanvas(); });
-        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA Label' }), lblInp]));
-        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'CTA URL' }), urlInp]));
-      }
-      if (b.type === 'examgrid' || b.type === 'faq') {
-        var itemsInp = el('textarea', { class: 'cso-mod-textarea' });
-        itemsInp.value = Array.isArray(b.items) ? b.items.join('\n') : (b.items || '');
-        itemsInp.addEventListener('input', function () {
-          b.items = itemsInp.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-          renderCanvas();
-        });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [el('label', { class: 'cso-mod-label', text: 'Primary CTA Label' }), lblInp]));
         propHost.appendChild(el('div', { class: 'cso-mod-field' }, [
-          el('label', { class: 'cso-mod-label', text: b.type === 'faq' ? 'Items (Question | Answer per line)' : 'Items (Label | /url per line)' }),
-          itemsInp
+          el('label', { class: 'cso-mod-label', text: 'CTA URL' }),
+          urlInp,
+          makeVerifiedSelect(function (u) { b.url = u; urlInp.value = u; renderCanvas(); })
         ]));
       }
+
+      if (b.type === 'examgrid' || b.type === 'exam_grid' || b.type === 'cbt') {
+        if (!Array.isArray(b.cards)) {
+          b.cards = Array.isArray(b.items) ? b.items.map(function (s) {
+            var p = String(s).split('|');
+            return { title: (p[0] || '').trim(), badge: '', url: (p[1] || '/').trim(), summary: '' };
+          }) : [];
+        }
+        var cardsBox = el('div', { class: 'cso-mod-shell' });
+        b.cards.forEach(function (c, ci) {
+          var ct = el('input', { type: 'text', class: 'cso-mod-input', value: c.title || '', placeholder: 'Card Title' });
+          var cb = el('input', { type: 'text', class: 'cso-mod-input', value: c.badge || '', placeholder: 'Badge (e.g. Live)' });
+          var cu = el('input', { type: 'text', class: 'cso-mod-input', value: c.url || '', placeholder: '/route/' });
+          var cs = el('input', { type: 'text', class: 'cso-mod-input', value: c.summary || '', placeholder: 'Short summary' });
+          ct.addEventListener('input', function () { c.title = ct.value; renderCanvas(); });
+          cb.addEventListener('input', function () { c.badge = cb.value; renderCanvas(); });
+          cu.addEventListener('input', function () { c.url = cu.value; renderCanvas(); });
+          cs.addEventListener('input', function () { c.summary = cs.value; renderCanvas(); });
+          cardsBox.appendChild(el('div', { class: 'cso-builder-block' }, [
+            el('div', { class: 'cso-mod-grid-2' }, [ct, cb]),
+            el('div', { class: 'cso-mod-grid-2' }, [cu, makeVerifiedSelect(function (u) { c.url = u; cu.value = u; renderCanvas(); })]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              cs,
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { b.cards.splice(ci, 1); renderInspector(); renderCanvas(); } })
+            ])
+          ]));
+        });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('label', { class: 'cso-mod-label', text: 'Grid Cards (' + b.cards.length + ')' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Item', onclick: function () { b.cards.push({ title: '', badge: '', url: '/mock-tests/', summary: '' }); renderInspector(); renderCanvas(); } })
+          ]),
+          cardsBox
+        ]));
+      }
+
+      if (b.type === 'key_dates') {
+        if (!Array.isArray(b.rows)) b.rows = [];
+        var rBox = el('div', { class: 'cso-mod-shell' });
+        b.rows.forEach(function (rw, ri) {
+          var rl = el('input', { type: 'text', class: 'cso-mod-input', value: rw.label || '', placeholder: 'Label' });
+          var rv = el('input', { type: 'text', class: 'cso-mod-input', value: rw.value || '', placeholder: 'Date / Status' });
+          rl.addEventListener('input', function () { rw.label = rl.value; renderCanvas(); });
+          rv.addEventListener('input', function () { rw.value = rv.value; renderCanvas(); });
+          rBox.appendChild(el('div', { class: 'cso-mod-grid-3' }, [
+            rl, rv,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '×', onclick: function () { b.rows.splice(ri, 1); renderInspector(); renderCanvas(); } })
+          ]));
+        });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('label', { class: 'cso-mod-label', text: 'Date Rows (' + b.rows.length + ')' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Row', onclick: function () { b.rows.push({ label: '', value: '' }); renderInspector(); renderCanvas(); } })
+          ]),
+          rBox
+        ]));
+      }
+
+      if (b.type === 'faq') {
+        if (!Array.isArray(b.rows)) {
+          b.rows = Array.isArray(b.items) ? b.items.map(function (s) {
+            var p = String(s).split('|');
+            return { question: (p[0] || '').trim(), answer: (p[1] || '').trim() };
+          }) : [];
+        }
+        var fBox = el('div', { class: 'cso-mod-shell' });
+        b.rows.forEach(function (rw, fi) {
+          var fq = el('input', { type: 'text', class: 'cso-mod-input', value: rw.question || '', placeholder: 'Question' });
+          var fa = el('textarea', { class: 'cso-mod-textarea', rows: '2', placeholder: 'Answer' });
+          fa.value = rw.answer || '';
+          fq.addEventListener('input', function () { rw.question = fq.value; renderCanvas(); });
+          fa.addEventListener('input', function () { rw.answer = fa.value; renderCanvas(); });
+          fBox.appendChild(el('div', { class: 'cso-builder-block' }, [
+            fq, fa,
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove FAQ', onclick: function () { b.rows.splice(fi, 1); renderInspector(); renderCanvas(); } })
+          ]));
+        });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('label', { class: 'cso-mod-label', text: 'FAQ Items (' + b.rows.length + ')' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add FAQ', onclick: function () { b.rows.push({ question: '', answer: '' }); renderInspector(); renderCanvas(); } })
+          ]),
+          fBox
+        ]));
+      }
+
+      if (b.type === 'attachments') {
+        if (!Array.isArray(b.items)) b.items = [];
+        var aBox = el('div', { class: 'cso-mod-shell' });
+        b.items.forEach(function (it, ai) {
+          var at = el('input', { type: 'text', class: 'cso-mod-input', value: it.title || '', placeholder: 'Document Title' });
+          var as = el('input', { type: 'text', class: 'cso-mod-input', value: it.source_label || '', placeholder: 'Source (R2 PDF / Google Drive / .gov.in)' });
+          var au = el('input', { type: 'text', class: 'cso-mod-input', value: it.url || '', placeholder: 'https://… or /api/media/…' });
+          at.addEventListener('input', function () { it.title = at.value; renderCanvas(); });
+          as.addEventListener('input', function () { it.source_label = as.value; renderCanvas(); });
+          au.addEventListener('input', function () { it.url = au.value; renderCanvas(); });
+          aBox.appendChild(el('div', { class: 'cso-builder-block' }, [
+            el('div', { class: 'cso-mod-grid-2' }, [at, as]),
+            el('div', { class: 'cso-mod-toolbar' }, [
+              au,
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: 'Remove', onclick: function () { b.items.splice(ai, 1); renderInspector(); renderCanvas(); } })
+            ])
+          ]));
+        });
+        propHost.appendChild(el('div', { class: 'cso-mod-field' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('label', { class: 'cso-mod-label', text: 'Attachments (' + b.items.length + ')' }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '+ Add Link', onclick: function () { b.items.push({ title: '', source_label: 'Official Portal', url: 'https://odisha.gov.in' }); renderInspector(); renderCanvas(); } })
+          ]),
+          aBox
+        ]));
+      }
+
+      // AI Block Assistant
+      propHost.appendChild(el('div', { class: 'cso-mod-toolbar' }, [
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '✨ AI Rewrite Block', onclick: function () { runBlockAi('polish'); } }),
+        el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '✨ AI Translate to Odia (ଓଡ଼ିଆ)', onclick: function () { runBlockAi('translate_odia'); } })
+      ]));
     }
 
     function renderCanvas() {
       clear(canvasEl);
+      runBuilderValidation();
+      scheduleDraftSave();
+
+      if (canvasMode === 'live') {
+        var liveFrame = el('iframe', {
+          class: 'cso-builder-iframe',
+          sandbox: 'allow-same-origin',
+          title: 'Visual Page Builder Real-CSS Live View'
+        });
+        liveFrame.srcdoc = buildBuilderPreviewHtml();
+        wireBuilderIframeClick(liveFrame);
+        canvasEl.appendChild(liveFrame);
+        canvasEl.appendChild(el('p', { class: 'cso-mod-muted', text: 'Click any section in the Real-CSS preview to select and edit it in the Block Inspector.' }));
+        return;
+      }
+
       if (!blocks.length) {
-        canvasEl.appendChild(el('p', { class: 'cso-mod-muted', text: 'No blocks yet. Click a block in the palette to add it.' }));
+        canvasEl.appendChild(el('p', { class: 'cso-mod-muted', text: 'No blocks yet. Click a block in the palette or choose a Quick Section Blueprint.' }));
         return;
       }
       blocks.forEach(function (b, idx) {
-        var blk = el('div', { class: 'cso-builder-block' }, [
+        var cls = 'cso-builder-block' + (idx === selectedIdx ? ' is-selected' : '') + (b.hidden ? ' is-hidden-blk' : '');
+        var blk = el('div', { class: cls, draggable: 'true' }, [
           el('div', { class: 'cso-builder-block-head' }, [
-            badge((idx + 1) + '. ' + b.type, idx === selectedIdx ? 'ok' : 'info'),
+            el('div', { class: 'cso-inline-row' }, [
+              el('span', { class: 'cso-drag-handle', text: '⋮⋮', title: 'Drag to reorder' }),
+              badge((idx + 1) + '. ' + b.type, idx === selectedIdx ? 'ok' : 'info'),
+              b.hidden ? badge('Hidden', 'warn') : null
+            ]),
             el('div', { class: 'cso-mod-toolbar' }, [
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Edit', onclick: function () { selectedIdx = idx; renderInspector(); renderCanvas(); } }),
-              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↑', onclick: function () { if (idx > 0) { var t = blocks[idx - 1]; blocks[idx - 1] = blocks[idx]; blocks[idx] = t; selectedIdx = idx - 1; renderCanvas(); renderInspector(); } } }),
-              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↓', onclick: function () { if (idx < blocks.length - 1) { var t = blocks[idx + 1]; blocks[idx + 1] = blocks[idx]; blocks[idx] = t; selectedIdx = idx + 1; renderCanvas(); renderInspector(); } } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↑', disabled: idx === 0, onclick: function () { if (idx > 0) { var t = blocks[idx - 1]; blocks[idx - 1] = blocks[idx]; blocks[idx] = t; selectedIdx = idx - 1; renderCanvas(); renderInspector(); } } }),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '↓', disabled: idx === blocks.length - 1, onclick: function () { if (idx < blocks.length - 1) { var t = blocks[idx + 1]; blocks[idx + 1] = blocks[idx]; blocks[idx] = t; selectedIdx = idx + 1; renderCanvas(); renderInspector(); } } }),
               el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-danger cso-mod-btn-sm', text: '✕', onclick: function () { blocks.splice(idx, 1); selectedIdx = Math.max(0, selectedIdx - 1); renderCanvas(); renderInspector(); } })
             ])
           ]),
           el('h4', { text: b.title || b.heading || b.type.toUpperCase() }),
+          b.odia_subtitle ? el('p', { class: 'cso-mod-muted', text: b.odia_subtitle }) : null,
           b.text || b.body ? el('p', { class: 'cso-mod-muted', text: b.text || b.body }) : null,
-          Array.isArray(b.items) && b.items.length ? el('ul', {}, b.items.map(function (it) { return el('li', { text: it }); })) : null,
+          Array.isArray(b.cards) && b.cards.length ? el('ul', {}, b.cards.map(function (c) { return el('li', { text: c.title + ' → ' + c.url }); })) : null,
+          Array.isArray(b.rows) && b.rows.length ? el('ul', {}, b.rows.map(function (r) { return el('li', { text: (r.label || r.question || '') + ' : ' + (r.value || r.answer || '') }); })) : null,
           (b.label || b.ctaText) ? el('span', { class: 'cso-mod-badge cso-mod-badge-info', text: (b.label || b.ctaText) + ' → ' + (b.url || b.ctaUrl || '/') }) : null
         ]);
+        blk.addEventListener('dragstart', function () { dragFromIdx = idx; blk.classList.add('is-dragging'); });
+        blk.addEventListener('dragend', function () { dragFromIdx = null; blk.classList.remove('is-dragging'); });
+        blk.addEventListener('dragover', function (e) { e.preventDefault(); });
+        blk.addEventListener('drop', function (e) {
+          e.preventDefault();
+          if (dragFromIdx === null || dragFromIdx === idx) return;
+          var moved = blocks.splice(dragFromIdx, 1)[0];
+          blocks.splice(idx, 0, moved);
+          selectedIdx = idx;
+          dragFromIdx = null;
+          renderCanvas();
+          renderInspector();
+        });
         canvasEl.appendChild(blk);
       });
     }
@@ -2544,11 +2964,54 @@
           status: status,
           note: 'Visual Page Builder (' + blocks.length + ' blocks)'
         });
+        try { localStorage.removeItem(DRAFT_KEY); clear(recoveryHost); } catch (_) {}
         openLiveLink.setAttribute('href', route);
         toast((status === 'published' ? 'Published live: ' : 'Saved draft: ') + route, 'success');
       } catch (e) {
         toast(e.message, 'crimson');
       }
+    }
+
+    async function openBuilderRevisions() {
+      var route = f02NormalizeRoute(routeInput.value || currentRoute);
+      clear(revisionHost);
+      revisionHost.appendChild(el('div', { class: 'cso-drawer' }, [el('p', { class: 'cso-mod-muted', text: 'Loading revisions for ' + route + '…' })]));
+      try {
+        var d = await api('GET', 'pages/revisions?route=' + encodeURIComponent(route));
+        var revs = d.revisions || [];
+        clear(revisionHost);
+        var box = el('div', { class: 'cso-drawer' }, [
+          el('div', { class: 'cso-drawer-head' }, [
+            el('strong', { text: 'Revision History (' + revs.length + ') — ' + route }),
+            el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Close', onclick: function () { clear(revisionHost); } })
+          ])
+        ]);
+        if (!revs.length) box.appendChild(el('p', { class: 'cso-mod-muted', text: 'No revisions recorded for this route yet.' }));
+        revs.forEach(function (rv) {
+          var snap = {};
+          try { snap = JSON.parse(rv.snapshot_json || '{}'); } catch (_) {}
+          box.appendChild(el('div', { class: 'cso-diff-row' }, [
+            el('div', { class: 'cso-drawer-head' }, [
+              el('div', {}, [
+                el('strong', { text: (snap.title || rv.route) + ' ' }),
+                badge(snap.status || 'draft', snap.status === 'published' ? 'ok' : 'warn'),
+                el('div', { class: 'cso-mod-muted', text: (rv.created_at || '') + ' · ' + (rv.editor_email || 'staff') + ' · ' + (rv.note || 'update') })
+              ]),
+              el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Restore', onclick: async function () {
+                try {
+                  await api('POST', 'pages/restore', { route: route, revision_id: rv.id, status: 'draft' });
+                  var listRes = await api('GET', 'pages');
+                  var fresh = (listRes.pages || []).find(function (x) { return x.route === route; });
+                  if (fresh) loadPageIntoBuilder(fresh);
+                  clear(revisionHost);
+                  toast('Restored revision #' + rv.id, 'success');
+                } catch (e) { toast(e.message, 'crimson'); }
+              } })
+            ])
+          ]));
+        });
+        revisionHost.appendChild(box);
+      } catch (e) { clear(revisionHost); toast(e.message, 'crimson'); }
     }
 
     function loadPageIntoBuilder(p) {
@@ -2588,14 +3051,51 @@
       if (pagesMap[v]) loadPageIntoBuilder(pagesMap[v]);
     });
 
-    var paletteCard = el('div', { class: 'cso-mod-card' }, [
-      el('h4', { text: 'Block Palette' }),
-      el('p', { class: 'cso-mod-muted', text: 'Click to append a live block:' })
+    var bpSel = el('select', { class: 'cso-mod-select' }, [
+      el('option', { value: '', text: 'Quick Section Blueprints…' }),
+      el('option', { value: 'exam_hub', text: 'Odisha Exam Hub' }),
+      el('option', { value: 'cbt_landing', text: 'CBT Mock Test Landing' }),
+      el('option', { value: 'scheme_portal', text: 'Govt Scheme Portal' }),
+      el('option', { value: 'institutional', text: 'Institutional Page' })
     ]);
+    bpSel.addEventListener('change', function () {
+      if (!bpSel.value || !SECTION_BLUEPRINTS[bpSel.value]) return;
+      blocks = JSON.parse(JSON.stringify(SECTION_BLUEPRINTS[bpSel.value]));
+      selectedIdx = 0;
+      bpSel.value = '';
+      renderCanvas();
+      renderInspector();
+      toast('Loaded section blueprint', 'info');
+    });
+
+    var importInp = el('input', { type: 'file', class: 'cso-sr-file', accept: '.json,application/json' });
+    importInp.addEventListener('change', function () {
+      var f = importInp.files[0];
+      if (!f) return;
+      var rdr = new FileReader();
+      rdr.onload = function () {
+        try {
+          var arr = JSON.parse(String(rdr.result || '[]'));
+          if (!Array.isArray(arr) || !arr.every(function (x) { return x && typeof x.type === 'string'; })) {
+            toast('Invalid JSON: expected an array of blocks with a "type" field', 'crimson');
+            return;
+          }
+          blocks = arr;
+          selectedIdx = 0;
+          renderCanvas();
+          renderInspector();
+          toast('Imported ' + blocks.length + ' block(s)', 'success');
+        } catch (err) { toast('Invalid JSON file: ' + err.message, 'crimson'); }
+      };
+      rdr.readAsText(f);
+      importInp.value = '';
+    });
+
+    var paletteGrid = el('div', { class: 'cso-palette-grid' });
     BLOCK_TYPES.forEach(function (bt) {
-      paletteCard.appendChild(el('button', {
+      paletteGrid.appendChild(el('button', {
         type: 'button',
-        class: 'cso-mod-btn',
+        class: 'cso-mod-btn cso-mod-btn-sm',
         text: '+ ' + bt.label,
         onclick: function () {
           blocks.push(JSON.parse(JSON.stringify(bt.def)));
@@ -2605,36 +3105,94 @@
         }
       }));
     });
+    var paletteCard = el('div', { class: 'cso-mod-card' }, [
+      el('h4', { text: 'Block Palette' }),
+      el('p', { class: 'cso-mod-muted', text: 'Click to append a live block:' }),
+      paletteGrid
+    ]);
 
-    renderBanner(shell, 'Visual Page Builder', 'Compose responsive blocks for any route and publish live to csodisha.com.', [
+    renderBanner(shell, 'Visual Page Builder', 'Compose responsive blocks with Real-CSS live preview, dynamic inspectors, drag-reorder & AI block tools.', [
       pageSelect,
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Desktop', onclick: function () { setViewport('desktop'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '768px', onclick: function () { setViewport('tablet'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: '375px', onclick: function () { setViewport('mobile'); } }),
-      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Publish Live to Website', onclick: function () { saveBuilder('published'); } }),
+      bpSel,
+      vpDeskBtn, vpTabBtn, vpMobBtn,
+      modeLiveBtn, modeOutlineBtn,
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Full-Screen Real View', onclick: openBuilderFullScreen }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Revisions', onclick: openBuilderRevisions }),
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Save Draft', onclick: function () { saveBuilder('draft'); } }),
+      el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-primary cso-mod-btn-sm', text: 'Publish Live to Website', onclick: function () { saveBuilder('published'); } }),
       openLiveLink,
+      el('label', { class: 'cso-mod-btn cso-mod-btn-sm' }, [el('span', { text: 'Import JSON' }), importInp]),
       el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Export JSON', onclick: function () { downloadFile('page-blocks.json', JSON.stringify(blocks, null, 2)); } })
     ]);
 
+    shell.appendChild(recoveryHost);
+    shell.appendChild(validationHost);
+    shell.appendChild(revisionHost);
     shell.appendChild(el('div', { class: 'cso-builder-split' }, [
       el('div', { class: 'cso-mod-shell' }, [metaHost, paletteCard, propHost]),
       el('div', { class: 'cso-builder-canvas-wrap' }, [canvasEl])
     ]));
 
     root.appendChild(shell);
+    root.appendChild(fullscreenHost);
+
+    try {
+      var savedRaw = localStorage.getItem(DRAFT_KEY);
+      if (savedRaw) {
+        var saved = JSON.parse(savedRaw);
+        if (saved && Array.isArray(saved.blocks) && saved.blocks.length) {
+          recoveryHost.appendChild(el('div', { class: 'cso-drawer' }, [
+            el('div', { class: 'cso-drawer-head' }, [
+              el('strong', { text: 'Unsaved Visual Builder Draft (' + (saved.route || '/custom-portal/') + ')' }),
+              el('div', { class: 'cso-mod-toolbar' }, [
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm cso-mod-btn-primary', text: 'Restore Draft', onclick: function () {
+                  if (saved.route) { currentRoute = saved.route; routeInput.value = saved.route; }
+                  if (saved.pageMeta) pageMeta = saved.pageMeta;
+                  blocks = saved.blocks;
+                  selectedIdx = 0;
+                  clear(recoveryHost);
+                  renderMetaCard();
+                  renderCanvas();
+                  renderInspector();
+                  toast('Restored Visual Builder draft', 'success');
+                } }),
+                el('button', { type: 'button', class: 'cso-mod-btn cso-mod-btn-sm', text: 'Discard', onclick: function () { localStorage.removeItem(DRAFT_KEY); clear(recoveryHost); } })
+              ])
+            ])
+          ]));
+        }
+      }
+    } catch (_) {}
+
     renderMetaCard();
     renderCanvas();
     renderInspector();
 
-    api('GET', 'pages').then(function (d) {
-      (d.pages || []).forEach(function (p) {
+    Promise.all([
+      api('GET', 'pages').catch(function () { return { pages: [] }; }),
+      api('GET', 'mock-tests?limit=50').catch(function () { return { items: [] }; }),
+      api('GET', 'jobs?limit=50').catch(function () { return { items: [] }; }),
+      api('GET', 'media').catch(function () { return { items: [] }; })
+    ]).then(function (allRes) {
+      (allRes[0].pages || []).forEach(function (p) {
         pagesMap[p.route] = p;
         pageSelect.appendChild(el('option', { value: p.route, text: (p.title || p.route) + ' (' + p.route + ')' }));
+        verifiedLinks.push({ url: p.route, label: 'Page: ' + p.route });
+      });
+      (allRes[1].items || []).forEach(function (t) {
+        verifiedLinks.push({ url: '/mock-tests/?test=' + encodeURIComponent(t.slug || t.id), label: 'Mock Test: ' + t.title });
+      });
+      (allRes[2].items || []).forEach(function (j) {
+        verifiedLinks.push({ url: '/jobs-careers/?job=' + encodeURIComponent(j.slug || j.id), label: 'Job: ' + j.title });
+      });
+      (allRes[3].items || []).forEach(function (m) {
+        if (m.kind === 'image') r2Images.push({ url: m.url || ('/api/media/' + m.object_key), name: m.original_name || m.object_key });
       });
       if (!tpl && pagesMap[currentRoute]) {
         pageSelect.value = currentRoute;
         loadPageIntoBuilder(pagesMap[currentRoute]);
+      } else {
+        renderInspector();
       }
     }).catch(function () {});
   }

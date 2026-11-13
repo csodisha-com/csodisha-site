@@ -1829,4 +1829,10 @@ input[type="checkbox"] {
 .cso-file-drop:hover { background: rgba(56, 189, 248, 0.16); border-color: var(--studio-accent); }
 .cso-sr-file { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .cso-bottom-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; background: var(--studio-surface); border: 1px solid var(--studio-border-strong); border-radius: 12px; margin-top: 4px; }
+.cso-builder-iframe { width: 100%; height: 560px; border: 1px solid var(--studio-border); border-radius: 8px; background: #fff; }
+.cso-builder-block.is-selected { border-color: var(--studio-blue); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25); }
+.cso-builder-block.is-hidden-blk { opacity: 0.55; border-style: dashed; }
+.cso-builder-block.is-dragging { opacity: 0.4; }
+.cso-drag-handle { cursor: grab; user-select: none; color: var(--studio-muted); font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--studio-bg); }
+.cso-palette-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 
