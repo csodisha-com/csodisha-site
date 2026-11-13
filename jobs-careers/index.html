@@ -166,6 +166,22 @@
             </div>
           </div>
 
+          <div class="live-filter-chips" role="group" aria-label="Filter jobs by recruitment track">
+            <div class="live-filter-chips__list" id="live-jobs-chips">
+              <button type="button" class="live-chip is-active" data-chip="all" aria-pressed="true">All Jobs</button>
+              <button type="button" class="live-chip" data-chip="psc" aria-pressed="false">OPSC / OSSC / OSSSC</button>
+              <button type="button" class="live-chip" data-chip="teaching" aria-pressed="false">Teaching &amp; Education</button>
+              <button type="button" class="live-chip" data-chip="central-banking" aria-pressed="false">Central &amp; Banking</button>
+              <button type="button" class="live-chip" data-chip="admit-result" aria-pressed="false">Admit Card &amp; Result</button>
+            </div>
+            <button type="button" id="live-jobs-goal-toggle" class="live-chip live-chip--goal" aria-pressed="false">★ Match My Dashboard Goals</button>
+          </div>
+
+          <div id="live-jobs-auth-hint" class="live-auth-hint" role="status" hidden>
+            <span id="live-jobs-auth-hint-text">Sign in to sync saved jobs and match your Candidate Dashboard goals.</span>
+            <a href="/login.html?redirect=%2Fjobs-careers%2F" class="live-btn live-btn--primary">Sign In →</a>
+          </div>
+
           <div id="live-jobs-status" class="live-status-box" role="status" aria-live="polite">
             Loading live recruitment notifications…
           </div>
@@ -173,20 +189,24 @@
           <div id="live-jobs-grid" class="live-jobs-grid" aria-live="polite"></div>
           <div id="live-jobs-pagination" class="live-pagination" hidden></div>
 
-          <article id="live-job-detail" class="live-job-detail" aria-labelledby="live-job-detail-title" hidden>
-            <div class="live-job-detail__bar">
-              <button id="live-job-detail-close" class="live-detail-back" type="button">← Back to Job List</button>
-              <div id="live-job-detail-actions" class="live-job-detail__actions"></div>
-            </div>
-            <header class="live-job-detail__header">
-              <div id="live-job-detail-badges" class="live-job-card__badges"></div>
-              <h3 id="live-job-detail-title" class="live-job-detail__title"></h3>
-              <p id="live-job-detail-title-or" class="live-job-detail__title-or" hidden></p>
-              <div id="live-job-detail-meta" class="live-job-detail__meta"></div>
-            </header>
-            <div id="live-job-detail-summary" class="live-job-detail__summary" hidden></div>
-            <div id="live-job-detail-body" class="live-job-detail__body cso-prose"></div>
-          </article>
+          <div id="live-job-detail-modal" class="live-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="live-job-detail-title" hidden>
+            <article id="live-job-detail" class="live-job-detail live-modal-drawer">
+              <div class="live-job-detail__bar">
+                <button id="live-job-detail-close" class="live-detail-back" type="button">✕ Close Details</button>
+                <div id="live-job-detail-actions" class="live-job-detail__actions"></div>
+              </div>
+              <header class="live-job-detail__header">
+                <div id="live-job-detail-badges" class="live-job-card__badges"></div>
+                <h3 id="live-job-detail-title" class="live-job-detail__title"></h3>
+                <p id="live-job-detail-title-or" class="live-job-detail__title-or" hidden></p>
+                <div id="live-job-detail-meta" class="live-job-detail__meta"></div>
+              </header>
+              <div id="live-job-detail-specs" class="live-detail-specs-grid"></div>
+              <div id="live-job-syllabus-box" class="live-syllabus-banner" hidden></div>
+              <div id="live-job-detail-summary" class="live-job-detail__summary" hidden></div>
+              <div id="live-job-detail-body" class="live-job-detail__body cso-prose"></div>
+            </article>
+          </div>
         </section>
 
         <section id="overview" aria-label="Directory overview">
@@ -367,6 +387,7 @@
 </div></footer>
 <script src="../assets/cso-auth-client.js" defer></script>
 <script src="../assets/shared-header.js" defer></script>
+<script src="../assets/js/cso-idb.js" defer></script>
 <script src="../assets/js/bookmark-manager.js" defer></script>
 </body>
 </html>

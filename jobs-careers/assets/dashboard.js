@@ -1116,6 +1116,7 @@
   const liveStatusEl = $('live-jobs-status');
   const liveGridEl = $('live-jobs-grid');
   const livePaginationEl = $('live-jobs-pagination');
+  const liveDetailModalEl = $('live-job-detail-modal');
   const liveDetailEl = $('live-job-detail');
   const liveDetailCloseBtn = $('live-job-detail-close');
   const liveDetailActionsEl = $('live-job-detail-actions');
@@ -1123,13 +1124,166 @@
   const liveDetailTitleEl = $('live-job-detail-title');
   const liveDetailTitleOrEl = $('live-job-detail-title-or');
   const liveDetailMetaEl = $('live-job-detail-meta');
+  const liveDetailSpecsEl = $('live-job-detail-specs');
+  const liveDetailSyllabusEl = $('live-job-syllabus-box');
   const liveDetailSummaryEl = $('live-job-detail-summary');
   const liveDetailBodyEl = $('live-job-detail-body');
+  const liveChipsWrap = $('live-jobs-chips');
+  const liveGoalToggleBtn = $('live-jobs-goal-toggle');
+  const liveAuthHintEl = $('live-jobs-auth-hint');
+  const liveAuthHintTextEl = $('live-jobs-auth-hint-text');
 
   const pc = window.CSOPublicContent;
   const knownCategories = new Set(['OPSC', 'OSSC', 'OSSSC', 'Teaching', 'Police & Defence', 'Banking & PSU', 'Railway']);
-  let liveState = { page: 1, limit: 12, q: '', state: '', category: '' };
+  let liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
   let liveSearchTimer = null;
+  let liveTaxonomy = [];
+  let liveCandidateUser = null;
+  let liveGoalExamIds = [];
+  let liveGoalsLoaded = false;
+
+  async function loadCandidateGoalsAndTaxonomy() {
+    if (liveGoalsLoaded) return;
+    liveGoalsLoaded = true;
+    try {
+      const taxPromise = fetch('/api/content/exam-taxonomy', { credentials: 'same-origin' })
+        .then(r => (r.ok ? r.json() : { items: [] }))
+        .catch(() => ({ items: [] }));
+      const mePromise = fetch('/api/auth/me', { credentials: 'same-origin' })
+        .then(r => (r.ok ? r.json() : null))
+        .catch(() => null);
+      const [taxRes, meRes] = await Promise.all([taxPromise, mePromise]);
+      liveTaxonomy = Array.isArray(taxRes && taxRes.items) ? taxRes.items : [];
+      if (meRes && meRes.authenticated && meRes.user) {
+        liveCandidateUser = meRes.user;
+      }
+      if (meRes && Array.isArray(meRes.preferences && meRes.preferences.selectedExams)) {
+        liveGoalExamIds = meRes.preferences.selectedExams;
+      } else if (meRes && Array.isArray(meRes.controls && meRes.controls.assigned_exams)) {
+        liveGoalExamIds = meRes.controls.assigned_exams;
+      }
+      if (!liveGoalExamIds.length && liveCandidateUser) {
+        const prefRes = await fetch('/api/user/preferences', { credentials: 'same-origin' })
+          .then(r => (r.ok ? r.json() : null))
+          .catch(() => null);
+        if (prefRes && Array.isArray(prefRes.selectedExams)) {
+          liveGoalExamIds = prefRes.selectedExams;
+        }
+      }
+      if (!liveGoalExamIds.length) {
+        try {
+          const localPrefs = JSON.parse(localStorage.getItem('cso_candidate_preferences_v1') || '{}');
+          if (Array.isArray(localPrefs.selectedExams)) liveGoalExamIds = localPrefs.selectedExams;
+        } catch (_) {}
+      }
+      if (!liveCandidateUser) {
+        try {
+          const sess = JSON.parse(localStorage.getItem('cso_candidate_session_v1') || 'null');
+          if (sess && (sess.id || sess.email)) liveCandidateUser = sess;
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
+  function showAuthHint(msg) {
+    if (!liveAuthHintEl) return;
+    if (liveAuthHintTextEl && msg) liveAuthHintTextEl.textContent = msg;
+    liveAuthHintEl.hidden = false;
+  }
+
+  function jobSearchHaystack(job) {
+    const tags = Array.isArray(job.tags) ? job.tags.join(' ') : '';
+    return `${job.title || ''} ${job.summary || ''} ${job.organisation || ''} ${job.category || ''} ${job.state || ''} ${job.qualification || ''} ${tags}`.toLowerCase();
+  }
+
+  function matchesChipFilter(job, chip) {
+    if (!chip || chip === 'all') return true;
+    const hay = jobSearchHaystack(job);
+    if (chip === 'psc') {
+      return /\b(opsc|ossc|osssc|oas|ocs|aso|peo|ri|ari|amin|sfs|forest)\b/.test(hay);
+    }
+    if (chip === 'teaching') {
+      return /\b(teach|b\.?ed|ct|otet|osstet|cht|ltr|pgt|tgt|lecturer|education|ssb|riem|jt)\b/.test(hay);
+    }
+    if (chip === 'central-banking') {
+      return String(job.state || '').toLowerCase() === 'central' || /\b(upsc|ssc|ibps|sbi|rbi|rrb|railway|bank|banking|defence|psu|central|cgl|chsl|mts)\b/.test(hay);
+    }
+    if (chip === 'admit-result') {
+      return /\b(admit\s*card|hall\s*ticket|result|merit\s*list|score\s*card|cut\s*off|answer\s*key)\b/.test(hay);
+    }
+    return true;
+  }
+
+  function getActiveGoalTerms() {
+    if (!liveGoalExamIds.length) return [];
+    const terms = new Set();
+    liveGoalExamIds.forEach(id => {
+      terms.add(String(id).toLowerCase());
+      const tax = liveTaxonomy.find(t => t.id === id);
+      if (tax) {
+        if (tax.short_code) terms.add(String(tax.short_code).toLowerCase());
+        if (tax.exam_label) {
+          String(tax.exam_label).toLowerCase().split(/[\s/&(),.-]+/).filter(w => w.length >= 3).forEach(w => terms.add(w));
+        }
+        (tax.parent_tags || []).forEach(tag => terms.add(String(tag).toLowerCase()));
+      }
+    });
+    return Array.from(terms).filter(t => t.length >= 2);
+  }
+
+  function matchesGoalFilter(job) {
+    const terms = getActiveGoalTerms();
+    if (!terms.length) return true;
+    const hay = jobSearchHaystack(job);
+    return terms.some(term => hay.includes(term));
+  }
+
+  function matchJobToTaxonomy(job) {
+    if (!liveTaxonomy.length) return null;
+    const hay = jobSearchHaystack(job);
+    let best = null;
+    let bestScore = 0;
+    liveTaxonomy.forEach(tax => {
+      let score = 0;
+      const code = String(tax.short_code || '').toLowerCase();
+      if (code && hay.includes(code)) score += 5;
+      if (tax.id && hay.includes(String(tax.id).toLowerCase().replace(/-/g, ' '))) score += 4;
+      (tax.parent_tags || []).forEach(tag => {
+        const tg = String(tag).toLowerCase();
+        if (tg.length >= 2 && hay.includes(tg)) score += 2;
+      });
+      if (tax.domain_label && hay.includes(String(tax.domain_label).toLowerCase().split(' ')[0])) score += 1;
+      if (score > bestScore) {
+        bestScore = score;
+        best = tax;
+      }
+    });
+    return bestScore >= 2 ? best : null;
+  }
+
+  function formatDeadlineBadge(job) {
+    if (job.status === 'expired' || job.expired) {
+      const formatted = (job.last_date && pc && typeof pc.formatDate === 'function') ? pc.formatDate(job.last_date) : '';
+      return {
+        cls: 'cso-dl-closed',
+        label: formatted ? `Application Closed (${formatted})` : 'Application Closed'
+      };
+    }
+    if (job.last_date && pc && typeof pc.deadlineInfo === 'function') {
+      const dl = pc.deadlineInfo(job.last_date);
+      if (dl) {
+        const formatted = pc.formatDate(job.last_date);
+        if (dl.statusClass === 'cso-dl-urgent') {
+          return {
+            cls: 'cso-dl-urgent',
+            label: dl.label.includes('Today') ? `Closing Soon · Today (${formatted})` : `Closing Soon · ${dl.label}`
+          };
+        }
+        return { cls: dl.statusClass, label: dl.label };
+      }
+    }
+    return null;
+  }
 
   function syncCategoryDropdown(items) {
     if (!liveCategoryEl) return;
@@ -1164,17 +1318,31 @@
     if (job.category) {
       frag.appendChild(el('span', 'live-badge', job.category));
     }
-    if (job.status === 'expired' || job.expired) {
-      const formatted = (job.last_date && pc && typeof pc.formatDate === 'function') ? pc.formatDate(job.last_date) : '';
-      const label = formatted ? `Application Closed (${formatted})` : 'Application Closed';
-      frag.appendChild(el('span', 'live-badge cso-dl-closed', label));
-    } else if (job.last_date && pc && typeof pc.deadlineInfo === 'function') {
-      const dl = pc.deadlineInfo(job.last_date);
-      if (dl) {
-        frag.appendChild(el('span', `live-badge ${dl.statusClass}`, dl.label));
-      }
+    const dl = formatDeadlineBadge(job);
+    if (dl) {
+      frag.appendChild(el('span', `live-badge ${dl.cls}`, dl.label));
     }
     return frag;
+  }
+
+  function makeDashboardBookmarkBtn(job) {
+    if (!pc || typeof pc.createBookmarkButton !== 'function') return null;
+    const btn = pc.createBookmarkButton({
+      type: 'job',
+      id: job.slug || job.id,
+      title: job.title,
+      badge: job.organisation || job.category || 'Job Alert',
+      url: `/jobs-careers/?job=${encodeURIComponent(job.slug || job.id)}`,
+      pdfUrl: job.notification_url || '',
+      deadline: job.last_date || ''
+    });
+    btn.dataset.bookmarkIdle = 'Save to Dashboard';
+    btn.dataset.bookmarkSaved = 'Saved to Dashboard';
+    const txtEl = btn.querySelector('.cso-bm-text');
+    if (txtEl && txtEl.textContent === 'Bookmark') {
+      txtEl.textContent = 'Save to Dashboard';
+    }
+    return btn;
   }
 
   function renderJobCard(job) {
@@ -1194,14 +1362,17 @@
     }
 
     const meta = el('div', 'live-job-card__meta');
-    if (job.vacancies !== null && job.vacancies !== undefined && job.vacancies !== '') {
-      meta.appendChild(el('span', '', `👥 Vacancies: ${Number(job.vacancies).toLocaleString('en-IN')}`));
-    }
+    const vacText = (job.vacancies !== null && job.vacancies !== undefined && job.vacancies !== '')
+      ? `👥 ${Number(job.vacancies).toLocaleString('en-IN')} Vacancies`
+      : '👥 Vacancies: Refer PDF';
+    meta.appendChild(el('span', 'live-meta-pill', vacText));
     if (job.qualification) {
-      meta.appendChild(el('span', '', `🎓 ${job.qualification}`));
+      meta.appendChild(el('span', 'live-meta-pill', `🎓 ${job.qualification}`));
     }
-    if (job.published_at && pc) {
-      meta.appendChild(el('span', '', `📅 Published: ${pc.formatDate(job.published_at)}`));
+    if (job.last_date && pc) {
+      meta.appendChild(el('span', 'live-meta-pill', `⏰ Deadline: ${pc.formatDate(job.last_date)}`));
+    } else if (job.published_at && pc) {
+      meta.appendChild(el('span', 'live-meta-pill', `📅 Published: ${pc.formatDate(job.published_at)}`));
     }
     top.appendChild(meta);
     card.appendChild(top);
@@ -1228,17 +1399,8 @@
       footer.appendChild(applyLink);
     }
 
-    if (pc && typeof pc.createBookmarkButton === 'function') {
-      footer.appendChild(pc.createBookmarkButton({
-        type: 'job',
-        id: job.slug || job.id,
-        title: job.title,
-        badge: job.organisation || job.category || 'Job Alert',
-        url: `/jobs-careers/?job=${encodeURIComponent(job.slug || job.id)}`,
-        pdfUrl: job.notification_url || '',
-        deadline: job.last_date || ''
-      }));
-    }
+    const bmBtn = makeDashboardBookmarkBtn(job);
+    if (bmBtn) footer.appendChild(bmBtn);
 
     card.appendChild(footer);
     return card;
@@ -1280,9 +1442,9 @@
   }
 
   function closeJobDetail(pushUrl = true) {
-    if (!liveDetailEl) return;
-    liveDetailEl.hidden = true;
-    if (liveGridEl) liveGridEl.hidden = false;
+    if (!liveDetailModalEl) return;
+    liveDetailModalEl.hidden = true;
+    document.body.classList.remove('is-live-modal-open');
     if (pushUrl) {
       try {
         const u = new URL(window.location.href);
@@ -1294,15 +1456,44 @@
     }
   }
 
+  function buildDetailSpecBox(label, primary, secondary) {
+    const card = el('div', 'live-spec-box');
+    card.appendChild(el('span', 'live-spec-label', label));
+    card.appendChild(el('strong', 'live-spec-value', primary));
+    if (secondary) card.appendChild(el('span', 'live-spec-sub', secondary));
+    return card;
+  }
+
+  function inferSelectionStages(job) {
+    const hay = jobSearchHaystack(job);
+    if (/\b(oas|ocs|opsc|assistant\s*section|aso)\b/.test(hay)) {
+      return 'Prelims (CBT/OMR) → Mains Written Exam → Viva-Voce / Document Verification';
+    }
+    if (/\b(police|constable|si|defence|fire|forest)\b/.test(hay)) {
+      return 'CBT Written Exam → Physical Measurement & Efficiency (PMT/PET) → Medical & DV';
+    }
+    if (/\b(teach|b\.?ed|tgt|pgt|lecturer|osstet|otet|cht|ltr)\b/.test(hay)) {
+      return 'Computer-Based Test (Paper I & II) → Merit List & Certificate Verification';
+    }
+    if (/\b(bank|ibps|sbi|ssc|rrb|railway)\b/.test(hay)) {
+      return 'Tier-I / Prelims CBT → Tier-II / Mains CBT → Skill Test & Document Verification';
+    }
+    return 'Written Exam / CBT Screening → Interview / Skill Test → Document Verification';
+  }
+
   async function openJobDetail(slug, pushUrl = true) {
-    if (!slug || !liveDetailEl) return;
-    if (liveGridEl) liveGridEl.hidden = true;
-    if (livePaginationEl) livePaginationEl.hidden = true;
-    liveDetailEl.hidden = false;
+    if (!slug || !liveDetailModalEl) return;
+    liveDetailModalEl.hidden = false;
+    document.body.classList.add('is-live-modal-open');
     liveDetailBadgesEl.replaceChildren();
     liveDetailTitleEl.textContent = 'Loading notification details…';
     liveDetailTitleOrEl.hidden = true;
     liveDetailMetaEl.replaceChildren();
+    if (liveDetailSpecsEl) liveDetailSpecsEl.replaceChildren();
+    if (liveDetailSyllabusEl) {
+      liveDetailSyllabusEl.replaceChildren();
+      liveDetailSyllabusEl.hidden = true;
+    }
     liveDetailSummaryEl.hidden = true;
     liveDetailActionsEl.replaceChildren();
     liveDetailBodyEl.replaceChildren(el('p', '', 'Fetching official recruitment details…'));
@@ -1316,6 +1507,7 @@
     }
 
     try {
+      await loadCandidateGoalsAndTaxonomy();
       const res = await fetch(`/api/content/jobs/${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(res.status === 404 ? 'Job notification not found or no longer active.' : `HTTP ${res.status}`);
       const job = await res.json();
@@ -1340,6 +1532,37 @@
         liveDetailMetaEl.appendChild(el('span', '', `📅 Published: ${pc.formatDate(job.published_at)}`));
       }
 
+      if (liveDetailSpecsEl) {
+        const dl = formatDeadlineBadge(job);
+        const pubTxt = (job.published_at && pc) ? `Published ${pc.formatDate(job.published_at)}` : 'Official Notice';
+        const lastTxt = (job.last_date && pc) ? pc.formatDate(job.last_date) : 'See Official PDF';
+        liveDetailSpecsEl.appendChild(buildDetailSpecBox('Important Dates', `Deadline: ${lastTxt}`, dl ? `${dl.label} · ${pubTxt}` : pubTxt));
+
+        const vacTxt = (job.vacancies !== null && job.vacancies !== undefined && job.vacancies !== '')
+          ? `${Number(job.vacancies).toLocaleString('en-IN')} Posts`
+          : 'Refer Official Notice';
+        liveDetailSpecsEl.appendChild(buildDetailSpecBox('Age & Qualification', job.qualification || 'Check Official Notification', vacTxt));
+        liveDetailSpecsEl.appendChild(buildDetailSpecBox('Selection Stages', inferSelectionStages(job), job.organisation || job.category || 'Recruitment Board'));
+      }
+
+      if (liveDetailSyllabusEl) {
+        const matchedTax = matchJobToTaxonomy(job);
+        const targetExamParam = matchedTax ? `?exam=${encodeURIComponent(matchedTax.id)}` : '';
+        const copy = el('div', 'live-syllabus-banner__copy');
+        copy.appendChild(el('strong', '', matchedTax ? `Matched Track: ${matchedTax.exam_label}` : 'Exam Preparation & Mock Tests'));
+        copy.appendChild(el('span', '', matchedTax
+          ? `Access structured syllabus checklists, PYQs & CBT drills for ${matchedTax.short_code}.`
+          : 'Explore Odisha recruitment syllabi, previous papers, and CBT mock tests.'));
+        const links = el('div', 'live-syllabus-banner__actions');
+        const sylBtn = el('a', 'live-btn live-btn--primary', 'Open Exam Syllabus & Mock Drill →');
+        sylBtn.href = `/resources/${targetExamParam}`;
+        const mockBtn = el('a', 'live-btn', 'Practice Mock Tests ↗');
+        mockBtn.href = `/mock-tests/${targetExamParam}`;
+        links.append(sylBtn, mockBtn);
+        liveDetailSyllabusEl.append(copy, links);
+        liveDetailSyllabusEl.hidden = false;
+      }
+
       if (job.summary) {
         liveDetailSummaryEl.textContent = job.summary;
         liveDetailSummaryEl.hidden = false;
@@ -1361,17 +1584,8 @@
         liveDetailActionsEl.appendChild(applyLink);
       }
 
-      if (pc && typeof pc.createBookmarkButton === 'function') {
-        liveDetailActionsEl.appendChild(pc.createBookmarkButton({
-          type: 'job',
-          id: job.slug || job.id,
-          title: job.title,
-          badge: job.organisation || job.category || 'Job Alert',
-          url: `/jobs-careers/?job=${encodeURIComponent(job.slug || job.id)}`,
-          pdfUrl: job.notification_url || '',
-          deadline: job.last_date || ''
-        }));
-      }
+      const detailBmBtn = makeDashboardBookmarkBtn(job);
+      if (detailBmBtn) liveDetailActionsEl.appendChild(detailBmBtn);
 
       if (job.body_html && pc && typeof pc.renderSanitizedHtml === 'function') {
         pc.renderSanitizedHtml(liveDetailBodyEl, job.body_html);
@@ -1392,7 +1606,8 @@
 
   async function loadLiveJobs() {
     if (!liveGridEl || !liveStatusEl) return;
-    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category);
+    const isClientComposite = (liveState.chip && liveState.chip !== 'all') || Boolean(liveState.goalMatch);
+    const hasFilter = Boolean(liveState.q || liveState.state || liveState.category || isClientComposite);
     if (liveResetBtn) liveResetBtn.hidden = !hasFilter;
 
     liveStatusEl.hidden = false;
@@ -1400,25 +1615,41 @@
     liveGridEl.replaceChildren();
 
     const params = new URLSearchParams();
-    params.set('page', String(liveState.page));
-    params.set('limit', String(liveState.limit));
+    params.set('page', isClientComposite ? '1' : String(liveState.page));
+    params.set('limit', isClientComposite ? '50' : String(liveState.limit));
     if (liveState.q) params.set('q', liveState.q);
     if (liveState.state) params.set('state', liveState.state);
     if (liveState.category) params.set('category', liveState.category);
 
     try {
+      if (liveState.goalMatch && !liveGoalsLoaded) {
+        await loadCandidateGoalsAndTaxonomy();
+      }
       const res = await fetch(`/api/content/jobs?${params.toString()}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const items = Array.isArray(data.items) ? data.items : [];
-      const total = Number(data.total) || items.length;
-
+      let items = Array.isArray(data.items) ? data.items : [];
       syncCategoryDropdown(items);
+
+      if (liveState.chip && liveState.chip !== 'all') {
+        items = items.filter(job => matchesChipFilter(job, liveState.chip));
+      }
+      if (liveState.goalMatch) {
+        items = items.filter(matchesGoalFilter);
+      }
+
+      const total = isClientComposite ? items.length : (Number(data.total) || items.length);
+      const displayPage = isClientComposite ? liveState.page : (data.page || liveState.page);
+      const displayLimit = liveState.limit;
+      const pagedItems = isClientComposite
+        ? items.slice((displayPage - 1) * displayLimit, displayPage * displayLimit)
+        : items;
+
       if (liveCountEl) {
         liveCountEl.textContent = `${total.toLocaleString('en-IN')} ${total === 1 ? 'Active Notice' : 'Active Notices'}`;
       }
 
-      if (items.length === 0) {
+      if (pagedItems.length === 0) {
         liveStatusEl.hidden = false;
         liveStatusEl.replaceChildren(
           el('p', '', hasFilter
@@ -1431,9 +1662,9 @@
 
       liveStatusEl.hidden = true;
       const frag = document.createDocumentFragment();
-      items.forEach(job => frag.appendChild(renderJobCard(job)));
+      pagedItems.forEach(job => frag.appendChild(renderJobCard(job)));
       liveGridEl.appendChild(frag);
-      renderLivePagination(data.page || liveState.page, data.limit || liveState.limit, total);
+      renderLivePagination(displayPage, displayLimit, total);
 
       if (window.CSOBookmarks && typeof window.CSOBookmarks.updateUI === 'function') {
         window.CSOBookmarks.updateUI();
@@ -1449,6 +1680,114 @@
       liveStatusEl.append(msg, retry);
     }
   }
+
+  function updateChipButtonsUI() {
+    if (liveChipsWrap) {
+      liveChipsWrap.querySelectorAll('[data-chip]').forEach(btn => {
+        const active = btn.dataset.chip === liveState.chip;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
+    }
+    if (liveGoalToggleBtn) {
+      liveGoalToggleBtn.classList.toggle('is-active', liveState.goalMatch);
+      liveGoalToggleBtn.setAttribute('aria-pressed', String(liveState.goalMatch));
+    }
+  }
+
+  if (liveChipsWrap) {
+    liveChipsWrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-chip]');
+      if (!btn) return;
+      liveState.chip = btn.dataset.chip || 'all';
+      liveState.page = 1;
+      updateChipButtonsUI();
+      loadLiveJobs();
+    });
+  }
+
+  if (liveGoalToggleBtn) {
+    liveGoalToggleBtn.addEventListener('click', async () => {
+      await loadCandidateGoalsAndTaxonomy();
+      if (!liveState.goalMatch && !liveCandidateUser && !liveGoalExamIds.length) {
+        showAuthHint('Sign in and select target exams in Candidate Hub to match jobs with your Dashboard goals.');
+        return;
+      }
+      if (!liveState.goalMatch && !liveGoalExamIds.length) {
+        showAuthHint('Set target exams inside Candidate Hub → Change Focus to filter recruitments by your goals.');
+        return;
+      }
+      liveState.goalMatch = !liveState.goalMatch;
+      liveState.page = 1;
+      updateChipButtonsUI();
+      loadLiveJobs();
+    });
+  }
+
+  // Sync job bookmarks directly to POST /api/candidate/bookmarks + CSOIdb fallback
+  window.addEventListener('cso:bookmark-toggled', async (e) => {
+    const det = e && e.detail ? e.detail : null;
+    if (!det || det.type !== 'job' || !det.id) return;
+    await loadCandidateGoalsAndTaxonomy();
+
+    const prefixedId = `jobs:${det.id}`;
+    if (!liveCandidateUser) {
+      if (det.bookmarked) {
+        showAuthHint('Saved on this device! Sign in to sync this recruitment into your Candidate Hub.');
+      }
+      return;
+    }
+
+    const payload = det.bookmarked
+      ? {
+          action: 'save',
+          postId: prefixedId,
+          postTitle: det.title || 'Saved Recruitment',
+          postUrl: det.url || `/jobs-careers/?job=${encodeURIComponent(det.id)}`,
+          category: det.badge || 'Job Alert',
+          deadlineDate: det.deadline || null
+        }
+      : { action: 'remove', postId: prefixedId };
+
+    if (window.CSOIdb) {
+      try {
+        if (det.bookmarked && typeof window.CSOIdb.saveBookmarkMirror === 'function') {
+          await window.CSOIdb.saveBookmarkMirror({
+            postId: prefixedId,
+            postTitle: payload.postTitle,
+            postUrl: payload.postUrl,
+            category: payload.category,
+            deadlineDate: payload.deadlineDate
+          });
+        } else if (!det.bookmarked && typeof window.CSOIdb.removeBookmarkMirror === 'function') {
+          await window.CSOIdb.removeBookmarkMirror(prefixedId);
+        }
+      } catch (_) {}
+    }
+
+    let syncedOnline = false;
+    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+      try {
+        const res = await fetch('/api/candidate/bookmarks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        });
+        syncedOnline = res.ok;
+      } catch (_) {}
+    }
+
+    if (!syncedOnline && window.CSOIdb && typeof window.CSOIdb.enqueueSyncAction === 'function') {
+      try {
+        await window.CSOIdb.enqueueSyncAction({
+          endpoint: '/api/candidate/bookmarks',
+          method: 'POST',
+          payload
+        });
+      } catch (_) {}
+    }
+  });
 
   if (liveSearchEl) {
     liveSearchEl.addEventListener('input', () => {
@@ -1479,10 +1818,12 @@
   }
   if (liveResetBtn) {
     liveResetBtn.addEventListener('click', () => {
-      liveState = { page: 1, limit: 12, q: '', state: '', category: '' };
+      liveState = { page: 1, limit: 12, q: '', state: '', category: '', chip: 'all', goalMatch: false };
       if (liveSearchEl) liveSearchEl.value = '';
       if (liveStateEl) liveStateEl.value = '';
       if (liveCategoryEl) liveCategoryEl.value = '';
+      if (liveAuthHintEl) liveAuthHintEl.hidden = true;
+      updateChipButtonsUI();
       closeJobDetail(true);
       loadLiveJobs();
     });
@@ -1490,7 +1831,27 @@
   if (liveDetailCloseBtn) {
     liveDetailCloseBtn.addEventListener('click', () => closeJobDetail(true));
   }
+  if (liveDetailModalEl) {
+    liveDetailModalEl.addEventListener('click', (e) => {
+      if (e.target === liveDetailModalEl) closeJobDetail(true);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !liveDetailModalEl.hidden) {
+        closeJobDetail(true);
+      }
+    });
+  }
 
+  try {
+    const sp = new URLSearchParams(window.location.search);
+    const qParam = sp.get('q');
+    if (qParam && liveSearchEl) {
+      liveSearchEl.value = qParam;
+      liveState.q = qParam.trim();
+    }
+  } catch (_) {}
+
+  loadCandidateGoalsAndTaxonomy();
   syncCategoryDropdown([]);
   loadLiveJobs();
 

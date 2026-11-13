@@ -416,7 +416,9 @@
           star.textContent = bookmarked ? '★' : '☆';
           const text = document.createElement('span');
           text.className = 'cso-bm-text';
-          text.textContent = bookmarked ? 'Saved' : 'Bookmark';
+          const idleLabel = btn.dataset.bookmarkIdle || 'Bookmark';
+          const savedLabel = btn.dataset.bookmarkSaved || 'Saved';
+          text.textContent = bookmarked ? savedLabel : idleLabel;
           btn.replaceChildren(star, ' ', text);
         }
       }
@@ -440,6 +442,21 @@
       const deadline = btn.dataset.bookmarkDeadline || '';
 
       const isNowBookmarked = toggleBookmark(type, { id, title, badge, url, pdfUrl, deadline });
+
+      try {
+        window.dispatchEvent(new CustomEvent('cso:bookmark-toggled', {
+          detail: {
+            type,
+            id,
+            title,
+            badge,
+            url,
+            pdfUrl,
+            deadline,
+            bookmarked: isNowBookmarked
+          }
+        }));
+      } catch (_) {}
 
       if (window.CSOSuperStore && typeof window.CSOSuperStore.showToast === 'function') {
         window.CSOSuperStore.showToast(
